@@ -1,6 +1,7 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
-import { searchEngineDisplayName, supportLookupById } from "utils/search_engine_name"
+import { searchEngineDisplayName } from "utils/search_engine_name"
+import { supportsLookupById } from "utils/search_engines"
 import { showStatusMessage } from "utils/status_message"
 
 /**
@@ -38,7 +39,7 @@ export default class extends ModalTriggerControllerBase {
 
     this.currentCaseId = caseId || ""
     this.searchEngine = searchEngine
-    this.supportsLookup = supportLookupById(searchEngine)
+    this.supportsLookup = supportsLookupById(searchEngine)
 
     if (this.hasNameInputTarget) this.nameInputTarget.value = ""
     if (this.hasRecordFieldsCheckboxTarget) this.recordFieldsCheckboxTarget.checked = false

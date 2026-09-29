@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { isEsLikeEngine } from "utils/search_engines"
 
 function mapSearchEndpoint(data) {
   return {
@@ -37,12 +38,9 @@ export function createSearchEndpointRuntime({ request = apiFetch } = {}) {
     list: () => load("api/search_endpoints"),
     fetchForCase: (caseNo) => load(`api/cases/${caseNo}/search_endpoints`),
     all: () => searchEndpoints,
-    isEsOrOsEngine: (searchEngine) => searchEngine === "es" || searchEngine === "os",
+    isEsOrOsEngine: isEsLikeEngine,
     usesJsonQueryParams: (searchEngine) =>
-      searchEngine === "es" ||
-      searchEngine === "os" ||
-      searchEngine === "vectara" ||
-      searchEngine === "algolia",
+      isEsLikeEngine(searchEngine) || searchEngine === "vectara" || searchEngine === "algolia",
     reset: () => {
       searchEndpoints = []
     }

@@ -1,3 +1,5 @@
+import { isEsLikeEngine } from "utils/search_engines"
+
 /* jslint latedef:false */
 
 /**
@@ -107,9 +109,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     domain: {
       ...domain,
       search: {
-        isEsOrOsEngine: function (searchEngine) {
-          return searchEngine === "es" || searchEngine === "os"
-        },
+        isEsOrOsEngine: isEsLikeEngine,
         create: function (fieldList, searchUrl, args, queryText, options, searchEngine) {
           return searchSvc.createSearcher(
             fieldList,
@@ -605,27 +605,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     promiseApi: runtimeFramework.promiseApi
   })
 
-  search.queryCapabilities.getListState = function () {
-    const selectedTry = runtimeDomain.settings.applicable() || {}
-    return {
-      canAddQueries: selectedTry.searchEngine !== "static",
-      addQueryMessage:
-        selectedTry.searchEngine === "static"
-          ? "Adding queries is not supported"
-          : "Add a query to this case",
-      showOnlyRated: svc.showOnlyRated === true,
-      // Match the query-list controller's showOnlyRatedUnsupported state: while the case is
-      // still loading, no selected try means the capability is unknown,
-      // not unsupported.
-      showOnlyRatedUnsupported: runtimeDomain.settings.isTrySelected()
-        ? !trySupportsRatedDocsLookup(selectedTry)
-        : false,
-      isBootstrapping: svc.isBootstrapping === true,
-      searching: hasUnscoredQueries(),
-      batchPosition: scoredQueryCount(),
-      batchSize: queryCount()
-    }
-  }
   // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
   // these stay as the public names that deferred result controls and docFinder.js call.
   function trySupportsSearchApiRatedDocsLookup(aTry) {
@@ -1034,6 +1013,9 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
               ? "Adding queries is not supported"
               : "Add a query to this case",
           showOnlyRated: svc.showOnlyRated === true,
+          // Match the query-list controller's showOnlyRatedUnsupported state: while the case is
+          // still loading, no selected try means the capability is unknown,
+          // not unsupported.
           showOnlyRatedUnsupported: runtimeDomain.settings.isTrySelected()
             ? !trySupportsRatedDocsLookup(selectedTry)
             : false,

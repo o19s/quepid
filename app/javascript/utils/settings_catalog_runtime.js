@@ -1,3 +1,5 @@
+import { supportsLookupById } from "utils/search_engines"
+
 const clone = (value) => JSON.parse(JSON.stringify(value))
 
 const defaultSettings = {
@@ -176,7 +178,7 @@ export function createSettingsCatalog() {
     registerMapper: (engine) => {
       currentDefaults[engine.id] = engine
     },
-    supportsLookupById: (searchEngine) => !["vectara", "searchapi"].includes(searchEngine),
+    supportsLookupById,
     supportsEscapeQuery: (searchEngine) => ["solr", "es", "os"].includes(searchEngine),
     troubleshootingWikiUrl: (searchEngine, mapperBasedSearchEngineId) => {
       const page =

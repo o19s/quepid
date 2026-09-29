@@ -1,4 +1,5 @@
 import { paginateQuery, runSearchAll, searchQuery } from "utils/query_service"
+import { isEsLikeEngine } from "utils/search_engines"
 
 /**
  * Runtime for the live query/search result lifecycle.
@@ -341,7 +342,7 @@ export function createTargetedSearchAdapter({
       })
     }
 
-    if (adapter.searcher.type === "es" || adapter.searcher.type === "os") {
+    if (isEsLikeEngine(adapter.searcher.type)) {
       const filter = { query: query.filterToRatings(settings, adapter.docs.length) }
       if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
         delete adapter.searcher.args.id
@@ -379,7 +380,7 @@ export function createTargetedSearchAdapter({
     if (adapter.defaultList && ["solr", "es", "os"].includes(adapter.searcher.type)) {
       const ratedFieldSpec = settings.createFieldSpec()
       adapter.searcher = createSearcherFromSettings(settings, query, { filterToRated: true })
-      if (adapter.searcher.type === "es" || adapter.searcher.type === "os") {
+      if (isEsLikeEngine(adapter.searcher.type)) {
         const ratedFilter = { query: query.filterToRatings(settings, adapter.docs.length) }
         if (adapter.searcher.isTemplateCall(adapter.searcher.args)) {
           delete adapter.searcher.args.id

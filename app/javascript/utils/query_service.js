@@ -1,3 +1,5 @@
+import { isEsLikeEngine } from "utils/search_engines"
+
 /**
  * Helpers extracted from the live-query runtime.
  *
@@ -202,7 +204,7 @@ export function normalizeSearchResults({
 }) {
   let normalized
 
-  if (searcher.type === "es" || searcher.type === "os") {
+  if (isEsLikeEngine(searcher.type)) {
     normalized = extractors.es(searcher.docs, fieldSpec)
   } else if (searcher.type === "solr") {
     normalized = extractors.solr(searcher.docs, fieldSpec, searcher.othersExplained)

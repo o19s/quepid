@@ -1,3 +1,5 @@
+import { isEsLikeEngine } from "utils/search_engines"
+
 /**
  * Rated-document lookup rules — which engines can retrieve already-rated docs by
  * id, and the per-engine filter syntax for doing so. Extracted from the live-query
@@ -5,8 +7,6 @@
  */
 
 const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "solr"])
-
-const ES_LIKE_ENGINES = new Set(["es", "os"])
 
 /**
  * A static (CSV-backed) case is served by a Solr-compatible endpoint, so the
@@ -73,7 +73,7 @@ export function buildRatedDocsFilter({ searchEngine, idField, ratedIds }) {
   const engine = normalizeSearchEngine(searchEngine)
   const ids = ratedIds || []
 
-  if (ES_LIKE_ENGINES.has(engine)) {
+  if (isEsLikeEngine(engine)) {
     return { terms: { [idField]: ids } }
   }
 

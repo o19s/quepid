@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { snapshotDocument } from "stores/query_documents_store"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { isEsLikeEngine } from "utils/search_engines"
 
 export default class extends Controller {
   static targets = ["queryParams", "queryParamsEditor", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
@@ -41,7 +42,7 @@ export default class extends Controller {
 
   renderShell() {
     const supported = this.adapter.usesQueryParamsEditor
-    const jsonEditor = supported && ["es", "os"].includes(this.adapter.settings?.searchEngine)
+    const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
     this.element.replaceChildren(this.missingDocumentsContentTemplate(jsonEditor, supported))
     const engineNameTarget = this.element.querySelector("[data-missing-documents-target='engineName']")
     if (engineNameTarget) engineNameTarget.textContent = this.adapter.engineName
