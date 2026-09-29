@@ -321,7 +321,7 @@ bin/prettier-staged path/to/app/javascript/file.js
 
 Legacy assets under `app/assets/javascripts/` are checked with ESLint and Prettier when staged, but their findings are advisory and do not block commits while the remaining legacy runtime is being retired.
 
-**Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+**First-party JavaScript** — ESLint covers the modern runtime, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Prettier remains limited to `api/` and `utils/` (see [`docs/js_tooling.md`](docs/js_tooling.md)):
 
 ```bash
 bin/docker r yarn lint:js

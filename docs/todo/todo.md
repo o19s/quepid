@@ -6,19 +6,69 @@ Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed
 
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
-**Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Remaining frontend cleanup lives in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-ux-and-testing-work).
+**Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Remaining frontend cleanup is tracked in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
+
+## Frontend cleanup after Angular removal
+
+### P0 — Scorer sandboxing
+
+Client scorer code still executes through `new Function()`; evaluate a Web
+Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
+
+### P1 — Scorer contract drift
+
+`app/javascript/utils/scorer_runtime.js` and `scorer_logic.js` need a canonical
+shared API and migration guidance.
+
+### P2 — Accessibility
+
+Complete the pass for score and rating controls so state is not conveyed by
+color alone. Some core controls still need accessible names, including
+copy-query and snapshot delete/clear actions; add `aria-label` or visible text
+while touching the owning control, and cover the result with the relevant
+Playwright scenario.
+
+### Opportunistic — Core-toolbar status-message duplication
+
+Several core-toolbar modal controllers duplicate `showAlert`/`clearAlert`
+behavior, while `judgements_core_controller.js` has a structurally similar
+`showError`/`clearError` variant. Consider a small shared status-message helper
+or a narrow addition to `ModalTriggerControllerBase` once the current modal
+migration work settles.
+
+Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
+replacement, prefer server-owned URLs passed through data attributes or form
+actions over a generic client-side `fillUrlTemplate` helper.
+
+### Verification requirements
+
+For changes to the core case surface:
+
+- Preserve the core surface’s existing behavior and appearance; do not collapse it
+  with a Rails-page interaction model that used different UX.
+- Add or update Vitest contracts for changed modules and controllers.
+- Drive the affected user flow through Playwright and update the matching manual
+  testing tracker entry.
+- For visual changes, keep matched before/after screenshots for the core surface.
+
+### Cleanup candidates
+
+- Remove stale Angular terminology from comments, generated-build labels, test names,
+  and helper names where it no longer describes the implementation.
+- Remove remaining Angular-era build or CSS compatibility steps only after verifying
+  that no core or Rails surface still depends on them.
 
 ---
 
 ## Obviated by Angular removal (do not fix in Angular)
 
-These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-ux-and-testing-work).
+These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
 | Item | Why not patch Angular | Where it moves |
 |------|----------------------|----------------|
-| Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work) |
-| Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [inventory § a11y](./angularjs_removal_inventory.md#icon-only-controls) |
-| Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work) |
+| Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
+| Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
+| Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
 
 ---
 
@@ -32,7 +82,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 **Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null).
 
-**Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work).
+**Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
 ---
 
@@ -190,6 +240,26 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 **Status:** Confirmed by reading `extract_judgement_params` — `:user` is **not** in its permit list (`:rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation`), so `judgement_params[:user]` is always nil and the lookup key is *always* `nil`, not just when a caller omits it. Consequences in order: the endpoint never attributes a judgement to anyone unless the caller passes `user_id`; when a caller does pass it, the request adopts and re-attributes an existing anonymous row; two API clients judging the same pair fight over one row. Deferrable because nothing in Quepid's own frontend calls it (grepped `app/javascript`, `app/assets/javascripts`) — this is external API surface only. Note the existing controller test asserts only a `judgements.count` delta, so it passes either way. Same bug family as the `BookImporter` nil-user work of 2026-09-10.
 
 **Fix direction:** Decide which key is canonical, use it in both places, and guard the lookup so a nil judge cannot adopt an existing anonymous row.
+
+---
+
+## P2 — Error handling consistency
+
+### Missing team resources redirect instead of using the app-wide 404
+
+`TeamsController` has a controller-wide `rescue_from ActiveRecord::RecordNotFound`
+that redirects to the teams page with a flash. This differs from the default
+`ApplicationController` behavior, which renders the styled 404 for HTML
+requests. Decide whether inaccessible or missing team resources should remain a
+redirect, become a 404 (or 403), and apply the chosen policy consistently.
+
+### Missing case URLs render the core shell instead of a page-level 404
+
+`CoreController#set_case_or_bootstrap` leaves `@case` nil when an explicit case
+ID is unavailable, then renders the core shell. Decide whether `/case/:id`
+should return the styled 404 before bootstrapping the frontend when the case is
+missing or inaccessible. Preserve the existing behavior for `/case` without an
+explicit ID, which intentionally boots the user's latest available case.
 
 ---
 

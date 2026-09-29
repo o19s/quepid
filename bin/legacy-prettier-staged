@@ -8,7 +8,7 @@ files=()
 
 for path in "$@"; do
   case "$path" in
-    app/assets/javascripts/*.js) files+=("$path") ;;
+    app/assets/javascripts/*.js|app/javascript/ace_config.js|app/javascript/footer.js|app/javascript/tour.js) files+=("$path") ;;
   esac
 done
 

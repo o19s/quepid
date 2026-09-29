@@ -49,8 +49,7 @@
     {
       "enabled": false,
       "matchPackageNames": [
-        "angular-ui-ace",
-        "jquery"
+        "angular-ui-ace"
       ]
     },
     {

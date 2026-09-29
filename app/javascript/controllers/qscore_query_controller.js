@@ -6,7 +6,7 @@ import { getCoreStores } from "utils/core_store_access"
  * Store-driven implementation for the core query score component's
  * primary "current query score" usage in the expanded-results template
  * (`<qscore-query scorable="query">`) — the first store subscriber, per
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
+ * the frontend cleanup migration notes, § Re-render mechanism, step 4.
  *
  * Reads the core store through the shared store accessors. The bundled case
  * runtime and importmap controllers share the same store instances.

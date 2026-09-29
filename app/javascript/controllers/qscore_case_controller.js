@@ -9,7 +9,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
  * Store-driven implementation for the core case score component's primary
  * "current case score" usage in `core/index.html.erb` (`scorable="queries.avgQuery"`)
  * — same pattern as `qscore_query_controller.js`, per
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
+ * the frontend cleanup migration notes, § Re-render mechanism, step 4.
  *
  * Snapshot/diff case scores are rendered separately by the Stimulus
  * `diff-case-scores` controller. The score-history graph is now the Stimulus

@@ -16,8 +16,7 @@ qscore-case, qscore-query, .case-score {
 }
 
 /*
-  Case score badge spacing (docs/todo/angularjs_removal_inventory.md § Re-render
-  mechanism, step 4). The primary case score is a plain `.case-score` div now
+  Case score badge spacing. The primary case score is a plain `.case-score` div now
   (Stimulus-driven); the snapshot/diff scores use the same `.case-score` / `.diff-score`
   classes while their state is being migrated. Both share the `.case-score` class, so these rules key off
   DOM position (`:last-child`), not tag name, and apply the same regardless of which
@@ -47,7 +46,7 @@ qscore-case, qscore-query, .case-score {
 
 /* Overall rating styles - consolidated identical selectors.
    .qscore-query-badge (Stimulus, store-driven primary query score badge —
-   see docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4)
+   see the frontend cleanup migration notes)
    *is* the equivalent of qscore-query's `.overall-rating` child, not a
    wrapper around one: the legacy client targeted `.overall-rating`
    itself, and a separate outer wrapper here just to carry

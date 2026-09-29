@@ -1,21 +1,22 @@
 # JavaScript tooling (lint, format, unit tests)
 
-Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire migration:
+Quepid has a modern JavaScript tree plus a small set of classic compatibility scripts:
 
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
-| `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **ESLint + Prettier (advisory on commit)** | **Karma + Jasmine** (`spec/javascripts/`) |
+| `app/javascript/{ace_config,footer,tour}.js` | Classic scripts still loaded by the core layout | **ESLint + Prettier (advisory)** | Browser/manual coverage |
 | `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
 
-## ESLint + Prettier (`app/javascript`)
+## ESLint + Prettier
 
 ### Scope
 
 Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and used by:
 
-- `eslint.config.mjs` (ignores + file globs) — **all** modern `app/javascript` except vendor/esbuild bridges
+- `eslint.config.mjs` (ignores + file globs) — **all** first-party JavaScript, with classic compatibility scripts using their legacy rules
 - `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/` and `utils/`** for now (avoids a mass reformat of controllers/modules in one PR)
 - `scripts/filter_javascript_lint_paths.mjs` (ESLint pre-commit)
 - `bin/eslint-staged` / `bin/prettier-staged`
@@ -28,11 +29,11 @@ That tree includes:
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 
 - `app/javascript/vendor/**`
-- `app/javascript/core_vendor.js`, `jquery_bundle.js`, `splainer_search_adapter.js`
+- `app/javascript/core_vendor.js`, `app/javascript/utils/splainer_search_runtime.js`
 
 Importmap bare imports (`api/fetch`, `utils/quepid_root`, npm pins) are not Node-resolvable; we do not use `eslint-plugin-import`.
 
-ESLint `no-unused-vars` and `no-console` are off during migration (unused `catch (e)`, Stimulus action params, debug `console.log`).
+ESLint `no-unused-vars` and `no-console` are off during migration (unused `catch (e)`, Stimulus action params, debug `console.log`). The server-side scorer and mapper files also disable rules that assume ordinary module scope because MiniRacer supplies their globals and evaluates user code in the same sandbox. Those files are still parsed and checked for standard syntax errors.
 
 ### Formatting conventions
 
@@ -42,7 +43,7 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
 
-**ESLint** covers the full modern tree under `app/javascript/`; Vitest specs live under `test/javascript/` and are out of scope entirely (not colocated, not linted/formatted by these tools). Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run it yourself before finishing. Specs follow formatting conventions manually.
+**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run the full `yarn lint:js` command before finishing. Specs follow formatting conventions manually.
 
 **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
 
@@ -53,11 +54,11 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 ### Commands
 
 ```bash
-bin/docker r yarn lint:js              # ESLint — full modern tree (eslint.config.mjs)
-bin/docker r yarn lint:js:legacy      # ESLint — full legacy Angular tree (advisory in CI/commits)
+bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
+bin/docker r yarn lint:js:legacy      # ESLint — classic core scripts (advisory)
 bin/docker r yarn format:js:check      # Prettier check — api/ and utils/ only
 bin/docker r yarn format:js            # Prettier write — api/ and utils/ only
-bin/docker r yarn format:js:legacy:check # Prettier check — full legacy Angular tree (advisory in CI/commits)
+bin/docker r yarn format:js:legacy:check # Prettier check — classic core scripts (advisory)
 bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
 bin/docker r rails test:frontend       # Vitest + Karma + ESLint + Stylelint
 ```
@@ -76,7 +77,7 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
-- `app/assets/javascripts/**/*.js` → **advisory ESLint + Prettier** via the legacy staged hooks
+- `app/assets/javascripts/**/*.js` and the three classic core scripts → **advisory ESLint + Prettier** via the legacy staged hooks
 - `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
 - `app/javascript/api/**`, `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
 
@@ -86,9 +87,9 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 `.devcontainer/devcontainer.json` includes the ESLint and EditorConfig extensions. Point ESLint at the workspace `eslint.config.mjs`; Prettier uses `.prettierrc.json`.
 
-## Legacy Angular assets
+## Classic core scripts
 
-The `app/assets/javascripts/` tree is checked by ESLint and Prettier when legacy JavaScript is staged. Those checks are advisory in the commit hook: findings are printed but do not block the commit while the Angular case app is being retired.
+`ace_config.js`, `footer.js`, and `tour.js` are loaded directly by the core layout as classic scripts because they still expose or consume browser globals. They are checked by advisory ESLint and Prettier commands, and their behavior should be verified through the affected core-page browser flow rather than duplicated in a separate module-test harness.
 
 ## Vitest (`app/javascript`)
 
@@ -125,7 +126,7 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 - Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
 - Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
 - Scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. Controllers are excluded for now (many are intentionally untested per that same policy, which would just show up as noisy `NoCoverage` mutants); add specific controller files to `mutate` in `stryker.config.mjs` once they have solid Vitest coverage.
-- Legacy Angular (`app/assets/javascripts/`, Karma) is out of scope — it's being removed by the Angular → Stimulus migration, not worth the investment.
+- The classic core scripts are out of scope for mutation testing; browser verification covers their DOM and global-script behavior.
 
 ```bash
 bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mutation-report.html
@@ -148,4 +149,4 @@ Survived/no-coverage mutants in the report point at either a missing test case o
 
 - [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Karma, Playwright
 - [`app_structure.md`](./app_structure.md) — frontend layout
-- [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) — migration scope
+- [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) — frontend cleanup after Angular removal

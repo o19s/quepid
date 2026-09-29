@@ -4,8 +4,8 @@ import { CaseScoreStore } from "stores/case_score_store"
 import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
 
 /**
- * First store-subscriber Stimulus controller (docs/todo/angularjs_removal_inventory.md
- * § Re-render mechanism, step 4) — replaces the legacy <qscore-query> component's
+ * First store-subscriber Stimulus controller (§ Re-render mechanism, step 4) —
+ * replaces the legacy <qscore-query> component's
  * primary "current query score" usage in searchResults.html. The component's
  */
 function buildController(element, { queryId = "1" } = {}) {

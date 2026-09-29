@@ -11,7 +11,7 @@
     * the import action is Stimulus-owned; live query refresh remains bridged to the live-query runtime.
     * the east pane  - the Tune Relevance drawer, Stimulus-owned with a settings capability bridge.
 
-  The primary case score badge (docs/todo/angularjs_removal_inventory.md § Re-render
+  The primary case score badge (the frontend cleanup migration notes § Re-render
   mechanism, step 4) is Stimulus now, driven by the module-owned case score store - see
   app/javascript/controllers/qscore_case_controller.js.
 
@@ -39,8 +39,7 @@
                   style="display: inline-flex; align-items: flex-start;"
                   data-controller="diff-case-scores"
                 >
-                  <!-- Current case score (Stimulus, store-driven — see
-                       docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4) -->
+                  <!-- Current case score (Stimulus, store-driven) -->
                   <div class="case-score">
                     <div
                       class="qgraph"

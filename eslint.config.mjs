@@ -1,5 +1,5 @@
 /**
- * ESLint flat config for Quepid's modern JavaScript (`app/javascript/`).
+ * ESLint flat config for Quepid's first-party JavaScript.
  *
  * Scope is defined in `config/javascript_lint_scope.mjs` (shared with Prettier).
  */
@@ -9,7 +9,13 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import {
   ESLINT_FILES,
   ESLINT_IGNORES,
+  LEGACY_SCRIPT_FILES,
 } from './config/javascript_lint_scope.mjs';
+
+const recommendedRules = {
+  ...js.configs.recommended.rules,
+  ...eslintConfigPrettier.rules,
+};
 
 export default [
   { ignores: ESLINT_IGNORES },
@@ -32,8 +38,7 @@ export default [
       },
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...eslintConfigPrettier.rules,
+      ...recommendedRules,
       'no-var': 'error',
       'prefer-const': 'warn',
       eqeqeq: ['error', 'always', { null: 'ignore' }],
@@ -44,19 +49,86 @@ export default [
     },
   },
   {
-    files: ['app/assets/javascripts/**/*.js'],
+    files: ['app/assets/javascripts/**/*.js', ...LEGACY_SCRIPT_FILES],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
       globals: {
         ...globals.browser,
         angular: 'readonly',
-        jQuery: 'readonly',
-        $: 'readonly',
+        ace: 'readonly',
+        Shepherd: 'readonly',
+        setupTour: 'readonly',
+        startTour: 'readonly',
       },
     },
     rules: {
       ...js.configs.recommended.rules,
+      'no-var': 'off',
+      'prefer-const': 'off',
+    },
+  },
+  {
+    files: ['test/javascript/**/*.js'],
+    languageOptions: {
+      ...js.configs.recommended.languageOptions,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      ...recommendedRules,
+      'no-console': 'off',
+      'no-unused-vars': 'off',
+    },
+  },
+  {
+    files: [
+      'scripts/**/*.mjs',
+      'config/javascript_lint_scope.mjs',
+      'eslint.config.mjs',
+      'stryker.config.mjs',
+      'build_css.js',
+      'audit_css.js',
+      'vitest.config.js',
+    ],
+    languageOptions: {
+      ...js.configs.recommended.languageOptions,
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      ...recommendedRules,
+      'no-console': 'off',
+      'no-unused-vars': 'off',
+      'no-useless-escape': 'off',
+    },
+  },
+  {
+    files: [
+      'lib/**/*.js',
+      'db/scorers/**/*.js',
+      'db/mapper_based_search_engines/**/*.js',
+    ],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'script',
+    },
+    rules: {
+      ...recommendedRules,
+      // These files run inside MiniRacer with Quepid-provided globals.
+      'no-undef': 'off',
+      'no-unused-vars': 'off',
+      'no-console': 'off',
+      'no-prototype-builtins': 'off',
+      'no-redeclare': 'off',
+      'no-useless-assignment': 'off',
     },
   },
 ];

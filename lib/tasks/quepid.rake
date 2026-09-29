@@ -92,10 +92,10 @@ namespace :test do
     Rake::Task['test:stylelint'].invoke
   end
 
-  desc 'Run ESLint on app/javascript (see eslint.config.mjs)'
+  desc 'Run ESLint on first-party JavaScript (see eslint.config.mjs)'
   task eslint: :environment do
     puts '-' * 100
-    puts 'Starting ESLint (app/javascript)'.yellow
+    puts 'Starting ESLint (first-party JavaScript)'.yellow
 
     eslint = Rails.root.join('node_modules/.bin/eslint')
     unless eslint.executable?
@@ -104,7 +104,21 @@ namespace :test do
       exit false
     end
 
-    eslint_success = system(eslint.to_s, 'app/javascript', chdir: Rails.root.to_s)
+    eslint_paths = [
+      'app/javascript',
+      'test/javascript',
+      'scripts',
+      'config/javascript_lint_scope.mjs',
+      'eslint.config.mjs',
+      'stryker.config.mjs',
+      'build_css.js',
+      'audit_css.js',
+      'vitest.config.js',
+      'lib',
+      'db/scorers',
+      'db/mapper_based_search_engines',
+    ]
+    eslint_success = system(eslint.to_s, *eslint_paths, chdir: Rails.root.to_s)
 
     prettier_script = Rails.root.join('scripts/javascript_lint.mjs')
     unless prettier_script.exist?

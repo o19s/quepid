@@ -47,8 +47,6 @@ describe("CaseToolbarController", () => {
   })
 
   afterEach(() => {
-    delete window.jQuery
-    delete window.$
     vi.restoreAllMocks()
   })
 

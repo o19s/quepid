@@ -166,8 +166,8 @@ this.setupAndStartTour = function() {
   return startTour(tour);
 };
 
-$(document).ready(function() {
-  if ( $('[data-trigger-tour]').length ) {
+document.addEventListener('DOMContentLoaded', function() {
+  if ( document.querySelector('[data-trigger-tour]') ) {
     const tour = setupTour();
     return tour.start();
   }

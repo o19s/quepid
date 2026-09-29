@@ -4,8 +4,8 @@ import { CaseScoreStore } from "stores/case_score_store"
 import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
 
 /**
- * First `searchResults`/`queriesCtrl` slice (docs/todo/angularjs_removal_inventory.md
- * § Re-render mechanism, step 5) — replaces the legacy `SearchResultsCtrl`'s
+ * First `searchResults`/`queriesCtrl` slice (§ Re-render mechanism, step 5) —
+ * replaces the legacy `SearchResultsCtrl`'s
  * `query.isNotAllRated()` "unrated results" frog badge in `searchResults.html`,
  * following the same store-subscriber pattern step 4 used for the qscore
  * badges (`qscore_query_controller.test.js`).

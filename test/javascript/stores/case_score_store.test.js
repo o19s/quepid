@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { CaseScoreStore } from "stores/case_score_store"
 
 /**
- * Unit contract for the dual-run shadow store (see
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 3).
+ * Unit contract for the dual-run shadow store (see the frontend cleanup
+ * migration notes, § Re-render mechanism, step 3).
  * A fresh instance per test, not the page-scoped `caseScoreStore` singleton,
  * so tests can't leak state into each other.
  */

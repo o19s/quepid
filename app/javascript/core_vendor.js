@@ -1,6 +1,5 @@
 // Entry point for the remaining core vendor globals.
 // This is compiled by esbuild into app/assets/builds/core_vendor.js.
-// NOTE: jQuery must be loaded separately before this bundle
 
 // Bootstrap 5 JS (Tooltip, Popover, etc.) is loaded separately via the
 // `bootstrap_globals` importmap pin (see app/views/layouts/core.html.erb)
@@ -32,7 +31,7 @@ window.URI = URI;
 
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
-// setting `root.Shepherd`/`root.Tether`, so legacy code (app/assets/javascripts/tour.js)
+// setting `root.Shepherd`/`root.Tether`, so legacy code (app/javascript/tour.js)
 // referencing the bare `Shepherd` global needs it pinned to window explicitly
 // (matches the URI/core-DOM pattern above).
 import Tether from 'tether-shepherd/dist/js/tether';

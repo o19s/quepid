@@ -3,7 +3,7 @@
  * paths and `queriesSvc.scoreAll()`'s averaging step. Framework-
  * free — no behavior change intended. Pulled out ahead of the case-workspace
  * re-render mechanism (a plain-JS store + Stimulus subscribers, see
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism) so the display
+ * the frontend cleanup migration notes § Re-render mechanism) so the display
  * rules are pinned down and unit-tested before the rendering code around them moves.
  */
 

@@ -1,8 +1,8 @@
 /**
  * Single source of truth for ESLint + Prettier scope on `app/javascript/`.
  *
- * Legacy Angular assets have a separate, advisory ESLint/Prettier scope while
- * that code is being retired.
+ * Legacy scripts have a separate, advisory ESLint/Prettier scope while that
+ * code is being retired.
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -10,8 +10,14 @@ import { join, relative } from 'node:path';
 /** Esbuild bridge files — not importmap/Stimulus; excluded from modern lint. */
 export const LEGACY_ESBUILD_ENTRIES = [
   'app/javascript/core_vendor.js',
-  'app/javascript/jquery_bundle.js',
   'app/javascript/utils/splainer_search_runtime.js',
+];
+
+/** Classic scripts still loaded directly by the core layout. */
+export const LEGACY_SCRIPT_FILES = [
+  'app/javascript/ace_config.js',
+  'app/javascript/footer.js',
+  'app/javascript/tour.js',
 ];
 
 /** Directory names under app/javascript/ never linted (vendored Angular plugins). */
@@ -26,11 +32,11 @@ export const ESLINT_IGNORES = [
   'public/**',
   'vendor/**',
   'spec/**',
-  'test/**',
+  'test/fixtures/**',
+  'test/playwright/**',
   'app/assets/builds/**',
   'app/javascript/vendor/**',
   ...LEGACY_ESBUILD_ENTRIES,
-  'app/javascript/**/*.test.js',
 ];
 
 /**

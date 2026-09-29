@@ -6,8 +6,7 @@ import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
 
 /**
  * Store-driven Stimulus controller for the legacy <qscore-case> component's
- * primary "current case score" usage (docs/todo/angularjs_removal_inventory.md
- * § Re-render mechanism, step 4) — same pattern as
+ * primary "current case score" usage (§ Re-render mechanism, step 4) — same pattern as
  * qscore_query_controller.test.js.
  */
 function buildController(element, { caseId = 1, scoreLabel = "AP@10" } = {}) {

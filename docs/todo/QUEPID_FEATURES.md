@@ -1,6 +1,6 @@
 # Quepid: Complete Feature & Function Enumeration
 
-> **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For Angular removal see [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md).
+> **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For frontend cleanup after Angular removal see [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal).
 >
 > **Last reviewed:** August 2026 against `main` (`Rails 8.1.3` / `Ruby 4.0.6` / AngularJS 1.8.3). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
 
@@ -967,7 +967,6 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 ### Build Pipeline
 
 ```
-esbuild → jquery_bundle.js (IIFE)
 esbuild → angular_app.js (IIFE, vendor libs)
 Node.js → angular_templates.js (compiled HTML)
 Node.js → quepid_angular_app.js (concatenated app code)
@@ -980,7 +979,6 @@ Node.js → application.css, core.css, admin.css (concatenated CSS)
 ```
 web:            puma
 worker:         bin/jobs (Solid Queue)
-jquery:         npm run build:jquery -- --watch
 angular_vendor: npm run build:angular-vendor -- --watch
 angular:        npm run build:angular-app:watch
 templates:      npm run build:angular-templates:watch
@@ -1599,7 +1597,7 @@ Book scales cannot be changed once any judgement exists — this is a data integ
 The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md). Key cross-references:
 - [`complete_application_specification.md`](../complete_application_specification.md) — canonical schema columns, HTML routes, and business rules (feature behavior lives in this file and COREUI)
 - [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md) / [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md) — app-wide and case-workspace feature inventories
-- [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md) — AngularJS inventory, migration strategy (incremental default + optional full rewrite), removal checklist; [`event_bus_inventory.md`](./event_bus_inventory.md) — `$broadcast` / `$emit` map
+- [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal) — frontend cleanup after Angular removal
 - [`todo/todo.md`](./todo/todo.md) — open bugs and hardening
 - [`data_mapping.md`](./data_mapping.md) / [`app_structure.md`](./app_structure.md) — canonical data model and architecture explanations
 - [`operating_documentation.md`](./operating_documentation.md) — operations/deployment guide covering Nginx, OAuth, Thor scripts, etc.
@@ -1612,7 +1610,7 @@ The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md).
 
 ## Summary Statistics
 
-Counts drift as the tree changes — re-count before citing exact numbers. Angular file inventory: [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md).
+Counts drift as the tree changes — re-count before citing exact numbers.
 
 | Metric | Count (Aug 2026) |
 |--------|------------------|

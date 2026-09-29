@@ -7,8 +7,6 @@
 | Doc | Purpose |
 |-----|---------|
 | [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) | Case UI deep internals (tour, queriesSvc quirks, TryFactory, bulk judgement, Rails) |
-| [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) | Remaining AngularJS-related risks, compatibility seams, and cleanup |
-| [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md) | Angular `$broadcast` / `$emit` map (re-run before deleting emitters) |
 | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) | ActiveRecord encryption |
 | [`app_structure.md`](./app_structure.md), [`data_mapping.md`](./data_mapping.md) | How the app is built |
 | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) | Whole-app feature inventory |
@@ -19,12 +17,11 @@
 ## Dedup rules (Aug 2026)
 
 - **Encryption:** one living doc — [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md).
-- **Angular removal:** one living doc — [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) (remaining risks, compatibility seams, and cleanup). Former migration-plan documents are historical.
-- **Angular event bus:** one living doc — [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md). Re-run before deleting `$broadcast` emitters.
+- **Frontend cleanup:** one living section — [`todo.md` § Frontend cleanup after Angular removal](./todo/todo.md#frontend-cleanup-after-angular-removal). Former migration-plan documents are historical.
 - **Open bugs / hardening:** one living doc — [`todo/todo.md`](./todo/todo.md). Outstanding work only; remove entries when fixed (no completed section).
 - **Data model:** narrative — [`data_mapping.md`](./data_mapping.md); quick table index — [`todo/QUEPID_FEATURES.md` §3](./todo/QUEPID_FEATURES.md#3-data-model--relationships); schema columns — [`complete_application_specification.md` §3](./complete_application_specification.md#3-data-model).
 - **REST API:** canonical list — OpenAPI at `/api/docs`; Stimulus client conventions — [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions); HTML routes — [`complete_application_specification.md` §20.5](./complete_application_specification.md#205-html-rails-routes-non-api).
 - **Core UI implementation quirks:** [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) (not duplicated in [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md)).
-- **Core UI file inventory:** [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) (not COREUI §23+).
-- **Obviated Angular UI bugs:** listed in [`todo/todo.md` § Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular); remaining frontend cleanup in [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md#open-ux-and-testing-work).
+- **Core UI implementation quirks:** [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) (not COREUI §23+).
+- **Obviated Angular UI bugs:** listed in [`todo/todo.md` § Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular); remaining frontend cleanup in [`todo.md` § Frontend cleanup after Angular removal](./todo/todo.md#frontend-cleanup-after-angular-removal).
 - **Business rules / edge cases:** [`complete_application_specification.md` § Edge Cases](./complete_application_specification.md#edge-cases-and-business-rules); architectural narrative — [`todo/QUEPID_FEATURES.md` §35](./todo/QUEPID_FEATURES.md#35-key-architectural-decisions).
