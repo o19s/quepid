@@ -1,10 +1,10 @@
 /**
- * Bootstrap 5 tooltip helpers shared by the Angular quepidTooltip directive,
+ * Bootstrap 5 tooltip helpers shared by the legacy quepidTooltip directive,
  * Stimulus `bs-tooltip`, and query-list drag-and-drop (hide stuck tooltips
  * mid-drag).
  */
 
-// quepid-tooltip: Angular. [data-controller~="bs-tooltip"]: Stimulus (core drag safety net).
+// quepid-tooltip: legacy directive. [data-controller~="bs-tooltip"]: Stimulus (core drag safety net).
 export const TOOLTIP_SELECTOR = '[quepid-tooltip], [data-controller~="bs-tooltip"]'
 
 export function getBootstrapTooltip() {

@@ -1,7 +1,7 @@
 /**
  * Framework-free document lifecycle for a live Query.
  *
- * The Angular service supplies the live Query object and document factory
+ * The legacy service supplies the live Query object and document factory
  * dependencies, but reset/error/result transitions and publication policy are
  * kept together here so search execution does not depend on service-local
  * helpers.

@@ -65,8 +65,7 @@ export function formatShortDate(dateString) {
 }
 
 /**
- * "General" export format: one row per scored query, mirroring the former
- * AngularJS export service.
+ * "General" export format: one row per scored query.
  *
  * @param {object} caseData - `GET api/cases/:id?shallow=false` response
  * @param {object[]} queries - `GET api/cases/:id/queries` response's `queries` array
@@ -174,7 +173,7 @@ export function buildDetailedCaseCsv(caseData, queries) {
 }
 
 /**
- * "Snapshot" export format, mirroring the former AngularJS export service.
+ * "Snapshot" export format.
  *
  * @param {number|string} caseId
  * @param {object} snapshotData - `GET api/cases/:id/snapshots/:id?shallow=false` response

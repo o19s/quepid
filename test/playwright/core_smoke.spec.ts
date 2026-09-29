@@ -7,7 +7,7 @@ import {
   gotoCase,
 } from './angular_case_helpers';
 
-// Golden-path smoke suite for the Angular case UI (core.html.erb).
+// Golden-path smoke suite for the core case UI (core.html.erb).
 // Each test ends in a baseline screenshot so the BS3 -> BS5 migration's
 // per-template PRs have a regression net for "invisible-but-present"
 // failures (CLAUDE.md trap #5: popover element exists, aria-describedby set,
@@ -298,7 +298,7 @@ test.describe('core layout golden paths', () => {
     // test.afterEach does run even then (same reasoning as
     // toolbar_modals_core.spec.ts's afterAll comment), so cleanup goes
     // through a direct API call instead of the UI, keyed off the query/doc
-    // identity and rating captured from Angular scope before any mutation.
+    // identity and rating captured from the live case state before any mutation.
     let restoreState: { queryId: number; docId: string; rating: number | null } | undefined;
 
     test.afterEach(async ({ page }) => {

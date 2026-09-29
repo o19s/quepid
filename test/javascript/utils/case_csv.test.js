@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
 
-// Escaping edge cases preserve the AngularJS export behavior this utility ports.
+// Escaping edge cases preserve the established export behavior.
 describe("buildGeneralCaseCsv", () => {
   const baseCaseData = {
     case_name: "Test Case",
@@ -83,7 +83,7 @@ describe("buildSnapshotCsv", () => {
   })
 
   it("skips queries that were deleted since the snapshot was taken (no matching query_text)", () => {
-    // The field-name header is still derived from the raw docs, matching the AngularJS
+    // The field-name header is still derived from the raw docs, matching the
     // `stringifySnapshot` this ports — only the per-query data rows are skipped.
     const result = buildSnapshotCsv(8, { ...snapshotData, queries: [] })
 

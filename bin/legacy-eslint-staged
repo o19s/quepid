@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Advisory ESLint check for staged legacy Angular JavaScript.
+# Advisory ESLint check for staged legacy JavaScript.
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

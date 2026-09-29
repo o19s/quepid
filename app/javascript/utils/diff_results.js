@@ -1,11 +1,11 @@
 /**
  * Build the snapshot comparison objects used by the live Query model.
  *
- * The Query model is still Angular-owned during the incremental case rewrite,
+ * The Query model is still owned by the legacy runtime during the incremental case rewrite,
  * but diff construction is framework-free: callers provide the current
  * settings, snapshot-searcher factory, and query-view selection. Keeping this
  * seam here lets Stimulus own the diff read model without making the diff
- * engine depend on an Angular service.
+ * engine depend on a framework service.
  */
 export function createQueryDiff({
   query,

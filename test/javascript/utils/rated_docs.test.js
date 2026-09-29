@@ -8,7 +8,7 @@ import {
 } from "utils/rated_docs"
 
 /**
- * Unit contract for logic that Angular only covered indirectly, through the
+ * Unit contract for logic that the legacy client only covered indirectly, through the
  * `createSearcherFromSettings` examples in
  * spec/javascripts/angular/services/queriesSvc_spec.js ("Solr ratings filter
  * (options.filterToRated)"). The static-engine cases below had no coverage at all.
@@ -98,7 +98,7 @@ describe("rated_docs", () => {
       ).toBe("{!terms f=id}a,b")
     })
 
-    // Angular got this only because createSearcherFromSettings had already rewritten
+    // The client got this only because createSearcherFromSettings had already rewritten
     // settings.searchEngine in place; without normalization a static case appends
     // undefined to fq on every search.
     it("filters a static case exactly like Solr", () => {

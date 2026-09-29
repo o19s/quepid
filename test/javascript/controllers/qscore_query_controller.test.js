@@ -5,11 +5,8 @@ import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_ov
 
 /**
  * First store-subscriber Stimulus controller (docs/todo/angularjs_removal_inventory.md
- * § Re-render mechanism, step 4) — replaces the Angular <qscore-query> component's
+ * § Re-render mechanism, step 4) — replaces the legacy <qscore-query> component's
  * primary "current query score" usage in searchResults.html. The component's
- * Karma coverage (spec/javascripts/angular/components/qscore_components_spec.js)
- * still applies to the Angular <qscore-query>'s remaining usage (diff/snapshot
- * searcher scores), which this controller doesn't touch.
  */
 function buildController(element, { queryId = "1" } = {}) {
   const controller = Object.create(QscoreQueryController.prototype)

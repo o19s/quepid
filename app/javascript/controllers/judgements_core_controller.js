@@ -14,8 +14,8 @@ const BACKGROUND_QUERY_THRESHOLD = 50
 const REDIRECT_DELAY_MS = 500
 
 /**
- * Judgements / book-link modal for the core case toolbar — mirrors AngularJS
- * `<judgements>` / `_modal.html`. Loads books from the case's teams, saves
+ * Judgements / book-link modal for the core case toolbar. Loads books from the
+ * case's teams, saves
  * book + sync settings via `PUT api/cases/:id`, and runs refresh/sync via
  * the books refresh API. "Populate Now" reads the framework-free document
  * store, while live search continues publishing the store from the live-query runtime. After ratings refresh that

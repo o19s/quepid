@@ -1,6 +1,6 @@
 /**
  * Animates an element's text content stepping from one numeric value to
- * another, replacing the removed angular-countup vendor directive.
+ * another.
  */
 
 const DEFAULT_STEPS = 5

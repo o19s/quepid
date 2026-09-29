@@ -489,7 +489,7 @@ class BooksController < ApplicationController
                                           :show_rank, :scoring_guidelines,
                                           { team_ids: [], ai_judge_ids: [] } ])
 
-    # Crafting a book[team_ids] parameter from the AngularJS side didn't work, so using top level parameter
+    # Use a top-level parameter because nested team_ids are not accepted here.
     params_to_use[:team_ids] = params[:team_ids] if params[:team_ids]
     params_to_use[:team_ids]&.compact_blank!
 

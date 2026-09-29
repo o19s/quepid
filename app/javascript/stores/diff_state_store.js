@@ -2,7 +2,7 @@
  * Framework-free comparison selection state.
  *
  * Snapshot fetching and diff scoring still use the compatibility adapter, but
- * the selected snapshot ids no longer need to live in an Angular service.
+ * the selected snapshot ids no longer need to live in a framework service.
  */
 export class DiffStateStore extends EventTarget {
   constructor() {

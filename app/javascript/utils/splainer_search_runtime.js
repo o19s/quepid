@@ -3,9 +3,8 @@ import { createFetchClient, createWiredServices } from "splainer-search/wired.js
 /**
  * Build the wired Splainer service graph for the framework-free case runtime.
  *
- * The old adapter wrapped every client method in Angular `$q` only to trigger a
- * digest. Case consumers now subscribe to explicit stores/events, so native
- * promises are the correct contract and the graph no longer needs Angular DI.
+ * Case consumers subscribe to explicit stores/events, so native promises are
+ * the correct contract and the graph needs no framework-specific adapter.
  */
 export function createSplainerSearchRuntime({
   client = createFetchClient({ credentials: "include" }),

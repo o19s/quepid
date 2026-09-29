@@ -18,7 +18,7 @@ const TOPIC = process.env.MIGRATION_SHOT_TOPIC || '';
 
 // NOTE: the share-case migration-diff tests that used to live here were moved to
 // share_case.spec.ts as permanent regression coverage — commit 9eebf95c deleted the
-// AngularJS share_case component entirely, so there is no more "before" for this
+// legacy share_case component entirely, so there is no more "before" for this
 // surface to diff against. See that file's header comment for details.
 
 async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CASE_ID) {
@@ -205,7 +205,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     const modal = page.locator('#shareCaseModal.show, .modal.show').first();
     await expect(modal).toContainText(/Share Case/i);
     await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-    // Requires at least one team not yet sharing this case (Angular list-group parity).
+  // Requires at least one team not yet sharing this case (list-group parity).
     await expect(modal.locator('#share-case-shareable-list [data-team-id]').first()).toBeAttached({
       timeout: 5_000
     });

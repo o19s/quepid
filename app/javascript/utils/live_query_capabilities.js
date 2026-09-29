@@ -1,6 +1,6 @@
 /**
  * Install the public live-query namespace without coupling registration to
- * Angular or to the runtime that constructs the callback implementations.
+ * the legacy client or to the runtime that constructs the callback implementations.
  */
 export function installLiveQueryCapabilities({
   target,

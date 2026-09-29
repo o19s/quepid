@@ -2,7 +2,7 @@ import { createQueryDiff } from "utils/diff_results"
 
 /**
  * Framework-free adapter for live Query diff construction and refresh.
- * Angular supplies the current settings, query collection, and publication
+ * The legacy runtime supplies the current settings, query collection, and publication
  * callbacks while diff state remains on the live Query objects.
  */
 export function createLiveQueryDiffRuntime({

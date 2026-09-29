@@ -1,6 +1,6 @@
 /**
- * Compose the remaining Angular-backed live-query callbacks into explicit
- * contracts. The callbacks still point at Angular services during migration,
+ * Compose the remaining legacy live-query callbacks into explicit contracts.
+ * The callbacks still point at compatibility services during migration,
  * but callers no longer need to know how those services are grouped.
  */
 export function createLiveQueryAdapters({

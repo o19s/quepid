@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# This hosts the main Angular 1 application that runs in the client.
+# This hosts the main case application that runs in the client.
 class CoreController < ApplicationController
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new

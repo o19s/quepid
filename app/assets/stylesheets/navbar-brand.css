@@ -1,19 +1,19 @@
 /*
- * Quepid navbar brand skin shared by all three bundles: the Angular core
+ * Quepid navbar brand skin shared by all three bundles: the core
  * header (_header_core_app.html.erb, styled the rest of the way by
- * bootstrap5-compat.css) and the non-Angular header (_header.html.erb,
+ * bootstrap5-compat.css) and the application header (_header.html.erb,
  * used by both the dashboard/cases bundle and the admin bundle, styled the
  * rest of the way by bootstrap5-add.css).
  *
  * Only declarations that are byte-identical across both headers live here.
- * The two headers' markup genuinely differs (the Angular header is a bare
+ * The two headers' markup genuinely differs (the core header is a bare
  * `<header class="navbar-secondary navbar-expand">` with no `.navbar`
  * class, so it doesn't inherit BS5's own `.navbar` nav-link centering;
- * the non-Angular header uses the full `.navbar.navbar-expand-lg` classes)
- * — so bundle-specific deltas (the Angular `.navbar-brand`'s extra
+ * the application header uses the full `.navbar.navbar-expand-lg` classes)
+ * — so bundle-specific deltas (the core `.navbar-brand`'s extra
  * `padding`/`line-height`, each header's `:hover .hover` tooltip offset,
- * `.navbar-secondary`'s `padding` on the non-Angular side, and the
- * Angular-only nav-link centering/hover-active rules) stay in
+ * `.navbar-secondary`'s `padding` on the application side, and the
+ * core-only nav-link centering/hover-active rules) stay in
  * bootstrap5-compat.css / bootstrap5-add.css rather than being forced
  * together here. Verify visually in both contexts before changing
  * anything in this file.
@@ -47,8 +47,8 @@
 
 /* BS5's `.nav-link` sets `font-size: var(--bs-nav-link-font-size)`, which
  * Quepid never defines — invalid at computed-value time, so it falls back
- * to the *inherited* font-size. On the Angular core header that happens to
- * land on 14px (core-additions.css's 87.5% root), but the non-Angular
+ * to the *inherited* font-size. On the core header that happens to
+ * land on 14px (core-additions.css's 87.5% root), but the application
  * dashboard header has a 16px root and would silently render 16px nav
  * links without this. Pin it explicitly so both headers match regardless
  * of ambient root font-size. */

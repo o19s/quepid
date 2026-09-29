@@ -3,8 +3,8 @@
   a real hard navigation - two independent interceptors have to be defeated, not just one:
 
   1. `turbo: false` instead of `turbo_frame: "_top"`: this frame is nested inside the
-     Angular-bootstrapped core page, and Turbo Frames stay navigable even with Drive off (see
-     DEVELOPER_GUIDE.md's "Turbo on the Angular case page"), so a "_top" visit would still swap
+     client-bootstrapped core page, and Turbo Frames stay navigable even with Drive off (see
+     DEVELOPER_GUIDE.md's "Turbo on the core case page"), so a "_top" visit would still swap
      the body via AJAX without reloading the script context.
   2. `target: "_self"`: ensures the link escapes the containing Turbo Frame and replaces the
      document rather than only updating the frame. Without both, Turbo can change the URL while
@@ -12,7 +12,7 @@
 
   Skipping either one leaves the URL changing while the page silently keeps showing the old case.
 
-  `class: "dropdown-item"` matches what the original Angular markup put on each of these links
+  `class: "dropdown-item"` matches the core markup on each of these links
   (dropdown/cases.html.erb, the Rails-page navbar's twin, never had it) - without it the items
   render as plain underlined text instead of full-row, padded/hoverable Bootstrap menu items.
 %>

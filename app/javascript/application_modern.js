@@ -16,9 +16,9 @@ import "vega_globals"
 
 import "ahoy"
 
-// Import Bootstrap and its dependencies
-import "@popperjs/core"
-import "bootstrap"
+// Import Bootstrap and its dependencies, exposing the UMD global used by the
+// data API and by the consent-toast initializer.
+import "bootstrap_globals"
 
 // Import the new CodeMirror module
 import { setupGlobalCodeMirror } from "modules/editor"

@@ -22,7 +22,7 @@ describe("caseNameFromHeader", () => {
     const frame = mountCaseHeader("Old Name")
     expect(caseNameFromHeader()).toBe("Old Name")
 
-    // What case-toolbar does when Angular renames the case.
+    // What case-toolbar does when the case name changes.
     frame.querySelector("[data-case-header-case-name]")
       .setAttribute("data-case-header-case-name", "New Name")
 

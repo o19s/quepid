@@ -1,8 +1,6 @@
 /**
- * Vanilla port of the former `ng-json-explorer` Angular directive — same markup,
- * classnames (styled by app/assets/stylesheets/json-explorer.css, loaded via
- * core.html.erb) and collapse/expand
- * interaction, without the Angular scope/watch machinery.
+ * JSON explorer with the existing markup, class names, and
+ * collapse/expand interaction.
  */
 
 export function escapeHtml(value) {

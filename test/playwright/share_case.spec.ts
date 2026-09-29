@@ -8,9 +8,9 @@ import { dynamicRegions } from './angular_case_helpers';
  *
  * This supersedes two transitional specs:
  *  - The "share-case" tests that used to live in dom_migration_screenshots.spec.ts
- *    were written to screenshot-diff the AngularJS share-case UI against its
+ *    were written to screenshot-diff the legacy share-case UI against its
  *    Stimulus replacement while both existed side by side. Commit 9eebf95c
- *    deleted the Angular share_case component entirely (app/assets/javascripts/
+ *    deleted the legacy share_case component entirely (app/assets/javascripts/
  *    components/share_case/*), so there is no more "before" to diff against —
  *    these are now ordinary baseline screenshots (`toHaveScreenshot`), not a
  *    migration diff.

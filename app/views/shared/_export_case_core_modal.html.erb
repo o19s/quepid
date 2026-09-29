@@ -1,12 +1,7 @@
-<%# Core case toolbar — export case modal, mirrors the AngularJS <export-case>
-    component/_modal.html it replaces. Clicking Export always closes the modal
-    (data-bs-dismiss) and immediately downloads (Angular's close-then-download
-    flow); there's no inline success/failure alert since Angular didn't have
-    one either.
-
-    "Detailed" is the one format that can't be reconstructed from the server
-    alone (it needs the live, already-searched documents held in the
-    still-running Angular app) — see export_case_core_controller.js. %>
+<%# Core case toolbar — export case modal. Clicking Export always closes the
+    modal and immediately downloads. "Detailed" is the one format that can't
+    be reconstructed from the server alone (it needs the live, already-searched
+    documents) — see export_case_core_controller.js. %>
 <% modal_footer = capture do %>
   <button type="button" class="btn btn-primary" disabled data-bs-dismiss="modal"
           data-export-case-core-target="submitButton" data-action="click->export-case-core#submit">Export</button>

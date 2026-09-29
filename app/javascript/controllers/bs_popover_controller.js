@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsPopover } from "utils/bs_popover"
 
-/** BS5 text popover for Rails/Stimulus pages. Template-content popovers (ratings, match detail) still use Angular quepid-popover-template. */
+/** BS5 text popover for Rails/Stimulus pages. Template-content popovers (ratings, match detail) still use the legacy template directive. */
 export default class extends Controller {
   static values = {
     title: String,

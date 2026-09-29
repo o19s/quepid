@@ -5,15 +5,14 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 import { showStatusMessage } from "utils/status_message"
 
 /**
- * Pick-scorer modal for the core case toolbar — mirrors AngularJS
- * `views/pick_scorer.html` / `ScorerCtrl`. Lists communal (+ custom, when
+ * Pick-scorer modal for the core case toolbar. Lists communal (+ custom, when
  * allowed) scorers from `api/scorers`, saves via
  * `PUT api/cases/:id/scorers/:scorerId`, then dispatches
  * `pick-scorer:selected` so the legacy live-query scorer can rescore
  * live queries until the live-query-state migration owns that path.
  *
  * When the case's current scorer is missing from the accessible lists, it
- * stays selected and the warning banner shows (Angular activeScorer parity).
+ * stays selected and the warning banner shows.
  * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
  */
 export default class extends ModalTriggerControllerBase {
@@ -49,7 +48,7 @@ export default class extends ModalTriggerControllerBase {
     this.currentCaseId = caseId || ""
     this.selectedScorer = null
     this._isSubmitting = false
-    // Ignore non-numeric ids (e.g. Angular's legacy "default" scorerId).
+    // Ignore non-numeric ids such as the legacy "default" scorer id.
     const parsedScorerId = currentScorerId ? Number(currentScorerId) : NaN
     this.initialScorerId = Number.isFinite(parsedScorerId) ? parsedScorerId : null
     this.initialScorerName = currentScorerName || ""
@@ -142,7 +141,7 @@ export default class extends ModalTriggerControllerBase {
 
       // Keep the case's current scorer selected even when it is missing from
       // the accessible lists — that is what the inaccessible-scorer warning
-      // is for (Angular ScorerCtrl / activeScorer parity).
+      // is for.
       const pool = this.communalScorers.concat(this.userScorers)
       const initial = pool.find((s) => Number(s.scorer_id) === this.initialScorerId) || null
       if (initial) {
@@ -219,7 +218,7 @@ export default class extends ModalTriggerControllerBase {
     if (!this.hasWarningTarget) return
 
     // Warning tracks the *case's* current scorer (initialScorerId), not the
-    // in-modal selection — matches Angular's one-shot scorerAccessible flag.
+    // in-modal selection.
     const accessible = this._initialScorerAccessible()
     this.warningTarget.classList.toggle("d-none", accessible)
     if (this.hasWarningNameTarget) {

@@ -2,8 +2,8 @@
  * Framework-free snapshot data model.
  *
  * The case workspace still supplies the document cache and explanation
- * normalizer while snapshot fetching is being moved out of Angular. Keeping
- * those as callbacks makes the snapshot contract testable without Angular.
+ * normalizer while snapshot fetching is being moved into this runtime. Keeping
+ * those as callbacks makes the snapshot contract testable independently.
  */
 export function createSnapshotModel({
   params,

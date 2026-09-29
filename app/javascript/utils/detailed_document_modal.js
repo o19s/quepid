@@ -3,7 +3,7 @@ import { renderJsonExplorer } from "utils/json_explorer"
 
 /**
  * Opens the detailed document view shared by the Stimulus results renderer and
- * the remaining Angular Document Finder path.
+ * the remaining document-finder path.
  *
  * The two callers provide slightly different document shapes. The modal only
  * needs the plain fields below, so keeping that boundary here prevents either

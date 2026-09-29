@@ -3,7 +3,7 @@
  *
  * The header (app/views/core/_case_header.html.erb) lives in a Turbo Frame and is the single
  * source of truth for the case name on the core case page: a rename re-renders that frame, and
- * an Angular-originated rename patches it. The case-action toolbar sits outside the frame, so
+ * a client-side rename patches it. The case-action toolbar sits outside the frame, so
  * reading the name here at the moment a modal opens is what keeps modal titles and export
  * filenames current, without copying the name onto every trigger and keeping those copies in
  * step afterwards.

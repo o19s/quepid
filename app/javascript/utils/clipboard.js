@@ -3,8 +3,7 @@
  *
  * `navigator.clipboard` needs a secure context (HTTPS or localhost). The core
  * case page can be plain HTTP (Solr JSONP forces it), so fall back to the
- * classic `document.execCommand("copy")` technique when clipboard is missing —
- * same behavior as Angular `clipboardSvc`.
+ * classic `document.execCommand("copy")` technique when clipboard is missing.
  *
  * `document.execCommand` is deprecated in the DOM spec, but it remains the only
  * reliable write path outside a secure context — keep using it intentionally.

@@ -42,7 +42,6 @@ function buildController(overrides = {}) {
 }
 
 describe("ShareCaseController — Rails cases index / teams", () => {
-  // No Karma analogue — Rails surface uses form POST + redirect (Playwright dom_migration / stimulus_pages).
   beforeEach(() => {
     vi.clearAllMocks()
   })

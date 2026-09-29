@@ -1,10 +1,10 @@
 /**
  * Observable read model for the case query collection.
  *
- * During the Angular migration, Angular still owns the live Query objects
+ * The legacy runtime still owns the live Query objects
  * (search, documents, ratings, and scoring). This store owns the collection
  * snapshot and display order so the future Stimulus query-list can read the
- * same bootstrap state without reaching into an Angular scope.
+ * same bootstrap state without reaching into a controller scope.
  */
 export class QueryCollectionStore extends EventTarget {
   constructor() {

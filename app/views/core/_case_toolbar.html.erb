@@ -34,7 +34,7 @@
 
     Without it the toolbar is clickable from the first paint, roughly 1.5s before the case runtime has
     bootstrapped the case. "Create snapshot" clicked in that window posts with no query state
-    and hangs on "Snapshot Being Created" forever. Angular hid the whole toolbar until the case
+    and hangs on "Snapshot Being Created" forever. The old client hid the whole toolbar until the case
     loaded, so this also keeps the surface behavior stable.
   %>
   <div class="col-sm-12" data-case-toolbar-target="actions" hidden>

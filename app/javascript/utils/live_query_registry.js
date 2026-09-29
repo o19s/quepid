@@ -2,7 +2,7 @@
  * Owns live Query execution objects while the collection store owns their
  * membership and display order.
  *
- * The registry is deliberately framework-free: Angular supplies the Query
+ * The legacy runtime supplies the Query
  * objects, while the store receives the collection mutations needed by the
  * modern case workspace.
  */

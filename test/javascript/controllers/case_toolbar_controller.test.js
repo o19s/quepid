@@ -113,8 +113,8 @@ describe("CaseToolbarController", () => {
 
   /**
    * The header renders the scorer name server-side, so picking a scorer has to refetch the frame.
-   * Nothing else would: the modal saves over the API and bridges to Angular for the rescore, which
-   * was enough only while the header was an Angular template reading the same model.
+   * Nothing else would: the modal saves over the API and bridges to the live
+   * scoring runtime for the rescore.
    */
   describe("scorer chosen in the pick-scorer modal", () => {
     it("refetches the header frame so the new scorer name renders", () => {

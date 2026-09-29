@@ -1,7 +1,7 @@
 /**
  * Framework-free orchestration for the live Query persistence lifecycle.
  *
- * The Angular service supplies state registration and search callbacks while
+ * The legacy service supplies state registration and search callbacks while
  * this runtime owns the single/bulk commit policy used by Stimulus callers.
  */
 export function createLiveQueryLifecycleRuntime({

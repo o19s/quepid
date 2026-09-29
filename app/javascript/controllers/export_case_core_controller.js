@@ -90,15 +90,14 @@ export default class extends ModalTriggerControllerBase {
   }
 
   // The "Snapshot" radio's dropdown: picking a snapshot always selects the
-  // "Snapshot" format, mirroring the AngularJS modal's $watch on `options`.
+  // "Snapshot" format.
   selectSnapshot() {
     if (this.hasSnapshotRadioTarget) this.snapshotRadioTarget.checked = true
     this.selectFormat({ params: { format: "snapshot" } })
   }
 
   // The Basic/TREC section shares one snapshot dropdown; picking a snapshot
-  // there always selects "Basic" (same AngularJS $watch quirk — choosing a
-  // snapshot for a TREC export still flips the radio to Basic).
+  // there always selects "Basic".
   selectBasicSnapshot() {
     if (this.hasBasicRadioTarget) this.basicRadioTarget.checked = true
     this.selectFormat({ params: { format: "basic" } })

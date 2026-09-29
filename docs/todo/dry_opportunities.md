@@ -1,6 +1,6 @@
 # DRY Opportunities Across the Codebase
 
-A whole-codebase audit (Ruby backend, modern JS, legacy AngularJS, views/config) for
+A whole-codebase audit (Ruby backend, modern JS, views/config) for
 duplicated or near-duplicated logic worth consolidating. Findings are grouped by area
 and ranked by impact within each area. File:line references were verified against the
 codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
@@ -236,8 +236,8 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      `clone_case_core_controller.js:104`, `delete_case_options_core_controller.js:61`,
      `export_case_core_controller.js:6,298`, and `share_case_core_controller.js:326,371-372`
      — six-plus copies of the same substitution logic.
-     (Line numbers as of 2026-09-18 — this file is actively being edited on
-     `angular-phase-6`; re-check before acting, per this doc's own header note.)
+     (Line numbers as of 2026-09-18 — re-check before acting, per this doc's own
+     header note.)
    - **Fix**: hoist `showAlert`/`clearAlert`/`setProgress` onto
      `ModalTriggerControllerBase` (or a small `utils/status_message` wrapper); extract
      a single `fillUrlTemplate(template, params)` helper for the URL-template call sites.
@@ -248,14 +248,11 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      started drifting (`showError`/`clearError`'s different shape). Don't bundle into
      an active bug-fix pass — do it as its own small refactor PR once the
      judgements/pick-scorer/take-snapshot migration work settles, to avoid merge
-     friction with whatever's still landing on `angular-phase-6`.
-   - **Angular removal:** Partially — these are the *new* Stimulus controllers
-     themselves (already migrated off Angular), so this is a modern-JS cleanup, not
-     something that goes away when Angular is removed.
+     friction with any remaining migration work.
 
 ### Low-medium impact
 
-5. **Clipboard-copy-with-fallback duplicated with inconsistent robustness.**
+3. **Clipboard-copy-with-fallback duplicated with inconsistent robustness.**
    `invite_controller.js` now uses shared `utils/clipboard` (`copyText`).
    `mapper_wizard_controller.js:484-509` still only supports
    `navigator.clipboard.writeText` (no HTTP fallback) and separately reimplements
@@ -267,7 +264,7 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      next touching that controller rather than as standalone work.
    - **Angular removal:** No — `mapper_wizard_controller.js` is Rails-only.
 
-6. **Manual debounce-timer bookkeeping** reimplemented in
+4. **Manual debounce-timer bookkeeping** reimplemented in
    `team_member_autocomplete_controller.js:30,36-37,44,52-55,171-176` and
    `bulk_judgement_controller.js:9,12-16,126-128,134` — same declare-in-connect /
    clear-in-disconnect / clear-then-reschedule shape.
@@ -279,7 +276,7 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
 
 ### Low impact
 
-7. Leftover `console.log("X controller connected")` debug lines in 4 controllers
+5. Leftover `console.log("X controller connected")` debug lines in 4 controllers
    (`import_case_controller.js:9`, `import_snapshot_controller.js:7`,
    `mapper_wizard_controller.js:48`, `prompt_form_controller.js:7`) — just remove.
    - **Pragmatic priority — Do now:** literally a four-line delete with zero risk —
@@ -287,9 +284,9 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      that touches any of these files (or as a standalone one-liner PR today).
    - **Angular removal:** No — all four controllers (`import_case`,
      `import_snapshot`, `mapper_wizard`, `prompt_form`) are Rails-page Stimulus
-     controllers, not core-page/Angular-replacement code.
+     controllers, not core-page code.
 
-8. Test files hand-build `Object.create(Controller.prototype)` stub controllers
+6. Test files hand-build `Object.create(Controller.prototype)` stub controllers
    with manually-assigned `hasXTarget`/`xTarget` pairs in 4+ spec files
    (`share_case_controller.test.js:4-30`, `import_case_controller.test.js:9-21`,
    etc.) — a shared `buildStubController` test helper would reduce boilerplate.
@@ -301,115 +298,16 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
      `share_scorer_controller.test.js`, `share_search_endpoint_controller.test.js`)
      rather than factoring it out, since that PR was scoped to the controllers
      themselves. Slightly higher-value than before; still optional.
-   - **Angular removal:** No — all four test files cover the Rails-side share
-     controllers (`share_case`, `share_book`, `share_scorer`,
-     `share_search_endpoint`), not `share_case_core_controller.js` (the actual
-     Angular-replacement controller, which isn't among these duplicated stubs).
-     These were built to match the pattern established for the core controller but
-     aren't themselves migration output.
+   - These test files cover the Rails-side share controllers
+     (`share_case`, `share_book`, `share_scorer`, `share_search_endpoint`).
 
 ---
 
-## 3. Legacy AngularJS (`app/assets/javascripts/`) — migration-doomed, treat as low-priority
-
-### Informational (migration will likely delete this code)
-
-3. **`qscore_query_controller.js` and `qscore_case_controller.js` are ~95% identical**
-   (68 lines each) — identical `getScoreFromScorable()`, `updateScore()`, and
-   `$watchGroup` logic; only the templates differ meaningfully. Core score-display
-   UI, likely to persist a while.
-   - **Fix**: Merge into one component with an optional `showGraph`/`showLabel`
-     binding, or extract the shared logic into `qscoreSvc` (already injected by both).
-   - **Pragmatic priority — Opportunistic:** no bug, no drift — just duplication in
-     code that's a migration candidate itself. Worth the `qscoreSvc` extraction only
-     if you're already in this file for the Stimulus port; not worth a standalone
-     Angular-side PR.
-   - **Angular removal:** Yes — both controllers are AngularJS components on the
-     core case page awaiting their Stimulus port.
-
-4. `$quepidModal.open()` + `.result.then()` launcher boilerplate repeated in 9
-   components (`export_case`, `clone_case`, `delete_case_options`, `query_options`,
-   `diff`, `query_explain`, `frog_report`, `move_query`, `judgements` controllers) —
-   root cause of finding #1. **(migration-doomed)**
-   - **Pragmatic priority — Skip:** don't refactor Angular code that's being deleted;
-     keep this pattern in mind as the shape of the future Stimulus "modal-launch"
-     controller instead.
-   - **Angular removal:** Yes — all 9 components are legacy AngularJS slated for
-     migration.
-
-5. `ctrl.cancel = function () { $quepidModalInstance.dismiss('cancel'); }` duplicated
-   ~21 times across every modal-instance controller. **(migration-doomed)**
-   - **Pragmatic priority — Skip:** same reasoning as #4 — migration will delete this
-     wholesale.
-   - **Angular removal:** Yes — legacy AngularJS modal-instance controllers.
-
-6. **(partially resolved 2026-09-18)** `rateBulkSvc`/`rateElementSvc` were identical
-   `setScale`-only services (the duplicated `handleRatingScale` they used to share was
-   removed when the ratings-scale popover migrated to the Stimulus
-   `rating-popover` controller) — merged into a single `rateScaleSvc`.
-   What's left: `searchResults.js`, `docFinder.js`, and `controllers/searchResult.js`
-   each independently wire up `$element.on('rating-popover:rate'/'reset', ...)` +
-   `$scope.$on('$destroy', ...)` cleanup to bridge the Stimulus controller's bubbling
-   CustomEvents back into Angular (same `stopPropagation`/`$scope.$apply()`/doc-id-collection
-   shape ~90 lines total, with the id-collection loop duplicated a second time within
-   `searchResults.js`/`docFinder.js` between their own rate and reset handlers).
-   - **Fix**: A `bindRatingPopover($scope, $element, { rate, reset })` helper
-     (natural fit alongside `rateScaleSvc`) that owns the event binding/cleanup;
-     callers pass only their rate/reset logic.
-   - **Pragmatic priority — Skip:** this is Angular-to-Stimulus bridge code that
-     exists solely until the surrounding Angular controllers themselves are ported —
-     building a shared abstraction for code with a known short remaining lifespan
-     wastes the effort. Revisit only if this bridge is still here well after the
-     surrounding controllers were expected to be migrated.
-   - **Angular removal:** Yes — `searchResults.js`, `docFinder.js`, and
-     `controllers/searchResult.js` are all legacy AngularJS core-UI code.
-
-7. Duplicate array-containment helper in `services/caseSvc.js:529-533`
-   (`listContainsCase`) and `services/bookSvc.js:26-28` (`contains`) — same
-   "does list already have this id" filter. Low priority.
-   - **Pragmatic priority — Skip:** trivial, no bug, in migration-adjacent code —
-     not worth the diff.
-   - **Angular removal:** Yes — `services/caseSvc.js` and `services/bookSvc.js` are
-     legacy AngularJS services.
-
-8. Dead `'caseUpdate'` broadcast event (`services/caseSvc.js:410`) with no listener
-   anywhere — a symptom of event names being magic strings with no shared registry.
-   Low priority, cheap to add a `broadcastSvc.EVENTS` map if touching this file.
-   - **Pragmatic priority — Skip:** dead code, harmless — delete opportunistically,
-     don't build a registry for a problem that's mostly theoretical at this point in
-     the migration.
-   - **Angular removal:** Yes — `services/caseSvc.js` is legacy AngularJS.
-
-9. `delete_case_options_controller.js:27-64` repeats the same
-   "call promise, on success set flash+navigate, on failure build message" shape 3x
-   with slightly drifted message text. Single file, low priority.
-   - **Pragmatic priority — Skip:** single file, cosmetic message drift only — not
-     worth touching migration-doomed code for this.
-   - **Angular removal:** Yes — legacy AngularJS controller.
-
-10. `factories/SettingsFactory.js` reimplements "find try by tryNo" 3 different ways
-    (`:50-59`, `:86-88`, `:120`) instead of calling its own `getTry(tryNo)`. Cosmetic.
-    - **Pragmatic priority — Skip:** cosmetic, migration-adjacent — leave it.
-    - **Angular removal:** Yes — legacy AngularJS factory.
-
-11. Nine parallel "case action" component trios (component + controller +
-    modal-instance-controller) share identical scaffolding — the umbrella pattern
-    behind findings #4-#5. **Not a refactor target** given imminent migration, but
-    useful context: one generic "modal-launch" Stimulus controller could replace
-    all nine when ported.
-    - **Pragmatic priority — Skip (as Angular refactor); reference for the port:**
-      don't touch the Angular side — treat this as the design spec for whatever
-      Stimulus controller eventually replaces all nine.
-    - **Angular removal:** Yes — all nine trios are legacy AngularJS awaiting
-      migration.
-
----
-
-## 4. Views, CSS, Config, E2E Tests
+## 3. Views, CSS, Config, E2E Tests
 
 ### Medium impact
 
-3. **Duplicate "Delete"/"Archive" confirm-button pattern** in 7 files
+1. **Duplicate "Delete"/"Archive" confirm-button pattern** in 7 files
    (`books/edit.html.erb:5`, `scorers/edit.html.erb:5`, `query_doc_pairs/edit.html.erb:5`,
    `search_endpoints/edit.html.erb:5-6`, `admin/users/edit.html.erb`,
    `admin/announcements/edit.html.erb`, `scores/index.html.erb:73`) — same
@@ -421,7 +319,7 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
 
 ### Low-medium impact
 
-6. Layout `<head>` boilerplate (title, meta description, favicon, csrf_meta_tags)
+2. Layout `<head>` boilerplate (title, meta description, favicon, csrf_meta_tags)
    duplicated across `layouts/admin.html.erb:1-15`, `layouts/analytics.html.erb:1-14`,
    `layouts/core.html.erb:1-18`, and `layouts/application.html.erb:6-75`. The SEO
    description text has already drifted between them (`core.html.erb:7` reads "Use
@@ -431,13 +329,8 @@ codebase as of 2026-09-03 — re-check before acting, since line numbers drift.
    - **Pragmatic priority — Soon:** the SEO drift is real but harmless-ish; the
      partial is cheap and low-risk since only four layout files are involved — fine
      to knock out whenever someone's next in a layout file.
-   - **Angular removal:** Partial — `layouts/core.html.erb` is the Angular
-     case-page layout; `admin.html.erb`, `analytics.html.erb`, and
-     `application.html.erb` are Rails-only. Any `_head_meta` extraction touches the
-     Angular surface's layout file directly, so verify `core.html.erb` still renders
-     correctly afterward.
 
-8. Routes: share/unshare sub-resource pattern expressed 3 different ways in
+3. Routes: share/unshare sub-resource pattern expressed 3 different ways in
    `config/routes.rb` (cases/books/search_endpoints share one shape at
    `:154-159`, scorers use a separate shape at `:77-78`) — not urgent, but
    would fall out naturally from consolidating `TeamCasesController` /

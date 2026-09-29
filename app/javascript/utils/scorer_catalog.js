@@ -3,7 +3,7 @@
  *
  * The custom scorer object is still supplied by the legacy factory because its
  * user-code execution contract has not moved yet. Catalog loading, default
- * selection, and case bootstrap do not need Angular state, so keep those
+ * selection, and case bootstrap do not need query state, so keep those
  * responsibilities here while that last factory seam is being retired.
  */
 export function createScorerCatalog({

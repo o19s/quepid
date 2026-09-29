@@ -2,7 +2,7 @@
  * Searcher-compatible access to results captured in a snapshot.
  *
  * Snapshot data is hydrated by the framework-free snapshot registry, then
- * adapted here to the small searcher interface used by Query. Angular still
+ * adapted here to the small searcher interface used by Query. The legacy runtime still
  * supplies the document factory and promise implementation while it remains
  * the compatibility owner of the live Query objects.
  */

@@ -4,8 +4,7 @@ import { searchEngineDisplayName, supportLookupById } from "utils/search_engine_
 import { showStatusMessage } from "utils/status_message"
 
 /**
- * Take-snapshot modal for the core case toolbar — mirrors AngularJS
- * `views/snapshotModal.html` / `PromptSnapshotCtrl`. Collects name + optional
+ * Take-snapshot modal for the core case toolbar. Collects name + optional
  * document-fields checkbox, then dispatches `take-snapshot:create` so the
  * Stimulus snapshot bridge can build the payload from live query results.
  *
@@ -69,7 +68,7 @@ export default class extends ModalTriggerControllerBase {
       ? this.recordFieldsCheckboxTarget.checked
       : false
 
-    // Engines without id lookup always store document fields (Angular parity).
+    // Engines without id lookup always store document fields.
     if (!this.supportsLookup) recordDocumentFields = true
 
     this.setSubmitting(true)
@@ -112,9 +111,9 @@ export default class extends ModalTriggerControllerBase {
 
   setSubmitting(isSubmitting) {
     if (this.hasSubmitButtonTarget) this.submitButtonTarget.disabled = isSubmitting
-    // Angular parity: Cancel is disabled while the snapshot request is in
-    // flight, so a stale request's completion handler can't fire against a
-    // modal the user has since dismissed and possibly reopened.
+    // Cancel is disabled while the snapshot request is in flight, so a stale
+    // completion handler cannot fire against a modal the user has dismissed
+    // and possibly reopened.
     if (this.hasCancelButtonTarget) this.cancelButtonTarget.disabled = isSubmitting
   }
 
@@ -124,7 +123,7 @@ export default class extends ModalTriggerControllerBase {
       message,
       className: `alert alert-${variant} text-danger mb-0`
     })
-    // Preserve newlines from the Angular error copy
+    // Preserve newlines in the error message.
     this.alertTarget.style.whiteSpace = "pre-line"
   }
 

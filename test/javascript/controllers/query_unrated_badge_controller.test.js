@@ -5,7 +5,7 @@ import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_ov
 
 /**
  * First `searchResults`/`queriesCtrl` slice (docs/todo/angularjs_removal_inventory.md
- * § Re-render mechanism, step 5) — replaces the Angular `SearchResultsCtrl`'s
+ * § Re-render mechanism, step 5) — replaces the legacy `SearchResultsCtrl`'s
  * `query.isNotAllRated()` "unrated results" frog badge in `searchResults.html`,
  * following the same store-subscriber pattern step 4 used for the qscore
  * badges (`qscore_query_controller.test.js`).

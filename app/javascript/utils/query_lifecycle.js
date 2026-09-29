@@ -3,7 +3,7 @@ import { apiFetch } from "api/fetch"
 /**
  * Request contracts for the core query lifecycle.
  *
- * Endpoint paths and payloads belong here so Stimulus and the remaining Angular
+ * Endpoint paths and payloads belong here so Stimulus and the remaining legacy
  * state adapter use the same API without copying legacy service conventions.
  */
 export function bootstrapRequest(caseId) {

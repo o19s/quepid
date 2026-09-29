@@ -1,6 +1,6 @@
 /**
  * Framework-free orchestration for the remaining live Query state transitions.
- * The Angular service supplies the live objects and compatibility callbacks;
+ * The legacy service supplies the live objects and compatibility callbacks;
  * this runtime owns score refresh and case/try settings policy.
  */
 export function createLiveQueryStateRuntime({

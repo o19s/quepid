@@ -2,12 +2,11 @@ import { averageMaxScore } from "utils/scoring"
 
 /**
  * Dual-run shadow store for case/query score state — the first `EventTarget`-based
- * store in the case-workspace re-render plan (see
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 3).
+ * store in the case-workspace re-render plan.
  *
- * Angular's digest still owns all rendering. `queriesSvc.scoreAll()` writes into
+ * The legacy renderer still owns all rendering. `queriesSvc.scoreAll()` writes into
  * this store through its module-owned singleton.
- * so the store's output can be compared against what Angular actually paints before
+ * so the store's output can be compared against what the page actually paints before
  * any Stimulus controller reads from it, and before `$scope` is touched. Nothing in
  * the DOM is driven by this store yet — dual-run only.
  *

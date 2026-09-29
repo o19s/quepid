@@ -4,8 +4,7 @@ import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Store-driven replacement for the expanded-results template's per-query "unrated
- * results" frog badge — the first `searchResults`/`queriesCtrl` slice, per
- * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 5.
+ * results" frog badge — the first `searchResults`/`queriesCtrl` slice.
  *
  * Reads the core store through the temporary compatibility adapter. The
  * adapter preserves the bundled singleton while the case runtime and

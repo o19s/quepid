@@ -1,6 +1,5 @@
 /**
- * Display names for search-engine ids — port of the Angular
- * `searchEngineName` filter used by the take-snapshot modal copy.
+ * Display names for search-engine ids used by the take-snapshot modal.
  */
 
 const SEARCH_ENGINE_NAMES = {

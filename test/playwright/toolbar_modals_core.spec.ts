@@ -3,7 +3,7 @@ import { playwrightBaseURL } from './env';
 
 /**
  * Behavioral coverage for the Stimulus core-toolbar modals migrated off
- * Angular: pick-scorer-core, take-snapshot-core, judgements-core.
+ * Core toolbar: pick-scorer-core, take-snapshot-core, judgements-core.
  *
  * Uses a disposable case per test (same pattern as
  * delete_and_clone_case_options.spec.ts) so mutate paths never touch shared

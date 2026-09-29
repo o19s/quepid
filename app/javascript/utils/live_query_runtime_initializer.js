@@ -75,7 +75,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   const mapperFunctionsCache = {}
 
   // Temporary dual-run bridge: the store owns the query collection snapshot
-  // and display order while Angular keeps the live Query objects for search,
+  // and display order while the legacy runtime keeps the live Query objects for search,
   // ratings, documents, and scoring.
   const queryCollectionStore = store && store.queries
   const queryDocumentsStore = store && store.documents
@@ -88,7 +88,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // The collection store owns membership and display order. Keep the
-  // Angular map as the live-object execution index only; every runtime
+  // legacy map as the live-object execution index only; every runtime
   // that needs the collection receives the store-ordered live objects.
   function getLiveQueries() {
     return liveQueryRegistry.all()
@@ -337,15 +337,15 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     publishQueryListState()
   }
 
-  // Explicit adapter for the Stimulus query list. Angular retains the live
+  // Explicit adapter for the Stimulus query list. The legacy runtime retains the live
   // Query objects, but the list no longer discovers them through an
-  // Angular controller scope.
+  // compiled controller scope.
   function publishQueryListState() {
     document.dispatchEvent(new CustomEvent("queries-state:changed"))
   }
 
   // Case-level scoring orchestration lives in the framework-free query
-  // runtime. Angular remains the compatibility adapter for the live Query
+  // runtime. The legacy runtime remains the compatibility adapter for the live Query
   // objects and the legacy latestScoreInfo shape during dual-run.
   const caseScoringRuntime = search.queryScoring.createCaseScoringRuntime({
     getScorables: function () {
@@ -644,7 +644,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     }
   }
   // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
-  // these stay as the Angular-facing names that deferred result controls and docFinder.js call.
+  // these stay as the public names that deferred result controls and docFinder.js call.
   function trySupportsSearchApiRatedDocsLookup(aTry) {
     return search.ratedDocs.supportsSearchApiLookup(aTry)
   }
@@ -653,7 +653,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     return search.ratedDocs.supportsLookup(aTry)
   }
 
-  // Temporary dual-run publisher: Angular keeps the live Query objects, but
+  // Temporary dual-run publisher: the legacy runtime keeps the live Query objects, but
   // Stimulus receives a plain read model for expanded result rendering.
   function publishQueryDocuments(query) {
     if (!queryDocumentsStore || !query) {
@@ -728,14 +728,14 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
 
   // Explicit command adapter for the Stimulus results renderer. The live
   // Query objects remain here until search and scoring migrate, but the
-  // renderer does not need to discover them through an Angular scope.
+  // renderer does not need to discover them through a controller scope.
   function getLiveQuery(queryId) {
     return liveQueryRegistry.get(queryId)
   }
 
   // Explicit command adapters for the Stimulus expanded-results renderer.
-  // Query objects remain Angular-owned, but the renderer does not discover
-  // them through a compiled Angular controller.
+  // Query objects remain owned by the legacy runtime, but the renderer does not discover
+  // them through a compiled legacy controller.
   function toggleQuery(queryId) {
     const query = getLiveQuery(queryId)
     if (!query) return false
@@ -987,7 +987,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   function queryArray() {
     if (queryCollectionStore && queryCollectionStore.status === "ready") {
       // Keep the legacy defaultCaseOrder contract while taking the order
-      // itself from the store. Angular's existing orderBy and any other
+      // itself from the store. The existing orderBy contract and any other
       // consumers still rely on this field being refreshed on each read.
       return search.queryState.orderedQueries(
         queryCollectionStore.orderedQueryIds(),
@@ -998,7 +998,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // Temporary adapter for the Stimulus reorder controller. The controller
-  // owns the PUT; Angular keeps the live display order in sync until the
+  // owns the PUT; the legacy runtime keeps the live display order in sync until the
   // query store becomes authoritative.
   function applyDisplayOrder(displayOrder) {
     svc.displayOrder = displayOrder
@@ -1019,15 +1019,15 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // Refresh diff objects for all queries after state changes. The live diff
-  // runtime remains Angular-backed, but its public adapter is the explicit
+  // runtime remains compatibility-backed, but its public adapter is the explicit
   // capability below rather than the legacy service namespace.
   function refreshAllDiffs() {
     return liveQueryDiffRuntime.refreshAll()
   }
 
   // Framework-free controllers use this adapter instead of resolving the
-  // Angular service from the injector. Keep the digest boundary here with
-  // the live Query implementation until diff refresh leaves Angular.
+  // legacy service from the injector. Keep the scheduling boundary here with
+  // the live Query implementation until diff refresh leaves the compatibility layer.
   function refreshAllDiffsCapability() {
     return new Promise(function (resolve, reject) {
       runtimeFramework.schedule(function () {

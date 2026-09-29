@@ -79,7 +79,7 @@ import {
 } from "utils/query_service"
 
 /**
- * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
+ * query/search logic kept
  * separate from `quepid_dom.js` (DOM helpers) because none of it touches the DOM.
  * The core entry imports this object as a module singleton.
  */
@@ -196,7 +196,8 @@ const quepidSearch = {
     ratingChangedQueryId
   },
   // Temporary capability boundary for modern case controllers. The
-  // implementation remains Angular-owned until live query/search state moves,
+  // implementation remains owned by the legacy runtime until live query/search
+  // state moves,
   // but modern code must not depend on the legacy queryState namespace.
   queryCapabilities: {
     getListState: null,

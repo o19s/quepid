@@ -1,7 +1,7 @@
 /**
- * Bootstrap 5 popover helpers shared by Angular quepidPopover and Stimulus pages.
+ * Bootstrap 5 popover helpers shared by legacy quepidPopover and Stimulus pages.
  *
- * Trigger mapping (uib → BS5) for Angular attrs:
+ * Trigger mapping (uib → BS5) for legacy attributes:
  *   'mouseenter'   → hover focus
  *   'click'        → click
  *   'focus'        → focus
@@ -39,7 +39,7 @@ export function getBootstrapPopover() {
 }
 
 /**
- * Wire a BS5 Popover on `element`. Angular template mode passes hooks via
+ * Wire a BS5 Popover on `element`. Template mode passes hooks via
  * `options`; Stimulus text mode uses static title/body values.
  *
  * @param {Element} element

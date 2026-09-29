@@ -195,7 +195,7 @@ class TryTest < ActiveSupport::TestCase
   end
 
   # Mirrors formattedName() in app/assets/javascripts/factories/TryFactory.js, so the
-  # server-rendered case header and the Angular models still in the page agree on the label.
+  # server-rendered case header and the client models still in the page agree on the label.
   describe '#formatted_name' do
     test 'leaves a name that already mentions its try number alone' do
       try = tries(:one)

@@ -21,7 +21,7 @@ module JudgementHelper
       # Calculate appropriate button class based on scale position
       button['class'] = calculate_button_class(score, max_score)
 
-      # Add HSL color to match Angular app
+      # Add the HSL color used by the case UI.
       button['style'] = { 'background-color' => calculate_hsl_color(score, book.scale) }
 
       # Get label from book's scale_with_labels if available
@@ -72,19 +72,19 @@ module JudgementHelper
     end
   end
 
-  # Calculate HSL color value matching the Angular app's color scheme
+  # Calculate the HSL color used by the case UI.
   # This replicates the same color gradient from the client scorer runtime.
   # where scores range from red (lowest) to green (highest) on a 0-120 hue scale
   # @param score [Numeric] The rating value
   # @param scale [Array] The full scale array from the book
   # @return [String] HSL color string
   def calculate_hsl_color score, scale
-    # Match the Angular app's color calculation logic from scaleToColors function
+    # Match the client-side scaleToColors calculation.
     min_score = scale.first
     max_score = scale.last
     range = max_score - min_score
 
-    # Calculate hue (0-120 from red to green, just like the Angular app)
+    # Calculate hue (0-120 from red to green).
     hue = if range.zero?
             0 # Avoid division by zero
           else

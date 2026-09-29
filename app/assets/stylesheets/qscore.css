@@ -49,7 +49,7 @@ qscore-case, qscore-query, .case-score {
    .qscore-query-badge (Stimulus, store-driven primary query score badge —
    see docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4)
    *is* the equivalent of qscore-query's `.overall-rating` child, not a
-   wrapper around one: Angular's `ng-style` targeted `.overall-rating`
+   wrapper around one: the legacy client targeted `.overall-rating`
    itself, and a separate outer wrapper here just to carry
    `data-controller` left the actual float un-styled. */
 qscore-case .overall-rating,

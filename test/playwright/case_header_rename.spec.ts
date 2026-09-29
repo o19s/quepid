@@ -3,11 +3,11 @@ import { test, expect, type Page } from '@playwright/test';
 /**
  * E2E coverage for the server-rendered case header.
  *
- * The header (case name, try name, badges, scorer) moved out of the Angular
+ * The header (case name, try name, badges, scorer) moved out of the legacy
  * `queriesLayout.html` template into `app/views/core/_case_header.html.erb`,
  * rendered inside a `case_header` Turbo Frame served by
  * `Core::CaseHeaderController`. Rename is a Rails round trip that re-renders
- * the frame rather than an Angular `$http` call driving a digest.
+ * the frame rather than a client-side request driving a digest.
  *
  * What only an end-to-end test can catch here is the bridging, since the
  * things that must stay in step live *outside* the frame: the toolbar's modal
@@ -44,7 +44,7 @@ async function deleteCaseViaApi(page: Page, caseId: number) {
   await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
 }
 
-/** Waits until Angular has actually selected the case; the toolbar is gated on it. */
+/** Waits until the case is selected; the toolbar is gated on it. */
 async function gotoLoadedCase(page: Page, caseId: number) {
   await page.goto(`case/${caseId}/try/1`);
   await expect(page.locator('#case-actions .col-sm-12')).toBeVisible({ timeout: 20_000 });
@@ -131,7 +131,7 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
  *
  * Both are the same defect: a control outside the frame mutates state the frame rendered.
  * `_case_header.html.erb` documents the contract (dispatch `quepid:case-header-stale`); this
- * covers it end to end, since the failure is in the wiring between Angular, Stimulus and Turbo
+ * covers it end to end, since the failure is in the wiring between the legacy client, Stimulus and Turbo
  * and unit tests on either side cannot see it.
  */
 test.describe('core case header: stays in step with changes made outside the frame', () => {

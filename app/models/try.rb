@@ -121,7 +121,7 @@ class Try < ApplicationRecord
 
   # How the try is labelled in the case header. Mirrors `formattedName()` in
   # app/assets/javascripts/factories/TryFactory.js so the server-rendered header
-  # and the Angular models still in the page agree: a name that already mentions
+  # and the client models still in the page agree: a name that already mentions
   # its own try number is shown as-is, anything else gets the number appended.
   def formatted_name
     return name if name.to_s.include?("Try #{try_number}")

@@ -1,9 +1,9 @@
 /**
  * Build the plain document/query state consumed by QueryDocumentsStore.
  *
- * The live Query remains Angular-owned for now, but this read-model contract
- * is framework-free so the eventual search runtime can publish the same shape
- * without carrying Angular helpers into Stimulus.
+ * The live Query remains owned by the legacy runtime for now, but this
+ * read-model contract is framework-free so the search runtime can publish the
+ * same shape without carrying framework helpers into Stimulus.
  */
 export function buildQueryDocumentsState({
   query,

@@ -1,5 +1,5 @@
 /**
- * Paste handler shared by add-query (Angular) and Stimulus `text-paste`.
+ * Paste handler shared by add-query and Stimulus `text-paste`.
  * Invokes `onPaste(plainText)` when the user pastes into `element` and
  * consumes the native insertion so callers can normalize the text.
  *

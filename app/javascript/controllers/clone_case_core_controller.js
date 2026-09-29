@@ -8,12 +8,9 @@ const REDIRECT_DELAY_MS = 1000
 
 /**
  * Clone-case options for the core case toolbar — list/form UI, API stay-on-page
- * while cloning, then navigate to the new case. Mirrors the AngularJS
- * clone-case modal it replaces, except: on success the modal stays open
- * showing an inline success alert for REDIRECT_DELAY_MS before navigating
- * (Angular closed the modal and navigated immediately), and on failure the
- * modal stays open with an inline alert instead of Angular's
- * close-then-global-flash (same documented delta as share-case-core).
+ * while cloning, then navigate to the new case. On success the modal stays
+ * open showing an inline success alert for REDIRECT_DELAY_MS before
+ * navigating; on failure it stays open with an inline alert.
  *
  * One controller class instantiated on both the toolbar trigger and the modal
  * root (same dual-role pattern as share-case-core / delete-case-options-core,

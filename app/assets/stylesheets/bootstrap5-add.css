@@ -17,9 +17,9 @@ body {
 
 /*
 	Primary Navbar - branding — shared declarations (identical between this
-	non-Angular header and the Angular core one) live in navbar-brand.css.
+	application header and the core one) live in navbar-brand.css.
 	Only genuine deltas live below: this header's .navbar-brand has no
-	padding-top (unlike the Angular core skin — see the comment in
+	padding-top (unlike the core skin — see the comment in
 	bootstrap5-compat.css), so the wordmark sits higher and this tooltip
 	offset is correspondingly smaller.
 */

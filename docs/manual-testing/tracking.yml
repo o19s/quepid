@@ -166,10 +166,10 @@ parts:
         paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_initializer.js", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts"]
       "3.3":
         title: "Import a case from JSON"
-        last_run: 2026-09-25T15:55:49Z
-        result: fail
-        notes: "Covered live via Playwright MCP: exported the existing case using the Quepid JSON export, uploaded that file through Import Quepid Case, and submitted it. The app showed 'Failed to import case. Please check the file format.' and created no new case. JSON import round-trip is currently failing."
-        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb"]
+        last_run: 2026-09-29T04:10:00Z
+        result: pass
+        notes: "Covered live via Playwright MCP and the checked-in Playwright flow: the Cases-page Import Case modal opens, accepts JSON, posts successfully, and redirects to the imported case. The fix added the missing local Turbo/Stimulus import-map pins and restored Bootstrap modal loading; the import-related E2E checks now pass."
+        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/application_modern.js", "config/importmap.rb"]
       "3.4":
         title: "Import snapshots from CSV"
         last_run: 2026-09-25T15:55:00Z

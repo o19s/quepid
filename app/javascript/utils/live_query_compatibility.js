@@ -1,7 +1,7 @@
 /**
  * Compose the live-query compatibility island from framework-free runtimes.
  *
- * The remaining Angular service supplies environment callbacks, but this
+ * The remaining legacy service supplies environment callbacks, but this
  * module owns the wiring between query model, factory, documents, and
  * execution. That keeps the eventual case-workspace entry point on the same
  * contract without copying the composition logic.

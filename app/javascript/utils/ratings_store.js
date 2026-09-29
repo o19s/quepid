@@ -1,10 +1,10 @@
 /**
  * Framework-free ratings state and transport adapter.
  *
- * The Angular ratingsStoreSvc used to own both the ratings dictionary and the
+ * The legacy ratings service used to own both the ratings dictionary and the
  * HTTP calls that mutate it. This class keeps the same public contract while
  * receiving transport and change notification as dependencies, so query
- * scoring can use it without Angular during the case-workspace migration.
+ * scoring can use it without coupling to the case workspace UI.
  */
 export class RatingsStore {
   constructor({ caseNo, queryId, ratingsDict = {}, request, onChanged = () => {} }) {

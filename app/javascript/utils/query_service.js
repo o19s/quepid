@@ -1,7 +1,8 @@
 /**
  * Framework-free helpers extracted from the legacy live-query runtime.
  *
- * These functions deliberately know nothing about Angular, $q, or the case
+ * These functions deliberately know nothing about framework internals, async
+ * implementation details, or the case
  * workspace. They are shared through quepidSearch while the runtime initializer
  * remains the owner of the live Query objects during the migration.
  */
@@ -19,7 +20,7 @@ export function settingsWithTryOverrides(settings, tryOverrides) {
 /**
  * Prepare the engine-specific arguments passed to splainer-search.
  *
- * This is deliberately independent of Angular services. The caller supplies
+ * This is deliberately independent of application services. The caller supplies
  * the small engine predicates and the query's ratings filter, while this
  * helper owns the mutation-prone Solr/ES/Search API argument rules that used
  * to live inside the compatibility initializer.
@@ -96,7 +97,7 @@ export function buildSearcherRequest({
 
 /**
  * Create a splainer-search searcher without coupling the construction rules to
- * Angular services. The caller injects the legacy searcher factory and the
+ * application services. The caller injects the legacy searcher factory and the
  * small environment-specific predicates; the settings/query contract stays
  * portable for the future case-workspace bundle.
  */
@@ -158,7 +159,7 @@ export function evaluateMapperFunctions(mapperCode, cache = {}, globalObject = w
   })
 
   // Mapper code is user-provided JavaScript by design; this preserves the
-  // existing Angular behavior while moving the seam out of the service.
+  // existing behavior while moving the seam out of the service.
   const mapperFunction = new Function(mapperCode)
   mapperFunction.call(globalObject)
 
@@ -190,7 +191,7 @@ export function matchFeaturesExplain(doc) {
 /**
  * Convert a splainer-search response into Quepid's rateable document shape.
  * Engine-specific explain extraction and the rateable-doc factory are injected
- * so this helper remains independent of Angular services.
+ * so this helper remains independent of application services.
  */
 export function normalizeSearchResults({
   searcher,
@@ -350,11 +351,11 @@ export async function pAll(queue, requestsPerMinute) {
 }
 
 /**
- * Run the case's live search-and-score batch without owning any Angular state.
+ * Run the case's live search-and-score batch without owning UI state.
  *
  * The callbacks deliberately keep Query construction, scoring, book sync, and
  * the temporary read-model bridge outside this orchestration seam. That lets
- * the Angular service remain a compatibility facade while Stimulus takes over
+ * the legacy service remains a compatibility facade while Stimulus takes over
  * the batch lifecycle incrementally.
  */
 export function runSearchAll({

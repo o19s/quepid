@@ -10,9 +10,9 @@ import {
 } from "utils/scoring"
 
 /**
- * Unit contract for the score display/aggregation rules extracted from Angular's
+ * Unit contract for the score display/aggregation rules extracted from the legacy
  * `scoreDisplay` / `ratingBgStyle` filters and `queriesSvc.scoreAll()`. The
- * framework-free replacement is covered here instead of through Angular.
+ * framework-free replacement is covered here directly.
  */
 describe("scoring", () => {
   describe("isUnratedScore", () => {
@@ -44,11 +44,11 @@ describe("scoring", () => {
     })
 
     it("renders NaN as an empty string, matching AngularJS's number filter", () => {
-      // AngularJS's formatNumber() explicitly returns '' for isNaN(number);
+      // formatNumber() explicitly returns '' for NaN values;
       // Number.prototype.toLocaleString has no such guard and would
       // otherwise render the literal string "NaN". Reachable via a custom
       // scorer whose eval'd code divides by zero (scorer_runtime.js's
-      // score() treats NaN as angular.isNumber() === true and returns it
+      // score() treats NaN as numeric and returns it
       // uncoerced).
       expect(formatScore(NaN)).toBe("")
     })

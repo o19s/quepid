@@ -3,7 +3,7 @@ import { paginateQuery, runSearchAll, searchQuery } from "utils/query_service"
 /**
  * Framework-free runtime for the live query/search result lifecycle.
  *
- * The Angular service supplies searcher construction, document factories, and
+ * The legacy service supplies searcher construction, document factories, and
  * compatibility callbacks. Keeping those dependencies injected makes this
  * usable by the future case-workspace entry bundle without moving search or
  * scoring to the server.
@@ -206,7 +206,7 @@ export function createQueryRuntime({
  * Framework-free orchestration for the case-wide search lifecycle.
  * Query objects and scoring remain injected so this preserves the current
  * browser-to-engine and client-side scoring behavior while removing the queue
- * policy from the Angular service.
+ * policy from the legacy service.
  */
 export function createSearchAllRuntime({
   queries,

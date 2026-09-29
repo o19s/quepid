@@ -1,9 +1,9 @@
 /**
  * Observable read model for the documents in each expanded query.
  *
- * Angular still owns search, scoring, and rating mutations. It publishes plain
+ * The legacy runtime still owns search, scoring, and rating mutations. It publishes plain
  * document snapshots here so the expanded-results renderer can stop walking
- * Angular scopes without changing the live search contract.
+ * controller scopes without changing the live search contract.
  */
 export class QueryDocumentsStore extends EventTarget {
   constructor() {

@@ -10,7 +10,7 @@ import { Controller } from "@hotwired/stimulus"
  * The forms post to Core::CaseHeaderController and re-render the enclosing `case_header` Turbo
  * Frame, so there is nothing to write back into a client-side model on success - the controller
  * is torn down with the old frame content and reconnects against the new markup in its default
- * (display, not editing) state, which matches Angular resetting `startRename` after a rename.
+ * (display, not editing) state, resetting after a rename.
  */
 export default class extends Controller {
   static targets = [
@@ -29,7 +29,7 @@ export default class extends Controller {
     this.syncTrySubmit()
   }
 
-  // Angular's `caseNameEditModeToggle` toggled, so a second double-click closes the editor again.
+  // This action toggles, so a second double-click closes the editor again.
   editCase() {
     if (this.isEditingCase) {
       this.cancelCase()
@@ -38,7 +38,7 @@ export default class extends Controller {
 
     this.resetCaseInput()
     this.showCaseForm(true)
-    // Focus only, never select: Angular left the caret where the field put it, so selecting
+    // Focus only, never select: selecting
     // would change what the first keystroke does (replace the name rather than extend it).
     this.caseInputTarget.focus()
   }

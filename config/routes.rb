@@ -83,7 +83,7 @@ Rails.application.routes.draw do
   get '/dropdown/books' => 'dropdown#books'
   # Core case page twins: same lists, but their links must do a hard browser
   # navigation (see app/views/dropdown/cases_core.html.erb) instead of the
-  # Rails-page navbar's Turbo AJAX visit, which would leave Angular running
+  # Rails-page navbar's Turbo AJAX visit, which would leave the case app running
   # against the old case underneath a silently-changed URL.
   get '/dropdown/cases_core' => 'dropdown#cases_core'
   get '/dropdown/books_core' => 'dropdown#books_core'
@@ -352,12 +352,12 @@ Rails.application.routes.draw do
   delete '/cases/:id' => 'cases#destroy', as: :case
   delete '/cases/:id/queries' => 'cases#destroy_queries', as: :case_queries
 
-  # Routes handled by angular
+  # Routes handled by the case client
   get '/case/:id(/try/:try_number)'   => 'core#index', as: :case_core
   get '/cases/new'                    => 'core#new', as: :case_new
   get '/case'                         => 'core#index'
 
-  # Server-rendered case header on the Angular core page. These re-render the
+  # Server-rendered case header on the core page. These re-render the
   # `case_header` Turbo Frame in place rather than returning JSON, so a rename
   # updates every place the name appears without a client-side model to sync.
   get '/case/:id/header(/try/:try_number)' => 'core/case_header#show', as: :case_header

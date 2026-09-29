@@ -23,7 +23,7 @@ class DropdownControllerTest < ActionController::TestCase
     end
 
     # Regression: these links used to do a Turbo AJAX visit ("_top") on the core case page,
-    # which swaps <body> without reloading the script context - Angular kept running against the
+    # which swaps <body> without reloading the script context - the old client kept running against the
     # old case while the URL silently changed underneath it. Both `data-turbo="false"` (escapes
     # Turbo, which otherwise stays frame-navigable even with Drive off) and `target="_self"`
     # (escapes the containing Turbo Frame) are required together; either alone still leaves the

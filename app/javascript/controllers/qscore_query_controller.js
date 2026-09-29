@@ -14,10 +14,10 @@ import { getCoreStores } from "utils/core_store_access"
  *
  * Colors relative to *this query's own* maxScore (`queryScore.maxScore`,
  * e.g. 1.0 for AP@10, from the scorer via `Query.prototype.scoreOthers`),
- * not the case-level `$scope.maxScore` the old Angular binding used
+ * not the case-level `$scope.maxScore` the legacy binding used
  * (`max-score="maxScore || 100"`) — that scope value is an average across
  * all of the case's queries and, per query, often isn't what the old
- * `<qscore-query>` badge actually colored against anyway: Angular's own
+ * `<qscore-query>` badge actually colored against anyway: the component
  * component read `scorable.currentScore.backgroundColor` first (set by
  * `Query.prototype.scoreOthers` using the query's own maxScore) and only
  * fell back to `qscoreSvc.scoreToColor(ctrl.score, ctrl.maxScore)` — the

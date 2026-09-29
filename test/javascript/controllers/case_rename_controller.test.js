@@ -2,10 +2,9 @@ import { beforeEach, describe, expect, it } from "vitest"
 import CaseRenameController from "controllers/case_rename_controller"
 
 /**
- * Contracts ported from the Angular header this replaced: the former `CaseCtrl.caseName` /
+ * Contracts carried over from the former header: the former `CaseCtrl.caseName` /
  * `caseNameEditModeToggle` and `CurrSettingsCtrl.tryName` / `tryNameEditModeToggle` in
- * app/assets/javascripts/controllers/case.js and currSettings.js (no Karma specs existed for
- * either, so these are the first automated coverage of that behaviour).
+ * app/assets/javascripts/controllers/case.js and currSettings.js.
  *
  * Not covered here, because it is Turbo's job rather than the controller's: the form POST and
  * the `case_header` frame re-render. Those are exercised by the Rails controller test and by
@@ -84,7 +83,7 @@ describe("CaseRenameController", () => {
     expect(controller.caseDisplayTarget.classList.contains("d-none")).toBe(true)
   })
 
-  // Angular's caseNameEditModeToggle was a toggle, not a one-way open.
+  // caseNameEditModeToggle was a toggle, not a one-way open.
   it("closes the case editor again on a second edit", () => {
     CaseRenameController.prototype.editCase.call(controller)
     CaseRenameController.prototype.editCase.call(controller)

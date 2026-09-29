@@ -5,7 +5,7 @@ import { createSearchAllRuntime } from "utils/query_runtime"
  *
  * Searchers and Query objects remain injected adapters while this runtime owns
  * the single-query and batch search policy. That keeps persistence commits and
- * search execution on the same seam during the Angular dual-run.
+ * search execution on the same seam during the compatibility dual-run.
  */
 export function createLiveQueryTransportRuntime({
   queryRuntime,

@@ -2,7 +2,7 @@
  * Framework-free command orchestration for live Query objects.
  *
  * The runtime owns lookup, scheduling, and command sequencing. The case
- * service injects the Angular-backed execution and document/rating adapters
+ * service injects the compatibility-backed execution and document/rating adapters
  * until those dependencies can move out of the compatibility layer.
  */
 export function createLiveQueryCommandsRuntime({

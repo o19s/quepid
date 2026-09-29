@@ -81,7 +81,7 @@ const TEAM_PAYLOAD = {
 }
 
 describe("ShareCaseCoreController — modal list UI", () => {
-  // List partition / selection: Angular ShareCaseModalInstanceCtrl (no Karma spec existed).
+  // List partition / selection contract (no older unit spec existed).
   beforeEach(() => {
     vi.clearAllMocks()
   })

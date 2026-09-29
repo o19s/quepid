@@ -3,7 +3,7 @@ import { createQueryRuntime } from "utils/query_runtime"
 /**
  * Adapter factory for the live Query search lifecycle.
  *
- * The case service supplies Angular-owned searchers, document factories, and
+ * The case service supplies legacy searchers, document factories, and
  * publication callbacks. Query runtime construction stays framework-free so
  * the future case workspace can provide the same contract directly.
  */

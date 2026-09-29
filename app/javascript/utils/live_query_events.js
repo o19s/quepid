@@ -2,7 +2,7 @@
  * Event bridge for live Query state owned by the compatibility layer.
  *
  * Stimulus owns the initiating UI and API calls; this runtime keeps the
- * Angular-backed live query collection synchronized until that collection is
+ * compatibility-backed live query collection synchronized until that collection is
  * removed.
  */
 export function createLiveQueryEventsRuntime({

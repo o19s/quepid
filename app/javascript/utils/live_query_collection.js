@@ -1,9 +1,9 @@
 /**
  * Framework-free orchestration for the live query collection boundary.
  *
- * Angular still provides the live Query implementation and HTTP adapter, but
+ * The legacy runtime still provides the live Query implementation and HTTP adapter, but
  * collection bootstrap, stale-request handling, and store publication live in
- * this runtime so they can be reused after the Angular service is removed.
+ * this runtime so they can be reused after the legacy service is removed.
  */
 export function createLiveQueryCollectionRuntime({
   request,

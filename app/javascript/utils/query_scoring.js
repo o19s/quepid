@@ -5,8 +5,7 @@ const LEGACY_UNSCORED_STYLE = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
 /**
  * Framework-free scoring operations extracted from the legacy live-query runtime.
  *
- * Promise scheduling is injected because the compatibility adapter still uses
- * Angular's $q while the eventual case runtime will use native Promises.
+ * Promise scheduling is injected so callers can supply their own async runtime.
  */
 export function scoreQuery({
   query,
@@ -37,9 +36,8 @@ export function scoreQuery({
       maxScore,
       allRated,
       countMissingRatings,
-      // qscoreSvc historically returned a style object only for the '?' /
-      // null state and a color string for resolved scores. Keep that shape
-      // while the Angular adapter still exposes currentScore to legacy code.
+      // The score display uses a style object for the '?' / null state and a
+      // color string for resolved scores. Keep that public shape.
       backgroundColor:
         score === "?" || score === null ? LEGACY_UNSCORED_STYLE : scoreToColor(score, maxScore)
     }
@@ -91,11 +89,9 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
 /**
  * Own the case-level scoring lifecycle without owning the live query objects.
  *
- * The current case page still injects Angular Query objects through
- * `getScorables`, but the orchestration and completion contract are now
- * framework-free. The callback is intentionally injected so the compatibility
- * adapter can publish to Angular and the shadow score store during dual-run;
- * the future case entry bundle can replace it with a store write directly.
+ * The current case page injects live query objects through `getScorables`,
+ * while the orchestration and completion contract remain framework-free. The
+ * completion callback lets callers publish the result to their own state.
  */
 export function createCaseScoringRuntime({
   getScorables,

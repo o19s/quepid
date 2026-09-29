@@ -1,5 +1,5 @@
 /**
- * Vitest for `app/javascript/` (importmap + Stimulus). Legacy Angular specs stay on Karma.
+ * Vitest for `app/javascript/` (importmap + Stimulus).
  * Specs live under `test/javascript/`, mirroring `app/javascript/` — not colocated with source.
  *
  * Import aliases mirror `config/importmap.rb` pins — add new pins here when modules

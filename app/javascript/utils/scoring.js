@@ -1,6 +1,6 @@
 /**
- * Score display and aggregation math extracted from the Angular `scoreDisplay` /
- * `ratingBgStyle` filters and `queriesSvc.scoreAll()`'s averaging step. Framework-
+ * Score display and aggregation math extracted from the legacy score-display
+ * paths and `queriesSvc.scoreAll()`'s averaging step. Framework-
  * free — no behavior change intended. Pulled out ahead of the case-workspace
  * re-render mechanism (a plain-JS store + Stimulus subscribers, see
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism) so the display
@@ -17,15 +17,13 @@ export function isUnratedScore(score) {
 }
 
 /**
- * Mirrors AngularJS's `number` filter at fractionSize 2 (en-US grouping +
+ * Formats values at fractionSize 2 (en-US grouping +
  * rounding), which is what the `scoreDisplay` filter delegated to via
  * `$filter('number')(score, 2)`. A sentinel or otherwise non-numeric score
  * ('zsr', '--', null, undefined) passes through unchanged. A NaN score
  * (reachable via a buggy custom scorer — see scorer_runtime.js's score(),
  * which treats NaN as a number and returns it uncoerced) renders as an
- * empty string, matching Angular's own `isNaN(number) return ''` guard in
- * formatNumber() — `Number.prototype.toLocaleString` has no such guard and
- * would otherwise render the literal string "NaN".
+ * empty string for NaN values.
  */
 export function formatScore(score) {
   if (typeof score !== "number") {
@@ -105,7 +103,7 @@ const PENDING_RATING_SCORE_COLOR = "hsl(0, 0%, 91%)"
  *
  * Unlike `qscoreSvc.scoreToColor`, this always returns a plain color string
  * (never a `{'background-color': ...}` object) — the caller wraps it. The
- * Angular version's '?'/null branch returns a style object that its callers
+ * The legacy '?' / null branch returns a style object that its callers
  * (`qscore_case_controller.js` / `qscore_query_controller.js`) then wrap in
  * a second `{'background-color': ...}`, producing a nested style object that
  * `ng-style` silently can't apply. Not reproduced here: it's an invisible
@@ -135,13 +133,13 @@ export function scoreToColor(score, maxScore) {
  *
  * Unlike `queriesCtrl.js`'s `runScore()` (which this otherwise mirrors),
  * this runs unconditionally rather than only when the case-level score is a
- * plain number (`runScore()` guards on `angular.isNumber(lastScore) &&
+ * plain number (`runScore()` guards on a numeric last score and
  * lastScore !== -1` before touching `$scope.maxScore` at all). That guard
  * doesn't need reproducing here: every current caller of `caseScore.maxScore`
  * (`scoreToColor()`) already short-circuits on a sentinel/`'?'`/null score
  * before it would ever consult maxScore, so the two behave identically in
  * practice. A future caller that uses `maxScore` without that same
- * sentinel-first branching would see a real value here where Angular would
+ * sentinel-first branching would see a real value here where the legacy code would
  * have left `$scope.maxScore` at its prior (possibly stale/undefined) state
  * — worth re-checking this guard if one shows up.
  */

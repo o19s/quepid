@@ -8,7 +8,7 @@ module Api
 
       def create
         user_params_to_save = user_params
-        # Little workaround for the Angular frontend doing password confirmation on the frontend!
+        # The client performs password confirmation before submitting.
         user_params_to_save[:password_confirmation] = user_params_to_save[:password]
 
         # Check if we already have an invite out for this user, and if so let's use that

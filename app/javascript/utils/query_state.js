@@ -1,5 +1,5 @@
 /**
- * Framework-free query-row and query-list rules shared by the Angular bridge
+ * Framework-free query-row and query-list rules shared by the compatibility bridge
  * and the eventual Stimulus query workspace.
  */
 
@@ -16,7 +16,11 @@ export function queryResultCount(query, showOnlyRated) {
   return showOnlyRated ? (query?.ratedDocsFound ?? 0) : (query?.numFound ?? 0)
 }
 
-export function queryLifecycleState({ errorText = "", resultsReturned = false, docCount = 0 } = {}) {
+export function queryLifecycleState({
+  errorText = "",
+  resultsReturned = false,
+  docCount = 0
+} = {}) {
   if (errorText.length > 0) return "error"
   if (!resultsReturned) return "loading"
   if (docCount === 0) return "noResults"
@@ -68,7 +72,13 @@ export function paginate(items = [], page, pageSize) {
   return items.slice(start, start + size)
 }
 
-export function queryDisplayPositions({ oldIndex, newIndex, currentPage = 1, pageSize = 1, reverse = false } = {}) {
+export function queryDisplayPositions({
+  oldIndex,
+  newIndex,
+  currentPage = 1,
+  pageSize = 1,
+  reverse = false
+} = {}) {
   const pageOffset = (Math.max(1, Number(currentPage) || 1) - 1) * (Number(pageSize) || 0)
   const fromIndex = oldIndex + pageOffset
   const toIndex = newIndex + pageOffset

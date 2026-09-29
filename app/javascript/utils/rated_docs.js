@@ -1,7 +1,7 @@
 /**
  * Rated-document lookup rules — which engines can retrieve already-rated docs by
- * id, and the per-engine filter syntax for doing so. Extracted from the Angular
- * the live-query runtime so the rules are unit-testable and independent of the UI stack.
+ * id, and the per-engine filter syntax for doing so. Extracted from the live-query
+ * runtime so the rules are unit-testable and independent of the UI stack.
  */
 
 const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "solr"])
@@ -10,12 +10,12 @@ const ES_LIKE_ENGINES = new Set(["es", "os"])
 
 /**
  * A static (CSV-backed) case is served by a Solr-compatible endpoint, so the
- * searcher and filter paths treat it as Solr. Angular achieved this by rewriting
+ * searcher and filter paths treat it as Solr. The searcher path achieves this by rewriting
  * `settings.searchEngine` in place inside `createSearcherFromSettings()`, which
  * made every downstream branch depend on that call having run first.
  *
  * Only for the searcher/filter seam. The capability predicates below read the
- * *try*, whose `searchEngine` Angular never rewrote — normalizing there would
+ * *try*, whose `searchEngine` remains unchanged — normalizing there would
  * enable "Show only rated" for static cases, which it is not today.
  *
  * @param {string | null | undefined} searchEngine
@@ -90,7 +90,7 @@ export function buildRatedDocsFilter({ searchEngine, idField, ratedIds }) {
 
 /**
  * Rated ids for a query, in the order the ratings object lists them. `slice`
- * mirrors Angular's explain-other paging, which cannot page through results and
+ * mirrors explain-other paging, which cannot page through results and
  * so asks for a window of ids instead.
  *
  * @param {object | null | undefined} ratings Map of docId -> rating.
