@@ -14,7 +14,6 @@ function runtimeFor(overrides = {}) {
     markStoreError: vi.fn(),
     setBootstrapping: vi.fn(),
     publishState: vi.fn(),
-    onVersion: vi.fn(),
     defer: () => {
       let resolve
       let reject

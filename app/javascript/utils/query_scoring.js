@@ -46,7 +46,7 @@ export function scoreQuery({
 
 /**
  * Score a collection and aggregate the same case-level read model that
- * the legacy runtime's latest score shape currently exposes.
+ * the live-query runtime's latest score shape currently exposes.
  */
 export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logger = console }) {
   const scores = []

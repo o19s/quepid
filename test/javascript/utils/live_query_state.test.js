@@ -15,24 +15,21 @@ function runtimeFor(overrides = {}) {
     configureBook: vi.fn(),
     refreshQueryDiff: vi.fn(),
     queryReady: ready,
-    onVersion: vi.fn(),
     promiseApi: Promise,
     ...overrides
   })
 }
 
 describe("createLiveQueryStateRuntime", () => {
-  it("marks live queries dirty and increments the version after scoring", async () => {
+  it("marks live queries dirty and refreshes scores", async () => {
     const query = { diff: null, setDirty: vi.fn() }
-    const onVersion = vi.fn()
     const scoreAll = vi.fn(() => Promise.resolve())
-    const runtime = runtimeFor({ getQueries: vi.fn(() => ({ 1: query })), scoreAll, onVersion })
+    const runtime = runtimeFor({ getQueries: vi.fn(() => ({ 1: query })), scoreAll })
 
     await runtime.updateScores()
 
     expect(query.setDirty).toHaveBeenCalled()
     expect(scoreAll).toHaveBeenCalledWith()
-    expect(onVersion).toHaveBeenCalled()
   })
 
   it("scores only live query diffs", async () => {

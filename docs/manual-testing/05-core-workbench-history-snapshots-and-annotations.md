@@ -36,7 +36,7 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
 
 ### 5.3 Compare snapshots (diff)
 
-The picker, snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row are Stimulus/framework-free. The explicit `snapshot-bridge` compatibility controller still hands hydrated snapshots to Angular’s live Query model for diff scoring while that engine remains in migration.
+The picker, snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row are Stimulus-owned. The explicit `snapshot-bridge` controller hands hydrated snapshots to the live-query runtime for diff scoring.
 
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.

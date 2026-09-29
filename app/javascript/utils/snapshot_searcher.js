@@ -2,9 +2,9 @@
  * Searcher-compatible access to results captured in a snapshot.
  *
  * Snapshot data is hydrated by the snapshot registry, then
- * adapted here to the small searcher interface used by Query. The legacy runtime still
- * supplies the document factory and promise implementation while it remains
- * the compatibility owner of the live Query objects.
+ * adapted here to the small searcher interface used by Query. The live-query
+ * runtime supplies the document factory and promise implementation while it
+ * owns the live Query objects.
  */
 export function createSnapshotSearcher({
   snapshot,

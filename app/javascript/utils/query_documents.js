@@ -1,7 +1,7 @@
 /**
  * Build the plain document/query state consumed by QueryDocumentsStore.
  *
- * The live Query remains owned by the legacy runtime for now, but this
+ * The live Query remains owned by the live-query runtime, but this
  * read-model contract is independent of framework helpers so the search runtime
  * can publish the same shape into Stimulus.
  */

@@ -8,9 +8,8 @@ import { getCoreStores } from "utils/core_store_access"
  * (`<qscore-query scorable="query">`) — the first store subscriber, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *
- * Reads the core store through the temporary compatibility adapter. The
- * adapter preserves the bundled singleton while the case runtime and
- * importmap controllers are still built separately.
+ * Reads the core store through the shared store accessors. The bundled case
+ * runtime and importmap controllers share the same store instances.
  *
  * Colors relative to *this query's own* maxScore (`queryScore.maxScore`,
  * e.g. 1.0 for AP@10, from the scorer via `Query.prototype.scoreOthers`),

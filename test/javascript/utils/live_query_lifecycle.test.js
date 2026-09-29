@@ -14,7 +14,6 @@ function runtimeFor(overrides = {}) {
     setQueryId: vi.fn(),
     registerQuery: vi.fn(),
     removeQuery: vi.fn(() => true),
-    onVersion: vi.fn(),
     searchAndScore: vi.fn(() => Promise.resolve()),
     updateScores: vi.fn(),
     logger: { info: vi.fn() },
@@ -70,13 +69,11 @@ describe("createLiveQueryLifecycleRuntime", () => {
 
   it("reconciles a removed query and optionally rescoring", () => {
     const removeQuery = vi.fn(() => true)
-    const onVersion = vi.fn()
     const updateScores = vi.fn()
-    const runtime = runtimeFor({ removeQuery, onVersion, updateScores })
+    const runtime = runtimeFor({ removeQuery, updateScores })
 
     expect(runtime.reconcileQueryRemoval(12, true)).toBe(true)
     expect(removeQuery).toHaveBeenCalledWith(12)
-    expect(onVersion).toHaveBeenCalledOnce()
     expect(updateScores).toHaveBeenCalledOnce()
   })
 

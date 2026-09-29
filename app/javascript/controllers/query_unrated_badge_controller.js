@@ -6,9 +6,8 @@ import { getCoreStores } from "utils/core_store_access"
  * Store-driven replacement for the expanded-results template's per-query "unrated
  * results" frog badge — the first `searchResults`/`queriesCtrl` slice.
  *
- * Reads the core store through the temporary compatibility adapter. The
- * adapter preserves the bundled singleton while the case runtime and
- * importmap controllers are still built separately.
+ * Reads the core store through the shared store accessors. The bundled case
+ * runtime and importmap controllers share the same store instances.
  *
  * `isNotAllRated()` had exactly one caller before this
  * (`query.isNotAllRated` in the legacy Query object), now read from the

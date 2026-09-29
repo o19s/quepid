@@ -1,8 +1,8 @@
 /**
  * Comparison selection state.
  *
- * Snapshot fetching and diff scoring still use the compatibility adapter, but
- * the selected snapshot ids no longer need to live in a framework service.
+ * Snapshot fetching and diff scoring use the live-query runtime, but the
+ * selected snapshot ids no longer need to live in a service object.
  */
 export class DiffStateStore extends EventTarget {
   constructor() {

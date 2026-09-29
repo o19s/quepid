@@ -1,7 +1,7 @@
 /**
  * Observable read model for the documents in each expanded query.
  *
- * The legacy runtime still owns search, scoring, and rating mutations. It publishes plain
+ * The live-query runtime owns search, scoring, and rating mutations. It publishes plain
  * document snapshots here so the expanded-results renderer can stop walking
  * controller scopes without changing the live search contract.
  */

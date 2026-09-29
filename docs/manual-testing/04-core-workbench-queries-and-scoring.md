@@ -109,7 +109,6 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   3. Rate the found document inline.
   4. Click **Reset to All Rated Docs**.
 - **Expected:** Search returns matching documents with a count message (or a "no results" message); ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."
-- **Implementation note:** The core modal and query command requests are Stimulus-owned; targeted search, paging, and rating mutations run through the framework-free case workspace adapter, with Angular supplying only the legacy engine/document dependencies.
 
 ### 4.10 Tune Relevance drawer — Query tab (Query Sandbox)
 

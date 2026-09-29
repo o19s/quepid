@@ -9,12 +9,12 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 
 /*
- * Temporary compatibility bridge for snapshot comparison.
+ * Snapshot comparison bridge between the Stimulus read model and live queries.
  *
  * The comparison picker, snapshot registry/hydration, and renderer are
- * Stimulus-owned. The live Query model and snapshot scoring are
- * still owned by the live-query runtime, so this controller is the single,
- * explicit boundary between them while that larger migration is in progress.
+ * Stimulus-owned. The live Query model and snapshot scoring remain in the
+ * live-query runtime, so this controller is the explicit boundary between
+ * those two representations.
  */
 export default class extends Controller {
   connect() {

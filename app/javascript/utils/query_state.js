@@ -1,5 +1,5 @@
 /**
- * Query-row and query-list rules shared by the compatibility bridge
+ * Query-row and query-list rules shared by the core query UI
  * and the eventual Stimulus query workspace.
  */
 

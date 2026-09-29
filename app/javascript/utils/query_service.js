@@ -1,10 +1,10 @@
 /**
- * Helpers extracted from the legacy live-query runtime.
+ * Helpers extracted from the live-query runtime.
  *
  * These functions deliberately know nothing about framework internals, async
  * implementation details, or the case
- * workspace. They are shared through quepidSearch while the runtime initializer
- * remains the owner of the live Query objects during the migration.
+ * workspace. They are shared through quepidSearch while the runtime owner
+ * manages the live Query objects.
  */
 
 export function settingsWithTryOverrides(settings, tryOverrides) {
@@ -354,9 +354,8 @@ export async function pAll(queue, requestsPerMinute) {
  * Run the case's live search-and-score batch without owning UI state.
  *
  * The callbacks deliberately keep Query construction, scoring, book sync, and
- * the temporary read-model bridge outside this orchestration seam. That lets
- * the legacy service remains a compatibility facade while Stimulus takes over
- * the batch lifecycle incrementally.
+ * the read-model publication outside this orchestration seam. That keeps the
+ * batch lifecycle independent from the Stimulus controllers.
  */
 export function runSearchAll({
   queries,

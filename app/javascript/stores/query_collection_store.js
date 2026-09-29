@@ -190,10 +190,6 @@ export class QueryCollectionStore extends EventTarget {
     this._liveQueries.clear()
   }
 
-  replaceLiveQueries(queries = {}) {
-    this._liveQueries = new Map(Object.entries(queries))
-  }
-
   get size() {
     return this._queries.size
   }

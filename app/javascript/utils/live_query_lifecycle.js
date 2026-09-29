@@ -16,7 +16,6 @@ export function createLiveQueryLifecycleRuntime({
   setQueryId,
   registerQuery,
   removeQuery,
-  onVersion,
   searchAndScore,
   updateScores,
   logger = console
@@ -54,7 +53,6 @@ export function createLiveQueryLifecycleRuntime({
         query.queryId = persisted.data.query.query_id
         setQueryId(query, query.queryId)
         registerQuery(query.queryId, query)
-        onVersion()
       }
 
       return searchAndScore(query).then(
@@ -75,7 +73,6 @@ export function createLiveQueryLifecycleRuntime({
 
     reconcileQueryRemoval(queryId, rescore = false) {
       if (!removeQuery(queryId)) return false
-      onVersion()
       if (rescore) updateScores()
       return true
     }

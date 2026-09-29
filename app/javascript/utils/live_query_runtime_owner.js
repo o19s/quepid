@@ -153,8 +153,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
           },
           buildRatingsFilter: search.ratedDocs.buildFilter,
           ratedDocIds: search.ratedDocs.ids,
-          onDirty: function () {
-          }
+          onDirty: function () {}
         },
         documents: {
           getFieldSpec: function () {
@@ -397,8 +396,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       svc.isBootstrapping = value
     },
     publishState: publishQueryListState,
-    onVersion: function () {
-    },
     defer: function () {
       return runtimeFramework.promiseApi.defer()
     },
@@ -532,8 +529,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     registerQuery: function (queryId, query) {
       registerQueryInCollection(queryId, query)
     },
-    onVersion: function () {
-    },
     removeQuery: function (queryId) {
       return liveQueryRegistry.remove(queryId)
     },
@@ -606,8 +601,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       promise: function () {
         return liveQueryCollectionRuntime.searchablePromise()
       }
-    },
-    onVersion: function () {
     },
     promiseApi: runtimeFramework.promiseApi
   })

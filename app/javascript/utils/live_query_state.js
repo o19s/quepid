@@ -15,15 +15,12 @@ export function createLiveQueryStateRuntime({
   configureBook,
   refreshQueryDiff,
   queryReady,
-  onVersion,
   promiseApi = Promise
 }) {
   return {
     updateScores() {
       Object.values(getQueries()).forEach((query) => query.setDirty())
-      return promiseApi.resolve(scoreAll()).then(() => {
-        onVersion()
-      })
+      return promiseApi.resolve(scoreAll())
     },
 
     scoreAllDiffs() {

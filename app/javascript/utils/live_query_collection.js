@@ -17,7 +17,6 @@ export function createLiveQueryCollectionRuntime({
   markStoreError,
   setBootstrapping,
   publishState,
-  onVersion,
   defer,
   logger = console
 }) {
@@ -28,8 +27,6 @@ export function createLiveQueryCollectionRuntime({
     const newQueries = []
     if (Array.isArray(data.display_order)) {
       applyDisplayOrder(data.display_order)
-    } else {
-      onVersion()
     }
 
     ;(data.queries || []).forEach((queryWithRatings) => {

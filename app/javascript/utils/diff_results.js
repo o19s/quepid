@@ -1,7 +1,7 @@
 /**
  * Build the snapshot comparison objects used by the live Query model.
  *
- * The Query model is still owned by the legacy runtime during the incremental case rewrite,
+ * The Query model is owned by the live-query runtime,
  * but diff construction is caller-configured: callers provide the current
  * settings, snapshot-searcher factory, and query-view selection. Keeping this
  * seam here lets Stimulus own the diff read model without making the diff

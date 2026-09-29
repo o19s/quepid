@@ -2,15 +2,12 @@ import { describe, expect, it, vi } from "vitest"
 import { QueryCollectionStore } from "stores/query_collection_store"
 import { createLiveQueryRegistry } from "utils/live_query_registry"
 
-function storeFor(overrides = {}) {
-  return {
-    status: "ready",
-    orderedQueryIds: vi.fn(() => ["q2", "q1"]),
-    upsert: vi.fn(),
-    remove: vi.fn(),
-    reset: vi.fn(),
-    ...overrides
-  }
+function storeFor() {
+  const store = new QueryCollectionStore()
+  vi.spyOn(store, "upsert")
+  vi.spyOn(store, "remove")
+  vi.spyOn(store, "reset")
+  return store
 }
 
 describe("createLiveQueryRegistry", () => {
@@ -22,7 +19,7 @@ describe("createLiveQueryRegistry", () => {
     registry.register(2, query)
 
     expect(registry.get(2)).toBe(query)
-    expect(store.upsert).toHaveBeenCalledWith(query)
+    expect(store.upsert).toHaveBeenCalledWith(query, { publish: true })
   })
 
   it("supports bootstrap registration without publishing partial collection state", () => {
@@ -33,7 +30,7 @@ describe("createLiveQueryRegistry", () => {
     registry.register(1, query, { publish: false })
 
     expect(registry.get(1)).toBe(query)
-    expect(store.upsert).not.toHaveBeenCalled()
+    expect(store.upsert).toHaveBeenCalledWith(query, { publish: false })
   })
 
   it("uses the collection store as the live object owner", () => {
@@ -70,15 +67,17 @@ describe("createLiveQueryRegistry", () => {
   it("enumerates live objects in store order and removes them together", () => {
     const store = storeFor()
     const registry = createLiveQueryRegistry({ store })
-    const first = { queryId: "q1" }
-    const second = { queryId: "q2" }
-    registry.register("q1", first, { publish: false })
-    registry.register("q2", second, { publish: false })
+    const first = { queryId: 1 }
+    const second = { queryId: 2 }
+    registry.register(1, first, { publish: false })
+    registry.register(2, second, { publish: false })
+    store.setDisplayOrder([2, 1])
 
-    expect(Object.keys(registry.all())).toEqual(["q2", "q1"])
-    expect(registry.remove("q2")).toBe(true)
-    expect(store.remove).toHaveBeenCalledWith("q2")
-    expect(registry.get("q2")).toBeNull()
+    expect(store.orderedQueryIds()).toEqual([2, 1])
+    expect(registry.all()).toEqual({ 1: first, 2: second })
+    expect(registry.remove(2)).toBe(true)
+    expect(store.remove).toHaveBeenCalledWith(2)
+    expect(registry.get(2)).toBeNull()
   })
 
   it("resets the store only for an explicit case reset", () => {
