@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { formatScore, scoreToColor } from "utils/scoring"
+import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Renders the case-level snapshot comparison scores.
@@ -10,7 +11,7 @@ import { formatScore, scoreToColor } from "utils/scoring"
  */
 export default class extends Controller {
   connect() {
-    this.store = window.quepidStore?.documents
+    this.store = getCoreStores().documents
     this.onStoreChange = () => this.render()
     this.store?.addEventListener("change", this.onStoreChange)
     this.store?.addEventListener("reset", this.onStoreChange)

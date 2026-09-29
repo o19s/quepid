@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { formatScore, scoreToColor } from "utils/scoring"
+import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Store-driven replacement for the Angular `<qscore-query>` component's
@@ -7,12 +8,9 @@ import { formatScore, scoreToColor } from "utils/scoring"
  * (`<qscore-query scorable="query">`) — the first store subscriber, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
  *
- * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
- * `queriesSvc.scoreAll()` writes into) rather than importing
- * `stores/case_score_store` directly — that module is also esbuild-bundled
- * into `core_vendor.js` (`build:core-vendor`), and a second, separately
- * imported copy here (this controller loads via importmap, unbundled) would
- * be a distinct singleton that never sees Angular's writes.
+ * Reads the core store through the temporary compatibility adapter. The
+ * adapter preserves the bundled singleton while the case runtime and
+ * importmap controllers are still built separately.
  *
  * Colors relative to *this query's own* maxScore (`queryScore.maxScore`,
  * e.g. 1.0 for AP@10, from the scorer via `Query.prototype.scoreOthers`),
@@ -35,7 +33,7 @@ export default class extends Controller {
   }
 
   initialize() {
-    this.store = window.quepidStore.scoring
+    this.store = getCoreStores().scoring
     this.onStoreChange = () => this.render()
   }
 

@@ -4,7 +4,7 @@ import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
 import { showStatusMessage } from "utils/status_message"
-import { queryDocumentsStore } from "stores/query_documents_store"
+import { getCoreStores } from "utils/core_store_access"
 import { populateBook } from "utils/book_sync"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
@@ -184,7 +184,7 @@ export default class extends ModalTriggerControllerBase {
     const bookId = this.activeBookId
 
     try {
-      const queries = Object.values((window.quepidStore?.documents || queryDocumentsStore).snapshot().queries || {})
+      const queries = Object.values(getCoreStores().documents.snapshot().queries || {})
       await populateBook({ bookId, caseId: Number(caseId), queries })
       if (String(this.currentCaseId) !== String(caseId)) return
       this.setProgress(false)

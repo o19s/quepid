@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { queryDocumentsStore } from "stores/query_documents_store"
+import { getCoreStores } from "utils/core_store_access"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
 import { sanitizeHtml } from "controllers/search_result_controller"
@@ -17,7 +17,7 @@ export default class extends Controller {
   ]
 
   connect() {
-    this.store = window.quepidStore?.documents || queryDocumentsStore
+    this.store = getCoreStores().documents
     this.storeChange = event => this.renderFromStore(event.detail)
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)

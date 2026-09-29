@@ -1,4 +1,4 @@
-import { averageMaxScore } from "../utils/scoring"
+import { averageMaxScore } from "utils/scoring"
 
 /**
  * Dual-run shadow store for case/query score state — the first `EventTarget`-based

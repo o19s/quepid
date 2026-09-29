@@ -3,7 +3,7 @@ import { apiFetch } from "api/fetch"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { errorMessage } from "utils/error_message"
-import { queryCollectionStore } from "stores/query_collection_store"
+import { getCoreStores } from "utils/core_store_access"
 import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
@@ -30,11 +30,8 @@ export default class extends Controller {
     this.clientReverse = this.reverseValue
     this.queryCapabilities = window.quepidSearch?.queryCapabilities
     this.syncSortFromUrl()
-    // The Angular and core Stimulus bundles currently compile separately, so
-    // their module singletons are not shared. Use the temporary bridge while
-    // Angular still owns the live query objects; the imported store remains a
-    // useful fallback for isolated tests and the eventual single bundle.
-    this.store = window.quepidStore?.queries || queryCollectionStore
+    const stores = getCoreStores()
+    this.store = stores.queries
     this.storeChange = () => this.scheduleRender()
     this.store.addEventListener("change", this.storeChange)
     this.store.addEventListener("reset", this.storeChange)
@@ -42,7 +39,7 @@ export default class extends Controller {
     this.searchSettled = () => this.handleSearchSettled()
     this.store.addEventListener("search-failed", this.searchFailed)
     this.store.addEventListener("search-started", this.searchSettled)
-    this.documentStore = window.quepidStore?.documents
+    this.documentStore = stores.documents
     this.documentStoreChange = () => this.scheduleRender()
     this.documentStore?.addEventListener("change", this.documentStoreChange)
     this.documentStore?.addEventListener("reset", this.documentStoreChange)
@@ -461,7 +458,7 @@ export default class extends Controller {
     this.bridgeQueryExplainTemplate(query.queryId, searchResultsRoot)
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
-    const diffSnapshot = window.quepidStore?.documents?.query(query.queryId)?.diffs
+    const diffSnapshot = this.documentStore?.query(query.queryId)?.diffs
     diffSnapshot?.searchers?.forEach((searcher, index) => {
       const badge = document.createElement("div")
       badge.className = "results-score diff-score"

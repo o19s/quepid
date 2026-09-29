@@ -57,6 +57,7 @@ pin 'utils/live_query_state', to: 'utils/live_query_state.js'
 pin 'utils/qgraph', to: 'utils/qgraph.js'
 pin 'utils/tune_relevance', to: 'utils/tune_relevance.js'
 pin 'utils/core_angular_adapter', to: 'utils/core_angular_adapter.js'
+pin 'utils/core_store_access', to: 'utils/core_store_access.js'
 pin 'utils/live_query_runtime_initializer', to: 'utils/live_query_runtime_initializer.js'
 pin 'utils/editor_mode', to: 'utils/editor_mode.js'
 pin 'utils/wizard_contracts', to: 'utils/wizard_contracts.js'
@@ -65,6 +66,7 @@ pin 'utils/snapshot_api', to: 'utils/snapshot_api.js'
 pin 'utils/snapshot_hydration', to: 'utils/snapshot_hydration.js'
 pin 'utils/snapshot_import', to: 'utils/snapshot_import.js'
 pin 'utils/snapshot_payload', to: 'utils/snapshot_payload.js'
+pin 'stores/case_score_store', to: 'stores/case_score_store.js'
 
 pin 'local-time' # @3.0.3
 

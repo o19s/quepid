@@ -2,9 +2,9 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { buildSnapshotPayload } from "utils/snapshot_payload"
-import { diffStateStore } from "stores/diff_state_store"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
 import { getSnapshotCapabilities } from "utils/core_angular_adapter"
+import { getCoreStores } from "utils/core_store_access"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -40,7 +40,7 @@ export default class extends Controller {
   }
 
   diffStore() {
-    return window.quepidStore?.diff || diffStateStore
+    return getCoreStores().diff
   }
 
   snapshotRegistry() {

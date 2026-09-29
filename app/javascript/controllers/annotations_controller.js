@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { showFlash } from "utils/flash"
+import { getCoreStores } from "utils/core_store_access"
 
 export default class extends Controller {
   static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave"]
@@ -15,7 +16,7 @@ export default class extends Controller {
     this.annotations = []
     this.onScoreChange = () => this.updateCreateState()
     this.onEditSubmit = (event) => this.saveEdit(event)
-    this.scoringStore = window.quepidStore?.scoring
+    this.scoringStore = getCoreStores().scoring
     this.scoringStore?.addEventListener("change", this.onScoreChange)
     this.load()
   }

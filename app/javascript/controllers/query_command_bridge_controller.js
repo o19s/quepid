@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { queryCollectionStore } from "stores/query_collection_store"
-import { queryDocumentsStore } from "stores/query_documents_store"
+import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Routes query-workspace intents from the framework-free stores to the
@@ -11,8 +10,9 @@ import { queryDocumentsStore } from "stores/query_documents_store"
  */
 export default class extends Controller {
   connect() {
-    this.collectionStore = window.quepidStore?.queries || queryCollectionStore
-    this.documentsStore = window.quepidStore?.documents || queryDocumentsStore
+    const stores = getCoreStores()
+    this.collectionStore = stores.queries
+    this.documentsStore = stores.documents
     this.handleDocumentCommand = event => this.routeDocumentCommand(event.detail || {})
     this.handleCollectionCommand = event => this.routeCollectionCommand(event.detail || {})
     this.handleQueryDeleteCompleted = event => this.reconcileQueryRemoval(event.detail || {}, false)

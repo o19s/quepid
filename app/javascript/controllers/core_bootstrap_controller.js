@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getBootstrapCapabilities } from "utils/core_angular_adapter"
-import { diffStateStore } from "stores/diff_state_store"
+import { getCoreStores } from "utils/core_store_access"
 import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
 
 export default class extends Controller {
@@ -20,21 +20,19 @@ export default class extends Controller {
   async bootstrap() {
     try {
       this.capabilities = await getBootstrapCapabilities()
+      const stores = getCoreStores()
 
       if (this.capabilities.liveQuery && window.quepidSearch.splainerSearch?.searchSvc) {
         initializeLiveQueryRuntime({
           ...this.capabilities.liveQuery,
           search: window.quepidSearch,
-          store: window.quepidStore
+          store: stores
         })
       }
 
       const { configuration, user, case: caseCapability, settings, navigation, scoring } = this.capabilities.core
       const { docCache } = this.capabilities
-      // The case runtime bundle publishes the shared store on window. The
-      // imported store is only a fallback for isolated/unit-test contexts;
-      // separate bundles must never reset different diff-store instances.
-      const comparisonStore = window.quepidStore?.diff || diffStateStore
+      const comparisonStore = stores.diff
       const caseNo = this.caseNoValue || 0
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 

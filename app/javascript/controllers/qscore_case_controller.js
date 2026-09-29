@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
 import { diffStateStore } from "stores/diff_state_store"
+import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Store-driven replacement for the Angular `<qscore-case>` component's primary
@@ -14,9 +15,8 @@ import { diffStateStore } from "stores/diff_state_store"
  * `qgraph` controller, as a sibling that reads the case scores and annotations
  * APIs directly.
  *
- * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
- * `queriesSvc.scoreAll()` writes into), not a fresh `import` of
- * `stores/case_score_store` — see qscore_query_controller.js's note on why.
+ * Reads the core stores through the temporary compatibility adapter, which
+ * preserves the bundled singleton while the runtimes are built separately.
  *
  * Colors relative to `caseScore.maxScore`, the average of each live query's own
  * maxScore (`CaseScoreStore` derives it via `averageMaxScore()`), mirroring
@@ -39,7 +39,8 @@ export default class extends Controller {
   }
 
   initialize() {
-    this.store = window.quepidStore.scoring
+    this.coreStores = getCoreStores()
+    this.store = this.coreStores.scoring
     this.diffRefreshGeneration = 0
     this.onStoreChange = () => this.renderScore()
     this.onScoringComplete = event => {
@@ -139,7 +140,8 @@ export default class extends Controller {
   async refreshCaseDiffScores({ refreshQueries = false, failed = false } = {}) {
     this.diffRefreshGeneration ??= 0
     const refreshGeneration = ++this.diffRefreshGeneration
-    const documentsStore = window.quepidStore?.documents
+    const stores = this.coreStores || getCoreStores()
+    const documentsStore = stores.documents
     const buildCaseDiffScores = window.quepidSearch?.diffScores?.buildCaseDiffScores
 
     if (!documentsStore || !buildCaseDiffScores) return
@@ -149,7 +151,7 @@ export default class extends Controller {
       return
     }
 
-    const comparisonStore = window.quepidStore?.diff || diffStateStore
+    const comparisonStore = stores.diff || diffStateStore
     if (comparisonStore.selections().length === 0) {
       documentsStore.clearCaseDiffs()
       return

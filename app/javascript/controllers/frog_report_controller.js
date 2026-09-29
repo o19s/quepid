@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { openDynamicModal } from "utils/dynamic_modal"
-import { queryDocumentsStore } from "stores/query_documents_store"
+import { getCoreStores } from "utils/core_store_access"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
 export function buildFrogReportStats(queries) {
@@ -43,7 +43,7 @@ export default class extends Controller {
 
   connect() {
     if (this.element.dataset.frogReportModalRoot !== "true") return
-    this.store = window.quepidStore?.documents || queryDocumentsStore
+    this.store = getCoreStores().documents
     this.render()
     this.storeChange = () => this.render()
     this.store.addEventListener("change", this.storeChange)

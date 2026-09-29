@@ -3,7 +3,7 @@ import { apiFetch } from "api/fetch"
 import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
-import { queryDocumentsStore } from "stores/query_documents_store"
+import { getCoreStores } from "utils/core_store_access"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
@@ -235,7 +235,7 @@ export default class extends ModalTriggerControllerBase {
     }
 
     const caseData = await response.json()
-    const queries = (window.quepidStore?.documents || queryDocumentsStore).snapshot().queries
+    const queries = getCoreStores().documents.snapshot().queries
     const csv = buildDetailedCaseCsv(caseData, queries)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))
   }

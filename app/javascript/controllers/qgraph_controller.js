@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { graphData, graphSpec } from "utils/qgraph"
+import { getCoreStores } from "utils/core_store_access"
 
 export default class extends Controller {
   static targets = ["container"]
@@ -14,7 +15,7 @@ export default class extends Controller {
     this.scores = []
     this.annotations = []
     this.margin = { top: 4, right: 6, bottom: 4, left: 4 }
-    this.scoringStore = window.quepidStore?.scoring
+    this.scoringStore = getCoreStores().scoring
     this.onScoringComplete = () => {
       this.maxScore = this.scoringStore?.caseScore?.maxScore || this.maxScoreValue || 1
       this.render()

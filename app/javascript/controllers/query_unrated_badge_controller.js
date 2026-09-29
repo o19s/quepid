@@ -1,18 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
 import { isNotAllRated } from "utils/scoring"
+import { getCoreStores } from "utils/core_store_access"
 
 /**
  * Store-driven replacement for the expanded-results template's per-query "unrated
  * results" frog badge — the first `searchResults`/`queriesCtrl` slice, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 5.
  *
- * Reads `window.quepidStore.scoring` (the bridged `CaseScoreStore` singleton
- * `queriesSvc.scoreAll()` writes into) rather than importing
- * `stores/case_score_store` directly — that module is also esbuild-bundled
- * into `core_vendor.js` (`build:core-vendor`), and a second, separately
- * imported copy here (this controller loads via importmap, unbundled) would
- * be a distinct singleton that never sees Angular's writes. Same pattern as
- * `qscore_query_controller.js`.
+ * Reads the core store through the temporary compatibility adapter. The
+ * adapter preserves the bundled singleton while the case runtime and
+ * importmap controllers are still built separately.
  *
  * `isNotAllRated()` had exactly one caller before this
  * (`query.isNotAllRated` in the legacy Query object), now read from the
@@ -25,7 +22,7 @@ export default class extends Controller {
   }
 
   initialize() {
-    this.store = window.quepidStore.scoring
+    this.store = getCoreStores().scoring
     this.onStoreChange = () => this.render()
   }
 
