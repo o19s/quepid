@@ -136,14 +136,16 @@ async function loadCapability(name) {
             createScorer(data, {
               promiseApi: nativeFramework.promiseApi,
               schedule: (callback) => nativeFramework.schedule(callback),
-              refreshRatedDocs: (queryId, count) => runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
+              refreshRatedDocs: (queryId, count) =>
+                runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
             }),
           initialDefault: createScorer(
             {},
             {
               promiseApi: nativeFramework.promiseApi,
               schedule: (callback) => nativeFramework.schedule(callback),
-              refreshRatedDocs: (queryId, count) => runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
+              refreshRatedDocs: (queryId, count) =>
+                runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
             }
           ),
           promiseApi: nativeFramework.promiseApi
@@ -258,7 +260,10 @@ function createWizardCapabilities(
     },
     navigation: {
       rootUrl: () => navigationRuntime.getQuepidRootUrl(),
-      caseNo: () => navigationRuntime.getCaseNo()
+      caseNo: () => navigationRuntime.getCaseNo(),
+      needToRedirectProtocol: (url) => navigationRuntime.needToRedirectQuepidProtocol(url),
+      swapUrlTls: () => navigationRuntime.swapQuepidUrlTLS(),
+      appendQueryParams: (...args) => navigationRuntime.appendQueryParams(...args)
     },
     documents: {
       cache: runtimeOwner.docCache

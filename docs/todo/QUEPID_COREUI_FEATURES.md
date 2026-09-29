@@ -951,22 +951,20 @@ The wizard modal opens automatically when:
 1. `showWizard=true` URL parameter is present, OR
 2. ALL of: user hasn't completed case wizard, has exactly 1 case, is in 0 teams, hasn't seen intro wizard, and user object is defined
 
-### Wizard Steps (6-Step `<wizard>` Component)
+### Wizard Steps (6-step Stimulus modal)
 
-1. **Welcome**: Splash screen with Doug mascot image (`doug.jpg`, 100px wide, float left). "Hi, I'm Doug, creator of Quepid..."
-2. **Case Name**: Text input for naming the case (default width 250px)
-3. **Search Endpoint**: Accordion with two options:
-   - **"Create a new Search Endpoint"**: Radio buttons with engine logos (`solr.png`, etc.) for Solr, ES, OpenSearch, Vectara, Static, SearchAPI, Algolia. URL input with "ping it" validation button. Engine-specific config:
-     - Solr: API method dropdown (JSONP/GET)
-     - SearchAPI: "Custom Mapper Required" alert with "Use Mapper Wizard" button
-     - Static: CSV file upload via `ng-csv-import` directive
-   - **"Use an existing Search Endpoint"**: Dropdown selector from configured endpoints. SearchAPI gets additional "Test Query" input
-   - Custom headers component (API Key / Custom / None)
-   - TLS mismatch, invalid headers, and proxy API method validation alerts
-   - "Validating..." spinner state on Continue button
-4. **Display Fields**: Title field, ID field (both with typeahead from discovered fields), additional fields via `tags-input` with auto-complete. Required field validation with red error text
-5. **Queries**: Query text input with "Add Query" button. List of added queries with individual "X" delete buttons. SearchAPI shows query pattern input (textarea for POST, text input for GET). Static engine shows message about auto-creating queries from CSV
-6. **Finish**: "That's It!" confirmation with large green "Finish" button
+The current case wizard is intentionally a compact, Rails-rendered/Stimulus-owned
+flow. It does not reproduce every Angular-era presentation control.
+
+1. **Welcome**: Short introduction without the former Doug mascot.
+2. **Case Name**: Text input for naming the case.
+3. **Search Endpoint**: Existing endpoint selector followed by a create-new form. The form uses a plain engine select (no logo tiles), URL and API method fields, query/test-query fields, a raw JSON custom-headers textarea, basic auth, proxy toggle, and static CSV file input. Continue validates the endpoint; there is no separate "ping it" button, Solr curl/config help block, inline Mapper Wizard link, or engine-specific troubleshooting panel.
+   - SearchAPI mapper setup remains available through the standalone Mapper Wizard under Search Endpoints; the case wizard does not provide the former shortcut and does not block a mapper-less draft.
+   - TLS mismatch, invalid headers, and proxy/API-method validation alerts remain supported.
+   - Static CSV files import on file selection; the wizard creates the snapshot-backed search URL and queries from the CSV.
+4. **Display Fields**: Plain Title, ID, and comma-separated additional-field inputs. Required validation remains, but there are no discovered-field suggestions or tag/autocomplete controls.
+5. **Queries**: Query text input with "Add Query" and removable query rows. SearchAPI query patterns and static CSV-derived queries remain supported.
+6. **Finish**: "That's It!" confirmation with a Finish button.
 
 ### Special: Static CSV Import
 For the Static engine type, the wizard includes:

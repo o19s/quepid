@@ -2,10 +2,11 @@
      data-controller="wizard">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header"><h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1><button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header"><h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1><button type="button" class="btn-core-close" data-action="wizard#close" aria-label="Close"></button></div>
       <div class="modal-body">
         <div class="alert alert-danger" role="alert" data-wizard-target="alert" hidden></div>
-        <section data-wizard-target="step">
+        <p class="text-muted" data-wizard-target="loading">Loading…</p>
+        <section data-wizard-target="step" hidden>
           <h2>Welcome To Quepid!</h2><p>Let me guide you through setting up your first Case.</p>
           <button type="button" class="btn btn-primary float-end" data-action="wizard#next">Continue</button>
         </section>
@@ -37,7 +38,14 @@
           <label class="form-label mt-3" for="wizardBasicAuth">Basic Authentication</label>
           <input id="wizardBasicAuth" class="form-control" placeholder="username:password" data-wizard-target="basicAuth" data-wizard-field="basicAuthCredential" data-action="input->wizard#updateSetting">
           <div class="form-check mt-3"><input id="wizardProxy" class="form-check-input" type="checkbox" data-wizard-target="proxyRequests" data-wizard-field="proxyRequests" data-action="change->wizard#updateSetting"><label class="form-check-label" for="wizardProxy">Proxy requests through Quepid</label></div>
-          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <div class="alert alert-warning mt-3" data-wizard-target="tlsWarning" hidden>
+            You have specified a search endpoint url that is on a different protocol ( <code data-wizard-target="tlsProtocol"></code> ) than Quepid is running,
+            and this triggers your browser to prevent communication with the search endpoint.<br>
+            Option 1: Reload Quepid to run on the correct protocol.<br>
+            Option 2: Check <strong>Proxy requests through Quepid</strong> so Quepid's server talks to your search endpoint.
+            <a class="btn btn-primary form-control mt-2" data-wizard-target="tlsReloadLink"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in <code data-wizard-target="tlsProtocol"></code> Protocol</a>
+          </div>
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton endpointContinue" data-action="wizard#next">Continue</button>
           <button type="button" class="btn btn-danger mt-3" data-wizard-target="skipButton" data-action="wizard#skipValidation">Skip Validation</button>
         </section>
         <section data-wizard-target="step" hidden>

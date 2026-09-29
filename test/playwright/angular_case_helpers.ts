@@ -112,3 +112,29 @@ export function expandedCaseScreenshotOpts(page: Page) {
     maxDiffPixelRatio: 0.025,
   };
 }
+
+export async function apiHeaders(page: Page) {
+  const csrf = await page.evaluate(() =>
+    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
+  );
+  return { Accept: 'application/json', 'X-CSRF-Token': csrf };
+}
+
+/**
+ * Finishing the wizard (see wizard_completion.spec.ts) permanently flips this account's
+ * `completed_case_wizard` to true (PUT api/users/:id). That is account state in the shared dev
+ * DB, so it outlives the run, and every later `?showWizard=true` load skips the Welcome step.
+ * Wizard specs call this first so they always start from the first-time Welcome step.
+ */
+export async function resetCompletedCaseWizard(page: Page) {
+  const headers = { ...(await apiHeaders(page)), 'Content-Type': 'application/json' };
+  const me = await page.request.get('api/users/current', { headers });
+  expect(me.ok()).toBeTruthy();
+  const { id } = await me.json();
+
+  const response = await page.request.put(`api/users/${id}`, {
+    data: { user: { completed_case_wizard: false } },
+    headers
+  });
+  expect(response.ok()).toBeTruthy();
+}

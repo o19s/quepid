@@ -6,6 +6,11 @@ A Search Endpoint tells Quepid how to reach a search engine or search API (Solr,
 
 **Where to find it:** Sidebar paper-plane icon, tooltip "Search Endpoints" → `/search_endpoints`.
 
+The standalone Mapper Wizard is separate from the compact case-creation wizard.
+The case wizard accepts SearchAPI configuration directly but does not include the
+former inline "Use Mapper Wizard" shortcut; use the Search Endpoints flow below
+when mapper generation or editing is required.
+
 ## Test scenarios
 
 ### 7.1 Browse / filter the Search Endpoints list

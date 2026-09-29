@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dynamicRegions } from './angular_case_helpers';
+import { apiHeaders, dynamicRegions, resetCompletedCaseWizard } from './angular_case_helpers';
 
 /**
  * Full case-creation wizard (Stimulus `wizard` controller /
@@ -30,13 +30,6 @@ import { dynamicRegions } from './angular_case_helpers';
  * browser runs and is already covered (unfinished) by the existing specs.
  */
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'X-CSRF-Token': csrf };
-}
-
 /**
  * Creates a disposable case via POST api/cases rather than clicking through
  * directly rather than clicking through an existing case page first — case
@@ -65,33 +58,12 @@ async function deleteCase(page: Page, caseId: number) {
   expect(response.ok()).toBeTruthy();
 }
 
-/**
- * Finishing the wizard below permanently flips this account's
- * `completed_case_wizard` to true (wizard_controller#finish -> user runtime's
- * shownIntroWizard(), PUT api/users/:id), which is account state, not case
- * state -- it survives this test and this process, since it's persisted in
- * the shared dev DB. Once set, every later `?showWizard=true` load for this
- * same account skips the Welcome step and lands directly on Name, which broke
- * angular_pages.spec.ts and angular_pages_narrow_viewport.spec.ts's wizard
- * specs when this spec ran first. Reset it back so later specs (and later
- * runs) see the same first-time Welcome step this test itself started from.
- */
-async function resetCompletedCaseWizard(page: Page) {
-  const headers = { ...(await apiHeaders(page)), 'Content-Type': 'application/json' };
-  const me = await page.request.get('api/users/current', { headers });
-  expect(me.ok()).toBeTruthy();
-  const { id } = await me.json();
-
-  const response = await page.request.put(`api/users/${id}`, {
-    data: { user: { completed_case_wizard: false } },
-    headers
-  });
-  expect(response.ok()).toBeTruthy();
-}
-
 test.describe('Case creation wizard', () => {
   test('runs every step and lands back on the newly created case', async ({ page }) => {
     const caseId = await createDisposableCase(page);
+    // A previous run that timed out never reached its cleanup, leaving the flag set and the
+    // Welcome step skipped; start from the same first-time state every time.
+    await resetCompletedCaseWizard(page);
     const caseName = `Playwright Wizard Case ${Date.now()}`;
 
     try {
@@ -106,14 +78,12 @@ test.describe('Case creation wizard', () => {
 
       const continueButton = () => modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
 
-      // The Welcome step only shows up sometimes (depends on this user's
-      // wizard-seen state); skip it if present rather than requiring it.
-      if (await modal.getByRole('heading', { name: /Welcome To Quepid/i }).isVisible().catch(() => false)) {
-        await continueButton().click();
-      }
+      // --- Welcome step: steps stay hidden until the wizard has loaded, so wait for it. ---
+      await expect(modal.getByRole('heading', { name: /Welcome To Quepid/i })).toBeVisible({ timeout: 15_000 });
+      await continueButton().click();
 
       // --- Name step ---
-      await expect(modal).toContainText('Name Your Case');
+      await expect(modal.getByRole('heading', { name: /Name Your Case/i })).toBeVisible();
       const nameInput = modal.getByLabel('New Case Name:');
       await nameInput.evaluate((el: HTMLElement) => el.focus());
       await nameInput.fill(caseName, { force: true });
@@ -164,6 +134,9 @@ test.describe('Case creation wizard', () => {
       // error) can't skip resetCompletedCaseWizard -- these are independent
       // cleanups and a failure in one shouldn't leave the other undone.
       try {
+        // Let the page's own score write land first: deleting mid-write fails the
+        // case_scores foreign key and returns a 500.
+        await page.waitForLoadState('networkidle').catch(() => {});
         await deleteCase(page, caseId);
       } finally {
         await resetCompletedCaseWizard(page);

@@ -22,7 +22,8 @@ export default class extends Controller {
     "queryParams", "testQuery", "proxyRequests", "basicAuth", "customHeaders", "titleField",
     "idField", "additionalFields", "queryText", "queryList", "staticFile", "staticPreview",
     "staticAlert", "alert", "continueButton", "finishButton", "validation", "skipButton",
-    "mapperEngines", "endpointDetails", "queryPattern", "fieldError", "staticSection"
+    "mapperEngines", "endpointDetails", "queryPattern", "fieldError", "staticSection",
+    "tlsWarning", "tlsReloadLink", "tlsProtocol", "endpointContinue", "loading"
   ]
 
   static values = { rootUrl: String, caseNo: String }
@@ -82,9 +83,32 @@ export default class extends Controller {
 
     this.renderEndpointChoices()
     this.applySettings(this.settings.searchEnginePreset, this.settings.searchUrl)
+    this.applyReloadParams()
 
     if (user.current()?.completedCaseWizard) this.stepIndex = 1
+    // Steps stay hidden until now, so the Welcome step never flashes up and then jumps to Name.
+    this.loaded = true
     this.render()
+  }
+
+  // After a protocol-switch reload (see renderTls), restore what the user had entered.
+  applyReloadParams() {
+    const query = new URLSearchParams(window.location.search)
+    const preset = query.get("searchEngine")
+    if (!preset) return
+    this.applySettings(preset)
+    const overrides = {
+      searchUrl: query.get("searchUrl"),
+      caseName: query.get("caseName"),
+      apiMethod: query.get("apiMethod"),
+      basicAuthCredential: query.get("basicAuthCredential")
+    }
+    Object.entries(overrides).forEach(([key, value]) => { if (value) this.settings[key] = value })
+  }
+
+  tlsMismatch() {
+    const { proxyRequests, searchUrl } = this.settings || {}
+    return proxyRequests !== true && Boolean(this.capability?.navigation.needToRedirectProtocol(searchUrl))
   }
 
   open() {
@@ -95,6 +119,10 @@ export default class extends Controller {
   close(event) {
     event?.preventDefault()
     if (!window.confirm("Are you sure you want to abandon this case?")) return
+    if (!this.capability) {
+      getOrCreateBsModal(this.element)?.hide()
+      return
+    }
     const selectedCase = this.capability.case.selected()
     this.capability.case.delete(selectedCase)?.then(() => {
       getOrCreateBsModal(this.element)?.hide()
@@ -131,7 +159,10 @@ export default class extends Controller {
     let value = event.target.type === "checkbox" ? event.target.checked : event.target.value
     if (field === "additionalFields") value = value.split(/[\s,]+/).filter(Boolean)
     this.settings[field] = value
-    if (event.target.dataset.wizardField === "searchEnginePreset") this.applySettings(event.target.value)
+    if (event.target.dataset.wizardField === "searchEnginePreset") {
+      this.settings.searchEndpointId = null
+      this.applySettings(event.target.value)
+    }
     if (["searchUrl", "proxyRequests", "apiMethod", "basicAuthCredential"].includes(event.target.dataset.wizardField)) this.clearValidation()
     this.render()
   }
@@ -178,6 +209,7 @@ export default class extends Controller {
 
   async validate(justValidate = false) {
     this.clearValidation()
+    if (this.tlsMismatch()) return this.render()
     this.setBusy(true)
     if (this.settings.searchEngine === "searchapi" && !this.settings.queryParams?.trim()) return this.fail("Query pattern is required for Search API endpoints.")
     const headerValue = this.hasCustomHeadersTarget ? this.customHeadersTarget.value : this.settings.customHeaders
@@ -352,18 +384,45 @@ export default class extends Controller {
       }))
     }
     if (!this.hasEndpointSelectTarget) return
-    this.endpointSelectTarget.replaceChildren()
-    this.searchEndpoints.filter((endpoint) => endpoint.searchEngine !== "static").forEach((endpoint) => {
+    const endpoints = this.searchEndpoints.filter((endpoint) => endpoint.searchEngine !== "static")
+    // A blank first option, so choosing the first real endpoint still fires `change`.
+    const placeholder = document.createElement("option")
+    placeholder.value = ""
+    placeholder.textContent = endpoints.length ? "Select a search endpoint…" : "You do not have any Search Endpoints created yet."
+    this.endpointSelectTarget.replaceChildren(placeholder, ...endpoints.map((endpoint) => {
       const option = document.createElement("option")
       option.value = endpoint.id
       option.textContent = endpoint.name
-      this.endpointSelectTarget.append(option)
+      return option
+    }))
+    this.endpointSelectTarget.disabled = endpoints.length === 0
+  }
+
+  renderTls() {
+    if (!this.hasTlsWarningTarget) return
+    const mismatch = this.tlsMismatch()
+    this.tlsWarningTarget.hidden = !mismatch
+    if (this.hasEndpointContinueTarget) this.endpointContinueTarget.hidden = mismatch
+    if (this.hasSkipButtonTarget) this.skipButtonTarget.hidden = mismatch
+    if (!mismatch) return
+    const [url, protocol] = this.capability.navigation.swapUrlTls()
+    const { searchEnginePreset, searchEngine, searchUrl, caseName, apiMethod, basicAuthCredential } = this.settings
+    const params = new URLSearchParams({
+      showWizard: "true",
+      searchEngine: searchEnginePreset || searchEngine || "",
+      searchUrl: searchUrl || "",
+      caseName: caseName || "",
+      apiMethod: apiMethod || "",
+      basicAuthCredential: basicAuthCredential || ""
     })
+    this.tlsReloadLinkTarget.href = this.capability.navigation.appendQueryParams(url, params.toString())
+    this.tlsProtocolTargets.forEach((target) => { target.textContent = protocol })
   }
 
   render() {
     this.settings ||= {}
-    this.stepTargets.forEach((step, index) => step.hidden = index !== this.stepIndex)
+    if (this.hasLoadingTarget) this.loadingTarget.hidden = this.loaded || Boolean(this.error)
+    this.stepTargets.forEach((step, index) => step.hidden = !this.loaded || index !== this.stepIndex)
     this.element.querySelectorAll("[data-wizard-only]").forEach((element) => {
       element.hidden = element.dataset.wizardOnly !== steps[this.stepIndex]
     })
@@ -380,6 +439,7 @@ export default class extends Controller {
         : customHeaders === "null" ? "" : customHeaders || ""
     }
     if (this.hasProxyRequestsTarget) this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
+    if (this.hasEndpointSelectTarget) this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
     if (this.hasEngineTarget) this.engineTarget.value = this.settings?.searchEnginePreset || this.settings?.searchEngine || "solr"
     if (this.hasEndpointModeTarget) this.endpointModeTarget.textContent = this.settings?.searchEngine || ""
     if (this.hasTitleFieldTarget) this.titleFieldTarget.value = this.settings?.titleField || ""
@@ -407,5 +467,6 @@ export default class extends Controller {
     }
     this.continueButtonTargets.forEach((button) => { button.disabled = this.validating || (this.stepIndex === 1 && !this.settings?.caseName?.trim()) })
     if (this.hasFinishButtonTarget) this.finishButtonTarget.disabled = this.saving
+    this.renderTls()
   }
 }

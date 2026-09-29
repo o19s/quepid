@@ -1,26 +1,32 @@
 # Todo
 
-**Last updated:** 2026-09-18
+**Last updated:** 2026-09-29
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
+
+Every actionable item carries a provenance marker: `[MIGRATION]` means it was
+introduced by or is required to complete AngularJS removal, `[MIGRATION-FOLLOWUP]`
+means it is related cleanup but not necessarily a migration regression, and
+`[PREEXISTING]` means it predates the AngularJS removal. Use these markers when
+choosing migration work; do not treat pre-existing defects as migration regressions.
 
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
 **Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Remaining frontend cleanup is tracked in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
-## Frontend cleanup after Angular removal
+## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### P0 — Scorer sandboxing
+### [PREEXISTING] P0 — Scorer sandboxing
 
 Client scorer code still executes through `new Function()`; evaluate a Web
 Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
 
-### P1 — Scorer contract drift
+### [PREEXISTING] P1 — Scorer contract drift
 
 `app/javascript/utils/scorer_runtime.js` and `scorer_logic.js` need a canonical
 shared API and migration guidance.
 
-### P2 — Accessibility
+### [MIGRATION-FOLLOWUP] P2 — Accessibility
 
 Complete the pass for score and rating controls so state is not conveyed by
 color alone. Some core controls still need accessible names, including
@@ -28,7 +34,7 @@ copy-query and snapshot delete/clear actions; add `aria-label` or visible text
 while touching the owning control, and cover the result with the relevant
 Playwright scenario.
 
-### Opportunistic — Core-toolbar status-message duplication
+### [PREEXISTING] Opportunistic — Core-toolbar status-message duplication
 
 Several core-toolbar modal controllers duplicate `showAlert`/`clearAlert`
 behavior, while `judgements_core_controller.js` has a structurally similar
@@ -40,27 +46,27 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### Verification requirements
+### [MIGRATION] Verification requirements
 
 For changes to the core case surface:
 
-- Preserve the core surface’s existing behavior and appearance; do not collapse it
+- `[MIGRATION]` Preserve the core surface’s existing behavior and appearance; do not collapse it
   with a Rails-page interaction model that used different UX.
-- Add or update Vitest contracts for changed modules and controllers.
-- Drive the affected user flow through Playwright and update the matching manual
+- `[MIGRATION]` Add or update Vitest contracts for changed modules and controllers.
+- `[MIGRATION]` Drive the affected user flow through Playwright and update the matching manual
   testing tracker entry.
-- For visual changes, keep matched before/after screenshots for the core surface.
+- `[MIGRATION]` For visual changes, keep matched before/after screenshots for the core surface.
 
-### Cleanup candidates
+### [MIGRATION-FOLLOWUP] Cleanup candidates
 
-- Remove stale Angular terminology from comments, generated-build labels, test names,
+- `[MIGRATION-FOLLOWUP]` Remove stale Angular terminology from comments, generated-build labels, test names,
   and helper names where it no longer describes the implementation.
-- Remove remaining Angular-era build or CSS compatibility steps only after verifying
+- `[MIGRATION-FOLLOWUP]` Remove remaining Angular-era build or CSS compatibility steps only after verifying
   that no core or Rails surface still depends on them.
 
 ---
 
-## Obviated by Angular removal (do not fix in Angular)
+## [MIGRATION] Obviated by Angular removal (do not fix in Angular)
 
 These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
@@ -72,9 +78,9 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 ---
 
-## P0 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P0 — Product bugs (Playwright MCP verified)
 
-### Deleting the latest try bricks the case (backend)
+### [PREEXISTING] Deleting the latest try bricks the case (backend)
 
 **Observed:** `DELETE /api/cases/:id/tries/:n` on the live try returns 204, but `cases.last_try_number` still points at the deleted try. Reload → banner *"Cannot read properties of null (reading 'tryNo')"*; case unusable until DB repair.
 
@@ -86,7 +92,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 ---
 
-### Try delete orphans scores; `same_score_source?` can 500
+### [PREEXISTING] Try delete orphans scores; `same_score_source?` can 500
 
 **Observed:** Scores keep a stale `try_id`. When an orphan is `last_score`, `PUT /api/cases/:id/scores` can 500 with `undefined method 'try_number' for nil`.
 
@@ -96,9 +102,9 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 ---
 
-## P1 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P1 — Product bugs (Playwright MCP verified)
 
-### Uploading the judgements export imports nothing and reports success
+### [PREEXISTING] Uploading the judgements export imports nothing and reports success
 
 **Location:** `app/services/book_importer.rb:66`, `app/views/api/v1/judgements/index.json.jbuilder`, `app/views/books/import/edit.html.erb:71`
 
@@ -110,7 +116,7 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 
 ---
 
-### Missing case: search_endpoints index 500s
+### [PREEXISTING] Missing case: search_endpoints index 500s
 
 **Observed:** `GET /api/cases/999999` → 404, but `GET /api/cases/999999/search_endpoints` → 500 (`undefined method 'teams' for nil`).
 
@@ -121,9 +127,40 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 ---
 
 
-## P2 — Security
+### [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
 
-### Proxy CSRF bypass
+**Location:** `app/javascript/controllers/wizard_controller.js`, `renderTls`
+
+The protocol-switch link places `basicAuthCredential` in the query string. A
+credential entered during wizard setup can therefore leak through browser
+history, server/proxy logs, referrers, and the subsequent `CoreController`
+request. This behavior predates AngularJS removal; it was carried forward while
+restoring the TLS handoff.
+
+**Fix direction:** Preserve pending wizard state server-side or behind a
+short-lived opaque token, and never put the credential itself in a URL.
+
+---
+
+### [PREEXISTING] Wizard TLS reload loses endpoint-specific settings
+
+**Location:** `app/javascript/controllers/wizard_controller.js`, `applyReloadParams`
+
+The protocol-switch reload reapplies engine defaults and restores only the URL,
+case name, API method, and basic-auth credential. Custom query parameters,
+headers, mapper code, test query, field selections, and intentionally empty
+values can be replaced or lost. This was also present in the Angular wizard and
+is not a deangularization regression.
+
+**Fix direction:** Preserve the complete pending endpoint configuration across
+the reload, including explicit empty values, without reapplying defaults over
+user-entered settings.
+
+---
+
+## [PREEXISTING] P2 — Security
+
+### [PREEXISTING] Proxy CSRF bypass
 
 **Location:** `app/controllers/proxy_controller.rb:8`
 
@@ -133,7 +170,7 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 
 ---
 
-### Password reset enumerates accounts (Playwright MCP)
+### [PREEXISTING] Password reset enumerates accounts (Playwright MCP)
 
 **Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
 
@@ -143,7 +180,7 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 
 ---
 
-### Rating deletion: tolerate "already gone"
+### [PREEXISTING] Rating deletion: tolerate "already gone"
 
 Deleting a rating that was already removed can error; races (tabs, double clicks) worsen with async UI.
 
@@ -151,9 +188,9 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 
 ---
 
-## P2 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P2 — Product bugs (Playwright MCP verified)
 
-### Silent HTML profile update failure
+### [PREEXISTING] Silent HTML profile update failure
 
 **Observed:** Clearing required email and saving does not persist, but HTML path redirects with no flash/error.
 
@@ -163,7 +200,7 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 
 ---
 
-### Profile page shows the same validation errors three times
+### [PREEXISTING] Profile page shows the same validation errors three times
 
 **Location:** `app/views/profiles/show.html.erb`, `app/views/shared/_error_messages.html.erb`
 
@@ -175,7 +212,7 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 
 ---
 
-### Book import forms 404 instead of importing into the book you're viewing
+### [PREEXISTING] Book import forms 404 instead of importing into the book you're viewing
 
 **Location:** `app/views/books/import/edit.html.erb`, `app/controllers/books/import_controller.rb`
 
@@ -189,15 +226,15 @@ Fixing the method alone isn't enough: `Books::Import#create` unconditionally doe
 
 ---
 
-### Judgement rating not validated against book's scale (outside AI judging)
+### [PREEXISTING] Judgement rating not validated against book's scale (outside AI judging)
 
 **Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
 
 **Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
 
 **Audit result (done):** Two call sites *legitimately* write ratings outside the discrete scale, both gated on `book.support_implicit_judgements?`:
-- `BooksController#combine` (`app/controllers/books_controller.rb:277`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
-- `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
+- `[PREEXISTING]` `BooksController#combine` (`app/controllers/books_controller.rb:277`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
+- `[PREEXISTING]` `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
 
 `BookImporter`/`RatingsImporter` are fine: `RatingsImporter` writes the unrelated `Rating` model, and `BookImporter#import_judgement` already silently no-ops on failed saves.
 
@@ -205,7 +242,7 @@ Fixing the method alone isn't enough: `Books::Import#create` unconditionally doe
 
 ---
 
-### `BooksController#combine` collapses anonymous judgements into one averaged row
+### [PREEXISTING] `BooksController#combine` collapses anonymous judgements into one averaged row
 
 **Location:** `app/controllers/books_controller.rb:275` — `combine`
 
@@ -219,7 +256,7 @@ The merge loop upserts each source judgement with `query_doc_pair.judgements.fin
 
 ---
 
-### Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
+### [PREEXISTING] Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
 
 **Location:** `app/services/book_importer.rb` — `import_judgement`
 
@@ -231,7 +268,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### `Api::V1::JudgementsController#create` keys its lookup off `:user` but assigns `:user_id`
+### [PREEXISTING] `Api::V1::JudgementsController#create` keys its lookup off `:user` but assigns `:user_id`
 
 **Location:** `app/controllers/api/v1/judgements_controller.rb:80`
 
@@ -243,9 +280,9 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-## P2 — Error handling consistency
+## [PREEXISTING] P2 — Error handling consistency
 
-### Missing team resources redirect instead of using the app-wide 404
+### [PREEXISTING] Missing team resources redirect instead of using the app-wide 404
 
 `TeamsController` has a controller-wide `rescue_from ActiveRecord::RecordNotFound`
 that redirects to the teams page with a flash. This differs from the default
@@ -253,7 +290,7 @@ that redirects to the teams page with a flash. This differs from the default
 requests. Decide whether inaccessible or missing team resources should remain a
 redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
-### Missing case URLs render the core shell instead of a page-level 404
+### [PREEXISTING] Missing case URLs render the core shell instead of a page-level 404
 
 `CoreController#set_case_or_bootstrap` leaves `@case` nil when an explicit case
 ID is unavailable, then renders the core shell. Decide whether `/case/:id`
@@ -263,15 +300,15 @@ explicit ID, which intentionally boots the user's latest available case.
 
 ---
 
-## P2 — Test coverage
+## [PREEXISTING] P2 — Test coverage
 
-- Add `test/controllers/cases_controller_test.rb` — HTML **unarchive** authorization test (`archive` already has coverage at lines 68-84; `unarchive` has no test at all)
+- `[PREEXISTING]` Add `test/controllers/cases_controller_test.rb` — HTML **unarchive** authorization test (`archive` already has coverage at lines 68-84; `unarchive` has no test at all)
 
 ---
 
-## P3 — Security & consistency
+## [PREEXISTING] P3 — Security & consistency
 
-### Proxy `proxy_debug` boolean parsing
+### [PREEXISTING] Proxy `proxy_debug` boolean parsing
 
 **Location:** `app/controllers/proxy_controller.rb:26`
 
@@ -279,7 +316,7 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 ---
 
-### Proxy URL parsing bug
+### [PREEXISTING] Proxy URL parsing bug
 
 **Location:** `app/controllers/proxy_controller.rb:75-80` (`extract_extra_url_params`)
 
@@ -291,7 +328,7 @@ Fix together with URL extraction deduplication below.
 
 ---
 
-### URL parameter extraction duplication
+### [PREEXISTING] URL parameter extraction duplication
 
 **Locations:** `proxy_controller.rb`, `api/v1/search_endpoints/validations_controller.rb`, `application_helper.rb` (`get_protocol_from_url`)
 
@@ -299,9 +336,9 @@ Overlapping parse logic. Same fix as "Proxy URL parsing bug" above — `UrlParse
 
 ---
 
-## P3 — Code quality
+## [PREEXISTING] P3 — Code quality
 
-### BookImporter: replace the mass-assignment denylists with allowlists
+### [PREEXISTING] BookImporter: replace the mass-assignment denylists with allowlists
 
 **Location:** `app/services/book_importer.rb` — `UNASSIGNABLE_JUDGEMENT_KEYS`, `UNASSIGNABLE_QUERY_DOC_PAIR_KEYS`
 
@@ -311,7 +348,7 @@ Both `Judgement` and `QueryDocPair` are updated from an uploaded file via `assig
 
 ---
 
-### Dead code: `ScoresController#set_score`
+### [PREEXISTING] Dead code: `ScoresController#set_score`
 
 **Location:** `app/controllers/scores_controller.rb:24-26`
 
@@ -319,7 +356,7 @@ Defined but unused (no `before_action`). Safe to delete.
 
 ---
 
-### Unsafe integer coercion in snapshot search
+### [PREEXISTING] Unsafe integer coercion in snapshot search
 
 **Location:** `app/controllers/api/v1/snapshots/search_controller.rb:45-46`
 
@@ -327,7 +364,7 @@ Defined but unused (no `before_action`). Safe to delete.
 
 ---
 
-### Predicate method naming
+### [PREEXISTING] Predicate method naming
 
 **Location:** `app/models/selection_strategy.rb`
 
@@ -337,7 +374,7 @@ Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pai
 
 ---
 
-### BookImporter: unsaved records aren't reported back to the user
+### [PREEXISTING] BookImporter: unsaved records aren't reported back to the user
 
 **Location:** `app/services/book_importer.rb` — `import_query_doc_pairs`, `import_all_judgements`, `import_judgement`, `upsert_nested_query_doc_pair`
 
@@ -345,7 +382,7 @@ None of these check the return value of `qdp.save` / `judgement.save`. If a row 
 
 ---
 
-### BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
+### [PREEXISTING] BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
 
 **Location:** `app/services/book_importer.rb` — `find_judgement_user`, `validate`, `emails_of_judges`
 
@@ -360,9 +397,9 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 
 ---
 
-## P2 — Performance
+## [PREEXISTING] P2 — Performance
 
-### Potential N+1 queries
+### [PREEXISTING] Potential N+1 queries
 
 1. **`app/controllers/cases_controller.rb:32`** — `includes(:owner, :teams, scores: :user).distinct`; scores accessed later may still N+1.
 2. **`app/controllers/teams_controller.rb:248`** — `includes(:owner, :teams)`; missing `scores` if the view touches them.
@@ -372,35 +409,35 @@ Bullet is enabled in dev/test — fix as surfaced; review views for missing eage
 
 ---
 
-## RuboCop deferrals
+## [PREEXISTING] RuboCop deferrals
 
 Inline `rubocop:disable` only on this branch (no config-level excludes). Search codebase for `rubocop:disable` for the full list.
 
-### Metrics/ParameterLists
+### [PREEXISTING] Metrics/ParameterLists
 
-- `Case#clone_case` — `app/models/case.rb:124`
-- `MapperWizardState#store_fetch_result` — `app/models/mapper_wizard_state.rb:58`
-- `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
+- `[PREEXISTING]` `Case#clone_case` — `app/models/case.rb:124`
+- `[PREEXISTING]` `MapperWizardState#store_fetch_result` — `app/models/mapper_wizard_state.rb:58`
+- `[PREEXISTING]` `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
 
-### Complex methods (Metrics/*)
+### [PREEXISTING] Complex methods (Metrics/*)
 
 Candidates for extraction into smaller methods or services:
 
-- `FetchService` — `app/services/fetch_service.rb`
-- `Api::V1::Import::RatingsController#create`
-- `Api::V1::Export::RatingsController`
-- `Api::V1::Snapshots::SearchController`
-- `BookImporter` / `RatingsImporter`
-- `MapperWizardsController`
-- `TeamsController` / `BooksController` / `HomeController`
+- `[PREEXISTING]` `FetchService` — `app/services/fetch_service.rb`
+- `[PREEXISTING]` `Api::V1::Import::RatingsController#create`
+- `[PREEXISTING]` `Api::V1::Export::RatingsController`
+- `[PREEXISTING]` `Api::V1::Snapshots::SearchController`
+- `[PREEXISTING]` `BookImporter` / `RatingsImporter`
+- `[PREEXISTING]` `MapperWizardsController`
+- `[PREEXISTING]` `TeamsController` / `BooksController` / `HomeController`
 
 ---
 
-## P2 — Stimulus HTTP infra follow-ups (hybrid migration)
+## [MIGRATION-FOLLOWUP] P2 — Stimulus HTTP infra follow-ups (hybrid migration)
 
 Shared `apiFetch` / `getQuepidRootUrl()` landed on `main` (see [DEVELOPER_GUIDE § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)). Remaining consistency work:
 
-### `bulk_judgement` — server-owned URLs
+### [MIGRATION-FOLLOWUP] `bulk_judgement` — server-owned URLs
 
 **Location:** `app/javascript/controllers/bulk_judgement_controller.js`, `app/views/bulk_judge/new.html.erb`
 
@@ -408,7 +445,7 @@ Still builds `` `books/${bookId}/judge/bulk/save` `` / `delete` in JS. Pass `sav
 
 ---
 
-### Import case API — return `redirect_url`
+### [MIGRATION-FOLLOWUP] Import case API — return `redirect_url`
 
 **Location:** `app/controllers/api/v1/import/cases_controller.rb`, `import_case_controller.js`
 
@@ -416,7 +453,7 @@ Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/$
 
 ---
 
-### Remaining inline CSRF controllers
+### [MIGRATION-FOLLOWUP] Remaining inline CSRF controllers
 
 Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
 
@@ -424,11 +461,11 @@ Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit 
 
 ---
 
-## P2 — match-explain Stimulus controller follow-ups
+## [MIGRATION-FOLLOWUP] P2 — match-explain Stimulus controller follow-ups
 
 From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`; these notes remain historical follow-ups for the live query-state phase.
 
-### Eager per-digest computation undoes the deleted code's lazy-compile optimization
+### [MIGRATION] Eager per-digest computation undoes the deleted code's lazy-compile optimization
 
 **Location:** retired Angular result bridge; current read model: `app/javascript/stores/query_documents_store.js`
 
@@ -438,7 +475,7 @@ The former Angular `matchExplainData()` eagerly serialized explanation details d
 
 ---
 
-### `json_explorer.js` undefined value renders a stray comma `<li>`
+### [PREEXISTING] `json_explorer.js` undefined value renders a stray comma `<li>`
 
 **Location:** `app/javascript/utils/json_explorer.js` (`parseValue` / `parseChildren`)
 

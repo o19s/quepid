@@ -53,8 +53,8 @@ this.setupTour = function() {
   tour.addStep('add-query', {
     title:     'Add Query',
     text:      'Need to add more queries to your case for testing? You can do it here.<br />Go ahead, add a query. We will wait...<br />Try "Toy Story" if you are using the default TMDB we set you up with.',
-    attachTo:  'add-query right',
-    advanceOn: 'add-query input[type="submit"] click',
+    attachTo:  'form[data-controller="add-query"] right',
+    advanceOn: '#add-query-submit click',
     buttons:   [{
       text:    'Back',
       classes: 'shepherd-button-secondary',

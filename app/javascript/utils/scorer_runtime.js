@@ -301,7 +301,9 @@ export function createScorer(
 
     const execute = () => {
       try {
-        new Function(...names, code)(...values)
+        // Wrap in a block so scorer declarations (e.g. `const max`) shadow the
+        // helper parameters instead of colliding with them.
+        new Function(...names, `{\n${code}\n}`)(...values)
       } catch (error) {
         deferred.reject(error)
       }

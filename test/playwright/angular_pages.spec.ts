@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
 import {
-  CASE_ID,
   dynamicRegions,
   expandFirstQuery,
   expandedCaseScreenshotOpts,
   gotoCase,
   headerDropdownMenu,
+  resetCompletedCaseWizard,
 } from './angular_case_helpers';
 
 /**
@@ -164,42 +164,33 @@ test.describe('Angular pages — interaction screenshots', () => {
     await expect(page).toHaveScreenshot('scorer-config-06-filter-focused.png', expandedCaseScreenshotOpts(page));
   });
 
-  test('wizard — welcome, name step, accordion', async ({ page }) => {
-    await gotoCase(page, 'showWizard=true');
+  test('wizard — welcome, name, endpoint steps', async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.goto('cases');
+    await resetCompletedCaseWizard(page);
+    await gotoCase(page, 'showWizard=true', 6);
     const modal = page.locator('.modal.show').first();
-    await expect(modal).toBeVisible();
-    await expect(modal).toContainText(/Welcome To Quepid|Name Your Case|Wizard/i);
+    const continueButton = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
+    // Steps stay hidden until the wizard has loaded; wait for a real heading, not just the modal.
+    await expect(modal.getByRole('heading', { name: /Welcome To Quepid/i })).toBeVisible({ timeout: 15_000 });
     await expect(page).toHaveScreenshot('wizard-01-welcome-step.png', expandedCaseScreenshotOpts(page));
 
-    await modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true }).click();
-    await expect(modal).toContainText('Name Your Case');
+    await continueButton.click();
+    await expect(modal.getByRole('heading', { name: /Name Your Case/i })).toBeVisible();
     await expect(page).toHaveScreenshot('wizard-02-name-step.png', expandedCaseScreenshotOpts(page));
 
-    const nameInput = modal.locator('input[ng-model="pendingWizardSettings.caseName"]');
-    // Wizard steps may leave prior-step fields in the DOM with display:none; call DOM focus
-    // so we target the Name-step field without Playwright's visible-element checks (focus() has no force).
-    await nameInput.evaluate((el: HTMLElement) => el.focus());
+    const nameInput = modal.getByLabel('New Case Name:');
+    await nameInput.focus();
     await expect(page).toHaveScreenshot('wizard-03-case-name-focused.png', expandedCaseScreenshotOpts(page));
 
-    await nameInput.fill('Playwright wizard tour', { force: true });
-    // The wizard sometimes auto-advances on the input event and sometimes doesn't.
-    // If it didn't, click Continue; either way we end up on the Endpoint step.
-    const endpointHeading = modal.getByRole('heading', { name: /What Search Endpoint/i });
-    const visibleContinue = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
-    if (!(await endpointHeading.isVisible())) {
-      await visibleContinue.click();
-    }
-    await expect(endpointHeading).toBeVisible({ timeout: 15_000 });
-    await modal.getByRole('button', { name: 'Create a new Search Endpoint' }).click();
-    await expect(page).toHaveScreenshot('wizard-04-endpoint-accordion.png', expandedCaseScreenshotOpts(page));
+    await nameInput.fill('Playwright wizard tour');
+    await continueButton.click();
+    await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page).toHaveScreenshot('wizard-04-endpoint-step.png', expandedCaseScreenshotOpts(page));
 
-    // Wizard body has no standalone popover; close and exercise modal/dropdown/popover/form on the case shell.
-    await page.locator('#wizard').getByRole('button', { name: 'Close', exact: true }).click();
-    // $quepidModal's dismiss can leave `.modal.show` briefly during hide; force a clean state.
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.modal.show')).toHaveCount(0, { timeout: 10_000 });
-
-    await gotoCase(page);
+    // Don't close the wizard: on this shared fixture case the ✕ and Cancel both offer to
+    // delete the case. Reloading the case page below dismisses it without finishing.
+    await gotoCase(page, '', 6);
     await expandFirstQuery(page);
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();

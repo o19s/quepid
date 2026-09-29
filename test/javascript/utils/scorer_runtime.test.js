@@ -65,6 +65,13 @@ describe("scorer runtime", () => {
     expect(scorer.error).toBeFalsy()
   })
 
+  it("lets scorer code redeclare helper names with let or const", async () => {
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code: "const max = 5; setScore(max)" })
+
+    await expect(scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [])).resolves.toBe(5)
+    expect(scorer.error).toBeFalsy()
+  })
+
   it("treats omitted best documents as an empty rating set", async () => {
     const scorer = createScorer({ scale: [0, 1], code: "setScore(null)" })
 

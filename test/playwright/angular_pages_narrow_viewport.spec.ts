@@ -1,50 +1,42 @@
 import { test, expect } from '@playwright/test';
 import {
-  CASE_ID,
   dynamicRegions,
   expandFirstQuery,
   expandedCaseScreenshotOpts,
   gotoCase,
   headerDropdownMenu,
+  resetCompletedCaseWizard,
 } from './angular_case_helpers';
 
 /**
  * Reflow smoke at **768×900** (see `chromium-narrow` in `playwright.config.ts`).
  * Catches grid/gutter and header layout regressions that often pass at 1280×900 alone.
  *
- * Subset of `angular_pages.spec.ts`: **wizard accordion first on a bare `?showWizard=true` load**, then cases
- * list + dropdown + share modal — avoids flaky wizard steps when MySQL wizard state was touched by shell steps earlier in the tour.
+ * Subset of `angular_pages.spec.ts`: **wizard endpoint step on a `?showWizard=true` load**, then cases
+ * list + dropdown + share modal.
  *
  * Baselines: `yarn test:e2e:update-baselines` (Docker: `bin/docker r yarn test:e2e:update-baselines`).
  */
 test.describe('Angular core — narrow viewport slice (768×900)', () => {
-  test('wizard endpoint accordion + cases list reflow', async ({ page }) => {
-    await gotoCase(page, 'showWizard=true');
+  test('wizard endpoint step + cases list reflow', async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.goto('cases');
+    await resetCompletedCaseWizard(page);
+    await gotoCase(page, 'showWizard=true', 6);
     const modal = page.locator('.modal.show').first();
-    await expect(modal).toBeVisible();
+    const continueButton = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
+    await expect(modal.getByRole('heading', { name: /Welcome To Quepid/i })).toBeVisible({ timeout: 15_000 });
 
-    await modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true }).click();
-    await expect(modal).toContainText('Name Your Case');
+    await continueButton.click();
+    await expect(modal.getByRole('heading', { name: /Name Your Case/i })).toBeVisible();
+    await modal.getByLabel('New Case Name:').fill('Playwright narrow tour');
+    await continueButton.click();
+    await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+    await expect(page).toHaveScreenshot('narrow-01-wizard-endpoint-step.png', expandedCaseScreenshotOpts(page));
 
-    const nameInput = modal.locator('input[ng-model="pendingWizardSettings.caseName"]');
-    await nameInput.evaluate((el: HTMLElement) => el.focus());
-    await nameInput.fill('Playwright narrow tour', { force: true });
-    // The wizard sometimes auto-advances on the input event and sometimes doesn't.
-    // If it didn't, click Continue; either way we end up on the Endpoint step.
-    const endpointHeading = modal.getByRole('heading', { name: /What Search Endpoint/i });
-    const visibleContinue = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
-    if (!(await endpointHeading.isVisible())) {
-      await visibleContinue.click();
-    }
-    await expect(endpointHeading).toBeVisible({ timeout: 15_000 });
-    await modal.getByRole('button', { name: 'Create a new Search Endpoint' }).click();
-    await expect(page).toHaveScreenshot('narrow-01-wizard-endpoint-accordion.png', expandedCaseScreenshotOpts(page));
-
-    await page.locator('#wizard').getByRole('button', { name: 'Close', exact: true }).click();
-    await page.keyboard.press('Escape');
-    await expect(page.locator('.modal.show')).toHaveCount(0, { timeout: 10_000 });
-
-    await gotoCase(page);
+    // Don't close the wizard: on this shared fixture case the ✕ and Cancel both offer to
+    // delete the case. Reloading the case page below dismisses it without finishing.
+    await gotoCase(page, '', 6);
     await expandFirstQuery(page);
     // This step is really just scene-setting for the dropdown/share-modal
     // shots below -- expandFirstQuery() leaves a real, live search result
