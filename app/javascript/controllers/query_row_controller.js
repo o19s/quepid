@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { isImageUrl, queryStateClass } from "utils/query_state"
 
 /**
- * Query-row presentation. Angular still owns the expanded row and its
+ * Query-row presentation. The live-query runtime still owns the expanded row and its
  * controls; this controller owns the header values and dispatches the toggle
  * intent so the row can be migrated incrementally.
  */

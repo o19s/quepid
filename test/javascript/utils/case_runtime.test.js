@@ -20,14 +20,37 @@ describe("case runtime", () => {
       tries: [{ try_number: 2 }]
     }))
     const runtime = createCaseRuntime({ request })
-    window.quepidSearch = {}
+    const selected = vi.fn()
+    document.addEventListener("quepid:case-selected", selected)
 
     const value = await runtime.load(7)
     runtime.select(value)
 
     expect(value).toMatchObject({ caseNo: 7, caseName: "Books", lastTry: 2 })
     expect(runtime.selected()).toBe(value)
-    expect(window.quepidSearch.caseState).toMatchObject({ caseNo: 7, caseName: "Books" })
+    expect(selected).toHaveBeenCalledWith(expect.objectContaining({
+      type: "quepid:case-selected",
+      detail: expect.objectContaining({ caseNo: 7, caseName: "Books" })
+    }))
+    document.removeEventListener("quepid:case-selected", selected)
+  })
+
+  it("publishes the selected case details for shared runtime state", () => {
+    const runtime = createCaseRuntime()
+    const selected = vi.fn()
+    document.addEventListener("quepid:case-selected", selected)
+
+    runtime.select({ caseNo: 7, caseName: "Books", bookId: 12, bookName: "Catalog" })
+
+    expect(selected).toHaveBeenCalledWith(expect.objectContaining({
+      detail: {
+        caseNo: 7,
+        caseName: "Books",
+        bookId: 12,
+        bookName: "Catalog"
+      }
+    }))
+    document.removeEventListener("quepid:case-selected", selected)
   })
 
   it("preserves case mutations and server-rendered header events", async () => {

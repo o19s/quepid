@@ -1,5 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
 import QueryDeleteController from "controllers/query_delete_controller"
+import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
 
 describe("query-delete controller", () => {
   let controller
@@ -41,11 +42,13 @@ describe("query-delete controller", () => {
     window.fetch.mockResolvedValue({ ok: false, status: 500 })
     controller.element = document.createElement("button")
     controller.element.disabled = false
-    window.quepidDom = { flash: { show: vi.fn() } }
+    const flash = { show: vi.fn() }
+    setCoreFlashForTest(flash)
 
     await controller.remove({ preventDefault: vi.fn() })
 
     expect(controller.dispatch).not.toHaveBeenCalled()
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
+    expect(flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
+    resetCoreFlashForTest()
   })
 })

@@ -1,13 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCoreStores } from "utils/core_store_access"
-import { getCoreCapabilities } from "utils/core_capability_access"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
-import { sanitizeHtml } from "controllers/search_result_controller"
+import { createRatingControl, sanitizeHtml } from "controllers/search_result_controller"
 import { engineDisplayName } from "utils/browse_query"
 
 /**
- * Renders an expanded query from the plain document read model. Angular still
+ * Renders an expanded query from the plain document read model. The live-query runtime still
  * owns live search and mutations, but those are reached through explicit
  * command/state adapters rather than scope discovery.
  */
@@ -179,18 +178,7 @@ export default class extends Controller {
     const fragment = document.createDocumentFragment()
 
     docs.forEach((doc, index) => {
-      const element = document.createElement("search-result")
-      element.className = "search-result"
-      element.setAttribute("data-controller", "search-result")
-      element.setAttribute("data-search-result-explain-view-value", "full")
-      element.setAttribute("rank", String(index + 1))
-      element.dataset.queryId = String(snapshot.queryId)
-      element.dataset.docId = String(doc.id)
-      element.dataset.rating = doc.rating == null ? "" : String(doc.rating)
-      element.innerHTML = '<div data-search-result-target="content"></div>'
-      element.__searchResultDocument = doc
-      element.__searchResultQuery = snapshot
-      fragment.appendChild(element)
+      fragment.appendChild(this.buildSearchResult(doc, snapshot, index + 1))
     })
 
     this.resultsTarget.replaceChildren(fragment)
@@ -286,8 +274,11 @@ export default class extends Controller {
     result.setAttribute("rank", String(rank))
     result.dataset.queryId = String(snapshot.queryId)
     result.dataset.docId = String(doc.id)
+    result.dataset.rating = doc.rating == null ? "" : String(doc.rating)
     result.__searchResultDocument = doc
-    result.__searchResultQuery = { ...snapshot, maxDocScore }
+    result.__searchResultQuery = maxDocScore === undefined
+      ? snapshot
+      : { ...snapshot, maxDocScore }
     result.innerHTML = '<div data-search-result-target="content"></div>'
     return result
   }
@@ -326,23 +317,10 @@ export default class extends Controller {
       <div class="ratings"><div class="single-rating" data-controller="rating-popover"></div></div>
     `
 
+    const rating = snapshot.queryRating ?? "--"
     const popover = container.querySelector('[data-controller="rating-popover"]')
-    popover.dataset.ratingPopoverScaleValue = JSON.stringify(snapshot.ratingScale || {})
-    const trigger = document.createElement("span")
-    trigger.className = "btn"
-    const rating = snapshot.queryRating || "--"
-    trigger.textContent = `${rating} `
-    trigger.style.backgroundColor = this.ratingColor(rating, snapshot.ratingScale || {})
-    const icon = document.createElement("i")
-    icon.className = "bi bi-caret-down-fill"
-    icon.setAttribute("aria-hidden", "true")
-    trigger.appendChild(icon)
-    popover.appendChild(trigger)
+    popover.replaceWith(createRatingControl(rating, snapshot.ratingScale || {}))
     this.scoreAllTarget.appendChild(container)
-  }
-
-  ratingColor(rating, scale) {
-    return getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })?.["background-color"] || scale[rating]?.color || ""
   }
 
   handleQueryToggle(event) {

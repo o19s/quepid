@@ -61,7 +61,7 @@ export default class extends Controller {
       this.annotations.unshift(this.normalize(await response.json()))
       this.messageTarget.value = ""
       this.render()
-      this.notifyAngular()
+      this.notifyScoreConsumers()
       showFlash("success", "New Annotation created successfully!")
     } catch {
       showFlash("error", "Unable to create Annotation.")
@@ -111,7 +111,7 @@ export default class extends Controller {
       this.annotations = this.annotations.map((item) => item.id === updated.id ? updated : item)
       this.render()
       this.editModalInstance?.hide()
-      this.notifyAngular()
+      this.notifyScoreConsumers()
       showFlash("success", "Annotation updated successfully!")
     } catch {
       showFlash("error", "Unable to update Annotation.")
@@ -130,7 +130,7 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Unable to delete annotation (${response.status})`)
       this.annotations = this.annotations.filter((item) => item.id !== annotation.id)
       this.render()
-      this.notifyAngular()
+      this.notifyScoreConsumers()
       showFlash("success", "Annotation deleted successfully!")
     } catch {
       showFlash("error", "Unable to delete Annotation.")
@@ -156,7 +156,7 @@ export default class extends Controller {
     if (this.hasCreateButtonTarget) this.createButtonTarget.disabled = !this.scorePayload()
   }
 
-  notifyAngular() {
+  notifyScoreConsumers() {
     document.dispatchEvent(new CustomEvent("annotations:changed", {
       bubbles: true,
       detail: { caseId: this.caseIdValue }

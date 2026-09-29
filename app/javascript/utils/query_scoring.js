@@ -1,4 +1,4 @@
-import { averageScore, scoreToColor } from "./scoring"
+import { averageScore, scoreToColor } from "utils/scoring"
 
 const LEGACY_UNSCORED_STYLE = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
 

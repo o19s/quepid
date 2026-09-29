@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
   static targets = ["notes", "informationNeed"]
@@ -52,10 +53,10 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Unable to save query notes (${response.status})`)
 
       this.loadedValues = { notes, informationNeed }
-      window.quepidDom?.flash?.show("success", "Success! Your query details have been saved.")
+      coreFlash.show("success", "Success! Your query details have been saved.")
       this.element.dispatchEvent(new CustomEvent("query-notes:close", { bubbles: true }))
     } catch {
-      window.quepidDom?.flash?.show("error", "Ooooops! Could not save your query details. Please try again.")
+      coreFlash.show("error", "Ooooops! Could not save your query details. Please try again.")
     }
   }
 }

@@ -4,42 +4,42 @@ import {
   ratedDocIds,
   supportsRatedDocsLookup,
   supportsSearchApiRatedDocsLookup
-} from "./utils/rated_docs"
-import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from "./utils/scoring"
-import { buildCaseDiffScores } from "./utils/diff_scores"
-import { createQueryDiff } from "./utils/diff_results"
-import { RatingsStore } from "./utils/ratings_store"
-import { createSnapshotSearcherFromRegistry } from "./utils/snapshot_searcher"
-import { createSnapshotModel } from "./utils/snapshot_model"
-import { codeToString, formatCode, parseResponseObject } from "./utils/search_error"
-import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "./utils/query_scoring"
-import { createQueryModel } from "./utils/query_model"
-import { createDocCache } from "./utils/doc_cache"
+} from "utils/rated_docs"
+import { averageScore, formatScore, isUnratedScore, ratingBackgroundColor } from "utils/scoring"
+import { buildCaseDiffScores } from "utils/diff_scores"
+import { createQueryDiff } from "utils/diff_results"
+import { RatingsStore } from "utils/ratings_store"
+import { createSnapshotSearcherFromRegistry } from "utils/snapshot_searcher"
+import { createSnapshotModel } from "utils/snapshot_model"
+import { codeToString, formatCode, parseResponseObject } from "utils/search_error"
+import { createCaseScoringRuntime, scoreAllQueries, scoreQuery } from "utils/query_scoring"
+import { createQueryModel } from "utils/query_model"
+import { createDocCache } from "utils/doc_cache"
 import {
   createQueryRuntime,
   createSearchAllRuntime,
   createTargetedSearchAdapter
-} from "./utils/query_runtime"
-import { extractCuratorVars } from "./utils/curator_vars"
-import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "./utils/book_sync"
-import { buildQueryDocumentsState } from "./utils/query_documents"
-import { createLiveQueryCollectionRuntime } from "./utils/live_query_collection"
-import { createLiveQuerySearchRuntime } from "./utils/live_query_search"
-import { createLiveQueryModelRuntime } from "./utils/live_query_model"
-import { createLiveQueryDocumentsRuntime } from "./utils/live_query_documents"
-import { createLiveQueryFactory } from "./utils/live_query_factory"
-import { createLiveQueryCommandsRuntime } from "./utils/live_query_commands"
-import { createLiveQueryEventsRuntime } from "./utils/live_query_events"
-import { createLiveQueryExecutionRuntime } from "./utils/live_query_execution"
-import { createLiveQueryRuntime } from "./utils/live_query_runtime"
-import { createLiveQueryLifecycleRuntime } from "./utils/live_query_lifecycle"
-import { createLiveQueryTransportRuntime } from "./utils/live_query_transport"
-import { createLiveQueryCompatibilityRuntime } from "./utils/live_query_compatibility"
-import { createLiveQueryAdapters } from "./utils/live_query_adapters"
-import { installLiveQueryCapabilities } from "./utils/live_query_capabilities"
-import { createLiveQueryDiffRuntime } from "./utils/live_query_diff"
-import { createLiveQueryStateRuntime } from "./utils/live_query_state"
-import { createLiveQueryRegistry } from "./utils/live_query_registry"
+} from "utils/query_runtime"
+import { extractCuratorVars } from "utils/curator_vars"
+import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "utils/book_sync"
+import { buildQueryDocumentsState } from "utils/query_documents"
+import { createLiveQueryCollectionRuntime } from "utils/live_query_collection"
+import { createLiveQuerySearchRuntime } from "utils/live_query_search"
+import { createLiveQueryModelRuntime } from "utils/live_query_model"
+import { createLiveQueryDocumentsRuntime } from "utils/live_query_documents"
+import { createLiveQueryFactory } from "utils/live_query_factory"
+import { createLiveQueryCommandsRuntime } from "utils/live_query_commands"
+import { createLiveQueryEventsRuntime } from "utils/live_query_events"
+import { createLiveQueryExecutionRuntime } from "utils/live_query_execution"
+import { createLiveQueryRuntime } from "utils/live_query_runtime"
+import { createLiveQueryLifecycleRuntime } from "utils/live_query_lifecycle"
+import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
+import { createLiveQueryCompatibilityRuntime } from "utils/live_query_compatibility"
+import { createLiveQueryAdapters } from "utils/live_query_adapters"
+import { installLiveQueryCapabilities } from "utils/live_query_capabilities"
+import { createLiveQueryDiffRuntime } from "utils/live_query_diff"
+import { createLiveQueryStateRuntime } from "utils/live_query_state"
+import { createLiveQueryRegistry } from "utils/live_query_registry"
 import {
   invalidateRatedDocsCache,
   matchesQueryFilter,
@@ -51,7 +51,7 @@ import {
   queryStateClass,
   querqyRuleTriggered,
   ratingChangedQueryId
-} from "./utils/query_state"
+} from "utils/query_state"
 import {
   bootstrapRequest,
   bulkCreateRequest,
@@ -63,7 +63,7 @@ import {
   positionRequest,
   persistQuery,
   persistQueries
-} from "./utils/query_lifecycle"
+} from "utils/query_lifecycle"
 import {
   buildSearcherRequest,
   buildSearchApiRatedDocsQueryParams,
@@ -76,19 +76,18 @@ import {
   runSearchAll,
   searchQuery,
   settingsWithTryOverrides
-} from "./utils/query_service"
+} from "utils/query_service"
 
 /**
  * Framework-free query/search logic lifted out of the Angular `queriesSvc`, kept
  * separate from `quepid_dom.js` (DOM helpers) because none of it touches the DOM.
- * Exposed on `window.quepidSearch` for the concatenated core legacy bundle
- * (`core_legacy.js`); Stimulus controllers import the modules directly.
+ * The core entry imports this object as a module singleton.
  */
 const quepidSearch = {
   docResolverSvc: null,
   docCache: createDocCache({
-    resolver: (...args) => window.quepidSearch.docResolverSvc.createResolver(...args),
-    proxyUrlFor: (searchEndpointId) => window.quepidSearch.caseRuntime?.bootstrap?.core?.navigation?.proxyUrlFor(searchEndpointId)
+    resolver: (...args) => quepidSearch.docResolverSvc.createResolver(...args),
+    proxyUrlFor: (searchEndpointId) => quepidSearch.caseRuntime?.bootstrap?.core?.navigation?.proxyUrlFor(searchEndpointId)
   }),
   caseState: {
     caseNo: null,

@@ -16,7 +16,7 @@ const ACTION_METHODS = {
 
 /**
  * Delete/archive options for the core case toolbar — list UI, form-post
- * (stay-Rails) transport, mirrors the AngularJS delete-case-options modal.
+ * (stay-Rails) transport, mirrors the former delete-case-options modal.
  *
  * One controller class instantiated on both the toolbar trigger and the
  * modal root (same dual-role pattern as share-case-core, shared via

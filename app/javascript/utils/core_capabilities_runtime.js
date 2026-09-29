@@ -9,6 +9,7 @@ import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
 import { createScorer } from "utils/scorer_runtime"
 import { apiFetch } from "api/fetch"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 const mapperSearchRuntime = createMapperSearchRuntime()
 const searchEndpointRuntime = createSearchEndpointRuntime()
@@ -21,7 +22,7 @@ const settingsRuntime = createSettingsRuntime({
   tryNo: () => navigationRuntime.getTryNo(),
   navigate: (values) => navigationRuntime.navigateTo(values),
   createFieldSpec: (value) =>
-    window.quepidSearch?.splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
+    getCoreCapabilities().splainerSearch?.fieldSpecSvc?.createFieldSpec(value) || {}
 })
 const userRuntime = createUserRuntime()
 
@@ -118,13 +119,13 @@ async function loadCapability(name) {
   const definition = capabilityDefinitions[name]
   if (!definition) throw new Error(`Unknown case runtime capability: ${name}`)
 
-  const runtime = window.quepidSearch?.caseRuntime
+  const runtimeOwner = getCoreCapabilities()
+  const runtime = runtimeOwner.caseRuntime
   if (runtime?.[name]) return runtime[name]
 
   const services = {}
 
-  window.quepidSearch ||= {}
-  window.quepidSearch.caseRuntime ||= {}
+  runtimeOwner.caseRuntime ||= {}
   const nativeFramework = name === "bootstrap" ? createNativeFramework() : null
   const scorerCatalog =
     name === "bootstrap"
@@ -133,23 +134,25 @@ async function loadCapability(name) {
           constructFromData: (data) =>
             createScorer(data, {
               promiseApi: nativeFramework.promiseApi,
-              schedule: (callback) => nativeFramework.schedule(callback)
+              schedule: (callback) => nativeFramework.schedule(callback),
+              refreshRatedDocs: (queryId, count) => runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
             }),
           initialDefault: createScorer(
             {},
             {
               promiseApi: nativeFramework.promiseApi,
-              schedule: (callback) => nativeFramework.schedule(callback)
+              schedule: (callback) => nativeFramework.schedule(callback),
+              refreshRatedDocs: (queryId, count) => runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
             }
           ),
           promiseApi: nativeFramework.promiseApi
         })
       : null
-  window.quepidSearch.caseRuntime[name] =
+  runtimeOwner.caseRuntime[name] =
     name === "bootstrap"
       ? {
           core: createCoreCapabilities(services, scorerCatalog, userRuntime),
-          docCache: window.quepidSearch.docCache,
+          docCache: runtimeOwner.docCache,
           liveQuery: createLiveQueryCapabilities(services, scorerCatalog)
         }
       : {
@@ -159,11 +162,12 @@ async function loadCapability(name) {
             services,
             userRuntime,
             searchEndpointRuntime,
-            mapperSearchRuntime
+            mapperSearchRuntime,
+            runtimeOwner
           ),
-          docCache: window.quepidSearch.docCache
+          docCache: runtimeOwner.docCache
         }
-  return window.quepidSearch.caseRuntime[name]
+  return runtimeOwner.caseRuntime[name]
 }
 
 function createNamedCapability(
@@ -171,24 +175,26 @@ function createNamedCapability(
   services,
   userRuntime,
   searchEndpointRuntime,
-  mapperSearchRuntime
+  mapperSearchRuntime,
+  runtimeOwner
 ) {
-  if (name === "snapshots") return createSnapshotCapabilities(services)
+  if (name === "snapshots") return createSnapshotCapabilities(services, runtimeOwner)
   if (name === "wizard") {
     return createWizardCapabilities(
       services,
       userRuntime,
       searchEndpointRuntime,
-      mapperSearchRuntime
+      mapperSearchRuntime,
+      runtimeOwner
     )
   }
   if (name === "tuneRelevance")
-    return createTuneRelevanceCapabilities(services, searchEndpointRuntime)
+    return createTuneRelevanceCapabilities(services, searchEndpointRuntime, runtimeOwner)
   return {}
 }
 
-function createSnapshotCapabilities(services) {
-  const splainerSearch = window.quepidSearch?.splainerSearch || {}
+function createSnapshotCapabilities(services, runtimeOwner) {
+  const splainerSearch = runtimeOwner.splainerSearch || {}
 
   return {
     settings: {
@@ -212,9 +218,10 @@ function createWizardCapabilities(
   services,
   userRuntime,
   searchEndpointRuntime,
-  mapperSearchRuntime
+  mapperSearchRuntime,
+  runtimeOwner
 ) {
-  const splainerSearch = window.quepidSearch?.splainerSearch || {}
+  const splainerSearch = runtimeOwner.splainerSearch || {}
 
   return {
     settings: {
@@ -253,13 +260,13 @@ function createWizardCapabilities(
       caseNo: () => navigationRuntime.getCaseNo()
     },
     documents: {
-      cache: window.quepidSearch.docCache
+      cache: runtimeOwner.docCache
     }
   }
 }
 
-function createTuneRelevanceCapabilities(services, searchEndpointRuntime) {
-  const esUrlSvc = window.quepidSearch?.splainerSearch?.esUrlSvc
+function createTuneRelevanceCapabilities(services, searchEndpointRuntime, runtimeOwner) {
+  const esUrlSvc = runtimeOwner.splainerSearch?.esUrlSvc
 
   return {
     settings: {
@@ -360,8 +367,8 @@ function createLiveQueryCapabilities(services, scorerCatalog) {
   }
 }
 
-// Named capability entry points are the public contract. The Angular service names above are
-// implementation details of this compatibility adapter, not a service locator for controllers.
+// Named capability entry points are the public contract. The former service
+// names are implementation details, not a service locator for controllers.
 export function getBootstrapCapabilities() {
   return loadCapability("bootstrap")
 }

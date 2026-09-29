@@ -6,7 +6,7 @@ import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
- * Store-driven replacement for the Angular `<qscore-case>` component's primary
+ * Store-driven implementation for the core case score component's primary
  * "current case score" usage in `core/index.html.erb` (`scorable="queries.avgQuery"`)
  * — same pattern as `qscore_query_controller.js`, per
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 4.
@@ -16,7 +16,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
  * `qgraph` controller, as a sibling that reads the case scores and annotations
  * APIs directly.
  *
- * Reads the core stores through the temporary compatibility adapter, which
+ * Reads the core stores through the temporary runtime adapter, which
  * preserves the bundled singleton while the runtimes are built separately.
  *
  * Colors relative to `caseScore.maxScore`, the average of each live query's own

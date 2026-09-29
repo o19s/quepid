@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
- * Renders one flash box on the core case page. Angular controllers (still on
+ * Renders one flash box on the core case page. Core controllers (still on
  * `/case/:id`) trigger it via `document`-level `flash:show` / `flash:hide`
  * CustomEvents dispatched from `utils/flash.js`, since they can't reach a
  * Stimulus controller's own actions directly. Each box picks its events out

@@ -98,7 +98,7 @@ function buildCoreCSS() {
   output += '\n';
 
   // Bootstrap 5 base. The compat shim (loaded below) supplies BS5-vs-legacy
-  // resets, px sizing, and Angular-core-specific overrides (popover, header nav,
+  // resets, px sizing, and overrides (popover, header nav,
   // modals, sub-results toolbar, …).
   output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
   output += '\n';

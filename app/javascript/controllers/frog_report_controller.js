@@ -4,6 +4,7 @@ import { openDynamicModal } from "utils/dynamic_modal"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { getQuepidRootUrl } from "utils/quepid_root"
+import coreFlash from "utils/core_flash"
 
 export function buildFrogReportStats(queries) {
   const withResults = queries.filter(query => (query.docs || []).length > 0).length
@@ -157,7 +158,7 @@ export default class extends Controller {
         }
         await refreshQueries(state.caseNo)
       }
-      window.quepidDom?.flash?.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
+    coreFlash.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
       if (background) window.location.assign(getQuepidRootUrl())
     } catch (error) {
       this.errorTarget.textContent = `An error (${error.message}) occurred, please try again.`

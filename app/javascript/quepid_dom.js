@@ -4,33 +4,32 @@ import {
   disposeBsTooltip,
   hideTooltipsWithin,
   updateBsTooltipContent
-} from "./utils/bs_tooltip"
+} from "utils/bs_tooltip"
 import {
   POPOVER_SELECTOR,
   createBsPopover,
   normalizePopoverPlacement,
   parsePopoverTrigger,
   toBsPopoverTrigger
-} from "./utils/bs_popover"
-import { restoreModalBodyLock, showStackedModal } from "./utils/bs_modal"
-import { attachTextPaste } from "./utils/text_paste"
-import { animateCountUp, stopCountUp } from "./utils/count_up"
-import { hideFlash, showFlash } from "./utils/flash"
+} from "utils/bs_popover"
+import { restoreModalBodyLock, showStackedModal } from "utils/bs_modal"
+import { attachTextPaste } from "utils/text_paste"
+import { animateCountUp, stopCountUp } from "utils/count_up"
+import { hideFlash, showFlash } from "utils/flash"
 // dynamic_modal.js pulls in utils/bs_modal via the usual importmap bare
 // specifier ("utils/bs_modal", not "./bs_modal") — this bundle (core_vendor.js)
 // is built with plain esbuild, which doesn't know about config/importmap.rb's
 // pins, so build:core-vendor passes --alias:utils=./app/javascript/utils
 // to resolve it (see package.json).
-import { openDynamicModal } from "./utils/dynamic_modal"
-import { openDetailedDocumentModal } from "./utils/detailed_document_modal"
-import { renderJsonExplorer, escapeHtml } from "./utils/json_explorer"
+import { openDynamicModal } from "utils/dynamic_modal"
+import { openDetailedDocumentModal } from "utils/detailed_document_modal"
+import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.
- * Exposed on `window.quepidDom` for the concatenated core legacy bundle
- * (`core_legacy.js`); Stimulus controllers import the modules directly.
+ * The core entry imports this object as a module singleton.
  */
-const quepidDom = {
+const moduleDom = {
   tooltip: {
     selector: TOOLTIP_SELECTOR,
     create: createBsTooltip,
@@ -70,4 +69,4 @@ const quepidDom = {
   }
 }
 
-export default quepidDom
+export default moduleDom

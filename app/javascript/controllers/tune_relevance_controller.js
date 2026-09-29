@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
-import { getTuneRelevanceCapabilities } from "utils/core_angular_adapter"
+import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
+import coreFlash from "utils/core_flash"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -306,10 +307,10 @@ export default class extends Controller {
     this.runEvaluationTarget.disabled = true
     this.runEvaluationTarget.textContent = "Queuing evaluation job..."
     this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.selectedTry.tryNo).then(() => {
-      window.quepidDom?.flash?.show("success", "Evaluation queued successfully.")
+      coreFlash.show("success", "Evaluation queued successfully.")
       window.location.assign(this.capability.navigation.rootUrl())
     }).catch(() => {
-      window.quepidDom?.flash?.show("error", "Unable to queue evaluation.")
+      coreFlash.show("error", "Unable to queue evaluation.")
     }).finally(() => {
       this.runEvaluationTarget.disabled = false
       this.runEvaluationTarget.textContent = "Rerun My Searches in the Background!"
@@ -346,7 +347,7 @@ export default class extends Controller {
       if (!this.tryRenameFormTarget.hidden) this.tryNameInputTarget.focus()
     } else if (action === "duplicate") {
       this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
-        window.quepidDom?.flash?.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
+      coreFlash.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
         this.reloadSettings()
         window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
       }).catch(() => this.showError("Unable to duplicate try."))
@@ -359,7 +360,7 @@ export default class extends Controller {
     const name = this.tryNameInputTarget.value.trim()
     if (!name || !this.activeTry) return
     this.capability.settings.renameTry(this.activeTry.tryNo, name).then(() => {
-      window.quepidDom?.flash?.show("success", "Try renamed successfully.")
+      coreFlash.show("success", "Try renamed successfully.")
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
     }).catch(() => this.showError("Unable to rename try."))
@@ -374,7 +375,7 @@ export default class extends Controller {
     const numberOfTries = (this.settings.tries || []).filter(item => !item.deleted).length
     if (numberOfTries <= 1) return
     this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
-      window.quepidDom?.flash?.show("success", "Successfully deleted try!")
+      coreFlash.show("success", "Successfully deleted try!")
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
     }).catch(() => this.showError("Unable to delete try."))
@@ -386,6 +387,6 @@ export default class extends Controller {
   }
 
   showError(message) {
-    window.quepidDom?.flash?.show("error", message)
+    coreFlash.show("error", message)
   }
 }

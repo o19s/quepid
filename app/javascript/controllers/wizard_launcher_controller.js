@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 
 /**
- * Opens the core wizard modal. Case creation itself remains an Angular service seam until the
+ * Opens the core wizard modal. Case creation itself remains a live-query service seam until the
  * case workspace state migration is complete; the wizard UI and lifecycle are Stimulus-owned.
  */
 export default class extends Controller {

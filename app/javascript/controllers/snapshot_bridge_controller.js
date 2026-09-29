@@ -3,17 +3,18 @@ import { apiFetch } from "api/fetch"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { buildSnapshotPayload } from "utils/snapshot_payload"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
-import { getSnapshotCapabilities } from "utils/core_angular_adapter"
+import { getSnapshotCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import coreFlash from "utils/core_flash"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
  *
  * The comparison picker, snapshot registry/hydration, and renderer are
  * Stimulus/framework-free. The live Query model and snapshot scoring are
- * still Angular-owned, so this controller is the single, explicit boundary
- * between them while that larger migration is in progress.
+ * still owned by the live-query runtime, so this controller is the single,
+ * explicit boundary between them while that larger migration is in progress.
  */
 export default class extends Controller {
   connect() {
@@ -143,7 +144,7 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
       const snapshot = await response.json()
       await this.registerSnapshots([snapshot])
-      window.quepidDom?.flash?.show("success", "Snapshot created successfully.")
+      coreFlash.show("success", "Snapshot created successfully.")
       detail.done?.(null)
     } catch (error) {
       detail.done?.(error?.message || error)

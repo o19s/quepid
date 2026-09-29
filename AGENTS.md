@@ -24,7 +24,7 @@
 - After CSS or vendor JS changes make sure you rebuild:
     `docker compose exec app yarn build`              # full frontend build
     `docker compose exec app yarn build:css`          # core.css / application.css only
-    `docker compose exec app yarn build:angular-vendor`  # BS5 + splainer-search bundle
+    `docker compose exec app yarn build:core-vendor`     # BS5 + splainer-search bundle
 - In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 ### Shared agent skills
@@ -36,11 +36,9 @@
 
 ## Frontend
 
-- The core case app is built using AngularJS 1.8 but we are in the process of removing our AngularJS dependency.
-- In place of AngularJS we are using vanilla JS and StimulusJS along with various components of Hotwire, our goal is to have a modern Rails stack application.
+- The core case app uses Rails-rendered HTML, vanilla JS, StimulusJS, and Hotwire.
+- Keep behavior in Stimulus/controllers and shared runtime modules while Rails owns static page structure and URLs.
 - For Stimulus migrations, keep static page structure and copy in Rails ERB partials. JavaScript should own behavior, state, and genuinely dynamic repeated content only; do not put a mostly-static page or modal's HTML into `innerHTML` template strings. If a dynamic modal needs a shell, render the shell in ERB and populate its targets.
-- **Angular → Stimulus on core:** per-surface equivalence — core matches Angular; Rails pages keep their prior UX. **Do not collapse surfaces.** Playbook: `angular-case-migration` skill (`.agents/skills/angular-case-migration/SKILL.md`) — DoD is phases 5–6, not Vitest + a modal screenshot.
-- **Migration skill preflight is mandatory:** before changing `/case/:id` Angular/Stimulus code, read the complete `angular-case-migration/SKILL.md`, announce that it is in use, and record the affected phase checklist. Run the relevant Karma baseline before removing Angular specs; port migrated contracts to Vitest, then complete the required Playwright/manual-testing verification before calling the slice done.
 
 
 ## Backend
@@ -49,7 +47,7 @@
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
-- **Turbo on the Angular case page** (Frames/Streams only, Drive off; never put Angular elements inside a Turbo Frame) — see DEVELOPER_GUIDE.md's "Turbo on the Angular case page" section before adding Hotwire to `core`.
+- **Turbo on the core case page** (Frames/Streams only, Drive off; keep interactive regions out of Turbo Frames unless their lifecycle is explicitly supported) — see the Turbo guidance in DEVELOPER_GUIDE.md before adding Hotwire to `core`.
 
 
 ## JavaScript
@@ -61,7 +59,7 @@
 
 ### JavaScript
 
-- Run JavaScript unit tests via `docker compose exec app yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated) or `docker compose exec app yarn test` (Karma — legacy Angular).
+- Run JavaScript unit tests via `docker compose exec app yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated).
 - Lint modern JS via `docker compose exec app yarn lint:js` or `docker compose exec app rails test:eslint` (see `docs/js_tooling.md`).
 - **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
 
@@ -89,7 +87,6 @@
     - add a new numbered scenario (with `paths`) for new functionality,
     - delete/mark obsolete the scenario for removed functionality,
     - and revise steps/expected-results for changed behavior.
-    - Angular→Stimulus migrations follow the same rule — see `angular-case-migration` skill phases 5–6.
 
 
 ## Documentation
@@ -120,11 +117,11 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) but **ignores `*.test.js`** — follow the conventions above manually when you add specs.
     - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
     - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
-- **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy Angular habits (`var`, semicolons) on greenfield Stimulus/importmap code.
+- **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy habits (`var`, semicolons) on greenfield Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
 - Use `const` or `let`, not `var`.
 
-**Legacy Angular JS** (`app/assets/javascripts/`) — ESLint and Prettier run as advisory checks on staged files; their findings do not block commits while the Angular case app is being retired. Avoid reformatting it as part of modern JavaScript changes.
+**Legacy core JS** (`app/assets/javascripts/`) — ESLint and Prettier run as advisory checks on staged files. Avoid reformatting it as part of modern JavaScript changes.
 
 **Ruby** — `.rubocop.yml` (opposite comma rule from JS):
 
@@ -146,11 +143,11 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - We use .css, we do not use .scss.
 
 
-## Bootstrap 5 JavaScript on Angular `core` (BS5 CSS + patch sheets)
+## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)
 
-- The Angular case UI (`app/views/layouts/core.html.erb`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
-- **`app/javascript/angular_app.js`** pins BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals (`$quepidModal`), and similar.
-- The non-Angular UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use `app/assets/javascripts/directives/quepidPopover.js` and `quepidTooltip.js` as patterns and expect these traps:
+- The core case UI (`app/views/layouts/core.html.erb`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
+- **`app/javascript/core_vendor.js`** and the core Stimulus/runtime bundle provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
+- The rest of the UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
 - **Root `font-size` and rem-based BS5 defaults.** `bootstrap5-compat.css` comment blocks historically assumed **`html { font-size: 62.5% }`** (1rem = 10px); that rule is **not** set in-repo on `core` today (`core.html.erb` / `core-additions.css`).
     - If **computed** root `font-size` is not 16px, rem-based BS5 defaults may look wrong — override the relevant **`--bs-*`** vars with **px** in compat CSS when tuning widgets, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
 - **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
@@ -175,9 +172,9 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 ### Before/after pairs — do not break the working tree
 
 - Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
-- To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild Angular (`yarn build:angular-vendor`, `build:angular-app`, `build:angular-templates`), capture, then **restore + rebuild in the same session** before anything else.
-- **Never leave the repo on HEAD/pre-migration sources** after a before capture — verify migrated markup and bundles before finishing.
-- Use `test/playwright/dom_migration_screenshots.spec.ts` + `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
+- To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild the core bundle (`yarn build:core`), capture, then **restore + rebuild in the same session** before anything else.
+- **Never leave the repo on HEAD/old sources** after a before capture — verify the current markup and bundles before finishing.
+- Use the relevant Playwright screenshot spec and `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
 - No viewer tooling, inventory docs, or unrelated edits while the tree is mid-flip.
 
 ## Code reviews

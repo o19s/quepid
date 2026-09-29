@@ -4,13 +4,13 @@ repos:
   - repo: local
     hooks:
       - id: legacy-eslint-staged
-        name: eslint (legacy Angular, advisory)
+        name: eslint (advisory)
         entry: bin/legacy-eslint-staged
         language: script
         files: ^app/assets/javascripts/.*\.js$
         pass_filenames: true
       - id: legacy-prettier-staged
-        name: prettier (legacy Angular, advisory)
+        name: prettier (advisory)
         entry: bin/legacy-prettier-staged
         language: script
         files: ^app/assets/javascripts/.*\.js$

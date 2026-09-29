@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
 import { QueryDocumentsStore } from "stores/query_documents_store"
+import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
 
 describe("DiffCaseScoresController", () => {
   let element
@@ -9,11 +10,11 @@ describe("DiffCaseScoresController", () => {
   beforeEach(() => {
     element = document.createElement("div")
     store = new QueryDocumentsStore()
-    window.quepidStore = { documents: store }
+    setCoreStoresForTest({ documents: store })
   })
 
   afterEach(() => {
-    delete window.quepidStore
+    resetCoreStoresForTest()
   })
 
   it("renders case-level snapshot scores from the document store", () => {

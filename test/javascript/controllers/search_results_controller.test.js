@@ -154,9 +154,8 @@ describe("SearchResultsController", () => {
     expect(controller.contentTarget.classList.contains("d-none")).toBe(true)
   })
 
-  it("renders from store state without an Angular scope", () => {
+  it("renders from store state without a controller scope", () => {
     const { controller } = controllerFor()
-    expect(controller.angularScope).toBeUndefined()
     controller.render()
     expect(controller.resultsTarget.childElementCount).toBe(1)
   })

@@ -15,7 +15,7 @@ import { Controller } from "@hotwired/stimulus"
  *
  * Note what this deliberately does NOT do: copy the case name onto the toolbar's modal triggers.
  * Those read it live from the header via `utils/case_header`, so there are no duplicates to keep
- * in step and nothing to repair when Angular rebuilds the toolbar.
+ * in step and nothing to repair when the toolbar is rebuilt.
  */
 const HEADER_FRAME_ID = "case_header"
 const HEADER_META_SELECTOR = "[data-case-header-case-no]"
@@ -26,11 +26,11 @@ export default class extends Controller {
   static values = { headerUrl: String }
 
   connect() {
-    this.onAngularRename = this.handleAngularRename.bind(this)
+    this.onCaseRenamed = this.handleCaseRenamed.bind(this)
     this.onScorerSelected = this.handleScorerSelected.bind(this)
     this.onHeaderStale = this.handleHeaderStale.bind(this)
     this.onBootstrapReady = this.handleBootstrapReady.bind(this)
-    document.addEventListener("quepid:case-renamed", this.onAngularRename)
+    document.addEventListener("quepid:case-renamed", this.onCaseRenamed)
     document.addEventListener("pick-scorer:selected", this.onScorerSelected)
     document.addEventListener("quepid:case-header-stale", this.onHeaderStale)
     document.addEventListener("core-bootstrap:ready", this.onBootstrapReady)
@@ -38,7 +38,7 @@ export default class extends Controller {
   }
 
   disconnect() {
-    document.removeEventListener("quepid:case-renamed", this.onAngularRename)
+    document.removeEventListener("quepid:case-renamed", this.onCaseRenamed)
     document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
     document.removeEventListener("quepid:case-header-stale", this.onHeaderStale)
     document.removeEventListener("core-bootstrap:ready", this.onBootstrapReady)
@@ -66,9 +66,8 @@ export default class extends Controller {
 
   /**
    * The header renders the case's scorer name, so a scorer chosen in the pick-scorer modal has to
-   * reach it. Nothing else would: the modal saves over the API and bridges to Angular for the
-   * rescore, which used to be enough when the header was an Angular template reading the same
-   * model, but the header is server-rendered now.
+   * reach it. Nothing else would: the modal saves over the API and triggers a
+   * rescore, while the header is server-rendered now.
    */
   handleScorerSelected() {
     this.refetchHeader()
@@ -82,7 +81,7 @@ export default class extends Controller {
    * wizard E2E spec failed. The refetch then reconciles the rest of the header (try name, scorer,
    * badges), which the wizard can also have changed.
    */
-  handleAngularRename(event) {
+  handleCaseRenamed(event) {
     const caseName = event?.detail?.caseName
 
     if (caseName !== undefined) this.applyHeaderName(caseName)

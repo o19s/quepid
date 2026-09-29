@@ -1,10 +1,10 @@
 /*
- * Core (Angular) CSS manifest (used by build_css.sh).
+ * Core case CSS manifest (used by build_css.sh).
  * Former Sprockets directives converted to informational comments only.
  */
  
  /*
- * Angular core: Bootstrap 5 from npm plus Quepid sheets (see build_css.js buildCoreCSS()).
+ * Core case: Bootstrap 5 from npm plus Quepid sheets (see build_css.js buildCoreCSS()).
  *
  * Shared Bootstrap Icons
  * include bootstrap-icons/font/bootstrap-icons

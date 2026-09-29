@@ -6,11 +6,12 @@ import { errorMessage } from "utils/error_message"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { searchResultsTemplate } from "controllers/search_results_template"
+import coreFlash from "utils/core_flash"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. The collection
- * store owns the rendered query read model; Angular remains behind narrow
- * adapters for persistence, sorting capability, and query-template rendering.
+ * store owns the rendered query read model; the live-query runtime remains
+ * behind narrow adapters for persistence, sorting, and query-template rendering.
  */
 export default class extends Controller {
   static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize"]
@@ -188,7 +189,7 @@ export default class extends Controller {
     } catch (error) {
       console.error("queries-list: reorder failed", error)
       this.restoreDraggedOrder()
-      window.quepidDom?.flash?.show("error", "Unable to reorder queries.")
+      coreFlash.show("error", "Unable to reorder queries.")
     } finally {
       this.clearDraggingState()
     }
@@ -398,9 +399,7 @@ export default class extends Controller {
     const querqyTriggered = querqyRuleTriggered(query.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(expanded)
-    const sorting = Boolean(
-      this.queryCapabilities?.isSortingEnabled?.() ?? this.angularScope?.queries?.isSortingEnabled?.()
-    )
+    const sorting = Boolean(this.queryCapabilities?.isSortingEnabled?.())
 
     row.innerHTML = `
       <div
@@ -517,9 +516,8 @@ export default class extends Controller {
     if (queryId === undefined || queryId === null) return
 
     // Stimulus owns the persisted mutation and the stores own the rendered
-    // collection. Angular listens to the same document event separately and
-    // only drops its temporary live Query object; there is no need for the
-    // query list to call back into an Angular service.
+    // collection. The live-query runtime drops its temporary query object from
+    // the same document event; the query list only updates its read models.
     this.store?.remove?.(queryId)
     this.documentStore?.removeQuery?.(queryId)
     this.scheduleRender()
@@ -530,11 +528,11 @@ export default class extends Controller {
   // the collection store now reports every generation-tracked failure here.
   handleSearchFailed(event) {
     const message = errorMessage(event.detail?.error, "Search failed. Some queries may not have updated.")
-    window.quepidDom?.flash?.show?.("error", message, "search-error")
+      coreFlash.show("error", message, "search-error")
   }
 
   handleSearchSettled() {
-    window.quepidDom?.flash?.hide?.("search-error")
+      coreFlash.hide("search-error")
   }
 
   handleQueryMoveCompleted(event) {

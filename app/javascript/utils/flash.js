@@ -1,8 +1,7 @@
 /**
  * Dispatches `document`-level flash events for the core case UI's Stimulus
- * `flash` controller (see `controllers/flash_controller.js`). Legacy Angular
- * controllers call this via `window.quepidDom.flash` since they can't reach
- * a Stimulus controller's actions directly.
+ * `flash` controller (see `controllers/flash_controller.js`). Core controllers
+ * import the shared `quepidDom` module rather than reaching through `window`.
  */
 
 /**

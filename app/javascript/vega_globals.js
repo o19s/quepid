@@ -3,7 +3,7 @@
 // These three are pinned in config/importmap.rb to files vendored by the
 // `vega` gem (served through the Rails asset pipeline, not npm/node_modules)
 // so every page that needs Vega shares one copy instead of each esbuild
-// bundle (admin, analytics, the Angular core app) shipping its own.
+// bundle (admin, analytics, or the core case) shipping its own.
 //
 // They're plain UMD builds, not real ES modules — loading them via a bare
 // `import` still runs them (any script is valid as a no-export ES module),

@@ -6,19 +6,19 @@ Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed
 
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
-**Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Migration work lives in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-bugs--ux-address-during-migration).
+**Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Remaining frontend cleanup lives in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-ux-and-testing-work).
 
 ---
 
 ## Obviated by Angular removal (do not fix in Angular)
 
-These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-bugs--ux-address-during-migration).
+These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [`angularjs_removal_inventory.md`](./angularjs_removal_inventory.md#open-ux-and-testing-work).
 
 | Item | Why not patch Angular | Where it moves |
 |------|----------------------|----------------|
-| Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [inventory § try delete](./angularjs_removal_inventory.md#try-delete-bricks-case-on-reload) |
-| Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [inventory § a11y](./angularjs_removal_inventory.md#icon-only-controls-lack-accessible-names) |
-| Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [inventory § known bug](./angularjs_removal_inventory.md#known-bug-copy--explain-migration) |
+| Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work) |
+| Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [inventory § a11y](./angularjs_removal_inventory.md#icon-only-controls) |
+| Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work) |
 
 ---
 
@@ -32,7 +32,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 **Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null).
 
-**Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [inventory § try delete](./angularjs_removal_inventory.md#try-delete-bricks-case-on-reload).
+**Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [inventory § frontend cleanup](./angularjs_removal_inventory.md#open-ux-and-testing-work).
 
 ---
 

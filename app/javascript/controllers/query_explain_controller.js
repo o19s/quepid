@@ -11,7 +11,7 @@ const TABS = [
 
 /**
  * "Explain Query" modal on the per-query toolbar (was the `query_explain`
- * Angular component's `$quepidModal` + `QueryExplainModalInstanceCtrl`).
+ * former `$quepidModal` + `QueryExplainModalInstanceCtrl` component).
  *
  * Params/Parsing tabs are sync data computed by the query-list controller into
  * `data-query-explain-data-value` (same bridge pattern as match-explain).

@@ -13,7 +13,7 @@ describe("json_explorer", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ description: "weight(x)", value: 3.5, matched: true }))
 
-      const root = container.querySelector(".angular-json-explorer")
+      const root = container.querySelector(".json-explorer")
       expect(root).not.toBeNull()
       expect(root.querySelector(".prop").textContent).toContain("description")
       expect(root.querySelector(".string").textContent).toBe('"weight(x)"')

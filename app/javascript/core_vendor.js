@@ -30,14 +30,11 @@ window.ace = ace;
 import URI from 'urijs';
 window.URI = URI;
 
-// The framework-free case runtime is loaded by core.html.erb before this
-// legacy bundle and remains available on window for compatibility services.
-
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
 // setting `root.Shepherd`/`root.Tether`, so legacy code (app/assets/javascripts/tour.js)
 // referencing the bare `Shepherd` global needs it pinned to window explicitly
-// (matches the URI/quepidDom pattern above).
+// (matches the URI/core-DOM pattern above).
 import Tether from 'tether-shepherd/dist/js/tether';
 window.Tether = Tether;
 import Shepherd from 'tether-shepherd/dist/js/shepherd';

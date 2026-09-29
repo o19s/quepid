@@ -6,11 +6,10 @@ import {
   getWizardCapabilities,
   createNativeFramework,
   resetCoreServiceCache
-} from "utils/core_angular_adapter"
+} from "utils/core_capabilities_runtime"
 
 describe("core runtime capabilities", () => {
   afterEach(() => {
-    delete window.angular
     delete window.quepidSearch
     document.body.innerHTML = ""
     resetCoreServiceCache()
@@ -57,13 +56,11 @@ describe("core runtime capabilities", () => {
   })
 
   it("does not resolve the removed live-query service for controllers", async () => {
-    window.angular = { element: vi.fn(() => { throw new Error("Angular injector should not be used") }) }
-
     const capabilities = await getBootstrapCapabilities()
 
     expect(capabilities).toEqual(expect.objectContaining({
       core: expect.any(Object),
-      docCache: undefined,
+      docCache: expect.any(Object),
       liveQuery: expect.any(Object)
     }))
     expect(capabilities.core).toEqual(expect.objectContaining({
@@ -78,7 +75,6 @@ describe("core runtime capabilities", () => {
       framework: expect.any(Object),
       domain: expect.any(Object)
     })
-    expect(window.angular.element).not.toHaveBeenCalled()
   })
 
   it.each([

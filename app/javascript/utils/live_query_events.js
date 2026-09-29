@@ -11,6 +11,7 @@ export function createLiveQueryEventsRuntime({
   getCaseNo,
   getQuery,
   getQueries,
+  ratingChangedQueryId,
   invalidateRatedDocs,
   publishQuery,
   scoreAll,
@@ -26,7 +27,7 @@ export function createLiveQueryEventsRuntime({
   }
 
   function ratingChanged(event, legacyQueryId) {
-    const queryId = window.quepidSearch.queryState.ratingChangedQueryId(event, legacyQueryId)
+    const queryId = ratingChangedQueryId(event, legacyQueryId)
     const query = queryId !== undefined ? getQuery(queryId) : null
     if (query) {
       invalidateRatedDocs(query)

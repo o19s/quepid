@@ -6,7 +6,7 @@ import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
 /**
  * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row
  * (was the `stackedChart` directive/`HotMatchesCtrl`), the popover it opens
- * (was `matches/matches.html`, reached via the now-deleted Angular
+ * (was `matches/matches.html`, reached via the former
  * `quepidPopoverTemplate` directive) and the two modals reachable from that
  * popover (were the `debug-matches` and `expand-content` components).
  *

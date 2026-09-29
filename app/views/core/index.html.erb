@@ -1,22 +1,22 @@
 <%#
   Case page shell.
 
-  The layout that used to live in the Angular template `views/queriesLayout.html` is rendered here
+  The former `views/queriesLayout.html` case layout is rendered here
   instead. Rendering the shell from Rails lets the header and toolbar come straight from
   `@case`/`@try`.
 
-  What stays Angular, and why:
+  Runtime responsibilities that remain centralized, and why:
     * the score-history graph - Stimulus/Vega, backed by the case scores and annotations APIs.
     * the query list and search results island - rendered by `core/_queries`.
-    * the import action is Stimulus-owned; live query refresh remains bridged to Angular.
-    * the east pane  - the Tune Relevance drawer, Stimulus-owned with an Angular settings bridge.
+    * the import action is Stimulus-owned; live query refresh remains bridged to the live-query runtime.
+    * the east pane  - the Tune Relevance drawer, Stimulus-owned with a settings capability bridge.
 
   The primary case score badge (docs/todo/angularjs_removal_inventory.md § Re-render
-  mechanism, step 4) is Stimulus now, driven by window.quepidStore.scoring - see
+  mechanism, step 4) is Stimulus now, driven by the module-owned case score store - see
   app/javascript/controllers/qscore_case_controller.js.
 
-  The deferred live-result controls are compiled by Angular at bootstrap. The query-list shell
-  itself is Rails + Stimulus and no longer depends on an Angular controller scope.
+  The deferred live-result controls are initialized by the live-query runtime at bootstrap. The
+  query-list shell itself is Rails + Stimulus and owns its rendered read model.
 %>
 <div id="flash-messages">
   <div class="flash fade" data-controller="flash" data-flash-channel-value="main">

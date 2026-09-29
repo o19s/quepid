@@ -67,13 +67,13 @@ describe("CaseToolbarController", () => {
    * refetch: under load that round trip loses the race with whatever reads the header next, which
    * is exactly how the wizard E2E spec failed.
    */
-  describe("rename originating in Angular", () => {
+  describe("rename originating in the case runtime", () => {
     it("patches the rendered heading without waiting for the refetch", () => {
       const frame = buildFrame({ caseName: "Old Name" })
       controller.headerUrlValue = "/case/7/header"
       controller.hasHeaderUrlValue = true
 
-      CaseToolbarController.prototype.handleAngularRename.call(controller, {
+      CaseToolbarController.prototype.handleCaseRenamed.call(controller, {
         detail: { caseNo: 7, caseName: "Wizard Name" }
       })
 
@@ -88,7 +88,7 @@ describe("CaseToolbarController", () => {
       controller.headerUrlValue = "/case/7/header/try/2"
       controller.hasHeaderUrlValue = true
 
-      CaseToolbarController.prototype.handleAngularRename.call(controller, {
+      CaseToolbarController.prototype.handleCaseRenamed.call(controller, {
         detail: { caseNo: 7, caseName: "Wizard Name" }
       })
 
@@ -100,7 +100,7 @@ describe("CaseToolbarController", () => {
       controller.hasHeaderUrlValue = false
 
       expect(() =>
-        CaseToolbarController.prototype.handleAngularRename.call(controller, {
+        CaseToolbarController.prototype.handleCaseRenamed.call(controller, {
           detail: { caseNo: 7, caseName: "Wizard Name" }
         })
       ).not.toThrow()
@@ -184,7 +184,7 @@ describe("CaseToolbarController", () => {
     CaseToolbarController.prototype.connect.call(controller)
     CaseToolbarController.prototype.disconnect.call(controller)
 
-    expect(remove).toHaveBeenCalledWith("quepid:case-renamed", controller.onAngularRename)
+    expect(remove).toHaveBeenCalledWith("quepid:case-renamed", controller.onCaseRenamed)
     expect(remove).toHaveBeenCalledWith("pick-scorer:selected", controller.onScorerSelected)
   })
 })

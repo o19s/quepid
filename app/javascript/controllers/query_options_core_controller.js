@@ -2,9 +2,10 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { fromTextArea } from "modules/editor"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
+import coreFlash from "utils/core_flash"
 
 /**
- * Core per-query options editor. The live Query object remains Angular-owned,
+ * Core per-query options editor. The live Query object remains runtime-owned,
  * so the successful save is handed back through a document event for the
  * existing query/scoring adapter to consume.
  */
@@ -54,7 +55,7 @@ export default class extends ModalTriggerControllerBase {
     try {
       options = JSON.parse(value)
     } catch {
-      window.quepidDom?.flash?.show("error", "Please provide a valid JSON object.")
+      coreFlash.show("error", "Please provide a valid JSON object.")
       return
     }
 
@@ -71,11 +72,11 @@ export default class extends ModalTriggerControllerBase {
       document.dispatchEvent(new CustomEvent("query-options:saved", {
         detail: { queryId: this.queryId, options }
       }))
-      window.quepidDom?.flash?.show("success", "Query options saved successfully.")
+      coreFlash.show("success", "Query options saved successfully.")
       getOrCreateBsModal(document.getElementById(this.modalElementId))?.hide()
     } catch (error) {
       console.error("query-options-core: save failed", error)
-      window.quepidDom?.flash?.show("error", "Unable to save query options.")
+      coreFlash.show("error", "Unable to save query options.")
       if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
     }
   }

@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 import { errorMessage } from "utils/error_message"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import coreFlash from "utils/core_flash"
 
 /**
  * Owns query lifecycle orchestration while the search/scoring implementation
- * remains in the temporary Angular service adapter.
+ * remains in the temporary live-query service adapter.
  */
 export default class extends Controller {
   static values = { caseId: Number }
@@ -22,7 +23,7 @@ export default class extends Controller {
     if (queryTexts.length === 0) return
     const lifecycle = getCoreCapabilities().queryLifecycle
     if (!lifecycle?.prepareQueries || !lifecycle?.commitQueries) {
-      window.quepidDom?.flash?.show("error", "Unable to add queries.")
+      coreFlash.show("error", "Unable to add queries.")
       this.complete(false)
       return
     }
@@ -35,7 +36,7 @@ export default class extends Controller {
         : await lifecycle.persistQueries(caseId, queryTexts)
       const result = await lifecycle.commitQueries(prepared, persisted)
       if (result.searchError) {
-        window.quepidDom.flash.show("error", queryTexts.length === 1
+        coreFlash.show("error", queryTexts.length === 1
           ? "Your new query had an error!"
           : "One (or many) of your new queries had an error!")
         // A single query's error comes from searchAndScore(), which never
@@ -48,17 +49,17 @@ export default class extends Controller {
           // Unlike the generic fallbacks below, preserve the raw rejection text
           // here rather than a fixed message — this channel is meant to show
           // search-engine detail, not just "something went wrong."
-          window.quepidDom.flash.show("error", errorMessage(result.searchError, String(result.searchError)), "search-error")
+        coreFlash.show("error", errorMessage(result.searchError, String(result.searchError)), "search-error")
         }
       } else {
-        window.quepidDom.flash.show("success", queryTexts.length === 1
+        coreFlash.show("success", queryTexts.length === 1
           ? "Query added successfully."
           : "Queries added successfully.")
       }
       this.complete(true)
     } catch (error) {
       const fallback = queryTexts.length === 1 ? "Unable to add query." : "Unable to add queries."
-      window.quepidDom.flash.show("error", errorMessage(error, fallback))
+      coreFlash.show("error", errorMessage(error, fallback))
       this.complete(false)
     }
   }

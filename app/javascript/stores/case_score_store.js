@@ -6,7 +6,7 @@ import { averageMaxScore } from "utils/scoring"
  * docs/todo/angularjs_removal_inventory.md § Re-render mechanism, step 3).
  *
  * Angular's digest still owns all rendering. `queriesSvc.scoreAll()` writes into
- * this store as a pure side effect (`window.quepidStore.scoring.setLatestScoreInfo`)
+ * this store through its module-owned singleton.
  * so the store's output can be compared against what Angular actually paints before
  * any Stimulus controller reads from it, and before `$scope` is touched. Nothing in
  * the DOM is driven by this store yet — dual-run only.

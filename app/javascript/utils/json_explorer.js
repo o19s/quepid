@@ -97,6 +97,6 @@ export function renderJsonExplorer(container, jsonString, { collapsed = false } 
 
   const html = isArray ? `[<ul class="array">${inner}</ul>]` : `{<ul class="object">${inner}</ul>}`
 
-  container.innerHTML = `<div class="angular-json-explorer">${html}</div>`
+  container.innerHTML = `<div class="json-explorer">${html}</div>`
   wireCollapsers(container)
 }

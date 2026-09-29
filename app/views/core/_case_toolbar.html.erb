@@ -1,18 +1,18 @@
 <%#
-  Server-rendered case-action toolbar for the Angular core case page.
+  Server-rendered case-action toolbar for the core case page.
 
-  Each link's `data-*` attributes used to be Angular interpolations of case and try models.
+  Each link's `data-*` attributes are server-rendered from case and try models.
   Every one of those values is Rails model data that CoreController already has, so they are
   rendered from `kase`/`a_try` directly.
 
   This is deliberately NOT inside the `case_header` Turbo Frame: the case toolbar contains
-  live-query bridges, and Angular only compiles the page once at bootstrap.
+  live-query bridges, and Stimulus initializes the page once at bootstrap.
 
   The case *name* is deliberately absent from these triggers. Each modal reads it live from the
   header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
   here - which also means an `ng-if` rebuild of this toolbar cannot reinstate a stale name.
 
-  Live query services remain behind the explicit core bootstrap adapter.
+  Live query services remain behind the explicit core bootstrap boundary.
 %>
 <%#
   `case-toolbar` is mounted out here rather than on the gated div below, so it is never torn
@@ -28,14 +28,14 @@
   data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
 >
   <%#
-    The `ng-if` is not leftover Angular data binding - the attributes below are all server
+    The visibility gate is not client data binding - the attributes below are all server
     rendered. It gates *visibility* only, and it has to stay until <diff> and the remaining
     the snapshot/diff/export flows stop depending on live queriesSvc state.
 
-    Without it the toolbar is clickable from the first paint, roughly 1.5s before Angular has
+    Without it the toolbar is clickable from the first paint, roughly 1.5s before the case runtime has
     bootstrapped the case. "Create snapshot" clicked in that window posts with no query state
     and hangs on "Snapshot Being Created" forever. Angular hid the whole toolbar until the case
-    loaded, so this also keeps the surface equivalent to what it shipped.
+    loaded, so this also keeps the surface behavior stable.
   %>
   <div class="col-sm-12" data-case-toolbar-target="actions" hidden>
     <ul class="list-inline">

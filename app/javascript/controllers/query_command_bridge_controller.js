@@ -4,10 +4,10 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Routes query-workspace intents from the framework-free stores to the
- * explicit query-command runtime. The runtime still delegates to Angular-owned
+ * explicit query-command runtime. The runtime still delegates to live-query-owned
  * Query objects today; keeping that compatibility boundary here means the
  * stores and Stimulus controllers do not need to know when the implementation
- * moves out of Angular.
+ * moves into the framework-free runtime.
  */
 export default class extends Controller {
   connect() {

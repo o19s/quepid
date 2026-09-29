@@ -1,8 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
-import { getBootstrapCapabilities } from "utils/core_angular_adapter"
+import { getBootstrapCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
+import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
   static values = {
@@ -20,14 +21,14 @@ export default class extends Controller {
 
   async bootstrap() {
     try {
-      this.capabilities = await getBootstrapCapabilities()
       const stores = getCoreStores()
-      const legacy = getCoreCapabilities()
+      const runtime = getCoreCapabilities()
+      this.capabilities = await getBootstrapCapabilities()
 
-      if (this.capabilities.liveQuery && legacy.splainerSearch?.searchSvc) {
+      if (this.capabilities.liveQuery && runtime.splainerSearch?.searchSvc) {
         initializeLiveQueryRuntime({
           ...this.capabilities.liveQuery,
-          search: legacy,
+          search: runtime,
           store: stores
         })
       }
@@ -53,16 +54,16 @@ export default class extends Controller {
       }
       const searchEngineChanged = () => getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
 
-      if (caseChanged()) legacy.queryCapabilities.resetQueryState()
+      if (caseChanged()) runtime.queryCapabilities.resetQueryState()
 
       navigation.complete({ caseNo, tryNo })
 
       if (caseNo === 0) {
-        window.quepidDom?.flash?.show("error", "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started.")
+        coreFlash.show("error", "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started.")
         return this.fail(new Error("No case selected"))
       }
 
-      legacy.queryCapabilities.resetSearchPromise()
+      runtime.queryCapabilities.resetSearchPromise()
       await caseCapability.load(caseNo).then(async acase => {
         if (acase === undefined) throw new Error(`Could not retrieve case ${caseNo}. Confirm that the case has been shared with you via a team you are a member of!`)
 
@@ -90,17 +91,17 @@ export default class extends Controller {
         }
 
         await docCache.update(newSettings)
-        await legacy.queryCapabilities.changeSettings(caseNo, newSettings)
-        window.quepidDom?.flash?.hide()
-        window.quepidDom?.flash?.hide("search-error")
+      await runtime.queryCapabilities.changeSettings(caseNo, newSettings)
+        coreFlash.hide()
+        coreFlash.hide("search-error")
         caseCapability.trackLastViewedAt(caseNo)
         this.ready({ caseNo, tryNo })
 
-        legacy.queryCommands.searchAll().then(
-          () => window.quepidDom?.flash?.show("success", "All queries finished successfully!"),
+        runtime.queryCommands.searchAll().then(
+          () => coreFlash.show("success", "All queries finished successfully!"),
           error => {
-            window.quepidDom?.flash?.show("error", "Some queries failed to resolve!")
-            window.quepidDom?.flash?.show("error", error, "search-error")
+            coreFlash.show("error", "Some queries failed to resolve!")
+            coreFlash.show("error", error, "search-error")
           }
         )
       })
@@ -113,13 +114,13 @@ export default class extends Controller {
   handleBootstrapError(error) {
     const message = error?.message || String(error)
     if (message.startsWith("Blocked Request")) {
-      window.quepidDom?.flash?.show("error", message, "search-error", { html: true })
+        coreFlash.show("error", message, "search-error", { html: true })
     } else if (message.startsWith("Could not retrieve case")) {
-      window.quepidDom?.flash?.show("error", message, "search-error")
+        coreFlash.show("error", message, "search-error")
     } else if (message.startsWith("try number")) {
-      window.quepidDom?.flash?.show("error", `Could not load case ${this.caseNoValue} due to ${message}`, "search-error")
+        coreFlash.show("error", `Could not load case ${this.caseNoValue} due to ${message}`, "search-error")
     } else if (message !== "No case selected") {
-      window.quepidDom?.flash?.show("error", `Could not load the case ${this.caseNoValue} due to: ${message}`, "search-error")
+        coreFlash.show("error", `Could not load the case ${this.caseNoValue} due to: ${message}`, "search-error")
     }
   }
 

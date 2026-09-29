@@ -5,8 +5,8 @@ import { getCoreStores } from "utils/core_store_access"
 /**
  * Renders the case-level snapshot comparison scores.
  *
- * Angular still calculates these scores while live query scoring is being
- * migrated, but the header no longer depends on the Angular qscore-case
+ * The live-query runtime still calculates these scores while scoring is being
+ * migrated, but the header no longer depends on the old qscore-case
  * component or its scope bindings.
  */
 export default class extends Controller {

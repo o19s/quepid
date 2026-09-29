@@ -46,13 +46,17 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
     selected: () => selectedCase,
     select: (value) => {
       selectedCase = value
-      if (value && window.quepidSearch) {
-        window.quepidSearch.caseState = {
-          caseNo: value.caseNo,
-          caseName: value.caseName || "",
-          bookId: value.bookId || null,
-          bookName: value.bookName || null
-        }
+      if (value) {
+        document.dispatchEvent(
+          new CustomEvent("quepid:case-selected", {
+            detail: {
+              caseNo: value.caseNo,
+              caseName: value.caseName || "",
+              bookId: value.bookId || null,
+              bookName: value.bookName || null
+            }
+          })
+        )
       }
       return selectedCase
     },

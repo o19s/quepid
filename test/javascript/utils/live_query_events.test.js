@@ -1,16 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryEventsRuntime } from "utils/live_query_events"
 
 describe("live query events runtime", () => {
-  beforeEach(() => {
-    window.quepidSearch = {
-      queryState: {
-        ratingChangedQueryId: vi.fn().mockReturnValue(1),
-        invalidateRatedDocsCache: vi.fn()
-      }
-    }
-  })
-
   function setup() {
     const eventTarget = new EventTarget()
     const scoringStore = new EventTarget()
@@ -28,6 +19,7 @@ describe("live query events runtime", () => {
       getCaseNo: vi.fn().mockReturnValue(7),
       getQuery,
       getQueries: () => ({ 1: query }),
+      ratingChangedQueryId: vi.fn().mockReturnValue(1),
       invalidateRatedDocs,
       publishQuery: vi.fn(),
       scoreAll,

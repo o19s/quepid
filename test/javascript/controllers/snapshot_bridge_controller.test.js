@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
-import { resetCoreServiceCache } from "utils/core_angular_adapter"
+import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
 
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
@@ -21,7 +21,6 @@ vi.mock("utils/snapshot_hydration", () => snapshotHydration)
 
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
-  window.angular = { element: () => ({ injector: () => ({ get: (name) => services[name] }) }) }
   return controller
 }
 
@@ -74,7 +73,6 @@ describe("SnapshotBridgeController", () => {
   afterEach(() => {
     delete window.quepidStore
     delete window.quepidSearch
-    delete window.angular
     resetCoreServiceCache()
     vi.restoreAllMocks()
   })

@@ -1,10 +1,12 @@
 /**
- * Slim Stimulus entry for the Angular core case layout (`core.html.erb`).
+ * Slim Stimulus entry for the core case layout (`core.html.erb`).
+ * This entry is bundled as `core_case.js` by esbuild; it is intentionally
+ * separate from the importmap entry used by Rails pages.
  *
  * Registers only the controllers `core.html.erb` actually renders, instead of
  * `controllers/index.js`'s `eagerLoadControllersFrom` (which would import every
  * pinned controller, Rails-only ones like `confetti_controller.js` included) on
- * this already-heavy Angular surface.
+ * this already-heavy case surface.
  *
  * Turbo is loaded here for Turbo Frames only - the server-rendered case header
  * re-renders its frame on rename. Drive is switched off, as it is for the rest of
@@ -13,6 +15,7 @@
  * regardless.
  */
 import "@hotwired/turbo-rails"
+import "core_runtime"
 import { application } from "controllers/application"
 import CaseRenameController from "controllers/case_rename_controller"
 import CaseToolbarController from "controllers/case_toolbar_controller"

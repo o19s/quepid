@@ -1113,7 +1113,7 @@ A dedicated full-page interface for rapid document judging, separate from the st
 
 **Canonical endpoint list:** OpenAPI at `/api/docs` (auto-generated via `oas_rails`). Route source: `config/routes.rb` (`namespace :api`).
 
-**Client patterns:** [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions) (new Stimulus code); legacy Angular `$http` — [`todo/angularjs_removal_inventory.md` § Angular core HTTP](./todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy).
+**Client patterns:** [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions) for current client code.
 
 **HTML (non-API) routes:** [`complete_application_specification.md` §20.5](../complete_application_specification.md#205-html-rails-routes-non-api).
 

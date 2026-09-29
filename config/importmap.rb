@@ -3,12 +3,13 @@
 # Pin npm packages by running ./bin/importmap
 
 pin 'application_modern'
-# Stimulus-only entry for the Angular core case layout (no Turbo).
-pin 'core_stimulus'
-pin '@hotwired/turbo-rails', to: 'turbo.min.js'
-pin '@hotwired/stimulus', to: 'stimulus.min.js'
-pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
+pin 'quepid_dom', to: 'quepid_dom.js'
+pin 'quepid_search', to: 'quepid_search.js'
+pin 'quepid_store', to: 'quepid_store.js'
+pin 'core_runtime', to: 'core_runtime.js'
 pin_all_from 'app/javascript/controllers', under: 'controllers'
+pin_all_from 'app/javascript/utils', under: 'utils'
+pin_all_from 'app/javascript/stores', under: 'stores'
 pin 'api/fetch', to: 'api/fetch.js'
 pin 'utils/user_runtime', to: 'utils/user_runtime.js'
 pin 'utils/search_endpoint_runtime', to: 'utils/search_endpoint_runtime.js'
@@ -44,7 +45,6 @@ pin 'utils/error_message', to: 'utils/error_message.js'
 pin 'utils/search_engine_name', to: 'utils/search_engine_name.js'
 pin 'utils/scoring', to: 'utils/scoring.js'
 pin 'utils/scorer_catalog', to: 'utils/scorer_catalog.js'
-pin 'utils/splainer_search_runtime', to: 'utils/splainer_search_runtime.js'
 pin 'utils/scorer_runtime', to: 'utils/scorer_runtime.js'
 pin 'utils/query_state', to: 'utils/query_state.js'
 pin 'utils/query_lifecycle', to: 'utils/query_lifecycle.js'
@@ -56,7 +56,7 @@ pin 'utils/live_query_diff', to: 'utils/live_query_diff.js'
 pin 'utils/live_query_state', to: 'utils/live_query_state.js'
 pin 'utils/qgraph', to: 'utils/qgraph.js'
 pin 'utils/tune_relevance', to: 'utils/tune_relevance.js'
-pin 'utils/core_angular_adapter', to: 'utils/core_angular_adapter.js'
+pin 'utils/core_capabilities_runtime', to: 'utils/core_capabilities_runtime.js'
 pin 'utils/core_store_access', to: 'utils/core_store_access.js'
 pin 'utils/core_capability_access', to: 'utils/core_capability_access.js'
 pin 'utils/live_query_runtime_initializer', to: 'utils/live_query_runtime_initializer.js'
@@ -76,7 +76,7 @@ pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
 # Shared entry point that loads the three above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (analytics, the Angular core app) can load just this.
+# application_modern.js (analytics and Rails pages) can load just this.
 pin 'vega_globals'
 
 pin 'ahoy', to: 'ahoy.js'
@@ -88,7 +88,7 @@ pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.8
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 # Shared entry point that loads the two above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (the Angular core app) can load just this.
+# application_modern.js (the core case bundle) can load just this.
 pin 'bootstrap_globals'
 
 # CodeMirror 6 packages

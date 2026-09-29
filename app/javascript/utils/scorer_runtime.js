@@ -21,7 +21,10 @@ const promiseApiFor = (promiseApi = Promise) => ({
   }
 })
 
-export function createScorer(data = {}, { promiseApi = Promise, schedule } = {}) {
+export function createScorer(
+  data = {},
+  { promiseApi = Promise, schedule, refreshRatedDocs = () => undefined } = {}
+) {
   const promises = promiseApiFor(promiseApi)
   const scorer = {}
   const source = { ...data }
@@ -204,8 +207,7 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
       for (let index = 0; index < count; index += 1)
         if (ratedDocExistsAt(index)) callback(ratedDocAt(index), index)
     }
-    const refreshRatedDocs = (count) =>
-      window.quepidSearch.queryCapabilities.refreshRatedDocs(query.queryId, count)
+    const refreshQueryRatedDocs = (count) => refreshRatedDocs(query.queryId, count)
     const eachDocWithRatingEqualTo = (rating, callback) =>
       bestDocs.forEach((doc) => {
         if (doc.rating === rating) callback(doc)
@@ -282,7 +284,7 @@ export function createScorer(data = {}, { promiseApi = Promise, schedule } = {})
       editDistanceFromBest,
       eachDoc,
       eachRatedDoc,
-      refreshRatedDocs,
+      refreshQueryRatedDocs,
       eachDocWithRatingEqualTo,
       eachDocWithRating,
       topRatings,

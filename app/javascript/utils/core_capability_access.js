@@ -1,8 +1,9 @@
-// The remaining legacy case runtime is published on window until its final
-// consumers move into the framework-free case entry bundle. Keep that
-// compatibility lookup in one boundary so modern controllers do not become
-// service locators again.
+import { quepidSearch } from "core_runtime"
+import { getCoreCapabilitiesOverride } from "utils/core_test_overrides"
+
+// The core entry owns one module instance for the whole case workspace. Keep
+// this accessor as a named capability boundary so controllers do not become
+// coupled to the runtime's internal object shape.
 export function getCoreCapabilities() {
-  if (typeof window === "undefined") return {}
-  return window.quepidSearch || {}
+  return getCoreCapabilitiesOverride() || quepidSearch
 }

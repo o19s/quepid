@@ -50,14 +50,14 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       errorMsg: () => error
     }
   }
-  const angularCopy = (value) => {
+  const copySettings = (value) => {
     if (value === null || typeof value !== "object") return value
-    if (Array.isArray(value)) return value.map(angularCopy)
+    if (Array.isArray(value)) return value.map(copySettings)
     return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, angularCopy(entry)])
+      Object.entries(value).map(([key, entry]) => [key, copySettings(entry)])
     )
   }
-  const angularForEach = (items, callback) => Object.values(items || {}).forEach(callback)
+  const forEachValue = (items, callback) => Object.values(items || {}).forEach(callback)
   const isFunction = (value) => typeof value === "function"
   const svc = {
     error: false,
@@ -197,7 +197,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
             return currSettings
           },
           copy: function (settings) {
-            return angularCopy(settings)
+            return copySettings(settings)
           }
         },
         searchers: {
@@ -478,6 +478,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     getQueries: function () {
       return getLiveQueries()
     },
+    ratingChangedQueryId: search.queryState.ratingChangedQueryId,
     invalidateRatedDocs: function (query) {
       search.queryState.invalidateRatedDocsCache(query)
     },
@@ -925,7 +926,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     }
 
     if (svc.showOnlyRated) {
-      angularForEach(getLiveQueries(), function (query) {
+      forEachValue(getLiveQueries(), function (query) {
         if (!query.ratingsReady) {
           search.queryCapabilities.refreshRatedDocs(query.queryId)
         }

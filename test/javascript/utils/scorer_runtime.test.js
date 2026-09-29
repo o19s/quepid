@@ -62,4 +62,17 @@ describe("scorer runtime", () => {
     scorer.code = "for (const item of docs) { setScore(item) }"
     await expect(scorer.checkCode()).rejects.toContain("Loops are currently not supported")
   })
+
+  it("delegates rated-document refresh through the injected capability", async () => {
+    const refreshRatedDocs = vi.fn().mockResolvedValue(undefined)
+    const scorer = createScorer({
+      scale: [0, 1],
+      code: "refreshRatedDocs(25); setScore(1)"
+    }, { refreshRatedDocs })
+    const query = { queryId: 7, ratedDocs: [] }
+
+    await scorer.score(query, 1, [], [])
+
+    expect(refreshRatedDocs).toHaveBeenCalledWith(7, 25)
+  })
 })

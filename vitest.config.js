@@ -17,6 +17,7 @@ export default defineConfig({
     environment: "happy-dom",
     include: ["test/javascript/**/*.test.js"],
     globals: false,
+    setupFiles: ["test/javascript/setup.js"],
   },
   resolve: {
     alias: [
@@ -62,9 +63,14 @@ export default defineConfig({
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },
       { find: "utils/qgraph", replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js") },
       { find: "utils/tune_relevance", replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js") },
-      { find: "utils/core_angular_adapter", replacement: path.resolve(repoRoot, "app/javascript/utils/core_angular_adapter.js") },
+      { find: "utils/core_capabilities_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capabilities_runtime.js") },
       { find: "utils/core_store_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js") },
       { find: "utils/core_capability_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js") },
+      { find: "utils/core_flash", replacement: path.resolve(repoRoot, "app/javascript/utils/core_flash.js") },
+      { find: "utils/core_test_overrides", replacement: path.resolve(repoRoot, "app/javascript/utils/core_test_overrides.js") },
+      { find: "core_runtime", replacement: path.resolve(repoRoot, "app/javascript/core_runtime.js") },
+      { find: "quepid_dom", replacement: path.resolve(repoRoot, "app/javascript/quepid_dom.js") },
+      { find: "quepid_store", replacement: path.resolve(repoRoot, "app/javascript/quepid_store.js") },
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },

@@ -1,6 +1,6 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
- * in selectors. All Bootstrap-class overrides for the Angular core bundle —
+ * in selectors. All Bootstrap-class overrides for the core case bundle —
  * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
  * sub-results toolbars, `#dev-settings` tabs, modals, annotations, dropdown
  * shims, etc. — live in bootstrap5-compat.css.

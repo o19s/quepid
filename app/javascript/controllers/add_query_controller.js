@@ -4,7 +4,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Stimulus shell for the core add-query control.
- * Query creation/search remains behind the Angular queries service seam while
+ * Query creation/search remains behind the live-query service seam while
  * the live query state is migrated.
  */
 export default class extends Controller {

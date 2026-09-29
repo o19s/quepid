@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dead-rule audit for the Angular `core.css` stylesheet bundle.
+// Dead-rule audit for the `core.css` stylesheet bundle.
 //
 // Scans every source file that `buildCoreCSS()` in build_css.js
 // concatenates into core.css, and asks PurgeCSS which selectors are
@@ -74,7 +74,7 @@ const NOISY_SOURCES = new Set(['node_modules/bootstrap/dist/css/bootstrap.css'])
 
 // Where templates, scripts, and helpers live. PurgeCSS extracts any
 // token that *could* be a class name from these, so anything appearing
-// as a string literal (in ERB, Angular HTML, JS, or Ruby) is detected.
+// as a string literal (in ERB, JS, or Ruby) is detected.
 const CONTENT = [
   'app/views/**/*.erb',
   'app/views/**/*.html',
@@ -88,39 +88,30 @@ const CONTENT = [
 ];
 
 // Safelist: classes that are real but never appear as literals in the
-// content globs (runtime-added by Angular, Bootstrap JS, jQuery UI,
-// Tether-Shepherd, etc.).
+// content globs (runtime-added by Bootstrap JS, Tether-Shepherd,
+// and other browser libraries).
 const SAFELIST = {
   standard: [
-    // JS-added state classes (BS5 + Quepid). `in`/`open` are legacy BS3
-    // holdovers still emitted by older directives; safe to drop only after
-    // grep confirms no callers.
-    'in', 'fade', 'show', 'open', 'active', 'disabled', 'loading',
+    // JS-added state classes (BS5 + Quepid).
+    'fade', 'show', 'active', 'disabled',
     'collapse', 'collapsing', 'collapsed',
     // Modal sizes from `'modal-' + opts.size` in JS
-    'modal-sm', 'modal-lg', 'modal-xl', 'modal-fullscreen',
+    'modal-sm', 'modal-lg', 'modal-xl',
     // Alert variants emitted by app/helpers (bootstrap_class_for)
     'alert-success', 'alert-info', 'alert-warning', 'alert-danger',
-    'alert-primary', 'alert-secondary',
+    'alert-primary',
     // Common runtime-toggled utility
     'hidden',
   ],
   // Whole namespaces added at runtime by libraries — never appear as
   // literals in templates but the CSS rules supporting them are live.
   greedy: [
-    /^ng-/,             // Angular directive states
-    /^ui-/,             // jQuery UI
     /^shepherd-/,       // tether-shepherd tour
     /^tooltip/,         // BS3/BS5 tooltip variants
     /^popover/,         // BS3/BS5 popover variants
     /^bs-tooltip-/,
     /^bs-popover-/,
-    /^tour-/,
-    /^wizard/,          // angular-wizard
-    /^tags-/, /^ti-/,   // ng-tags-input
-    /^autocomplete/,    // autocompleter library
     /^ace_/,            // Ace editor
-    /^d3-tip/,          // d3-tip
     /^vega-/,           // Vega embed
     /^json-/,           // json_explorer (historical .angular-json-explorer classes)
   ],

@@ -12,13 +12,13 @@
       <div class="collapse navbar-collapse" id="coreNavbarContent">
       <ul class="navbar-nav me-auto">
         <!--
-          Begin case selector. Server-rendered (was Angular HeaderCtrl). Same interaction model
+          Begin case selector. Server-rendered (formerly HeaderCtrl). Same interaction model
           (lazy-loaded Turbo Frame list, full-page link) as the Rails-page navbar's `dropdown/cases`
           frame (`_header.html.erb`), but with `dropdown#cases_core`/`cases_core.html.erb` as the
           core-specific twin: same list, links do a hard navigation (`turbo: false`) instead of a
-          Turbo AJAX visit, since AJAX-swapping this page's body would leave Angular running against
+          Turbo AJAX visit, since AJAX-swapping this page's body would leave core controllers against
           the old case - see config/routes.rb. The "(N active)" count and "Create a book"'s
-          case-derived query params are core-only additions that Angular showed but the Rails-page
+          case-derived query params are core-only additions that the case page showed but the Rails-page
           navbar doesn't - see docs/todo/angularjs_removal_inventory.md.
         -->
         <li class="nav-item dropdown">

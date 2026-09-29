@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import QscoreQueryController from "controllers/qscore_query_controller"
 import { CaseScoreStore } from "stores/case_score_store"
+import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
 
 /**
  * First store-subscriber Stimulus controller (docs/todo/angularjs_removal_inventory.md
@@ -31,12 +32,12 @@ describe("QscoreQueryController", () => {
     document.body.appendChild(element)
 
     store = new CaseScoreStore()
-    window.quepidStore = { scoring: store }
+    setCoreStoresForTest({ scoring: store })
   })
 
   afterEach(() => {
     element.remove()
-    delete window.quepidStore
+    resetCoreStoresForTest()
   })
 
   it("renders '?' with the unscored color before the store has any data", () => {

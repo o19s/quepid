@@ -1,14 +1,13 @@
 <%#
-  Server-rendered case header for the Angular core case page.
+  Server-rendered case header for the core case page.
 
   Everything here is Rails model data that CoreController already loads, so it is rendered
-  from `kase`/`a_try` rather than interpolated out of Angular models.
+  from `kase`/`a_try` rather than interpolated out of client-side models.
   The rename forms post to Core::CaseHeaderController and re-render this frame in place,
-  which is what replaces Angular's digest on this surface.
+  which keeps this server-owned surface synchronized.
 
-  Keep this frame free of Angular elements: a frame re-render replaces its DOM, and Angular
-  only compiles the page once at bootstrap, so anything Angular-owned inside would lose its
-  bindings after the first rename. The live score badges therefore stay outside the frame,
+  Keep this frame free of client-owned widgets: a frame re-render replaces its DOM, so anything
+  stateful inside must be reinitialized by its controller. The live score badges therefore stay outside the frame,
   in core/index.html.erb.
 
   CONTRACT - anything rendered in here goes stale unless something tells the frame to refetch.
@@ -24,7 +23,7 @@
   <%#
     The identity attributes below are read by the `case-toolbar` Stimulus controller when this
     frame re-renders, so it can refresh the toolbar's modal trigger attributes and tell the
-    Angular services about a rename they no longer perform themselves.
+    client-side services about a rename they no longer perform themselves.
   %>
   <div
     class="case-header-meta"

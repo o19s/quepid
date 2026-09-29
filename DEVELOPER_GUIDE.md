@@ -30,7 +30,6 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
-		- [Karma](#karma)
 		- [Playwright E2E](#playwright-e2e)
 		- [Rubocop](#rubocop)
 		- [All Tests](#all-tests)
@@ -58,7 +57,6 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [Updating RubyGems](#updating-rubygems)
 	- [How does the Frontend work?](#how-does-the-frontend-work)
 		- [Stimulus HTTP conventions](#stimulus-http-conventions)
-		- [AngularJS code comments](#angularjs-code-comments)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
 	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
@@ -74,10 +72,8 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Migration Errors](#migration-errors)
 	- [Frontend Issues](#frontend-issues)
 		- [Asset Compilation Errors](#asset-compilation-errors)
-		- [Angular App Not Loading](#angular-app-not-loading)
 	- [Testing Issues](#testing-issues)
 		- [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-		- [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
 	- [Seed Data](#seed-data)
 
@@ -138,7 +134,7 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + Karma + linters)
+* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + linters)
 * Run back end unit tests: `bin/docker r rails test`
 
 ### Local Setup
@@ -199,7 +195,7 @@ Run the test suite:
 ```bash
 bin/rails test                # Run backend tests
 bin/rails test:vitest         # Vitest (test/javascript/)
-bin/rails test:frontend       # Vitest + Karma + linters
+bin/rails test:frontend       # Vitest + linters
 bundle exec rubocop           # Run Ruby linter
 ```
 
@@ -295,7 +291,7 @@ bin/docker r rails test:vitest       # same as yarn test:unit
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), advisory ESLint and Prettier on staged legacy Angular assets, blocking ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. Legacy findings are printed but do not block commits. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), advisory ESLint and Prettier on staged legacy assets, blocking ESLint on the modern `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` only — via a version-controlled hook in `.githooks/pre-commit`. Legacy findings are printed but do not block commits. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
 
@@ -323,15 +319,15 @@ bin/prettier-staged path/to/app/javascript/file.js
 
 ### JS Lint
 
-Legacy Angular assets under `app/assets/javascripts/` are checked with ESLint and Prettier when staged, but their findings are advisory and do not block commits while the Angular case app is being retired.
+Legacy assets under `app/assets/javascripts/` are checked with ESLint and Prettier when staged, but their findings are advisory and do not block commits while the remaining legacy runtime is being retired.
 
 **Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn lint:js:legacy      # advisory — full legacy Angular tree
+bin/docker r yarn lint:js:legacy      # advisory — full legacy tree
 bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
-bin/docker r yarn format:js:legacy:check # advisory — full legacy Angular tree
+bin/docker r yarn format:js:legacy:check # advisory — full legacy tree
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
@@ -342,7 +338,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook checks staged legacy Angular files with advisory ESLint and Prettier, then lints scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook checks staged legacy files with advisory ESLint and Prettier, then lints scoped files under `app/javascript` (ESLint on controllers/modules/etc.; Prettier on `api/` and `utils/` only). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -364,20 +360,9 @@ pre-commit install
 
 The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
 
-### Karma
-
-Runs tests for the Angular side. There are two modes for the karma tests:
-
-* Single run: `bin/docker r rails karma:run`
-* Continuous/watched run: `bin/docker r bin/rake karma:start`
-
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
-If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
-The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
-
 ### Playwright E2E
 
-Golden-path and visual-regression tests against a running app, under `test/playwright/`. Unlike Karma, these hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
+Golden-path and visual-regression tests against a running app, under `test/playwright/`. These hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
 
 ```bash
 bin/docker r yarn test:e2e             # run the suite
@@ -395,11 +380,11 @@ Environment variables (all optional, sensible defaults baked in):
 
 * `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:33000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
-* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `6` (`"10s of Queries"` in the shared dev DB — a case with a working search endpoint and existing queries). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `bin/docker r bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `6` (`"10s of Queries"` in the shared dev DB — a case with a working search endpoint and existing queries). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `bin/docker r bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
 
 Structure:
 
-* `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* Core smoke and narrow-viewport specs — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
 * `share_case.spec.ts` — permanent regression coverage for case sharing: the Stimulus `share-case-core` modal on the core toolbar (incl. the judgements-modal bridge into it) and the Rails cases-index/teams share modal. Mixes `toHaveScreenshot()` baselines with plain behavioral assertions (share/unshare click flow, success alerts) that don't depend on any before/after phase.
 * `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
@@ -516,7 +501,7 @@ config.assets.debug = true
 # config.assets.debug = false
 ```
 
-Because there are too many Angular JS files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application, and becomes really annoying in development mode to wait for the scripts to load. Which is why it is turned off by default.
+Because there are many JavaScript files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application and makes development asset loading unnecessarily slow. This is why it is turned off by default.
 
 **PS:** Don't forget to restart the server when you change the config.
 
@@ -556,7 +541,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    - Splainer-search ESM modules are inlined into **`app/assets/builds/core_vendor.js`** at build time, not runtime.
    - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
    - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core-vendor`**
-   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`case_runtime.js`**, **`core_vendor.js`** + **`core_legacy.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running (that script also rebuilds the framework-free case runtime).
+   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`core_vendor.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running.
 
 
 ## Convenience Scripts
@@ -840,14 +825,14 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-The core interactive application is in a staged AngularJS deangularization. The remaining legacy services still run in Angular 1, but the framework-free case runtime now has its own `app/javascript/case_runtime.js` bundle and is loaded before Angular. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Remaining AngularJS-era UI libraries (pagination and ui-ace) live **under `app/javascript/vendor/`** (see `vendor/README.md`).
-The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
+The core interactive application is Rails + Stimulus with a module-owned framework-free case runtime. **`splainer-search`** is **`3.x` from npm** (see root `package.json`). Remaining UI libraries (pagination and ui-ace replacements) live **under `app/javascript/vendor/`** (see `vendor/README.md`).
+The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
+For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
 
 ### Stimulus HTTP conventions
 
-Normative patterns for **new** client code on Rails pages (teams, books, admin, …). Legacy Angular patterns on `/case/...` live in [`docs/todo/angularjs_removal_inventory.md`](docs/todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy).
+Normative patterns for **new** client code on Rails pages (teams, books, admin, …).
 
 - **Server owns URLs.** Pass Rails path helpers or `url_for` into Stimulus as `data-*-url-value` attributes (see `mapper_wizards/show.html.erb`, `mapper_wizard_controller.js`). For forms, use `this.formTarget.action` (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths for navigation.
 - **CSRF on mutating requests.** Layouts include `csrf_meta_tags`. Use `apiFetch` from `app/javascript/api/fetch.js` (importmap: `api/fetch`) so `X-CSRF-Token` is added automatically. For form submits (e.g. `confirm_delete_controller.js`), use `authenticity_token` instead.
@@ -855,29 +840,20 @@ Normative patterns for **new** client code on Rails pages (teams, books, admin, 
 - **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs), [`docs/QUEPID_FEATURES.md` §23](docs/QUEPID_FEATURES.md#23-api-surface)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
 - **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
 
-### Turbo on the Angular case page
+### Turbo on the case page
 
 The case page (`app/views/layouts/core.html.erb`) loads Turbo through `core_stimulus.js`, but only
 for **Frames and Streams**. `Turbo.session.drive = false` is set there, as it is in
 `application_modern.js` for the rest of the app.
 
-Keep Drive off on this layout. AngularJS runs `$locationProvider.html5Mode(true)`, so letting Turbo
-Drive intercept navigation would put two routers on the same URL. Frames and Streams are unaffected:
+Keep Drive off on this layout so the case page's client-side runtime retains control of navigation.
+Frames and Streams are unaffected:
 Turbo treats anything inside a `<turbo-frame>` as navigatable regardless of the Drive setting, so
 forms inside a frame still submit and re-render normally.
 
-**Never put an Angular element inside a Turbo Frame on this page.** Angular compiles the document
-once at bootstrap. A frame re-render replaces its children with HTML Angular will never compile, so
-any `ng-*` attribute, `{{ }}` binding or custom element inside it is dead from that point on. Where
-server-rendered markup and Angular elements have to sit together — the case header's score badges
-next to its name, the toolbar's `<diff>` and `<import-ratings>` next to Stimulus modal triggers —
-keep the Angular elements *outside* the frame and let a Stimulus controller reconcile the two (see
-`case_toolbar_controller.js`).
-
-Server-rendering a region that Angular used to own also removes whatever ordering Angular's own
-bindings imposed. The case toolbar still carries `ng-if="caseModel.caseLoaded()"` for exactly this
-reason: its markup no longer needs Angular, but several of its actions read live `queriesSvc` state
-and break if clicked before the case has bootstrapped.
+Keep interactive regions out of Turbo Frames unless their lifecycle is explicitly supported. When
+server-rendered markup and client-side behavior have to sit together, let the owning Stimulus
+controller reconcile the two (see `case_toolbar_controller.js`).
 
 **Which mechanism re-renders a region depends on who owns the state.** Server-owned state — the case
 name, try, scorer name, badges — re-renders through a Turbo Frame, because Rails can render it. The
@@ -885,8 +861,7 @@ case workspace's scores and search results cannot: live search runs browser → 
 scoring runs client-side, so the server never sees the documents and has nothing to render from.
 Those re-render from a client-side store that Stimulus controllers subscribe to, writing the DOM
 directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
-page that is the exception, not the default. Migration sequencing and test obligations live in
-`docs/todo/angularjs_removal_inventory.md` § Re-render mechanism.
+page that is the exception, not the default.
 
 ## Fonts
 
@@ -1043,7 +1018,7 @@ Adapter-specific behavior:
    bin/docker r yarn -v
    ```
 
-### Angular App Not Loading
+### Frontend assets not loading
 
 **Symptom**: Quepid interface doesn't load properly.
 
@@ -1072,19 +1047,6 @@ Adapter-specific behavior:
    ```bash
    bin/docker r rails test -v
    ```
-
-### Karma Tests Timeout
-
-**Symptom**: Karma tests hang or timeout.
-
-**Solutions**:
-1. Run in single-run mode:
-   ```bash
-   bin/docker r rails karma:run
-   ```
-
-2. Check for browser compatibility issues
-3. Increase the timeout in karma.conf.js
 
 # QA
 

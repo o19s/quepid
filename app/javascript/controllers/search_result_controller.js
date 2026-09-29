@@ -102,22 +102,8 @@ export default class extends Controller {
   }
 
   ratingControl(doc, scale) {
-    const container = document.createElement("div")
-    container.className = "single-rating"
-    container.dataset.controller = "rating-popover"
-    container.dataset.ratingPopoverScaleValue = JSON.stringify(scale)
-
-    const trigger = document.createElement("span")
-    trigger.className = "btn"
     const rating = doc.rating ?? "--"
-    trigger.textContent = `${rating} `
-    const icon = document.createElement("i")
-    icon.className = "bi bi-caret-down-fill"
-    icon.setAttribute("aria-hidden", "true")
-    trigger.appendChild(icon)
-    trigger.style.backgroundColor = this.ratingColor(rating, scale)
-    container.appendChild(trigger)
-    return container
+    return createRatingControl(rating, scale)
   }
 
   renderImage(row, wrapperSelector, imageSelector, value, options, visible) {
@@ -127,11 +113,6 @@ export default class extends Controller {
     image.src = `${options?.prefix || ""}${value}`
     image.alt = ""
     wrapper.classList.remove("d-none")
-  }
-
-  ratingColor(rating, scale) {
-    const style = getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })
-    return style?.["background-color"] || scale[rating]?.color || ""
   }
 
   appendFields(parent, values, renderer) {
@@ -219,6 +200,30 @@ export default class extends Controller {
   appendSanitized(element, value, prefix = "") {
     element.innerHTML = `${prefix}${sanitizeHtml(String(value ?? ""))}`
   }
+}
+
+export function createRatingControl(rating, scale) {
+  const container = document.createElement("div")
+  container.className = "single-rating"
+  container.dataset.controller = "rating-popover"
+  container.dataset.ratingPopoverScaleValue = JSON.stringify(scale)
+
+  const trigger = document.createElement("span")
+  trigger.className = "btn"
+  trigger.textContent = `${rating} `
+  trigger.style.backgroundColor = ratingColor(rating, scale)
+
+  const icon = document.createElement("i")
+  icon.className = "bi bi-caret-down-fill"
+  icon.setAttribute("aria-hidden", "true")
+  trigger.appendChild(icon)
+  container.appendChild(trigger)
+  return container
+}
+
+function ratingColor(rating, scale) {
+  const style = getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })
+  return style?.["background-color"] || scale[rating]?.color || ""
 }
 
 // Search snippets contain harmless markup such as <strong>, but their values

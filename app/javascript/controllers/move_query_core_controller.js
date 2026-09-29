@@ -2,12 +2,13 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { moveQuery } from "utils/query_lifecycle"
+import coreFlash from "utils/core_flash"
 
 /**
  * Move a query from the core case workspace to another case.
  *
  * The modal and case-list loading are Stimulus-owned. Stimulus owns the PUT;
- * the completion event lets the remaining Angular live object be reconciled
+ * the completion event lets the remaining live query object be reconciled
  * through the query-command bridge without issuing a second request.
  */
 export default class extends ModalTriggerControllerBase {
@@ -54,7 +55,7 @@ export default class extends ModalTriggerControllerBase {
       console.error("move-query-core: load cases failed", error)
       this.cases = []
       this.renderCases()
-      window.quepidDom?.flash?.show("error", "Unable to load cases.")
+      coreFlash.show("error", "Unable to load cases.")
     } finally {
       this.setLoading(false)
     }
@@ -71,7 +72,7 @@ export default class extends ModalTriggerControllerBase {
     if (!this.selectedCase || !this.queryId) return
 
     if (!this.currentCaseId || !this.queryId) {
-      window.quepidDom?.flash?.show("error", "Unable to move query.")
+      coreFlash.show("error", "Unable to move query.")
       return
     }
 
@@ -86,11 +87,11 @@ export default class extends ModalTriggerControllerBase {
           targetCaseId: Number(this.selectedCase.case_id)
         }
       }))
-      window.quepidDom?.flash?.show("success", "Query moved successfully!")
+      coreFlash.show("success", "Query moved successfully!")
       getOrCreateBsModal(this.element)?.hide()
     } catch (error) {
       console.error("move-query-core: move failed", error)
-      window.quepidDom?.flash?.show("error", "Unable to move query.")
+      coreFlash.show("error", "Unable to move query.")
       this.submitButtonTarget.disabled = false
     }
   }

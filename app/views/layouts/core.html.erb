@@ -12,7 +12,6 @@
 <%= csrf_meta_tags %>
 <%= javascript_importmap_tags 'vega_globals' %>
 <%= javascript_import_module_tag 'bootstrap_globals' %>
-<%= javascript_import_module_tag 'core_stimulus' %>
 
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
@@ -44,9 +43,11 @@
   <%= render 'layouts/footer_core_app' %>
 
   <%= javascript_include_tag 'jquery_bundle' %>
-  <%= javascript_include_tag 'case_runtime' %>
   <%= javascript_include_tag 'core_vendor' %>
-  <%= javascript_include_tag 'core_legacy' %>
+  <%= javascript_include_tag 'core_case' %>
+  <%= javascript_include_tag 'footer' %>
+  <%= javascript_include_tag 'tour' %>
+  <%= javascript_include_tag 'ace_config' %>
 
 </body>
 </html>

@@ -2,6 +2,7 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { hideBsModal, showBsModal, getOrCreateBsModal } from "utils/bs_modal"
 import { caseNameFromHeader } from "utils/case_header"
+import coreFlash from "utils/core_flash"
 
 const REQUIRED_HEADERS = {
   csv: ["query", "docid", "rating"],
@@ -9,7 +10,7 @@ const REQUIRED_HEADERS = {
   snapshots: ["Snapshot Name", "Snapshot Time", "Case ID", "Query Text", "Doc ID", "Doc Position"]
 }
 
-/** Core case import modal. Keeps the Angular core import formats and wording. */
+/** Core case import modal. Keeps the established core import formats and wording. */
 export default class extends ModalTriggerControllerBase {
   static targets = [
     "title", "alert", "content", "warning", "loading", "importButton",
@@ -248,7 +249,7 @@ export default class extends ModalTriggerControllerBase {
   }
   errorMessage(error) { return error.message || "Import failed. Please try again." }
   dispatchReload() { document.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: this.caseIdValue } })) }
-  flash(type, message) { window.quepidDom?.flash?.show(type, message) }
+  flash(type, message) { coreFlash.show(type, message) }
   setBusy(busy) { this.busy = busy; if (this.hasLoadingTarget) this.loadingTarget.classList.toggle("d-none", !busy); this.refreshUi() }
   setError(target, message) { if (!target) return; target.textContent = message; target.classList.toggle("d-none", !message) }
   readFile(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(file) }) }

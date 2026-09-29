@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreCaseController from "controllers/qscore_case_controller"
 import { CaseScoreStore } from "stores/case_score_store"
 import { diffStateStore } from "stores/diff_state_store"
-import { resetCoreServiceCache } from "utils/core_angular_adapter"
+import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
 
 /**
  * Store-driven Stimulus controller for the Angular <qscore-case> component's
@@ -51,7 +51,6 @@ describe("QscoreCaseController", () => {
     element.remove()
     delete window.quepidStore
     delete window.quepidSearch
-    delete window.angular
     diffStateStore.reset()
     resetCoreServiceCache()
     vi.unstubAllGlobals()
@@ -232,16 +231,6 @@ describe("QscoreCaseController", () => {
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }
     }
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "$rootScope"
-              ? { $evalAsync: (callback) => callback() }
-            : { queries: { 1: query } }
-        })
-      })
-    }
-
     const controller = buildController(element)
     controller.store = store
     await controller.refreshCaseDiffScores({ refreshQueries: true })
@@ -268,16 +257,6 @@ describe("QscoreCaseController", () => {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
     }
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "$rootScope"
-              ? { $evalAsync: (callback) => callback() }
-            : { queries: { 1: query } }
-        })
-      })
-    }
-
     const controller = buildController(element)
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
@@ -304,16 +283,6 @@ describe("QscoreCaseController", () => {
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }
     }
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "$rootScope"
-              ? { $evalAsync: (callback) => callback() }
-            : { queries: { 1: query } }
-        })
-      })
-    }
-
     const controller = buildController(element)
     await expect(controller.refreshCaseDiffScores({ refreshQueries: true })).resolves.toBeUndefined()
 
@@ -333,16 +302,6 @@ describe("QscoreCaseController", () => {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
     }
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "$rootScope"
-            ? { $evalAsync: (callback) => callback() }
-            : { queries: {} }
-        })
-      })
-    }
-
     const controller = buildController(element)
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
@@ -374,16 +333,6 @@ describe("QscoreCaseController", () => {
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
       }
     }
-    window.angular = {
-      element: () => ({
-        injector: () => ({
-          get: (service) => service === "$rootScope"
-              ? { $evalAsync: (callback) => callback() }
-            : { queries: { 1: query } }
-        })
-      })
-    }
-
     const controller = buildController(element)
     controller.store = store
     const oldRefresh = controller.refreshCaseDiffScores({ refreshQueries: true })

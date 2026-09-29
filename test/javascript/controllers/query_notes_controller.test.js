@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueryNotesController from "controllers/query_notes_controller"
+import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
 
 function controllerFor() {
   const element = document.createElement("div")
@@ -39,7 +40,8 @@ describe("QueryNotesController", () => {
 
   it("saves notes and closes the panel on success", async () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
-    window.quepidDom = { flash: { show: vi.fn() } }
+    const flash = { show: vi.fn() }
+    setCoreFlashForTest(flash)
     const { controller, element } = controllerFor()
     const close = vi.fn()
     element.addEventListener("query-notes:close", close)
@@ -50,6 +52,7 @@ describe("QueryNotesController", () => {
 
     expect(fetch).toHaveBeenCalledWith(controller.urlValue, expect.objectContaining({ method: "PUT" }))
     expect(close).toHaveBeenCalled()
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", expect.stringContaining("saved"))
+    expect(flash.show).toHaveBeenCalledWith("success", expect.stringContaining("saved"))
+    resetCoreFlashForTest()
   })
 })

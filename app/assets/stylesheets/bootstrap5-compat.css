@@ -201,31 +201,6 @@ label {
   margin-bottom: 0;
   font-weight: 400;
 }
-
-/* BS5 dropped `.btn-group-justified` (BS3's equal-width button-group
- * component, used by Clone Case's "Only include a specific try" /
- * "Include the entire try history" toggle) entirely, so it's inert and
- * the buttons just size to their own text — producing a lopsided split
- * for uneven label lengths. Restore BS3's table-cell technique, which
- * forces every direct `.btn-group` child to the same width regardless
- * of content. */
-.btn-group-justified {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: separate;
-}
-
-.btn-group-justified > .btn-group {
-  display: table-cell;
-  float: none;
-  width: 1%;
-}
-
-.btn-group-justified > .btn-group .btn {
-  width: 100%;
-}
-
 .tooltip {
   --bs-tooltip-font-size: 14px;
   --bs-tooltip-padding-x: 8px;
@@ -267,19 +242,6 @@ label {
 .popover-body {
   overflow-y: auto;
   max-height: 550px;
-}
-
-/* Accordion: only live use is the wizard endpoint picker (wizardModal.html).
- * Font size inherits BS5's 1rem; only padding/border are Quepid-tuned. */
-.accordion {
-  --bs-accordion-btn-padding-x: 20px;
-  --bs-accordion-btn-padding-y: 16px;
-  --bs-accordion-btn-icon-width: 20px;
-  --bs-accordion-btn-focus-box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
-  --bs-accordion-body-padding-x: 20px;
-  --bs-accordion-body-padding-y: 16px;
-  --bs-accordion-border-radius: 4px;
-  --bs-accordion-inner-border-radius: 3px;
 }
 
 /* Nav tabs (replaces uib-tabset). Font size inherits BS5's 1rem. */
@@ -562,11 +524,6 @@ header .dropdown-toggle .bi {
 	color: inherit;
 }
 
-.modal-title .modal-case {
-	font-weight: 200;
-	color: #888;
-}
-
 /* Sub-results panel — toolbar absolutely top-right of the per-query
  * panel, row borders between <search-result> items. `left` reserves the
  * space core-additions.css's `.col-ratings.query-rating` occupies
@@ -640,15 +597,6 @@ header .dropdown-toggle .bi {
 .sub-results .search-result .row {
 	border-top: 1px solid #CCC;
 	position: relative;
-}
-
-/* In the "Find and Rate Missing Documents" modal, <search-result>'s own
- * .row collapses to shrink-wrap its columns (~360px) instead of filling the
- * available width, even though the same <search-result>/.row markup fills
- * the row correctly on the case page. Forcing an explicit width restores
- * the normal full-width layout for the "Matches" explain column. */
-#targeted-search-modal .search-result .row {
-	width: 100%;
 }
 
 /* BS5's .row > * sets width:100% so each child fills its own line, since

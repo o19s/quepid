@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
-import { getWizardCapabilities } from "utils/core_angular_adapter"
+import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { getQuepidRootUrl } from "utils/quepid_root"

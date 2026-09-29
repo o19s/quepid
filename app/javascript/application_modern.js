@@ -1,5 +1,5 @@
-// This file leverages importmaps and Stimulus for the modern (non-Angular) parts of the application.
-// The Angular app uses a separate build pipeline via esbuild (see package.json).
+// This file leverages importmaps and Stimulus for Rails pages. The core case
+// uses a separate esbuild entry (see package.json).
 
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"

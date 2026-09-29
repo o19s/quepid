@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
+import coreFlash from "utils/core_flash"
 
 /**
  * Owns query-delete confirmation and persistence.
@@ -20,7 +21,7 @@ export default class extends Controller {
 
   async deleteQuery() {
     if (!this.hasDeleteUrlValue || !this.deleteUrlValue) {
-      window.quepidDom?.flash?.show("error", "Unable to delete query.")
+      coreFlash.show("error", "Unable to delete query.")
       return
     }
 
@@ -37,7 +38,7 @@ export default class extends Controller {
     } catch (error) {
       console.error("query-delete: delete failed", error)
       this.element.disabled = false
-      window.quepidDom?.flash?.show("error", "Unable to delete query.")
+      coreFlash.show("error", "Unable to delete query.")
     }
   }
 }

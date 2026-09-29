@@ -18,7 +18,7 @@ const REDIRECT_DELAY_MS = 500
  * `<judgements>` / `_modal.html`. Loads books from the case's teams, saves
  * book + sync settings via `PUT api/cases/:id`, and runs refresh/sync via
  * the books refresh API. "Populate Now" reads the framework-free document
- * store, while live search continues publishing the store from Angular. After ratings refresh that
+ * store, while live search continues publishing the store from the live-query runtime. After ratings refresh that
  * should re-bootstrap queries, dispatches `judgements:queries-need-reload`.
  *
  * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
@@ -523,7 +523,7 @@ export default class extends ModalTriggerControllerBase {
     // must re-enable Save without another setBusy() — recompute from _busy
     // rather than assuming "not busy".
     this._refreshSaveVisibility()
-    // Angular parity: Cancel is disabled while a save/refresh/sync request is
+    // Preserve the existing behavior: Cancel is disabled while a save/refresh/sync request is
     // in flight, so a stale request's completion handler can't fire against a
     // modal the user has since dismissed and possibly reopened.
     if (this.hasCancelButtonTarget) {
