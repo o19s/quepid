@@ -3,7 +3,7 @@ import { averageScore, scoreToColor } from "utils/scoring"
 const LEGACY_UNSCORED_STYLE = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
 
 /**
- * Framework-free scoring operations extracted from the legacy live-query runtime.
+ * Scoring operations extracted from the legacy live-query runtime.
  *
  * Promise scheduling is injected so callers can supply their own async runtime.
  */
@@ -90,7 +90,7 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
  * Own the case-level scoring lifecycle without owning the live query objects.
  *
  * The current case page injects live query objects through `getScorables`,
- * while the orchestration and completion contract remain framework-free. The
+ * while the orchestration and completion contract remain runtime-owned. The
  * completion callback lets callers publish the result to their own state.
  */
 export function createCaseScoringRuntime({

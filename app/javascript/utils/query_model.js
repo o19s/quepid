@@ -1,5 +1,5 @@
 /**
- * Framework-free per-query state and scoring contract.
+ * Per-query state and scoring contract.
  *
  * The legacy live-query runtime still owns search, rated-document lookup, and API
  * persistence. This module owns query-local state transitions so those

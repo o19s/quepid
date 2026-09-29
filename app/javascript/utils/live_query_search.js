@@ -3,9 +3,9 @@ import { createSearcherFromSettings } from "utils/query_service"
 /**
  * Runtime boundary for constructing a live query searcher.
  *
- * The case page still injects the legacy searcher factory and endpoint
+ * The case page still injects the searcher factory and endpoint
  * services, but the search request policy now lives behind a small,
- * framework-free object that can be reused by the modern case workspace.
+ * focused object that can be reused by the modern case workspace.
  */
 export function createLiveQuerySearchRuntime({
   proxyUrlFor,

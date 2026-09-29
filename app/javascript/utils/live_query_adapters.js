@@ -1,10 +1,9 @@
 /**
- * Compose the remaining legacy live-query callbacks into explicit contracts.
- * The callbacks still point at compatibility services during migration,
- * but callers no longer need to know how those services are grouped.
+ * Compose the live-query callbacks into explicit contracts. Callers do not
+ * need to know how the service graph is grouped internally.
  */
 export function createLiveQueryAdapters({
-  compatibility = {},
+  runtime = {},
   scoring = {},
   book = {},
   search = {},
@@ -12,11 +11,11 @@ export function createLiveQueryAdapters({
   framework = {},
   domain = {}
 }) {
-  const factoryOptions = compatibility.factoryOptions || {}
-  const executionOptions = compatibility.executionOptions || {}
+  const factoryOptions = runtime.factoryOptions || {}
+  const executionOptions = runtime.executionOptions || {}
 
   return {
-    compatibility: {
+    runtime: {
       factoryOptions: {
         model: {},
         documents: {},

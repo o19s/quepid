@@ -4,8 +4,8 @@ import { Controller } from "@hotwired/stimulus"
  * Bridges the server-rendered case header to the client-side case runtime.
  *
  * Rename is a Rails round trip now (Core::CaseHeaderController re-renders the `case_header` Turbo
- * Frame), so the framework-free runtime needs an explicit refresh: the Tune Relevance drawer
- * reads the try name from the framework-free settings runtime.
+ * Frame), so the client runtime needs an explicit refresh: the Tune Relevance drawer
+ * reads the try name from the settings runtime.
  *
  * It also handles the other direction: the new-case wizard can rename through the case runtime,
  * and the server-rendered header must be refreshed.

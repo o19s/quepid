@@ -1,9 +1,9 @@
 /**
- * Framework-free orchestration for the live query collection boundary.
+ * Orchestration for the live query collection boundary.
  *
- * The legacy runtime still provides the live Query implementation and HTTP adapter, but
+ * The service graph provides the live Query implementation and HTTP adapter, but
  * collection bootstrap, stale-request handling, and store publication live in
- * this runtime so they can be reused after the legacy service is removed.
+ * this runtime so they remain independent from transport details.
  */
 export function createLiveQueryCollectionRuntime({
   request,

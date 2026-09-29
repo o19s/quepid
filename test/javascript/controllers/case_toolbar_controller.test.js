@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CaseToolbarController from "controllers/case_toolbar_controller"
 
 /**
- * This controller bridges the server-rendered case header to the framework-free case runtime.
+ * This controller bridges the server-rendered case header to the client case runtime.
  * It deliberately does not copy the case name onto the toolbar's modal triggers — those read it
  * live via `utils/case_header`.
  */

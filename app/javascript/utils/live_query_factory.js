@@ -1,5 +1,5 @@
 /**
- * Framework-free construction of a live Query compatibility object.
+ * Construction of a live Query object.
  *
  * The case service provides transport and scoring/model adapters, while this
  * factory owns the stable query shape shared by bootstrapped and new queries.

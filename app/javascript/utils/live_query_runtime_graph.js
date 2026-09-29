@@ -1,12 +1,10 @@
 /**
- * Compose the live-query compatibility island from framework-free runtimes.
+ * Compose the live-query runtime graph from focused runtime modules.
  *
- * The remaining legacy service supplies environment callbacks, but this
- * module owns the wiring between query model, factory, documents, and
- * execution. That keeps the eventual case-workspace entry point on the same
- * contract without copying the composition logic.
+ * The search service graph supplies environment callbacks, but this module
+ * owns the wiring between query model, factory, documents, and execution.
  */
-export function createLiveQueryCompatibilityRuntime({
+export function createLiveQueryRuntimeGraph({
   model,
   factory,
   documents,

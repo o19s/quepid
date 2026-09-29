@@ -1,5 +1,5 @@
 /**
- * Framework-free helpers extracted from the legacy live-query runtime.
+ * Helpers extracted from the legacy live-query runtime.
  *
  * These functions deliberately know nothing about framework internals, async
  * implementation details, or the case

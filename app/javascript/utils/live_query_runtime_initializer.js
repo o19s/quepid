@@ -1,10 +1,9 @@
 /* jslint latedef:false */
 
 /**
- * Creates the live-query compatibility runtime from explicit domain and state
- * dependencies. The runtime itself is framework-free; the outer bootstrap
- * boundary supplies the still-legacy search, scoring, settings, and transport
- * services while the migration is in flight.
+ * Creates the live-query runtime from explicit domain and state dependencies.
+ * The outer bootstrap boundary supplies the search, scoring, settings, and
+ * transport services.
  */
 export function initializeLiveQueryRuntime({ framework, domain, search, store }) {
   const splainerSearch = search.splainerSearch || {}
@@ -74,9 +73,9 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
   const mapperFunctionsCache = {}
 
-  // Temporary dual-run bridge: the store owns the query collection snapshot
-  // and display order while the legacy runtime keeps the live Query objects for search,
-  // ratings, documents, and scoring.
+  // The store owns the query collection snapshot and display order while the
+  // live query graph keeps the query objects needed for search, ratings,
+  // documents, and scoring.
   const queryCollectionStore = store && store.queries
   const queryDocumentsStore = store && store.documents
   const diffStateStore = store && store.diff
@@ -88,7 +87,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // The collection store owns membership and display order. Keep the
-  // legacy map as the live-object execution index only; every runtime
+  // live-object map as the execution index only; every runtime
   // that needs the collection receives the store-ordered live objects.
   function getLiveQueries() {
     return liveQueryRegistry.all()
@@ -143,7 +142,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
       }
     },
     framework,
-    compatibility: {
+    runtime: {
       factoryOptions: {
         model: {
           getDefaultScorer: function () {
@@ -337,16 +336,16 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     publishQueryListState()
   }
 
-  // Explicit adapter for the Stimulus query list. The legacy runtime retains the live
+  // Explicit adapter for the Stimulus query list. The runtime retains the live
   // Query objects, but the list no longer discovers them through an
   // compiled controller scope.
   function publishQueryListState() {
     document.dispatchEvent(new CustomEvent("queries-state:changed"))
   }
 
-  // Case-level scoring orchestration lives in the framework-free query
-  // runtime. The legacy runtime remains the compatibility adapter for the live Query
-  // objects and the legacy latestScoreInfo shape during dual-run.
+  // Case-level scoring orchestration lives in the query
+  // runtime. The service graph remains the adapter for the live Query objects
+  // and the latestScoreInfo shape during the store transition.
   const caseScoringRuntime = search.queryScoring.createCaseScoringRuntime({
     getScorables: function () {
       return getLiveQueries()
@@ -413,17 +412,17 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     logger: runtimeFramework.logger
   })
 
-  const liveQueryCompatibilityRuntime = search.queryLifecycle.createCompatibilityRuntime({
+  const liveQueryRuntimeGraph = search.queryLifecycle.createRuntimeGraph({
     model: search.liveQueryModel,
     factory: search.liveQueryFactory,
     documents: search.liveQueryDocuments,
     execution: search.liveQueryExecution,
-    factoryOptions: liveQueryAdapters.compatibility.factoryOptions,
-    executionOptions: liveQueryAdapters.compatibility.executionOptions
+    factoryOptions: liveQueryAdapters.runtime.factoryOptions,
+    executionOptions: liveQueryAdapters.runtime.executionOptions
   })
-  const liveQueryDocumentsRuntime = liveQueryCompatibilityRuntime.documents
-  const liveQueryRuntime = liveQueryCompatibilityRuntime.execution
-  const liveQueryFactory = liveQueryCompatibilityRuntime.factory
+  const liveQueryDocumentsRuntime = liveQueryRuntimeGraph.documents
+  const liveQueryRuntime = liveQueryRuntimeGraph.execution
+  const liveQueryFactory = liveQueryRuntimeGraph.factory
 
   const liveQueryTransportRuntime = search.queryLifecycle.createTransportRuntime({
     queryRuntime: liveQueryRuntime,
@@ -653,7 +652,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
     return search.ratedDocs.supportsLookup(aTry)
   }
 
-  // Temporary dual-run publisher: the legacy runtime keeps the live Query objects, but
+  // Temporary store-transition publisher: the runtime keeps the live Query objects, but
   // Stimulus receives a plain read model for expanded result rendering.
   function publishQueryDocuments(query) {
     if (!queryDocumentsStore || !query) {
@@ -734,8 +733,8 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // Explicit command adapters for the Stimulus expanded-results renderer.
-  // Query objects remain owned by the legacy runtime, but the renderer does not discover
-  // them through a compiled legacy controller.
+  // Query objects remain owned by the runtime, but the renderer does not discover
+  // them through a compiled controller.
   function toggleQuery(queryId) {
     const query = getLiveQuery(queryId)
     if (!query) return false
@@ -858,7 +857,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   /**
    * Shared "look up already-rated docs via the mapper" pipeline for a searchapi/mapper-based
    * engine - used by both docFinder.js's "Already Rated Documents" section and
-   * the framework-free query runtime (Query's "Show only rated" toggle), which otherwise
+   * the query runtime (Query's "Show only rated" toggle), which otherwise
    * duplicated this same build-query-params -> previewArgs -> search -> normalize sequence.
    * Callers are expected to have already checked trySupportsSearchApiRatedDocsLookup(); this
    * resolves to null when the mapper doesn't build a query (or previewArgs can't resolve it),
@@ -892,7 +891,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         const searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: "POST" })
 
         return searcher.search().then(function () {
-          const normed = liveQueryAdapters.compatibility.executionOptions.documents.normalize(
+          const normed = liveQueryAdapters.runtime.executionOptions.documents.normalize(
             query,
             searcher,
             settings.createFieldSpec()
@@ -986,7 +985,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   // only call this when our version() changes
   function queryArray() {
     if (queryCollectionStore && queryCollectionStore.status === "ready") {
-      // Keep the legacy defaultCaseOrder contract while taking the order
+      // Keep the existing defaultCaseOrder contract while taking the order
       // itself from the store. The existing orderBy contract and any other
       // consumers still rely on this field being refreshed on each read.
       return search.queryState.orderedQueries(
@@ -998,7 +997,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // Temporary adapter for the Stimulus reorder controller. The controller
-  // owns the PUT; the legacy runtime keeps the live display order in sync until the
+  // owns the PUT; the runtime keeps the live display order in sync until the
   // query store becomes authoritative.
   function applyDisplayOrder(displayOrder) {
     svc.displayOrder = displayOrder
@@ -1019,15 +1018,15 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
   }
 
   // Refresh diff objects for all queries after state changes. The live diff
-  // runtime remains compatibility-backed, but its public adapter is the explicit
-  // capability below rather than the legacy service namespace.
+  // runtime remains service-backed, but its public adapter is the explicit
+  // capability below rather than an internal service namespace.
   function refreshAllDiffs() {
     return liveQueryDiffRuntime.refreshAll()
   }
 
-  // Framework-free controllers use this adapter instead of resolving the
-  // legacy service from the injector. Keep the scheduling boundary here with
-  // the live Query implementation until diff refresh leaves the compatibility layer.
+  // Controllers use this adapter instead of resolving the service graph from
+  // the injector. Keep the scheduling boundary here with
+  // the live Query implementation until diff refresh uses the runtime graph directly.
   function refreshAllDiffsCapability() {
     return new Promise(function (resolve, reject) {
       runtimeFramework.schedule(function () {
@@ -1145,7 +1144,7 @@ export function initializeLiveQueryRuntime({ framework, domain, search, store })
         },
         settingsWithTryOverrides: settingsWithTryOverrides,
         createSearcherFromSettings: createSearcherFromSettings,
-        normalizeDocExplains: liveQueryAdapters.compatibility.executionOptions.documents.normalize,
+        normalizeDocExplains: liveQueryAdapters.runtime.executionOptions.documents.normalize,
         searchApiRatedDocs: searchApiRatedDocs,
         supportsRatedDocsLookup: trySupportsRatedDocsLookup,
         promiseApi: runtimeFramework.promiseApi

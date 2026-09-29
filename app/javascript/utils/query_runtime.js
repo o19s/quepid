@@ -1,7 +1,7 @@
 import { paginateQuery, runSearchAll, searchQuery } from "utils/query_service"
 
 /**
- * Framework-free runtime for the live query/search result lifecycle.
+ * Runtime for the live query/search result lifecycle.
  *
  * The legacy service supplies searcher construction, document factories, and
  * compatibility callbacks. Keeping those dependencies injected makes this
@@ -203,7 +203,7 @@ export function createQueryRuntime({
 }
 
 /**
- * Framework-free orchestration for the case-wide search lifecycle.
+ * Orchestration for the case-wide search lifecycle.
  * Query objects and scoring remain injected so this preserves the current
  * browser-to-engine and client-side scoring behavior while removing the queue
  * policy from the legacy service.

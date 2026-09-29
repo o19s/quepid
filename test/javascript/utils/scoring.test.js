@@ -12,7 +12,7 @@ import {
 /**
  * Unit contract for the score display/aggregation rules extracted from the legacy
  * `scoreDisplay` / `ratingBgStyle` filters and `queriesSvc.scoreAll()`. The
- * framework-free replacement is covered here directly.
+ * replacement is covered here directly.
  */
 describe("scoring", () => {
   describe("isUnratedScore", () => {

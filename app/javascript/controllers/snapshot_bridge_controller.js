@@ -12,7 +12,7 @@ import coreFlash from "utils/core_flash"
  * Temporary compatibility bridge for snapshot comparison.
  *
  * The comparison picker, snapshot registry/hydration, and renderer are
- * Stimulus/framework-free. The live Query model and snapshot scoring are
+ * Stimulus-owned. The live Query model and snapshot scoring are
  * still owned by the live-query runtime, so this controller is the single,
  * explicit boundary between them while that larger migration is in progress.
  */

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
-import { createLiveQueryCompatibilityRuntime } from "utils/live_query_compatibility"
+import { createLiveQueryRuntimeGraph } from "utils/live_query_runtime_graph"
 
-describe("createLiveQueryCompatibilityRuntime", () => {
+describe("createLiveQueryRuntimeGraph", () => {
   it("wires model, document, factory, and execution runtimes through shared adapters", () => {
     const modelRuntime = { create: vi.fn() }
     const documentRuntime = {
@@ -19,7 +19,7 @@ describe("createLiveQueryCompatibilityRuntime", () => {
     const modelOptions = { scoreQuery: vi.fn() }
     const documentOptions = { matchFeaturesExplain: vi.fn() }
 
-    const runtime = createLiveQueryCompatibilityRuntime({
+    const runtime = createLiveQueryRuntimeGraph({
       model,
       factory,
       documents,

@@ -1,5 +1,5 @@
 /**
- * Framework-free snapshot data model.
+ * Snapshot data model.
  *
  * The case workspace still supplies the document cache and explanation
  * normalizer while snapshot fetching is being moved into this runtime. Keeping

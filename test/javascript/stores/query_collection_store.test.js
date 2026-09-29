@@ -95,6 +95,7 @@ describe("QueryCollectionStore", () => {
 
     store.upsert(liveQuery)
 
+    expect(store.liveQuery(4)).toBe(liveQuery)
     expect(store.query(4)).toMatchObject({
       caseNo: 7,
       numFound: 12,

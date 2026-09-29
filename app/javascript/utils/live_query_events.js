@@ -1,8 +1,8 @@
 /**
- * Event bridge for live Query state owned by the compatibility layer.
+ * Event bridge for live Query state owned by the runtime graph.
  *
  * Stimulus owns the initiating UI and API calls; this runtime keeps the
- * compatibility-backed live query collection synchronized until that collection is
+ * service-backed live query collection synchronized until that collection is
  * removed.
  */
 export function createLiveQueryEventsRuntime({
@@ -26,8 +26,8 @@ export function createLiveQueryEventsRuntime({
     return !Number(detail.caseId) || Number(detail.caseId) === Number(getCaseNo())
   }
 
-  function ratingChanged(event, legacyQueryId) {
-    const queryId = ratingChangedQueryId(event, legacyQueryId)
+  function ratingChanged(event, fallbackQueryId) {
+    const queryId = ratingChangedQueryId(event, fallbackQueryId)
     const query = queryId !== undefined ? getQuery(queryId) : null
     if (query) {
       invalidateRatedDocs(query)

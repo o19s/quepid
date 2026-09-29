@@ -3,7 +3,7 @@ import { test, expect, type Page } from '@playwright/test';
 /**
  * E2E coverage for the core-case-shell migration: `ngRoute` was removed,
  * `core-bootstrap` now bootstraps from server-rendered case/try values through
- * framework-free runtimes, and recent-case links do a full document navigation
+ * client runtimes, and recent-case links do a full document navigation
  * instead of an in-SPA route change. See docs/todo/angularjs_removal_inventory.md's shell
  * migration parity table.
  *

@@ -1,11 +1,10 @@
 import { createQueryRuntime } from "utils/query_runtime"
 
 /**
- * Adapter factory for the live Query search lifecycle.
+ * Adapter factory for the live query search lifecycle.
  *
- * The case service supplies legacy searchers, document factories, and
- * publication callbacks. Query runtime construction stays framework-free so
- * the future case workspace can provide the same contract directly.
+ * The search service graph supplies searchers, document factories, and
+ * publication callbacks. Query runtime construction stays in this runtime layer.
  */
 export function createLiveQueryRuntime({
   createRuntime = createQueryRuntime,

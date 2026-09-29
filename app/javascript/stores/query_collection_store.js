@@ -1,10 +1,9 @@
 /**
  * Observable read model for the case query collection.
  *
- * The legacy runtime still owns the live Query objects
- * (search, documents, ratings, and scoring). This store owns the collection
- * snapshot and display order so the future Stimulus query-list can read the
- * same bootstrap state without reaching into a controller scope.
+ * This store owns the live Query objects, their collection snapshot, and
+ * display order. The snapshot API keeps Stimulus independent from the live
+ * search and scoring model.
  */
 export class QueryCollectionStore extends EventTarget {
   constructor() {
@@ -20,6 +19,7 @@ export class QueryCollectionStore extends EventTarget {
     this._searchError = null
     this._displayOrder = []
     this._queries = new Map()
+    this._liveQueries = new Map()
     this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
@@ -32,6 +32,7 @@ export class QueryCollectionStore extends EventTarget {
     this._searchError = null
     this._displayOrder = []
     this._queries = new Map()
+    this._liveQueries = new Map()
     this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
@@ -39,10 +40,16 @@ export class QueryCollectionStore extends EventTarget {
   replace({ caseId, displayOrder = [], queries = [] }) {
     this._caseId = Number(caseId)
     this._displayOrder = displayOrder.map(Number)
+    const nextQueries = queries.filter(query => query.deleted !== true && query.deleted !== "true")
+    const currentLiveQueries = this._liveQueries
     this._queries = new Map(
-      queries
-        .filter(query => query.deleted !== true && query.deleted !== "true")
-        .map(query => [String(this.queryId(query)), this.querySnapshot(query)])
+      nextQueries.map(query => [String(this.queryId(query)), this.querySnapshot(query)])
+    )
+    this._liveQueries = new Map(
+      nextQueries
+        .map(query => String(this.queryId(query)))
+        .filter(queryId => currentLiveQueries.has(queryId))
+        .map(queryId => [queryId, currentLiveQueries.get(queryId)])
     )
     this._queries.forEach((query, queryId) => {
       if (this._expandedQueries.has(queryId)) {
@@ -98,17 +105,20 @@ export class QueryCollectionStore extends EventTarget {
     return true
   }
 
-  upsert(query) {
+  upsert(query, { publish = true } = {}) {
     const queryId = this.queryId(query)
     if (queryId === undefined || queryId === null) return
 
-    this._queries.set(String(queryId), this.querySnapshot(query))
+    const key = String(queryId)
+    this._liveQueries.set(key, query)
+    this._queries.set(key, this.querySnapshot(query))
     if (!this._displayOrder.includes(Number(queryId))) this._displayOrder.push(Number(queryId))
     this._status = "ready"
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    if (publish) this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
   remove(queryId) {
+    this._liveQueries.delete(String(queryId))
     this._queries.delete(String(queryId))
     this._displayOrder = this._displayOrder.filter(id => String(id) !== String(queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
@@ -170,6 +180,18 @@ export class QueryCollectionStore extends EventTarget {
 
   query(queryId) {
     return this._queries.get(String(queryId)) ?? null
+  }
+
+  liveQuery(queryId) {
+    return this._liveQueries.get(String(queryId)) ?? null
+  }
+
+  clearLiveQueries() {
+    this._liveQueries.clear()
+  }
+
+  replaceLiveQueries(queries = {}) {
+    this._liveQueries = new Map(Object.entries(queries))
   }
 
   get size() {

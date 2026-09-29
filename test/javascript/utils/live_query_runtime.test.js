@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryRuntime } from "utils/live_query_runtime"
 
 describe("createLiveQueryRuntime", () => {
-  it("assembles Angular compatibility callbacks around the framework-free runtime", () => {
+  it("assembles service callbacks around the framework-free runtime", () => {
     const createRuntime = vi.fn(() => "runtime")
     const query = { id: 1 }
     const dependencies = {
@@ -32,7 +32,7 @@ describe("createLiveQueryRuntime", () => {
     expect(createRuntime).toHaveBeenCalledWith(expect.objectContaining({ query }))
   })
 
-  it("forwards the query to query-specific compatibility callbacks", () => {
+  it("forwards the query to query-specific service callbacks", () => {
     const createRuntime = vi.fn((options) => options)
     const query = { id: 2 }
     const createSearcher = vi.fn()

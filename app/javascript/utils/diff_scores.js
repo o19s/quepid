@@ -3,7 +3,7 @@ import { scoreToColor } from "utils/scoring"
 /**
  * Build the plain case-level read model used by the Stimulus diff-score header.
  * Query diff searchers remain owned by the live case engine for now; this
- * helper owns only the framework-free aggregation and display data.
+ * helper owns only the aggregation and display data.
  */
 export function buildCaseDiffScores(queries, maxScore = 1) {
   const queryList = Array.isArray(queries) ? queries : Object.values(queries || {})

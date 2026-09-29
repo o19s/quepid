@@ -1,8 +1,8 @@
 import { createQueryDiff } from "utils/diff_results"
 
 /**
- * Framework-free adapter for live Query diff construction and refresh.
- * The legacy runtime supplies the current settings, query collection, and publication
+ * Adapter for live Query diff construction and refresh.
+ * The service graph supplies the current settings, query collection, and publication
  * callbacks while diff state remains on the live Query objects.
  */
 export function createLiveQueryDiffRuntime({

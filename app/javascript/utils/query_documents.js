@@ -2,8 +2,8 @@
  * Build the plain document/query state consumed by QueryDocumentsStore.
  *
  * The live Query remains owned by the legacy runtime for now, but this
- * read-model contract is framework-free so the search runtime can publish the
- * same shape without carrying framework helpers into Stimulus.
+ * read-model contract is independent of framework helpers so the search runtime
+ * can publish the same shape into Stimulus.
  */
 export function buildQueryDocumentsState({
   query,

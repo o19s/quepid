@@ -16,7 +16,7 @@ function runtimeFor(overrides = {}) {
 }
 
 describe("createLiveQueryDiffRuntime", () => {
-  it("assembles a framework-free diff with the current Angular adapters", () => {
+  it("assembles a framework-free diff with the current service adapters", () => {
     const createDiff = vi.fn(() => Promise.resolve())
     const getDiffSettings = vi.fn(() => ["snapshot"])
     const getSettings = vi.fn(() => ({ searchEngine: "solr" }))

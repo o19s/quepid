@@ -1,5 +1,5 @@
 /**
- * Framework-free scorer catalog lifecycle.
+ * Scorer catalog lifecycle.
  *
  * The custom scorer object is still supplied by the legacy factory because its
  * user-code execution contract has not moved yet. Catalog loading, default

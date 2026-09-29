@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryAdapters } from "utils/live_query_adapters"
 
 describe("createLiveQueryAdapters", () => {
-  it("keeps compatibility, scoring, and book callbacks in explicit groups", () => {
+  it("keeps runtime, scoring, and book callbacks in explicit groups", () => {
     const factoryOptions = { model: { getDefaultScorer: vi.fn() } }
     const executionOptions = { searchers: { create: vi.fn() } }
     const scoring = {
@@ -40,7 +40,7 @@ describe("createLiveQueryAdapters", () => {
     }
 
     const adapters = createLiveQueryAdapters({
-      compatibility: { factoryOptions, executionOptions },
+      runtime: { factoryOptions, executionOptions },
       scoring,
       book,
       search,
@@ -49,7 +49,7 @@ describe("createLiveQueryAdapters", () => {
       domain
     })
 
-    expect(adapters.compatibility).toEqual({
+    expect(adapters.runtime).toEqual({
       factoryOptions: {
         model: factoryOptions.model,
         documents: {},
@@ -72,7 +72,7 @@ describe("createLiveQueryAdapters", () => {
 
   it("does not require optional callback groups", () => {
     expect(createLiveQueryAdapters({})).toEqual({
-      compatibility: {
+      runtime: {
         factoryOptions: {
           model: {},
           documents: {},

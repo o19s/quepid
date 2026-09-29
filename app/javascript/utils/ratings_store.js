@@ -1,5 +1,5 @@
 /**
- * Framework-free ratings state and transport adapter.
+ * Ratings state and transport adapter.
  *
  * The legacy ratings service used to own both the ratings dictionary and the
  * HTTP calls that mutate it. This class keeps the same public contract while

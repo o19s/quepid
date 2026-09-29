@@ -34,7 +34,7 @@ import { createLiveQueryExecutionRuntime } from "utils/live_query_execution"
 import { createLiveQueryRuntime } from "utils/live_query_runtime"
 import { createLiveQueryLifecycleRuntime } from "utils/live_query_lifecycle"
 import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
-import { createLiveQueryCompatibilityRuntime } from "utils/live_query_compatibility"
+import { createLiveQueryRuntimeGraph } from "utils/live_query_runtime_graph"
 import { createLiveQueryAdapters } from "utils/live_query_adapters"
 import { installLiveQueryCapabilities } from "utils/live_query_capabilities"
 import { createLiveQueryDiffRuntime } from "utils/live_query_diff"
@@ -195,10 +195,8 @@ const quepidSearch = {
     querqyRuleTriggered,
     ratingChangedQueryId
   },
-  // Temporary capability boundary for modern case controllers. The
-  // implementation remains owned by the legacy runtime until live query/search
-  // state moves,
-  // but modern code must not depend on the legacy queryState namespace.
+  // Capability boundary for modern case controllers. Modern code does not
+  // depend on the internal query-state implementation.
   queryCapabilities: {
     getListState: null,
     isSortingEnabled: null,
@@ -244,7 +242,7 @@ const quepidSearch = {
     createRuntime: createLiveQueryLifecycleRuntime,
     createCollectionRuntime: createLiveQueryCollectionRuntime,
     createTransportRuntime: createLiveQueryTransportRuntime,
-    createCompatibilityRuntime: createLiveQueryCompatibilityRuntime,
+    createRuntimeGraph: createLiveQueryRuntimeGraph,
     caseId: null,
     prepareQueries: null,
     commitQueries: null,

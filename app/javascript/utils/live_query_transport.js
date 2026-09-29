@@ -1,11 +1,11 @@
 import { createSearchAllRuntime } from "utils/query_runtime"
 
 /**
- * Framework-free transport orchestration for live queries.
+ * Transport orchestration for live queries.
  *
  * Searchers and Query objects remain injected adapters while this runtime owns
  * the single-query and batch search policy. That keeps persistence commits and
- * search execution on the same seam during the compatibility dual-run.
+ * search execution on the same seam during the store transition.
  */
 export function createLiveQueryTransportRuntime({
   queryRuntime,

@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+import { QueryCollectionStore } from "stores/query_collection_store"
 import { createLiveQueryRegistry } from "utils/live_query_registry"
 
 function storeFor(overrides = {}) {
@@ -33,6 +34,37 @@ describe("createLiveQueryRegistry", () => {
 
     expect(registry.get(1)).toBe(query)
     expect(store.upsert).not.toHaveBeenCalled()
+  })
+
+  it("uses the collection store as the live object owner", () => {
+    const store = new QueryCollectionStore()
+    const registry = createLiveQueryRegistry({ store })
+    const query = { queryId: 1 }
+
+    registry.register(1, query, { publish: false })
+
+    expect(store.liveQuery(1)).toBe(query)
+    expect(registry.get(1)).toBe(query)
+
+    registry.clear()
+
+    expect(store.liveQuery(1)).toBeNull()
+  })
+
+  it("preserves registered live objects when bootstrap replaces snapshots", () => {
+    const store = new QueryCollectionStore()
+    const registry = createLiveQueryRegistry({ store })
+    const query = { queryId: 1, queryText: "live" }
+
+    registry.register(1, query, { publish: false })
+    store.replaceFromResponse(7, {
+      display_order: [1],
+      queries: [{ query_id: 1, query_text: "snapshot" }]
+    })
+
+    expect(registry.get(1)).toBe(query)
+    expect(registry.all()).toEqual({ 1: query })
+    expect(store.query(1).queryText).toBe("snapshot")
   })
 
   it("enumerates live objects in store order and removes them together", () => {

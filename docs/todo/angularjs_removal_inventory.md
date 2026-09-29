@@ -43,11 +43,11 @@ boundaries whose behavior must be preserved while the core UI evolves:
   and score deduplication remain backend contracts that frontend work must not change.
 - `app/javascript/utils/core_capabilities_runtime.js` now exposes module-owned
   capabilities for bootstrap, snapshots, the wizard, and Tune Relevance; it no
-  longer accepts a legacy runtime from callers. The remaining dual-run
+  longer accepts a legacy runtime from callers. The remaining store-transition
   boundary is `app/javascript/utils/live_query_runtime_initializer.js`, which
-  still coordinates live-query search, scoring, and Angular-owned query state.
-  Reduce or remove that initializer only when those consumers have been moved
-  and verified.
+  coordinates live-query search, scoring, and live query objects alongside the
+  explicit query stores. Remove the duplicate ownership only after those
+  consumers have been moved and verified.
 
 ## Open UX and testing work
 
