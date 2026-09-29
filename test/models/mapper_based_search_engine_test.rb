@@ -57,17 +57,25 @@ class MapperBasedSearchEngineTest < ActiveSupport::TestCase
       assert_nil qdrant.pagination_offset_param
     end
 
-    it 'ships no live endpoint, so the wizard asks for the user\'s own cluster URL' do
-      assert_equal '', qdrant.search_url
+    it 'ships a live endpoint pointing at the quepid-tmdb cluster\'s tmdb collection' do
+      assert_includes qdrant.search_url, '.cloud.qdrant.io/collections/tmdb/points/query'
       assert_includes qdrant.url_format, '/collections/'
       assert_includes qdrant.url_format, '/points/query'
     end
 
-    # Qdrant authenticates with its own api-key header rather than HTTP Basic.
-    it 'ships a placeholder api-key header rather than a real credential' do
+    # Qdrant authenticates with its own api-key header rather than HTTP Basic. The shipped
+    # key must stay scoped to read-only access on the tmdb collection - if a future swap
+    # widens that scope, this should fail loudly rather than silently ship a stronger
+    # credential.
+    it 'ships a real api-key header scoped to read-only access on the tmdb collection' do
       assert_not qdrant.supports_basic_auth
       assert_equal 'Custom', qdrant.header_type
-      assert_equal({ 'api-key' => '<your-qdrant-api-key>' }, JSON.parse(qdrant.custom_headers))
+
+      token   = JSON.parse(qdrant.custom_headers)['api-key']
+      payload = token.split('.')[1]
+      payload = JSON.parse(Base64.urlsafe_decode64(payload + ('=' * ((4 - (payload.length % 4)) % 4))))
+
+      assert_equal [ { 'collection' => 'tmdb', 'access' => 'r' } ], payload['access']
     end
 
     it 'supports rated docs lookup, which its mapper implements' do

@@ -135,10 +135,11 @@ class MapperBasedSearchEngine
       # a deserialization error. The page size is baked into query_params below as a real
       # integer instead, editable in the Query Sandbox.
       supports_pagination:        false,
-      # No public Qdrant demo cluster exists to point this at the way Vespa's tile points at
-      # the o19s demo tenant, so this tile needs the user to paste their own collection's
-      # query URL. url_format is what the wizard shows them as the shape to follow.
-      search_url:                 '',
+      # A live demo tile, same idea as Vespa's: search_url points at the quepid-tmdb Qdrant
+      # Cloud cluster's tmdb collection (restored per docs/endpoints_qdrant.md), so the tile
+      # works with zero setup. url_format still shows self-hosted/other-cluster users the
+      # general shape to paste their own collection into.
+      search_url:                 'https://e23a5023-4f5c-492e-baa4-5b8dccf08dca.europe-west6-0.gcp.cloud.qdrant.io/collections/tmdb/points/query',
       url_format:                 'https://<cluster-id>.<region>.cloud.qdrant.io:6333/collections/<collection>/points/query',
       # BM25 rather than a dense embedding model: qdrant/bm25 is the one model Qdrant runs
       # locally inside the cluster, so this default works on self-hosted Qdrant as well as
@@ -156,11 +157,11 @@ class MapperBasedSearchEngine
       # Qdrant can filter by point id (has_id) or by a payload key (match/any), so an
       # already-rated-docs lookup is expressible - see ratedDocsQueryParamsMapper.
       supports_rated_docs_lookup: true,
-      # A placeholder, not a credential: unlike Vespa's demo tenant there is no shared
-      # cluster to hand out read access to, so the user replaces this with their own key in
-      # the wizard's Custom Headers editor (a self-hosted cluster with auth disabled ignores
-      # the header entirely).
-      custom_headers:             { 'api-key': '<your-qdrant-api-key>' }.to_json,
+      # Read-only Qdrant Cloud data-plane key for the quepid-tmdb cluster, scoped to query
+      # access on the tmdb collection only ({"collection":"tmdb","access":"r"}), so exposure
+      # is bounded to extra queries against the demo index, not writing/deleting data. A
+      # self-hosted cluster with auth disabled ignores this header entirely.
+      custom_headers:             { 'api-key': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2Nlc3MiOlt7ImNvbGxlY3Rpb24iOiJ0bWRiIiwiYWNjZXNzIjoiciJ9XSwic3ViamVjdCI6ImFwaS1rZXk6MTE0MjFhOTgtMGYzZi00YWFhLWI0MzYtMDg1YWJlODhhYmY3In0.sHTEd9DDdXirQ2MiY-OMAm5y5-bW5LJAtNFWezqUbfI' }.to_json,
       header_type:                'Custom',
       # Qdrant's own point id, which is what a has_id filter matches on. A collection that
       # would rather key on a payload field can repoint this at that field by name; both
@@ -171,7 +172,7 @@ class MapperBasedSearchEngine
       # by id, so this works as a match-all smoke test against any collection, whether or
       # not it has the sparse bm25 vector the default query_params above needs.
       test_query:                 '{"with_payload": true, "limit": 1}',
-      additional_fields:          [],
+      additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
       mapper_file:                'db/mapper_based_search_engines/qdrant.js',
     }
   ].freeze
