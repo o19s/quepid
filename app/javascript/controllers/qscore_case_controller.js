@@ -3,6 +3,7 @@ import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
 import { diffStateStore } from "stores/diff_state_store"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Store-driven replacement for the Angular `<qscore-case>` component's primary
@@ -142,7 +143,8 @@ export default class extends Controller {
     const refreshGeneration = ++this.diffRefreshGeneration
     const stores = this.coreStores || getCoreStores()
     const documentsStore = stores.documents
-    const buildCaseDiffScores = window.quepidSearch?.diffScores?.buildCaseDiffScores
+    const capabilities = getCoreCapabilities()
+    const buildCaseDiffScores = capabilities.diffScores?.buildCaseDiffScores
 
     if (!documentsStore || !buildCaseDiffScores) return
 
@@ -157,12 +159,12 @@ export default class extends Controller {
       return
     }
 
-    const capabilities = window.quepidSearch?.queryCapabilities
-    const queries = Object.values(capabilities?.getQueries?.() || {})
-    if (!capabilities?.refreshAllDiffs) return
+    const queryCapabilities = capabilities.queryCapabilities
+    const queries = Object.values(queryCapabilities?.getQueries?.() || {})
+    if (!queryCapabilities?.refreshAllDiffs) return
     try {
       if (refreshQueries) {
-        await capabilities.refreshAllDiffs()
+        await queryCapabilities.refreshAllDiffs()
       }
 
       if (refreshGeneration !== this.diffRefreshGeneration) return

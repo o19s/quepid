@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { snapshotDocument } from "stores/query_documents_store"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 export default class extends Controller {
   static targets = ["queryParams", "queryParamsEditor", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
@@ -20,7 +21,7 @@ export default class extends Controller {
 
   connect() {
     if (!this.isModalRoot) return
-    this.adapter = window.quepidSearch?.targetedSearch?.(this.queryIdValue)
+    this.adapter = getCoreCapabilities().targetedSearch?.(this.queryIdValue)
     if (!this.adapter) return
     this.element.addEventListener("rating-popover:rate", this.ratingHandler = event => this.rate(event))
     this.element.addEventListener("rating-popover:reset", this.resetHandler = event => this.rate(event))

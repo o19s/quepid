@@ -4,6 +4,7 @@ import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { errorMessage } from "utils/error_message"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { searchResultsTemplate } from "controllers/search_results_template"
 
 /**
@@ -28,7 +29,7 @@ export default class extends Controller {
     this.filterValue = ""
     this.clientSortName = this.sortNameValue
     this.clientReverse = this.reverseValue
-    this.queryCapabilities = window.quepidSearch?.queryCapabilities
+    this.queryCapabilities = getCoreCapabilities().queryCapabilities
     this.syncSortFromUrl()
     const stores = getCoreStores()
     this.store = stores.queries
@@ -53,7 +54,7 @@ export default class extends Controller {
     document.addEventListener("query-command:delete-completed", this.queryDeleteCompleted)
     document.addEventListener("query-command:move-completed", this.queryMoveCompleted)
     this.listStateChange = () => {
-      this.queryCapabilities = window.quepidSearch?.queryCapabilities
+      this.queryCapabilities = getCoreCapabilities().queryCapabilities
       this.scheduleRender()
     }
     document.addEventListener("queries-state:changed", this.listStateChange)

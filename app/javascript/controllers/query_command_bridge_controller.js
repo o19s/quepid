@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Routes query-workspace intents from the framework-free stores to the
@@ -32,7 +33,7 @@ export default class extends Controller {
   }
 
   routeDocumentCommand({ command, queryId, docId, rating, ratedOnly }) {
-    const queryCommands = window.quepidSearch?.queryCommands
+    const queryCommands = getCoreCapabilities().queryCommands
     const handlers = {
       "rate-document": () => queryCommands?.rateDocument?.(queryId, docId, rating),
       "rate-all": () => queryCommands?.rateAll?.(queryId, rating),
@@ -44,7 +45,7 @@ export default class extends Controller {
   }
 
   routeCollectionCommand({ command }) {
-    const queryCommands = window.quepidSearch?.queryCommands
+    const queryCommands = getCoreCapabilities().queryCommands
     if (command === "toggle-show-only-rated") queryCommands?.toggleShowOnlyRated?.()
     if (command === "collapse-all") {
       queryCommands?.collapseAll?.()
@@ -56,7 +57,7 @@ export default class extends Controller {
   reconcileQueryRemoval({ caseId, queryId }, rescore) {
     if (queryId == null) return
 
-    const capabilities = window.quepidSearch?.queryCapabilities
+    const capabilities = getCoreCapabilities().queryCapabilities
     if (rescore && caseId != null && String(caseId) !== String(capabilities?.getCaseNo?.())) return
     capabilities?.reconcileQueryRemoval?.(queryId, rescore)
   }

@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { getBootstrapCapabilities } from "utils/core_angular_adapter"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { initializeLiveQueryRuntime } from "utils/live_query_runtime_initializer"
 
 export default class extends Controller {
@@ -21,11 +22,12 @@ export default class extends Controller {
     try {
       this.capabilities = await getBootstrapCapabilities()
       const stores = getCoreStores()
+      const legacy = getCoreCapabilities()
 
-      if (this.capabilities.liveQuery && window.quepidSearch.splainerSearch?.searchSvc) {
+      if (this.capabilities.liveQuery && legacy.splainerSearch?.searchSvc) {
         initializeLiveQueryRuntime({
           ...this.capabilities.liveQuery,
-          search: window.quepidSearch,
+          search: legacy,
           store: stores
         })
       }
@@ -51,7 +53,7 @@ export default class extends Controller {
       }
       const searchEngineChanged = () => getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
 
-      if (caseChanged()) window.quepidSearch.queryCapabilities.resetQueryState()
+      if (caseChanged()) legacy.queryCapabilities.resetQueryState()
 
       navigation.complete({ caseNo, tryNo })
 
@@ -60,7 +62,7 @@ export default class extends Controller {
         return this.fail(new Error("No case selected"))
       }
 
-      window.quepidSearch.queryCapabilities.resetSearchPromise()
+      legacy.queryCapabilities.resetSearchPromise()
       await caseCapability.load(caseNo).then(async acase => {
         if (acase === undefined) throw new Error(`Could not retrieve case ${caseNo}. Confirm that the case has been shared with you via a team you are a member of!`)
 
@@ -88,13 +90,13 @@ export default class extends Controller {
         }
 
         await docCache.update(newSettings)
-        await window.quepidSearch.queryCapabilities.changeSettings(caseNo, newSettings)
+        await legacy.queryCapabilities.changeSettings(caseNo, newSettings)
         window.quepidDom?.flash?.hide()
         window.quepidDom?.flash?.hide("search-error")
         caseCapability.trackLastViewedAt(caseNo)
         this.ready({ caseNo, tryNo })
 
-        window.quepidSearch.queryCommands.searchAll().then(
+        legacy.queryCommands.searchAll().then(
           () => window.quepidDom?.flash?.show("success", "All queries finished successfully!"),
           error => {
             window.quepidDom?.flash?.show("error", "Some queries failed to resolve!")

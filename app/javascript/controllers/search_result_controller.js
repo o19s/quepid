@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Renders one document snapshot. Search, rating mutations, and detailed
@@ -129,7 +130,7 @@ export default class extends Controller {
   }
 
   ratingColor(rating, scale) {
-    const style = window.quepidSearch?.scoring?.ratingBackgroundColor?.({ rating, scale })
+    const style = getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })
     return style?.["background-color"] || scale[rating]?.color || ""
   }
 

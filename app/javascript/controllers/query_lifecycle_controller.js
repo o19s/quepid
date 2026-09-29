@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { errorMessage } from "utils/error_message"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Owns query lifecycle orchestration while the search/scoring implementation
@@ -19,7 +20,7 @@ export default class extends Controller {
 
   async addQueries(queryTexts) {
     if (queryTexts.length === 0) return
-    const lifecycle = window.quepidSearch?.queryLifecycle
+    const lifecycle = getCoreCapabilities().queryLifecycle
     if (!lifecycle?.prepareQueries || !lifecycle?.commitQueries) {
       window.quepidDom?.flash?.show("error", "Unable to add queries.")
       this.complete(false)

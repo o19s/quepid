@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_angular_adapter"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import {
@@ -297,11 +298,12 @@ export default class extends Controller {
       const latestSettings = settings.editable()
       documents.cache.invalidate()
       documents.cache.update(latestSettings)
-      await window.quepidSearch.queryCapabilities.changeSettings(navigation.caseNo(), latestSettings)
+      const capabilities = getCoreCapabilities()
+      await capabilities.queryCapabilities.changeSettings(navigation.caseNo(), latestSettings)
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
-      if (texts.length && window.quepidSearch?.queryLifecycle) {
-        const persisted = await window.quepidSearch.queryLifecycle.persistQueries(navigation.caseNo(), texts)
-        await window.quepidSearch.queryLifecycle.commitPersistedQueries(persisted)
+      if (texts.length && capabilities.queryLifecycle) {
+        const persisted = await capabilities.queryLifecycle.persistQueries(navigation.caseNo(), texts)
+        await capabilities.queryLifecycle.commitPersistedQueries(persisted)
       }
       const currentUser = user.current()
       const isFirstCaseWizard = !currentUser.completedCaseWizard

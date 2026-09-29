@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { attachTextPaste } from "utils/text_paste"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Stimulus shell for the core add-query control.
@@ -14,9 +15,9 @@ export default class extends Controller {
   }
 
   connect() {
-    this.queryCapabilities = window.quepidSearch?.queryCapabilities
+    this.queryCapabilities = getCoreCapabilities().queryCapabilities
     this.onQueryStateChange = () => {
-      this.queryCapabilities = window.quepidSearch?.queryCapabilities
+      this.queryCapabilities = getCoreCapabilities().queryCapabilities
       this.render()
     }
     document.addEventListener("queries-state:changed", this.onQueryStateChange)

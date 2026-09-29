@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
 export function buildFrogReportStats(queries) {
@@ -58,21 +59,22 @@ export default class extends Controller {
 
   render() {
     const queries = Object.values(this.store?.snapshot()?.queries || {})
+    const capabilities = getCoreCapabilities()
     const { withResults, withoutResults, ratingsNeeded, missingRatings, missingRate, allRated } = buildFrogReportStats(queries)
 
-    this.setText("caseName", window.quepidSearch?.caseState?.caseName || "")
+    this.setText("caseName", capabilities.caseState?.caseName || "")
     this.setText("queryCount", queries.length)
     this.setText("withResults", withResults)
     this.setText("withoutResults", withoutResults)
     this.setText("ratingsNeeded", ratingsNeeded)
     this.setText("missingRatings", missingRatings)
     this.setText("missingRate", missingRate)
-    this.setText("bookName", window.quepidSearch?.caseState?.bookName || "")
+    this.setText("bookName", capabilities.caseState?.bookName || "")
 
     this.allRatedTarget.classList.toggle("d-none", !allRated)
     this.notAllRatedTarget.classList.toggle("d-none", allRated)
     this.hopMessageTarget.classList.toggle("d-none", allRated || missingRate <= 5)
-    this.refreshButtonTarget.classList.toggle("d-none", !window.quepidSearch?.caseState?.bookId)
+    this.refreshButtonTarget.classList.toggle("d-none", !capabilities.caseState?.bookId)
     this.renderChart(this.distribution(queries))
   }
 
@@ -134,7 +136,7 @@ export default class extends Controller {
   }
 
   async refresh() {
-    const state = window.quepidSearch?.caseState || {}
+    const state = getCoreCapabilities().caseState || {}
     if (!state.bookId || !state.caseNo) return
     this.refreshButtonTarget.disabled = true
     this.refreshIconTarget.classList.add("spintime")
@@ -149,7 +151,7 @@ export default class extends Controller {
       const response = await apiFetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
       if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
       if (!background) {
-        const refreshQueries = window.quepidSearch?.queryLifecycle?.refreshQueries
+        const refreshQueries = getCoreCapabilities().queryLifecycle?.refreshQueries
         if (typeof refreshQueries !== "function") {
           throw new Error("Query refresh is unavailable")
         }

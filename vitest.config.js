@@ -64,6 +64,7 @@ export default defineConfig({
       { find: "utils/tune_relevance", replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js") },
       { find: "utils/core_angular_adapter", replacement: path.resolve(repoRoot, "app/javascript/utils/core_angular_adapter.js") },
       { find: "utils/core_store_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js") },
+      { find: "utils/core_capability_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js") },
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },

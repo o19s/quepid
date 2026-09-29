@@ -5,6 +5,7 @@ import { buildSnapshotPayload } from "utils/snapshot_payload"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
 import { getSnapshotCapabilities } from "utils/core_angular_adapter"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /*
  * Temporary compatibility bridge for snapshot comparison.
@@ -44,20 +45,20 @@ export default class extends Controller {
   }
 
   snapshotRegistry() {
-    const snapshotSearch = window.quepidSearch?.snapshotSearch
+    const snapshotSearch = getCoreCapabilities().snapshotSearch
     if (!snapshotSearch) return null
     snapshotSearch.snapshots ||= {}
     return snapshotSearch.snapshots
   }
 
   refreshAllDiffs() {
-    return window.quepidSearch?.queryCapabilities?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
+    return getCoreCapabilities().queryCapabilities?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
   }
 
   async registerSnapshots(payloads) {
     const { capability, docCache } = await getSnapshotCapabilities()
     const { settings, navigation, fieldSpec, documents } = capability
-    const snapshotSearch = window.quepidSearch?.snapshotSearch
+    const snapshotSearch = getCoreCapabilities().snapshotSearch
     const registry = this.snapshotRegistry()
 
     if (!settings || !navigation || !fieldSpec || !documents || !docCache || !snapshotSearch || !registry) {
@@ -132,7 +133,7 @@ export default class extends Controller {
       const payload = buildSnapshotPayload(
         detail.name,
         detail.recordDocumentFields,
-        window.quepidSearch.queryCapabilities.getQueryArray()
+        getCoreCapabilities().queryCapabilities.getQueryArray()
       )
       const response = await apiFetch(`api/cases/${caseNo}/snapshots`, {
         method: "POST",

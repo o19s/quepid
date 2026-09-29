@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
 import { sanitizeHtml } from "controllers/search_result_controller"
@@ -341,7 +342,7 @@ export default class extends Controller {
   }
 
   ratingColor(rating, scale) {
-    return window.quepidSearch?.scoring?.ratingBackgroundColor?.({ rating, scale })?.["background-color"] || scale[rating]?.color || ""
+    return getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })?.["background-color"] || scale[rating]?.color || ""
   }
 
   handleQueryToggle(event) {
