@@ -102,7 +102,7 @@ function updateModalTitle(judgeId) {
       <div class="card-body">
         <div class="display-5 fw-bold text-danger"><%= @zero_judgement_count %></div>
         <h6 class="card-title mt-1"><i class="bi bi-exclamation-circle text-danger"></i> Not Started</h6>
-        <p class="card-text text-muted small">Pairs with zero judgements — highest priority</p>
+        <p class="card-text text-muted small">Pairs with no judgements — highest priority</p>
       </div>
     </div>
   </div>
@@ -148,7 +148,7 @@ function updateModalTitle(judgeId) {
 <div class="card mb-4">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="mb-0"><i class="bi bi-people"></i> Judge Activity</h5>
-    <small class="text-muted">Last 7 days</small>
+    <small class="text-muted">Last 30 days</small>
   </div>
   <div class="card-body p-0">
     <table class="table table-hover mb-0 align-middle">
@@ -157,7 +157,7 @@ function updateModalTitle(judgeId) {
           <th>Judge</th>
           <th class="text-end">Judged</th>
           <th class="text-end">Last Active</th>
-          <th style="min-width:160px">Activity (7d)</th>
+          <th style="min-width:220px">Activity (30d)</th>
         </tr>
       </thead>
       <tbody id="judge-activity-table"
@@ -185,7 +185,7 @@ function updateModalTitle(judgeId) {
       <div class="card-header">
         <h5 class="mb-0"><i class="bi bi-briefcase"></i> Linked Cases</h5>
       </div>
-      <div id="linked-cases-list">
+      <div id="linked-cases-list" class="d-flex flex-column flex-grow-1">
         <%= render 'books/linked_cases_list', book: @book, cases: @cases %>
       </div>
     </div>

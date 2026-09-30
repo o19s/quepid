@@ -15,10 +15,11 @@ module AvatarHelper
   # - if the user is an AI judge, badges the avatar with a robot icon
   #
   # @param user [User] the user object to render an avatar for
-  # @param size [Symbol] the size key (:small, :medium, :big)
+  # @param size [Symbol, Integer] a size key (:small, :medium, :big) or an exact pixel size
   # @param classes [String] additional CSS classes for the wrapper
+  # @param id [String, nil] optional id attribute for the wrapper
   # @return [String] HTML-safe string containing the avatar image
-  def avatar_tag user, size: :medium, classes: ''
+  def avatar_tag user, size: :medium, classes: '', id: nil
     return content_tag(:div, '?', class: 'avatar-placeholder') if user.nil?
 
     size_px = avatar_size_in_pixels(size)
@@ -30,12 +31,14 @@ module AvatarHelper
             render_initials_avatar(user, size_px)
           end
 
-    wrap_avatar(img, user, wrapper_classes)
+    wrap_avatar(img, user, wrapper_classes, id)
   end
 
   private
 
   def avatar_size_in_pixels size
+    return size if size.is_a?(Integer)
+
     Profile::SIZES[size] || Profile::SIZES[:medium]
   end
 
@@ -43,7 +46,7 @@ module AvatarHelper
     image_tag(
       user.avatar_url(size),
       alt:   user.fullname,
-      class: 'rounded',
+      class: 'rounded-circle',
       style: "width:#{size_px}px;height:#{size_px}px;object-fit:cover;"
     )
   end
@@ -57,7 +60,7 @@ module AvatarHelper
     image_tag(
       data_uri,
       alt:   user.fullname,
-      class: 'rounded',
+      class: 'rounded-circle',
       style: "width:#{size_px}px;height:#{size_px}px;object-fit:cover;"
     )
   end
@@ -83,8 +86,8 @@ module AvatarHelper
     SVG
   end
 
-  def wrap_avatar img, user, wrapper_classes
-    content_tag(:div, class: wrapper_classes) do
+  def wrap_avatar img, user, wrapper_classes, id
+    content_tag(:div, class: wrapper_classes, id: id) do
       if user.ai_judge?
         img + ai_judge_badge
       else
