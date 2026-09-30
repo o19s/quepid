@@ -392,9 +392,6 @@ export default class extends Controller {
 
   renderQueryShell(row, query, rank, expanded = this.queryExpanded(query)) {
     const queryId = String(query.queryId)
-    const queryText = escapeAttribute(query.queryText || "")
-    const informationNeed = escapeAttribute(query.informationNeed || "")
-    const state = escapeAttribute(query.state || "")
     const numFound = Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0)
     const querqyTriggered = querqyRuleTriggered(query.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
@@ -406,11 +403,8 @@ export default class extends Controller {
         data-controller="query-row"
         data-query-row-query-id-value="${queryId}"
         data-query-row-rank-value="${rank}"
-        data-query-row-query-text-value="${queryText}"
-        data-query-row-information-need-value="${informationNeed}"
         data-query-row-num-found-value="${numFound}"
         data-query-row-querqy-triggered-value="${querqyTriggered}"
-        data-query-row-state-value="${state}"
         data-query-row-diff-value="${hasDiffs}"
         data-query-row-toggled-value="${toggled}"
         data-query-row-sorting-value="${sorting}">
@@ -420,7 +414,7 @@ export default class extends Controller {
           </div>
           <div data-query-row-target="diffScores"></div>
           <h2 class="results-title" data-action="click->query-row#toggle">
-            <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-title-value="Info Need: ${informationNeed}" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
+            <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
               <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image" alt="">
               <span data-query-row-target="text">&nbsp;</span>
             </span>
@@ -440,6 +434,13 @@ export default class extends Controller {
       </div>
     `
 
+    // User-controlled values are assigned as data attributes, never interpolated into markup.
+    const rowElement = row.querySelector('[data-controller="query-row"]')
+    rowElement.dataset.queryRowQueryTextValue = query.queryText || ""
+    rowElement.dataset.queryRowInformationNeedValue = query.informationNeed || ""
+    rowElement.dataset.queryRowStateValue = query.state || ""
+    rowElement.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue =
+      `Info Need: ${query.informationNeed || ""}`
   }
 
   renderSearchResults(row, query) {
@@ -449,8 +450,8 @@ export default class extends Controller {
     searchResults.innerHTML = searchResultsTemplate({
       caseId: query.caseNo,
       queryId: query.queryId,
-      queryExplainData: escapeAttribute(JSON.stringify(queryExplainData(query))),
-      queryOptionsData: escapeAttribute(JSON.stringify(query.options || {}))
+      queryExplainData: JSON.stringify(queryExplainData(query)),
+      queryOptionsData: JSON.stringify(query.options || {})
     })
     const searchResultsRoot = searchResults.firstElementChild
     expanded.appendChild(searchResultsRoot)
@@ -569,14 +570,6 @@ export default class extends Controller {
     this.paginationTarget.appendChild(nav)
   }
 
-}
-
-function escapeAttribute(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
 }
 
 function queryExplainData(query) {

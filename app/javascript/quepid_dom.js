@@ -23,7 +23,8 @@ import { hideFlash, showFlash } from "utils/flash"
 // to resolve it (see package.json).
 import { openDynamicModal } from "utils/dynamic_modal"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
-import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
+import { renderJsonExplorer } from "utils/json_explorer"
+import { escapeHtml } from "utils/html"
 
 /**
  * Shared DOM helpers for Bootstrap tooltips/popovers and paste handling.

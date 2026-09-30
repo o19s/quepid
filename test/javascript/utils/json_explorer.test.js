@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { escapeHtml, renderJsonExplorer } from "utils/json_explorer"
+import { renderJsonExplorer } from "utils/json_explorer"
 
 describe("json_explorer", () => {
-  describe("escapeHtml", () => {
-    it("escapes &, < and >", () => {
-      expect(escapeHtml("<a> & <b>")).toBe("&lt;a&gt; &amp; &lt;b&gt;")
-    })
-  })
-
   describe("renderJsonExplorer", () => {
     it("renders a raw object's keys, string, number and boolean leaves", () => {
       const container = document.createElement("div")

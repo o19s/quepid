@@ -82,4 +82,12 @@ describe("ScorerScaleController", () => {
     controller.hasScaleLabelsTarget = false
     expect(() => controller.updateScaleLabels("0,1")).not.toThrow()
   })
+
+  it("treats hostile scale values as text, not markup", () => {
+    const { controller } = mount()
+    controller.scaleListTarget.value = "<img src=x onerror=alert(1)>,2"
+    controller.scaleListTarget.dispatchEvent(new Event("input"))
+    expect(controller.scaleLabelsTarget.querySelector("img")).toBeNull()
+    expect(labelInputs(controller)).toContain("scorer[scale_with_labels][<img src=x onerror=alert(1)>]")
+  })
 })

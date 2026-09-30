@@ -19,3 +19,27 @@ describe("searchResultsTemplate accessibility", () => {
     expect(root.querySelector(".results-pane-toggle").tagName).toBe("BUTTON")
   })
 })
+
+describe("searchResultsTemplate escaping", () => {
+  it("keeps hostile explain/options JSON inside its attribute", () => {
+    const payload = '{"x":"\\"><img src=x onerror=alert(1)>"}'
+    const root = document.createElement("div")
+    root.innerHTML = searchResultsTemplate({
+      caseId: 1,
+      queryId: 2,
+      queryExplainData: payload,
+      queryOptionsData: payload
+    })
+
+    expect(root.querySelector("img")).toBeNull()
+    expect(root.querySelector("[data-query-explain-data-value]").dataset.queryExplainDataValue).toBe(payload)
+    expect(root.querySelector("[data-query-options-core-options-value]").dataset.queryOptionsCoreOptionsValue).toBe(payload)
+  })
+
+  it("escapes hostile ids", () => {
+    const root = document.createElement("div")
+    root.innerHTML = searchResultsTemplate({ caseId: 1, queryId: '1"><img src=x>', queryExplainData: "{}" })
+    expect(root.querySelector("img")).toBeNull()
+  })
+})
+

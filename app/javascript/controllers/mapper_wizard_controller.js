@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { escapeHtml } from "utils/html"
 import { apiFetch } from "api/fetch"
 import { showStatusMessage } from "utils/status_message"
 
@@ -284,17 +285,17 @@ export default class extends Controller {
 
       if (data.success) {
         const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${this.escapeHtml(resultStr)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${escapeHtml(resultStr)}</pre>`
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
-        resultTarget.innerHTML = `<pre class="text-danger mb-0">${this.escapeHtml(data.error)}</pre>`
+        resultTarget.innerHTML = `<pre class="text-danger mb-0">${escapeHtml(data.error)}</pre>`
         this.showStatus(`${mapperType} test failed`, "error")
       }
 
       // Display console logs if any were captured
       this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
-      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${this.escapeHtml(error.message)}</pre>`
+      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${escapeHtml(error.message)}</pre>`
     } finally {
       this.setButtonLoading(button, false)
     }
@@ -316,7 +317,7 @@ export default class extends Controller {
       const levelIcon = log.level === 'error' ? '[ERROR]' :
                         log.level === 'warn' ? '[WARN]' :
                         log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${this.escapeHtml(levelIcon)} ${this.escapeHtml(log.message)}</div>`
+      return `<div class="${levelClass}">${escapeHtml(levelIcon)} ${escapeHtml(log.message)}</div>`
     }).join('')
 
     logsTarget.innerHTML = logHtml
@@ -532,11 +533,5 @@ export default class extends Controller {
       button.disabled = false
       button.innerHTML = button.dataset.originalText || button.innerHTML
     }
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div')
-    div.textContent = text
-    return div.innerHTML
   }
 }

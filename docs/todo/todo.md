@@ -42,12 +42,6 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION] P2 — Client-rendered HTML is an XSS and lifecycle hotspot (code review 2026-09-29)
-
-Template-string rendering remains in e.g. `search_results_controller.js:315-323` and `queries_list_controller.js:400-455`. Escaping is spread across helpers and call sites, and `innerHTML` replacement complicates Stimulus lifecycle reasoning.
-
-**Fix direction:** Prefer ERB shells plus Stimulus targets for stable UI, and DOM construction/text nodes for user-controlled values. Where templates are necessary, centralize escaping and add XSS regression tests for query text, document IDs, endpoint names, error messages, and mapper output.
-
 ### [MIGRATION] Verification requirements
 
 For changes to the core case surface:

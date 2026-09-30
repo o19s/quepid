@@ -1,3 +1,5 @@
+import { escapeAttribute } from "utils/html"
+
 /**
  * Static shell for an expanded query.
  *
@@ -5,6 +7,11 @@
  * Live search/scoring remains behind the query-state adapter.
  */
 export function searchResultsTemplate({ caseId, queryId, queryExplainData, queryOptionsData = "{}" }) {
+  // Raw values in; every interpolation below is escaped here, once.
+  caseId = escapeAttribute(caseId)
+  queryId = escapeAttribute(queryId)
+  queryExplainData = escapeAttribute(queryExplainData)
+  queryOptionsData = escapeAttribute(queryOptionsData)
   return `
     <div data-controller="search-results">
       <div data-search-results-target="content" class="sub-results container-fluid d-none">

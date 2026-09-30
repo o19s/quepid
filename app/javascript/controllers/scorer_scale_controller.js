@@ -64,16 +64,15 @@ export default class extends Controller {
       label.className = 'scale-with-label-element clearfix'
       label.style.display = 'inline-block'
       label.style.marginRight = '10px'
-      label.innerHTML = `
-        ${value}:
-        <input
-          class="form-control scale-label clearfix"
-          type="text"
-          name="scorer[scale_with_labels][${value}]"
-          value=""
-          style="width: 100px; display: inline-block;"
-        />
-      `
+      label.append(`${value}: `)
+      const input = document.createElement('input')
+      input.className = 'form-control scale-label clearfix'
+      input.type = 'text'
+      input.name = `scorer[scale_with_labels][${value}]`
+      input.value = ''
+      input.style.width = '100px'
+      input.style.display = 'inline-block'
+      label.appendChild(input)
       labelsContainer.appendChild(label)
     })
   }

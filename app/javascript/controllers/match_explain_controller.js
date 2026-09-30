@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsPopover } from "utils/bs_popover"
 import { openDynamicModal } from "utils/dynamic_modal"
-import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
+import { renderJsonExplorer } from "utils/json_explorer"
+import { escapeHtml } from "utils/html"
 
 /**
  * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row

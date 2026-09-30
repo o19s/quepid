@@ -459,4 +459,19 @@ describe("queries_list_controller", () => {
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to reorder queries.")
     delete window.quepidDom
   })
+
+  it("renders hostile query text, info need, and state as inert data attributes", () => {
+    const { controller } = controllerFor()
+    const evil = '"><img src=x onerror=alert(1)>'
+    const row = document.createElement("li")
+    controller.renderQueryShell(row, { queryId: 9, queryText: evil, informationNeed: evil, state: evil }, 1)
+
+    expect(row.querySelector("[onerror]")).toBeNull()
+    const el = row.querySelector('[data-controller="query-row"]')
+    expect(el.dataset.queryRowQueryTextValue).toBe(evil)
+    expect(el.dataset.queryRowInformationNeedValue).toBe(evil)
+    expect(el.dataset.queryRowStateValue).toBe(evil)
+    expect(row.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue).toBe(`Info Need: ${evil}`)
+  })
 })
+

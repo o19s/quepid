@@ -28,6 +28,7 @@ export default defineConfig({
       { find: "utils/case_header", replacement: path.resolve(repoRoot, "app/javascript/utils/case_header.js") },
       { find: "utils/bs_tooltip", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js") },
       { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },
+      { find: "utils/html", replacement: path.resolve(repoRoot, "app/javascript/utils/html.js") },
       { find: "utils/bs_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_modal.js") },
       { find: "utils/dynamic_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/dynamic_modal.js") },
       { find: "utils/detailed_document_modal", replacement: path.resolve(repoRoot, "app/javascript/utils/detailed_document_modal.js") },
