@@ -116,7 +116,7 @@ module AiJudges
         body = response.parsed_body
         assert body['unrateable']
         assert_nil body['rating']
-        assert_match(/outside this book's scale/, body['explanation'])
+        assert_match(/outside the scale/, body['explanation'])
       end
 
       test 'a rating on the book scale is still shown as the rating' do

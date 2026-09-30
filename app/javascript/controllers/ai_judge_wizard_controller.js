@@ -72,7 +72,7 @@ export default class extends Controller {
     "ratingInfo",
     "loadingSpinner",
     "runPromptButton",
-    "needsBookNotice"
+    "needsScaleNotice"
   ]
 
   static values = {
@@ -81,7 +81,7 @@ export default class extends Controller {
     existing: Boolean,
     presets: Object,
     stockPrompts: Array,
-    hasBook: Boolean
+    hasScale: Boolean
   }
 
   connect() {
@@ -204,14 +204,14 @@ export default class extends Controller {
     this.updateRunAvailability(preset)
   }
 
-  // A provider that needs a book (currently: one sent the book's scale as its
-  // criteria, like Jev) has nothing to judge against without one, so don't offer
-  // a run that can only fail.
+  // A provider that needs a scale (currently: one sent the scale as its criteria,
+  // like Jev) has nothing to judge against without one, so don't offer a run that
+  // can only fail.
   updateRunAvailability(preset) {
-    const needsBook = Boolean(preset?.needs_book) && !this.hasBookValue
+    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
 
-    if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = needsBook
-    if (this.hasNeedsBookNoticeTarget) this.needsBookNoticeTarget.style.display = needsBook ? "" : "none"
+    if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
+    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
   }
 
   // Fields the provider fixes for us (e.g. a single endpoint and model) are shown

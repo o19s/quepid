@@ -56,7 +56,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
     test 'carries the book scale into the system prompt' do
       envelope = openai.request_envelope(query_doc_pair, system_prompt: 'Judge it.',
-                                                         book:          books(:james_bond_movies))
+                                                         scale:         JudgeScale.for(books(:james_bond_movies)))
 
       assert_match(/rating scale is: 0 \(labeled "Not Relevant"\), 1 \(labeled "Relevant"\)/,
                    envelope[:body][:messages][0][:content])

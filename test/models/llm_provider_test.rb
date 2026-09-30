@@ -73,7 +73,7 @@ class LlmProviderTest < ActiveSupport::TestCase
     preset = LlmProvider.presets.fetch('openai')
 
     assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :read_only,
-                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_book ],
+                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_scale ],
                  preset.keys
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
   end
@@ -134,7 +134,6 @@ class LlmProviderTest < ActiveSupport::TestCase
     assert_equal LlmProvider::CHAT_SYSTEM_PROMPT, prompt
     assert_includes prompt, 'scale of 0 to 3'
     assert_includes prompt, 'JSON format'
-    assert_equal prompt, AiJudgesController::DEFAULT_SYSTEM_PROMPT, 'the old constant still resolves'
   end
 
   test 'jev ships a prompt that says what to weigh and nothing the request already carries' do
@@ -187,5 +186,17 @@ class LlmProviderTest < ActiveSupport::TestCase
     assert_equal %w[llm_service_url llm_model llm_api_version], jev.read_only_fields
     assert_equal jev.read_only_fields, jev.to_preset[:read_only]
     assert_includes jev.help_html, 'https://console.typesafe.ai/keys'
+  end
+
+  test 'how the scale is sent comes from the adapter, not from the provider entry' do
+    LlmProvider.each do |provider|
+      expected = provider.adapter.constantize.scale_as_criteria?
+
+      assert_equal expected, provider.scale_as_criteria?, "#{provider.key} scale_as_criteria?"
+      assert_equal expected, provider.needs_scale?, "#{provider.key} needs_scale?"
+    end
+
+    assert_predicate LlmProvider.find('typesafe_jev'), :needs_scale?
+    assert_not LlmProvider.find('openai').needs_scale?
   end
 end

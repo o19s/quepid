@@ -14,7 +14,7 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
   test 'a rating on the book scale is left exactly as the judge gave it' do
     judgement = judgement_with(1.0)
 
-    JudgementFinalizer.call(judgement, book: book)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
     assert_in_delta(1.0, judgement.rating)
     assert_equal 'Because.', judgement.explanation
@@ -24,7 +24,7 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
   test 'a missing rating is unrateable' do
     judgement = judgement_with(nil)
 
-    JudgementFinalizer.call(judgement, book: book)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
     assert_predicate judgement, :unrateable
     assert_nil judgement.rating
@@ -33,23 +33,23 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
   test 'a rating outside the scale is unrateable, with the raw value kept for review' do
     judgement = judgement_with(3.0)
 
-    JudgementFinalizer.call(judgement, book: book)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
     assert_predicate judgement, :unrateable
     assert_nil judgement.rating
-    assert_equal "Because. [LLM returned rating 3.0, outside this book's scale [0, 1]]",
+    assert_equal 'Because. [LLM returned rating 3.0, outside the scale [0, 1]]',
                  judgement.explanation
   end
 
   test 'the annotation still reads sensibly when the judge explained nothing' do
     judgement = judgement_with(3.0, explanation: nil)
 
-    JudgementFinalizer.call(judgement, book: book)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
-    assert_equal "[LLM returned rating 3.0, outside this book's scale [0, 1]]", judgement.explanation
+    assert_equal '[LLM returned rating 3.0, outside the scale [0, 1]]', judgement.explanation
   end
 
-  test 'with no book there is nothing to validate against and the rating stands' do
+  test 'with no scale there is nothing to validate against and the rating stands' do
     judgement = judgement_with(7.0)
 
     JudgementFinalizer.call(judgement)
@@ -62,7 +62,7 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
     scaleless = Book.new(name: 'No scale', scale: [])
     judgement = judgement_with(7.0)
 
-    JudgementFinalizer.call(judgement, book: scaleless)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(scaleless))
 
     assert_in_delta(7.0, judgement.rating)
     assert_not judgement.unrateable
@@ -71,7 +71,7 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
   test 'it decides, it does not save -- the caller owns persistence' do
     judgement = judgement_with(3.0)
 
-    JudgementFinalizer.call(judgement, book: book)
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
     assert_predicate judgement, :new_record?
   end
@@ -79,6 +79,6 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
   test 'it returns the judgement so callers can chain' do
     judgement = judgement_with(1.0)
 
-    assert_same judgement, JudgementFinalizer.call(judgement, book: book)
+    assert_same judgement, JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
   end
 end

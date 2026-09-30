@@ -135,9 +135,6 @@ class LlmProvider
   attribute :prompt_label,          :string, default: 'System prompt'
   # One line under the field explaining what belongs in it.
   attribute :prompt_hint,           :string
-  # True when this provider is sent the book's scale as the question's criteria rather
-  # than having it described in prose inside the prompt.
-  attribute :scale_as_criteria,     :boolean, default: false
   # judge_options this provider understands beyond the common ones, as
   # key => { label:, hint:, ... }, so the form can offer them instead of leaving
   # people to hand-edit JSON.
@@ -253,9 +250,9 @@ class LlmProvider
       default_model: 'qwen3:0.6b',
     },
     # Jev is a typed "System One" model, not a chat model, so it speaks through its own
-    # adapter (LlmJudgeAdapters::Jev; docs/adr/0001). scale_as_criteria makes it need a
-    # book: without one there is no scale to send, so AiJudges::WizardController and the
-    # form refuse to preview it and a judging run can only start from a book.
+    # adapter (LlmJudgeAdapters::Jev; docs/adr/0001). That adapter sends the scale as the
+    # question's criteria, so without one there is nothing to ask: AiJudges::WizardController
+    # and the form refuse to preview it and a judging run can only start from a book.
     {
       key:                   'typesafe_jev',
       label:                 'TypeSafe Jev',
@@ -263,7 +260,6 @@ class LlmProvider
       default_service_url:   'https://api.typesafe.ai',
       default_model:         'jev-latest',
       read_only_fields:      %w[llm_service_url llm_model llm_api_version],
-      scale_as_criteria:     true,
       default_system_prompt: JEV_SYSTEM_PROMPT,
       prompt_label:          'Judging instructions',
       prompt_hint:           'Jev has no system prompt: this text is sent as the instructions on the ' \
@@ -343,11 +339,15 @@ class LlmProvider
     end
   end
 
-  alias_method :scale_as_criteria?, :scale_as_criteria
+  # Is the scale sent as the question's criteria rather than described in the prompt?
+  # That is decided by the dialect the provider speaks, not by the provider.
+  def scale_as_criteria?
+    adapter.constantize.scale_as_criteria?
+  end
 
-  # A provider that is sent the book's scale as its criteria has nothing to judge
-  # against without one, so it can only be run (or previewed) from a book.
-  def needs_book?
+  # A provider that is sent the scale as its criteria has nothing to judge against
+  # without one, so it can only be run (or previewed) with a scale in hand.
+  def needs_scale?
     scale_as_criteria?
   end
 
@@ -376,7 +376,7 @@ class LlmProvider
       prompt_label:      prompt_label,
       prompt_hint:       prompt_hint,
       scale_as_criteria: scale_as_criteria?,
-      needs_book:        needs_book?,
+      needs_scale:       needs_scale?,
     }
   end
 

@@ -24,32 +24,38 @@ module LlmJudgeAdapters
     MAX_STATE_CHARS = 80_000
     TRUNCATION_MARKER = ' ...[truncated]'
 
-    NO_BOOK_MESSAGE = 'Jev judges against a book\'s rating scale, so it needs a book -- run it from a book.'
+    NO_SCALE_MESSAGE = 'Jev judges against a rating scale, so it needs one -- run it from a book that has a scale.'
+
+    # The scale is sent as the question's criteria rather than described in the prompt,
+    # so there is nothing to ask without one.
+    def self.scale_as_criteria?
+      true
+    end
 
     def path
       'v1/systemone'
     end
 
     # Overridden rather than filling in Base's body_for: for a chat model the
-    # book is context that colours a prompt, but here the book's scale *is* the
+    # scale is context that colours a prompt, but here the scale *is* the
     # question, so it has to reach the request builder as an argument.
-    def request_envelope query_doc_pair, system_prompt:, book: nil
+    def request_envelope query_doc_pair, system_prompt:, scale: JudgeScale::NONE
       {
         path:    path,
         headers: headers,
         body:    {
           model:     options[:llm_model].presence || DEFAULT_MODEL,
           state:     user_prompt(query_doc_pair),
-          questions: { QUESTION_ID => question(system_prompt, book) },
+          questions: { QUESTION_ID => question(system_prompt, scale) },
         },
       }
     end
 
     # The prompt-preview path can build a request from a loose prompt pair with
-    # no book attached. Nothing sensible can be asked of Jev that way, so say so
+    # no scale attached. Nothing sensible can be asked of Jev that way, so say so
     # instead of sending a question with no criteria.
     def envelope _user_prompt, _system_prompt
-      raise NO_BOOK_MESSAGE
+      raise NO_SCALE_MESSAGE
     end
 
     # Jev accepts text only -- a string, a JSON object, or an array of text
@@ -68,10 +74,9 @@ module LlmJudgeAdapters
 
     # Unlike a chat model's answer, Jev's cannot be off-scale: `score` is a
     # position on the criteria we supplied, so it maps back to one of the
-    # book's own rating values.
-    def apply_response judgement, response_body, book: nil
+    # scale's own rating values.
+    def apply_response judgement, response_body, scale: JudgeScale::NONE
       answer = answer_from(response_body)
-      scale = JudgeScale.for(book)
 
       judgement.rating = rating_from(answer, scale)
       judgement.explanation = explanation_from(answer, response_body, scale)
@@ -85,12 +90,8 @@ module LlmJudgeAdapters
 
     private
 
-    def question system_prompt, book
-      raise NO_BOOK_MESSAGE if book.nil?
-
-      scale = JudgeScale.for(book)
-
-      raise 'Jev judges against the book\'s rating scale, but this book has no scale configured' if scale.empty?
+    def question system_prompt, scale
+      raise NO_SCALE_MESSAGE if scale.empty?
 
       type, criteria = if scale.size > MAX_SCORE_LEVELS
                          [ 'choice', scale.criteria_by_value ]
@@ -98,13 +99,13 @@ module LlmJudgeAdapters
                          [ 'score', scale.criteria ]
                        end
 
-      { type: type, instructions: instructions(system_prompt, book), criteria: criteria }
+      { type: type, instructions: instructions(system_prompt, scale), criteria: criteria }
     end
 
     # The judge's own prompt still says what to weigh; it just no longer has to
     # describe the scale or an output format, both of which the request carries.
-    def instructions system_prompt, book
-      [ system_prompt.presence, book&.scoring_guidelines.presence ].compact.join("\n\n")
+    def instructions system_prompt, scale
+      [ system_prompt.presence, scale.guidelines ].compact.join("\n\n")
     end
 
     def answer_from response_body
@@ -165,10 +166,14 @@ module LlmJudgeAdapters
       end.join(', ')
     end
 
-    def formatted number
-      return 'unknown' if number.nil?
+    # Reports what came back, even when it is not a number -- a malformed answer
+    # is exactly the kind worth being able to read in the explanation.
+    def formatted value
+      number = numeric_value(value)
+      return format('%g', number) if number
+      return 'unknown' if value.nil?
 
-      format('%g', number)
+      value.to_s.inspect
     end
 
     def truncated_fields document_fields, limit = MAX_FIELD_CHARS

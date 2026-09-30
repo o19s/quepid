@@ -34,9 +34,11 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
+      # The judge is handed the book's scale, never the book.
+      scale = JudgeScale.for(@book)
       provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
-      if provider&.needs_book? && @book.nil?
-        error = "#{provider.label} rates against a book's scale, so it can only be tested from a book: " \
+      if provider&.needs_scale? && scale.empty?
+        error = "#{provider.label} rates against a book's scale, so it can only be tested from a book that has one: " \
                 "open this judge from the book's Judgement Stats page (Refine Prompt)."
         render json: { error: error }, status: :unprocessable_content
         return
@@ -60,11 +62,11 @@ module AiJudges
 
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
-      llm_service.perform_safe_judgement judgement, book: @book
+      llm_service.perform_safe_judgement judgement, scale: scale
       # Hold the preview to the same rules a real judging run applies, so a
       # rating this book would reject can't look fine while you tune the prompt.
       # Nothing is persisted here -- the finalizer only marks the in-memory record.
-      JudgementFinalizer.call judgement, book: @book
+      JudgementFinalizer.call judgement, scale: scale
 
       render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }
     end

@@ -1,11 +1,13 @@
 # frozen_string_literal: true
 
-# A book's rating scale: which ratings are legal, and how to describe them.
+# A rating scale: which ratings are legal, how to describe them, and any
+# guidance on applying them.
 #
-# Not an ActiveRecord model -- a value object built from a Book, so the one
-# definition of "legal rating for this book" is shared by everything that needs
-# it: the system prompt an LLM judge is given (LlmService), and the check that
-# decides whether a returned rating is usable (RunJudgeJudyJob).
+# Not an ActiveRecord model -- a value object, and the only thing an AI judge
+# is handed. A judge is told the scale to use, the same way a human judge is;
+# it never sees the Book the scale came from. The edges that start judging
+# (RunJudgeJudyJob, AiJudges::WizardController) build one with JudgeScale.for
+# and pass it down to LlmService, the adapters and JudgementFinalizer.
 #
 # `Book#scale` is already a sorted Array of Integers (see ScaleSerializer), and
 # `Book#scale_with_labels` is a JSON hash keyed by the rating as a String.
@@ -15,24 +17,30 @@ class JudgeScale
   # collapsed to a single trimmed, length-capped line first.
   MAX_LABEL_LENGTH = 60
 
-  attr_reader :values
+  attr_reader :values, :guidelines
 
   delegate :empty?, :size, to: :values
 
   def self.for book
-    new(book&.scale, book&.scale_with_labels)
+    new(book&.scale, book&.scale_with_labels, guidelines: book&.scoring_guidelines)
   end
 
-  def initialize values, labels = nil
+  # @param guidelines [String, nil] free-text advice on applying the scale
+  #   (Book#scoring_guidelines), for a judge that can be told it.
+  def initialize values, labels = nil, guidelines: nil
     @values = Array(values).freeze
     # scale_with_labels is JSON-deserialized stored data (e.g. from an imported
     # book file) with no guaranteed shape -- fall back to "no labels" for
     # anything that isn't actually a Hash, rather than raising (Array/String#[]
     # don't accept a String key the way Hash#[] does).
     @labels = labels.is_a?(Hash) ? labels : {}
+    @guidelines = guidelines.presence
 
     freeze
   end
+
+  # No scale at all: nothing to describe to a judge and nothing to validate against.
+  NONE = new([])
 
   def label_for value
     label = @labels[value.to_s]

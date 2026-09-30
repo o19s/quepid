@@ -159,7 +159,7 @@ in the normal unrateable flow. This is the one genuinely new capability Jev give
 providers; keep it opt-in so existing behaviour is the default.
 
 **D8 — `system_prompt` becomes the question's `instructions`.** The stock
-`AiJudgesController::DEFAULT_SYSTEM_PROMPT` (0–3 scale, JSON output format, three worked examples)
+`LlmProvider::CHAT_SYSTEM_PROMPT` (0–3 scale, JSON output format, three worked examples)
 is actively wrong for Jev: the scale comes from `criteria`, and there is no output format to specify.
 Add `AiJudgesController::JEV_DEFAULT_INSTRUCTIONS` — a couple of lines, e.g. *"Judge how well this
 document satisfies the user's query and information need."* — and have the form preset install it

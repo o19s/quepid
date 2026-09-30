@@ -695,21 +695,21 @@ parts:
         paths: ["app/controllers/books_controller.rb"]
       "12.4":
         title: "Refine an AI Judge's prompt"
-        last_run: 2026-09-23T13:55:00Z
+        last_run: 2026-09-30T19:08:00Z
         result: pass
-        notes: "Re-driven after rebasing onto the wizard (the Refine page is now /ai_judges/:id/edit?book_id=). Jev judge on Book of Ratings: Test & Refine loaded a pair, criteria table listed level 0/1 with the book's labels, Run Judgement returned a live Jev rating. New judge on Ollama with a prompt forcing 3 on the 0/1 book: LLM Response showed Unrateable with the out-of-scale annotation. Provider switch in-form (Jev->OpenAI->Jev) swapped the untouched stock prompt, label/hint and prose-vs-table criteria; JSON tab and fields stayed in sync both ways; planting another provider's stock prompt showed the warning and 'Use TypeSafe Jev's default' replaced it. Nothing was saved -- the Save path, malformed JSON and the zero-pairs book were not exercised."
+        notes: "Re-driven in Chrome after judges were changed to take a scale instead of a book: Jev judge on Book of Ratings (?book_id=1) showed the criteria table (level 0/1 with the book labels) and Run Judgement returned a live Jev rating. The chat-provider preview, the out-of-scale Unrateable preview, provider switching, Save, malformed JSON and the zero-pairs book were not re-driven this time (browser JS was blocked by another extension); the out-of-scale annotation was checked through a real judging run instead (see 12.5)."
         paths: ["app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
       "12.6":
         title: "Judge with TypeSafe Jev"
-        last_run: 2026-09-24T03:30:00Z
+        last_run: 2026-09-30T19:08:00Z
         result: pass
-        notes: "Re-driven after the LlmProvider refactor, in Chrome: existing Jev judge on Book of Ratings, Run Judgement returned a live rating (Jev rated 1 \"Relevant\", raw 0.98, confidence 0.97); without book_id the Run button was disabled and the needs-a-book notice shown. No console errors. Not covered: Judge Judy batch run, saving, a scale over 10 values, image documents."
+        notes: "Re-driven in Chrome after judges were changed to take a scale instead of a book: existing Jev judge on Book of Ratings, Run Judgement returned a live rating (Jev rated 1 \"Relevant\", raw 0.99, confidence 0.98); without book_id the page rendered the needs-a-scale notice (checked from page text; the button's disabled state was not read because browser JS was blocked by another extension -- it is covered by the controller test). A 2-pair Judge Judy run from rails runner produced on-scale ratings. Not covered: saving, a scale over 10 values, image documents."
         paths: ["app/services/llm_judge_adapters/jev.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-09-21T18:35:00Z
+        last_run: 2026-09-30T19:08:00Z
         result: pass
-        notes: "Both dialects re-run after every change. Ollama (qwen3:0.6b) on Book of Ratings (0/1 scale): 3 pairs judged, in-scale answers saved and out-of-scale ones (2.0 and 3.0) marked unrateable with the unchanged annotation. Jev: 3 pairs judged against the live TypeSafe API, with the judge's Minimum confidence of 0.5 in play -- answers at confidence 0.13 and 0.03 came back unrateable, the one at 0.67 was rated. Judge All Pairs / kraken mode and the zero-pairs-left case not re-driven."
+        notes: "Re-run after judges were changed to take a scale instead of a book, via RunJudgeJudyJob.perform_now from rails runner (not the Prepare to Judge! modal): Ollama (qwen3:0.6b) and Jev, 2 pairs each on Book of Ratings (0/1). Ollama's on-scale answer was saved and a 2.0 was marked unrateable with the '[LLM returned rating 2.0, outside the scale [0, 1]]' annotation; Jev returned two on-scale ratings. The created judgements were deleted afterwards. The UI modal, Judge All Pairs / kraken mode and the zero-pairs-left case were not driven."
         paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/models/judge_scale.rb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_connection.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
       "13.1":
         title: "Tries visualization"

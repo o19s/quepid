@@ -7,14 +7,13 @@
 # today, the prompt preview and (when it exists) batch ingest tomorrow. A rating
 # that would be rejected in a run should look rejected everywhere.
 class JudgementFinalizer
-  def self.call judgement, book: nil
-    new(judgement, book: book).call
+  def self.call judgement, scale: JudgeScale::NONE
+    new(judgement, scale: scale).call
   end
 
-  def initialize judgement, book: nil
+  def initialize judgement, scale: JudgeScale::NONE
     @judgement = judgement
-    @book = book
-    @scale = JudgeScale.for(book)
+    @scale = scale
   end
 
   def call
@@ -31,22 +30,22 @@ class JudgementFinalizer
 
   private
 
-  attr_reader :judgement, :book, :scale
+  attr_reader :judgement, :scale
 
-  # A book with no scale configured at all is left alone -- there's nothing to
+  # With no scale at all a rating is left alone -- there's nothing to
   # validate against, so its rating passes through as-is.
   def out_of_scale?
     scale.present? && !scale.includes?(judgement.rating)
   end
 
-  # The LLM returned a rating outside this book's configured scale -- a human
-  # judge could never produce this (the judging UI only offers buttons for the
-  # book's actual scale values), so don't trust it, but keep the raw value
+  # The LLM returned a rating outside the scale it was given -- a human judge
+  # could never produce this (the judging UI only offers buttons for the
+  # scale's actual values), so don't trust it, but keep the raw value
   # visible for review rather than silently dropping it. Runs before
   # mark_unrateable, which clears the rating.
   def annotate_out_of_scale
     judgement.explanation =
       "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, " \
-      "outside this book's scale #{book.scale.inspect}]".strip
+      "outside the scale #{scale.values.inspect}]".strip
   end
 end

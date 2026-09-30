@@ -53,7 +53,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     patch ai_judge_url(ai_judge), params: { book_id: book.id, user: { name: '' } }
 
     assert_response :success
-    assert_select '[data-ai-judge-wizard-has-book-value=true]'
+    assert_select '[data-ai-judge-wizard-has-scale-value=true]'
   end
 
   test 'should create ai_judge with no team (owner-only)' do
@@ -202,7 +202,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-wizard-target=needsBookNotice]:not([style*="display:none"])',
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"])',
                     text: /Judgement Stats/
     end
 
@@ -213,7 +213,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
-      assert_select '[data-ai-judge-wizard-target=needsBookNotice][style*="display:none"]'
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
     end
 
     test 'shows no criteria when there is no book to take them from' do

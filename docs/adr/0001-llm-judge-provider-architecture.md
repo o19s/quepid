@@ -119,6 +119,14 @@ not edited.
 to change, the step was not behaviour-preserving and is wrong. It also keeps each step revertable
 in isolation — no caller is holding the new shape hostage.
 
+**Amended.** Once the refactor landed, `perform_judgement` / `perform_safe_judgement` changed their
+`book:` keyword to `scale:` (a `JudgeScale`), as did the adapters and `JudgementFinalizer`. A judge
+is told the scale to rate against, just as a human judge is, and never sees the book. The callers
+that start judging (`RunJudgeJudyJob`, `AiJudges::WizardController`) build the scale with
+`JudgeScale.for(book)`. How the scale reaches the model (prose in the prompt, or structured
+criteria) belongs to the adapter (`LlmJudgeAdapters::Base.scale_as_criteria?`), not to the
+provider registry.
+
 ### D3 — Four small extractions, each with a single reason to change
 
 | Extraction | Owns | Replaces |

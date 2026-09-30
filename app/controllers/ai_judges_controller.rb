@@ -5,11 +5,6 @@ class AiJudgesController < ApplicationController
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
 
-  # Kept as a constant because tests and other callers refer to it; the text
-  # itself now lives with the providers that use it (LlmProvider), since what
-  # a judge should be told depends on the dialect it speaks.
-  DEFAULT_SYSTEM_PROMPT = LlmProvider::CHAT_SYSTEM_PROMPT
-
   def index
     @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
   end

@@ -104,4 +104,20 @@ class JudgeScaleTest < ActiveSupport::TestCase
   test 'built from no book at all it is simply empty' do
     assert_predicate JudgeScale.for(nil), :empty?
   end
+
+  test 'built from a book it carries that book s scoring guidelines' do
+    book = books(:james_bond_movies)
+    book.scoring_guidelines = 'Prefer exact title matches.'
+
+    assert_equal 'Prefer exact title matches.', JudgeScale.for(book).guidelines
+  end
+
+  test 'blank guidelines are no guidelines' do
+    assert_nil JudgeScale.new([ 0, 1 ], nil, guidelines: '  ').guidelines
+    assert_nil JudgeScale.for(nil).guidelines
+  end
+
+  test 'NONE is an empty scale' do
+    assert_predicate JudgeScale::NONE, :empty?
+  end
 end

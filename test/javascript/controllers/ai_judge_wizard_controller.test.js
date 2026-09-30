@@ -189,7 +189,7 @@ describe("AiJudgeWizardController runPrompt", () => {
         Promise.resolve({
           rating: null,
           unrateable: true,
-          explanation: "Perfect [LLM returned rating 3.0, outside this book's scale [0, 1]]"
+          explanation: "Perfect [LLM returned rating 3.0, outside the scale [0, 1]]"
         })
     })
 
@@ -199,7 +199,7 @@ describe("AiJudgeWizardController runPrompt", () => {
 
     expect(controller.ratingInfoTarget.innerHTML).toContain("Unrateable")
     expect(controller.ratingInfoTarget.innerHTML).not.toContain("null")
-    expect(controller.ratingInfoTarget.innerHTML).toContain("outside this book")
+    expect(controller.ratingInfoTarget.innerHTML).toContain("outside the scale")
   })
 
   it("shows an error and does not render a rating when the request fails", async () => {
@@ -304,25 +304,25 @@ describe("AiJudgeWizardController provider switching", () => {
     expect(AiJudgeWizardController.prototype.judgeOptions.call(controller)).not.toHaveProperty("jev_min_confidence")
   })
 
-  it("disables Run Judgement for a provider that needs a book when there is none", () => {
+  it("disables Run Judgement for a provider that needs a scale when there is none", () => {
     const notice = document.createElement("div")
-    const controller = buildController({ hasBookValue: false, hasNeedsBookNoticeTarget: true, needsBookNoticeTarget: notice })
+    const controller = buildController({ hasScaleValue: false, hasNeedsScaleNoticeTarget: true, needsScaleNoticeTarget: notice })
     controller.hasRunPromptButtonTarget = true
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: true })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_scale: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(true)
     expect(notice.style.display).toBe("")
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: false })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_scale: false })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
     expect(notice.style.display).toBe("none")
   })
 
-  it("lets a provider that needs a book run once there is one", () => {
-    const controller = buildController({ hasBookValue: true })
+  it("lets a provider that needs a scale run once there is one", () => {
+    const controller = buildController({ hasScaleValue: true })
     controller.hasRunPromptButtonTarget = true
 
-    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_book: true })
+    AiJudgeWizardController.prototype.updateRunAvailability.call(controller, { needs_scale: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
   })
 })

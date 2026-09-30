@@ -9,6 +9,13 @@ module LlmJudgeAdapters
   class Base
     attr_reader :llm_key, :options
 
+    # Whether the scale travels as structured criteria in the request (true) or is
+    # described in prose inside the prompt (false). How the scale is sent is a
+    # property of the dialect, so it lives here rather than on each provider.
+    def self.scale_as_criteria?
+      false
+    end
+
     def initialize llm_key, options = {}
       @llm_key = llm_key
       @options = options
@@ -18,18 +25,20 @@ module LlmJudgeAdapters
     # no randomness. A live call posts it; a batch writer serializes it into a
     # JSONL line and posts it hours later from another process.
     #
+    # @param scale [JudgeScale] the scale to rate against -- never a Book: a judge is
+    #   told the scale, it does not go looking for one.
     # @return [Hash] { path:, headers:, body: }
-    def request_envelope query_doc_pair, system_prompt:, book: nil
-      envelope(user_prompt(query_doc_pair), system_prompt_for(system_prompt, book))
+    def request_envelope query_doc_pair, system_prompt:, scale: JudgeScale::NONE
+      envelope(user_prompt(query_doc_pair), system_prompt_for(system_prompt, scale))
     end
 
     # @param response_body [Hash] an already-parsed provider response -- never a
     #   Faraday::Response, so a body replayed from a stored batch output file
     #   goes through this same code.
     # Mutates the judgement; deliberately does not save it.
-    # rubocop:disable-next Lint/UnusedMethodArgument -- book is part of the interface:
+    # rubocop:disable-next Lint/UnusedMethodArgument -- scale is part of the interface:
     # an adapter whose answer is scale-relative (Jev) needs it to read a response.
-    def apply_response judgement, response_body, book: nil
+    def apply_response judgement, response_body, scale: JudgeScale::NONE
       result = extract_judgement(response_body)
 
       # Judgement#rating is a float DB column, so assigning a non-numeric value
@@ -89,12 +98,11 @@ module LlmJudgeAdapters
 
     private
 
-    # Appends an explicit reminder of the book's real rating scale to the
-    # judge's system prompt. Without this, a judge's prompt (e.g. the default,
-    # which is hardcoded to a 0-3 scale) can silently disagree with whatever
-    # scale the book it's assigned to actually uses.
-    def system_prompt_for system_prompt, book
-      scale = JudgeScale.for(book)
+    # Appends an explicit reminder of the real rating scale to the judge's
+    # system prompt. Without this, a judge's prompt (e.g. the default, which is
+    # hardcoded to a 0-3 scale) can silently disagree with the scale it is
+    # actually being held to.
+    def system_prompt_for system_prompt, scale
       return system_prompt if scale.empty?
 
       <<~PROMPT.strip

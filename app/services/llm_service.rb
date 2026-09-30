@@ -23,8 +23,8 @@ class LlmService
     @conn = LlmConnection.build(url: @options[:llm_service_url])
   end
 
-  def perform_safe_judgement judgement, book: nil
-    perform_judgement(judgement, book: book)
+  def perform_safe_judgement judgement, scale: JudgeScale::NONE
+    perform_judgement(judgement, scale: scale)
   rescue RuntimeError => e
     judgement.explanation = "BOOM: Runtime Error: #{e.message}"
     judgement.unrateable = true
@@ -34,16 +34,15 @@ class LlmService
     judgement.unrateable = true
   end
 
-  # @param book [Book, nil] when given, the judge's system prompt is augmented
-  #   with this book's actual rating scale/labels, so the LLM is told the
-  #   scale it's really being held to instead of whatever scale (if any) the
-  #   judge's own free-text system prompt happens to describe.
-  def perform_judgement judgement, book: nil
+  # @param scale [JudgeScale] the rating scale the judge is held to. How it
+  #   reaches the model -- described in the prompt, or sent as the question's
+  #   criteria -- is the adapter's business.
+  def perform_judgement judgement, scale: JudgeScale::NONE
     envelope = @adapter.request_envelope(judgement.query_doc_pair,
                                          system_prompt: judgement.user.system_prompt,
-                                         book:          book)
+                                         scale:         scale)
 
-    @adapter.apply_response(judgement, post(envelope), book: book)
+    @adapter.apply_response(judgement, post(envelope), scale: scale)
   end
 
   def make_user_prompt query_doc_pair

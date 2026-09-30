@@ -84,6 +84,8 @@ class RunJudgeJudyJob < ApplicationJob
     counter = 0
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     llm_service = LlmService.new judge.llm_key, judge.judge_options
+    # The judge is told the book's scale, and never sees the book itself.
+    scale = JudgeScale.for(book)
     # Only jobs actually dispatched through SolidQueue have a row to poll for
     # cancellation - under the :test adapter (or inline execution) there's
     # never a row to begin with, so we skip the check rather than misread
@@ -101,8 +103,8 @@ class RunJudgeJudyJob < ApplicationJob
 
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
-      llm_service.perform_safe_judgement(judgement, book: book)
-      JudgementFinalizer.call(judgement, book: book)
+      llm_service.perform_safe_judgement(judgement, scale: scale)
+      JudgementFinalizer.call(judgement, scale: scale)
 
       judgement.save!
       counter += 1
