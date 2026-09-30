@@ -104,6 +104,12 @@ module Api
             kase = Case.find_by(case_name: 'test case')
             assert_not_nil kase
             kase.owner = user
+
+            body = response.parsed_body
+            assert_equal kase.id, body['case_id']
+            assert_equal kase.id, body['id']
+            assert_equal kase.case_name, body['case_name']
+            assert_equal case_core_url(kase, kase.last_try_number), body['redirect_url']
           end
 
           test 'returns bad request when search endpoint fails validation on import' do

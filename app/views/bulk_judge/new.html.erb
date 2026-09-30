@@ -105,7 +105,9 @@
         </div>
       </div>
 
-      <div data-controller="bulk-judgement" data-bulk-judgement-book-id-value="<%= @book.id %>">
+      <div data-controller="bulk-judgement"
+           data-bulk-judgement-save-url-value="<%= book_judge_bulk_save_path(@book).delete_prefix('/') %>"
+           data-bulk-judgement-delete-url-value="<%= book_judge_bulk_delete_path(@book).delete_prefix('/') %>">
 
         <%
         # Use enhanced JudgementHelper to generate rating buttons with scorer labels

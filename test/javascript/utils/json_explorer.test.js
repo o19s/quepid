@@ -11,7 +11,10 @@ describe("json_explorer", () => {
   describe("renderJsonExplorer", () => {
     it("renders a raw object's keys, string, number and boolean leaves", () => {
       const container = document.createElement("div")
-      renderJsonExplorer(container, JSON.stringify({ description: "weight(x)", value: 3.5, matched: true }))
+      renderJsonExplorer(
+        container,
+        JSON.stringify({ description: "weight(x)", value: 3.5, matched: true })
+      )
 
       const root = container.querySelector(".json-explorer")
       expect(root).not.toBeNull()

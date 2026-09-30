@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 
 const modal = {
   element: document.createElement("div"),
@@ -21,6 +20,7 @@ vi.mock("utils/json_explorer", () => ({
 
 import { openDynamicModal } from "utils/dynamic_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
+import { openDetailedDocumentModal, sanitizeDocumentHtml } from "utils/detailed_document_modal"
 
 describe("detailed document modal", () => {
   afterEach(() => document.getElementById("detailed-document-modal-template")?.remove())
@@ -51,15 +51,50 @@ describe("detailed document modal", () => {
       linkUrl: "https://example.test/doc-1"
     })
 
-    const html = openDynamicModal.mock.calls[0][0].html
     expect(openDynamicModal.mock.calls[0][0].templateId).toBe("detailed-document-modal-template")
     expect(modal.element.querySelector("[data-modal-target='title']").textContent).toBe("<unsafe>")
-    expect(modal.element.querySelector("[data-modal-target='allFields']").textContent).toContain("<raw>")
+    expect(modal.element.querySelector("[data-modal-target='allFields']").textContent).toContain(
+      "<raw>"
+    )
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       expect.any(Element),
       JSON.stringify({ nested: true }),
       { collapsed: false }
     )
+  })
+
+  it("preserves safe document structure without exposing response markup", () => {
+    const html = "<section prefix='A'><p>First</p></section><section prefix='B'>Second</section>"
+
+    const sanitized = sanitizeDocumentHtml(html)
+
+    expect(sanitized).toContain("<section>")
+    expect(sanitized).toContain("<p>First</p>")
+    expect(sanitized).not.toContain("prefix=")
+    expect(sanitized).not.toContain("&lt;section")
+  })
+
+  it("renders scalar subfields as sanitized HTML like the legacy detailed view", () => {
+    openDetailedDocumentModal({
+      doc: {
+        id: "doc-1",
+        title: "A result",
+        subs: {
+          text: "<section prefix='A'>First</section><section prefix='B'>Second</section><script>alert(1)</script>"
+        },
+        translations: {},
+        embeds: {},
+        rawFields: {}
+      }
+    })
+
+    const field = modal.element.querySelector("[data-modal-target='fields'] .col-md-8")
+
+    expect(field.innerHTML).toContain("<section>First</section>")
+    expect(field.innerHTML).toContain("<section>Second</section>")
+    expect(field.textContent).toContain("First")
+    expect(field.textContent).not.toContain("<section")
+    expect(field.querySelector("script")).toBeNull()
   })
 
   it("toggles all-fields visibility and disposes from Close", () => {

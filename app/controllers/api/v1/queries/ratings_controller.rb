@@ -20,8 +20,11 @@ module Api
 
         def destroy
           @rating = @query.ratings.where(doc_id: @doc_id).first
-          @rating.delete
-          Analytics::Tracker.track_rating_deleted_event current_user, @rating
+          # Deleting a rating that is already gone is a no-op, so double clicks and stale tabs don't 500.
+          if @rating
+            @rating.delete
+            Analytics::Tracker.track_rating_deleted_event current_user, @rating
+          end
 
           head :no_content
         end

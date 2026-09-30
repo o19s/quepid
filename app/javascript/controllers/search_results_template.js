@@ -12,8 +12,8 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
 
         <div class="btn-toolbar" role="toolbar">
           <div class="btn-group me-2">
-            <button class="btn btn-outline-secondary btn-sm" data-action="click->search-results#copyQuery">
-              <i class="bi bi-copy" aria-hidden="true" title="Copy query" alt="Copy query"></i>
+            <button type="button" class="btn btn-outline-secondary btn-sm" title="Copy query" aria-label="Copy query" data-action="click->search-results#copyQuery">
+              <i class="bi bi-copy" aria-hidden="true"></i>
             </button>
           </div>
           <div class="btn-group me-2">
@@ -49,7 +49,9 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
         <div data-search-results-target="diffResults"></div>
         <div data-search-results-target="error" class="alert alert-danger d-none" role="alert"></div>
         <div data-search-results-target="footer" class="row results-pane-footer d-none">
-          <i class="bi bi-caret-up-fill results-pane-toggle" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane"></i>
+          <button type="button" class="btn btn-link p-0 results-pane-toggle" aria-label="Close the results pane" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane">
+            <i class="bi bi-caret-up-fill" aria-hidden="true"></i>
+          </button>
           <button type="button" class="btn btn-outline-secondary d-none" data-search-results-target="nextPage" data-action="click->search-results#paginate">Peek at the next page of results</button>
           <div data-search-results-target="browseTool"></div>
           <div data-search-results-target="depthNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> Only the top <span data-search-results-target="depthValue"></span> results are used in the scoring calculations.</div>

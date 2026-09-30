@@ -21,8 +21,4 @@ class ScoresController < ApplicationController
     redirect_to case_scores_path(@case, scorer_id: params[:scorer_id]),
                 notice: 'Selected scores were successfully deleted.'
   end
-
-  def set_score
-    @score = Score.find(params.expect(:id))
-  end
 end

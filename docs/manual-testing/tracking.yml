@@ -184,10 +184,10 @@ parts:
         paths: ["app/javascript/controllers/wizard_controller.js", "app/javascript/utils/wizard_contracts.js", "app/views/shared/_wizard_modal.html.erb", "app/controllers/api/v1/snapshots/imports_controller.rb"]
       "3.3":
         title: "Import a case from JSON"
-        last_run: 2026-09-29T04:10:00Z
-        result: pass
-        notes: "Covered live via Playwright MCP and the checked-in Playwright flow: the Cases-page Import Case modal opens, accepts JSON, posts successfully, and redirects to the imported case. The fix added the missing local Turbo/Stimulus import-map pins and restored Bootstrap modal loading; the import-related E2E checks now pass."
-        paths: ["app/controllers/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/application_modern.js", "config/importmap.rb", "app/views/shared/_import_case_modal.html.erb"]
+        last_run: 2026-09-30T15:08:30Z
+        result: pass_with_fixes
+        notes: "Covered live via Playwright MCP with the import POST intercepted: the Cases-page Import Case modal opens, accepts JSON, and follows the API-provided redirect_url to /case/4242 without client-side case-id/root-url construction. Rails API tests verify successful imports return a case_core_url redirect_url with HTTP 201. The intercepted destination is intentionally nonexistent, so the final page is a 404; no real case was created in this smoke."
+        paths: ["app/controllers/cases_controller.rb", "app/controllers/api/v1/import/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/controllers/import_case_controller.js", "app/javascript/application_modern.js", "config/importmap.rb", "app/views/shared/_import_case_modal.html.erb", "app/views/api/v1/import/cases/create.json.jbuilder", "test/javascript/controllers/import_case_controller.test.js", "test/controllers/api/v1/import/cases_controller_test.rb"]
       "3.4":
         title: "Import snapshots from CSV"
         last_run: 2026-09-25T15:55:00Z
@@ -320,10 +320,10 @@ parts:
         paths: ["app/javascript/controllers/browse_query_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/browse_query.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/quepid_search.js", "config/importmap.rb", "test/javascript/utils/browse_query.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.19":
         title: "Query-list controls"
-        last_run: 2026-09-30T13:19:07Z
+        last_run: 2026-09-30T14:52:00Z
         result: pass
-        notes: "Partial before/after branch-ui-diff pass on case 6: entered a no-match filter and verified the empty result state, then cleared it and selected Name sorting; both baseline and current app preserved the expected controls, query ordering, and sort URL (sort=query&reverse=false). Screenshots: .playwright-mcp/branch-ui-diff/core-workbench-4.19-filter-empty-{before,after}.png and core-workbench-4.19-sort-name-{before,after}.png. Not covered: Collapse all interaction, drag reorder persistence, pagination, or Show only rated."
-        paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/core.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts"]
+        notes: "Partial before/after pass on case 6: expanded meetings, activated Copy Query, collapsed the results pane, and re-expanded it; the list collapsed to zero result links and returned to 10 result links without a reload. Added accessible names to the copy and collapse controls while preserving their appearance. Screenshots: .playwright-mcp/accessibility/core-workbench-controls-before.png and core-workbench-controls-after.png. Not covered: filter empty state, sort URL, drag reorder persistence, pagination, or Show only rated in this pass."
+        paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/core.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/controllers/search_results_template.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.20":
         title: "Query-list sorting, pagination & Show only rated"
         last_run: 2026-09-30T14:10:46Z
@@ -338,16 +338,16 @@ parts:
         paths: ["app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js"]
       "4.22":
         title: "Bulk rating (Score All) & result paging"
-        last_run: 2026-09-30T14:23:38Z
-        result: blocked
-        notes: "Partial mutating pass attempted with database snapshot/restore. The current replacement successfully recomputed scores after Score All, but the baseline comparison was invalid: logging into localhost:3000 in the shared Playwright context invalidated the localhost:3001 baseline session, so its bulk rating and reset requests returned HTTP 401 Unauthorized. The apparent unchanged baseline scores were therefore a harness/session artifact, not a product parity finding. Re-run with isolated browser storage/hosts before accepting parity. Screenshots: .playwright-mcp/branch-ui-diff/core-workbench-4.22-expanded-{before,after}.png, core-workbench-4.22-score-all-popover-{before,after}.png, core-workbench-4.22-score-all-rated-{before,after}.png, and core-workbench-4.22-peek-page-before.png. Not covered: valid baseline/current comparison, Show only rated bulk-rating variant, Missing Documents Score All, reload persistence, and peek-past-last-page. Shared database restored after the pass."
+        last_run: 2026-09-30T14:33:59Z
+        result: pass
+        notes: "Partial mutating before/after branch-ui-diff pass on case 6 with isolated browser hosts (baseline 127.0.0.1:3001, current localhost:3000), bracketed by database snapshot/restore: expanded a query, opened Score All, rated visible results Relevant, verified both sides received HTTP 204 and recomputed the query score to 1.00 and case score to 0.64, reset visible ratings, and verified both returned to 0.00 with 10 unrated results. Peek at the next page appended ranks 11-20 on both sides. The earlier blocked result was a shared-cookie harness artifact and is superseded by this valid pass. Screenshots: .playwright-mcp/branch-ui-diff/core-workbench-4.22-score-all-popover-isolated-{before,after}.png, core-workbench-4.22-score-all-rated-isolated-{before,after}.png, and core-workbench-4.22-peek-page-isolated-{before,after}.png. Not covered: Show only rated bulk-rating variant, Missing Documents Score All, reload persistence, and peek-past-last-page. Shared database restored after the pass."
         paths: ["app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/rating_popover_controller.js"]
       "4.23":
         title: "Search result rendering"
-        last_run: null
-        result: null
-        notes: ""
-        paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/json_explorer_controller.js"]
+        last_run: 2026-09-30T14:46:00Z
+        result: pass_with_fixes
+        notes: "Partial before/after branch-ui-diff pass on case 6 with isolated browser hosts: expanded meetings, verified result layout and sanitized snippets, opened the Detailed Document modal, and opened the Matches popover. Fixed the migrated modal regression where scalar document fields exposed literal <section prefix=...> markup; the replacement now preserves safe document structure while stripping response-controlled attributes and executable/embed tags. The fixed modal text and screenshot match the clean baseline behavior. Screenshots: core-workbench-4.23-expanded-{before,after}.png, core-workbench-4.23-document-modal-before.png, core-workbench-4.23-document-modal-fixed-after.png, and core-workbench-4.23-matches-{before,after}.png. Not covered: URL/image/audio/video/translation fields, Debug/Expand actions, injected-markup edge case, and narrow/long-value layout."
+        paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"
         last_run: null
@@ -372,9 +372,9 @@ parts:
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-09-27T22:46:55Z
-        result: pass
-        notes: "Covered live via Playwright MCP on case 1: opened Compare snapshots, confirmed the picker rendered with its controls, and reported 0 current console errors; the snapshot bridge also bootstrapped the shallow registry on page load. Captured and visually inspected .playwright-mcp/doc-cache-runtime/compare-snapshots-after.png and .playwright-mcp/snapshot-bridge/snapshot-create-success-after.png. The checked-in Playwright regression snapshots_and_annotations.spec.ts covers the rich-case diff flow; live Query objects remain owned by the live-query runtime."
+        last_run: 2026-09-30T14:52:00Z
+        result: pass_with_fixes
+        notes: "Covered live via Playwright MCP on case 6: opened Compare snapshots, confirmed the picker rendered, and verified the icon-only clear/delete snapshot controls expose accessible names in the live DOM. The existing picker controls remained visually usable. Screenshot: .playwright-mcp/accessibility/compare-snapshots-controls-after.png. The checked-in Playwright regression snapshots_and_annotations.spec.ts covers the rich-case diff flow; live Query objects remain owned by the live-query runtime."
         paths: ["app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/quepid_search.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/core.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts"]
       "5.4":
         title: "Annotations"
@@ -442,9 +442,9 @@ parts:
         paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
-        last_run: 2026-09-25T15:57:46Z
-        result: pass
-        notes: "Re-verified live via Playwright MCP on case 219 after deleting the Angular result controller: the Stimulus result list rendered and the document-detail path remained wired. The View All Fields interaction was not re-driven in this pass."
+        last_run: 2026-09-30T14:46:00Z
+        result: pass_with_fixes
+        notes: "Re-verified live via Playwright MCP on case 6 while investigating 4.23: result title opened the Detailed Document modal and scalar HTML document fields rendered cleanly after the migration fix, with no literal section tags exposed. View All Fields and the external View Document action were not re-driven in this pass."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/utils/json_explorer.js", "app/javascript/quepid_dom.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts"]
       "6.9":
         title: "Frog Report"
@@ -750,9 +750,9 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
-        last_run: 2026-09-25T15:59:04Z
+        last_run: 2026-09-30T15:05:25Z
         result: pass
-        notes: "Light recheck via Playwright MCP this pass: page rendered correctly ('Page 1 of 7 - Showing 1 to 25 of 175 unrated documents...'), clicked a Relevant radio on the first grid item — confirmed checked/selected state applied. Prior (2026-09-04) full golden-path pass, still the deepest coverage on record: results grouped by query with doc count, default-filtered to Unrated. Clicked Relevant on a doc — confirmed via rails console it saved via AJAX (no page reload, no URL change) and visually marked selected/bordered. Reloaded — rating persisted, and the doc correctly disappeared from the default Unrated-only view. Unchecked Unrated — the rated doc reappeared, pre-selected/bordered, with a Reset control now showing. Clicked Reset — confirmed the judgement was actually deleted (AJAX, no reload). Re-rated it, toggled Show Explanations on, typed into its explanation field, tabbed out — confirmed via rails console it auto-saved (no explicit save button) and persisted across a reload. Toggled Show Explanations off with that explanation present — confirmed it now renders as read-only text (not an editable textbox), not vanished. Entered a query-text filter matching nothing — got the 'No documents match your current filters' empty state listing the active filter with working 'Clear query filter'/'Clear all filters' buttons. Did not test the Rank Depth dropdown."
+        notes: "Live Playwright MCP smoke on book 1 confirmed the Bulk Judge page renders and the Stimulus root receives Rails-owned relative save/delete URLs: books/1/judge/bulk/save and books/1/judge/bulk/delete. Existing prior pass remains the deepest rating/explanation/reset coverage; this pass did not mutate judgements."
         paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb"]
       "11.9":
         title: "Query/Doc Pairs management"

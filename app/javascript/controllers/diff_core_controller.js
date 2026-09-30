@@ -180,6 +180,7 @@ export default class extends ModalTriggerControllerBase {
       remove.className = "btn btn-sm btn-danger"
       if (!selected) remove.classList.add("d-none")
       remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
+      remove.setAttribute("aria-label", remove.title)
       remove.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>'
       remove.addEventListener("click", () => this.removeSelection(index))
 
@@ -189,6 +190,7 @@ export default class extends ModalTriggerControllerBase {
       if (!selected) del.classList.add("d-none")
       del.style.marginLeft = "5px"
       del.title = "Delete this snapshot"
+      del.setAttribute("aria-label", del.title)
       del.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i>'
       del.addEventListener("click", () => this.deleteSelected(index))
 

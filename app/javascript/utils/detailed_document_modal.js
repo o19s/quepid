@@ -1,6 +1,82 @@
 import { openDynamicModal } from "utils/dynamic_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
 
+const DOCUMENT_HTML_TAGS = new Set([
+  "A",
+  "B",
+  "BR",
+  "CODE",
+  "DIV",
+  "EM",
+  "H1",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "I",
+  "LI",
+  "OL",
+  "P",
+  "PRE",
+  "SECTION",
+  "SPAN",
+  "STRONG",
+  "SUB",
+  "SUP",
+  "TABLE",
+  "TBODY",
+  "TD",
+  "TH",
+  "THEAD",
+  "TR",
+  "U",
+  "UL"
+])
+
+const DOCUMENT_DANGEROUS_TAGS = new Set(["IFRAME", "OBJECT", "SCRIPT", "STYLE", "TEMPLATE"])
+
+/**
+ * Preserve the safe document markup that Angular's ng-bind-html rendered in
+ * the legacy detailed-document view, while dropping response-controlled
+ * attributes and executable/embed content.
+ */
+export function sanitizeDocumentHtml(value) {
+  const template = document.createElement("template")
+  template.innerHTML = String(value ?? "")
+
+  Array.from(template.content.querySelectorAll("*"))
+    .reverse()
+    .forEach((element) => {
+      if (DOCUMENT_DANGEROUS_TAGS.has(element.tagName)) {
+        element.remove()
+        return
+      }
+
+      if (!DOCUMENT_HTML_TAGS.has(element.tagName)) {
+        element.replaceWith(...Array.from(element.childNodes))
+        return
+      }
+
+      const href = element.tagName === "A" ? element.getAttribute("href") : null
+      Array.from(element.attributes).forEach((attribute) => element.removeAttribute(attribute.name))
+      if (element.tagName === "A" && href) {
+        try {
+          const url = new URL(href, document.baseURI)
+          if (url.protocol === "http:" || url.protocol === "https:") {
+            element.setAttribute("href", url.href)
+            element.setAttribute("target", "_blank")
+            element.setAttribute("rel", "noopener noreferrer")
+          }
+        } catch (_error) {
+          // Drop malformed links while preserving their visible text.
+        }
+      }
+    })
+
+  return template.innerHTML
+}
+
 /**
  * Opens the detailed document view shared by the Stimulus results renderer and
  * the remaining document-finder path.
@@ -19,7 +95,7 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   const hasImage = typeof doc.hasImage === "function" ? doc.hasImage() : Boolean(doc.hasImage)
   const rawFields = doc.rawFields || doc.doc?.origin?.() || {}
 
-  function fieldRow(name, value) {
+  function fieldRow(name, value, html = false) {
     const row = document.createElement("div")
     row.className = "row"
     row.style.marginBottom = "10px"
@@ -28,7 +104,11 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
     label.textContent = name
     const content = document.createElement("div")
     content.className = "col-md-8"
-    content.textContent = value == null ? "" : String(value)
+    if (html) {
+      content.innerHTML = sanitizeDocumentHtml(value)
+    } else {
+      content.textContent = value == null ? "" : String(value)
+    }
     row.append(label, content)
     return { row, content }
   }
@@ -45,7 +125,7 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   modal.element.querySelector("[data-modal-target='title']").textContent = doc.title || ""
   const fields = modal.element.querySelector("[data-modal-target='fields']")
   subRows.forEach((row) => {
-    const field = fieldRow(row.name, row.rawValue === null ? row.value : "")
+    const field = fieldRow(row.name, row.rawValue === null ? row.value : "", row.rawValue === null)
     if (row.rawValue !== null) {
       field.content.dataset.detailedDocSubJsonIndex = String(row.index)
       renderJsonExplorer(field.content, JSON.stringify(row.rawValue), { collapsed: false })

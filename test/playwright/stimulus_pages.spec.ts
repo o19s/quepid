@@ -45,7 +45,7 @@ test.describe('Stimulus pages', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ case_id: 4242 }),
+          body: JSON.stringify({ redirect_url: '/case/4242' }),
         });
         return;
       }

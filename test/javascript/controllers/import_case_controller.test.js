@@ -40,7 +40,7 @@ describe("ImportCaseController submit redirect", () => {
     })
   })
 
-  it("redirects to quepid root + /case/:id after successful import", async () => {
+  it("redirects to the API-provided case URL after successful import", async () => {
     const controller = buildController()
     const file = new File(['{"case_name":"test"}'], "case.json", { type: "application/json" })
     controller.fileInputTarget.files = [file]
@@ -48,7 +48,7 @@ describe("ImportCaseController submit redirect", () => {
 
     apiFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ id: 42 }),
+      json: () => Promise.resolve({ redirect_url: "https://example.com/quepid/case/42" }),
     })
 
     const submitPromise = ImportCaseController.prototype.submit.call(controller, {
@@ -61,7 +61,7 @@ describe("ImportCaseController submit redirect", () => {
     expect(window.location.href).toBe("https://example.com/quepid/case/42")
   })
 
-  it("reloads the page when the API omits case_id", async () => {
+  it("reloads the page when the API omits redirect_url", async () => {
     const reload = vi.fn()
     Object.defineProperty(window, "location", {
       configurable: true,

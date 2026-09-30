@@ -23,7 +23,8 @@ function mount() {
   document.body.appendChild(element)
   const controller = Object.create(BulkJudgementController.prototype)
   controller.element = element
-  controller.bookIdValue = "3"
+  controller.saveUrlValue = "books/3/judge/bulk/save"
+  controller.deleteUrlValue = "books/3/judge/bulk/delete"
   controller.connect()
   return { controller, element }
 }

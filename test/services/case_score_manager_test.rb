@@ -138,6 +138,16 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         end
       end
 
+      test 'creates a new score when the last score points at a deleted try' do
+        the_case.scores.update_all user_id: user.id, scorer_id: the_case.scorer.id, updated_at: 1.minute.ago
+        the_case.scores.update_all try_id: 0
+        score_data[:scorer_id] = the_case.scorer.id
+
+        assert_difference 'the_case.scores.count' do
+          service.update score_data
+        end
+      end
+
       test 'creates new score if last score was last updated more than 5 min ago' do
         the_case.scores.update_all updated_at: 6.minutes.ago
         last_score = the_case.last_score

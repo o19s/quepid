@@ -119,6 +119,10 @@ describe("TuneRelevanceController", () => {
   beforeEach(() => {
     flash = { show: vi.fn(), hide: vi.fn() }
     window.quepidDom = { flash }
+    // happy-dom does not implement the Option constructor
+    vi.stubGlobal("Option", function Option(text, value) {
+      return Object.assign(document.createElement("option"), { textContent: text, value })
+    })
     window.bootstrap = { Modal: { getOrCreateInstance: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) } }
   })
   afterEach(() => {

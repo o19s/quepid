@@ -83,4 +83,24 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to cases_path
     assert_not kase.reload.archived
   end
+
+  test 'unarchive restores a case the user owns and redirects to the cases listing' do
+    kase = cases(:queries_case)
+    kase.mark_archived!
+
+    post unarchive_case_url(kase)
+
+    assert_redirected_to cases_path
+    assert_not kase.reload.archived
+  end
+
+  test 'unarchive does not touch a case the user is not involved with' do
+    kase = cases(:owned_case)
+    kase.mark_archived!
+
+    post unarchive_case_url(kase)
+
+    assert_redirected_to cases_path
+    assert kase.reload.archived
+  end
 end

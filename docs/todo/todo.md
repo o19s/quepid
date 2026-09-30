@@ -28,11 +28,7 @@ shared API and migration guidance.
 
 ### [MIGRATION-FOLLOWUP] P2 — Accessibility
 
-Complete the pass for score and rating controls so state is not conveyed by
-color alone. Some core controls still need accessible names, including
-copy-query and snapshot delete/clear actions; add `aria-label` or visible text
-while touching the owning control, and cover the result with the relevant
-Playwright scenario.
+Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario. (Copy-query, close-pane and snapshot delete/clear controls now have accessible names.)
 
 ### [PREEXISTING] Opportunistic — Core-toolbar status-message duplication
 
@@ -46,11 +42,17 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION] P2 — Dual Stimulus boot/runtime drift
+### [MIGRATION] P2 — Core Stimulus registration parity test
 
-Normal Rails pages lazy-load the whole controller directory (`app/javascript/controllers/index.js:1-5`) while the core page has a second esbuild entry with a long manual registration list (`app/javascript/core_stimulus.js:17-117`). The core runtime also exposes `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap globals, Sortable, Ace, and a large document-level `CustomEvent` bus. A controller can work on a normal page yet be silently missing from the core bundle, or be registered twice when markup moves between layouts.
+Normal Rails pages lazy-load every controller (`app/javascript/controllers/index.js`), while the core page has its own esbuild entry with a manual `register(...)` list (`app/javascript/core_stimulus.js`). The split is deliberate: it keeps the splainer-search runtime out of ordinary pages, so **do not merge the two into one registration source**. The risk is that nothing ties the core views to the core list, so a controller used by a core view but missing from `core_stimulus.js` never connects and fails silently. This is most likely when markup moves between layouts.
 
-**Fix direction:** Single declarative registration source where practical; a build-time check that every `data-controller` used by `core.html.erb` is registered; document event ownership/lifecycle rules.
+**Fix direction:** Add a vitest (runs under `yarn test:unit`) that collects every `data-controller` name from `app/views/core/**` and `app/views/layouts/core.html.erb`, plus controller names emitted by JS templates such as `search_results_template.js`, and fails if any is not registered in `core_stimulus.js`. Use a small allowlist for names supplied by shared partials that only render on normal pages. Optionally also flag core registrations that nothing references. Only add a "registered by both paths on one page" check if it has caused a real bug.
+
+### [MIGRATION] P3 — Document core event bus ownership
+
+The core runtime uses a large document-level `CustomEvent` bus and exposes `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap globals, Sortable, and Ace. The globals are acceptable migration glue; leave them unless one causes a bug.
+
+**Fix direction:** Write a short doc listing each event, its owner (emitter), its listeners, and lifecycle rules (who adds and removes listeners, and when). Put it in the developer guide's Stimulus section.
 
 ### [MIGRATION] P2 — Client-rendered HTML is an XSS and lifecycle hotspot (code review 2026-09-29)
 
@@ -102,13 +104,13 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 ---
 
-### [PREEXISTING] Try delete orphans scores; `same_score_source?` can 500
+### [PREEXISTING] Try delete orphans scores
 
-**Observed:** Scores keep a stale `try_id`. When an orphan is `last_score`, `PUT /api/cases/:id/scores` can 500 with `undefined method 'try_number' for nil`.
+**Observed:** Scores keep a stale `try_id` after the try is deleted. (The `PUT /api/cases/:id/scores` 500 on an orphaned `last_score` is fixed — `same_score_source?` now treats a nil try as a different source.)
 
-**Cause:** No cascade/nullify from try → scores (`case_scores.try_id` has no FK). Guard `return false if last_score&.try&.nil?` in `CaseScoreManager#same_score_source?` does not catch a nil try (`nil&.nil?` → `nil`, guard never trips).
+**Cause:** No cascade/nullify from try → scores (`case_scores.try_id` has no FK).
 
-**Fix direction:** Cascade or nullify scores on try destroy; change the guard to `return false if last_score.try.nil?`.
+**Fix direction:** Cascade or nullify scores on try destroy.
 
 ---
 
@@ -256,14 +258,6 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] Rating deletion: tolerate "already gone"
-
-Deleting a rating that was already removed can error; races (tabs, double clicks) worsen with async UI.
-
-**Action:** Prefer no-op success for "delete missing rating" so the client can stay optimistic without 500s.
-
----
-
 ## [PREEXISTING] P2 — Product bugs (Playwright MCP verified)
 
 ### [PREEXISTING] Judgement rating not validated against book's scale (outside AI judging)
@@ -332,12 +326,6 @@ redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
 ---
 
-## [PREEXISTING] P2 — Test coverage
-
-- `[PREEXISTING]` Add `test/controllers/cases_controller_test.rb` — HTML **unarchive** authorization test (`archive` already has coverage at lines 68-84; `unarchive` has no test at all)
-
----
-
 ## [PREEXISTING] P3 — Security & consistency
 
 ### [PREEXISTING] Proxy `proxy_debug` boolean parsing
@@ -377,14 +365,6 @@ Overlapping parse logic. Same fix as "Proxy URL parsing bug" above — `UrlParse
 Both `Judgement` and `QueryDocPair` are updated from an uploaded file via `assign_attributes(attrs.except(...))`. The `except` lists were built by hand and have twice needed a same-day patch: `:judgement_id` for `Judgement` (the judgements-API export emits it, and it isn't a real attribute, so it raised `UnknownAttributeError`) and `:book_id`/`:id` for `QueryDocPair` (a crafted value let one authenticated user write, or move, a query_doc_pair into another user's book — closed as a stopgap on 2026-09-10, reproduction is in this branch's history). Two escapes from small denylists in one review pass is the argument that a denylist can't converge here — the next producer to add a column or export a new key reopens the same class of bug.
 
 **Fix direction:** Replace both `.except(...)` calls with `.slice(...)` **allowlists** — `QueryDocPair`: `query_text`, `doc_id`, `position`, `document_fields`, `information_need`, `notes`, `options`; `Judgement`: `rating`, `unrateable`, `judge_later`, `explanation`. This also converts "unexpected key crashes the import job" into a silent no-op, closing the judgements-export entry above for free. Bigger change than the stopgap — touches every assign path in the importer and needs its own test pass — hence P3, not urgent.
-
----
-
-### [PREEXISTING] Dead code: `ScoresController#set_score`
-
-**Location:** `app/controllers/scores_controller.rb:24-26`
-
-Defined but unused (no `before_action`). Safe to delete.
 
 ---
 
@@ -487,27 +467,7 @@ Candidates for extraction into smaller methods or services:
 
 Shared `apiFetch` / `getQuepidRootUrl()` landed on `main` (see [DEVELOPER_GUIDE § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)). Remaining consistency work:
 
-### [MIGRATION-FOLLOWUP] `bulk_judgement` — server-owned URLs
-
-**Location:** `app/javascript/controllers/bulk_judgement_controller.js`, `app/views/bulk_judge/new.html.erb`
-
-Still builds `` `books/${bookId}/judge/bulk/save` `` / `delete` in JS. Pass `saveUrl` and `deleteUrl` from ERB via `data-*-url-value` (same pattern as `mapper_wizard`).
-
----
-
-### [MIGRATION-FOLLOWUP] Import case API — return `redirect_url`
-
-**Location:** `app/controllers/api/v1/import/cases_controller.rb`, `import_case_controller.js`
-
-Post-import navigation still built client-side: `` `${getQuepidRootUrl()}/case/${result.case_id}` ``. When touching the import API, return `redirect_url` from `case_core_url` in JSON and drop client path construction.
-
----
-
-### [MIGRATION-FOLLOWUP] Remaining inline CSRF controllers
-
-Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit — keep as-is unless moving to fetch).
-
-**Also:** add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
+Add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
 
 ---
 

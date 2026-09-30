@@ -12,7 +12,7 @@ const STATUS_VARIANT_CLASSES = [
 
 export default class extends Controller {
   static targets = ["rating", "explanation", "status", "savedIndicator"]
-  static values = { bookId: String }
+  static values = { saveUrl: String, deleteUrl: String }
 
   connect() {
     this.saveTimeout = null
@@ -28,13 +28,11 @@ export default class extends Controller {
   async resetRating(event) {
     const button = event.currentTarget
     const queryDocPairId = button.dataset.queryDocPairId
-    const bookId = this.bookIdValue
-
     // Show saving status first
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await apiFetch(`books/${bookId}/judge/bulk/delete`, {
+      const response = await apiFetch(this.deleteUrlValue, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json"
@@ -85,8 +83,6 @@ export default class extends Controller {
     const button = event.currentTarget
     const queryDocPairId = button.dataset.queryDocPairId
     const rating = button.dataset.rating
-    const bookId = this.bookIdValue
-
     // Update UI immediately for responsiveness
     this.updateRatingButtons(queryDocPairId, rating)
 
@@ -100,7 +96,7 @@ export default class extends Controller {
     const explanation = explanationField ? explanationField.value : ""
 
     try {
-      const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
+      const response = await apiFetch(this.saveUrlValue, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -128,8 +124,6 @@ export default class extends Controller {
   saveExplanation(event) {
     const field = event.currentTarget
     const queryDocPairId = field.dataset.queryDocPairId
-    const bookId = this.bookIdValue
-
     // Clear existing timeout
     if (this.saveTimeout) {
       clearTimeout(this.saveTimeout)
@@ -157,7 +151,7 @@ export default class extends Controller {
       this.showStatus(queryDocPairId, "saving")
 
       try {
-        const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
+        const response = await apiFetch(this.saveUrlValue, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

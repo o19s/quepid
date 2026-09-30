@@ -234,6 +234,12 @@ module Api
             assert_nil rating
           end
 
+          test 'returns no content when the rating is already gone' do
+            delete :destroy, params: { case_id: acase.id, query_id: query.id, rating: { doc_id: 'never-rated' } }
+
+            assert_response :no_content
+          end
+
           describe 'analytics' do
             test 'posts event' do
               expects_any_ga_event_call

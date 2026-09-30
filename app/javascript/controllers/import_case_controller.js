@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
-import { getQuepidRootUrl } from "utils/quepid_root"
 import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
@@ -64,9 +63,8 @@ export default class extends Controller {
       if (response.ok) {
         this.showAlert('Case imported successfully! Redirecting...', 'success')
         setTimeout(() => {
-          const caseId = result.id ?? result.case_id
-          if (caseId) {
-            window.location.href = `${getQuepidRootUrl()}/case/${caseId}`
+          if (result.redirect_url) {
+            window.location.href = result.redirect_url
           } else {
             window.location.reload()
           }
