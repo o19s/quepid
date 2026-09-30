@@ -4,8 +4,8 @@ Quepid has a modern JavaScript tree plus a small set of classic compatibility sc
 
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
-| `app/javascript/{ace_config,footer,tour}.js` | Classic scripts still loaded by the core layout | **ESLint + Prettier (advisory)** | Browser/manual coverage |
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `app/javascript/{ace_config,footer,tour}.js` | Classic scripts still loaded by the core layout | **ESLint + Prettier (enforced)** | Browser/manual coverage |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only; classic core scripts above are also Prettier-enforced) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
 | `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
@@ -17,7 +17,7 @@ Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; i
 Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and used by:
 
 - `eslint.config.mjs` (ignores + file globs) — **all** first-party JavaScript, with classic compatibility scripts using their legacy rules
-- `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/` and `utils/`** for now (avoids a mass reformat of controllers/modules in one PR)
+- `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/`, `utils/`, and the classic core scripts** for now (avoids a mass reformat of controllers/modules in one PR)
 - `scripts/filter_javascript_lint_paths.mjs` (ESLint pre-commit)
 - `bin/eslint-staged` / `bin/prettier-staged`
 
@@ -41,7 +41,7 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Trailing commas:** unlike many JS projects, Quepid does **not** use them in modern JS. Ruby is the opposite — RuboCop **requires** trailing commas on multiline hashes. See `CLAUDE.md` § Agent checklist.
 
-**Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
+**Prettier** is enforced on **`api/`, `utils/`, and the classic core scripts** (`ace_config`, `footer`, `tour`) only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
 
 **ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run the full `yarn lint:js` command before finishing. Specs follow formatting conventions manually.
 
@@ -55,10 +55,8 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 ```bash
 bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
-bin/docker r yarn lint:js:legacy      # ESLint — classic core scripts (advisory)
-bin/docker r yarn format:js:check      # Prettier check — api/ and utils/ only
-bin/docker r yarn format:js            # Prettier write — api/ and utils/ only
-bin/docker r yarn format:js:legacy:check # Prettier check — classic core scripts (advisory)
+bin/docker r yarn format:js:check      # Prettier check — api/, utils/, classic core scripts
+bin/docker r yarn format:js            # Prettier write — api/, utils/, classic core scripts
 bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
 bin/docker r rails test:frontend       # Vitest + Karma + ESLint + Stylelint
 ```
@@ -77,9 +75,8 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
-- `app/assets/javascripts/**/*.js` and the three classic core scripts → **advisory ESLint + Prettier** via the legacy staged hooks
 - `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
-- `app/javascript/api/**`, `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
+- `app/javascript/api/**`, `app/javascript/utils/**`, and the classic core scripts (`ace_config`, `footer`, `tour`) → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
 
 [pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged`.
 
@@ -89,7 +86,7 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 ## Classic core scripts
 
-`ace_config.js`, `footer.js`, and `tour.js` are loaded directly by the core layout as classic scripts because they still expose or consume browser globals. They are checked by advisory ESLint and Prettier commands, and their behavior should be verified through the affected core-page browser flow rather than duplicated in a separate module-test harness.
+`ace_config.js`, `footer.js`, and `tour.js` are loaded directly by the core layout as classic scripts because they still expose or consume browser globals. They are checked by blocking ESLint and Prettier (`lint:js`, `format:js:check`, pre-commit, CI), and their behavior should be verified through the affected core-page browser flow rather than duplicated in a separate module-test harness.
 
 ## Vitest (`app/javascript`)
 

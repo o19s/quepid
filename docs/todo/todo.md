@@ -42,18 +42,6 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION] P2 — Core Stimulus registration parity test
-
-Normal Rails pages lazy-load every controller (`app/javascript/controllers/index.js`), while the core page has its own esbuild entry with a manual `register(...)` list (`app/javascript/core_stimulus.js`). The split is deliberate: it keeps the splainer-search runtime out of ordinary pages, so **do not merge the two into one registration source**. The risk is that nothing ties the core views to the core list, so a controller used by a core view but missing from `core_stimulus.js` never connects and fails silently. This is most likely when markup moves between layouts.
-
-**Fix direction:** Add a vitest (runs under `yarn test:unit`) that collects every `data-controller` name from `app/views/core/**` and `app/views/layouts/core.html.erb`, plus controller names emitted by JS templates such as `search_results_template.js`, and fails if any is not registered in `core_stimulus.js`. Use a small allowlist for names supplied by shared partials that only render on normal pages. Optionally also flag core registrations that nothing references. Only add a "registered by both paths on one page" check if it has caused a real bug.
-
-### [MIGRATION] P3 — Document core event bus ownership
-
-The core runtime uses a large document-level `CustomEvent` bus and exposes `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap globals, Sortable, and Ace. The globals are acceptable migration glue; leave them unless one causes a bug.
-
-**Fix direction:** Write a short doc listing each event, its owner (emitter), its listeners, and lifecycle rules (who adds and removes listeners, and when). Put it in the developer guide's Stimulus section.
-
 ### [MIGRATION] P2 — Client-rendered HTML is an XSS and lifecycle hotspot (code review 2026-09-29)
 
 Template-string rendering remains in e.g. `search_results_controller.js:315-323` and `queries_list_controller.js:400-455`. Escaping is spread across helpers and call sites, and `innerHTML` replacement complicates Stimulus lifecycle reasoning.
@@ -474,11 +462,3 @@ Add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Sti
 ## [MIGRATION-FOLLOWUP] P2 — match-explain Stimulus controller follow-ups
 
 From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`.
-
-### [PREEXISTING] `json_explorer.js` undefined value renders a stray comma `<li>`
-
-**Location:** `app/javascript/utils/json_explorer.js` (`parseValue` / `parseChildren`)
-
-A `parseValue`/`parseChildren` entry for an `undefined` value renders a stray `<li>,</li>` instead of omitting the `<li>` entirely (the vendor's `if`/`else if` chain with no final `else` just skips it). Unreachable in practice — input always comes from `JSON.parse`, which never produces `undefined` — but worth matching exactly if this file is revisited.
-
-(Key escaping + the broken `class="prop>"` typo were fixed when the query-explain / detailed-doc follow-ups landed.)

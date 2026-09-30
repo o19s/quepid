@@ -88,5 +88,14 @@ describe("json_explorer", () => {
 
       expect(container.querySelector(".string").textContent).toBe('"invalid json"')
     })
+
+    it("renders JSON entries without empty list items", () => {
+      const container = document.createElement("div")
+      renderJsonExplorer(container, JSON.stringify({ present: "value", missing: null }))
+
+      const items = [...container.querySelectorAll(".json-explorer > ul > li")]
+      expect(items).toHaveLength(2)
+      expect(items.map(item => item.textContent)).toEqual(['present: "value",', "missing: null"])
+    })
   })
 })

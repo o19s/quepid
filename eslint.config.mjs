@@ -49,7 +49,7 @@ export default [
     },
   },
   {
-    files: ['app/assets/javascripts/**/*.js', ...LEGACY_SCRIPT_FILES],
+    files: LEGACY_SCRIPT_FILES,
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',

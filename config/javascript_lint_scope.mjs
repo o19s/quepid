@@ -1,8 +1,5 @@
 /**
  * Single source of truth for ESLint + Prettier scope on `app/javascript/`.
- *
- * Legacy scripts have a separate, advisory ESLint/Prettier scope while that
- * code is being retired.
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -13,7 +10,7 @@ export const LEGACY_ESBUILD_ENTRIES = [
   'app/javascript/utils/splainer_search_runtime.js',
 ];
 
-/** Classic scripts still loaded directly by the core layout. */
+/** Classic scripts still loaded directly by the core layout (ESLint + Prettier enforced). */
 export const LEGACY_SCRIPT_FILES = [
   'app/javascript/ace_config.js',
   'app/javascript/footer.js',
@@ -92,7 +89,8 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 }
 
 /**
- * Whether a repo-relative path is in the Prettier format scope.
+ * Whether a repo-relative path is in the Prettier format scope
+ * (api/, utils/, and the classic core scripts).
  * Narrow scope avoids a one-shot Prettier reformat of all controllers/modules;
  * project style is double quotes (see docs/js_tooling.md).
  * @param {string} path
@@ -102,7 +100,8 @@ export function isPrettierJavascriptPath(path) {
   const normalized = path.replace(/^\.\//, '');
   return (
     normalized.startsWith('app/javascript/api/') ||
-    normalized.startsWith('app/javascript/utils/')
+    normalized.startsWith('app/javascript/utils/') ||
+    LEGACY_SCRIPT_FILES.includes(normalized)
   );
 }
 

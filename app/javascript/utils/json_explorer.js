@@ -33,9 +33,12 @@ function parseChildren(key, value, collapser, ellipsis, contents, open, close) {
   html += `<ul class="${open === "[" ? "array" : "object"} collapsible ${contents}">`
 
   const entries = open === "[" ? value.map((v) => [null, v]) : Object.entries(value)
-  const items = entries.map(
-    ([k, v]) => `<li>${parseValue(k, v, collapser, ellipsis, contents)},</li>`
-  )
+  const items = entries
+    .map(([k, v]) => {
+      const parsed = parseValue(k, v, collapser, ellipsis, contents)
+      return parsed ? `<li>${parsed},</li>` : ""
+    })
+    .filter(Boolean)
   html += items.join("").replace(/,<\/li>$/, "</li>")
   html += `</ul>${close}`
   return html
@@ -88,9 +91,12 @@ export function renderJsonExplorer(container, jsonString, { collapsed = false } 
 
   const isArray = Array.isArray(data)
   const entries = isArray ? data.map((v) => [null, v]) : Object.entries(data)
-  const items = entries.map(
-    ([k, v]) => `<li>${parseValue(k, v, collapser, ellipsis, contents)},</li>`
-  )
+  const items = entries
+    .map(([k, v]) => {
+      const parsed = parseValue(k, v, collapser, ellipsis, contents)
+      return parsed ? `<li>${parsed},</li>` : ""
+    })
+    .filter(Boolean)
   const inner = items.join("").replace(/,<\/li>$/, "</li>")
 
   const html = isArray ? `[<ul class="array">${inner}</ul>]` : `{<ul class="object">${inner}</ul>}`
