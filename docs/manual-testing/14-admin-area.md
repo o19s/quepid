@@ -117,3 +117,16 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   2. Open **SQL Analytics** (Blazer) — confirm it loads and can run a basic query.
   3. As a **non-admin**, attempt to reach both directly by URL (`/admin/jobs`, `/admin/blazer`) — confirm access is denied.
 - **Expected:** Both tools are reachable only by admins; a deep dive into their internal functionality is out of scope for this guide (they're third-party engines), but confirm they at least load without erroring and are properly access-gated.
+
+### 14.12 Create a user (admin)
+
+- [ ] **Steps:**
+  1. Go to Admin > Users > **New User** (`/admin/users/new`).
+  2. Fill Email, Name, Company, a plain-text Password and confirmation, optionally tick Administrator, and save.
+  3. Repeat, but supply a pre-encrypted password hash (the **Encrypted Password** field) instead of a plain password.
+  4. Log in as each new user.
+- **Expected:** Redirects to the new user's Admin show page. The plain-password user logs in with that password; the pre-encrypted user logs in with the password the hash represents (the hash is stored as-is, not re-encrypted). The Administrator flag grants `/admin` access.
+- **Edge cases:**
+  - [ ] Duplicate email or blank email — form re-renders with validation errors, no user created.
+  - [ ] Password/confirmation mismatch — validation error.
+  - [ ] Delete the test users afterward (Part 14.8) so seed data stays clean.

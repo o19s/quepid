@@ -61,8 +61,29 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal 'id:id title:title', current_try.field_spec
     end
 
-    test 'does not load an inaccessible case' do
-      get :index, params: { id: cases(:not_shared).id }
+    test 'returns not found for an inaccessible case without creating one' do
+      assert_no_difference 'Case.count' do
+        get :index, params: { id: cases(:not_shared).id }
+      end
+
+      assert_response :not_found
+    end
+
+    test 'returns not found for a missing case without creating one' do
+      assert_no_difference 'Case.count' do
+        get :index, params: { id: 0 }
+      end
+
+      assert_response :not_found
+    end
+
+    test 'bootstraps a new case when no id is given and the user has no cases' do
+      user = User.create!(name: 'No Cases', email: 'no_cases@example.com', password: 'password', agreed: true)
+      login_user user
+
+      assert_no_difference 'Case.count' do
+        get :index
+      end
 
       assert_redirected_to case_new_path
     end

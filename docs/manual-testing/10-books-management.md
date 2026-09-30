@@ -51,7 +51,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   3. From the archived list, reopen it, click **Unarchive**, confirm.
 - **Expected:** Archive/unarchive work with the standard browser confirm dialog; the Archived badge and index-list membership update accordingly.
 - **Edge cases:**
-  - [ ] With legacy anonymous judgements present (`user: nil`), confirm the yellow "anonymous judgements" warning banner appears and links toward the Assign Anonymous tool (10.6b).
+  - [ ] With legacy anonymous judgements present (`user: nil`), confirm the yellow "anonymous judgements" warning banner appears and links toward the Assign Anonymous tool (10.6a).
   - [ ] With an import currently processing, confirm the red in-progress alert + manual **Refresh** link appears, and clicking Refresh updates the pair count once the job finishes.
   - [ ] Confirm "AI Judges Available" only appears when the book's teams have an unassigned AI judge, and flips to "we have an AI Judge helping" text once one is assigned.
 
@@ -89,6 +89,20 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 - **Expected:** Notice "Mapped N judgements to have rating X."; those judgements now carry the chosen rating and are no longer flagged Judge Later (they disappear from the "Judge Later" filter in the Judgements list).
 - **Edge cases:**
   - [ ] Run this with zero Judge Later judgements present — should still succeed, reporting 0 mapped.
+
+### 10.6e Remap judgement ratings
+
+- [ ] **Steps:**
+  1. On Settings > Danger Zone, scroll to **Remap Judgement Ratings**. Confirm one row per distinct rating value currently used by the book's judgements or its associated cases' ratings, each with a "Map To" number input pre-filled with the same value.
+  2. Change one or more targets (e.g. collapse a 0–3 scale to binary: 3→1, 2→1, 1→0), confirm the dialog, click **Remap Ratings**.
+  3. Open the Judgements tab and an associated Case's ratings (`/cases/:id/ratings`) and confirm the values changed.
+- **Expected:** Notice "Remapped N judgements and M case ratings."; both the book's judgements and all associated cases' ratings are remapped together.
+- **Edge cases:**
+  - [ ] Submit without changing any value — expect "No ratings changed." and no data touched.
+  - [ ] Chained mappings (e.g. 3→2 and 2→1 together) — confirm each original value maps exactly once (3 does not end up as 1).
+  - [ ] A book with no rated judgements or case ratings — the form shows "No rated judgements or case ratings found in this book." instead of a table.
+  - [ ] Blank a "Map To" input — that value is left unchanged rather than nulled.
+  - [ ] After remapping, confirm the book's Rating Scale (Settings) is **not** changed automatically; update it separately if the scale should change.
 
 ### 10.7 Import a new book from JSON
 

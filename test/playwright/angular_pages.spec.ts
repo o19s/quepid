@@ -173,6 +173,8 @@ test.describe('Angular pages — interaction screenshots', () => {
     const continueButton = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
     // Steps stay hidden until the wizard has loaded; wait for a real heading, not just the modal.
     await expect(modal.getByRole('heading', { name: /Welcome To Quepid/i })).toBeVisible({ timeout: 15_000 });
+    // The modal can be ready before the case behind it has loaded; wait so the backdrop is stable.
+    await expect(page.locator('.results-list-element li').first()).toBeVisible({ timeout: 20_000 });
     await expect(page).toHaveScreenshot('wizard-01-welcome-step.png', expandedCaseScreenshotOpts(page));
 
     await continueButton.click();

@@ -46,6 +46,18 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
+### [MIGRATION] P2 — Dual Stimulus boot/runtime drift (code review 2026-09-29)
+
+Normal Rails pages lazy-load the whole controller directory (`app/javascript/controllers/index.js:1-5`) while the core page has a second esbuild entry with a long manual registration list (`app/javascript/core_stimulus.js:17-117`). The core runtime also exposes `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap globals, Sortable, Ace, and a large document-level `CustomEvent` bus. A controller can work on a normal page yet be silently missing from the core bundle, or be registered twice when markup moves between layouts.
+
+**Fix direction:** Single declarative registration source where practical; a build-time check that every `data-controller` used by `core.html.erb` is registered; document event ownership/lifecycle rules.
+
+### [MIGRATION] P2 — Client-rendered HTML is an XSS and lifecycle hotspot (code review 2026-09-29)
+
+Template-string rendering remains in e.g. `search_results_controller.js:315-323` and `queries_list_controller.js:400-455`. Escaping is spread across helpers and call sites, and `innerHTML` replacement complicates Stimulus lifecycle reasoning.
+
+**Fix direction:** Prefer ERB shells plus Stimulus targets for stable UI, and DOM construction/text nodes for user-controlled values. Where templates are necessary, centralize escaping and add XSS regression tests for query text, document IDs, endpoint names, error messages, and mapper output.
+
 ### [MIGRATION] Verification requirements
 
 For changes to the core case surface:
@@ -86,7 +98,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 **Cause:** `Api::V1::TriesController#destroy` destroys the try but never recomputes `last_try_number` (create increments it). Deleting the latest try (including via API) can brick on reload.
 
-**Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null).
+**Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null), or forbid deleting the current try. Add a test that deletes the latest try, reloads the case, and verifies the next core bootstrap and score update both succeed.
 
 **Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
@@ -102,6 +114,28 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 ---
 
+## [PREEXISTING] P0 — Security (code review 2026-09-29)
+
+### [PREEXISTING] Public cases and snapshots allow unauthenticated mutation
+
+**Location:** `app/controllers/api/v1/cases_controller.rb:10-16`, `app/controllers/api/v1/snapshots_controller.rb:13-20`
+
+`Api::V1::CasesController#authenticate_api!` calls `set_case` and returns success whenever the case is public, regardless of action. That inherited callback covers `show`, `update`, and `destroy`, so a public case can be modified or deleted without an API key. `SnapshotsController` has the same bypass for listing, creation, and deletion.
+
+**Fix direction:** "Public" grants read access only; mutation requires an authenticated user plus an ownership/permission check. Split authentication into separate read and write policies instead of overriding the shared callback by action name. Add negative tests first: anonymous `PUT/PATCH/DELETE` against public cases and snapshots.
+
+---
+
+### [PREEXISTING] User API IDOR and cross-account write path
+
+**Location:** `app/controllers/api/v1/users_controller.rb:24-48`, `test/controllers/api/v1/users_controller_test.rb:30-39`
+
+`set_user` looks up any user by email or numeric ID without scoping to `current_user`, and `update` permits `company`, `completed_case_wizard`, and `default_scorer_id`. The existing test codifies one signed-in user fetching another's record. Unless this is an intentional admin directory, it exposes account metadata and allows cross-account changes.
+
+**Fix direction:** Scope ordinary requests to `current_user`. If admin lookup is needed, make it a separate admin-only endpoint with its own serializer and authorization test.
+
+---
+
 ## [PREEXISTING] P1 — Product bugs (Playwright MCP verified)
 
 ### [PREEXISTING] Uploading the judgements export imports nothing and reports success
@@ -112,7 +146,7 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 
 **Status:** Confirmed by reading; not driven through the UI. Two nearby format mismatches in the same panel, worth fixing together: the export's per-judgement `judgement_id` key isn't a `Judgement` attribute (a denylist entry now absorbs it, see `UNASSIGNABLE_JUDGEMENT_KEYS`), and the panel's promise that *"If you do NOT provide a `query_doc_pair_id` then you must provide `query_text` and `doc_id`"* isn't implemented — `find_query_doc_pair` returns nil for a blank id and `import_all_judgements` then does `next unless qdp`, silently dropping the judgement. Only the nested-`query_doc_pair`-object form actually upserts.
 
-**Fix direction:** Accept `judgements` as an alias for `all_judgements` (or make the export emit `all_judgements`), implement the flat `query_text`/`doc_id` fallback through `find_or_initialize_query_doc_pair`, and either way make a payload that matches zero rows report that instead of flashing success. Needs the allowlist work above first, since routing flat `query_text`/`doc_id` into `Judgement#assign_attributes` would raise `UnknownAttributeError` under the current denylist.
+**Fix direction:** Pick one canonical envelope and add a fixture-based export → import round-trip test. Accept `judgements` as an alias for `all_judgements` (or make the export emit `all_judgements`), implement the flat `query_text`/`doc_id` fallback through `find_or_initialize_query_doc_pair`, and either way make a payload that matches zero rows report that instead of flashing success. Needs the allowlist work above first, since routing flat `query_text`/`doc_id` into `Judgement#assign_attributes` would raise `UnknownAttributeError` under the current denylist.
 
 ---
 
@@ -158,17 +192,61 @@ user-entered settings.
 
 ---
 
-## [PREEXISTING] P2 — Security
+## [PREEXISTING] P1 — Security (code review 2026-09-29)
 
-### [PREEXISTING] Proxy CSRF bypass
+### [PREEXISTING] Outbound HTTPS certificate verification is disabled globally
 
-**Location:** `app/controllers/proxy_controller.rb:8`
+**Location:** `app/services/http_client_service.rb:91-101`
 
-`fetch` skips CSRF verification (`skip_before_action :verify_authenticity_token`) while requiring login. Cross-site POSTs from an authenticated session remain possible.
+`HttpClientService` sets `faraday.ssl.verify = false` for every request (proxy, mapper wizard, downloads, search calls), permitting man-in-the-middle interception of credentials and API keys.
+
+**Fix direction:** Remove the override. If development needs a custom CA, use a CA bundle or an explicit development-only opt-in. Add a test that production clients verify certificates.
+
+---
+
+### [PREEXISTING] Proxy SSRF controls are incomplete
+
+**Location:** `app/controllers/proxy_controller.rb:105-120`, `app/services/http_client_service.rb:91-99`
+
+The proxy validates the initial DNS resolution and blocks private ranges, but Faraday resolves the host again when making the request (DNS-rebinding window), and redirect following means an allowed public URL can redirect to an internal address without revalidation.
+
+**Fix direction:** Use a single validated connection target, disable redirects by default, or validate each redirect target. Tests: redirect-to-private-address, IPv6/link-local, rebinding, non-default ports, credential forwarding.
+
+---
+
+### [PREEXISTING] Secrets exposed through API serializers and admin views
+
+**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`, `app/views/admin/users/index.json.jbuilder:7-9`, `app/views/admin/users/show.html.erb:88-92`
+
+`api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses. Admin user JSON/HTML also render the encrypted password hash.
+
+**Fix direction:** Never serialize credentials or custom secret headers; return a masked/presence-only value and proxy server-side when secrets are needed. Make this unconditional rather than flag-dependent. Remove password hashes from admin views.
+
+---
+
+### [PREEXISTING] Static Active Record encryption keys committed as production fallbacks
+
+**Location:** `config/application.rb:55-61`
+
+Deployments that omit the env vars use publicly known keys, so encrypted fields are recoverable by anyone with the database.
+
+**Fix direction:** Fail fast in production when keys are absent; keep generated dev/test defaults out of production config; document key rotation and backup.
+
+---
+
+### [PREEXISTING] Proxy CSRF bypass and permissive CORS / Action Cable origins
+
+**Location:** `app/controllers/proxy_controller.rb:5-8`, `config/initializers/cors.rb:6-17`, `config/environments/production.rb:41-50`
+
+`fetch` skips CSRF verification (`skip_before_action :verify_authenticity_token`) for GET and POST while requiring login, so cross-site POSTs from an authenticated session remain possible. Production also allows every CORS origin, disables Action Cable request forgery protection, and accepts every Action Cable origin.
+
+**Fix direction:** Restrict CORS to configured origins with credentials off unless needed; derive Action Cable allowed origins from the deployment host list; give the proxy a CSRF token or a deliberately token-authenticated route.
 
 **Also open:** no rate limiting on proxy fetch (production concern when `proxy_requests: true`).
 
 ---
+
+## [PREEXISTING] P2 — Security
 
 ### [PREEXISTING] Password reset enumerates accounts (Playwright MCP)
 
@@ -322,7 +400,7 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 Manual `split('?')` / `split('=')` only captures the first embedded query param (e.g. loses `rows` from `?q=test&rows=10`).
 
-Fix together with URL extraction deduplication below.
+Fix together with URL extraction deduplication below. Add multi-parameter and encoded-value tests (code review 2026-09-29 recommends `Addressable::URI#query_values`).
 
 **Recommendation:** Cherry-pick `UrlParserService` from `origin/deangularjs-experimental` (commit `db1c4e50`) as its own small PR rather than reimplementing from scratch. That branch is a 1092-file, big-bang AngularJS→Rails rewrite that changed core architecture (server-side search execution, two-tier scoring, dropped/relocated features) — almost certainly why it was never merged, since it conflicts with this project's incremental per-surface migration strategy (see `angular-case-migration` skill). But `UrlParserService` itself is small, self-contained, and clean: wraps `Addressable::URI` (already a `Gemfile` dependency — no new gem needed), has 9 focused unit tests, and its `query_values` method fixes exactly this bug. Note that branch's `ProxyController` still had the CSRF-skip issue above — that fix wasn't part of the same effort and needs doing separately regardless.
 
@@ -397,6 +475,18 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 
 ---
 
+## [PREEXISTING] P2 — Background jobs (code review 2026-09-29)
+
+### [PREEXISTING] Import/populate jobs leave state and idempotency to best effort
+
+**Location:** `app/jobs/import_book_job.rb:7-21` (and similar populate jobs)
+
+Jobs set status strings before working and clear them only on success, so a failure can leave a book permanently busy and leave uploaded blobs in place. Several import paths use `find_or_create_by` plus later updates, vulnerable to duplicate work from retries or concurrent requests. Related to the anonymous-judgement re-import entry above.
+
+**Fix direction:** `ensure`/failure transitions for status and blob cleanup; deliberate retry/discard policy; idempotency via unique constraints or an explicit import identity. Test a failed job followed by retry, and a duplicate submission.
+
+---
+
 ## [PREEXISTING] P2 — Performance
 
 ### [PREEXISTING] Potential N+1 queries
@@ -406,6 +496,12 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 3. **`app/controllers/api/v1/cases_controller.rb:192`** — watch for extra associations in serializers beyond `preload(:tries, :teams, :cases_teams)`.
 
 Bullet is enabled in dev/test — fix as surfaced; review views for missing eager loads.
+
+### [PREEXISTING] API serializer query amplification (code review 2026-09-29)
+
+`app/views/api/v1/users/_user.json.jbuilder:12-13` runs three relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings.
+
+**Fix direction:** Endpoint-specific query objects, or preload/count exactly what each serializer needs. Add query-count tests for representative index responses, not just response-shape tests.
 
 ---
 

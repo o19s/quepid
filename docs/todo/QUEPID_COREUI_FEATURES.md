@@ -2,7 +2,9 @@
 
 > **Role:** Deep dive on `/case/...` only (~50% of rewrite difficulty). App-wide inventory: [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md). Schema / HTML routes / business rules: [`complete_application_specification.md`](../complete_application_specification.md). Frontend cleanup: [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal).
 >
-> The query evaluation page is the heart of Quepid. It accounts for ~50% of the rewrite difficulty and is where search engineers spend 90% of their time. This document exhaustively enumerates its functionality, interaction model, and technical complexity.
+> The query evaluation page is the heart of Quepid and is where search engineers spend most of their time. This document enumerates its functionality, interaction model, and technical complexity.
+>
+> **Implementation:** AngularJS has been removed. The page is server-rendered by `core.html.erb` and driven by Stimulus controllers (registered in [`core_stimulus.js`](../../app/javascript/core_stimulus.js), 50 of them) on top of plain ES modules in `app/javascript/utils/`, `stores/` and `api/`. `core-bootstrap` loads the case and starts the searches; the `live_query_*` modules own query state, search execution and scoring; `scorer_runtime.js` runs scorer code.
 
 ---
 
@@ -64,19 +66,18 @@ The query evaluation page is a **two-pane resizable layout** with a draggable sl
 
 ### Pane Resizing
 - **Slider** between panes supports mouse drag to resize
-- Right pane (dev settings) defaults to **450px** (`eastPaneWidth` value constant)
+- Right pane (dev settings) defaults to **450px** (`DEFAULT_EAST_PANE_WIDTH` in `pane_controller.js`)
 - Slider can toggle the right pane open/closed
-- Responds to window resize events via `$(window).on('resize', ...)`
-- Managed by `paneSvc` — mixed jQuery + raw DOM API:
-  - **Lazy initialization**: `refreshElements()` resolves 4 DOM elements via `getElementsByClassName`. If container width is 0 (DOM not yet laid out), retries via `$timeout(refreshElements, 200)` — polling until Angular's digest renders the view
-  - **Drag handling**: `slider.onmousedown = grabSlider` → `document.onmousemove = dragElement` → `document.onmouseup = releaseSlider`. Uses raw DOM events, not jQuery for drag
-  - **Toggle**: `$(document).on('toggleEast', toggleEast)` custom jQuery event. External code triggers pane toggle via `$(document).trigger('toggleEast')` rather than calling the service directly
-  - **Show/hide**: `$(slider).show()` / `$(east).hide()` — jQuery for visibility, raw DOM for positioning (`east.style.left`, `main.style.width`)
-  - Only public API is `this.refreshElements` — all other methods are private closure variables
+- Responds to window resize events (`window` `resize` listener)
+- Managed by the Stimulus `pane` controller ([`pane_controller.js`](../../app/javascript/controllers/pane_controller.js)), which positions the slider, east pane and main pane with inline styles:
+  - **Lazy initialization**: `refreshElements()` resolves the `.pane_east`, `.pane_main` and `.east-slider` elements. If the container width is 0 (not yet laid out), it retries after 200ms
+  - **Drag handling**: `mousedown` on the slider registers a document `mousemove` listener; `mouseup` releases it. The dragged width is remembered for the session only (no localStorage)
+  - **Toggle**: the controller listens for a `toggleEast` event on `document`; the Tune Relevance link dispatches it
+  - The pane starts closed on each page load
 
 ### Visibility
 - The "Tune Relevance" toggle in the header controls whether the dev settings pane is visible
-- Persisted via `$rootScope.devSettings` (survives route changes)
+- The state lives in the `pane` controller and is not persisted across page loads
 
 ---
 
@@ -86,8 +87,8 @@ The query evaluation page is a **two-pane resizable layout** with a draggable sl
 
 | Control | Behavior |
 |---------|----------|
-| **Add Query** button | Opens text input. Semicolons (`;`) delimit multiple queries — button label dynamically switches between "Add query" / "Add queries" based on presence of `;`. Paste handler (`quepidDom.textPaste` on the add-query directive) auto-converts newline-separated text to semicolons. Single query: `queriesSvc.persistQuery()` → search → score. Multiple: `queriesSvc.persistQueries()` → bulk POST to `api/bulk/cases/{caseNo}/queries` → `searchAll()` |
-| **Show Only Rated** checkbox | Toggles `queriesSvc.showOnlyRated`; when on, each query's search uses a filter query (Solr: `{!terms f=id}doc1,doc2,...`, ES/OS: `terms` filter in `bool` query) to show only rated documents |
+| **Add Query** button | Opens text input. Semicolons (`;`) delimit multiple queries — button label dynamically switches between "Add query" / "Add queries" based on presence of `;`. Paste handler (`attachTextPaste` in the `add-query` Stimulus controller) auto-converts newline-separated text to semicolons. The controller dispatches `add-query:submit` with the parsed query texts; the live-query runtime persists a single query (POST) or many (bulk POST to `api/bulk/cases/{caseNo}/queries`), then searches and scores them. The submit button is disabled while empty or loading |
+| **Show Only Rated** checkbox | Toggles the live-query runtime's show-only-rated flag; when on, each query's search uses a filter query (Solr: `{!terms f=id}doc1,doc2,...`, ES/OS: `terms` filter in `bool` query) to show only rated documents |
 | **Collapse All** button | Collapses all expanded query rows via the query collection/document stores |
 | **Sort dropdown** | Options: Default (manual), Name, Modified, Score, Errors |
 | **Sort direction** | Arrow toggle for ascending/descending |
@@ -107,10 +108,9 @@ The query evaluation page is a **two-pane resizable layout** with a draggable sl
 
 - **Drag-and-drop reordering** is only enabled when sort mode is "Default"
 - Uses SortableJS via the Stimulus `queries-list` controller (replaced angular-ui-sortable / jQuery UI): `cancel: '.unsortable'`
-- On `start`: captures `$scope.originalList = angular.copy(queriesList)` (accounts for reverse sort)
-- On `stop`: calculates from/to indices accounting for **pagination offset** (`(currentPage - 1) * pageSize`)
+- On drop: calculates from/to indices accounting for the reverse sort and the **pagination offset** (`(currentPage - 1) * pageSize`)
 - Sends `PUT /api/cases/{caseNo}/queries/{queryId}/position` with `{after: oldQueryId, reverse: boolean}`
-- Feature-flagged: `configurationSvc.isQueryListSortable()` controls whether drag-and-drop is available at all
+- Feature-flagged: the `queryListSortable` value (server-rendered onto the `core-bootstrap` element, stored by `configuration_runtime.js`) controls whether drag-and-drop is available at all
 
 ### Pagination
 - **15 queries per page** (hardcoded)
@@ -118,7 +118,7 @@ The query evaluation page is a **two-pane resizable layout** with a draggable sl
 - Pagination interacts with drag-and-drop (position calculation includes page offset)
 
 ### Status Indicators
-- **Bootstrapping**: "Booting up queries..." shown while `queriesSvc.isBootstrapping` is true
+- **Bootstrapping**: "Booting up queries..." shown while the live-query runtime is bootstrapping
 - **Updating**: "Updating X/Y queries..." progress indicator during `searchAll()`
 - **Flash messages**: Success/error messages for operations (delete, move, etc.)
 
@@ -140,7 +140,7 @@ Each query row is a **collapsible panel** with a header and expandable content a
 
 | Element | Detail |
 |---------|--------|
-| **Score badge** | Color-coded (HSL gradient, red→green) via `qscoreSvc.scoreToColor()`. Shows numeric score to 2 decimal places. Special values: `?` (pending), `--` (unrated), `zsr` (zero search results) |
+| **Score badge** | Color-coded (HSL gradient, red→green) via `scoreToColor()` in `utils/scoring.js`, rendered by the `qscore-query` controller. Shows numeric score to 2 decimal places. Special values: `?` (pending), `--` (unrated), `zsr` (zero search results) |
 | **Diff score badges** | One per enabled snapshot comparison (up to 5). Each has its own color and `allRated` indicator |
 | **Loading indicator** | Spinner while search is executing |
 | **Query text** | The search query (`h2.results-title`). Tooltip shows "Info Need: {informationNeed}" with 1-second delay, right placement |
@@ -177,20 +177,20 @@ When a query row is expanded, it shows search results in one of three view modes
 | Tool | Action |
 |------|--------|
 | **Score All** | Opens bulk rating popover for all visible documents |
-| **Copy** | Copies query text to clipboard via `ngclipboard` directive |
+| **Copy** | Copies query text to clipboard (`utils/clipboard.js`) |
 | **Toggle Notes** | Shows/hides query notes section (slides in `notes-box` div) |
 | **Explain** | Opens query-explain modal (Stimulus `query-explain` + `dynamic_modal`; size `lg`) with **3 tabs**: (1) **Params** — raw query parameters sorted alphabetically, displayed via vanilla `json_explorer`; (2) **Parsing** — `parsedQueryDetails` from searcher, also via `json_explorer` (uncollapsed); (3) **Query Template** — for ES template calls, renders template output in a `<pre>`. Each tab has a clipboard copy button. Only Solr returns query parameters; ES shows "not returned" message |
 | **Missing Documents** (targeted search) | Opens DocFinder modal. Button gets `active` CSS class when Finder view is shown |
-| **Query Options** | Per-query option key-value pairs via `<query-options>` component. Opens modal with ACE editor (JSON mode). Values accessible as `qOption('key')` in scorer code or `#$qOption.key##` in Query Sandbox template syntax. Saving triggers full rescore via `queriesSvc.updateScores()` |
-| **Move Query** | Opens `<move-query>` modal showing all user's cases (excluding current). Case list fetched from `caseSvc.allCases`, filtered to exclude source case. Listens for 6 events to keep list current. Selection triggers `queriesSvc.moveQuery()` → `PUT /api/cases/{caseNo}/queries/{queryId}` with `{other_case_id: targetCaseNo}`. Query removed from local map on success |
+| **Query Options** | Per-query option key-value pairs via `<query-options>` component. Stimulus `query-options-core` opens a modal with a CodeMirror editor (JSON mode). Values accessible as `qOption('key')` in scorer code or `#$qOption.key##` in Query Sandbox template syntax. Saving dispatches `query-options:saved`, which triggers a full rescore |
+| **Move Query** | Stimulus `move-query-core` opens a modal showing all the user's cases (excluding the current one). Selection sends `PUT /api/cases/{caseNo}/queries/{queryId}` with `{other_case_id: targetCaseNo}`; the query is removed from the local list on success |
 | **Delete Query** | Delete with confirmation dialog |
 
 ### Query Notes Section
 When toggled visible, shows a `form-horizontal` with:
-- **Information Need**: Text input (`ng-model="informationNeed"`) — describes what the query should find. Also shown as a tooltip on the query text in the header (`tooltip-popup-delay="1000"`, `tooltip-placement="right"`)
-- **Query Notes**: Textarea (`ng-model="queryNotes"`) — freeform notes about the query
-- **Save button**: Persists via `query.saveNotes(queryNotes, informationNeed)` → `PUT /api/cases/{caseNo}/queries/{queryId}/notes`
-- **Lazy loading**: Notes are fetched from the server only when the notes section is first opened (`$watch` on `displayed.notes`), not during initial query load
+- **Information Need**: Text input — describes what the query should find. Also shown as a tooltip on the query text in the header (1-second delay, right placement)
+- **Query Notes**: Textarea — freeform notes about the query
+- **Save button**: Persists via `PUT /api/cases/{caseNo}/queries/{queryId}/notes` (Stimulus `query-notes` controller)
+- **Lazy loading**: Notes are fetched from the server only when the notes section is first opened, not during initial query load
 
 ### Individual Search Result
 
@@ -216,42 +216,31 @@ Each result is a **3-column layout**:
 ### Field Display
 - Fields are extracted based on the **Field Spec** (e.g., `id:id title:name url:url`)
 - Field spec parsed by `fieldSpecSvc.createFieldSpec()` from splainer-search
-- Each field snippet is rendered with three-way type detection:
-  1. **Object/Array values** (`isObjectOrArray()`): Rendered with Stimulus `json-explorer` (`utils/json_explorer.js` — expandable JSON tree, starts uncollapsed)
-  2. **URL values** (`isUrl()`): Rendered as clickable `<a>` link opening in new tab
-  3. **Text values** (default): Rendered via `ng-bind-html` (HTML-sanitized)
-- **Title**: Clickable — opens Detailed Document modal. Shows `{{ doc.title }}`
-- **Translations**: Rendered with `ng-bind-html` plus a Google Translate link (`https://translate.google.com/?sl=auto&tl=en&text=...`)
-- **Unabridged fields**: Full content rendered via `ng-bind-html`
-- Doc ID field is validated by `DocListFactory` with two-tier error detection (see Section 22)
+- Each result is rendered by the Stimulus `search-result` controller ([`search_result_controller.js`](../../app/javascript/controllers/search_result_controller.js)); the parent `search-results` controller owns search, rating and detail commands. Snippet fields are rendered with three-way type detection:
+  1. **Object/Array values**: Rendered with Stimulus `json-explorer` (`utils/json_explorer.js` — expandable JSON tree, starts uncollapsed)
+  2. **URL values** (`http(s):` prefix): Rendered as clickable `<a>` link opening in new tab
+  3. **Text values** (default): Rendered as sanitized HTML (`sanitizeHtml`), so `<strong>` highlights survive
+- **Title**: Clickable — dispatches `search-result:show-document`, which opens the Detailed Document modal
+- **Translations**: Sanitized HTML plus a Google Translate link (`https://translate.google.com/?sl=auto&tl=en&text=...`)
+- **Unabridged fields**: Full content rendered as sanitized HTML
+- **Rank** and, at the scoring depth, a "Results above are counted in scoring." footer
+- Doc ID field is validated with two-tier error detection (see Section 22)
 
 ### Image/Thumbnail Prefix Wrapping
-The `SearchResultCtrl` handles image URLs with optional prefix:
-```javascript
-formatImageUrl(imgUrl, options) {
-  if (options?.prefix) imgUrl = options.prefix + imgUrl
-  return imgUrl
-}
-```
-This allows search engines that return relative image paths to be prefixed with a base URL configured per field spec.
+Thumbnail and image URLs are rendered as `${options.prefix}${value}` when the field spec supplies a prefix, so search engines that return relative image paths can be prefixed with a base URL.
 
 ### Snippet Extraction
-Each result calls `doc.subSnippets('<strong>', '</strong>')` to extract highlighted snippets from search engine responses, wrapping matches in `<strong>` tags.
+Highlighted snippets come from splainer-search (`doc.subSnippets('<strong>', '</strong>')`), which wraps matches in `<strong>` tags.
 
 ### Column Layout Adaptation
-`summaryColumnStyle()` returns different CSS classes based on document media:
-- `col-summary-thumb` — when `doc.hasThumb()` (thumbnail present)
-- `col-summary-image` — when `doc.hasImage()` (full image present)
-- empty string — text-only layout
+The summary column shows a thumbnail column when `doc.hasThumb`, a full-image column when `doc.hasImage`, and text only otherwise.
 
-### Expand Content Component
-The `<expand-content>` component allows expanding any field value into a **full-screen modal** (`windowClass: 'full-screen-modal'`). Content and title are passed through `$sce.trustAsHtml()` for safe HTML rendering.
-
-### Media Embedding (`quepidEmbed` directive)
-Attribute directive (`restrict: 'A'`) with isolated scope `{src: '='}`. Uses `views/embed.html` template. Detects file extension via regex and sets one of `audioSrc`, `imageSrc`, or `videoSrc`:
-- `.mp3`, `.wav`, `.ogg` → `<audio>` player
-- `.jpg`, `.jpeg`, `.gif`, `.png` → `<img>` element
-- `.mp4`, `.webm` → `<video>` player
+### Media Embedding
+`embedField()` in `search_result_controller.js` detects the file extension (ignoring any query string) and renders:
+- `.mp3`, `.wav`, `.ogg` → `<audio controls>`
+- `.jpg`, `.jpeg`, `.gif`, `.png` → `<img>`
+- `.mp4`, `.webm` → `<video controls>`
+- anything else → plain text
 
 ### Pagination
 - "Peek at the next page" link loads additional results via `query.paginate()`
@@ -259,17 +248,15 @@ Attribute directive (`restrict: 'A'`) with isolated scope `{src: '='}`. Uses `vi
 - Separate pagination for rated docs (`query.ratedPaginate()`)
 
 ### Explain Visualization (Stacked Chart)
-- **`stackedChart` directive** renders scoring breakdown per document
-- Trigger: "Matches" text with info icon, opens popover on click (`popover-trigger="outsideClick"`, `popover-placement="left"`)
-- Popover title: "Relevancy Score: {doc.score()}"
-- Shows "No Match" when `hots.length === 0`
-- **3 or fewer matches**: Shows all as `<uib-progressbar>` bars with description labels, clickable to open detailed explain
-- **More than 3 matches**: Shows first 3, remainder in `<uib-collapse>` behind "Show N More" / "Show Less" toggle link
-- Match colors cycle: red, orange, green, blue (via `stackChartColor` filter)
-- Match height proportional to percentage (via `stackChartHeight` filter)
-- Remaining percentage calculated by `stackChartLeftover` filter (100% - sum of matches)
-- Click on any match opens **Detailed Explain modal** with vanilla `json_explorer` showing `doc.explain().rawStr()`
-- Controller: `HotMatchesCtrl` — watches `doc.hotMatchesOutOf(maxDocScore)` for changes
+- The Stimulus `match-explain` controller ([`match_explain_controller.js`](../../app/javascript/controllers/match_explain_controller.js)) renders the scoring breakdown per document. It replaced the `stackedChart` directive and `HotMatchesCtrl`
+- Only rendered when `explainView` is `full` and the doc has `matchExplain` data
+- Trigger: "Matches" text with info icon, opens a Bootstrap popover on click (outside click closes, placed left)
+- Popover title: "Relevancy Score: {doc score}"
+- Shows "No Match" when there are no hot matches, and "no per-term score breakdown for doc" when the explain has no children
+- **3 or fewer matches**: Shows all as Bootstrap progress bars (width = clamped match percentage) with description labels
+- **More than 3 matches**: Shows first 3, remainder in a Bootstrap collapse behind a "Show N More" / "Show Less" toggle link
+- Popover body: the explain as text (or JSON when there is no breakdown) with **Debug** and **Expand** buttons. Expand opens a full-screen modal with the score and explanation text
+- Click on any bar, or the Debug button, opens the **Detailed Explain modal** with `json_explorer` showing the raw explain string (collapsed)
 
 ### Detailed Document Modal
 - Opens when clicking document title (vanilla modal via `window.quepidDom.modal.open`)
@@ -298,26 +285,26 @@ Attribute directive (`restrict: 'A'`) with isolated scope `{src: '='}`. Uses `vi
 ### Rating Interaction
 1. Click the rating badge on a document
 2. **Popover** appears with rating scale buttons (each color-coded)
-3. Click a value → `doc.rate(newRating)` → `PUT /api/cases/{caseNo}/queries/{queryId}/ratings`
-4. "Reset" button → `doc.resetRating()` → `DELETE /api/cases/{caseNo}/queries/{queryId}/ratings`
+3. Click a value → the `rating-popover` controller triggers the live-query `rateDocument` command (`live_query_commands.js`) → `query.ratingsStore.rateDocument()` → `PUT /api/cases/{caseNo}/queries/{queryId}/ratings`
+4. "Reset" button → `ratingsStore.resetRating()` → `DELETE /api/cases/{caseNo}/queries/{queryId}/ratings`
 5. After rating, `query.touchModifiedAt()` updates the query's modified timestamp
-6. `rating-changed` event broadcasts to trigger score recalculation
+6. A `rating-changed` event is dispatched (on the scoring store, or `ratings:changed` on `document`) to trigger score recalculation
 
 ### Bulk Rating ("Score All")
 1. Click "Score All" in query toolbar
 2. Popover appears with same scale
 3. Click a value → all visible documents rated at once
 4. Respects "Show Only Rated" filter — only rates currently visible docs
-5. Uses `doc.rateBulk(ids, rating)` → `PUT /api/cases/{caseNo}/queries/{queryId}/bulk/ratings`
-6. Bulk unrate: `doc.resetBulkRatings(ids)` → `POST /api/cases/{caseNo}/queries/{queryId}/bulk/ratings/delete`
+5. Uses `ratingsStore.rateBulkDocuments(ids, rating)` → `PUT /api/cases/{caseNo}/queries/{queryId}/bulk/ratings`
+6. Bulk unrate: `ratingsStore.resetBulkRatings(ids)` → `POST /api/cases/{caseNo}/queries/{queryId}/bulk/ratings/delete`
 
-### Ratings Storage (`ratingsStoreSvc`)
-- Each query gets a `RatingsStore` instance keyed by `(caseNo, queryId)`
+### Ratings Storage (`ratingsStore`)
+- Each query has a `ratingsStore` instance keyed by `(caseNo, queryId)`
 - Internal dictionary maps `docId → rating` (integer)
 - Supports URL-containing and dot-containing doc IDs (with escaping)
 - `bestDocs()` returns all rated docs sorted by rating value (descending) — used by scorer
 - `version()` counter increments on every change (for dirty-checking)
-- `createRateableDoc(normalDoc)` injects `rate()`, `rateBulk()`, `resetRating()`, `hasRating()`, `getRating()` methods onto document objects
+- Rateable document objects expose `hasRating()` and `getRating()`, which the scorer runtime calls
 
 ---
 
@@ -329,23 +316,24 @@ Scorers run in **two environments** with known behavioral drift:
 
 | Environment | Engine | Trigger | Location |
 |-------------|--------|---------|----------|
-| **Client-side** | Browser `eval()` inside `$timeout` | Rating change, search complete | `ScorerFactory.js` → `runCode()` |
+| **Client-side** | Browser `new Function`, scheduled with `queueMicrotask` | Rating change, search complete | [`scorer_runtime.js`](../../app/javascript/utils/scorer_runtime.js) → `runCode()` |
 | **Server-side** | MiniRacer V8 sandbox | Background evaluation, nightly runs | `lib/scorer_logic.js` |
 
 ### Key Differences Between Client and Server
 
-| Feature | Client (`ScorerFactory.js`) | Server (`scorer_logic.js`) |
+| Feature | Client (`scorer_runtime.js`) | Server (`scorer_logic.js`) |
 |---------|---------------------------|--------------------------|
 | `docAt(posn)` | Returns `docs[posn].doc` (unwrapped) | Returns `docs[posn]` (raw) |
 | `docRating(posn)` | Calls `docs[posn].getRating()` method | Accesses `docs[posn]["rating"]` property |
 | `hasDocRating(posn)` | Uses `docs[posn].hasRating()` method | Uses `hasRating(doc)` → `doc.hasOwnProperty('rating')` |
+| `eachRatedDoc()`, `docExistsAt()`, `ratedDocAt()`, `ratedDocExistsAt()` | Available | Available |
 | `avgRating100()` | Available | **Not available** |
 | `editDistanceFromBest()` | Available | **Not available** |
 | `pass()` / `fail()` | Available | **Not available** |
 | `assert()` / `assertOrScore()` | Available | **Not available** |
-| `setScore()` | Resolves a `$q` deferred | Sets a `theScore` variable |
-| Loop prohibition | Checked via `hasLoop()` promise | Not enforced on server |
-| Score return | Via Angular `$q.defer()` promise resolution | Via `getScore()` after `eval()` |
+| `setScore()` | Resolves a native-promise deferred | Sets a `theScore` variable |
+| Loop prohibition | `hasLoop()` runs in `checkCode()` (scorer save/test), not on every run | Not enforced on server |
+| Score return | Via deferred promise resolution | Via `getScore()` after `eval()` |
 
 ### Score Capping
 After scorer execution, the client-side score is adjusted:
@@ -353,12 +341,13 @@ After scorer execution, the client-side score is adjusted:
 2. If `null` and no bestDocs → `'--'` (unrated)
 3. If negative → `0`
 
-There is no upper bound. Scores are not capped at the rating scale max: CG@10, DCG@10, and v1 routinely exceed it. `scorer.maxScore()` always returns `undefined` (as it did in the Angular `ScorerFactory`), so query score colors use a max of 1.
+There is no upper bound. Scores are not capped at the rating scale max: CG@10, DCG@10, and v1 routinely exceed it. `scorer.maxScore()` always returns `undefined` (unchanged from the Angular era), so `scoreQuery()` in `query_scoring.js` falls back to a max of 1 for score colors.
 
 ### Loop Prohibition
-- Regex check: `/(while|for)\s*\(/g`
-- If matched, scorer code is rejected with error message: "Loops are currently not supported, use `eachDoc` to loop over documents."
-- Users must use `eachDoc()`, `eachRatedDoc()`, `eachDocWithRating()` etc. instead
+- Regex check: `/(while|for)\s*\(/g`, run by `hasLoop()` inside `checkCode()`
+- If matched, the check rejects with: "Loops are currently not supported, use `eachDoc` to loop over documents."
+- The check is a save/test-time validation only; it is not applied each time a scorer runs, so seeded scorers such as ERR@10 that contain `for` loops still score
+- Users are told to use `eachDoc()`, `eachRatedDoc()`, `eachDocWithRating()` etc. instead
 
 ### Depth of Rating Tracking
 After scorer code executes, the system appends code to detect and extract the `k` parameter:
@@ -369,8 +358,8 @@ if (typeof k !== 'undefined') {
 ```
 This records how many documents the scorer inspected (stored on `query.depthOfRating`).
 
-### Execution Timeout (Prototype, Not Active)
-There is a `checkCodeExecutionTime()` method using Web Workers with a 1-second timeout, but it's commented out (`// var timePromise = self.checkCodeExecutionTime()`). The code is preserved but not functional.
+### Execution Timeout
+There is no execution timeout. The Angular-era `checkCodeExecutionTime()` Web Worker prototype was never functional and is not part of `scorer_runtime.js`, so a scorer that loops forever blocks the tab.
 
 ---
 
@@ -422,6 +411,9 @@ These functions are available inside custom scorer code. The default `count` par
 |----------|-----------|-------------|
 | `editDistanceFromBest` | `editDistanceFromBest(count?)` | Levenshtein edit distance between current ranking and ideal ranking (from bestDocs). Returns integer (client-only) |
 | `qOption` | `qOption(key)` | Access per-query option value by key. Returns `null` if not set |
+| `max` | variable | The largest value of the scorer's rating scale (a value, not a function) |
+| `ratedDocAt` / `ratedDocExistsAt` | `ratedDocAt(posn)` / `ratedDocExistsAt(posn)` | Access `query.ratedDocs` by position, mirroring `docAt` / `docExistsAt` |
+| `refreshRatedDocs` | `refreshRatedDocs(count?)` | Reloads the query's rated documents from the search engine (client-only) |
 
 ### Built-in Scorers (9 total)
 These use the runtime API above:
@@ -439,36 +431,33 @@ These use the runtime API above:
 
 ## 8. Dev Settings Panel
 
-The right pane contains a **5-tab interface** for configuring the current search try.
+The right pane (`#dev-settings`, [`_tune_relevance.html.erb`](../../app/views/core/_tune_relevance.html.erb)) contains a **5-tab interface** for configuring the current search try: **Query**, **Tuning Knobs**, **Settings**, **History** and **Annotations**. It is driven by the Stimulus `tune-relevance` controller ([`tune_relevance_controller.js`](../../app/javascript/controllers/tune_relevance_controller.js)) with helpers in `utils/tune_relevance.js`.
 
 ### Tab 1: Query Sandbox
 
-Engine-specific editor for query parameters:
+A single CodeMirror 6 editor (`modules/editor.js`) whose mode follows the query params (`queryParamsMode`):
 
-| Engine | Editor | Format |
-|--------|--------|--------|
-| **Solr** | Textarea | Key-value query parameters (e.g., `q=#$query##&defType=edismax&qf=title^2 body`) |
-| **ES/OpenSearch** | ACE JSON editor | JSON DSL query body |
-| **Vectara** | ACE JSON editor | JSON query body |
-| **Algolia** | ACE JSON editor | JSON search parameters |
-| **SearchAPI** | ACE JSON editor | JSON with mapper code |
-| **Static** | Info message | No editable params (snapshot-backed) |
+| Engine | Mode | Format |
+|--------|------|--------|
+| **Solr** | Plain text | Key-value query parameters (e.g., `q=#$query##&defType=edismax&qf=title^2 body`) |
+| **ES/OpenSearch, Vectara, Algolia** | JSON | JSON DSL query body / search parameters |
+| **SearchAPI** | JSON when the params start with `{` | JSON with mapper code |
+| **Static** | Info message | No editable params (snapshot-backed); the editor is hidden |
 
-**ACE Editor Configuration**: All JSON editors use ACE with Chrome theme, JSON mode. SearchAPI editor has conditional gutter display. Each engine has its own editor element ID (`es-query-params-editor`, `os-query-params-editor`, etc.)
-
-**Validation**:
-- JSON syntax validation for ES/OS/Vectara/Algolia (try/catch on `JSON.parse`)
+**Validation** (on "Rerun My Searches!"):
+- JSON syntax validation for engines that use JSON query params, and for SearchAPI when the params start with `{` (shows "Please provide a valid formatted JSON object for the query DSL.")
 - **Solr typo detection**: Regex-based dictionary checking for 7 common misspellings:
   - `deftype` → `defType`, `echoparams` → `echoParams`, `explainother` → `explainOther`
   - `logparamslist` → `logParamsList`, `omitheader` → `omitHeader`
   - `segmentterminateearly` → `segmentTerminateEarly`, `timeallowed` → `timeAllowed`
   - Shows warning: "Your query params contain `<key>`, you probably meant `<correct>`."
-- **ES template call detection**: `esUrlSvc.isTemplateCall()` detects template syntax and shows warning about limitations (can't use `explainOther`)
+- **ES template call detection**: `isTemplateCall()` (splainer-search) detects template syntax and shows a warning about limitations (can't use `explainOther`; the `_source` field filter must include the displayed fields)
 - Pretty-printing: JSON auto-formatted with 2-space indentation on save
+- The Solr typo warnings above appear live as you type (`queryParamsWarning`)
 
 ### Tab 2: Tuning Knobs (Curator Variables)
 
-Curator variables use `##varName##` syntax in query parameters. The `varExtractorSvc` uses regex `/##[^#]*?##/g` to extract three tiers of variables:
+Curator variables use `##varName##` syntax in query parameters. `utils/curator_vars.js` uses regex `/##[^#]*?##/g` to extract three tiers of variables:
 
 **Three-Tier Variable System**:
 1. **Magic variables** (stripped during parsing, not shown as knobs):
@@ -479,8 +468,8 @@ Curator variables use `##varName##` syntax in query parameters. The `varExtracto
 
 - Empty state: when no variables exist, shows help text explaining `##variable##` syntax
 - Variables sorted alphabetically via `sortVars()`
-- When curator variables change, `toggleTab()` creates a temporary `TryFactory` copy, calls `updateVars()` to re-extract variables, validates the search URL, then commits back to `settings.selectedTry`
-- Changes create a new "try" (version) to preserve history
+- Editing the query params re-extracts the variables (`updateVars()` on the selected try), so knobs appear and disappear as you type
+- Saving ("Rerun My Searches!") creates a new "try" (version) to preserve history
 
 ### Tab 3: Settings
 
@@ -488,65 +477,58 @@ All subsections have **collapsible headers** (click to toggle visibility):
 
 | Setting | Control | Detail |
 |---------|---------|--------|
-| **Search Endpoint** | Typeahead selector (`uib-typeahead`) with custom popup template | Picks from configured endpoints; shows name, URL, archived status. "OR" option to select existing endpoints. Archived endpoint warning. Link to edit endpoint |
+| **Endpoint Details** | Read-only block | Endpoint name, engine icon, URL, archived warning, and a "Troubleshooting and Quepid" wiki link chosen per engine (`troubleshootingWikiUrl`) |
+| **Search Endpoint** | `<select>` plus a type-to-search box (up to 8 suggestions) | Picks from configured endpoints (the "OR" divider separates the two controls). Shows "No search endpoints found" or "No matching search endpoints found" as needed |
 | **Displayed Fields** | Text input | Field spec string (e.g., `id:id title:name thumb:poster_path`). ES/OS template warning shown when applicable |
-| **Number of Results** | Number input (max 100) | Results per page from search engine |
-| **Nightly Evaluation** | Checkbox | Enable/disable nightly background evaluation. Adjacent "Run Evaluation" button queues immediate background job. Button text changes to "Running..." with disabled state during execution |
-| **Escape Queries** | Checkbox | Whether to URL-encode query text before sending to engine |
+| **Number of Results** | Number input (1–100) | Results per page from search engine; other values are rejected on save |
+| **Nightly Evaluation** | Checkbox | Enable/disable nightly background evaluation. The adjacent "Rerun My Searches in the Background!" button queues an immediate background job (button reads "Queuing evaluation job..." and is disabled while it runs), then returns to the Quepid root |
+| **Escape Queries** | Checkbox | Whether to URL-encode query text before sending to engine. Hidden for engines that don't support it |
 
 **TLS Protocol Warning**: If Quepid is served via HTTPS but the search engine URL is HTTP (or vice versa), a warning appears with a link to switch protocols. The link preserves all current UI state as URL parameters.
 
 **Search Endpoint Switching**: When selecting a new endpoint, all settings are remapped:
 - `endpointUrl` → `searchUrl`
-- `searchEngine`, `apiMethod`, `customHeaders`, `basicAuthCredential`, `queryParams`, `mapperCode`
-- Creates a new try to preserve history
+- `searchEndpointId`, `searchEngine`, `apiMethod`, `customHeaders`, `proxyRequests`, `basicAuthCredential`, `mapperCode`, `mapperBasedSearchEngineId`
+- Saving creates a new try to preserve history
 
 ### Tab 4: History
 
-- Lists all tries (search configuration versions) for the current case
+- Links to "Visualize your tries" (tries visualization analytics page), "Check Scores" (`cases/:id/scores`) and "Check Ratings" (`cases/:id/ratings`)
+- Lists all non-deleted tries (search configuration versions) for the current case
 - Each try shows:
   - Formatted name (or auto-generated "Try N")
   - First 200 characters of query params
-  - Endpoint name
-- **Color-coded by search URL**: 3-color cycling with hardcoded background colors (`#666`, `#64647D`, `#667A66`). Bucket assigned by `urlBucket(searchUrl, 3)` — deterministic based on sorted unique URL index
-- Each entry shows: formatted name, first 200 characters of query params, endpoint name
+  - "using {endpoint name}"
+- **Color-coded by search URL**: each row gets a `bucket-N` class from `urlBucket(searchUrl, urls)`, deterministic on the unique search URLs, so tries against the same endpoint share a color
 - Click navigates to that try (changes active search configuration)
-- "..." button (with `$event.stopPropagation()` to prevent navigation) opens **Try Details Modal**:
-  - Try name (editable inline with rename form)
-  - Full query arguments in `<pre><code>` block
-  - Search endpoint with engine icon (`solr-icon.png` etc., 16px wide) and browse link
+- "..." button (click propagation stopped so it doesn't navigate) opens the **Try Details Modal**:
+  - Try name with a Rename action
+  - Full query arguments in a `<pre><code>` block
+  - Search endpoint link plus a "Browse Search Endpoint" link
   - Displayed fields spec
-  - Variables section: `#$query##` (always shown) plus all curator variables with values
-  - Duplicate button (closes modal, returns action for parent to handle via `settingsSvc.duplicateTry()`)
-  - Delete button (disabled for active try, disabled if only one try remains)
+  - Variables section listing the curator variables and their values
+  - Duplicate button
+  - Delete button
   - Dismiss button
 
 ### Tab 5: Annotations
 
 - Case-level text annotations (notes about results/performance)
-- Create, edit, delete via `annotationsSvc`
+- Create, edit, delete via the Stimulus `annotations` controller (message textarea, list, edit modal)
 - Each annotation is a structured object: `{id, caseId, message, score, source, user, createdAt, updatedAt}`
 - The `score` field is a nested reference to the associated case score at the time of annotation
 - `PUT /api/cases/{caseId}/annotations/{id}` for persistence
 
-### Custom Headers Component
+### Custom Headers
 
-Embedded in the Settings tab (and the Wizard) via `<custom-headers>` directive:
-- **Dropdown selector**: "None", "API Key", "Custom"
-- **ACE editor** (JSON mode, Chrome theme) for editing header JSON
-- When type changes, auto-populates template:
-  - None → clears to empty
-  - API Key → `{"Authorization": "ApiKey XXX"}`
-  - Custom → `{"KEY": "VALUE"}`
-- Editor is read-only when type is "None"
+There is no custom-headers component in the Settings tab. Headers belong to the search endpoint: they are edited on the endpoint page (`search_endpoints/_form.html.erb`, CodeMirror JSON editor) and in the wizard's endpoint form (raw JSON textarea). Selecting an endpoint in Settings copies its headers onto the try.
 
 ### Action Button: "Rerun My Searches!"
 
-At the bottom of the dev settings panel (visible only on Developer, Settings, and Curator tabs):
-- Saves current settings as a new try (`settingsSvc.save()`)
-- Triggers `queriesSvc.searchAll()` to re-execute all queries
-- If TLS mismatch detected, shows protocol switch link instead
-- Settings changes automatically broadcast `settings-changed` event
+At the bottom of the dev settings panel (`#query-sandbox-action`, visible only on the Query, Tuning Knobs and Settings tabs):
+- Copies the editor, field spec, number of rows and escape flag onto the settings, validates them, and saves them as a new try (`settings.save()`)
+- The saved try triggers a re-run of all queries
+- If a TLS mismatch is detected, the button is replaced by a "Reload Quepid in {protocol} Protocol" link
 
 ---
 
@@ -560,7 +542,7 @@ At the bottom of the dev settings panel (visible only on Developer, Settings, an
    - Shows current field spec
    - In-progress state: "Snapshot Being Created (this can take a minute or so)"
    - Error display for failures
-3. `querySnapshotSvc.addSnapshot(name, recordDocumentFields, queries)` → `POST /api/cases/{caseNo}/snapshots`
+3. The Stimulus `take-snapshot-core` controller builds the payload and sends `POST /api/cases/{caseNo}/snapshots`
 4. Snapshot payload per query includes:
    - **Query metadata**: `score`, `all_rated`, `number_of_results`
    - **All docs**: Each with `id`, `explain` (raw string), `rated_only: false`
@@ -577,9 +559,9 @@ For engines without ID-based lookup, snapshots with stored fields create a **fak
 ### Comparing Snapshots (Diff View)
 1. User clicks "Diff" in action bar
 2. Selects up to **5 snapshots** to compare against current results
-3. `diffStateStore.enable(snapshotIds)` activates comparison mode
+3. The comparison store (`stores.diff`, driven by the Stimulus `diff-core` controller) activates comparison mode
 4. Each query switches from Results view to **Diff view** (mode 3)
-5. `diffResultsSvc.createQueryDiff(query)` creates diff objects
+5. `createQueryDiff()` (`utils/diff_results.js`) creates diff objects for each query
 
 ### Diff Display Layout
 
@@ -610,7 +592,7 @@ CSS classes: `different`, `missing`, `new`
 - Case-level diff averaging: sums valid diff scores across all queries, computes average
 
 ### Snapshot Searcher Interface
-`snapshotSearcherSvc` wraps snapshot data in the same interface as live searchers:
+The snapshot searcher (`createSearcherFromSnapshot`) wraps snapshot data in the same interface as live searchers:
 - `search()` — resolves immediately (data pre-loaded)
 - `pager()` — returns null (no pagination)
 - `explainOther()` — rejects (not supported for snapshots)
@@ -627,10 +609,10 @@ This allows the diff system to treat snapshots identically to live search result
 The Doc Finder is an alternate view (mode 1) within each query that lets users **search for specific documents** to rate, even if they don't appear in the main search results.
 
 ### Modal Layout
-The Doc Finder opens as a **modal** ("Find and Rate Missing Documents") with:
-- ACE editor for query input (Lucene mode, Chrome theme, single line, no gutter)
+The Doc Finder (Stimulus `missing-documents` controller) opens as a **modal** ("Find and Rate Missing Documents") with:
+- ACE editor for query input (Lucene mode, single line, no gutter). This is the one place ACE is still used on the case page; everything else uses CodeMirror 6
 - Help text explains per-engine syntax: "Solr: Use simple Lucene query syntax..." / "Elasticsearch/OpenSearch: Keywords replace #$query##..."
-- **Enter key warning**: Detects enter keypress and shows red alert "Please click the 'Search' button instead of enter key..." (prevents accidental form submission in ACE editor)
+- **Enter key warning**: Detects enter keypress and shows red alert "Please click the 'Search' button instead of enter key..." (prevents accidental form submission in the editor)
 - "Search" button and "Reset to All Rated Docs" button (disabled when already showing rated)
 - "Score All" bulk rating widget with warning: "Changing ratings will affect the query score"
 - Search result list using same `<search-result>` components as main view
@@ -646,7 +628,7 @@ The Doc Finder opens as a **modal** ("Find and Rate Missing Documents") with:
    - Template calls (ES) can't use `explainOther`, falls back to regular search
    - Shows "There are N ratings for your original query 'X'"
 2. **Custom Search**: User enters arbitrary search query to find documents
-   - Creates new searcher via `queriesSvc.createSearcherFromSettings()`
+   - Creates new searcher via `createSearcherFromSettings()` (`utils/live_query_search.js`)
    - Calls `searcher.explainOther(queryText, fieldSpec)` for Solr
    - Normalizes results based on engine type via `normalDocsSvc.normalizeDocExplains()`
    - Creates rateable docs via `ratingsStore.createRateableDoc()`
@@ -662,11 +644,11 @@ The search execution pipeline abstracts 7 search engines behind a unified interf
 ### Searcher Creation Flow
 
 ```
-Settings (TryFactory)
+Settings (selected try)
     ↓
-queriesSvc.createSearcherFromSettings()
+createSearcherFromSettings() (utils/live_query_search.js → query_service.js)
     ↓
-searchSvc.createSearcher(fieldSpec, searchUrl, args, queryText, options, searchEngine)
+searchSvc.createSearcher(fieldSpec, searchUrl, args, queryText, options, searchEngine)   [splainer-search]
     ↓
 Engine-specific Searcher (Solr, ES, OS, Vectara, Algolia, SearchAPI, Static)
     ↓
@@ -702,7 +684,7 @@ Returns: { docs[], numFound, linkUrl, inError, search(), pager(), explainOther()
 ### SearchAPI Mapper System
 
 For custom search APIs, users provide JavaScript mapper code:
-1. **Validation**: Code evaluated via `new Function()` constructor in non-strict mode
+1. **Validation**: Code evaluated via `new Function()` constructor in non-strict mode (results cached by the mapper code string in `live_query_runtime_owner.js`)
 2. **Required functions**:
    - `numberOfResultsMapper(response)` — extracts total result count from response
    - `docsMapper(response)` — extracts document array from response
@@ -710,12 +692,12 @@ For custom search APIs, users provide JavaScript mapper code:
 4. **Error handling**: Validates both functions exist, reports specific missing function errors
 
 ### Explain Parsing
-- **Solr**: `solrExplainExtractorSvc` parses human-readable explain text into structured match components (score breakdowns, field contributions)
-- **ES/OS**: `esExplainExtractorSvc` parses nested JSON explain output into match components
+- **Solr**: `solrExplainExtractorSvc` (splainer-search) parses human-readable explain text into structured match components (score breakdowns, field contributions)
+- **ES/OS**: `esExplainExtractorSvc` (splainer-search) parses nested JSON explain output into match components
 - Other engines: `normalDocsSvc.createNormalDoc()` without explain data
 
 ### Document Normalization
-All search engine responses are normalized to a common format via `normalDocsSvc`:
+All search engine responses are normalized to a common format via `normalDocsSvc` (splainer-search, wired up in `core_runtime.js` by `createSplainerSearchRuntime()`):
 - `id` — extracted from field spec ID field
 - `title` — extracted from field spec title field
 - Additional fields — based on field spec
@@ -725,7 +707,7 @@ All search engine responses are normalized to a common format via `normalDocsSvc
 ### Search Execution Pattern
 
 ```javascript
-// In queriesSvc — Two-Phase Architecture
+// utils/live_query_transport.js → createSearchAllRuntime() in utils/query_runtime.js — Two-Phase Architecture
 searchAll():
   // Phase 1: Build lazy search functions (NOT promises)
   promises = queries.map(q => () => q.search().then(() => scorePromises.push(q.score())))
@@ -734,7 +716,7 @@ searchAll():
   pAll(promises, requestsPerMinute)
 
   // Phase 2: After all searches, wait for per-query scores
-  $q.all(scorePromises).then(() => {
+  Promise.all(scorePromises).then(() => {
     scoreAll()    // aggregate case-level score
     syncToBook()  // sync query-doc pairs to book
   })
@@ -742,7 +724,7 @@ searchAll():
 // query.search() internals:
 query.search()
   → hasBeenScored = false
-  → createSearcherFromSettings(settings, query)       // primary searcher
+  → createSearcherFromSettings(settings, query)       // primary searcher (proxied when the try uses the proxy)
   → createSearcherFromSettings(settings, query, {filterToRated:true})  // rated searcher (constructed but NOT searched yet)
   → searcher.search()                                  // HTTP call to search engine
   → query.setDocs(searcher.docs, searcher.numFound)    // DocListFactory with ratingsStore
@@ -750,7 +732,7 @@ query.search()
 
 // query.setDocs() internals:
 setDocs(newDocs, numFound)
-  → docs.length = 0           // truncate in-place (preserves Angular bindings)
+  → docs.length = 0           // truncate in-place
   → setDirty()                // version++, svcVersion++ — invalidates score cache
   → DocListFactory(newDocs, fieldSpec, ratingsStore)  // ratingsStore is 3rd arg
   → docList.list()            // returns docs with ratings attached via createRateableDoc()
@@ -778,7 +760,7 @@ normalizeDocExplains(query, searcher, fieldSpec):
 ```
 
 ### Rate-Limiting & Concurrency
-`queriesSvc.pAll(queue, requestsPerMinute)` is an `async` function managing concurrent search execution. The queue contains **functions** (not promises) — lazy evaluation ensures searches don't all start immediately.
+`pAll(queue, requestsPerMinute)` in [`utils/query_service.js`](../../app/javascript/utils/query_service.js) is an `async` function managing concurrent search execution (called by `runSearchAll()` via `createSearchAllRuntime()`, with `requestsPerMinute` taken from the selected try). The queue contains **functions** (not promises) — lazy evaluation ensures searches don't all start immediately.
 
 **No rate limit mode** (10 concurrent workers):
 ```javascript
@@ -818,52 +800,58 @@ Rating changes trigger a cascade of score updates through the system.
 ```
 User clicks rating
     ↓
-doc.rate(newRating)  →  PUT /api/cases/{caseNo}/queries/{queryId}/ratings
+ratingsStore.rateDocument(id, rating)  →  PUT /api/cases/{caseNo}/queries/{queryId}/ratings
     ↓
 query.touchModifiedAt()
     ↓
-$rootScope.$broadcast('rating-changed')
-    ↓  (debounced 100ms)
-├── query.diffs.fetch() → refresh diff scoring for this query
-├── query.score() → re-run scorer for this query
-│       ↓
-│   queriesSvc.scoreAll() → recalculate aggregate case score
-│       ↓
-│   caseSvc.trackLastScore() → PUT /api/cases/{caseId}/scores
-│       ↓
-│   $rootScope.$broadcast('updatedCaseScore')
-│       ↓
-│   UI updates: case score badge, query score badge, diff score badges
-└── case-level diff score averaging (iterates all queries)
+store.scoring.markRatingChanged(queryId)   (fires 'rating-changed'; falls back to a 'ratings:changed' event on document)
+    ↓  (live_query_events.js → ratingChanged)
+├── invalidate the query's rated-docs cache and republish the query to the document store
+└── schedule(scoreAll)
+        ↓
+    query.score() for every query → re-run scorer (cached when the version is unchanged)
+        ↓
+    scoreAll aggregation → store.scoring.setLatestScoreInfo(...) → 'scoring-complete' on the scoring store
+        ↓
+    qscore-case controller (onScoringComplete):
+        ├── persistScore() → PUT api/cases/{caseId}/scores  { case_score: { score, all_rated, try_number, queries } }
+        │       (URL and try number are server-rendered onto the element; skipped for non-numeric/-1 scores,
+        │        empty query scores, or a missing try number; then dispatches 'case-score:persisted')
+        └── refreshCaseDiffScores()
+        ↓
+    'queries-state:changed' dispatched on document
+        ↓
+    UI updates: case score badge, query score badges, diff score badges (qscore-query / qscore-case / diff-case-scores controllers)
+
+    Separately, qscore-case also listens for the store's 'rating-changed' and refreshes the case diff scores
+    (including per-query diffs) whenever a rating changes.
 ```
 
 ### `scoreAll()` Aggregation Algorithm
 
+`scoreAllQueries()` in [`utils/query_scoring.js`](../../app/javascript/utils/query_scoring.js):
+
 ```javascript
-scoreAll(scorables):
-  avg = null     // null + number coerces to number in JS (acts as 0)
-  tot = 0
-  allRated = true
+scoreAllQueries(scorables):
+  scores = []; queryScores = {}; allRated = true
 
   for each scorable:
     score()  // uses version cache — if version unchanged, returns cached score immediately
     .then(scoreInfo =>
-      // Skip 1: null scores → completely excluded (no contribution, no queryScores entry)
-      // Skip 2: 'zsr' (zero results) → excluded from avg but recorded in queryScores
-      // Skip 3: '--' (unrated) → excluded from avg but recorded in queryScores
-      // Include: numeric scores → avg += score; tot++
+      // any query with !allRated → allRated = false
+      // null score → skipped (logged; no queryScores entry)
+      // otherwise → push to scores and record in queryScores
+      //   (this includes 'zsr' and '--'; averageScore() decides how they count)
     )
 
-  // Final:
-  if (tot > 0) avg = avg / tot     // simple arithmetic mean
-  else avg = '--'                   // all queries were zsr/-- → case score is '--'
-
-  emit('scoring-complete')
+  // Final: { allRated, score: averageScore(scores), queries: queryScores }
 ```
+
+`averageScore()` (`utils/scoring.js`) computes the case score: the arithmetic mean of the numeric scores, or `'--'` when every query is `zsr`/`--`. `createCaseScoringRuntime` then calls `onComplete`, which stores the result in `store.scoring` (only for a full scoreAll) and publishes `queries-state:changed`.
 
 **Version cache deduplication in `score()`**: Each query tracks `lastScoreVersion` (initialized to `-5` sentinel). `version()` returns `localVersion + ratingsStore.version()`. If unchanged since last scoring, `score()` short-circuits and returns the cached `currentScore` via an immediately-resolved deferred — no scorer re-execution.
 
-### Score Color Mapping (`qscoreSvc`)
+### Score Color Mapping (`scoreToColor` in `utils/scoring.js`)
 - Converts numeric score to HSL color
 - Special handling:
   - `'?'` (pending) → specific gray
@@ -895,12 +883,14 @@ The `CaseScoreManager` uses 3-tier dedup logic when persisting scores:
 ```
 
 ### Inline Editing
-- **Case name**: Double-click to enter edit mode (yellow highlight `#FFFF99`). Submit to rename, Escape to cancel
-- **Try name**: Double-click to enter edit mode, same pattern
+The header is a server-rendered Turbo Frame (`GET /case/:id/header`) with the Stimulus `case-rename` and `case-toolbar` controllers on top.
+
+- **Case name**: Double-click to enter edit mode (yellow highlight `#FFFF99`). Submit to rename (`PATCH /case/:id/header/case_name`), Escape to cancel
+- **Try name**: Double-click to enter edit mode, same pattern (`PATCH /case/:id/header/try_name/:try_number`)
 - **Conditional badges** appear next to case name:
-  - Recurring icon — when `caseModel.selectedCase().nightly` is true
-  - "PUBLIC" badge — when `caseModel.selectedCase().public` is true
-  - "ARCHIVED" badge — when `caseModel.selectedCase().archived` is true
+  - Recurring icon — when the case is `nightly`
+  - "PUBLIC" badge — when the case is `public`
+  - "ARCHIVED" badge — when the case is `archived`
 
 ### Action Bar Items
 
@@ -938,9 +928,9 @@ The `CaseScoreManager` uses 3-tier dedup logic when persisting scores:
 - Inaccessible scorer warning: if the case's current scorer is not in either list, shows warning "The scorer X used by this case is NOT shared..."
 - "Create New Scorer" button links to scorers management page (hidden when `communalScorersOnly`)
 - Selecting a scorer:
-  1. `caseSvc.saveDefaultScorer(caseId, scorerId)`
-  2. `scorerSvc.setDefault(scorer)`
-  3. `queriesSvc.updateScores()` — triggers full rescore of all queries
+  1. `pick-scorer-core` saves via `PUT api/cases/:id/scorers/:id`
+  2. It dispatches `pick-scorer:selected`
+  3. `live_query_events.js` handles the event: `setScorer(...)` then `updateScores()` — triggers full rescore of all queries
 
 ---
 
@@ -971,7 +961,7 @@ For the Static engine type, the wizard includes:
 1. CSV file upload
 2. Header validation (`Query Text`, `Doc ID`, `Doc Position` required)
 3. Whitespace detection in field names
-4. Creates snapshot from CSV data via `querySnapshotSvc.importSnapshotsToSpecificCase()`
+4. Creates a snapshot from the CSV data through the snapshot import endpoint (`POST /api/cases/{caseNo}/snapshots/imports`)
 5. Generates magic URL: `/api/cases/{caseNo}/snapshots/{snapshotId}/search`
 6. Sets this as the search URL, continuing the wizard flow
 
@@ -990,20 +980,11 @@ After wizard completion, if user hasn't completed the case wizard tour, `setupAn
 - Disabled when any sort mode other than "Default" is active
 
 ### Text Paste
-- `quepidDom.textPaste` (via add-query directive link) captures paste events on the add-query input
-- Used for bulk query input (paste multiple queries separated by newlines)
-- Passes `$pastedText` to expression handler
-
-### Auto-Grow Inputs
-- Measures text width with a hidden span
-- Expands input width to fit content
+- `attachTextPaste` (`utils/text_paste`) captures paste events on the add-query input
+- Used for bulk query input (paste multiple queries separated by newlines; they are converted to `;`-separated text)
 
 ### Modal Patterns
-All modals use `$uibModal.open()` with:
-- Template URL
-- Controller
-- Resolve (data injection)
-- Result handling via `.then()` promise
+Modals are Bootstrap 5 modals opened by Stimulus controllers through `utils/bs_modal.js` / `utils/dynamic_modal.js` (`openDynamicModal({ templateId, size, windowClass })`), which clone a `<template>` and return the modal element. `showStackedModal` handles a modal opened over another.
 
 | Modal | Purpose |
 |-------|---------|
@@ -1016,113 +997,117 @@ All modals use `$uibModal.open()` with:
 | Query Options | Per-query option editor |
 
 ### Popover Patterns
-- Rating popovers (individual and bulk): `quepid-popover-template` with `popover-trigger="outsideClick"` and `popover-placement="auto right"`
-- Stacked chart match details: `quepid-popover-template` with `popover-placement="left"`
-- Score badge tooltips: `quepid-tooltip` with configurable delay and placement
+- Rating popovers (individual and bulk): the `rating-popover` controller, built on `createBsPopover` (`utils/bs_popover.js`), closing on outside click
+- Match explain details: `match-explain` controller, popover placed left
+- Tooltips: `bs-tooltip` controller / `utils/bs_tooltip.js` with configurable delay and placement
 
-### Third-Party Angular Components Used
+### Libraries and UI Building Blocks
 | Component | Source | Usage |
 |-----------|--------|-------|
-| `ui-ace` | angular-ui-ace | JSON/Lucene code editors (query sandbox, headers, doc finder) |
-| `$quepidModal` | first-party (BS5 Modal) | All modal dialogs (replaced `uib-modal`) |
-| `quepid-popover` / `quepid-popover-template` | first-party (BS5 Popover) | Rating popovers, explain popover (replaced `uib-popover*`) |
-| `bs-static-popover` | first-party (BS5 Popover) | Fixed `?` help icons (`data-bs-content`; see `directives/bsStaticPopover.js`) |
-| `quepid-tooltip` | first-party (BS5 Tooltip) | Query text tooltips (replaced `uib-tooltip`) |
-| `quepid-typeahead` | first-party (autocompleter) | Search endpoint selector, field mapping (replaced `uib-typeahead`) |
-| `uib-progressbar` | angular-ui-bootstrap | Explain match percentage bars |
-| `uib-collapse` | angular-ui-bootstrap | Collapsible sections (stacked chart "more", settings subsections) |
-| BS5 accordion (`data-bs-toggle`) | Bootstrap 5 | Wizard endpoint selection (new vs existing) |
-| `dir-paginate` | angular-utils-pagination | Query list pagination (15/page) |
-| `ngclipboard` | ngclipboard | Copy query text to clipboard |
-| `ng-csv-import` | ng-csv-import | Static CSV file upload in wizard |
-| `tags-input` + `auto-complete` | ng-tags-input | Additional display fields in wizard |
-| `flash-alert` | angular-flash | Flash success/error messages |
-| `<wizard>` / `<wz-step>` | angular-wizard | Multi-step wizard flow |
-| `angular-vega` | custom | Vega chart rendering directive |
-| `timeAgo` filter | first-party (`filters/timeAgo.js`) | Relative timestamps on annotations (`Intl.RelativeTimeFormat`; replaced `yaru22.angular-timeago`) |
-
-**Migrated off Angular:** JSON tree display is Stimulus `json-explorer` + `utils/json_explorer.js` (styles: `json-explorer.css`). Used for detailed doc fields, query/match explain, and object/array field values.
+| CodeMirror 6 | `modules/editor.js` | Query Sandbox, query options, JSON editors |
+| ACE | `ace-builds` (`ace_config.js`) | Missing-documents finder query input only |
+| Bootstrap 5 Modal | `utils/bs_modal.js`, `utils/dynamic_modal.js` | All modal dialogs |
+| Bootstrap 5 Popover / Tooltip | `utils/bs_popover.js`, `utils/bs_tooltip.js`; `bs-popover`, `bs-tooltip`, `rating-popover` controllers | Rating popovers, match explain, help icons, tooltips |
+| Bootstrap 5 Collapse / progress | Bootstrap | Match explain bars and "show more", Settings subsections |
+| SortableJS | `queries-list` controller | Query drag-and-drop reordering |
+| Clipboard helper | `utils/clipboard.js` | Copy query text |
+| Flash messages | `flash` controller, `utils/core_flash.js` | Success/error messages |
+| Wizard | `wizard`, `wizard-launcher` controllers, `utils/wizard_contracts` | Multi-step onboarding wizard |
+| Shepherd.js | `tour.js` | Post-wizard guided tour |
+| Vega-Lite | `utils/qgraph.js`, frog report | QGraph and reports |
+| JSON explorer | `json-explorer` controller, `utils/json_explorer.js` | Detailed doc fields, query/match explain, object/array field values |
+| Relative timestamps | `Intl.RelativeTimeFormat` | Annotation timestamps |
 
 ---
 
 ## 16. State Management Architecture
 
-### Service-as-State Pattern
-AngularJS services act as singleton state stores. Key services and their state:
+### Stores and Runtime Modules
+State lives in plain-JS stores (`app/javascript/stores/`, reached through `getCoreStores()` in `utils/core_store_access.js`) and in module runtimes reached through `getCoreCapabilities()` (`utils/core_capability_access.js`). Stimulus controllers render from these and dispatch commands; they do not own case state. Key pieces:
 
-| Service | Primary State | Persistence |
-|---------|--------------|-------------|
-| `queriesSvc` | Query objects dictionary, display order, scoring data | API-backed |
-| `caseSvc` | Selected case, case lists, case metadata | API-backed |
-| `settingsSvc` | Current try/settings, try list | API-backed |
-| Query collection/document stores + `diffStateStore` | Query toggle state and diff settings | In-memory (session) |
-| `scorerSvc` | Default scorer, scorer lists | API-backed |
-| `docCacheSvc` | Cached document details | In-memory |
-| `configurationSvc` | Feature flags (communal-only, sortable) | In-memory |
-| `querySnapshotSvc` | Snapshot list for current case | API-backed |
+| Piece | Primary State | Persistence |
+|-------|--------------|-------------|
+| Live-query runtime (`live_query_*.js`, owner: `live_query_runtime_owner.js`) | Live Query objects (search, ratings, scoring), display order | API-backed |
+| `stores.queries` (query collection store) | Query membership, order, expanded/collapsed state, search generations | In-memory (session) |
+| `stores.documents` | Read model of each query's documents for the results renderer | In-memory |
+| `stores.scoring` | Latest case score info and per-query scores | In-memory |
+| `stores.diff` | Selected snapshot comparisons | In-memory (session) |
+| Case / settings / navigation capabilities | Selected case, tries, current try (`settings.editable()`), URLs | API-backed |
+| Scorer runtime (`scorer_runtime.js`) | Default scorer, scale, colors | API-backed |
+| `doc_cache.js` | Cached document details | In-memory |
+| `configuration_runtime.js` | Feature flags (communal-only, sortable) | In-memory |
+| Book sync (`book_sync.js`) | Synced query-doc pairs cache | In-memory |
 
 ### Change Detection
-- **Version counters**: `queriesSvc.svcVersion`, `ratingsStore.version()`, `settingsSvc.settingsId()` increment on changes
-- **Angular `$watch`**: Controllers watch service properties for UI updates
-- **`$watchCollection`**: Used for array/dictionary changes (query list, snapshot list)
-- **Broadcast events**: Cross-service communication via `$rootScope.$broadcast()`
+- **Version counters**: `ratingsStore.version()` and each query's local version feed `query.version()`, which `score()` compares against `lastScoreVersion`
+- **Publish/subscribe**: the runtime publishes plain read models into the stores; controllers subscribe to store changes and re-render
+- **DOM events**: cross-module communication uses `CustomEvent`s on `document`
 
 ### Key Events
 
 | Event | Trigger | Consumers |
 |-------|---------|-----------|
-| `rating-changed` | Any document rating changes | QueriesCtrl (debounced rescore), SearchResultsCtrl (refresh counts) |
-| `scoring-complete` | All queries scored | QueriesCtrl (update case score display) |
-| `updatedCaseScore` | Case score persisted | Annotations, case header |
-| `settings-changed` | Try created/selected | MainCtrl (reload queries) |
-| `settings-updated` | Try updated in-place | Settings watchers |
-| `annotationDeleted` | Annotation removed | Annotations list |
+| `rating-changed` (scoring store) / `ratings:changed` (document) | Any document rating changes | Live-query events runtime (invalidate rated docs, republish, rescore) |
+| `scoring-complete` (scoring store) | All queries scored | `qscore-case` (persists the case score, refreshes diff scores) |
+| `case-score:persisted` | Case score saved via `PUT api/cases/{caseId}/scores` | Listeners such as the score-history graph (`qgraph`) |
+| `queries-state:changed` | Query list/score state published | `add-query` (and other query list state consumers) |
+| `query-options:saved` | Query options saved | Live-query events runtime (set options, rescore) |
+| `pick-scorer:selected` | Scorer chosen in the modal | Live-query events runtime (set scorer, rescore) |
+| `judgements:queries-need-reload`, `imports:queries-need-reload` | Judgements or ratings imports finished | Live-query events runtime (reset, re-bootstrap, `searchAll`) |
+| `case-book:associated` | Case linked to a book | Live-query runtime (re-fetch case, reconfigure book sync) |
+| `query-diffs:refreshed` | Diff scoring recomputed | `qscore-case` |
+| `core-bootstrap:ready` / `core-bootstrap:failed` | Case bootstrap finished / failed | `case-toolbar` (ready); tests read `window.quepidCoreBootstrap` |
+| `quepid:case-selected` | Case selected | `core_runtime.js` (updates `caseState`) |
+| `toggleEast` | Tune Relevance link | `pane` controller |
 
-Scorer selection (`pick-scorer-core` Stimulus modal) loads lists via `api/scorers` and saves via `PUT api/cases/:id/scorers/:id`, then dispatches `pick-scorer:selected` so Angular `scorerSvc` / `queriesSvc` can rescore live queries — no event-bus notification for the list load itself.
+Scorer selection (`pick-scorer-core` Stimulus modal) loads lists via `api/scorers` and saves via `PUT api/cases/:id/scorers/:id`, then dispatches `pick-scorer:selected` so the live-query runtime can rescore.
 
 ### Bootstrapping Sequence
 
 ```
-URL navigation to /case/{caseNo}/try/{tryNo}/
+core.html.erb renders /case/{caseNo}/try/{tryNo} with a core-bootstrap element
     ↓
-MainCtrl → bootstrapCase(caseNo)
+core-bootstrap controller → bootstrap()
     ↓
-caseSvc.get(caseNo) → fetch case data
+create the live-query runtime; configuration.setCommunalScorersOnly / setQueryListSortable / setCaseNo / setTryNo
     ↓
-settingsSvc.setCaseTries(tries) → set up try history
-settingsSvc.setCurrentTry(tryNo) → select active try
+user.loadCurrent()
     ↓
-scorerSvc.bootstrap(caseNo) → load scorers
+if the case changed → reset query state
     ↓
-queriesSvc.bootstrapQueries(caseNo) → GET /api/cases/{caseNo}/queries?bootstrap=true
+case.load(caseNo) → fetch case data; case.select(acase)
+settings.setCaseTries(tries); settings.setCurrentTry(tryNo)   (tryNo defaults to the case's last try)
     ↓
-docCacheSvc.update(settings) → pre-fetch cached docs
+mixed-content check (search URL protocol vs Quepid's, unless proxied) → "Blocked Request" error
     ↓
-queriesSvc.changeSettings(caseNo, settings)
+if the case changed → reset the diff store, empty docCache, scoring.bootstrap(caseNo)
+if the case or search endpoint changed → disable diffs, docCache.invalidate()
     ↓
-queriesSvc.searchAll() → execute all queries against search engine
+docCache.update(settings) → pre-fetch cached docs
     ↓
-querySnapshotSvc.bootstrap(caseNo) → load snapshots
+queryCapabilities.changeSettings(caseNo, settings)
     ↓
-caseSvc.trackLastViewedAt(caseNo) → update metadata
+case.trackLastViewedAt(caseNo); dispatch core-bootstrap:ready
+    ↓
+queryCommands.searchAll() → execute all queries against search engine
+    ↓
+flash "All queries finished successfully!" or "Some queries failed to resolve!"
 ```
 
-If the case changes (navigation to different case):
-- Reset `queriesSvc`, query collection/document stores, `diffStateStore`, `docCacheSvc`, `scorerSvc`
-- Re-bootstrap with new case data
+If there is no case (`caseNo === 0`) the page shows "You don't have any Cases created in Quepid..." and dispatches `core-bootstrap:failed`. Other failures show flash errors for blocked requests, an unreachable case, or a missing try number.
 
-### Document Cache (`docCacheSvc`)
+### Document Cache (`doc_cache.js`)
 - Caches document details fetched from search engines (for snapshot viewing and rated doc display)
 - `addIds(moreIds)` — register doc IDs to fetch
-- `update(settings)` — batch fetch all missing docs via `docResolverSvc` (15-doc batches)
+- `update(settings)` — batch fetch all missing docs via the splainer-search `docResolverSvc` (15-doc batches)
 - `invalidate()` — mark all as unfetched (but keep IDs)
 - `empty()` — clear entire cache
-- Used by `SnapshotFactory` to look up doc details for snapshot results
+- Used when hydrating snapshot results
 
 ### Synced Pairs Cache
-- `queriesSvc.syncedPairsCache` — tracks which query-doc pairs have been synced to a Book
+- `createBookSyncRuntime()` (`utils/book_sync.js`) keeps a per-book cache of query-doc pairs already synced to a Book
 - Prevents duplicate sync operations
-- Cleared when case changes
+- Reset when the case or book changes
 
 ---
 
@@ -1199,24 +1184,24 @@ The query evaluation page communicates with these backend endpoints:
 | PUT | `/api/books/{bookId}/populate` | Sync query-doc pairs to book |
 
 ### CSRF
-All requests include `X-CSRF-Token` header via `rails-csrf` interceptor.
+Requests made through `apiFetch` ([`api/fetch.js`](../../app/javascript/api/fetch.js)) include the `X-CSRF-Token` header.
 
 ---
 
 ## 18. Known Technical Debt
 
 ### Scorer Dual-Execution Drift
-The client-side `ScorerFactory.js` and server-side `scorer_logic.js` have diverged:
+The client-side `scorer_runtime.js` and server-side `scorer_logic.js` have diverged:
 - 6+ functions exist only on client (`avgRating100`, `editDistanceFromBest`, `pass`, `fail`, `assert`, `assertOrScore`)
 - Document access differs (`docs[posn].doc` vs `docs[posn]`, `.getRating()` vs `["rating"]`)
-- Score resolution differs (Angular `$q.defer()` vs variable assignment)
+- Score resolution differs (deferred promise vs variable assignment)
 - Custom scorers authored in the browser may behave differently in server-side batch evaluation
 
-### `eval()` for Scorer Execution
-Client-side scorers run via `eval()` inside `$timeout()`. This:
-- Has no sandboxing — scorer code has full access to Angular scope and DOM
+### `new Function` for Scorer Execution
+Client-side scorers run via `new Function(...)` scheduled with `queueMicrotask`. This:
+- Has no sandboxing — scorer code has full access to the page and DOM
 - Is a significant security concern (XSS vector if scorers are shared)
-- Can't be killed if it runs too long (the Web Worker timeout is commented out)
+- Can't be killed if it runs too long (there is no timeout)
 
 ### `new Function()` for Mapper Code
 SearchAPI mapper code evaluated via `new Function()` constructor in non-strict mode:
@@ -1225,20 +1210,18 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - Error handling is try/catch around eval
 
 ### jQuery Dependencies
-- Pane resizing uses jQuery event binding and DOM manipulation
-- Various directives still use jQuery selectors
+- The `pane` controller uses plain DOM APIs (no jQuery)
 - Query drag-and-drop is owned by the Stimulus `queries-list` controller and uses SortableJS
 
 ### Hardcoded Constants
-- 15 queries per page (hardcoded in QueriesCtrl)
+- 15 queries per page (hardcoded)
 - 10 default documents per scorer iteration (DEFAULT_NUM_DOCS)
 - 450px east pane width
 - 5 maximum snapshot comparisons
-- 100ms debounce for score recalculation
 - 200-character preview for try query params
 
 ### Missing Features (in Code but Incomplete)
-- `checkCodeExecutionTime()` — Web Worker-based timeout for scorer code, commented out with TODO note
+- No scorer execution timeout (the old Web Worker prototype was dropped)
 - `recordDepthOfRanking` — depth tracking is appended to scorer code but not surfaced in all UI contexts
 
 ---
@@ -1247,7 +1230,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 
 ### Color Systems
 
-**Rating Scale Colors** (hardcoded hex values in `ratingBgStyle` filter):
+**Rating Scale Colors** (default scale, hardcoded hex values in `ratingBackgroundColor()` in `utils/scoring.js`):
 
 | Rating | Color | Hex |
 |--------|-------|-----|
@@ -1263,8 +1246,8 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 | 10 | Dark Green | `#008900` |
 | Unrated | Gray | `#777` |
 
-**Query Score Colors** (`qscoreSvc`, HSL gradient):
-- Uses a 10-step HSL table from `hsl(0, 100%, 40%)` (red) to `hsl(100, 90%, 35%)` (dark green)
+**Query Score Colors** (`scoreToColor()` in `utils/scoring.js`, HSL gradient):
+- Uses an 11-step HSL table (keyed -1 to 10) from `hsl(0, 100%, 40%)` (red) to `hsl(100, 90%, 35%)` (dark green)
 - Pending (`--` or `zsr`): `hsl(0, 0%, 91%)` (light gray)
 - Unrated: `hsl(0, 0%, 0%, 0.5)` (semi-transparent black)
 
@@ -1312,7 +1295,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - Notification bubble: absolute positioned, -10px top, -12px right, red background (70% opacity), 20px circle, white text, 12px font
 
 ### Animations
-- **Froggy animation**: `flipInX` / `flipOutX` on ng-hide transitions (2s duration)
+- **Froggy animation**: `flipInX` / `flipOutX` transitions (2s duration)
 - **Spinner**: `spin 1s linear infinite` rotation for loading indicators (class: `spintime`)
 
 ### Chart Styling (`qgraph.css`)
@@ -1325,7 +1308,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - **Bootstrap Icons**: `bi bi-*` classes (replaced Glyphicons)
 - **Querqy icon**: Custom PNG image (`querqy-icon.png`), 24x24px, background-image
 - **Engine icons**: Per-engine PNGs (`solr.png`, `solr-icon.png`, etc.)
-- **Doug mascot**: `doug.jpg` (wizard welcome step, 100px wide)
+- The Doug mascot was removed from the wizard welcome step
 
 ### CSS Custom Properties
 ```css
@@ -1360,7 +1343,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 
 ### Search Error Translation (`app/javascript/utils/search_error.js`)
 
-Comprehensive HTTP status code mapping (100+ codes mapped to human-readable names). The framework-free utility is exposed to the legacy case runtime through `window.quepidSearch.searchErrors`. Error responses are parsed in this priority:
+Comprehensive HTTP status code mapping (100+ codes mapped to human-readable names). The framework-free utility is exposed to the case runtime through `quepidSearch.searchErrors`. Error responses are parsed in this priority:
 
 1. `response.data.error` (object: extract message; string: use directly)
 2. `response.statusText`
@@ -1370,13 +1353,14 @@ Comprehensive HTTP status code mapping (100+ codes mapped to human-readable name
 **Special Cases**:
 - **CORS failure** (`response.status === -1`): Suggests URL typo checking, CORS enablement, and ad blocker detection
 - **Solr-specific**: Custom error message with link to direct Solr instance inspection and troubleshooting wiki for Solr 8.4.1+ `X-Content-Type-Options: nosniff` compatibility issues
-- Error text rendered via `ng-bind-html` in a red `alert alert-danger` div within each query row
+- Error text rendered as HTML in a red `alert alert-danger` div within each query row
 
-### Search Engine Change Detection
-`MainCtrl` compares search URLs between old and new try to detect when the user switches between endpoints. Differentiates between:
-- TLS errors (protocol mismatch)
-- Case not found errors (invalid caseNo)
-- Generic search errors
+### Bootstrap Error Handling and Search Engine Change Detection
+`core-bootstrap` compares the search URL of the old and new try (`searchEngineChanged`) to decide whether to reset diffs and invalidate the doc cache. Bootstrap failures are surfaced as flash messages that differentiate:
+- Mixed-content / TLS errors ("Blocked Request", with a link to the endpoint edit page)
+- Case not found or not shared errors ("Could not retrieve case ...")
+- Missing try number
+- Generic load errors
 
 ---
 
@@ -1384,22 +1368,22 @@ Comprehensive HTTP status code mapping (100+ codes mapped to human-readable name
 
 The query evaluation page integrates with the Book (judgment collection) system:
 
-### Sync Flow (`queriesSvc.syncToBook()`)
-1. Fetches `case.book_id` from case data
+### Sync Flow (`createBookSyncRuntime().sync()` in `utils/book_sync.js`)
+1. On case load (and on `case-book:associated`), `GET api/cases/{caseNo}` supplies `book_id` and `auto_populate_book_pairs`; syncing only happens when `auto_populate_book_pairs` is true
 2. Builds query-doc pairs from current query results, each containing:
    - `query_text`, `doc_id`, `position` (1-based counter)
    - `document_fields`: extracted title, thumb, image, and other field values
-3. Checks `syncedPairsCache` to filter to **only unsynced pairs** (keyed by `"queryText:docId"`)
-4. **Batches by 100 pairs** per API call
-5. For each batch: `bookSvc.updateQueryDocPairs(bookId, caseNo, batch)` → `PUT /api/books/{bookId}/populate`
+3. Checks the synced-pairs cache to filter to **only unsynced pairs** (keyed by `"queryText:docId"`)
+4. **Batches by 100 queries** per API call, sent concurrently
+5. For each batch: `populateBook()` → `PUT /api/books/{bookId}/populate` with `{case_id, query_doc_pairs}`
 6. **Optimistic caching**: Marks pairs in cache *before* API confirmation
-7. On error: removes failed pairs from cache (allowing retry)
+7. On error: removes failed pairs from cache (allowing retry) and logs
 8. Cache methods: `clearSyncCache(bookId)`, `getSyncCacheStats(bookId)`
-9. Cache cleared entirely when case changes
+9. Cache cleared entirely when the case or book changes
 
-### Field Mapping in `bookSvc.updateQueryDocPairs()`
+### Field Mapping in `buildQueryDocPairsPayload()`
 
-The `bookSvc` performs detailed field extraction when building document payloads:
+`utils/book_sync.js` performs detailed field extraction when building document payloads:
 
 | Field | Source | Logic |
 |-------|--------|-------|
@@ -1408,20 +1392,20 @@ The `bookSvc` performs detailed field extraction when building document payloads
 | **Thumbnail** | `doc.thumb` | If `doc.thumb_options?.prefix` exists, prepends: `${prefix}${thumb}`. Otherwise raw thumb URL |
 | **Image** | `doc.image` | Same prefix-wrapping pattern as thumbnail: `${prefix}${image}` |
 
-The prefix-wrapping uses optional chaining (`?.`) with `// jshint ignore:line` since JSHint doesn't support the syntax.
-
-### Refresh from Book (`bookSvc.refreshCaseRatingsFromBook()`)
+### Refresh from Book (frog report controller)
 - PUTs to `api/books/{bookId}/cases/{caseId}/refresh`
-- If case has ≥50 queries, runs in background mode (`process_in_background=true`) and redirects to Quepid root after 500ms delay
-- On modal close success, the frog report controller resets and re-bootstraps: `queriesSvc.reset()` → `bootstrapQueries()` → `searchAll()`
+- The URL comes from the `data-frog-report-refresh-url-template` body attribute (`__BOOK_ID__`, `__CASE_ID__`, `__BACKGROUND__` placeholders)
+- If the case has ≥50 queries, runs in background mode (`process_in_background=true`), shows "Ratings are being refreshed in the background." and redirects to the Quepid root
+- Otherwise it calls `queryLifecycle.refreshQueries(caseNo)` to reload the queries and shows "Ratings have been refreshed."
+- Failures show "An error (...) occurred, please try again." in the modal; the button is only shown when the case has a book
 
 ---
 
 ## 22. Doc ID Validation & Edge Cases
 
-### Two-Tier Document ID Validation (`DocListFactory`)
+### Two-Tier Document ID Validation (`createDocList` in `live_query_runtime_owner.js`)
 
-When creating rateable docs from search results, the factory validates document IDs:
+When creating rateable docs from search results, the doc-list builder validates document IDs:
 
 **Error 1: Missing ID Field**
 - Triggered when the configured ID field doesn't exist on one or more results
@@ -1442,24 +1426,22 @@ Both errors display as red `alert alert-danger` within the individual search res
 - Empty string IDs are filtered out during rated docs initialization (workaround for "empty ID's that sneak in")
 
 ### Async Rated Docs Pattern
-Before scoring, queries can optionally wait for rated documents to finish loading:
-```
-query.awaitRatedDocs() → Promise
-  .then(() → query.score())
-```
-This ensures the scorer has access to `bestDocs` (all rated documents) even if they haven't finished loading from the search engine's `filterToRatings()` query. The `ratingsReady` boolean flag tracks this state.
+There is no `awaitRatedDocs()`. Rated documents are loaded by `refreshRatedDocs(pageSize)` in `utils/query_runtime.js`:
+- `query.ratingsReady` is set to `true` once the rated-docs lookup finishes (and reset to `false` when ratings change)
+- `query.ratingsPromise` de-duplicates concurrent calls; a `ratingsGeneration` counter makes a stale response re-run the lookup if ratings changed while it was in flight
+- SearchAPI (mapper-based) engines use `searchApiRatedDocs`, and end up with no rated docs when the endpoint doesn't support rated-docs lookup (`ratedDocsUnsupported`)
+- Turning on "Show Only Rated" triggers `refreshRatedDocs` for every query whose `ratingsReady` is false
+- The scorer's `bestDocs` come from the `ratingsStore` (see §5), so scoring does not wait on this lookup; only `eachRatedDoc` and the rated view depend on `ratedDocs`
 
 ---
 
-## 23. Implementation reference (Angular & file inventory)
+## 23. Implementation reference (file inventory)
 
-Sections 23–31 previously duplicated file-level inventories, `queriesSvc` internals, routing tables, and component catalogs. That material is **living migration documentation** — it changes as Angular is removed and goes stale quickly in a behavior-focused doc.
+File-level inventories and internals change quickly, so they are not duplicated in this behavior-focused doc.
 
 **Canonical source for remaining work:** [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal)
 
-Completed migration inventories are intentionally not duplicated here.
-
-**Read source for deep internals:** `queriesSvc.js`, `queriesCtrl.js`, `routes.js`, `core_controller.rb`, `TryFactory.js`, `diffResultsSvc.js`, `tour.js`.
+**Read source for deep internals:** [`core_stimulus.js`](../../app/javascript/core_stimulus.js) (registered controllers), `core_bootstrap_controller.js`, `live_query_runtime_owner.js`, `query_service.js`, `query_scoring.js`, `scorer_runtime.js`, `diff_results.js`, `core_controller.rb`, `tour.js`.
 
 **Hybrid Stimulus on case pages:** Book bulk judging uses `bulk_judgement_controller.js`; see [`core_ui_implementation_reference.md` §4](./core_ui_implementation_reference.md#4-bulk_judgement_controller-stimulus) and [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions).
 

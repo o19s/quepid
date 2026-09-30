@@ -5,7 +5,7 @@ require 'test_helper'
 require 'zip'
 
 module Books
-  class BooksControllerTest < ActionDispatch::IntegrationTest
+  class ImportControllerTest < ActionDispatch::IntegrationTest
     let(:user) { users(:random) }
 
     # rubocop:disable-next Minitest/AssertionInLifecycleHook

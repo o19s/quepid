@@ -227,3 +227,70 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 - **Expected:** Filtering, sorting, and collapse are handled without a page reload; the list returns to its full state after clearing the filter and no query remains expanded after **Collapse all**.
 - **Edge cases:**
   - [ ] Reorder queries when manual sorting is enabled and confirm the order persists after reload.
+
+### 4.20 Query-list sorting, pagination & "Show only rated"
+
+- [ ] **Steps:**
+  1. With a case of more than 15 queries, confirm the list is paginated 15 per page with working page controls.
+  2. Click each sort link in turn — **Manual, Name, Modified, Score, Errors** — and click the active one again to flip direction. Confirm ordering: Name alphabetical; Modified/Score/Errors newest/highest/errored first; the URL records `sort=`.
+  3. Rate a document in a low-scoring query, click Modified — confirm that query moves to the top. Trigger an error (e.g. break the endpoint URL) and confirm Errors groups failing queries together.
+  4. On page 2 with **Manual** sort, drag a query to a new position; reload.
+  5. Click **Show only rated**. Expand a query and confirm only rated documents are listed and the result count switches to the rated count; click again to restore.
+- **Expected:** Sorting, paging and the rated filter never trigger a page reload. Manual reorder persists across reload, including when dragging on a page other than page 1 (the position update accounts for the page offset).
+- **Edge cases:**
+  - [ ] Drag handles are inactive for every sort except Manual.
+  - [ ] Filter text plus a non-default sort plus page 2 — confirm the page clamps back to a valid page when the filtered set shrinks below it.
+  - [ ] "Show only rated" on Solr and ES/OS cases — each should filter via the engine (results contain exactly the rated doc IDs); confirm no error on an engine that can't look up by id.
+  - [ ] While a rescore runs, confirm the "Updating Queries" progress banner appears and clears when done.
+
+### 4.21 Query row states & score badge values
+
+- [ ] **Steps:**
+  1. Find or create queries in each state: loading, loaded with results, zero results, error, and never-rated.
+  2. Read each row's header: score badge, result count text, unrated-frog badge.
+  3. Hover the query text of a query with an Information Need.
+  4. If you have a Querqy-enabled Solr, search a query that triggers a rewrite.
+- **Expected:** The score badge shows `?` while pending, `--` when nothing is rated, `zsr` for zero search results, and a red→green scaled 2-decimal number otherwise. Error rows are visibly styled distinct from empty-result rows. The unrated frog shows the count of unrated results and links to the Frog Report (6.9). Hovering query text shows "Info Need: ..." after ~1s. The Querqy icon ("Querqy Strikes Again!") appears only on rows where a rewrite fired.
+- **Edge cases:**
+  - [ ] Double-click query text to rename it inline; confirm the new text persists and the query re-searches.
+  - [ ] With snapshots being compared (5.3), confirm one extra diff score badge per enabled snapshot (max 5) on each row.
+
+### 4.22 Bulk rating ("Score All") & result paging
+
+- [ ] **Steps:**
+  1. Expand a query, click **Score All**, and choose a rating value in the popover.
+  2. Confirm every visible result gets that rating and the query/case scores update.
+  3. Turn on **Show only rated** and repeat — only the visible (rated) docs are affected.
+  4. Use the popover's reset option to clear all visible ratings.
+  5. Click **Peek at the next page** at the bottom of the results; confirm additional results append below (not replace) and can be rated.
+- **Expected:** One request rates all visible docs (no per-doc flicker); scores recompute; reload confirms persistence. Reset clears all visible ratings in one action.
+- **Edge cases:**
+  - [ ] Score All in the Missing Documents finder (4.9) rates only the finder's results.
+  - [ ] Peek at the next page with "Show only rated" on — pagination steps through rated docs, not all docs.
+  - [ ] Peek past the last page — the control disappears/does nothing rather than erroring.
+
+### 4.23 Search result rendering
+
+- [ ] **Steps:**
+  1. Expand a query on a case whose Displayed Fields include a title, plain-text fields, a URL field, an object/array field, and (if available) `thumb:`/`image:` fields with a prefix, an audio/video field, and a `translations:` field.
+  2. Confirm the layout: rating badge left, content center, explain chart right (only when full explain is available).
+  3. Click a result title to open the Detailed Document modal (6.11).
+  4. Click the **Matches** link on a result (Solr/ES with explain).
+- **Expected:** Highlight snippets keep `<strong>` emphasis; HTML from documents is sanitized (no script execution); URL values are clickable links opening in a new tab; object/array values render as an expandable JSON tree; images honor the field-spec prefix; `.mp3/.wav/.ogg` render `<audio controls>`, `.mp4/.webm` render `<video controls>`; translations show a Google Translate link. The Matches popover titled "Relevancy Score: N" shows up to 3 score-contribution bars with "Show N More"/"Show Less", plus **Debug** and **Expand** buttons; Debug opens the raw explain JSON modal (6.8).
+- **Edge cases:**
+  - [ ] A doc whose fields contain injected markup (`<img onerror=...>`) — confirm nothing executes.
+  - [ ] "No Match" shows for a doc with no matching terms; "no per-term score breakdown" when explain has no children.
+  - [ ] A doc with a very long field value or huge JSON — layout doesn't overflow the results column at 1280px and 768px widths.
+
+### 4.24 Workbench layout: Tune Relevance pane open/close & resize
+
+- [ ] **Steps:**
+  1. Confirm the Tune Relevance pane is closed on fresh page load.
+  2. Click the wrench/**Tune Relevance** control to open it (default width ~450px) and again to close it.
+  3. Drag the slider between the query list and the pane to resize it; resize the browser window.
+  4. Reload.
+- **Expected:** Pane opens/closes without layout jumps; dragging resizes smoothly with no text selection or stuck-drag after releasing the mouse (including releasing outside the window); the query list reflows. After reload, the pane is closed again and the width resets (session-only state).
+- **Edge cases:**
+  - [ ] Open the pane at a narrow window width — the query list must remain usable (see Part 16.2).
+  - [ ] Open/close the pane rapidly several times; confirm no duplicate event handling (one toggle per click).
+

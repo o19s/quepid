@@ -376,8 +376,8 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('annotation timeAgo', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoCase(page, QUERIES_CASE_ID);
-    await page.getByText('Tune Relevance', { exact: false }).click();
-    await page.locator('#annotationsTab').click();
+    await page.locator('#case-actions').getByText('Tune Relevance').click();
+    await page.locator('#dev-settings button[data-tune-tab="annotations"]').click();
     if ((await page.locator('.annotations-time').count()) === 0) {
       await page.locator('#annotation-message').fill('Migration screenshot annotation');
       await page.getByRole('button', { name: 'Create', exact: true }).click();

@@ -145,3 +145,17 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Start a wizard session, fetch HTML, then navigate away **without saving**, and come back into the wizard — confirm you get a fresh session (previous fetch/draft state should NOT be resumed).
   - [ ] Enter the wizard via a URL referencing a `search_endpoint_id` that doesn't exist or you don't own — expect a redirect with "Search endpoint you are looking for either doesn't exist or you don't have permissions."
   - [ ] Enter a Basic Auth Credential in Step 1's Advanced Options, complete the wizard and save, then re-open the wizard for that same endpoint — confirm the credential is never displayed back to you in plaintext via the wizard (masked at most).
+
+### 7.11 Quepid proxy: SSRF guard
+
+The **Proxy requests through Quepid** option (and the case wizard's Proxy mode) routes browser search requests through `/proxy/fetch`. That endpoint must refuse to reach internal network addresses.
+
+- [ ] **Steps:**
+  1. Create/edit a search endpoint with **Proxy requests** on and a public, reachable URL — run a search from a case and confirm results return.
+  2. Point an endpoint (or call `/proxy/fetch?url=...` directly while logged in) at each of: `http://127.0.0.1:<port>/`, `http://localhost/`, a `10.x.x.x`, `172.16.x.x`, `192.168.x.x` address, a link-local `169.254.x.x` address, and an IPv6 `fc00::/7` address.
+  3. Also try a non-http(s) scheme (`file:///etc/passwd`, `ftp://...`) and a hostname that does not resolve.
+- **Expected:** The public URL works. Every internal/loopback/link-local target is rejected with HTTP 400 and `proxy_error: "Proxy URL resolves to a disallowed address"`; bad schemes and unresolvable hosts return `proxy_error: "Invalid proxy URL"`. No request is made to the internal target.
+- **Edge cases:**
+  - [ ] A public hostname that DNS-resolves to a private address is blocked (the check is on resolved addresses, not the literal URL).
+  - [ ] Confirm a saved endpoint's Basic Auth credential is attached by the proxy server-side and is never present in the response or browser network tab (Part 7.3).
+  - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it and CORS mode must be used — confirm the error message makes that diagnosable.

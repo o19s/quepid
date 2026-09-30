@@ -152,3 +152,18 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   - [ ] Delete an account that is the sole member of a team — check what happens to that orphaned team.
   - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm nothing errors for the invitee.
   - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm this succeeds (the annotation survives with `user_id` nulled) rather than a 500 (`ActiveRecord::InvalidForeignKey`); previously `User` had no `has_many :annotations` association, so the FK constraint blocked the raw delete. Fixed via `has_many :annotations, dependent: :nullify` in `app/models/user.rb`.
+
+### 1.10 Transactional emails (invitation & password reset)
+
+- [ ] **Steps:**
+  1. In development, open `/rails/mailers` and preview the **invitation instructions** and **reset password instructions** emails (HTML and text).
+  2. Trigger each for real (Part 1.4 reset, Part 9.3 invite) and open the delivered message in the mail catcher / logs.
+- **Expected:** Both emails render with the Quepid layout, a working link (reset: 'Change my password' → `/users/password/edit?reset_password_token=...`; invitation: the plain `/users/invitation/accept?invitation_token=...` URL), and no unresolved placeholders or broken styling.
+- **Edge cases:**
+  - [ ] Confirm the text-part invitation email contains the same working link as the HTML part.
+  - [ ] Confirm the link host matches the environment's configured host, not `localhost` when running behind a proxy/production config.
+
+### 1.11 Health check
+
+- [ ] **Steps:** Visit `/healthcheck` while logged out.
+- **Expected:** Returns HTTP 200 (Rails' built-in health page) without authentication. Optionally, with the database stopped in a disposable environment, confirm your load balancer's probe would notice — note that Rails' default check only proves the app booted, not that the DB is reachable.

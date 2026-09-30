@@ -24,20 +24,20 @@ Use the checkboxes (`- [ ]`) to track your pass through each test case; check th
 
 | # | Part | Covers |
 |---|---|---|
-| 1 | [Environment Setup & Accounts](01-environment-setup-and-accounts.md) | Getting a test environment running, seed accounts, sign up, login/logout, password reset, invitations, OAuth, profile, API keys, account deletion |
+| 1 | [Environment Setup & Accounts](01-environment-setup-and-accounts.md) | Getting a test environment running, seed accounts, sign up, login/logout, password reset, invitations, OAuth, profile, API keys, account deletion, transactional emails, health check |
 | 2 | [Home Dashboard](02-home-dashboard.md) | The landing page: recent cases/books, score trend cards, sparklines, cookie consent |
 | 3 | [Case Management](03-case-management.md) | Cases list page, creating a case (new-case wizard), archiving/unarchiving/deleting cases from the list view |
 | 4 | [Core Workbench — Queries & Scoring](04-core-workbench-queries-and-scoring.md) | The main case-tuning screen: adding/moving queries, rating documents, scorers, query options, Tune Relevance drawer |
 | 5 | [Core Workbench — History, Snapshots & Annotations](05-core-workbench-history-snapshots-and-annotations.md) | Tries/try history, snapshots, compare-snapshots (diff), annotations, score graph |
 | 6 | [Core Workbench — Import, Export & Explain Tools](06-core-workbench-import-export-and-explain-tools.md) | Import/export a case, clone/delete/share a case, query & document explain tools, Frog Report, Missing Documents finder |
-| 7 | [Search Endpoints & Mapper Wizard](07-search-endpoints-and-mapper-wizard.md) | Connecting Quepid to Solr/ES/OpenSearch/Vectara/Algolia/custom APIs, the AI-assisted Mapper Wizard |
+| 7 | [Search Endpoints & Mapper Wizard](07-search-endpoints-and-mapper-wizard.md) | Connecting Quepid to Solr/ES/OpenSearch/Vectara/Algolia/custom APIs, the AI-assisted Mapper Wizard, the proxy SSRF guard |
 | 8 | [Scorers](08-scorers.md) | Creating, editing, cloning, sharing, and defaulting relevance scoring formulas |
 | 9 | [Teams & Sharing](09-teams-and-sharing.md) | Creating teams, managing members/invites, sharing cases/books/endpoints/scorers |
-| 10 | [Books Management](10-books-management.md) | Creating/configuring books, import/export, combining books, danger-zone tools |
+| 10 | [Books Management](10-books-management.md) | Creating/configuring books, import/export, combining books, danger-zone tools (incl. rating remap) |
 | 11 | [Judging Workflows](11-judging-workflows.md) | The one-at-a-time judging screen, bulk judging, judgement stats, query/doc pair management |
 | 12 | [AI Judges](12-ai-judges.md) | Configuring an AI judge, refining its prompt, running it against a book ("Judge Judy") |
 | 13 | [Analytics](13-analytics.md) | Tries visualization, case public/private sharing, duplicate-score diagnostics |
-| 14 | [Admin Area](14-admin-area.md) | User management, announcements, websocket tester, job/SQL admin tools |
+| 14 | [Admin Area](14-admin-area.md) | User management (incl. admin create), announcements, websocket tester, job/SQL admin tools |
 | 15 | [Global Navigation & Notebooks](15-global-navigation-and-notebooks.md) | Sidebar, navbar quick-access dropdowns, avatar menu, API Docs, cookies page, the JupyterLite Notebooks integration |
 | 16 | [Cross-Cutting: BS5, Responsive & Accessibility](16-cross-cutting-bs5-responsive-and-accessibility.md) | Bootstrap 3→5 migration regression checks, narrow-viewport reflow, modal accessibility |
 

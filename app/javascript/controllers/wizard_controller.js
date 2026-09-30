@@ -18,7 +18,7 @@ const steps = ["welcome", "name", "endpoint", "fields", "query", "finish"]
 
 export default class extends Controller {
   static targets = [
-    "step", "caseName", "endpointMode", "endpointSelect", "engine", "searchUrl", "apiMethod",
+    "step", "tracker", "caseName", "endpointMode", "endpointSelect", "engine", "searchUrl", "apiMethod",
     "queryParams", "testQuery", "proxyRequests", "basicAuth", "customHeaders", "titleField",
     "idField", "additionalFields", "queryText", "queryList", "staticFile", "staticPreview",
     "staticAlert", "alert", "continueButton", "finishButton", "validation", "skipButton",
@@ -148,6 +148,7 @@ export default class extends Controller {
   }
 
   setStep(event) {
+    if (this.validating) return
     const index = Number(event.params.index)
     if (Number.isInteger(index) && index <= this.stepIndex) this.stepIndex = index
     this.render()
@@ -243,6 +244,7 @@ export default class extends Controller {
       this.setBusy(false)
       this.urlInvalid = true
       this.showError(error?.toString()?.replace(/^Error:\s*/, "") || "Quepid could not search this endpoint.")
+      this.render()
     }
   }
 
@@ -423,6 +425,12 @@ export default class extends Controller {
     this.settings ||= {}
     if (this.hasLoadingTarget) this.loadingTarget.hidden = this.loaded || Boolean(this.error)
     this.stepTargets.forEach((step, index) => step.hidden = !this.loaded || index !== this.stepIndex)
+    this.trackerTargets.forEach((item, index) => {
+      item.classList.toggle("active", index === this.stepIndex)
+      item.disabled = this.validating || index > this.stepIndex
+      if (index === this.stepIndex) item.setAttribute("aria-current", "step")
+      else item.removeAttribute("aria-current")
+    })
     this.element.querySelectorAll("[data-wizard-only]").forEach((element) => {
       element.hidden = element.dataset.wizardOnly !== steps[this.stepIndex]
     })

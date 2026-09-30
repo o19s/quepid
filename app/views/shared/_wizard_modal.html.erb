@@ -5,9 +5,18 @@
       <div class="modal-header"><h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1><button type="button" class="btn-core-close" data-action="wizard#close" aria-label="Close"></button></div>
       <div class="modal-body">
         <div class="alert alert-danger" role="alert" data-wizard-target="alert" hidden></div>
+        <ol class="nav nav-pills small mb-3" aria-label="Wizard steps">
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="0">1. Welcome</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="1">2. Name</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="2">3. Endpoint</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="3">4. Fields</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="4">5. Query</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep" data-wizard-index-param="5">6. Finish</button></li>
+        </ol>
         <p class="text-muted" data-wizard-target="loading">Loading…</p>
         <section data-wizard-target="step" hidden>
-          <h2>Welcome To Quepid!</h2><p>Let me guide you through setting up your first Case.</p>
+          <img src="images/doug.jpg" alt="Doug, creator of Quepid" class="float-start me-4 mb-3" width="100">
+          <h2>Welcome To Quepid!</h2><p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
           <button type="button" class="btn btn-primary float-end" data-action="wizard#next">Continue</button>
         </section>
         <section data-wizard-target="step" hidden>

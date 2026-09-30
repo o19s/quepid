@@ -27,7 +27,12 @@ class CoreController < ApplicationController
               current_user.cases_involved_with.not_archived.last
             end
 
-    return redirect_to(case_new_path) unless @case
+    unless @case
+      # An explicit id that doesn't resolve is a 404; GET must never create a case as a side effect.
+      raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', params[:id]) if params[:id].present?
+
+      return redirect_to(case_new_path)
+    end
 
     @try = if params[:try_number].present?
              @case.tries.where(try_number: params[:try_number]).first

@@ -26,7 +26,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
 
 - [ ] **Steps:**
   1. Click **Relevancy Cases > Create a case** in the top navbar dropdown (there's no standalone "New Case" button on the `/cases` list page itself), or the equivalent button inside an existing case's workbench.
-  2. A wizard modal opens automatically. Step through: **Welcome** → **Name** (enter a case name) → **Endpoint** (choose a search engine type — Solr / Elasticsearch / OpenSearch / Vectara / Static / SearchAPI / Algolia — enter the endpoint URL, choose Proxy vs. CORS as appropriate, and click **Continue** to validate) → remaining steps (field spec/finish, depending on engine chosen).
+  2. A wizard modal opens automatically. Step through: **Welcome** → **Name** (enter a case name) → **Endpoint** (choose a search engine type — Solr / Elasticsearch / OpenSearch / Vectara / Static / SearchAPI / Algolia — enter the endpoint URL, choose Proxy vs. CORS as appropriate, and click **Continue** to validate) → **Display Fields** (Title, ID, optional comma-separated additional fields — required) → **Queries** (add one or more queries; removable rows) → **Finish** ("That's It!").
   3. Complete the wizard.
 - **Expected:** A new case is created and you land in its Core Workbench (Part 4), on its first try, connected to the chosen search endpoint.
 - **Edge cases:**
@@ -35,6 +35,19 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `bootstrap5-compat.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
   - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
   - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/javascript/controllers/wizard_launcher_controller.js`) — this is current behavior, not a one-time trigger.
+
+### 3.2b Case wizard: Static CSV endpoint
+
+- [ ] **Steps:**
+  1. Start the wizard (3.2) and choose the **Static** engine on the Endpoint step.
+  2. Select a CSV with headers `Query Text`, `Doc ID`, `Doc Position` (extra columns allowed).
+  3. Complete the wizard.
+- **Expected:** The CSV imports on file selection; a snapshot-backed search URL is generated, the queries from the CSV are pre-filled on the Queries step, and the finished case shows the static queries with results in CSV order.
+- **Edge cases:**
+  - [ ] CSV missing one of the required headers — clear validation error, cannot continue.
+  - [ ] Header names with stray leading/trailing whitespace — flagged rather than silently mis-parsed.
+  - [ ] Non-CSV file chosen — rejected with a message.
+  - [ ] Confirm Add Query is disabled on the resulting case (4.2 edge case) and the Query tab shows the static-engine message (4.10).
 
 ### 3.3 Import a case from JSON
 

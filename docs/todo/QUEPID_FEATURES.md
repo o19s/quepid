@@ -2,7 +2,7 @@
 
 > **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For frontend cleanup after Angular removal see [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal).
 >
-> **Last reviewed:** August 2026 against `main` (`Rails 8.1.3` / `Ruby 4.0.6` / AngularJS 1.8.3). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
+> **Last reviewed:** August 2026 against branch `angular-phase-10` (`Rails 8.1.3.1` / `Ruby 4.0.6` / AngularJS removed). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
 
 ---
 
@@ -63,18 +63,17 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Backend Framework | Ruby on Rails 8.1.3 |
+| Backend Framework | Ruby on Rails 8.1.3.1 |
 | Language | Ruby 4.0.6 |
 | Database | MySQL 8.4.3 (utf8mb4) |
-| Frontend (Legacy) | AngularJS 1.8.3 |
-| Frontend (Modern) | Stimulus 1.3.4 + Turbo 2.0 |
+| Frontend | Stimulus + Turbo, plain ES modules in `app/javascript/utils/` (AngularJS removed) |
 | CSS | Bootstrap 5.3 (`core.css` + `application.css`) |
-| Job Queue | Solid Queue 1.6.0 |
+| Job Queue | Solid Queue 1.7.0 |
 | WebSockets | Solid Cable 4.0.2 + ActionCable |
 | Asset Pipeline | Propshaft 1.3 + esbuild |
 | Auth | Devise 5.0.4 + OmniAuth |
 | JavaScript Engine | MiniRacer 0.21 (V8) for scoring/mapping |
-| Visualization | Vega gem 0.6.0 (importmap); D3 in admin/analytics bundles |
+| Visualization | Vega-Lite (QGraph, frog report, analytics); D3 + CalHeatmap in admin/analytics bundles |
 | Analytics | Ahoy Matey 5.5.0 |
 | BI Dashboard | Blazer 3.5.1 |
 | Node (build) | Node 24.x (`package.json` engines: `>=24 <25`) |
@@ -180,11 +179,11 @@ User → Book → QueryDocPairs → Judgements (per user)
 
 - `active_storage_blobs`, `active_storage_attachments`, `active_storage_variant_records` (file storage)
 - `active_storage_db_files` (database-backed file storage)
-- `solid_queue_*` (7 tables for job queue)
+- `solid_queue_*` (11 tables for job queue)
 - `solid_cable_messages` (WebSocket messaging)
-- `blazer_*` (4 tables for BI dashboard)
+- `blazer_*` (5 tables for BI dashboard)
 
-### Total Migration Count: 179
+### Total Migration Count: 187
 
 ---
 
@@ -198,6 +197,7 @@ User → Book → QueryDocPairs → Judgements (per user)
 | API Key | HMAC-SHA256 Token | HTTP Bearer token via Authorization header |
 | Google OAuth | OmniAuth | omniauth-google-oauth2 gem |
 | Keycloak SSO | OmniAuth | omniauth_openid_connect gem |
+| Generic OpenID Connect | OmniAuth | Any OIDC provider; configured with `OPENID_CONNECT_BASE_URL`, `_CLIENT_ID`, `_CLIENT_SECRET` and `_ISSUER` (all four required), plus optional `OPENID_CONNECT_BUTTON_TEXT` (default "Sign in with OpenID Connect"). Separate from the Keycloak and Google options |
 | Invitation | Devise Invitable | Email invitation with token |
 
 ### Password & Security
@@ -265,9 +265,15 @@ end
 | Nightly Evaluation | Cases can be flagged for automated nightly runs; toggleable via `updateNightly()` |
 | Background Evaluation | `runCaseInBackground()` queues a server-side batch scoring job (separate from live browser scoring) |
 | Metadata Tracking | Per-user last_viewed_at timestamps |
-| Recent Cases | Dropdown showing 4 most recently viewed cases |
+| Recent Cases | Dropdown showing 4 most recently viewed cases. The core case page uses hard-navigation variants (`dropdown/cases_core`, `dropdown/books_core`) rendered without a layout |
+| Book Summary Detail | `home#book_summary_detail` (`/home/book_summary_detail/:book_id`) renders a book's summary on the home page |
 | Query Arrangement | Drag-and-drop ordering via fractional indexing |
 | Score History | Time-series tracking of case scores |
+| Score History Page | `scores#index` lists a case's scores (filterable by scorer, paginated); `scores#destroy_multiple` bulk-deletes selected scores |
+| Ratings Page | `ratings#index` lists a case's ratings with a text search over query, doc ID and rating; linked as "Check Ratings" from the History tab |
+| Delete All Queries | `cases#destroy_queries` removes every query in a case; reached from the delete/archive options menu on the case toolbar |
+| Public/Private Toggle (Analytics) | The tries-visualization analytics page can flip a case between public and private (`analytics/cases/visibilities#update`) |
+| Server-Rendered Case Header | The core case header is a Turbo Frame: `GET /case/:id/header`, `PATCH …/header/case_name`, `PATCH …/header/try_name/:try_number` |
 | Annotations | Notes attached to specific scores |
 | Name Grouping (Disabled) | Colon-delimited prefix grouping (e.g., "Typeahead: Dairy", "Typeahead: Meats" → "Typeahead" group); currently **commented out** in HomeController due to performance issues |
 
@@ -332,7 +338,7 @@ Uses a custom fractional indexing algorithm:
 | Per-Query Ratings | Each query has ratings for specific doc_ids; stored in per-query `RatingsStore` on the client |
 | Floating Point | Ratings are floats (support decimal scales); client normalizes string ratings to integers |
 | User Attribution | Optional user_id per rating |
-| Bulk Rating | Bulk create/update/delete ratings; DELETE workaround uses POST for bulk delete (AngularJS DELETE doesn't pass body) |
+| Bulk Rating | Bulk create/update/delete ratings; bulk delete goes through POST because DELETE requests don't carry a body |
 | Null Ratings | Support for partially-rated result sets |
 | Cross-System Sync | Ratings sync between Cases and Books via RatingsManager |
 | Dirty Tracking | Client-side version counter per RatingsStore and global; `rating-changed` event triggers `scoreAll()` re-scoring |
@@ -353,7 +359,7 @@ Uses a custom fractional indexing algorithm:
 | Team-Shared Scorers | Shared via team membership |
 | System Default | Configurable default scorer (e.g., AP@10) |
 | Scorer Cloning | Duplicate an existing scorer |
-| Code Editor | ACE editor (Angular) / CodeMirror 6 (modern) for editing scorer code |
+| Code Editor | CodeMirror 6 (`modules/editor.js`) for editing scorer code |
 | Built-in Metrics | 7 communal scorers seeded: **nDCG@10**, **DCG@10**, **CG@10** (scale 0-3: Poor/Fair/Good/Perfect), **P@10**, **AP@10**, **RR@10** (scale 0-1: Irrelevant/Relevant), **ERR@10** (scale 0-3); plus legacy **v1** scorer (`avgRating100 - editDistanceFromBest`); also `nDCG_CUT@10` variant (ideal DCG cut at k vs. all judged docs); each as a JavaScript file in `db/scorers/` |
 
 ### Scorer Runtime API
@@ -364,7 +370,7 @@ All scorers (both client-side and server-side) have access to these helper funct
 |----------|-------------|
 | `eachDoc(fn, k)` | Loop over top-k returned docs |
 | `eachDocWithRating(fn)` | Loop over ALL rated docs (not just top-k) |
-| `eachRatedDoc(fn, k)` | Loop over top-k rated docs only (client-side only) |
+| `eachRatedDoc(fn, k)` | Loop over top-k rated docs only (client and server) |
 | `eachDocWithRatingEqualTo(score, fn)` | Loop over docs matching a specific rating |
 | `hasDocRating(i)` | Check if doc at position i has a rating |
 | `docRating(i)` | Get rating for doc at position i |
@@ -384,7 +390,7 @@ All scorers (both client-side and server-side) have access to these helper funct
 
 | Context | Engine | Entry Point | Key Difference |
 |---------|--------|-------------|----------------|
-| Client-side | `eval()` in `$timeout` | `ScorerFactory.runCode()` | `docAt()` returns rich splainer-search doc objects |
+| Client-side | `new Function`, scheduled with `queueMicrotask` | `utils/scorer_runtime.js` `runCode()` | `docAt()` returns rich splainer-search doc objects |
 | Server-side | MiniRacer (V8) | `JavascriptScorer.score()` | `docAt()` returns plain JS objects; `lib/scorer_logic.js` provides helpers |
 
 Client-side scoring clips negative scores to 0. There is no upper bound: scores are not capped at the rating scale max (CG@10, DCG@10, and v1 routinely exceed it). Returns `'zsr'` for zero search results, `'--'` for no ratings. Case score is the average of all non-zsr/non-`--` per-query scores.
@@ -435,6 +441,8 @@ Client-side scoring clips negative scores to 0. There is no upper bound: scores 
 | Combine Books | Merge query-doc pairs and judgements from multiple books |
 | Delete Below Position | Remove query-doc pairs beyond a specific rank position |
 | Judgement Stats | Leaderboard with Vega-Lite bar chart showing judges vs judgement counts |
+| Remap Ratings | `remap_judgement_ratings` (form on the book edit page) maps old → new rating values across the book's judgements and linked case ratings in one transaction; a single SQL `CASE` update means chained remaps (5→4, 4→3) can't double-apply |
+| Delete Ratings by Assignee | `delete_ratings_by_assignee` deletes all of one user's judgements in the book and queues `UpdateCaseJob` |
 | Reset Unrateable | Admin can reset "unrateable" flags per user |
 | Reset Judge Later | Admin can reset "judge later" flags per user |
 | Assign Anonymous | Reassign anonymous judgements to a specific user |
@@ -506,6 +514,8 @@ If >= 3 judgements:
 | SearchAPI | GET/POST | Auto-detect | Custom mapper code; `new Function(mapperCode).call(window)` executes mapper in global scope; JSON vs Solr format auto-detected |
 | Static | GET | SolrArgParser | For static result sets; silently remapped to Solr engine internally |
 
+**Mapper-based search engines:** presets built on SearchAPI, defined by `MapperBasedSearchEngine` ([`mapper_based_search_engine.rb`](../../app/models/mapper_based_search_engine.rb)) with mapper code in `db/mapper_based_search_engines/` (currently Vespa). `GET /api/mapper_based_search_engines` lists them and they appear in the wizard's engine dropdown. Each preset carries capability flags — `supports_pagination` (with the hits/offset parameter names), rated-docs lookup, `supports_basic_auth`, default `api_method` and `proxy_requests`.
+
 ### Endpoint Configuration
 
 | Field | Description |
@@ -527,6 +537,9 @@ If >= 3 judgements:
 | Feature | Description |
 |---------|-------------|
 | Proxy Mode | Routes requests through Quepid server (for CORS/protocol issues); incompatible with JSONP |
+| Credential Masking | The `MaskableCredential` concern validates `basic_auth_credential` as `username:password`, shows it masked (`user:******`) in HTML forms, and — when `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is on — omits it from JSON API responses so it never reaches the browser |
+| Required Proxy for Basic Auth | With `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS=true`, endpoints with basic-auth credentials must enable `proxy_requests`; existing offenders are listed in a boot-time warning and fail validation when edited |
+| Endpoint Lookups | `GET /api/cases/:id/search_endpoints` lists the endpoints available to a case |
 | Cloning | Duplicate an existing search endpoint configuration |
 | Archiving | Soft-delete with archive/unarchive |
 | Team Sharing | Share endpoints across teams |
@@ -549,6 +562,7 @@ If >= 3 judgements:
 | Escape Query | Toggle for URL-encoding query text |
 | Number of Rows | Configurable result count (default: 10) |
 | Search Endpoint Link | Each try connects to a search endpoint |
+| Preview Args | `POST /api/cases/:case_id/tries/:try_number/preview_args` parses a try's params without persisting them (used by the missing-documents finder) |
 | Curator Variables | Dynamic named parameters (name → float value) |
 | Options Merging | Case options + SearchEndpoint options (SE wins) |
 | Ancestry Overflow | Ancestry column is `string(3072)`; when path exceeds limit, catches `ActiveRecord::ValueTooLong` and restarts chain (`parent = nil`); orphan strategy is `:adopt` |
@@ -630,6 +644,9 @@ Snapshot
 | Share Scorers | Share scoring functions with team |
 | Share Search Endpoints | Share endpoint configurations with team |
 | Unique Names | Team names must be globally unique |
+| Member Suggestions | `teams#suggest_members` returns autocomplete suggestions from users in the current user's teams |
+| Per-Team Archiving | Cases and search endpoints can be archived/unarchived within a team (`teams#archive_case`, `unarchive_case`, `archive_search_endpoint`, `unarchive_search_endpoint`) |
+| Team Books | `GET /api/teams/:id/books` lists a team's books |
 
 ### Sharing Model
 
@@ -657,9 +674,9 @@ All shared resources become accessible to all team members via the `ForUserScope
 | Queries | JSON | No | Information needs export |
 | Snapshots | Binary | No | Marshal + Zlib compressed |
 
-### Case Export Sub-Formats (Client-Side via AngularJS)
+### Case Export Sub-Formats (Client-Side)
 
-The export_case component generates multiple CSV formats locally in the browser:
+The case export JavaScript generates multiple CSV formats locally in the browser:
 
 | Format | Description |
 |--------|-------------|
@@ -871,26 +888,20 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 
 ## 18. Frontend Architecture
 
-### Dual Frontend System
+### Frontend Layout
 
-**AngularJS 1.8.3 (Core Search UI)**:
-- 45 component directories (3 files each: directive, controller, template)
-- 34 controllers
-- 27 services
-- 11 directives
-- 7 factories
-- 6 filters
-- 1 interceptor (CSRF)
-- 2 values
-- 31 HTML templates
+AngularJS has been removed. There is no `angular` package, Angular build script or Angular template bundle.
+
+**Core case page (`/case/:id`)**:
+- Plain ES modules in `app/javascript/utils/` (query, scoring, doc cache, diff, export and search-engine runtimes) plus stores in `app/javascript/stores/` and API helpers in `app/javascript/api/`
+- Roughly 67 Stimulus controllers drive the UI
+- Bundled by esbuild into `core_vendor.js` and `core_case.js`
 - Bootstrap 5 CSS (`core.css` + `bootstrap5-compat.css`)
 
-**Stimulus + Turbo (Modern Pages)**:
-- Home page, admin, analytics, books UI, profiles, judgements, bulk judge, search endpoints, mapper wizard
-- Bootstrap 5 CSS (`application.css`)
-- CodeMirror 6 for code editing (scorer code, JSON formatting, mapper code)
-- ES modules via importmap
-- Turbo Frames for partial page updates (case sparklines, book dropdowns, modals)
+**Other pages (home, admin, analytics, books, profiles, judgements, bulk judge, search endpoints, mapper wizard)**:
+- Stimulus + Turbo, Bootstrap 5 CSS (`application.css`)
+- CodeMirror 6 for code editing (scorer code, JSON formatting, mapper code, query params, headers); ACE remains only in the missing-documents finder
+- Turbo Frames for partial page updates (case sparklines, book dropdowns, modals, case header)
 - Turbo Streams for real-time WebSocket-driven updates
 
 **Key Stimulus Controllers**:
@@ -902,30 +913,24 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 - `confetti` - Triggers `party-js` confetti animation on the "Kraken Unleashed" celebration modal
 - `prompt-form` - Handles AI judge prompt submission with loading spinner
 
-### Key AngularJS Routes
+### Routes
 
-| Route | Controller | Purpose |
-|-------|-----------|---------|
-| `/case/:caseNo/try/:tryNo` | MainCtrl | Main search evaluation interface |
-| `/case/:caseNo` | MainCtrl | Case view (latest try) |
-| `/cases` | CasesCtrl | Case listing |
-| `/cases/import` | CasesImportCtrl | Import wizard |
-| `/teams` | TeamsCtrl | Team management |
-| `/teams/:teamId` | TeamCtrl | Individual team |
-| `/scorers` | ScorersCtrl | Scorer management |
+Only the case page is a client-driven surface: `/case/:caseNo` and `/case/:caseNo/try/:tryNo`. Case listing, import, teams and scorers (`/cases`, `/cases/import`, `/teams`, `/scorers`) are Rails-rendered pages.
 
 ### Client-Side Caching & Services
 
-| Service | Description |
-|---------|-------------|
-| `docCacheSvc` | In-memory document cache keyed by doc_id; pre-registers IDs from snapshots; fetches missing docs in batches of 15 |
-| `caseSvc` | Case object cache with `useCache` option to skip HTTP calls |
-| `scorerSvc` | Scorer cache avoids redundant API calls |
-| `paneSvc` | Manual drag-resize for east/main pane split using `document.onmousemove`; no localStorage persistence |
-| `configurationSvc` | Client-side feature flags: `communalScorersOnly` and `queryListSortable`, set from server-rendered HTML attributes |
-| `varExtractorSvc` | Extracts template variables from query params: `#$query##` (query text), `##variableName##` (curator vars) |
-| `docListFactory` | Detects two error conditions: undefined/missing ID field on docs, and duplicate IDs across docs; creates stub docs with error messages so list renders without crashing |
-| `broadcastSvc` | Thin wrapper around `$rootScope.$broadcast`; all cross-controller events go through this service |
+Former Angular services are now modules in `app/javascript/utils/`.
+
+| Module | Description |
+|--------|-------------|
+| `doc_cache.js` | In-memory document cache keyed by doc_id; pre-registers IDs from snapshots; fetches missing docs in batches |
+| `case_runtime.js` | Case object handling with cache option to skip HTTP calls |
+| `configuration_runtime.js` | Client-side feature flags (`communalScorersOnly`, `queryListSortable`) set from server-rendered HTML attributes |
+| `curator_vars.js` | Extracts template variables from query params: `#$query##` (query text), `##variableName##` (curator vars) |
+| `live_query_*.js` | Query execution, events, diffing and registry for the live case list |
+| `api/fetch.js` (`apiFetch`) | HTTP wrapper that adds the CSRF token; replaces the Angular `rails-csrf` interceptor |
+
+Doc lists detect two error conditions (undefined/missing ID field, duplicate IDs) and create stub docs with error messages so the list renders without crashing. The east/main pane split is drag-resizable with no localStorage persistence.
 
 ### Key UI Components
 
@@ -940,7 +945,7 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 - `new_case` / `clone_case` / `delete_case` / `archive_case` - Case lifecycle
 - `case_listing` - Case list display
 - `export_case` - Export functionality
-- `share_case` - Sharing dialog (Stimulus on core + cases/teams; Angular component removed)
+- `share_case` - Sharing dialog (Stimulus)
 
 **Scoring:**
 - `qgraph` - Query graph visualization
@@ -960,29 +965,26 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 
 **Visualization:**
 - `stacked_chart` - Stacked chart directive
-- `angular-vega` - Vega integration directive
+- Vega-Lite rendering for QGraph (`utils/qgraph.js`), the frog report and analytics
 - `frog_report` - Froggy mascot reporting
-- `quepidEmbed` - Auto-detects audio/image/video URLs by file extension and renders appropriate `<audio>`/`<img>`/`<video>` tags
+- Media embeds — `search_result_controller.js` detects audio (mp3/wav/ogg), image and video (mp4/webm) URLs by file extension and renders `<audio>`/`<img>`/`<video>` tags
 
 ### Build Pipeline
 
 ```
-esbuild → angular_app.js (IIFE, vendor libs)
-Node.js → angular_templates.js (compiled HTML)
-Node.js → quepid_angular_app.js (concatenated app code)
-esbuild → admin_users.js (D3 + CalHeatmap)
-esbuild → analytics.js (Vega)
+esbuild → core_vendor.js (vendor libs, CodeMirror, Bootstrap)
+esbuild → core_case.js (core_stimulus.js: case-page controllers and utils)
+esbuild → jquery bundle, analytics.js (Vega)
 Node.js → application.css, core.css, admin.css (concatenated CSS)
 ```
 
-**Development (6 Foreman processes):**
+**Development (Foreman, `Procfile.dev`):**
 ```
-web:            puma
-worker:         bin/jobs (Solid Queue)
-angular_vendor: npm run build:angular-vendor -- --watch
-angular:        npm run build:angular-app:watch
-templates:      npm run build:angular-templates:watch
-css:            npm run build:css:watch
+web:         puma
+worker:      bin/jobs (Solid Queue)
+core_vendor: npm run build:core-vendor -- --watch=forever
+core_case:   npm run build:core-case -- --watch=forever
+css:         npm run build:css:watch
 ```
 
 ---
@@ -1073,7 +1075,7 @@ A dedicated full-page interface for rapid document judging, separate from the st
 
 ## 22. Background Job Processing
 
-### Job Queue: Solid Queue 1.6.0
+### Job Queue: Solid Queue 1.7.0
 
 | Job | Queue | Purpose |
 |-----|-------|---------|
@@ -1178,6 +1180,10 @@ Used for:
 | ASSUME_SSL | false | Trust SSL termination from reverse proxy |
 | EMAIL_MARKETING_MODE | false | Show GDPR-compliant marketing opt-in |
 | QUEPID_DEFAULT_SCORER | AP@10 | Default scorer assigned to new users |
+| REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS | false | Require `proxy_requests` for endpoints with basic-auth credentials and hide those credentials from API responses |
+| OPENID_CONNECT_BASE_URL / _CLIENT_ID / _CLIENT_SECRET / _ISSUER / _BUTTON_TEXT | empty (button text: "Sign in with OpenID Connect") | Generic OpenID Connect login; the first four are all required |
+| OLLAMA_SERVICE_URL | `http://ollama:11434` (production), `http://ollama:31434` (other environments) | Ollama endpoint for local LLM features |
+| QUEPID_CONSIDER_ALL_REQUESTS_LOCAL | unset | When set (any value), production shows full error reports (`consider_all_requests_local`) |
 
 ### Legal & Compliance
 
@@ -1270,8 +1276,6 @@ Used for:
 |------|---------|
 | `assets:jupyterlite` | Downloads JupyterLite build from GitHub releases, unpacks to `public/notebooks/`; hooked into `assets:precompile` for production |
 | `db:exists` | Checks DB connectivity (exit 0/1); used for Docker health checks |
-| `karma:start` / `karma:run` / `karma:ci` | Frontend JS test runner (builds then runs Karma) |
-| `test:frontend` | Runs JS tests + JSHint linting |
 | `test:report_failed_tests` | Parses JUnit XML reports for CI failure reporting |
 | `erd:image` | Generates entity-relationship diagram PNG to `docs/erd.png` |
 
@@ -1303,15 +1307,13 @@ Used for:
 | System Tests | 1 |
 | **Total** | **136 files, ~18,749 lines** |
 
-### Frontend Tests (Jasmine + Karma)
+### Frontend Tests
 
-| Category | File Count |
-|----------|-----------|
-| Controller Specs | 9 |
-| Service Specs | 21 |
-| Filter Specs | 2 |
-| Component Specs | 1 |
-| **Total** | **30 spec files** |
+| Tool | Scope |
+|------|-------|
+| Vitest (`yarn test:unit`) | ~138 spec files under `test/javascript/` covering controllers, modules, utils and API helpers |
+| Playwright (`yarn test:e2e`) | 24 end-to-end specs with screenshot baselines and axe accessibility checks |
+| Stryker (`yarn test:mutation`) | Mutation testing on the Vitest suite |
 
 ### Test Infrastructure
 
@@ -1325,8 +1327,7 @@ Used for:
 
 | System | Purpose |
 |--------|---------|
-| CircleCI | Primary CI (tests, lint, coverage) |
-| GitHub Actions | Docker build on push + nightly builds |
+| GitHub Actions | Test workflow (`test.yml`, runs `rails test` in Docker on push) + nightly builds |
 | Dependabot | Dependency updates |
 
 ### Code Quality
@@ -1334,7 +1335,8 @@ Used for:
 | Tool | Purpose |
 |------|---------|
 | RuboCop | Ruby linting (with Rails, Minitest, Capybara plugins) |
-| JSHint | JavaScript linting |
+| ESLint + Prettier | JavaScript linting and formatting |
+| Stylelint | CSS linting |
 | DatabaseConsistency | Schema validation |
 | DeepSource | Static analysis |
 | Bullet | N+1 query detection |
@@ -1414,9 +1416,9 @@ Quepid integrates the `splainer-search` library (an OpenSource Connections libra
 
 | Visualization | Technology | Purpose |
 |---------------|-----------|---------|
-| QGraph | D3 | Query-level score graph |
-| QScore | D3 | Per-query and per-case score visualization |
-| Stacked Chart | D3 directive | Stacked chart for multi-dimensional data |
+| QGraph | Vega-Lite (`utils/qgraph.js`) | Query-level score graph |
+| QScore | `qscore-query` / `qscore-case` Stimulus controllers | Per-query and per-case score badges |
+| Stacked Chart | `match-explain` Stimulus controller | Match-explain stacked chart popover on search results |
 | Frog Report | Custom | Froggy mascot score reporting |
 
 ---
@@ -1474,7 +1476,7 @@ Quepid embeds a full **Jupyterlite** (browser-based Jupyter) environment served 
 ### UI Integration
 
 The notebooks are linked from three navigation points:
-- AngularJS core app header (`_header_core_app.html.erb`)
+- Core case page header (`_header_core_app.html.erb`)
 - Modern layout header (`_header.html.erb`)
 - Sidebar navigation (`_sidebar.html.erb`)
 
@@ -1490,7 +1492,7 @@ Two specific snapshots (IDs 2471, 2473 for case 6789) are **permanently preserve
 
 ### Overview
 
-The Frog Report is a **client-side rating coverage analysis tool** that shows how many query/document pairs are missing ratings. It is entirely an AngularJS component — no Rails backend controller or job is involved.
+The Frog Report is a **client-side rating coverage analysis tool** that shows how many query/document pairs are missing ratings. It runs entirely client-side (`frog_report_controller.js`) — no Rails backend controller or job is involved.
 
 ### Metrics Computed
 
@@ -1612,23 +1614,23 @@ The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md).
 
 Counts drift as the tree changes — re-count before citing exact numbers.
 
-| Metric | Count (Aug 2026) |
+| Metric | Count (Sep 2026) |
 |--------|------------------|
-| Database Tables | 50+ |
-| Database Migrations | 182 |
-| Models (`app/models/*.rb`) | 26 |
-| Controllers (total) | 93 (46 under `app/controllers/api`) |
+| Database Tables | 53 |
+| Database Migrations | 187 |
+| Models (`app/models/*.rb`) | 27 |
+| Controllers (total) | 95 (47 under `app/controllers/api`) |
 | API Endpoints | 80+ (canonical list: OpenAPI `/api/docs`) |
 | Services (`app/services`) | 13 |
 | Background Jobs (`app/jobs`) | 13 (plus recurring scheduled) |
 | RubyLLM Tools | 3 |
 | Validators | 4 |
 | Routing Constraints | 2 |
-| View Helpers | 8 |
+| View Helpers | 9 |
 | Analytics Trackers | 9 |
-| Stimulus Controllers | 17 |
-| Karma specs (`spec/javascripts/angular`) | 34 |
-| Test Files (Ruby, `*_test.rb`) | 130 |
-| Supported Search Engines | 7 (`splainer-search` 3.0.0) |
-| Feature Flags | 9 |
+| Stimulus Controllers | 70 |
+| Vitest spec files (`test/javascript`) | ~138 |
+| Test Files (Ruby, `*_test.rb`) | 156 |
+| Supported Search Engines | 7 (`splainer-search` 3.3.0) |
+| Feature Flags / env settings (§25 table) | 13 |
 | Gem Dependencies | 70+ |
