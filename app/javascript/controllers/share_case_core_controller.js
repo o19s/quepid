@@ -7,7 +7,6 @@ import {
   partitionTeams,
   unsharedTeams
 } from "utils/share_case_teams"
-import { showStatusMessage } from "utils/status_message"
 import { caseNameFromHeader } from "utils/case_header"
 
 /**
@@ -430,16 +429,5 @@ export default class extends ModalTriggerControllerBase {
       this.unshareButtonTarget.disabled =
         isSubmitting || !this.selectedSharedTeamId
     }
-  }
-
-  showAlert(message, variant) {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
-  }
-
-  clearAlert() {
-    if (!this.hasAlertTarget) return
-    this.alertTarget.textContent = ""
-    this.alertTarget.className = "alert d-none"
   }
 }

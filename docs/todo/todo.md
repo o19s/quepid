@@ -12,8 +12,6 @@ choosing migration work; do not treat pre-existing defects as migration regressi
 
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
-**Angular removal:** do not patch the core case UI for items listed under [Obviated by Angular removal](#obviated-by-angular-removal-do-not-fix-in-angular). Remaining frontend cleanup is tracked in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
-
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
 ### [PREEXISTING] P0 — Scorer sandboxing
@@ -26,17 +24,17 @@ Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
 `app/javascript/utils/scorer_runtime.js` and `scorer_catalog.js` need a canonical
 shared API and migration guidance.
 
-### [MIGRATION-FOLLOWUP] P2 — Accessibility
+### [PREEXISTING] P2 — Accessibility
 
-Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario. (Copy-query, close-pane and snapshot delete/clear controls now have accessible names.)
+Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario.
 
-### [PREEXISTING] Opportunistic — Core-toolbar status-message duplication
+### [PREEXISTING] P2 — Try delete has no confirm dialog
 
-Several core-toolbar modal controllers duplicate `showAlert`/`clearAlert`
-behavior, while `judgements_core_controller.js` has a structurally similar
-`showError`/`clearError` variant. Consider a small shared status-message helper
-or a narrow addition to `ModalTriggerControllerBase` once the current modal
-migration work settles.
+`deleteTry()` in `tune_relevance_controller.js` has the null and active-try guards, but one click on Delete still removes the try permanently. Add a confirm step.
+
+### [PREEXISTING] P2 — Explain Query Copy gives no feedback
+
+`query_explain_controller.js` swallows `copyText()` rejections (`.catch(() => {})`) and shows no success state. Surface failure and a "Copied!" state.
 
 Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
@@ -60,18 +58,6 @@ For changes to the core case surface:
 
 ---
 
-## [MIGRATION] Obviated by Angular removal (do not fix in Angular)
-
-These affect the core case UI (`/case/...`) today but **should not be patched in AngularJS** — the owning code is scheduled for replacement. Fix the **backend/API** parts in the sections below when called out; handle **frontend/UX** in [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
-
-| Item | Why not patch Angular | Where it moves |
-|------|----------------------|----------------|
-| Try delete confirm dialog (frontend) | Null guard and active-try guard are done in `tune_relevance_controller.js`; confirm dialog still missing | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
-| Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
-| Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
-
----
-
 ## [PREEXISTING] P0 — Product bugs (Playwright MCP verified)
 
 ### [PREEXISTING] Deleting the latest try bricks the case (backend)
@@ -82,7 +68,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 **Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null), or forbid deleting the current try. Add a test that deletes the latest try, reloads the case, and verifies the next core bootstrap and score update both succeed.
 
-**Frontend/UX** (confirm dialog): obviated — see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
+**Frontend/UX** (confirm dialog): see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
 ---
 

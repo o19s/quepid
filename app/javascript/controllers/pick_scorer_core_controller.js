@@ -2,7 +2,6 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
-import { showStatusMessage } from "utils/status_message"
 
 /**
  * Pick-scorer modal for the core case toolbar. Lists communal (+ custom, when
@@ -254,15 +253,5 @@ export default class extends ModalTriggerControllerBase {
     if (!this.hasSubmitButtonTarget) return
     this.submitButtonTarget.disabled =
       this._isSubmitting || !this.selectedScorer || this.selectedScorer.inaccessible
-  }
-
-  showAlert(message, variant) {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
-  }
-
-  clearAlert() {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
   }
 }

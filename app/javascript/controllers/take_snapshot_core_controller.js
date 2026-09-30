@@ -2,7 +2,6 @@ import ModalTriggerControllerBase from "controllers/core_modal_trigger_controlle
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { searchEngineDisplayName } from "utils/search_engine_name"
 import { supportsLookupById } from "utils/search_engines"
-import { showStatusMessage } from "utils/status_message"
 
 /**
  * Take-snapshot modal for the core case toolbar. Collects name + optional
@@ -119,18 +118,16 @@ export default class extends ModalTriggerControllerBase {
   }
 
   showAlert(message, variant) {
+    super.showAlert(message, variant)
     if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, {
-      message,
-      className: `alert alert-${variant} text-danger mb-0`
-    })
+    this.alertTarget.classList.add("text-danger", "mb-0")
     // Preserve newlines in the error message.
     this.alertTarget.style.whiteSpace = "pre-line"
   }
 
   clearAlert() {
+    super.clearAlert()
     if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
     this.alertTarget.style.whiteSpace = ""
   }
 }

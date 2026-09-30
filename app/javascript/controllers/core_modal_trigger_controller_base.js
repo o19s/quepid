@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { showStatusMessage } from "utils/status_message"
 
 /**
  * Base for the trigger/modal-root dual-instantiation pattern shared by the
@@ -16,6 +17,8 @@ import { Controller } from "@hotwired/stimulus"
  * - implement `modalElementId` returning the DOM id of its modal element
  * - implement `openAsRoot(event)` instead of `open(event)` - only called
  *   once delegation has resolved to the modal root instance
+ *
+ * Subclasses with an "alert" target get `showAlert`/`clearAlert` for free.
  */
 export default class extends Controller {
   get isModalRoot() {
@@ -39,5 +42,15 @@ export default class extends Controller {
     if (!modal) return null
 
     return this.application.getControllerForElementAndIdentifier(modal, this.identifier)
+  }
+
+  showAlert(message, variant) {
+    if (!this.hasAlertTarget) return
+    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
+  }
+
+  clearAlert() {
+    if (!this.hasAlertTarget) return
+    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
   }
 }

@@ -1,7 +1,6 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
 import { getQuepidRootUrl } from "utils/quepid_root"
-import { showStatusMessage } from "utils/status_message"
 import { caseNameFromHeader } from "utils/case_header"
 
 const REDIRECT_DELAY_MS = 1000
@@ -193,15 +192,5 @@ export default class extends ModalTriggerControllerBase {
   setSubmitting(isSubmitting) {
     if (!this.hasSubmitButtonTarget) return
     this.submitButtonTarget.disabled = isSubmitting || !this.newCaseName
-  }
-
-  showAlert(message, variant) {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
-  }
-
-  clearAlert() {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
   }
 }
