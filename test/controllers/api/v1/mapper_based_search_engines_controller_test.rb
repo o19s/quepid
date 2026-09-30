@@ -28,6 +28,21 @@ module Api
           assert_equal 'AUTO', vespa['api_method']
           assert_predicate vespa['mapper_code'], :present?
         end
+
+        test 'returns the Qdrant mapper based search engine' do
+          get :index
+
+          assert_response :ok
+
+          engines = response.parsed_body['mapper_based_search_engines']
+          qdrant = engines.find { |engine| 'qdrant' == engine['id'] }
+
+          assert qdrant
+          assert_equal 'Qdrant', qdrant['name']
+          assert_equal 'searchapi', qdrant['search_engine']
+          assert_equal 'POST', qdrant['api_method']
+          assert_predicate qdrant['mapper_code'], :present?
+        end
       end
     end
   end
