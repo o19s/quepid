@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Advisory Prettier check for staged legacy Angular JavaScript.
+# Advisory Prettier check for staged legacy JavaScript.
 set -u
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

@@ -117,7 +117,7 @@ describe("buildDetailedCaseCsv", () => {
     )
   })
 
-  it("keeps empty-query rows compatible with the Angular export", () => {
+  it("keeps empty-query rows compatible with the legacy export", () => {
     const result = buildDetailedCaseCsv(
       { case_name: "Test Case", case_id: 8, teams: [], last_score: { case_id: 8 } },
       { 1: { queryText: "dog", fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" }, docs: [] } }

@@ -8,10 +8,8 @@ import {
 } from "utils/rated_docs"
 
 /**
- * Unit contract for logic that the legacy client only covered indirectly, through the
- * `createSearcherFromSettings` examples in
- * spec/javascripts/angular/services/queriesSvc_spec.js ("Solr ratings filter
- * (options.filterToRated)"). The static-engine cases below had no coverage at all.
+ * Unit contract for the Solr ratings filter (options.filterToRated) and static-engine
+ * normalization.
  */
 describe("rated_docs", () => {
   describe("normalizeSearchEngine", () => {

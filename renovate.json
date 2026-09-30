@@ -48,12 +48,6 @@
   "packageRules": [
     {
       "enabled": false,
-      "matchPackageNames": [
-        "angular-ui-ace"
-      ]
-    },
-    {
-      "enabled": false,
       "matchDatasources": [
         "docker"
       ],

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { buildQueryDocumentsState } from "utils/query_documents"
 
 describe("query document read model", () => {
-  it("copies query results and derives display metadata without Angular", () => {
+  it("copies query results and derives display metadata without a framework", () => {
     const query = {
       queryText: "title",
       docs: [{ id: "1" }],

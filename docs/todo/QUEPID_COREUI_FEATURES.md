@@ -944,9 +944,9 @@ The wizard modal opens automatically when:
 ### Wizard Steps (6-step Stimulus modal)
 
 The current case wizard is intentionally a compact, Rails-rendered/Stimulus-owned
-flow. It does not reproduce every Angular-era presentation control.
+flow. A numbered step tracker along the top shows progress and lets users jump back to earlier steps (not ahead, and not while an endpoint is being validated). It does not reproduce every Angular-era presentation control.
 
-1. **Welcome**: Short introduction without the former Doug mascot.
+1. **Welcome**: Short introduction with Doug's photo.
 2. **Case Name**: Text input for naming the case.
 3. **Search Endpoint**: Existing endpoint selector followed by a create-new form. The form uses a plain engine select (no logo tiles), URL and API method fields, query/test-query fields, a raw JSON custom-headers textarea, basic auth, proxy toggle, and static CSV file input. Continue validates the endpoint; there is no separate "ping it" button, Solr curl/config help block, inline Mapper Wizard link, or engine-specific troubleshooting panel.
    - SearchAPI mapper setup remains available through the standalone Mapper Wizard under Search Endpoints; the case wizard does not provide the former shortcut and does not block a mapper-less draft.
@@ -1308,7 +1308,6 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - **Bootstrap Icons**: `bi bi-*` classes (replaced Glyphicons)
 - **Querqy icon**: Custom PNG image (`querqy-icon.png`), 24x24px, background-image
 - **Engine icons**: Per-engine PNGs (`solr.png`, `solr-icon.png`, etc.)
-- The Doug mascot was removed from the wizard welcome step
 
 ### CSS Custom Properties
 ```css

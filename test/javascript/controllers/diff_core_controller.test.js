@@ -73,7 +73,7 @@ describe("DiffCoreController", () => {
     expect(apply).not.toHaveBeenCalled()
   })
 
-  it("dispatches the selected snapshots to the Angular diff bridge", async () => {
+  it("dispatches the selected snapshots to the diff bridge", async () => {
     const controller = buildController()
     const events = []
     const listener = (event) => {

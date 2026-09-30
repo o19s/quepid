@@ -12,7 +12,7 @@ describe("case runtime", () => {
     delete window.quepidSearch
   })
 
-  it("loads and selects a case without Angular objects", async () => {
+  it("loads and selects a case without framework objects", async () => {
     const request = vi.fn().mockResolvedValue(response({
       case_id: 7,
       case_name: "Books",

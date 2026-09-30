@@ -96,11 +96,11 @@ jobs:
           command: bundle exec rake test:eslint
 
       - run:
-          name: Run advisory ESLint (legacy Angular JavaScript)
+          name: Run advisory ESLint (legacy JavaScript)
           command: yarn lint:js:legacy || echo "Legacy ESLint reported issues; continuing because this check is advisory."
 
       - run:
-          name: Run advisory Prettier (legacy Angular JavaScript)
+          name: Run advisory Prettier (legacy JavaScript)
           command: yarn format:js:legacy:check || echo "Legacy Prettier reported issues; continuing because this check is advisory."
 
       - run:

@@ -82,7 +82,7 @@ describe("query_command_bridge_controller", () => {
     expect(documentsStore.collapseAll).toHaveBeenCalledOnce()
   })
 
-  it("keeps live Angular queries synchronized after Stimulus-owned mutations", () => {
+  it("keeps live queries synchronized after Stimulus-owned mutations", () => {
     controller.connect()
 
     controller.handleQueryDeleteCompleted(new CustomEvent("query-command:delete-completed", {

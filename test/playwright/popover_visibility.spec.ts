@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { expandFirstQuery, gotoCase } from './angular_case_helpers';
+import { expandFirstQuery, gotoCase } from './case_helpers';
 
 /**
  * The popover node can exist in the DOM with `aria-describedby` set while

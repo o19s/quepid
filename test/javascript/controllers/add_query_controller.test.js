@@ -66,7 +66,7 @@ describe("add_query_controller", () => {
     controller.disconnect()
   })
 
-  it("stops loading when the Angular mutation bridge completes", () => {
+  it("stops loading when the mutation bridge completes", () => {
     const { controller } = controllerFor({ text: "query" })
     controller.loading = true
     controller.complete({ detail: { success: false } })

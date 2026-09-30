@@ -1,11 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders, dynamicRegions, resetCompletedCaseWizard } from './angular_case_helpers';
+import { apiHeaders, dynamicRegions, resetCompletedCaseWizard } from './case_helpers';
 
 /**
  * Full case-creation wizard (Stimulus `wizard` controller /
  * app/views/shared/_wizard_modal.html.erb), run start to finish.
  *
- * angular_pages.spec.ts and angular_pages_narrow_viewport.spec.ts both stop
+ * core_pages.spec.ts and core_pages_narrow_viewport.spec.ts both stop
  * partway through this same wizard — after opening the "Create a new
  * Search Endpoint" accordion on the Endpoint step — purely to screenshot
  * that state; neither finishes it. This spec instead walks every step

@@ -9,7 +9,7 @@ const makeDoc = (rating) => ({
 })
 
 describe("scorer runtime", () => {
-  it("preserves scorer metadata and scale helpers without Angular", () => {
+  it("preserves scorer metadata and scale helpers without a framework", () => {
     const scorer = createScorer({
       name: "Useful scorer",
       communal: true,

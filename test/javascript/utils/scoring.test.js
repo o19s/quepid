@@ -43,7 +43,7 @@ describe("scoring", () => {
       expect(formatScore(undefined)).toBe(undefined)
     })
 
-    it("renders NaN as an empty string, matching AngularJS's number filter", () => {
+    it("renders NaN as an empty string, matching the legacy number filter", () => {
       // formatNumber() explicitly returns '' for NaN values;
       // Number.prototype.toLocaleString has no such guard and would
       // otherwise render the literal string "NaN". Reachable via a custom
@@ -53,7 +53,7 @@ describe("scoring", () => {
       expect(formatScore(NaN)).toBe("")
     })
 
-    it("still renders Infinity using Angular's infinity symbol", () => {
+    it("still renders Infinity using the legacy infinity symbol", () => {
       expect(formatScore(Infinity)).toBe("∞")
       expect(formatScore(-Infinity)).toBe("-∞")
     })

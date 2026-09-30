@@ -79,7 +79,7 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(2)).not.toBeNull()
   })
 
-  it("publishes live-query intents without knowing their Angular owner", () => {
+  it("publishes live-query intents without knowing their owner", () => {
     const commands = []
     store.addEventListener("command", event => commands.push(event.detail))
 

@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { gotoCase } from './angular_case_helpers';
+import { gotoCase } from './case_helpers';
 
 /**
  * Case header title typography (#case-header h1). BS5 reboot fluid headings

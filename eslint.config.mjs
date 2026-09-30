@@ -55,7 +55,6 @@ export default [
       sourceType: 'script',
       globals: {
         ...globals.browser,
-        angular: 'readonly',
         ace: 'readonly',
         Shepherd: 'readonly',
         setupTour: 'readonly',

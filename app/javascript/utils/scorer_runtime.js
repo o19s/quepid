@@ -314,7 +314,7 @@ export function createScorer(
     return deferred.promise
   }
 
-  // Always undefined, as in the Angular ScorerFactory. Scores are not bounded
+  // Always undefined, as in the legacy ScorerFactory. Scores are not bounded
   // by the rating scale (CG@10 on a 0-3 scale can reach 30), so callers must
   // not treat this as a score ceiling; query scoring falls back to 1.
   function maxScore() {

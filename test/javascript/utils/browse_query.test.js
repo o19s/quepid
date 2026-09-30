@@ -31,7 +31,7 @@ describe("browse query utilities", () => {
     })
   })
 
-  it("matches the Angular engine labels", () => {
+  it("matches the legacy engine labels", () => {
     expect(engineDisplayName({ searchEngine: "solr" })).toBe("Solr")
     expect(engineDisplayName({ searchEngine: "searchapi", mapperBasedSearchEngineName: "Vespa" })).toBe("Vespa")
     expect(engineDisplayName({ searchEngine: "searchapi" })).toBe("Search API")

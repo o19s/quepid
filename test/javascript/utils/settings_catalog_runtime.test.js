@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import { createSettingsCatalog } from "utils/settings_catalog_runtime"
 
 describe("settings catalog runtime", () => {
-  it("provides the built-in presets without Angular", () => {
+  it("provides the built-in presets without a framework", () => {
     const catalog = createSettingsCatalog()
 
     expect(catalog.defaultSettings()).toMatchObject({

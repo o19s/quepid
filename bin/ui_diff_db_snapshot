@@ -21,6 +21,6 @@ DB_NAME="${DB_NAME:-quepid}_development"
 DB_USERNAME="${DB_USERNAME:-root}"
 DB_PASSWORD="${DB_PASSWORD:-password}"
 
-echo "==> Dumping $DB_NAME (quepid_db) to $SNAPSHOT_FILE"
-docker exec quepid_db mysqldump -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" > "$SNAPSHOT_FILE"
+echo "==> Dumping $DB_NAME (mysql service) to $SNAPSHOT_FILE"
+docker compose exec -T mysql mysqldump -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" > "$SNAPSHOT_FILE"
 echo "==> Snapshot saved ($(du -h "$SNAPSHOT_FILE" | cut -f1))"

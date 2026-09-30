@@ -80,7 +80,7 @@ describe("query_lifecycle", () => {
     vi.unstubAllGlobals()
   })
 
-  it("persists move and delete commands without an Angular adapter", async () => {
+  it("persists move and delete commands without a legacy adapter", async () => {
     vi.stubGlobal("fetch", vi.fn()
       .mockResolvedValueOnce(new Response("", { status: 204 }))
       .mockResolvedValueOnce(new Response("", { status: 204 })))

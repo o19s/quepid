@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createSplainerSearchRuntime } from "utils/splainer_search_runtime"
 
 describe("splainer search runtime", () => {
-  it("publishes the wired services without an Angular promise adapter", () => {
+  it("publishes the wired services without a promise adapter", () => {
     const services = { docResolverSvc: { createResolver: vi.fn() }, searchSvc: {} }
     const wire = vi.fn(() => services)
     const client = { search: vi.fn() }
@@ -14,7 +14,7 @@ describe("splainer search runtime", () => {
     expect(runtime.docResolverSvc).toBe(services.docResolverSvc)
   })
 
-  it("keeps the wired service methods native instead of requiring Angular", () => {
+  it("keeps the wired service methods native instead of requiring a framework", () => {
     const search = vi.fn(() => Promise.resolve({ docs: [] }))
     const services = { searchSvc: { search }, docResolverSvc: {} }
     const runtime = createSplainerSearchRuntime({ wire: () => services })

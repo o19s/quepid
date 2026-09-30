@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Smoke coverage for Stimulus-driven pages (application layout).
- * Complements the Angular core Playwright suite in angular_pages.spec.ts.
+ * Complements the core Playwright suite in core_pages.spec.ts.
  */
 
 async function firstBookId(page: Page): Promise<string> {

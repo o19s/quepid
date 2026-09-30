@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { gotoCase, expandFirstQuery } from './angular_case_helpers';
+import { gotoCase, expandFirstQuery } from './case_helpers';
 
 /**
  * Regression coverage for saving a query's Information Need / Notes when the save FAILS.

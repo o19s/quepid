@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -23,7 +23,7 @@ Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
 
 ### [PREEXISTING] P1 — Scorer contract drift
 
-`app/javascript/utils/scorer_runtime.js` and `scorer_logic.js` need a canonical
+`app/javascript/utils/scorer_runtime.js` and `scorer_catalog.js` need a canonical
 shared API and migration guidance.
 
 ### [MIGRATION-FOLLOWUP] P2 — Accessibility
@@ -46,7 +46,7 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION] P2 — Dual Stimulus boot/runtime drift (code review 2026-09-29)
+### [MIGRATION] P2 — Dual Stimulus boot/runtime drift
 
 Normal Rails pages lazy-load the whole controller directory (`app/javascript/controllers/index.js:1-5`) while the core page has a second esbuild entry with a long manual registration list (`app/javascript/core_stimulus.js:17-117`). The core runtime also exposes `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap globals, Sortable, Ace, and a large document-level `CustomEvent` bus. A controller can work on a normal page yet be silently missing from the core bundle, or be registered twice when markup moves between layouts.
 
@@ -71,8 +71,6 @@ For changes to the core case surface:
 
 ### [MIGRATION-FOLLOWUP] Cleanup candidates
 
-- `[MIGRATION-FOLLOWUP]` Remove stale Angular terminology from comments, generated-build labels, test names,
-  and helper names where it no longer describes the implementation.
 - `[MIGRATION-FOLLOWUP]` Remove remaining Angular-era build or CSS compatibility steps only after verifying
   that no core or Rails surface still depends on them.
 
@@ -84,7 +82,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 | Item | Why not patch Angular | Where it moves |
 |------|----------------------|----------------|
-| Try delete bricks case (frontend) | `settingsSvc.editableSettings()` null guard, confirm dialog, console rejection noise | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
+| Try delete confirm dialog (frontend) | Null guard and active-try guard are done in `tune_relevance_controller.js`; confirm dialog still missing | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
 | Icon-only controls lack accessible names | Copy-query; snapshot delete/clear in Compare | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
 | Explain Query Copy silently fails | `ngclipboard` + modal dismiss race | [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal) |
 
@@ -100,7 +98,7 @@ These affect the core case UI (`/case/...`) today but **should not be patched in
 
 **Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null), or forbid deleting the current try. Add a test that deletes the latest try, reloads the case, and verifies the next core bootstrap and score update both succeed.
 
-**Frontend/UX** (null try guard, confirm dialog, console noise): obviated — see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
+**Frontend/UX** (confirm dialog): obviated — see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
 
 ---
 
@@ -268,42 +266,6 @@ Deleting a rating that was already removed can error; races (tabs, double clicks
 
 ## [PREEXISTING] P2 — Product bugs (Playwright MCP verified)
 
-### [PREEXISTING] Silent HTML profile update failure
-
-**Observed:** Clearing required email and saving does not persist, but HTML path redirects with no flash/error.
-
-**Cause:** `ProfilesController#update` surfaces errors for JSON only.
-
-**Fix direction:** On HTML failure, re-render with flash / errors (mirror `AccountsController`).
-
----
-
-### [PREEXISTING] Profile page shows the same validation errors three times
-
-**Location:** `app/views/profiles/show.html.erb`, `app/views/shared/_error_messages.html.erb`
-
-**Observed:** A validation error from any one form on `/profile` renders under all three section headings (Profile, Account Security, Danger Zone) at once. E.g. submitting a mismatched password confirmation on the Account Security form also shows "Password confirmation doesn't match Password" under the unrelated Profile and Danger Zone sections.
-
-**Cause:** The view renders `shared/error_messages` three times, once per section, always against the same `current_user.errors` — with no way to tell which section's form actually produced the error. Predates the shared partial; present since the initial OSS commit.
-
-**Fix direction:** Either scope each render to only show when its own section's form was submitted, or consolidate into a single error block shown once above all three sections.
-
----
-
-### [PREEXISTING] Book import forms 404 instead of importing into the book you're viewing
-
-**Location:** `app/views/books/import/edit.html.erb`, `app/controllers/books/import_controller.rb`
-
-**Observed:** On `/books/:id/import/edit` ("Import Data Into This Book"), uploading a file through either upload form (Import Query Doc Pairs, Import Judgements) 404s.
-
-**Cause:** Both forms are `form_with model: @book, url: books_import_index_path` with no explicit `method:`. Since `@book` is a persisted record, Rails renders them as PATCH (via the hidden `_method` field), but `config/routes.rb` only defines POST at `books_import_index_path` (`Books::Import#create`) — no PATCH route exists there, so the request never reaches the controller.
-
-Fixing the method alone isn't enough: `Books::Import#create` unconditionally does `@book = Book.new`, ignoring `params[:id]` — it's built only for the from-scratch "New Book" import flow (`/books/import/new`), not for adding data to an existing book.
-
-**Fix direction:** Give `#create` (or a new action) a path to load and import into an already-existing `@book` when an id is present, and point these two forms at that route/method instead of the generic new-book endpoint.
-
----
-
 ### [PREEXISTING] Judgement rating not validated against book's scale (outside AI judging)
 
 **Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
@@ -367,14 +329,6 @@ that redirects to the teams page with a flash. This differs from the default
 `ApplicationController` behavior, which renders the styled 404 for HTML
 requests. Decide whether inaccessible or missing team resources should remain a
 redirect, become a 404 (or 403), and apply the chosen policy consistently.
-
-### [PREEXISTING] Missing case URLs render the core shell instead of a page-level 404
-
-`CoreController#set_case_or_bootstrap` leaves `@case` nil when an explicit case
-ID is unavailable, then renders the core shell. Decide whether `/case/:id`
-should return the styled 404 before bootstrapping the frontend when the case is
-missing or inaccessible. Preserve the existing behavior for `/case` without an
-explicit ID, which intentionally boots the user's latest available case.
 
 ---
 
@@ -511,7 +465,7 @@ Inline `rubocop:disable` only on this branch (no config-level excludes). Search 
 
 ### [PREEXISTING] Metrics/ParameterLists
 
-- `[PREEXISTING]` `Case#clone_case` — `app/models/case.rb:124`
+- `[PREEXISTING]` `Case#clone_case` — `app/models/case.rb:130`
 - `[PREEXISTING]` `MapperWizardState#store_fetch_result` — `app/models/mapper_wizard_state.rb:58`
 - `[PREEXISTING]` `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
 
@@ -559,17 +513,7 @@ Migrate to `apiFetch` when touched: `confirm_delete_controller.js` (form submit 
 
 ## [MIGRATION-FOLLOWUP] P2 — match-explain Stimulus controller follow-ups
 
-From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`; these notes remain historical follow-ups for the live query-state phase.
-
-### [MIGRATION] Eager per-digest computation undoes the deleted code's lazy-compile optimization
-
-**Location:** retired Angular result bridge; current read model: `app/javascript/stores/query_documents_store.js`
-
-The former Angular `matchExplainData()` eagerly serialized explanation details during every digest. The current plain-document snapshot computes the same display payload once while publishing the query read model, outside Angular's digest.
-
-**Status:** Obviated by the Stimulus/document-store migration. Revisit payload laziness only if profiling the live query-state phase shows explanation serialization is a measurable cost.
-
----
+From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`.
 
 ### [PREEXISTING] `json_explorer.js` undefined value renders a stray comma `<li>`
 

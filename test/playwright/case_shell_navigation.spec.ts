@@ -91,7 +91,7 @@ test.describe('core case shell: boot without ngRoute', () => {
   });
 });
 
-test.describe('core case shell: 404 handling without the Angular 404 route', () => {
+test.describe('core case shell: 404 handling without a client-side 404 route', () => {
   test('bare /case loads a workbench instead of the old dead-code "Not Found" page', async ({ page }) => {
     // Bare /case falls back to the user's own most-recent case server-side
     // (CoreController#index) -- assert it boots a real workbench rather
@@ -110,7 +110,7 @@ test.describe('core case shell: 404 handling without the Angular 404 route', () 
     }
   });
 
-  test('an unrouted path still 404s via Rails, not an Angular route', async ({ page }) => {
+  test('an unrouted path still 404s via Rails, not a client-side route', async ({ page }) => {
     const response = await page.goto('case/1/try/1/some/unrouted/garbage');
     expect(response?.status()).toBe(404);
   });

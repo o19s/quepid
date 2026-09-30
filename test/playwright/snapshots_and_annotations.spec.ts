@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
+import { DEFAULT_RICH_CASE_ID } from './case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
@@ -8,7 +8,7 @@ import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
  * snapshot actually gets created/listed, or exercised annotation creation.
  *
  * These use a case with a *working* search endpoint and existing queries —
- * DEFAULT_RICH_CASE_ID (angular_case_helpers.ts), same case the suite's own
+ * DEFAULT_RICH_CASE_ID (case_helpers.ts), same case the suite's own
  * default CASE_ID now points at. Snapshot creation doesn't strictly require
  * live results (it posts whatever query docs are in memory, even none), but
  * annotation creation does: the annotation controller refuses with "Can't create
@@ -22,7 +22,7 @@ async function gotoSnapshotCase(page: Page): Promise<void> {
   await page.goto(`case/${SNAPSHOT_CASE_ID}`);
   await page.waitForSelector('#case-actions', { timeout: 20_000 });
   // Wait for `.search-feedback` ("Bootstrapping Queries" / "Updating Queries: X / Y")
-  // to clear before proceeding -- see the identical wait in angular_case_helpers.ts's
+  // to clear before proceeding -- see the identical wait in case_helpers.ts's
   // gotoCase() for why `state: 'hidden'` alone isn't enough (two elements share the
   // class). Without this, clicking "Take Snapshot" before queriesSvc's state has
   // actually settled can race the snapshot POST silently -- easy to miss when the

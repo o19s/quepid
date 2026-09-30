@@ -2,7 +2,7 @@ import { expect, Page } from '@playwright/test';
 
 /**
  * Shared navigation and screenshot helpers for the core case UI (`core` layout).
- * Used by core_smoke, angular_pages, angular_pages_narrow_viewport, modal_a11y, and popover_visibility.
+ * Used by core_smoke, core_pages, core_pages_narrow_viewport, modal_a11y, and popover_visibility.
  */
 // The one case in the shared dev DB known to have a working search endpoint, existing queries,
 // and a last score — the single source of truth for every spec that needs "a case with real

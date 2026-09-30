@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run RuboCop, advisory ESLint + Prettier for legacy Angular assets, and
+# Run RuboCop, advisory ESLint + Prettier for legacy assets, and
 # blocking ESLint + Prettier for app/javascript.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

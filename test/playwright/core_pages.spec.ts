@@ -6,19 +6,19 @@ import {
   gotoCase,
   headerDropdownMenu,
   resetCompletedCaseWizard,
-} from './angular_case_helpers';
+} from './case_helpers';
 
 /**
- * One focused tour per major Angular (core layout) surface. Each spec loads the
+ * One focused tour per major core-layout surface. Each spec loads the
  * page, screenshots, then exercises modal, dropdown, popover, and form-field
  * focus (same case shell), with a screenshot after each step — migration net for
  * BS5 popover/tooltip/modal regressions (see CLAUDE.md trap #5).
  *
  * Baselines: `yarn test:e2e:update-baselines` (Docker: `bin/docker r yarn test:e2e:update-baselines`).
- * Narrow 768×900 subset: `angular_pages_narrow_viewport.spec.ts` (Playwright project `chromium-narrow`).
+ * Narrow 768×900 subset: `core_pages_narrow_viewport.spec.ts` (Playwright project `chromium-narrow`).
  */
 
-test.describe('Angular pages — interaction screenshots', () => {
+test.describe('Core pages — interaction screenshots', () => {
   test('cases list — header case picker & filters', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

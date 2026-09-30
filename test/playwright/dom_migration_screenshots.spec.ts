@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
+import { DEFAULT_RICH_CASE_ID } from './case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';

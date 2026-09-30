@@ -22,6 +22,6 @@ DB_NAME="${DB_NAME:-quepid}_development"
 DB_USERNAME="${DB_USERNAME:-root}"
 DB_PASSWORD="${DB_PASSWORD:-password}"
 
-echo "==> Restoring $DB_NAME (quepid_db) from $SNAPSHOT_FILE"
-docker exec -i quepid_db mysql -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" < "$SNAPSHOT_FILE"
+echo "==> Restoring $DB_NAME (mysql service) from $SNAPSHOT_FILE"
+docker compose exec -T mysql mysql -u"$DB_USERNAME" -p"$DB_PASSWORD" "$DB_NAME" < "$SNAPSHOT_FILE"
 echo "==> Restore complete"

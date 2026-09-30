@@ -186,7 +186,7 @@ describe("ExportCaseCoreController", () => {
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
-  it("selectBasicSnapshot always selects Basic, even for a TREC export (mirrors the AngularJS $watch quirk)", () => {
+  it("selectBasicSnapshot always selects Basic, even for a TREC export (mirrors the legacy $watch quirk)", () => {
     const controller = buildModalController()
 
     controller.selectBasicSnapshot()

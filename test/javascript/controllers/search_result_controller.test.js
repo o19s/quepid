@@ -64,7 +64,7 @@ describe("SearchResultController", () => {
     expect(controller.contentTarget.textContent).toContain("false")
   })
 
-  it("uses the rating scale and preserves the Angular mutation bridge", () => {
+  it("uses the rating scale and preserves the mutation bridge", () => {
     const controller = buildController(snapshotFor({ rating: 2 }), {
       depthOfRating: 0,
       ratingScale: { 2: { color: "green" } }

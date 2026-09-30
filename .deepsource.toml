@@ -4,10 +4,9 @@ exclude_patterns = [
   "node_modules/**",           # Dependencies
   "dist/**",                   # Build output
   "test/**",                   # Minitest and Vitest tests
-  "spec/**",                   # Karma/legacy Angular tests
   "**/*.test.js",              # JavaScript unit tests wherever located
   "**/*.spec.js",              # Legacy JavaScript specs wherever located
-  "app/assets/**",             # Legacy Angular assets and generated builds
+  "app/assets/**",             # Legacy assets and generated builds
   "app/javascript/vendor/**",  # Vendored JavaScript
   "public/javascripts/ace/**"  # Vendored Ace editor assets
 ]

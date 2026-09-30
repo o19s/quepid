@@ -145,7 +145,7 @@ describe("QueryCollectionStore", () => {
     expect(store.query(2).expanded).toBe(false)
   })
 
-  it("publishes query-list commands without knowing their Angular owner", () => {
+  it("publishes query-list commands without knowing their owner", () => {
     const commands = []
     store.addEventListener("command", event => commands.push(event.detail))
 

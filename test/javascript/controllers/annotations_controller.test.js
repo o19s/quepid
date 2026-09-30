@@ -79,7 +79,7 @@ describe("AnnotationsController", () => {
     expect(event.preventDefault).toHaveBeenCalled()
   })
 
-  it("deletes an annotation and notifies the Angular graph bridge", async () => {
+  it("deletes an annotation and notifies the graph bridge", async () => {
     apiFetch.mockResolvedValue({ ok: true })
     const controller = buildController()
     controller.annotations = [{ id: 9, message: "Old", score: {} }]

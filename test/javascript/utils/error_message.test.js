@@ -14,7 +14,7 @@ describe("errorMessage", () => {
     expect(errorMessage({ error: "Unable to add query." }, "fallback")).toBe("Unable to add query.")
   })
 
-  it("falls back to an Angular $http-style statusText", () => {
+  it("falls back to a $http-style statusText", () => {
     expect(errorMessage({ statusText: "Not Found" }, "fallback")).toBe("Not Found")
   })
 

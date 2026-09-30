@@ -6,18 +6,18 @@ import {
   gotoCase,
   headerDropdownMenu,
   resetCompletedCaseWizard,
-} from './angular_case_helpers';
+} from './case_helpers';
 
 /**
  * Reflow smoke at **768×900** (see `chromium-narrow` in `playwright.config.ts`).
  * Catches grid/gutter and header layout regressions that often pass at 1280×900 alone.
  *
- * Subset of `angular_pages.spec.ts`: **wizard endpoint step on a `?showWizard=true` load**, then cases
+ * Subset of `core_pages.spec.ts`: **wizard endpoint step on a `?showWizard=true` load**, then cases
  * list + dropdown + share modal.
  *
  * Baselines: `yarn test:e2e:update-baselines` (Docker: `bin/docker r yarn test:e2e:update-baselines`).
  */
-test.describe('Angular core — narrow viewport slice (768×900)', () => {
+test.describe('Core case — narrow viewport slice (768×900)', () => {
   test('wizard endpoint step + cases list reflow', async ({ page }) => {
     test.setTimeout(60_000);
     await page.goto('cases');

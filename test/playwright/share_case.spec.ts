@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dynamicRegions } from './angular_case_helpers';
+import { dynamicRegions } from './case_helpers';
 
 /**
  * Permanent regression coverage for case sharing: the Stimulus
@@ -28,7 +28,7 @@ async function gotoCase(page: Page, caseId = SHARE_CASE_ID) {
   // Case 1 ("SOLR CASE") uses a real external Solr host. `.search-feedback`
   // ("Bootstrapping Queries" / "Updating Queries: X / Y") is `ng-show`, so
   // while visible it occupies real layout space -- see the identical wait in
-  // angular_case_helpers.ts's gotoCase() for why `state: 'hidden'` alone
+  // case_helpers.ts's gotoCase() for why `state: 'hidden'` alone
   // isn't enough (two elements share the class).
   await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
 }

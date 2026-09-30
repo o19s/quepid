@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { expandFirstQuery, gotoCase } from './angular_case_helpers';
+import { expandFirstQuery, gotoCase } from './case_helpers';
 
 /**
  * Pragmatic a11y guard when the BS3/BS5 modal stack changes: run axe on the open
@@ -9,7 +9,7 @@ import { expandFirstQuery, gotoCase } from './angular_case_helpers';
  * `color-contrast` is disabled — legacy theme noise; we care about structure/ARIA/focus
  * class regressions from framework swaps.
  */
-test.describe('Angular core — modal a11y (axe)', () => {
+test.describe('Core case — modal a11y (axe)', () => {
   test('Explain Query modal has no critical/serious axe violations (modal scope)', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

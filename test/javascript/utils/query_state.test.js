@@ -53,7 +53,7 @@ describe("query_state", () => {
     expect(query.ratedDocs).toEqual([{ id: "a" }])
   })
 
-  it("reads query ids from both store and Angular rating events", () => {
+  it("reads query ids from both store and legacy rating events", () => {
     expect(ratingChangedQueryId({ detail: { queryId: 7 } }, 8)).toBe(7)
     expect(ratingChangedQueryId({}, 8)).toBe(8)
   })

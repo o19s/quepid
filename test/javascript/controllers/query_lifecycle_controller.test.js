@@ -112,7 +112,7 @@ describe("query_lifecycle_controller", () => {
     controller.disconnect()
   })
 
-  it("fails cleanly when the Angular adapter is unavailable", async () => {
+  it("fails cleanly when the adapter is unavailable", async () => {
     const { controller, element } = controllerFor({})
     const complete = vi.fn()
     element.querySelector("form").addEventListener("add-query:complete", complete)

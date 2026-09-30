@@ -20,7 +20,7 @@ export const LEGACY_SCRIPT_FILES = [
   'app/javascript/tour.js',
 ];
 
-/** Directory names under app/javascript/ never linted (vendored Angular plugins). */
+/** Directory names under app/javascript/ never linted (vendored legacy plugins). */
 export const SKIPPED_DIRECTORIES = ['vendor'];
 
 /**

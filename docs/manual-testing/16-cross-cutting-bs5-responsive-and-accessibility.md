@@ -55,7 +55,7 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
 
 ### 16.5 General visual sanity sweep after any CSS/JS change
 
-Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per `CLAUDE.md`, this requires a rebuild — confirm with the dev team that `yarn build` / `yarn build:css` / `yarn build:angular-vendor` has run before testing):
+Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per `CLAUDE.md`, this requires a rebuild — confirm with the dev team that `yarn build` (or `yarn build:css` / `yarn build:core` for just that part) has run before testing):
 
 - [ ] Click through every dropdown, modal, popover, tooltip, accordion, and tab control you encounter in your normal testing pass for that day, and actually **look** at them — don't just confirm the click "did something."
 - [ ] Compare against a recent baseline screenshot if one exists (see `.playwright-mcp/` conventions in `CLAUDE.md`, or the automated suite's own baselines).

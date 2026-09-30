@@ -151,7 +151,7 @@ describe("QueryExplainController", () => {
     expect(copyText).toHaveBeenCalledWith(data.queryDetails)
   })
 
-  it("shows 'not a templated query' and never asks Angular to render when the searcher has no isTemplateCall", () => {
+  it("shows 'not a templated query' and never asks for a render when the searcher has no isTemplateCall", () => {
     const controller = buildController(element, baseData({ supportsTemplate: false }))
     QueryExplainController.prototype.connect.call(controller)
     element.querySelector("button").click()
@@ -164,7 +164,7 @@ describe("QueryExplainController", () => {
     expect(dispatchSpy).not.toHaveBeenCalled()
   })
 
-  it("requests the rendered template from Angular when the tab is shown, and renders the response", () => {
+  it("requests the rendered template from the host when the tab is shown, and renders the response", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
     element.querySelector("button").click()
@@ -188,7 +188,7 @@ describe("QueryExplainController", () => {
     expect(copyText).toHaveBeenCalledWith('{"template":"rendered"}')
   })
 
-  it("shows 'not a templated query' when Angular reports the query isn't templated after all", () => {
+  it("shows 'not a templated query' when the host reports the query isn't templated after all", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
     element.querySelector("button").click()
@@ -202,7 +202,7 @@ describe("QueryExplainController", () => {
     expect(el.querySelector(".query-explain-template").textContent).toContain("This is not a templated query.")
   })
 
-  it("shows a warning when Angular reports an error rendering the template", () => {
+  it("shows a warning when the host reports an error rendering the template", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
     element.querySelector("button").click()

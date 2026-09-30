@@ -93,7 +93,7 @@ function buildCoreCSS() {
   console.log('Building core.css...');
   
   const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 5 for Angular App) */\n';
+  let output = '/* Core CSS Bundle (Bootstrap 5 for the core case UI) */\n';
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
 

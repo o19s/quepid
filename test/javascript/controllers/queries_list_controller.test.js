@@ -84,7 +84,7 @@ describe("queries_list_controller", () => {
     expect(element.querySelector('[data-queries-list-target="ratedLabel"]').title).toBe("")
   })
 
-  it("owns toolbar actions without an Angular event bridge", () => {
+  it("owns toolbar actions without an event bridge", () => {
     const { controller } = controllerFor()
     const collapseAll = vi.fn()
     controller.store = { requestCollapseAll: collapseAll }
@@ -179,7 +179,7 @@ describe("queries_list_controller", () => {
     expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([2, 1])
   })
 
-  it("renders the query shell without an Angular search-results host", () => {
+  it("renders the query shell without a search-results host", () => {
     const { controller } = controllerFor()
     const row = document.createElement("li")
     const query = {
@@ -237,7 +237,7 @@ describe("queries_list_controller", () => {
     expect(toggle).toHaveBeenCalledWith({ queryId: 7 })
   })
 
-  it("renders expanded query controls without an Angular compilation island", () => {
+  it("renders expanded query controls without a compilation island", () => {
     const { controller } = controllerFor()
     const row = document.createElement("li")
     row.innerHTML = `
@@ -250,7 +250,6 @@ describe("queries_list_controller", () => {
     controller.renderSearchResults(row, { queryId: 7, caseNo: 4, options: {} })
 
     expect(row.querySelector('[data-controller="search-results"]')).not.toBeNull()
-    expect(row.querySelector("[data-angular-deferred]")).toBeNull()
     expect(row.querySelector('[data-controller="query-options-core"]')).not.toBeNull()
     expect(row.querySelector('[data-controller="missing-documents"]')).not.toBeNull()
   })

@@ -128,7 +128,7 @@ describe("PickScorerCoreController", () => {
     expect(controller.createButtonTarget.classList.contains("d-none")).toBe(true)
   })
 
-  it("ignores a non-numeric current scorer id like Angular's default", async () => {
+  it("ignores a non-numeric current scorer id like the legacy default", async () => {
     apiFetch.mockResolvedValue({
       ok: true,
       json: () =>
