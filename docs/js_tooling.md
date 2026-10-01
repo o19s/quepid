@@ -127,6 +127,13 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mutation-report.html
 ```
 
+The incremental cache is only written when a run finishes, so a crash mid-run loses that run's results. To build results up in small pieces, narrow `--mutate` and give each slice its own cache file:
+
+```bash
+bin/docker r yarn test:mutation --mutate "app/javascript/api/**/*.js" \
+  --incrementalFile tmp/stryker-tmp/incremental-api.json
+```
+
 Survived/no-coverage mutants in the report point at either a missing test case or genuinely dead/defensive code — triage per file rather than chasing 100%.
 
 ## Unit test strategy

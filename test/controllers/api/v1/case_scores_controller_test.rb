@@ -52,6 +52,17 @@ module Api
           assert_equal score.all_rated, data[:all_rated]
         end
 
+        test 'returns a 400 and stores nothing when the try_number does not exist on the case' do
+          data = { score: 0.5, all_rated: false, try_number: first_try.try_number + 99 }
+
+          assert_no_difference 'acase.scores.count' do
+            put :update, params: { case_id: acase.id, case_score: data }
+          end
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['try_number'].join, 'not found'
+        end
+
         test 'saves hash of query scores' do
           data = {
             score:      (1..100).to_a.sample,

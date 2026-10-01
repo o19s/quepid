@@ -146,12 +146,13 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   1. Create (or use) a throwaway account that owns at least one case not shared with any team, and separately owns a case that **is** shared with a team.
   2. On the Profile page, scroll to the red **Danger Zone** section, read the warning text.
   3. Click **Delete your account**, confirm the dialog.
+  4. On a separate disposable account, cancel the confirmation and verify the account remains usable.
 - **Expected:** Per the warning text: you're removed from any teams; any case you own that has **no** team association is deleted (along with its snapshots/ratings). Cases that are shared with a team should not simply vanish for the team.
 - **Edge cases:**
   - [ ] Confirm a case that was shared with a team **survives** the owner's account deletion (verify with a teammate's login) — this is the trickiest behavior to verify and worth explicit testing.
   - [ ] Delete an account that is the sole member of a team — check what happens to that orphaned team.
   - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm nothing errors for the invitee.
-  - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm this succeeds (the annotation survives with `user_id` nulled) rather than a 500 (`ActiveRecord::InvalidForeignKey`); previously `User` had no `has_many :annotations` association, so the FK constraint blocked the raw delete. Fixed via `has_many :annotations, dependent: :nullify` in `app/models/user.rb`.
+  - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm deletion succeeds without a foreign-key error and removes the authored annotation. The current `User` association uses `dependent: :destroy`; annotations require a user.
 
 ### 1.10 Transactional emails (invitation & password reset)
 

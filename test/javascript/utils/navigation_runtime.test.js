@@ -17,6 +17,35 @@ describe("navigation runtime", () => {
     expect(assign).toHaveBeenCalledWith("https://quepid.example.test/case/5/try/2?sort=score&reverse=true")
   })
 
+  it("starts at try 1 when navigating to a different case", () => {
+    const assign = vi.fn()
+    const runtime = createNavigationRuntime({
+      location: { href: "https://quepid.example.test/case/5/try/4", search: "" },
+      window: { location: { assign } }
+    })
+
+    runtime.navigateTo({ caseNo: "8" })
+
+    expect(assign).toHaveBeenCalledWith("https://quepid.example.test/case/8/try/1")
+  })
+
+  it("builds the reload link that swaps Quepid to the search engine's protocol", () => {
+    const at = (href) => createNavigationRuntime({ location: { href }, window: {} })
+
+    expect(at("http://localhost:3000/case/5/try/1?sort=name").swapQuepidUrlTLS())
+      .toEqual(["https://localhost/case/5/try/1?protocolToSwitchTo=https", "https"])
+    expect(at("https://quepid.example.test/case/5/try/1").swapQuepidUrlTLS())
+      .toEqual(["http://quepid.example.test/case/5/try/1?protocolToSwitchTo=http", "http"])
+    expect(at("https://quepid.example.test/case/5").getQuepidProtocol()).toBe("http")
+    expect(at("http://quepid.example.test/case/5").getQuepidProtocol()).toBe("https")
+
+    const runtime = at("https://quepid.example.test/case/5")
+    expect(runtime.appendQueryParams("/a", "x=1")).toBe("/a?x=1")
+    expect(runtime.appendQueryParams("/a?y=2", "x=1")).toBe("/a?y=2&x=1")
+    expect(runtime.needToRedirectQuepidProtocol("")).toBe(false)
+    expect(runtime.createSearchEndpointLink(7)).toBe("https://quepid.example.test/search_endpoints/7")
+  })
+
   it("keeps protocol and proxy URL behavior framework-free", () => {
     const runtime = createNavigationRuntime({
       location: { href: "https://quepid.example.test/case/5", protocol: "https:", search: "" },

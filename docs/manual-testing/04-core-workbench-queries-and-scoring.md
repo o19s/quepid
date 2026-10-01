@@ -114,7 +114,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Click the wrench icon ("Tune Relevance") to open the east drawer.
-  2. On the **Query** tab, edit the raw query template (textarea for Solr, Ace/JSON editor for ES/OS/Vectara/Algolia/SearchAPI).
+  2. On the **Query** tab, edit the raw query template in the CodeMirror editor (Solr parameters or JSON for ES/OS/Vectara/Algolia/SearchAPI). Switch to Tuning Knobs and back; confirm the edits remain.
   3. Click **Rerun My Searches!**.
 - **Expected:** All queries re-run against the edited template and rescore.
 - **Edge cases:**

@@ -42,7 +42,7 @@ module Books
       @book.owner = current_user
 
       params_to_use = load_import_params(@book)
-      @book.name = params_to_use[:name] if params_to_use
+      @book.name = params_to_use[:name].presence || BookImporter::DEFAULT_BOOK_NAME if params_to_use
 
       if queue_import(@book, params_to_use)
         redirect_to @book, notice: 'Book was successfully created.'

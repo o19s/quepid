@@ -11,14 +11,14 @@
     <div class="settings-tab query-sandbox" data-tune-panel="developer">
       <p data-tune-relevance-target="staticEngineMessage" hidden>With a Static search endpoint there are no query settings to play with ;-(.</p>
       <div class="rerunnable-settings-tab" id="query-params-editor">
-        <div class="d-flex justify-content-between align-items-center"><h4 class="mb-0">Query Sandbox:</h4><a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank" rel="noopener noreferrer"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></a></div>
+        <div class="d-flex justify-content-between align-items-center"><h4 class="mb-0">Query Sandbox:</h4><a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank" rel="noopener noreferrer" aria-label="Query sandbox help (opens in new tab)"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></a></div>
         <p class="alert alert-warning" data-tune-relevance-target="queryWarning" hidden></p>
         <textarea id="tune-query-params" class="d-none" data-tune-relevance-target="queryEditor"></textarea>
       </div>
     </div>
 
     <div class="settings-tab" data-tune-panel="curator" hidden>
-      <div class="rerunnable-settings-tab"><p data-tune-relevance-target="staticKnobsMessage" hidden>With a Static search endpoint there are no tuning knobs to play with ;-(.</p><h4>Tuning Knobs</h4><p class="form-text tip">Add and remove knobs from here by editing your query.</p><div data-tune-relevance-target="curatorVars"></div></div>
+      <div class="rerunnable-settings-tab"><p data-tune-relevance-target="staticKnobsMessage" hidden>With a Static search endpoint there are no tuning knobs to play with ;-(.</p><h4>Tuning Knobs</h4><p class="form-text tip">Add and remove knobs by editing your query. Wrap a variable name in <code>##</code>, for example <code>title^##titleBoost##</code>, to create a tuning knob.</p><div data-tune-relevance-target="curatorVars"></div></div>
     </div>
 
     <div class="settings-tab" data-tune-panel="engineSettings" hidden>

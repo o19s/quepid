@@ -201,6 +201,7 @@ export default class extends ModalTriggerControllerBase {
     })
 
     this.addButtonTarget.classList.toggle("d-none", this.selectionValues.length >= this.maxSnapshotsValue)
+    this.warningTarget.textContent = "You have selected the same snapshot multiple times. Each snapshot should be unique."
     this.warningTarget.classList.toggle("d-none", !this.hasDuplicateSelections())
     const processing = this.selectionValues.some((id) => {
       const snapshot = this.snapshots.find((candidate) => String(candidate.id) === String(id))

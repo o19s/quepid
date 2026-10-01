@@ -53,6 +53,40 @@ describe("case runtime", () => {
     document.removeEventListener("quepid:case-selected", selected)
   })
 
+  it("deletes a case, clearing the selection only when it was the deleted case", async () => {
+    const request = vi.fn().mockResolvedValue(response({}, 204))
+    const runtime = createCaseRuntime({ request })
+    runtime.select({ caseNo: 7 })
+
+    await runtime.delete({ caseNo: 8 })
+    expect(runtime.selected()).toEqual({ caseNo: 7 })
+
+    await runtime.delete({ caseNo: 7 })
+    expect(runtime.selected()).toBeNull()
+    expect(request).toHaveBeenCalledWith("api/cases/7", expect.objectContaining({ method: "DELETE" }))
+  })
+
+  it("rejects failed mutations with the action and status, and ignores a blank rename", async () => {
+    const request = vi.fn().mockResolvedValue({ ok: false, status: 403, json: vi.fn() })
+    const runtime = createCaseRuntime({ request })
+
+    await expect(runtime.delete({ caseNo: 7 })).rejects.toThrow("Unable to delete case (403)")
+    await runtime.rename({ caseNo: 7 }, "")
+    expect(request).toHaveBeenCalledOnce()
+  })
+
+  it("queues an evaluation, scoped to a try when one is given", async () => {
+    const request = vi.fn().mockResolvedValue(response())
+    const runtime = createCaseRuntime({ request })
+
+    await runtime.runEvaluation(7, 3)
+    await runtime.runEvaluation(7)
+
+    expect(request.mock.calls[0][0]).toBe("api/cases/7/run_evaluation?try_number=3")
+    expect(request.mock.calls[0][1].method).toBe("POST")
+    expect(request.mock.calls[1][0]).toBe("api/cases/7/run_evaluation")
+  })
+
   it("preserves case mutations and server-rendered header events", async () => {
     const request = vi.fn()
       .mockResolvedValueOnce(response())

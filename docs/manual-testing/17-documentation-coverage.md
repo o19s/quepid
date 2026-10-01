@@ -111,7 +111,7 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 ### 17.1 Image field specifications
 
 - [ ] **Steps:** Use a disposable case whose search results contain an absolute image URL and a relative image path. In the case's displayed-field specification, configure one field as `thumb:` and one as `image:`; configure the relative field with the documented JSON `prefix`. Run the query and open the result.
-- **Expected:** The thumbnail and full-size image render in the result card, the relative URL is prefixed correctly, and clicking the image opens the expected resource. A missing/broken image does not break the rest of the result card.
+- **Expected:** The thumbnail and full-size image render in the result card and the relative URL is prefixed correctly. Images are display-only, matching the Angular case UI; the document title opens document details. A missing/broken image does not break the rest of the result card.
 - **Edge cases:**
   - [ ] Confirm an HTML/script payload in a result field is sanitized and cannot execute.
   - [ ] Confirm a result with only one configured image does not render duplicate image elements.
@@ -150,9 +150,10 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 
 ### 17.6 Ollama-backed AI Judge
 
-- [ ] **Steps:** In an environment with Ollama and a small supported model available, create or edit an AI Judge and select **Ollama**. Verify the service URL/model fields, save it, assign it to a disposable Book, and run a bounded judging job for one or two pairs.
+- [ ] **Steps:** In an environment with Ollama and a small supported model available, create or edit an AI Judge and select **Ollama**. Verify the service URL/model fields. Match the prompt's rating values to the disposable Book's scale and include a JSON example with `explanation` and `judgment`. Save it, assign it to the Book, and run a bounded judging job for one or two pairs.
 - **Expected:** The AI Judge saves with the Ollama configuration, the job completes, and new judgements contain a rating and explanation attributed to that AI Judge.
 - **Edge cases:**
+  - [ ] If the model returns a rating outside the Book's scale, confirm it is retained as an unrateable judgement with the original value in its explanation, rather than counted as a valid rating.
   - [ ] Point the judge at an unavailable model/service and confirm the job reports a useful failure without marking unrelated pairs as rated.
   - [ ] Confirm the normal OpenAI/provider configuration remains available after switching back from Ollama.
 

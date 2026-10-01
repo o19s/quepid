@@ -121,6 +121,37 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
     describe 'case and try with recent score' do
       let(:the_case) { cases(:case_with_score) }
 
+      test 'accepts aggregate-only scores after query scores and ignores an identical repeat' do
+        the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
+                                   score: 0.42, queries: { '174' => { score: 1, text: 'canine' } },
+                                   updated_at: 6.minutes.ago
+        score_data.delete(:queries)
+        score_data[:scorer_id] = the_case.scorer.id
+        score_data[:score] = 0.42
+
+        saved = nil
+        assert_difference 'the_case.scores.count', 1 do
+          saved = service.update score_data
+        end
+        assert_nil saved.queries
+        assert_in_delta 0.42, saved.score
+
+        assert_no_difference 'the_case.scores.count' do
+          assert_equal saved.id, service.update(score_data).id
+        end
+      end
+
+      test 'preserves distinct fractional scores outside the rating update window' do
+        the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
+                                   score: 0.42, queries: {}, updated_at: 6.minutes.ago
+        score_data[:scorer_id] = the_case.scorer.id
+        score_data[:score] = 0.73
+
+        assert_difference 'the_case.scores.count', 1 do
+          assert_in_delta 0.73, service.update(score_data).score
+        end
+      end
+
       test 'updates existing score if last score was last updated less than 5 min ago' do
         the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
                                    updated_at: 1.minute.ago

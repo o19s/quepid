@@ -49,6 +49,25 @@ class SearchEndpointTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'requests_per_minute' do
+    let(:endpoint) { search_endpoints(:for_case_queries_case) }
+
+    it 'accepts zero and ordinary positive values' do
+      [ 0, 60, 100_000 ].each do |value|
+        endpoint.requests_per_minute = value
+        assert_predicate endpoint, :valid?, "#{value} should be valid"
+      end
+    end
+
+    it 'rejects negative, fractional, and out-of-range values instead of storing or crashing on them' do
+      [ -5, 1.5, 100_001, 99_999_999_999 ].each do |value|
+        endpoint.requests_per_minute = value
+        assert_not endpoint.valid?, "#{value} should be invalid"
+        assert_predicate endpoint.errors[:requests_per_minute], :any?
+      end
+    end
+  end
+
   describe 'proxy' do
     let(:jsonp_endpoint) { search_endpoints(:for_shared_team_case) }
     it 'prevents JSONP being used' do

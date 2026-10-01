@@ -41,6 +41,42 @@ describe("core runtime capabilities", () => {
     expect(failure).toMatchObject({ data: { error: "nope" }, status: 422, ok: false })
   })
 
+  it("builds query params, JSON bodies, and headers for native requests", async () => {
+    document.head.innerHTML = '<base href="/">'
+    const framework = createNativeFramework()
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ ok: 1 }), { status: 200, statusText: "OK" })))
+
+    const result = await framework.request({
+      method: "POST",
+      url: "api/things",
+      params: { page: 2, skipNull: null, skipUndefined: undefined, zero: 0 },
+      headers: { "X-Trace": "t" },
+      data: { name: "a" }
+    })
+    await framework.request({ url: "api/things", headers: { "Content-Type": "text/plain" }, data: "raw" })
+    await framework.get("api/other")
+
+    const [url, init] = fetchMock.mock.calls[0]
+    expect(url).toBe("http://localhost:3000/api/things?page=2&zero=0")
+    expect(init.method).toBe("POST")
+    expect(init.body).toBe('{"name":"a"}')
+    expect(init.headers).toMatchObject({ "X-Trace": "t", "Content-Type": "application/json" })
+    expect(result).toEqual({ data: { ok: 1 }, ok: true, status: 200, statusText: "OK" })
+
+    const [, plainInit] = fetchMock.mock.calls[1]
+    expect(plainInit.method).toBe("GET")
+    expect(plainInit.headers["Content-Type"]).toBe("text/plain")
+    expect(plainInit.body).toBe("raw")
+
+    const [getUrl, getInit] = fetchMock.mock.calls[2]
+    expect(getUrl).toBe("http://localhost:3000/api/other")
+    expect(getInit.method).toBe("GET")
+    expect(getInit.body).toBeUndefined()
+    expect(getInit.headers).not.toHaveProperty("Content-Type")
+  })
+
   it("publishes named capabilities without exposing a service lookup to callers", async () => {
     const services = {
       settingsSvc: { editableSettings: vi.fn() },

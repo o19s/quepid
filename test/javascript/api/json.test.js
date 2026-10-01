@@ -41,6 +41,10 @@ describe("api/json", () => {
     const sent = (call) =>
       Object.fromEntries(Object.entries(fetch.mock.calls[call][1].headers).map(([k, v]) => [k.toLowerCase(), v]))
     expect(sent(0)).toMatchObject({ "x-trace": "1", accept: "text/plain" })
+    // The caller's header replaces the default rather than being sent alongside it.
+    const acceptKeys = Object.keys(fetch.mock.calls[0][1].headers).filter((k) => k.toLowerCase() === "accept")
+    expect(acceptKeys).toHaveLength(1)
+    expect(fetch.mock.calls[0][1].method).toBe("GET")
     expect(sent(1)).toMatchObject({
       "x-trace": "2",
       "content-type": "application/json",
@@ -71,6 +75,15 @@ describe("api/json", () => {
     expect(error).toBeInstanceOf(HttpError)
     expect(error.data).toBeNull()
     expect(error.message).toBe("Request failed (500)")
+  })
+
+  it("falls back to a status message when the error body's error is not a string", async () => {
+    stubFetch(new Response(JSON.stringify({ error: { name: ["can't be blank"] } }), { status: 422 }))
+
+    const error = await postJson("/x", {}).catch((e) => e)
+
+    expect(error.message).toBe("Request failed (422)")
+    expect(error.data).toEqual({ error: { name: ["can't be blank"] } })
   })
 
   it("rejects a malformed success body instead of returning null", async () => {

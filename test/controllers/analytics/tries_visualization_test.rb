@@ -27,6 +27,25 @@ module Analytics
           assert_not_nil json_try['name']
         end
       end
+
+      test 'renders external ancestry as a root without changing stored parents' do
+        first_try, second_try = case_with_two_tries.tries.order(:id).to_a
+        first_try.update! parent: tries(:one)
+        second_try.update! parent: nil
+        original_ancestry = first_try.ancestry
+
+        get :vega_data, params: { case_id: case_with_two_tries.id, format: :json }
+
+        assert_response :ok
+        rows = response.parsed_body
+        assert_equal 3, rows.size
+        ids = rows.pluck('id')
+        assert_equal ids.size, ids.uniq.size
+        root_count = rows.count { |row| row['parent'].nil? }
+        assert_equal 1, root_count
+        rows.each { |row| assert_includes ids, row['parent'] if row['parent'] }
+        assert_equal original_ancestry, first_try.reload.ancestry
+      end
     end
 
     describe 'a case this user cannot access' do

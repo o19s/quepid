@@ -19,33 +19,8 @@ class CaseImporter
   end
 
   def validate
-    list_of_emails_of_users = []
-    params_to_use = @data_to_process
-
-    scorer_name = params_to_use.dig(:scorer, :name)
-    if scorer_name.blank?
-      @case.errors.add(:scorer, 'is required. Import a file exported from a Quepid case.')
-    elsif !Scorer.exists?(name: scorer_name)
-      @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
-    end
-
-    params_to_use[:queries]&.each do |query|
-      next unless query[:ratings]
-
-      query[:ratings].each do |rating|
-        list_of_emails_of_users << rating[:user_email] if rating[:user_email].present?
-      end
-    end
-
-    list_of_emails_of_users.uniq.each do |email|
-      unless User.by_email(email).exists?
-        if options[:force_create_users]
-          User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
-        else
-          @case.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
-        end
-      end
-    end
+    validate_scorer
+    validate_rating_users
   end
 
   def import
@@ -73,6 +48,33 @@ class CaseImporter
   end
 
   private
+
+  def validate_scorer
+    scorer_name = @data_to_process.dig(:scorer, :name)
+    if scorer_name.blank?
+      @case.errors.add(:scorer, 'is required. Import a file exported from a Quepid case.')
+    elsif !Scorer.exists?(name: scorer_name)
+      @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
+    end
+  end
+
+  def validate_rating_users
+    rating_user_emails.each do |email|
+      next if User.by_email(email).exists?
+
+      if options[:force_create_users]
+        User.invite!({ email: email, password: '', skip_invitation: true }, @current_user)
+      else
+        @case.errors.add(:base, "User with email '#{email}' needs to be migrated over first.")
+      end
+    end
+  end
+
+  def rating_user_emails
+    @data_to_process[:queries].to_a.flat_map do |query|
+      query[:ratings].to_a.filter_map { |rating| rating[:user_email].presence }
+    end.uniq
+  end
 
   def assign_case_attributes
     params = @data_to_process

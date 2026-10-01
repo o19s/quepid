@@ -24,3 +24,10 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* Bootstrap's .visually-hidden is position:absolute. Inside a table cell with no positioned ancestor it
+   escapes the .table-responsive scroller and stretches the whole page horizontally (e.g. /cases at 768px),
+   so make the scroller the containing block. */
+.table-responsive {
+  position: relative;
+}

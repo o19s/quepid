@@ -79,6 +79,8 @@ describe("DiffCoreController", () => {
     const controller = buildController()
     controller.selectionValues = ["2", "2"]
     controller.renderSelections()
+    expect(controller.warningTarget.textContent).toContain("same snapshot")
+    expect(controller.warningTarget.classList.contains("d-none")).toBe(false)
     const apply = vi.fn()
     document.addEventListener("diff:apply", apply)
 

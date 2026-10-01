@@ -280,6 +280,9 @@ export function fromTextArea(textarea, options = {}) {
     basicStyles,
     // Additional enhancements
     EditorView.lineWrapping,
+    EditorView.updateListener.of(update => {
+      if (update.docChanged) options.onChange?.(update.state.doc.toString())
+    }),
     EditorState.tabSize.of(2)
   ];
   

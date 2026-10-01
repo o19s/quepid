@@ -501,7 +501,7 @@ class UserTest < ActiveSupport::TestCase
       user = users(:doug)
       raw = user.send_reset_password_instructions
 
-      assert user.reload.reset_password_token.present?
+      assert_predicate user.reload.reset_password_token, :present?
 
       reset = User.reset_password_by_token(
         reset_password_token: raw, password: 'newpassword1', password_confirmation: 'newpassword1'

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <% if content_for?(:debug_info) %>
   <%= yield :debug_info %>
 <% end %>
@@ -19,7 +19,7 @@
 
   <title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
 
-  <!-— facebook open graph tags -->
+  <!-- facebook open graph tags -->
   <meta property="og:type" content="website">
   <% if flash[:unfurl]["id"] %>
     <meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>">
@@ -28,7 +28,7 @@
   <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here.">
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>">
 
-  <!-— twitter card tags additive with the og: tags -->
+  <!-- twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@quepid_search">
   <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>">
@@ -44,7 +44,7 @@
 
   <title>Quepid -- Relevant Search Solved</title>
 
-  <!-— facebook open graph tags -->
+  <!-- facebook open graph tags -->
   <meta property="og:type" content="website">
   <meta name="twitter:site" content="@quepid_search">
   <meta property="og:url" content="<%= root_path %>">
@@ -52,7 +52,7 @@
   <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>">
 
-  <!-— twitter card tags additive with the og: tags -->
+  <!-- twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>">
   <meta name="twitter:title" value="Quepid -- Relevant Search Solved">

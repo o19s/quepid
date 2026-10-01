@@ -23,6 +23,9 @@ class BookImporter
     :id, :book_id, :judgements, :query_doc_pair_id, :created_at, :updated_at
   ].freeze
 
+  # Books must have a name, but an import file does not have to supply one.
+  DEFAULT_BOOK_NAME = 'Imported Book'
+
   attr_reader :logger, :options
 
   def initialize book, current_user, data_to_process, opts = {}
@@ -83,6 +86,7 @@ class BookImporter
 
   def apply_top_level_attributes params_to_use
     @book.name = params_to_use[:name] if params_to_use.key?(:name)
+    @book.name = DEFAULT_BOOK_NAME if @book.name.blank?
     @book.show_rank = params_to_use[:show_rank] if params_to_use.key?(:show_rank)
     return unless params_to_use.key?(:support_implicit_judgements)
 

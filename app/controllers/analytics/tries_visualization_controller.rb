@@ -14,13 +14,16 @@ module Analytics
     end
 
     def vega_data
-      @tries = @case.tries
-
-      roots = @tries.select { |t| t.parent.nil? }
+      @tries = @case.tries.to_a
+      try_ids = @tries.to_set(&:id)
+      # Imported/cloned tries can retain ancestry outside this case. The chart
+      # can only link parents included in its own data; render these as roots.
+      @tries.each { |t| t.parent = nil unless try_ids.include?(t.parent_id) }
+      roots = @tries.select { |t| t.parent_id.nil? }
       if roots.size > 1 # multiple roots need a new ROOT!
-        root_try = Try.new(id: 1, name: 'ROOT')
-        @tries.select { |t| t.parent.nil? }.each { |t| t.parent = root_try }
-        @tries = [ @tries, root_try ].flatten
+        root_try = Try.new(id: 0, name: 'ROOT')
+        roots.each { |t| t.parent = root_try }
+        @tries << root_try
       end
     end
   end

@@ -10,6 +10,21 @@ export default {
   reporters: ["html", "clear-text", "progress"],
   coverageAnalysis: "perTest",
   mutate: ["app/javascript/api/**/*.js", "app/javascript/utils/**/*.js"],
+  // Stryker copies the project into a sandbox. Skip directories the tests never read:
+  // `volumes/` holds the live MySQL socket (copy fails with ENOENT) and `.claude/skills`
+  // is a directory symlink (copy fails with EISDIR); the rest are just slow to copy.
+  ignorePatterns: [
+    ".agents",
+    ".claude",
+    ".mutant",
+    ".playwright-mcp",
+    "coverage",
+    "docs",
+    "log",
+    "public",
+    "storage",
+    "volumes"
+  ],
   vitest: {
     configFile: "vitest.config.js"
   },

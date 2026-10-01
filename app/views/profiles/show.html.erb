@@ -181,7 +181,9 @@
 
   <div class="row mb-3">
     <hr>
-    <%= form_with( model: current_user, url: account_path,  method: :delete) do |f| %>
+    <%= form_with(model: current_user, url: account_path, method: :delete,
+                  data: { controller: 'form-confirm', action: 'submit->form-confirm#confirm',
+                          form_confirm_message_value: 'Are you sure you want to delete your account?' }) do |f| %>
 
       <h2 class="text-danger">
         Danger Zone
@@ -195,7 +197,7 @@
         snapshots and all ratings that have been made.
       </p>
 
-      <%= f.submit 'Delete your account', class: 'btn btn-primary', data: {confirm: "Are you sure you want to delete your account?"} %>
+      <%= f.submit 'Delete your account', class: 'btn btn-primary' %>
 
     <% end %>
   </div>

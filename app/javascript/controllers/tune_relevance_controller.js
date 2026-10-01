@@ -108,12 +108,13 @@ export default class extends Controller {
     if (!this.hasQueryEditorTarget || this.editor) return
     this.editor = fromTextArea(this.queryEditorTarget, {
       mode: queryParamsMode(this.settings.selectedTry?.queryParams),
-      height: 360
-    })
-    this.editor.view.dom.addEventListener("input", () => {
-      this.settings.selectedTry.queryParams = this.editor.getValue()
-      this.refreshQueryEditor()
-      this.refreshCuratorVars()
+      height: 360,
+      onChange: value => {
+        this.settings.selectedTry.queryParams = value
+        this.refreshQueryWarning(value)
+        this.refreshCuratorVars()
+        this.refreshTemplateWarning()
+      }
     })
   }
 
@@ -126,12 +127,16 @@ export default class extends Controller {
     if (editorShell) editorShell.hidden = isStatic
     const value = this.settings.selectedTry.queryParams || ""
     if (this.editor && this.editor.getValue() !== value) this.editor.setValue(value)
+    this.refreshQueryWarning(value)
+    if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
+    this.editor?.setMode?.(queryParamsMode(value))
+  }
+
+  refreshQueryWarning(value) {
     if (this.hasQueryWarningTarget) {
       this.queryWarningTarget.innerHTML = queryParamsWarning(value)
       this.queryWarningTarget.hidden = !this.queryWarningTarget.innerHTML
     }
-    if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
-    this.editor?.setMode?.(queryParamsMode(value))
   }
 
   refreshCuratorVars() {

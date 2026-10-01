@@ -79,7 +79,13 @@ test.describe('snapshots', () => {
       const snapshotOption = select.locator('option', { hasText: snapshotName });
       await expect(snapshotOption).toHaveCount(1, { timeout: 15_000 });
 
-      await select.selectOption(await snapshotOption.getAttribute('value') as string);
+      const selectedId = await snapshotOption.getAttribute('value') as string;
+      await select.selectOption(selectedId);
+      await compareModal.getByRole('button', { name: 'Add Snapshot', exact: true }).click();
+      await compareModal.locator('select').nth(1).selectOption(selectedId);
+      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toContainText('You have selected the same snapshot multiple times.');
+      await compareModal.locator('select').nth(1).selectOption('');
+      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toBeHidden();
       await compareModal.getByRole('button', { name: 'Update Comparison Settings', exact: true }).click();
       await expect(compareModal).toBeHidden({ timeout: 30_000 });
 

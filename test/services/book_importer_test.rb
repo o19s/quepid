@@ -89,6 +89,15 @@ class BookImporterTest < ActiveSupport::TestCase
       assert_equal user, book.owner
     end
 
+    test 'falls back to a default name when the file does not provide one' do
+      data.delete(:name)
+
+      BookImporter.new(book, user, data).import
+
+      assert_predicate book, :persisted?
+      assert_equal BookImporter::DEFAULT_BOOK_NAME, book.name
+    end
+
     test 'sets the owner on a persisted book that does not have one yet' do
       saved_book = Book.create!(name: 'Queued Book')
 

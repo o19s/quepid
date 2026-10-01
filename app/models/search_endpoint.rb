@@ -61,6 +61,9 @@ class SearchEndpoint < ApplicationRecord
   validates :search_engine, presence: true
   validates :endpoint_url, presence: true
   validates :api_method, presence: true
+  validates :requests_per_minute,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100_000 },
+            allow_nil:    true
   validates :options, json_format: true, allow_blank: true
   validates :custom_headers, json_format: { normalize_values: true }, allow_blank: true
   validate :validate_proxy_requests_api_method

@@ -160,6 +160,27 @@ describe("TuneRelevanceController", () => {
   })
 
   describe("tabs", () => {
+    it("keeps CodeMirror edits in the selected try when extracting knobs and switching tabs", () => {
+      const { controller, settings } = mount()
+      const textarea = document.createElement("textarea")
+      controller.element.append(textarea)
+      controller.hasQueryEditorTarget = true
+      controller.queryEditorTarget = textarea
+      controller.editor = null
+      settings.selectedTry.updateVars = vi.fn()
+      controller.mountEditor()
+      const edited = "q=#$query##&boost=##titleBoost##&deftype=edismax"
+
+      controller.editor.setValue(edited)
+      controller.showTab("curator")
+      controller.refreshQueryEditor()
+
+      expect(settings.selectedTry.queryParams).toBe(edited)
+      expect(controller.editor.getValue()).toBe(edited)
+      expect(settings.selectedTry.updateVars).toHaveBeenCalled()
+      expect(controller.queryWarningTarget.textContent).toContain("defType")
+      controller.editor.view.destroy()
+    })
     it("activates the chosen tab, shows only its panel, and hides save on read-only tabs", () => {
       const { controller, element } = mount()
 

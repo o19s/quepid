@@ -35,7 +35,7 @@ class ScoresControllerTest < ActionController::TestCase
     end
 
     test 'lists scores that have no scorer without crashing' do
-      score_for_try_1.update_column :scorer_id, nil # rubocop:disable Rails/SkipsModelValidations
+      score_for_try_1.update_column :scorer_id, nil
 
       get :index, params: { case_id: case_with_score.id }
 
