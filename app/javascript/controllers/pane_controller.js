@@ -8,18 +8,12 @@ export default class extends Controller {
   connect() {
     this.toggled = false
     this.eastPaneWidth = DEFAULT_EAST_PANE_WIDTH
-    this.onToggle = this.toggle.bind(this)
-    this.onResize = this.resize.bind(this)
     this.onMouseUp = this.releaseSlider.bind(this)
 
-    document.addEventListener("toggleEast", this.onToggle)
-    window.addEventListener("resize", this.onResize)
     this.refreshElements()
   }
 
   disconnect() {
-    document.removeEventListener("toggleEast", this.onToggle)
-    window.removeEventListener("resize", this.onResize)
     this.releaseSlider()
     document.removeEventListener("mouseup", this.onMouseUp)
   }

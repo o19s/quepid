@@ -146,11 +146,15 @@ describe("ShareCaseCoreController — modal list UI", () => {
       [{ id: 1, name: "OSC" }]
     )
     const sharedItem = controller.sharedListTarget.querySelector("[data-team-id='1']")
-    controller.toggleCoreSharedSelect({ currentTarget: sharedItem }, { id: 1, name: "OSC" })
+    expect(sharedItem.dataset.action).toBe("click->share-case-core#selectSharedTeam")
+    expect(sharedItem.dataset.shareCaseCoreTeamIdParam).toBe("1")
+    controller.selectSharedTeam({ currentTarget: sharedItem, params: { teamId: 1 } })
     expect(controller.selectedSharedTeamId).toBe(1)
 
     const shareableItem = controller.shareableListTarget.querySelector("[data-team-id='2']")
-    controller.toggleShareSelect({ currentTarget: shareableItem }, { id: 2, name: "Other" })
+    expect(shareableItem.dataset.action).toBe("click->share-case-core#selectShareTeam")
+    expect(shareableItem.dataset.shareCaseCoreTeamIdParam).toBe("2")
+    controller.selectShareTeam({ currentTarget: shareableItem, params: { teamId: 2 } })
 
     expect(controller.selectedShareTeamId).toBe(2)
     expect(controller.submitButtonTarget.classList.contains("d-none")).toBe(false)

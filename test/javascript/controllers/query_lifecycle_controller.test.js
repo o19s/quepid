@@ -6,6 +6,8 @@ function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQue
   element.innerHTML = '<form data-controller="add-query"></form>'
   const controller = new QueryLifecycleController(element)
   controller.element = element
+  controller.hasAddQueryTarget = true
+  controller.addQueryTarget = element.querySelector("form")
   window.quepidSearch = {
     queryLifecycle: { persistQuery, persistQueries, prepareQueries, commitQueries }
   }
@@ -22,12 +24,9 @@ describe("query_lifecycle_controller", () => {
     const complete = vi.fn()
     element.querySelector("form").addEventListener("add-query:complete", complete)
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars", "dune"] }
     }))
-    await Promise.resolve()
-    await Promise.resolve()
 
     expect(prepareQueries).toHaveBeenCalledWith(["star wars", "dune"])
     expect(persistQueries).toHaveBeenCalledWith(undefined, ["star wars", "dune"])
@@ -35,46 +34,37 @@ describe("query_lifecycle_controller", () => {
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Queries added successfully.")
     expect(complete).toHaveBeenCalledOnce()
     expect(complete.mock.calls[0][0].detail).toEqual({ success: true })
-    controller.disconnect()
   })
 
   it("reports search errors but completes the persisted workflow", async () => {
     const prepareQueries = vi.fn().mockReturnValue({ query: {} })
     const persistQuery = vi.fn().mockResolvedValue({ status: 201, data: {} })
     const commitQueries = vi.fn().mockResolvedValue({ searchError: new Error("timeout") })
-    const { controller, element } = controllerFor({ prepareQueries, persistQuery, commitQueries })
+    const { controller } = controllerFor({ prepareQueries, persistQuery, commitQueries })
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars"] }
     }))
-    await Promise.resolve()
-    await Promise.resolve()
 
     expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(1, "error", "Your new query had an error!")
     expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(2, "error", "timeout", "search-error")
-    controller.disconnect()
   })
 
   it("reports a bulk search error without duplicating the collection store's own flash", async () => {
     const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
     const persistQueries = vi.fn().mockResolvedValue({ status: 201, data: {} })
     const commitQueries = vi.fn().mockResolvedValue({ searchError: new Error("timeout") })
-    const { controller, element } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+    const { controller } = controllerFor({ prepareQueries, persistQueries, commitQueries })
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars", "dune"] }
     }))
-    await Promise.resolve()
-    await Promise.resolve()
 
     // svc.searchAll() (the bulk path) already reports this failure through the
     // query collection store's search-failed event, which queries_list_controller.js
     // flashes on the same sticky channel — a second write here would just race it.
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "One (or many) of your new queries had an error!")
     expect(window.quepidDom.flash.show).not.toHaveBeenCalledWith("error", expect.anything(), "search-error")
-    controller.disconnect()
   })
 
   it("reports persistence failures and marks the form unsuccessful", async () => {
@@ -85,31 +75,25 @@ describe("query_lifecycle_controller", () => {
     const complete = vi.fn()
     element.querySelector("form").addEventListener("add-query:complete", complete)
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars"] }
     }))
-    await Promise.resolve()
 
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add query.")
     expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
-    controller.disconnect()
   })
 
   it("falls back to a generic message for a persistence failure with no usable error field", async () => {
     const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
     const persistQueries = vi.fn().mockRejectedValue({ foo: "bar" })
     const commitQueries = vi.fn()
-    const { controller, element } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+    const { controller } = controllerFor({ prepareQueries, persistQueries, commitQueries })
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars", "dune"] }
     }))
-    await Promise.resolve()
 
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
-    controller.disconnect()
   })
 
   it("fails cleanly when the adapter is unavailable", async () => {
@@ -117,14 +101,11 @@ describe("query_lifecycle_controller", () => {
     const complete = vi.fn()
     element.querySelector("form").addEventListener("add-query:complete", complete)
 
-    controller.connect()
-    element.dispatchEvent(new CustomEvent("add-query:submit", {
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
       detail: { queryTexts: ["star wars"] }
     }))
-    await Promise.resolve()
 
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
     expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
-    controller.disconnect()
   })
 })

@@ -135,7 +135,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Switch to **Settings**.
-  2. **Search Endpoints**: pick a different shared endpoint from the dropdown, or use the typeahead search.
+  2. **Search Endpoints**: pick a different shared endpoint from the dropdown, or use the typeahead search. The list only contains endpoints shared with one of **this case's** teams (`api/cases/:id/search_endpoints`), so on a case that isn't shared with a team it shows "No search endpoints found. Create or share an endpoint to use it here." — share the case and an endpoint with the same team first.
   3. **Endpoint Details**: confirm read-only name/URL/icon show, and the "More" link works; if the endpoint is archived, confirm the warning banner appears.
   4. **Displayed Fields**: change the comma-separated list of fields shown per result, confirm the result rows update.
   5. **Number of Results to Show**: change the numeric value (max 100), confirm the result count changes accordingly.

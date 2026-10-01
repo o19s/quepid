@@ -2,6 +2,7 @@
   class="results"
   id="query-container"
   data-controller="queries-list query-lifecycle"
+  data-action="add-query:submit->query-lifecycle#handleAddQueries query-row:toggle->queries-list#handleQueryToggle query-command:delete-completed@document->queries-list#handleQueryDeleteCompleted query-command:move-completed@document->queries-list#handleQueryMoveCompleted queries-state:changed@document->queries-list#refreshListState"
   data-queries-list-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
   data-queries-list-position-url-value="api/cases/<%= kase.id %>/queries"
   data-query-lifecycle-case-id-value="<%= kase.id %>">
@@ -10,9 +11,10 @@
       <form
         class="d-flex align-items-center vertically-centered gap-2 float-start mb-2"
         data-controller="add-query"
+        data-query-lifecycle-target="addQuery"
         data-add-query-can-add-queries-value="true"
         data-add-query-placeholder-value="Add a query to this case"
-        data-action="submit->add-query#submit">
+        data-action="submit->add-query#submit queries-state:changed@document->add-query#refreshQueryState add-query:complete->add-query#complete">
         <div class="input-group">
           <input id="add-query" class="form-control" data-add-query-target="input"
             type="text" data-action="input->add-query#input">

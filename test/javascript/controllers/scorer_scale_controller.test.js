@@ -15,36 +15,35 @@ function mount() {
   controller.scaleListTarget = element.querySelector('[data-target="list"]')
   controller.hasScaleLabelsTarget = true
   controller.scaleLabelsTarget = element.querySelector('[data-target="labels"]')
-  controller.connect()
   return { controller, element }
 }
 
-const choose = (element, value) => {
+const choose = (controller, element, value) => {
   const radio = element.querySelector(`input[value="${value}"]`)
   radio.checked = true
-  radio.dispatchEvent(new Event("change", { bubbles: true }))
+  controller.updateScale({ target: radio })
 }
 const labelInputs = controller => [...controller.scaleLabelsTarget.querySelectorAll("input")].map(i => i.name)
 
 describe("ScorerScaleController", () => {
   it("fills a binary scale and builds a label input per value", () => {
     const { controller, element } = mount()
-    choose(element, "binary")
+    choose(controller, element, "binary")
     expect(controller.scaleListTarget.value).toBe("0,1")
     expect(labelInputs(controller)).toEqual(["scorer[scale_with_labels][0]", "scorer[scale_with_labels][1]"])
   })
 
   it("fills a graded scale", () => {
     const { controller, element } = mount()
-    choose(element, "graded")
+    choose(controller, element, "graded")
     expect(controller.scaleListTarget.value).toBe("0,1,2,3")
     expect(labelInputs(controller)).toHaveLength(4)
   })
 
   it("clears the field and shows a placeholder for a custom scale", () => {
     const { controller, element } = mount()
-    choose(element, "graded")
-    choose(element, "custom")
+    choose(controller, element, "graded")
+    choose(controller, element, "custom")
     expect(controller.scaleListTarget.value).toBe("")
     expect(controller.scaleListTarget.placeholder).toMatch(/comma separated/i)
   })
@@ -53,14 +52,14 @@ describe("ScorerScaleController", () => {
     const { controller, element } = mount()
     let changed = 0
     controller.scaleListTarget.addEventListener("change", () => changed++)
-    choose(element, "binary")
+    choose(controller, element, "binary")
     expect(changed).toBe(1)
   })
 
   it("rebuilds labels as the scale list is typed, ignoring blanks and stray commas", () => {
     const { controller } = mount()
     controller.scaleListTarget.value = " 0, 5 ,,10 "
-    controller.scaleListTarget.dispatchEvent(new Event("input"))
+    controller.handleScaleListInput({ target: controller.scaleListTarget })
     expect(labelInputs(controller)).toEqual([
       "scorer[scale_with_labels][0]",
       "scorer[scale_with_labels][5]",
@@ -71,9 +70,9 @@ describe("ScorerScaleController", () => {
   it("leaves labels untouched when the scale list is emptied", () => {
     const { controller } = mount()
     controller.scaleListTarget.value = "0,1"
-    controller.scaleListTarget.dispatchEvent(new Event("input"))
+    controller.handleScaleListInput({ target: controller.scaleListTarget })
     controller.scaleListTarget.value = "   "
-    controller.scaleListTarget.dispatchEvent(new Event("input"))
+    controller.handleScaleListInput({ target: controller.scaleListTarget })
     expect(labelInputs(controller)).toHaveLength(2)
   })
 
@@ -86,7 +85,7 @@ describe("ScorerScaleController", () => {
   it("treats hostile scale values as text, not markup", () => {
     const { controller } = mount()
     controller.scaleListTarget.value = "<img src=x onerror=alert(1)>,2"
-    controller.scaleListTarget.dispatchEvent(new Event("input"))
+    controller.handleScaleListInput({ target: controller.scaleListTarget })
     expect(controller.scaleLabelsTarget.querySelector("img")).toBeNull()
     expect(labelInputs(controller)).toContain("scorer[scale_with_labels][<img src=x onerror=alert(1)>]")
   })

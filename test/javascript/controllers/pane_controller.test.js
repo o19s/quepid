@@ -29,7 +29,7 @@ describe("PaneController", () => {
     document.body.innerHTML = ""
   })
 
-  it("starts collapsed and toggles the east pane through the document event", () => {
+  it("starts collapsed and opens the east pane when toggled", () => {
     const { controller, main, slider, east } = buildController()
     controller.connect()
 
@@ -37,7 +37,7 @@ describe("PaneController", () => {
     expect(slider.style.display).toBe("none")
     expect(main.style.width).toBe("1000px")
 
-    document.dispatchEvent(new CustomEvent("toggleEast"))
+    controller.toggle()
 
     expect(east.style.display).toBe("block")
     expect(slider.style.display).toBe("block")
@@ -56,13 +56,13 @@ describe("PaneController", () => {
     controller.disconnect()
   })
 
-  it("removes listeners when disconnected", () => {
-    const { controller, east } = buildController()
+  it("removes active drag listeners when disconnected", () => {
+    const { controller, main } = buildController()
     controller.connect()
+    controller.toggle()
+    controller.grabSlider()
     controller.disconnect()
-
-    document.dispatchEvent(new CustomEvent("toggleEast"))
-
-    expect(east.style.display).toBe("none")
+    document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300 }))
+    expect(main.style.width).toBe("550px")
   })
 })

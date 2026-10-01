@@ -10,13 +10,10 @@ import coreFlash from "utils/core_flash"
 export default class extends Controller {
   static values = { caseId: Number }
 
-  connect() {
-    this.onAddQueries = event => this.addQueries(event.detail?.queryTexts || [])
-    this.element.addEventListener("add-query:submit", this.onAddQueries)
-  }
+  static targets = ["addQuery"]
 
-  disconnect() {
-    this.element.removeEventListener("add-query:submit", this.onAddQueries)
+  handleAddQueries(event) {
+    return this.addQueries(event.detail?.queryTexts || [])
   }
 
   async addQueries(queryTexts) {
@@ -65,7 +62,8 @@ export default class extends Controller {
   }
 
   complete(success) {
-    this.element.querySelector('[data-controller="add-query"]')?.dispatchEvent(
+    if (!this.hasAddQueryTarget) return
+    this.addQueryTarget.dispatchEvent(
       new CustomEvent("add-query:complete", { detail: { success } })
     )
   }

@@ -26,22 +26,7 @@ export default class extends Controller {
   static values = { headerUrl: String }
 
   connect() {
-    this.onCaseRenamed = this.handleCaseRenamed.bind(this)
-    this.onScorerSelected = this.handleScorerSelected.bind(this)
-    this.onHeaderStale = this.handleHeaderStale.bind(this)
-    this.onBootstrapReady = this.handleBootstrapReady.bind(this)
-    document.addEventListener("quepid:case-renamed", this.onCaseRenamed)
-    document.addEventListener("pick-scorer:selected", this.onScorerSelected)
-    document.addEventListener("quepid:case-header-stale", this.onHeaderStale)
-    document.addEventListener("core-bootstrap:ready", this.onBootstrapReady)
     if (window.quepidCoreBootstrap?.ready) this.showActions()
-  }
-
-  disconnect() {
-    document.removeEventListener("quepid:case-renamed", this.onCaseRenamed)
-    document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
-    document.removeEventListener("quepid:case-header-stale", this.onHeaderStale)
-    document.removeEventListener("core-bootstrap:ready", this.onBootstrapReady)
   }
 
   handleBootstrapReady() { this.showActions() }

@@ -21,15 +21,7 @@ export default class extends Controller {
       this.maxScore = this.scoringStore?.caseScore?.maxScore || this.maxScoreValue || 1
       this.render()
     }
-    this.onScorePersisted = (event) => {
-      if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadScores()
-    }
-    this.onAnnotationsChanged = (event) => {
-      if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadAnnotations()
-    }
     this.scoringStore?.addEventListener("scoring-complete", this.onScoringComplete)
-    document.addEventListener("case-score:persisted", this.onScorePersisted)
-    document.addEventListener("annotations:changed", this.onAnnotationsChanged)
     this.resizeObserver = new ResizeObserver(() => this.render())
     this.resizeObserver.observe(this.element)
     this.load()
@@ -37,10 +29,16 @@ export default class extends Controller {
 
   disconnect() {
     this.scoringStore?.removeEventListener("scoring-complete", this.onScoringComplete)
-    document.removeEventListener("case-score:persisted", this.onScorePersisted)
-    document.removeEventListener("annotations:changed", this.onAnnotationsChanged)
     this.resizeObserver?.disconnect()
     this.vegaResult?.finalize()
+  }
+
+  handleScorePersisted(event) {
+    if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadScores()
+  }
+
+  handleAnnotationsChanged(event) {
+    if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadAnnotations()
   }
 
   async load() {

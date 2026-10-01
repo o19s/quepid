@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import AddQueryController from "controllers/add_query_controller"
+import { resetCoreCapabilitiesForTest, setCoreCapabilitiesForTest } from "utils/core_test_overrides"
 
 function controllerFor({ canAddQueriesValue = true, text = "" } = {}) {
   const element = document.createElement("form")
@@ -64,6 +65,21 @@ describe("add_query_controller", () => {
     expect(controller.inputTarget.value).toBe("one;two")
     expect(event.defaultPrevented).toBe(true)
     controller.disconnect()
+  })
+
+  it("refreshes capability state without clearing the typed query", () => {
+    const { controller } = controllerFor({ text: "unfinished query" })
+    setCoreCapabilitiesForTest({ queryCapabilities: {
+      getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
+    } })
+    try {
+      controller.refreshQueryState()
+      expect(controller.submitTarget.disabled).toBe(true)
+      expect(controller.inputTarget.placeholder).toBe("Queries are unavailable")
+      expect(controller.inputTarget.value).toBe("unfinished query")
+    } finally {
+      resetCoreCapabilitiesForTest()
+    }
   })
 
   it("stops loading when the mutation bridge completes", () => {

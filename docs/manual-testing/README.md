@@ -20,6 +20,10 @@ Each part below is a self-contained document covering one feature area. Work thr
 
 Use the checkboxes (`- [ ]`) to track your pass through each test case; check them off as you confirm expected behavior.
 
+For timestamp comparisons and their limitations, see
+[DEVELOPER_GUIDE.md — Manual testing tracker](../../DEVELOPER_GUIDE.md#manual-testing-tracker).
+Keep `last_run` as the actual test time.
+
 ## Parts
 
 | # | Part | Covers |

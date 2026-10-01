@@ -122,6 +122,8 @@
       </div>
 
       <div data-controller="scoring-guidelines"
+           data-scoring-guidelines-four-point-value="<%= Book::FOUR_POINT_GUIDELINES.strip %>"
+           data-scoring-guidelines-two-point-value="<%= Book::TWO_POINT_GUIDELINES.strip %>"
            data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(@current_user).to_json %>">
         <div class="mb-3">
           <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
@@ -151,9 +153,7 @@
               rows: 10,
               placeholder: 'Scoring guidelines will be auto-populated when you select a rating scale, or enter your own custom guidelines...',
               data: {
-                scoring_guidelines_target: 'textarea',
-                four_point: Book::FOUR_POINT_GUIDELINES.strip,
-                two_point: Book::TWO_POINT_GUIDELINES.strip
+                scoring_guidelines_target: 'textarea'
               } %>
           <div class="form-text">
             Provide guidelines to help judges understand how to rate documents. Supports markdown formatting (tables, bold, italic, links, etc.).

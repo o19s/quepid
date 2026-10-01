@@ -31,16 +31,16 @@
       <div class="mb-3">
         <%= f.label :scale, "Scale for query ratings:", class: 'form-label' %>
         <div class="form-check">
-          <%= radio_button_tag 'scale_preset', 'binary', scorer.scale == [0, 1], class: 'form-check-input', id: 'scale-binary' %>
+          <%= radio_button_tag 'scale_preset', 'binary', scorer.scale == [0, 1], class: 'form-check-input', id: 'scale-binary', data: { action: 'change->scorer-scale#updateScale' } %>
           <%= label_tag 'scale-binary', 'Binary Scale (0, 1)', class: 'form-check-label' %>
         </div>
         <div class="form-check">
-          <%= radio_button_tag 'scale_preset', 'graded', scorer.scale == [0, 1, 2, 3], class: 'form-check-input', id: 'scale-graded' %>
+          <%= radio_button_tag 'scale_preset', 'graded', scorer.scale == [0, 1, 2, 3], class: 'form-check-input', id: 'scale-graded', data: { action: 'change->scorer-scale#updateScale' } %>
           <%= label_tag 'scale-graded', 'Graded Scale (0, 1, 2, 3)', class: 'form-check-label' %>
         </div>
         <div class="form-check">
           <% is_custom = ![[0, 1], [0, 1, 2, 3]].include?(scorer.scale) %>
-          <%= radio_button_tag 'scale_preset', 'custom', is_custom, class: 'form-check-input', id: 'scale-custom' %>
+          <%= radio_button_tag 'scale_preset', 'custom', is_custom, class: 'form-check-input', id: 'scale-custom', data: { action: 'change->scorer-scale#updateScale' } %>
           <%= label_tag 'scale-custom', 'Custom', class: 'form-check-label' %>
         </div>
       </div>
@@ -48,7 +48,7 @@
       <div class="row mb-3">
         <%= f.label :scale_list, class: 'col-sm-1 col-form-label' %>
         <div class="col-sm-6">
-          <%= f.text_field :scale_list, class: 'form-control', placeholder: 'Provide a list of comma separated INTEGERS to use for the scoring scale', data: { scorer_scale_target: 'scaleList', 'live-update': 'scorer_scale_with_labels' } %>
+          <%= f.text_field :scale_list, class: 'form-control', placeholder: 'Provide a list of comma separated INTEGERS to use for the scoring scale', data: { scorer_scale_target: 'scaleList', action: 'input->scorer-scale#handleScaleListInput', 'live-update': 'scorer_scale_with_labels' } %>
           <div class="form-text">Use a comma delimited list. This will update below the list of labels for each grade.</div>
         </div>
       </div>

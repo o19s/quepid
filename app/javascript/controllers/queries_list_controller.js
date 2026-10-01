@@ -45,20 +45,6 @@ export default class extends Controller {
     this.documentStoreChange = () => this.scheduleRender()
     this.documentStore?.addEventListener("change", this.documentStoreChange)
     this.documentStore?.addEventListener("reset", this.documentStoreChange)
-    this.queryToggle = event => {
-      this.forwardQueryToggle(event)
-      this.scheduleRender()
-    }
-    this.queryDeleteCompleted = event => this.handleQueryDeleteCompleted(event)
-    this.queryMoveCompleted = event => this.handleQueryMoveCompleted(event)
-    this.element.addEventListener("query-row:toggle", this.queryToggle)
-    document.addEventListener("query-command:delete-completed", this.queryDeleteCompleted)
-    document.addEventListener("query-command:move-completed", this.queryMoveCompleted)
-    this.listStateChange = () => {
-      this.queryCapabilities = getCoreCapabilities().queryCapabilities
-      this.scheduleRender()
-    }
-    document.addEventListener("queries-state:changed", this.listStateChange)
     this.setupSortable()
     this.render()
   }
@@ -70,12 +56,23 @@ export default class extends Controller {
     this.store?.removeEventListener("search-started", this.searchSettled)
     this.documentStore?.removeEventListener("change", this.documentStoreChange)
     this.documentStore?.removeEventListener("reset", this.documentStoreChange)
-    this.element.removeEventListener("query-row:toggle", this.queryToggle)
-    document.removeEventListener("query-command:delete-completed", this.queryDeleteCompleted)
-    document.removeEventListener("query-command:move-completed", this.queryMoveCompleted)
-    document.removeEventListener("queries-state:changed", this.listStateChange)
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
     this.sortable?.destroy()
+  }
+
+  handleQueryToggle(event) {
+    this.forwardQueryToggle(event)
+    this.scheduleRender()
+  }
+
+  refreshListState() {
+    this.queryCapabilities = getCoreCapabilities().queryCapabilities
+    this.scheduleRender()
+  }
+
+  changePage(event) {
+    this.currentPage += event.params.direction === "next" ? 1 : -1
+    this.render()
   }
 
   showOnlyRatedValueChanged() {
@@ -560,19 +557,13 @@ export default class extends Controller {
     nav.setAttribute("aria-label", "Query pages")
     nav.innerHTML = `
       <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="previous">Previous</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="previous" data-action="click->queries-list#changePage" data-queries-list-direction-param="previous">Previous</button>
         <span>Page ${this.currentPage} of ${pageCount} (${totalCount} queries)</span>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="next">Next</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="next" data-action="click->queries-list#changePage" data-queries-list-direction-param="next">Next</button>
       </div>
     `
     nav.querySelector('[data-page="previous"]').disabled = this.currentPage === 1
     nav.querySelector('[data-page="next"]').disabled = this.currentPage === pageCount
-    nav.addEventListener("click", event => {
-      const page = event.target.closest("[data-page]")?.dataset.page
-      if (!page) return
-      this.currentPage += page === "next" ? 1 : -1
-      this.render()
-    })
     this.paginationTarget.appendChild(nav)
   }
 

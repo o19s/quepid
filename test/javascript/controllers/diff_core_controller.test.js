@@ -210,7 +210,8 @@ describe("DiffCoreController", () => {
 
     second.value = "3"
     expect(second.dataset.action).toBe("change->diff-core#selectChanged")
-    controller.selectChanged({ currentTarget: second })
+    expect(second.dataset.diffCoreIndexParam).toBe("1")
+    controller.selectChanged({ currentTarget: second, params: { index: 1 } })
 
     expect(controller.selectionValues).toEqual(["2", "3"])
   })

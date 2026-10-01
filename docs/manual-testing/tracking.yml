@@ -25,9 +25,9 @@
 #       - a pass_with_fixes / fail earns as much room as it takes to say what broke, the cause,
 #         and how the fix was verified. That detail is the whole value of the entry later, and is
 #         why several notes here run long. Don't pad a routine pass to match them.
-#   - Timing gotcha: bin/manual_test_status compares last_run against the COMMIT timestamp of the
-#     files in `paths`, so a last_run stamped before you commit re-flags the scenario as due the
-#     moment the commit lands. Stamp it after committing (amend), or expect it to read as due.
+#   - Keep the actual test timestamp when committing. Clean files are due for code changes
+#     only when both their edit and commit times are newer than last_run; dirty files use edit
+#     time. See DEVELOPER_GUIDE.md's "Manual testing tracker" for the timestamp limitations.
 #   - If you skip a scenario, leave it alone — last_run: null means "never verified", which is
 #     honest and useful. Don't backfill a timestamp for something you didn't actually run.
 #   - Older entries recorded before this rule (bare YYYY-MM-DD dates) are still valid and don't need
@@ -549,13 +549,13 @@ parts:
         last_run: 2026-10-01T03:12:00Z
         result: pass
         notes: "Covered live: New Scorer form pre-assigns 'Scorer 8' as the name; POSTing a blank name creates a scorer with an auto name ('Scorer created.'); 11 scale values -> 'Scale must be limited to at most 10 values' (422); '0, 1, 2' with spaces saves; a valid graded scale saves and redirects to its edit page. FOUND AND FIXED: a non-integer scale such as 'a,b,c' returned a 500 on both create and update (ScaleSerializer raised SerializationTypeMismatch in after_initialize before ScaleValidator could run); Scorer#scale_list= now sets non-integer input aside and ScaleValidator reports 'Scale is invalid (only integers allowed)' with a 422, keeping the entered text in the field (model tests added). Test scorers deleted afterward. Not covered through the UI widgets: scale presets, labels toggle, code editor typing (form posted directly)."
-        paths: ["app/validators/scale_validator.rb", "app/controllers/scorers_controller.rb", "app/models/scorer.rb", "app/views/scorers/new.html.erb", "app/views/scorers/_form.html.erb"]
+        paths: ["app/validators/scale_validator.rb", "app/controllers/scorers_controller.rb", "app/models/scorer.rb", "app/views/scorers/new.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js"]
       "8.4":
         title: "Edit a scorer"
         last_run: 2026-10-01T03:12:00Z
         result: pass
         notes: "Covered live: editing my own scorer (name, code, scale 0,1,2) saves with 'Scorer updated.'; as an admin (realisticactivity is an admin in this seed) the communal scorer's edit page shows 'Warning: You are editing a communal scorer that is available to all users. Changes will affect everyone using this scorer.' (not saved, to keep seed data); as a non-admin (oscmember) /scorers/1/edit (communal) and another user's private scorer both return 404. Not covered: saving a communal scorer as an admin."
-        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb"]
+        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js"]
       "8.5":
         title: "Clone a scorer"
         last_run: 2026-09-15T17:00:00Z
@@ -635,13 +635,13 @@ parts:
         last_run: 2026-10-01T03:12:00Z
         result: pass
         notes: "Covered live: New Book form requires a name (browser validation); creating with a name, the OSC team and a 0,1 rating scale (scoring guidelines prefilled) redirected to the book with 'Book was successfully created.'. FOUND AND FIXED: posting a blank name created a book with an empty name because Book had no presence validation (only the HTML required attribute guarded it); Book now validates name presence ('Name can't be blank' re-renders the form; model test added); because a nameless import file used to create a nameless book, BookImporter now falls back to 'Imported Book' (test added) so imports still work. Not covered: zero-team alert, creating from a Case's Judgements flow (origin_case_id), saving without a team."
-        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb"]
+        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js"]
       "10.3":
         title: "Edit book settings"
         last_run: 2026-10-01T01:57:04Z
         result: pass
         notes: "Covered live: renaming, toggling Show Rank and Supports Implicit Judgements, assigning the OSC AI Judge and appending to the scoring guidelines all persisted after save and reload; sharing an imported book with OSC via Settings saved. Not covered: Delete Import/Export File, partial-team preservation (needs two accounts), changing scale after judgements exist."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb"]
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js"]
       "10.4":
         title: "Book Overview / Show page"
         last_run: 2026-10-01T03:12:00Z

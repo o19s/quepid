@@ -7,13 +7,7 @@ export default class extends Controller {
   static values = { url: String }
 
   connect() {
-    this.openHandler = () => this.load()
-    this.element.addEventListener("query-notes:open", this.openHandler)
     this.loadedValues = { notes: "", informationNeed: "" }
-  }
-
-  disconnect() {
-    this.element.removeEventListener("query-notes:open", this.openHandler)
   }
 
   async load() {

@@ -31,7 +31,7 @@
 
 <div>
       <div id="main">
-        <div class="pane_container" data-controller="pane">
+        <div class="pane_container" data-controller="pane" data-action="toggleEast@document->pane#toggle resize@window->pane#resize">
           <div class="pane_main results-control" data-pane-target="main">
             <div id="case-header" class="row">
               <div class="col-sm-12">
@@ -44,6 +44,7 @@
                     <div
                       class="qgraph"
                       data-controller="qgraph"
+                      data-action="case-score:persisted@document->qgraph#handleScorePersisted annotations:changed@document->qgraph#handleAnnotationsChanged"
                       hidden
                       data-qgraph-case-id-value="<%= @case.id %>"
                       data-qgraph-scores-url-value="<%= api_case_scores_path(case_id: @case.id) %>/all"
@@ -56,6 +57,7 @@
                     <div
                       class="header-rating"
                       data-controller="qscore-case"
+                      data-action="query-diffs:refreshed@document->qscore-case#handleDiffsRefreshed pick-scorer:selected@document->qscore-case#handleScorerSelected"
                       data-qscore-case-case-id-value="<%= @case.id %>"
                       data-qscore-case-score-label-value="<%= @case.scorer&.name %>"
                       data-qscore-case-score-url-value="<%= api_case_scores_path(case_id: @case.id) %>"

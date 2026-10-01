@@ -62,7 +62,7 @@ export default class extends ModalTriggerControllerBase {
   }
 
   selectCase(event) {
-    const caseId = event.currentTarget?.dataset?.caseId
+    const caseId = event.params.caseId
     this.selectedCase = this.cases.find((acase) => String(acase.case_id) === String(caseId)) || null
     this.renderCases()
   }
@@ -104,7 +104,7 @@ export default class extends ModalTriggerControllerBase {
       const item = document.createElement("button")
       item.type = "button"
       item.className = "list-group-item list-group-item-action"
-      item.dataset.caseId = acase.case_id
+      item.dataset.moveQueryCoreCaseIdParam = String(acase.case_id)
       item.textContent = acase.case_name
       item.classList.toggle("active", this.selectedCase?.case_id === acase.case_id)
       item.dataset.action = "click->move-query-core#selectCase"

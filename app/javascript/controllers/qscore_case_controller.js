@@ -49,19 +49,13 @@ export default class extends Controller {
       this.refreshCaseDiffScores()
     }
     this.onRatingChanged = () => this.refreshCaseDiffScores({ refreshQueries: true })
-    this.onDiffsRefreshed = event => this.refreshCaseDiffScores({
-      refreshQueries: false,
-      failed: event.detail?.success === false
-    })
-    this.onScorerSelected = (event) => this.handleScorerSelected(event)
+
   }
 
   connect() {
     this.store.addEventListener("change", this.onStoreChange)
     this.store.addEventListener("scoring-complete", this.onScoringComplete)
     this.store.addEventListener("rating-changed", this.onRatingChanged)
-    document.addEventListener("query-diffs:refreshed", this.onDiffsRefreshed)
-    document.addEventListener("pick-scorer:selected", this.onScorerSelected)
     this.renderScore()
     this.renderLabel()
   }
@@ -70,8 +64,13 @@ export default class extends Controller {
     this.store.removeEventListener("change", this.onStoreChange)
     this.store.removeEventListener("scoring-complete", this.onScoringComplete)
     this.store.removeEventListener("rating-changed", this.onRatingChanged)
-    document.removeEventListener("query-diffs:refreshed", this.onDiffsRefreshed)
-    document.removeEventListener("pick-scorer:selected", this.onScorerSelected)
+  }
+
+  handleDiffsRefreshed(event) {
+    return this.refreshCaseDiffScores({
+      refreshQueries: false,
+      failed: event.detail?.success === false
+    })
   }
 
   handleScorerSelected(event) {

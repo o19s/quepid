@@ -157,7 +157,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 ### 1.10 Transactional emails (invitation & password reset)
 
 - [ ] **Steps:**
-  1. In development, open `/rails/mailers` and preview the **invitation instructions** and **reset password instructions** emails (HTML and text).
+  1. In development, open `/rails/mailers` and preview the **reset password instructions** email. (Only that preview exists — `test/mailers/previews/devise_preview.rb` has no invitation preview, and the reset email has an HTML part only, so its `text/plain` preview errors. The invitation email has both parts; check it via step 2.)
   2. Trigger each for real (Part 1.4 reset, Part 9.3 invite) and open the delivered message in the mail catcher / logs.
 - **Expected:** Both emails render with the Quepid layout, a working link (reset: 'Change my password' → `/users/password/edit?reset_password_token=...`; invitation: the plain `/users/invitation/accept?invitation_token=...` URL), and no unresolved placeholders or broken styling.
 - **Edge cases:**

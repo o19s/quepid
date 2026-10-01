@@ -135,54 +135,24 @@ describe("CaseToolbarController", () => {
     })
   })
 
-  /**
-   * Anything the server-rendered header shows goes stale unless something refetches the frame,
-   * so surfaces that mutate that state dispatch `quepid:case-header-stale` (see the contract in
-   * core/_case_header.html.erb). These go through connect() and a real dispatched event rather
-   * than calling the handler directly: the bug this guards against is the event never arriving,
-   * which a direct call cannot catch.
-   */
-  describe("generic header-stale signal", () => {
-    afterEach(() => {
-      CaseToolbarController.prototype.disconnect.call(controller)
-    })
-
-    it("refetches the header when the event is dispatched on document", () => {
-      const frame = buildFrame()
-      controller.headerUrlValue = "/case/7/header/try/2"
-      controller.hasHeaderUrlValue = true
-      vi.restoreAllMocks() // let the real dispatchEvent through
-
-      CaseToolbarController.prototype.connect.call(controller)
-      document.dispatchEvent(new CustomEvent("quepid:case-header-stale", {
-        detail: { caseNo: 7, reason: "nightly" }
-      }))
-
-      expect(frame.src).toBe("/case/7/header/try/2")
-    })
-
-    it("stops refetching once disconnected", () => {
-      const frame = buildFrame()
-      controller.headerUrlValue = "/case/7/header/try/2"
-      controller.hasHeaderUrlValue = true
-      vi.restoreAllMocks()
-
-      CaseToolbarController.prototype.connect.call(controller)
-      CaseToolbarController.prototype.disconnect.call(controller)
-      document.dispatchEvent(new CustomEvent("quepid:case-header-stale"))
-
-      // jsdom treats <turbo-frame> as an unknown element, so an untouched src is undefined
-      // rather than "" — assert the refetch simply did not happen.
-      expect(frame.src).not.toBe("/case/7/header/try/2")
-    })
+  it("refetches the header for the generic stale signal", () => {
+    const frame = buildFrame()
+    controller.headerUrlValue = "/case/7/header/try/2"
+    controller.hasHeaderUrlValue = true
+    controller.handleHeaderStale()
+    expect(frame.src).toBe("/case/7/header/try/2")
   })
 
-  it("removes its document listeners on disconnect", () => {
-    const remove = vi.spyOn(document, "removeEventListener")
-    CaseToolbarController.prototype.connect.call(controller)
-    CaseToolbarController.prototype.disconnect.call(controller)
-
-    expect(remove).toHaveBeenCalledWith("quepid:case-renamed", controller.onCaseRenamed)
-    expect(remove).toHaveBeenCalledWith("pick-scorer:selected", controller.onScorerSelected)
+  it("shows actions if bootstrap finished before connect", () => {
+    controller.hasActionsTarget = true
+    controller.actionsTarget = document.createElement("div")
+    controller.actionsTarget.hidden = true
+    window.quepidCoreBootstrap = { ready: true }
+    try {
+      controller.connect()
+      expect(controller.actionsTarget.hidden).toBe(false)
+    } finally {
+      delete window.quepidCoreBootstrap
+    }
   })
 })

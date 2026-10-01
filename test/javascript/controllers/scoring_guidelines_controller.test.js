@@ -6,7 +6,9 @@ const TWO = "two point guidelines"
 
 function buildController({ text = "", scorerId = "1", lengths = { 1: 4, 2: 2, 3: 3 } } = {}) {
   const controller = Object.create(ScoringGuidelinesController.prototype)
-  controller.textareaTarget = { value: text, dataset: { fourPoint: FOUR, twoPoint: TWO } }
+  controller.textareaTarget = { value: text }
+  controller.fourPointValue = FOUR
+  controller.twoPointValue = TWO
   controller.scorerSelectTarget = { value: scorerId }
   controller.scaleLengthsValue = lengths
   return controller

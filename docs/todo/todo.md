@@ -32,6 +32,10 @@ Score and rating controls still convey state by color alone; add text or icons s
 
 `deleteTry()` in `tune_relevance_controller.js` has the null and active-try guards, but one click on Delete still removes the try permanently. Add a confirm step.
 
+### [MIGRATION-FOLLOWUP] P3 — Workbench clips at phone width
+
+At 375px the core workbench clips on the right with no scroll: the toolbar's Compare snapshots / Import / Share case links, each query row's result count and expand chevron, and the end of the case title are cut off. 768px is fine. Phone width isn't an official target and this wasn't compared against `main`; let the toolbar and query-row header wrap.
+
 ### [PREEXISTING] P2 — Explain Query Copy gives no feedback
 
 `query_explain_controller.js` swallows `copyText()` rejections (`.catch(() => {})`) and shows no success state. Surface failure and a "Copied!" state.
@@ -64,7 +68,7 @@ to confirm the new tests kill its mutants.
 
 ---
 
-## [PREEXISTING] P0 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P0 — Product bugs
 
 ### [PREEXISTING] Deleting the latest try bricks the case (backend)
 
@@ -88,7 +92,7 @@ to confirm the new tests kill its mutants.
 
 ---
 
-## [PREEXISTING] P0 — Security (code review 2026-09-29)
+## [PREEXISTING] P0 — Security
 
 ### [PREEXISTING] Public cases and snapshots allow unauthenticated mutation
 
@@ -110,7 +114,7 @@ to confirm the new tests kill its mutants.
 
 ---
 
-## [PREEXISTING] P1 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P1 — Product bugs
 
 ### [PREEXISTING] Uploading the judgements export imports nothing and reports success
 
@@ -123,17 +127,6 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 **Fix direction:** Pick one canonical envelope and add a fixture-based export → import round-trip test. Accept `judgements` as an alias for `all_judgements` (or make the export emit `all_judgements`), implement the flat `query_text`/`doc_id` fallback through `find_or_initialize_query_doc_pair`, and either way make a payload that matches zero rows report that instead of flashing success. Needs the allowlist work above first, since routing flat `query_text`/`doc_id` into `Judgement#assign_attributes` would raise `UnknownAttributeError` under the current denylist.
 
 ---
-
-### [PREEXISTING] Missing case: search_endpoints index 500s
-
-**Observed:** `GET /api/cases/999999` → 404, but `GET /api/cases/999999/search_endpoints` → 500 (`undefined method 'teams' for nil`).
-
-**Cause:** `SearchEndpointsController#index` calls `set_case` then `@case.teams` without `check_case`.
-
-**Fix direction:** `before_action :check_case` (or nil-guard) when `params[:case_id]` is present.
-
----
-
 
 ### [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
 
@@ -166,7 +159,17 @@ user-entered settings.
 
 ---
 
-## [PREEXISTING] P1 — Security (code review 2026-09-29)
+### [PREEXISTING] Account deletion fails for users who sent invitations, after deleting their cases
+
+**Observed:** Deleting an account (Profile → Danger Zone) whose user has invited anyone (a pending invitee row with `invited_by_id` pointing at them) returns a 500: `ActiveRecord::InvalidForeignKey` on `fk_rails_ae14a5013f` (`users.invited_by_id → users.id`). The account survives, but its unshared cases are already gone — `AccountsController#destroy` calls `c.really_destroy` for each team-less case *before* `@user.destroy`, outside a transaction.
+
+**Cause:** Nothing nullifies `users.invited_by_id` for invitees, and the case cleanup plus user destroy are not atomic. Same code on `main`.
+
+**Fix direction:** Nullify `invited_by_id` on invitees before destroying the user (e.g. a `has_many :invitations, class_name: 'User', foreign_key: :invited_by_id, dependent: :nullify`), and wrap case cleanup + user destroy in one transaction so a failure leaves the account's data intact. Add a controller test that deletes a user with a pending invitee and an unshared case.
+
+---
+
+## [PREEXISTING] P1 — Security
 
 ### [PREEXISTING] Outbound HTTPS certificate verification is disabled globally
 
@@ -222,7 +225,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ## [PREEXISTING] P2 — Security
 
-### [PREEXISTING] Password reset enumerates accounts (Playwright MCP)
+### [PREEXISTING] Password reset enumerates accounts
 
 **Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
 
@@ -230,7 +233,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 **Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
 
-### [PREEXISTING] No minimum password length (Playwright MCP)
+### [PREEXISTING] No minimum password length
 
 **Observed:** Resetting a password through the reset link with `abc` succeeds and the user can then log in with it. Manual test 1.4's short-password edge case expects a validation error.
 
@@ -240,7 +243,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-## [PREEXISTING] P2 — Product bugs (Playwright MCP verified)
+## [PREEXISTING] P2 — Product bugs
 
 ### [PREEXISTING] Judgement rating not validated against book's scale (outside AI judging)
 
@@ -293,6 +296,50 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 **Status:** Confirmed by reading `extract_judgement_params` — `:user` is **not** in its permit list (`:rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation`), so `judgement_params[:user]` is always nil and the lookup key is *always* `nil`, not just when a caller omits it. Consequences in order: the endpoint never attributes a judgement to anyone unless the caller passes `user_id`; when a caller does pass it, the request adopts and re-attributes an existing anonymous row; two API clients judging the same pair fight over one row. Deferrable because nothing in Quepid's own frontend calls it (grepped `app/javascript`, `app/assets/javascripts`) — this is external API surface only. Note the existing controller test asserts only a `judgements.count` delta, so it passes either way. Same bug family as the `BookImporter` nil-user work of 2026-09-10.
 
 **Fix direction:** Decide which key is canonical, use it in both places, and guard the lookup so a nil judge cannot adopt an existing anonymous row.
+
+---
+
+### [PREEXISTING] Snapshot CSV `Snapshot Time` parses two-digit years as year 00YY
+
+**Observed:** Importing a snapshot CSV (cases list → Import Snapshots from CSV) with `Snapshot Time` `10/01/26 18:05` stored `created_at` as `0010-01-26 18:05`, shown as `(1/26/10)` in Compare Snapshots. The modal's own sample format (`10/10/18 18:05`) has the same problem.
+
+**Cause:** `import_snapshot_controller.js` posts the raw string as `created_at`; the server's time parsing reads `NN/NN/NN` as year/month/day. The Angular importer passed the string through the same way.
+
+**Fix direction:** Parse `Snapshot Time` explicitly (document the accepted formats, e.g. ISO 8601 and `MM/DD/YY HH:MM`) and reject unparseable values with a row-numbered error instead of storing a wrong date. Fix the sample in the modal to an unambiguous format.
+
+---
+
+### [PREEXISTING] New-team form shows no validation errors
+
+**Observed:** Submitting `/teams/new` with a blank name, or a name another team already uses, re-renders the form with no message. (Rename on the team page does show "Name can't be blank".)
+
+**Cause:** `app/views/teams/new.html.erb` doesn't render `@team.errors`, and `TeamsController#create` renders `:new` without `status: :unprocessable_content`.
+
+**Fix direction:** Render the shared error-messages partial on `teams/new` and return 422 on failure.
+
+---
+
+### [PREEXISTING] Floating labels break when a field has a validation error
+
+**Observed:** On the Profile form, saving a duplicate email shows "Email has already been taken" but the floating "Email" label drops below the input and overlaps the Gravatar help text. The profile header card also shows the rejected email as if it were saved.
+
+**Cause:** Rails' default `field_error_proc` wraps the errored input in `div.field_with_errors`, which breaks Bootstrap's `.form-floating > .form-control ~ label` sibling selector. The header reads `current_user.email` from the unsaved, invalid model.
+
+**Fix direction:** Set a `field_error_proc` that adds `is-invalid` to the input instead of wrapping it, and render the profile header from the persisted user (`current_user.reload` or an `*_was` value) when the update fails.
+
+---
+
+### [PREEXISTING] Ratings page heading says "Scores for Case"
+
+`app/views/ratings/index.html.erb` uses `page_header "Scores for #{case_title @case}"` — copy-pasted from the scores page. Should read "Ratings for …".
+
+---
+
+### [PREEXISTING] Snapshot CSV import gives no success confirmation
+
+**Observed:** On the cases list, a successful Import Snapshots from CSV just closes the modal; no flash says what was created. (The in-case Import modal's Snapshots tab does flash "Snapshots imported successfully!".) The failure message for a nonexistent `Case ID` is also generic: "1 snapshot(s) failed to import. Some may have been imported successfully." without saying the case wasn't found.
+
+**Fix direction:** Flash the number of snapshots created and name the case(s); surface the per-snapshot reason (e.g. "Case 999999 not found") in the failure alert.
 
 ---
 
@@ -373,6 +420,14 @@ redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
 ## [PREEXISTING] P3 — Security & consistency
 
+### [PREEXISTING] Public tries visualization also answers on the numeric case ID
+
+**Observed:** While a case is public, `/analytics/tries_visualization/<numeric id>` loads for anonymous users, not just the `public_id` URL the clipboard link hands out. Making the case private again revokes both.
+
+**Fix direction:** Decide whether anonymous access should require the `public_id`; if so, only accept the numeric ID for authenticated users with access to the case.
+
+---
+
 ### [PREEXISTING] Proxy `proxy_debug` boolean parsing
 
 **Location:** `app/controllers/proxy_controller.rb:26`
@@ -451,7 +506,7 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 
 ---
 
-## [PREEXISTING] P2 — Background jobs (code review 2026-09-29)
+## [PREEXISTING] P2 — Background jobs
 
 ### [PREEXISTING] Import/populate jobs leave state and idempotency to best effort
 
@@ -473,7 +528,7 @@ Jobs set status strings before working and clear them only on success, so a fail
 
 Bullet is enabled in dev/test — fix as surfaced; review views for missing eager loads.
 
-### [PREEXISTING] API serializer query amplification (code review 2026-09-29)
+### [PREEXISTING] API serializer query amplification
 
 `app/views/api/v1/users/_user.json.jbuilder:12-13` runs three relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings.
 

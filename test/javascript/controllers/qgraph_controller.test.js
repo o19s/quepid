@@ -60,7 +60,7 @@ describe("QgraphController", () => {
     })
   })
   afterEach(() => {
-    // Controllers register document-level listeners; disconnect so they don't leak between tests.
+    // Release store subscriptions and chart resources between tests.
     mounted.splice(0).forEach(controller => controller.disconnect())
     vi.unstubAllGlobals()
     delete window.vegaEmbed
@@ -148,10 +148,10 @@ describe("QgraphController", () => {
     await flush()
     apiFetch.mockClear()
 
-    document.dispatchEvent(new CustomEvent("case-score:persisted", { detail: { caseId: 99 } }))
+    controller.handleScorePersisted({ detail: { caseId: 99 } })
     expect(apiFetch).not.toHaveBeenCalled()
 
-    document.dispatchEvent(new CustomEvent("case-score:persisted", { detail: { caseId: 5 } }))
+    controller.handleScorePersisted({ detail: { caseId: "5" } })
     expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores")
   })
 
@@ -161,10 +161,10 @@ describe("QgraphController", () => {
     await flush()
     apiFetch.mockClear()
 
-    document.dispatchEvent(new CustomEvent("annotations:changed", { detail: { caseId: 99 } }))
+    controller.handleAnnotationsChanged({ detail: { caseId: 99 } })
     expect(apiFetch).not.toHaveBeenCalled()
 
-    document.dispatchEvent(new CustomEvent("annotations:changed", { detail: { caseId: 5 } }))
+    controller.handleAnnotationsChanged({ detail: { caseId: "5" } })
     expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations")
   })
 
@@ -175,8 +175,10 @@ describe("QgraphController", () => {
 
     controller.disconnect()
     apiFetch.mockClear()
-    document.dispatchEvent(new CustomEvent("case-score:persisted", { detail: { caseId: 5 } }))
+    window.vegaEmbed.mockClear()
+    scoringStore.dispatchEvent(new Event("scoring-complete"))
 
+    expect(window.vegaEmbed).not.toHaveBeenCalled()
     expect(apiFetch).not.toHaveBeenCalled()
     expect(finalize).toHaveBeenCalled()
   })

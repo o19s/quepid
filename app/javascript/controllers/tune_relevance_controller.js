@@ -146,9 +146,14 @@ export default class extends Controller {
       row.querySelector("label").textContent = `${item.name}:`
       const input = row.querySelector("input")
       input.value = item.value ?? ""
-      input.addEventListener("input", event => { vars[index].value = event.target.value })
+      input.dataset.action = "input->tune-relevance#updateCuratorVariable"
+      input.dataset.tuneRelevanceIndexParam = String(index)
       return row
     }))
+  }
+
+  updateCuratorVariable(event) {
+    this.settings.selectedTry.curatorVars[event.params.index].value = event.currentTarget.value
   }
 
   refreshSettings() {
@@ -188,10 +193,16 @@ export default class extends Controller {
       button.type = "button"
       button.className = "list-group-item list-group-item-action"
       button.textContent = endpoint.name
-      button.addEventListener("click", () => this.selectEndpoint(endpoint))
+      button.dataset.action = "click->tune-relevance#selectEndpointSuggestion"
+      button.dataset.tuneRelevanceEndpointIdParam = String(endpoint.id)
       return button
     }))
     if (this.hasEndpointNoResultsTarget) this.endpointNoResultsTarget.hidden = !normalized || matches.length > 0
+  }
+
+  selectEndpointSuggestion(event) {
+    const endpoint = this.searchEndpoints.find(item => String(item.id) === String(event.params.endpointId))
+    if (endpoint) this.selectEndpoint(endpoint)
   }
 
   selectEndpoint(endpoint) {
@@ -253,10 +264,23 @@ export default class extends Controller {
       row.querySelector("[data-try-name]").textContent = item.formattedName ? item.formattedName() : item.name
       row.querySelector("[data-try-query]").textContent = (item.queryParams || "").slice(0, 200)
       row.querySelector("[data-try-endpoint]").textContent = `using ${item.endpointName || ""}`
-      row.addEventListener("click", () => this.capability.navigation.goToTry(item.tryNo))
-      row.querySelector("[data-try-details]").addEventListener("click", event => { event.stopPropagation(); this.showTryDetails(item) })
+      row.dataset.action = "click->tune-relevance#navigateToTry"
+      row.dataset.tuneRelevanceTryNoParam = String(item.tryNo)
+      const details = row.querySelector("[data-try-details]")
+      details.dataset.action = "click->tune-relevance#openTryDetails"
+      details.dataset.tuneRelevanceTryNoParam = String(item.tryNo)
       return row
     }))
+  }
+
+  navigateToTry(event) {
+    this.capability.navigation.goToTry(event.params.tryNo)
+  }
+
+  openTryDetails(event) {
+    event.stopPropagation()
+    const item = this.settings.tries.find(item => String(item.tryNo) === String(event.params.tryNo))
+    if (item) this.showTryDetails(item)
   }
 
   updateEndpoint(event) {

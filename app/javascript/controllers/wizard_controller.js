@@ -36,13 +36,7 @@ export default class extends Controller {
     this.searchFields = []
     this.newQueries = []
     this.staticRows = []
-    this.boundOpen = () => this.open()
-    this.element.addEventListener("wizard:open", this.boundOpen)
     this.loadWizard()
-  }
-
-  disconnect() {
-    this.element.removeEventListener("wizard:open", this.boundOpen)
   }
 
   async loadWizard() {

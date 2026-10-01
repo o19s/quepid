@@ -3,18 +3,6 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["scaleList", "scaleLabels"]
 
-  connect() {
-    // Listen for changes on scale preset radio buttons
-    this.element.querySelectorAll('input[name="scale_preset"]').forEach(radio => {
-      radio.addEventListener('change', this.updateScale.bind(this))
-    })
-    
-    // Listen for manual changes to scale_list field
-    if (this.hasScaleListTarget) {
-      this.scaleListTarget.addEventListener('input', this.handleScaleListInput.bind(this))
-    }
-  }
-
   handleScaleListInput(event) {
     const scaleValue = event.target.value.trim()
     if (scaleValue) {

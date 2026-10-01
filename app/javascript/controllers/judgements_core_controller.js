@@ -363,13 +363,17 @@ export default class extends ModalTriggerControllerBase {
       view.className = "btn btn-outline-secondary btn-sm float-end"
       view.title = "Open this book in a new page"
       view.innerHTML = '<i class="bi bi-eye-fill"></i> View'
-      view.addEventListener("click", (e) => e.stopPropagation())
+      view.dataset.action = "click->judgements-core#viewBook"
       li.appendChild(view)
 
       this.bookListTarget.appendChild(li)
     })
 
     this._refreshBookSelection()
+  }
+
+  viewBook(event) {
+    event.stopPropagation()
   }
 
   _refreshBookSelection() {

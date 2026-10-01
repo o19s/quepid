@@ -6,7 +6,7 @@ import { isEsLikeEngine } from "utils/search_engines"
 
 export default class extends Controller {
   static targets = ["queryParams", "queryParamsEditor", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
-  static values = { queryId: Number }
+  static values = { queryId: Number, modalRoot: Boolean }
 
   open(event) {
     event.preventDefault()
@@ -24,19 +24,15 @@ export default class extends Controller {
     if (!this.isModalRoot) return
     this.adapter = getCoreCapabilities().targetedSearch?.(this.queryIdValue)
     if (!this.adapter) return
-    this.element.addEventListener("rating-popover:rate", this.ratingHandler = event => this.rate(event))
-    this.element.addEventListener("rating-popover:reset", this.resetHandler = event => this.rate(event))
     this.renderShell()
     this.adapter.resetToRated().then(() => this.render())
   }
 
   get isModalRoot() {
-    return this.element.dataset.missingDocumentsModalRoot === "true"
+    return this.modalRootValue
   }
 
   disconnect() {
-    this.element.removeEventListener("rating-popover:rate", this.ratingHandler)
-    this.element.removeEventListener("rating-popover:reset", this.resetHandler)
     this.editor?.destroy()
   }
 

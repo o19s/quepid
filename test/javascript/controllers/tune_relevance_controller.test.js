@@ -241,6 +241,23 @@ describe("TuneRelevanceController", () => {
     })
   })
 
+  describe("curator variables", () => {
+    it("updates the original variable index when unused variables are filtered out", () => {
+      const variables = [{ name: "unused", value: "query", inQueryParams: false }, { name: "boost", value: "2", inQueryParams: true }]
+      const { controller, settings } = mount({ selectedTry: makeTry({ curatorVars: variables }) })
+      controller.refreshCuratorVars()
+      const input = controller.curatorVarsTarget.querySelector("input")
+      expect(input.dataset.action).toBe("input->tune-relevance#updateCuratorVariable")
+      expect(input.dataset.tuneRelevanceIndexParam).toBe("1")
+      input.value = "8"
+      controller.updateCuratorVariable({ currentTarget: input, params: { index: 1 } })
+      expect(settings.selectedTry.curatorVars[1].value).toBe("8")
+      expect(settings.selectedTry.curatorVars[0].value).toBe("query")
+      controller.refreshCuratorVars()
+      expect(controller.curatorVarsTarget.querySelector("input").value).toBe("8")
+    })
+  })
+
   describe("save", () => {
     it("rejects an out-of-range number of results without saving", () => {
       const { controller, capability } = mount()
@@ -362,7 +379,10 @@ describe("TuneRelevanceController", () => {
       const update = vi.spyOn(controller, "updateEndpoint").mockImplementation(() => {})
 
       controller.renderEndpointSuggestions("prod")
-      controller.endpointSuggestionsTarget.querySelector("button").click()
+      const button = controller.endpointSuggestionsTarget.querySelector("button")
+      expect(button.dataset.action).toBe("click->tune-relevance#selectEndpointSuggestion")
+      expect(button.dataset.tuneRelevanceEndpointIdParam).toBe("9")
+      controller.selectEndpointSuggestion({ params: { endpointId: 9 } })
 
       expect(update).toHaveBeenCalledWith({ target: controller.endpointSelectTarget })
     })
@@ -423,7 +443,9 @@ describe("TuneRelevanceController", () => {
 
       const rows = controller.historyListTarget.querySelectorAll("li")
       expect(rows).toHaveLength(2)
-      rows[1].click()
+      expect(rows[1].dataset.action).toBe("click->tune-relevance#navigateToTry")
+      expect(rows[1].dataset.tuneRelevanceTryNoParam).toBe("2")
+      controller.navigateToTry({ params: { tryNo: 2 } })
       expect(capability.navigation.goToTry).toHaveBeenCalledWith(2)
     })
 
@@ -431,7 +453,12 @@ describe("TuneRelevanceController", () => {
       const { controller, capability } = mount()
       controller.refreshHistory()
 
-      controller.historyListTarget.querySelector("[data-try-details]").click()
+      const details = controller.historyListTarget.querySelector("[data-try-details]")
+      expect(details.dataset.action).toBe("click->tune-relevance#openTryDetails")
+      expect(details.dataset.tuneRelevanceTryNoParam).toBe("1")
+      const stopPropagation = vi.fn()
+      controller.openTryDetails({ params: { tryNo: 1 }, stopPropagation })
+      expect(stopPropagation).toHaveBeenCalledOnce()
 
       expect(capability.navigation.goToTry).not.toHaveBeenCalled()
       expect(controller.tryTitleTarget.textContent).toBe("Try 1")

@@ -77,6 +77,8 @@
 
 ### Manual testing tracker (`docs/manual-testing/`)
 
+- Follow the timestamp rules in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker). Preserve actual verification timestamps.
+
 - When observed behavior differs from a manual scenario's expectation, compare it with the same surface on pre-deangularization `main` before classifying it or proposing a fix. Go back far enough to recover the Angular implementation (months if needed), record the baseline commit and source evidence, and distinguish migration regressions, pre-existing defects, and unsupported test expectations. Historical source inspection is not a live historical replay; state that limit explicitly.
 
 - `docs/manual-testing/*.md` is the human-readable manual test script. - `docs/manual-testing/tracking.yml` tracks, per numbered scenario, when it was last actually driven end-to-end (via Playwright MCP or by hand), the result, and which source `paths` that scenario exercises.

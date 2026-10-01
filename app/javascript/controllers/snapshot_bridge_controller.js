@@ -18,27 +18,7 @@ import coreFlash from "utils/core_flash"
  */
 export default class extends Controller {
   connect() {
-    this.onSelectionRequest = (event) => this.selectionRequest(event)
-    this.onApply = (event) => this.apply(event)
-    this.onClear = (event) => this.clear(event)
-    this.onDelete = (event) => this.delete(event)
-    this.onCreate = (event) => this.create(event)
-
-    document.addEventListener("diff:selection-request", this.onSelectionRequest)
-    document.addEventListener("diff:apply", this.onApply)
-    document.addEventListener("diff:clear", this.onClear)
-    document.addEventListener("diff:delete", this.onDelete)
-    document.addEventListener("take-snapshot:create", this.onCreate)
-
     void this.bootstrapSnapshots()
-  }
-
-  disconnect() {
-    document.removeEventListener("diff:selection-request", this.onSelectionRequest)
-    document.removeEventListener("diff:apply", this.onApply)
-    document.removeEventListener("diff:clear", this.onClear)
-    document.removeEventListener("diff:delete", this.onDelete)
-    document.removeEventListener("take-snapshot:create", this.onCreate)
   }
 
   diffStore() {

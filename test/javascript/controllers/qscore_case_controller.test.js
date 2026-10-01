@@ -118,7 +118,7 @@ describe("QscoreCaseController", () => {
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
 
-    document.dispatchEvent(
+    controller.handleScorerSelected(
       new CustomEvent("pick-scorer:selected", {
         detail: { caseId: 7, scorer: { name: "NDCG@10" } }
       })
@@ -133,7 +133,7 @@ describe("QscoreCaseController", () => {
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
 
-    document.dispatchEvent(
+    controller.handleScorerSelected(
       new CustomEvent("pick-scorer:selected", {
         detail: { caseId: 99, scorer: { name: "NDCG@10" } }
       })
@@ -143,19 +143,10 @@ describe("QscoreCaseController", () => {
     QscoreCaseController.prototype.disconnect.call(controller)
   })
 
-  it("stops reacting to pick-scorer:selected after disconnect", () => {
+  it("ignores scorer events with no scorer payload", () => {
     const controller = buildController(element, { caseId: 7, scoreLabel: "AP@10" })
-    QscoreCaseController.prototype.initialize.call(controller)
-    QscoreCaseController.prototype.connect.call(controller)
-    QscoreCaseController.prototype.disconnect.call(controller)
-
-    document.dispatchEvent(
-      new CustomEvent("pick-scorer:selected", {
-        detail: { caseId: 7, scorer: { name: "NDCG@10" } }
-      })
-    )
-
-    expect(labelEl.textContent).toBe("AP@10")
+    controller.handleScorerSelected({ detail: { caseId: 7 } })
+    expect(labelEl.textContent).not.toBe("NDCG@10")
   })
 
   it("does not persist the unrated '--' sentinel as a case score", () => {
@@ -256,7 +247,7 @@ describe("QscoreCaseController", () => {
     const controller = buildController(element)
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
-    document.dispatchEvent(new CustomEvent("query-diffs:refreshed"))
+    await controller.handleDiffsRefreshed(new CustomEvent("query-diffs:refreshed"))
     await vi.waitFor(() => expect(buildCaseDiffScores).toHaveBeenCalled())
 
     expect(buildCaseDiffScores).toHaveBeenCalledWith([query], 1)
@@ -301,7 +292,7 @@ describe("QscoreCaseController", () => {
     const controller = buildController(element)
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
-    document.dispatchEvent(new CustomEvent("query-diffs:refreshed", {
+    await controller.handleDiffsRefreshed(new CustomEvent("query-diffs:refreshed", {
       detail: { success: false }
     }))
     await vi.waitFor(() => expect(clearCaseDiffs).toHaveBeenCalled())

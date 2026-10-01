@@ -102,7 +102,7 @@ export default class extends ModalTriggerControllerBase {
   }
 
   selectChanged(event) {
-    this.selectionValues[Number(event.currentTarget.dataset.index)] = event.currentTarget.value
+    this.selectionValues[event.params.index] = event.currentTarget.value
     this.renderSelections()
   }
 
@@ -176,7 +176,7 @@ export default class extends ModalTriggerControllerBase {
 
       const select = document.createElement("select")
       select.className = "form-select snapshot-selection-select"
-      select.dataset.index = String(index)
+      select.dataset.diffCoreIndexParam = String(index)
       select.style.width = "auto"
       select.style.minWidth = "200px"
       select.style.marginRight = "10px"

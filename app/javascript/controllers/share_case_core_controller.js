@@ -48,15 +48,6 @@ export default class extends ModalTriggerControllerBase {
     this.currentCaseId = null
     this.allTeams = []
     this.sharedTeams = []
-    this.boundOpenFromEvent = (e) => this.openFromExternal(e)
-
-    document.addEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
-  }
-
-  disconnect() {
-    if (!this.isModalRoot) return
-
-    document.removeEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
   }
 
   get modalElementId() {
@@ -168,9 +159,10 @@ export default class extends ModalTriggerControllerBase {
   renderShareableTeams(teams) {
     if (!this.hasShareableListTarget) return
 
+    this.shareableTeams = teams
     this.renderTeamList(this.shareableListTarget, teams, {
       className: "list-group-item list-group-item-action",
-      onSelect: (e, team) => this.toggleShareSelect(e, team)
+      action: "selectShareTeam"
     })
   }
 
@@ -195,15 +187,26 @@ export default class extends ModalTriggerControllerBase {
   renderSharedTeams(teams) {
     if (!this.hasSharedListTarget) return
 
+    this.renderedSharedTeams = teams
     this.renderTeamList(this.sharedListTarget, teams, {
       className: "list-group-item list-group-item-action list-group-item-success",
-      onSelect: (e, team) => this.toggleCoreSharedSelect(e, team)
+      action: "selectSharedTeam"
     })
 
     this.updateUnshareFooter()
   }
 
-  renderTeamList(target, teams, { className, onSelect }) {
+  selectShareTeam(event) {
+    const team = this.shareableTeams.find(team => String(team.id) === String(event.params.teamId))
+    if (team) this.toggleShareSelect(event, team)
+  }
+
+  selectSharedTeam(event) {
+    const team = this.renderedSharedTeams.find(team => String(team.id) === String(event.params.teamId))
+    if (team) this.toggleCoreSharedSelect(event, team)
+  }
+
+  renderTeamList(target, teams, { className, action }) {
     target.innerHTML = ""
 
     teams.forEach((team) => {
@@ -212,7 +215,8 @@ export default class extends ModalTriggerControllerBase {
       item.className = className
       item.textContent = team.name || `Team ${team.id}`
       item.dataset.teamId = team.id
-      item.addEventListener("click", (e) => onSelect(e, team))
+      item.dataset.shareCaseCoreTeamIdParam = String(team.id)
+      item.dataset.action = `click->share-case-core#${action}`
       target.appendChild(item)
     })
   }

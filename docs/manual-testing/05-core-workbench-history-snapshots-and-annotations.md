@@ -63,7 +63,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
   5. Delete an annotation via the same dropdown.
 - **Expected:** Annotations record a point-in-time note tied to the current score; edits/deletes reflect immediately in the list and on the score graph (5.5).
 - **Edge cases:**
-  - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), attempt to create an annotation — confirm the flash error "Can't create a new annotation until searches have been run! Please rerun your searches." and no annotation is created.
+  - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), confirm the **Create** button is disabled until a case score exists, so no annotation can be created. (The controller's flash "Can't create a new annotation until searches have been run! Please rerun your searches." is a fallback that the disabled button normally keeps unreachable.)
   - [ ] Open Edit, change the message, then click **Cancel** — confirm the original message is restored (no partial edit leaks through).
   - [ ] Delete an annotation — note there is no confirmation dialog on this action; confirm this is intentional (and mention it to the team if it feels too easy to trigger accidentally).
 

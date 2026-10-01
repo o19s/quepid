@@ -13,7 +13,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
   queryExplainData = escapeAttribute(queryExplainData)
   queryOptionsData = escapeAttribute(queryOptionsData)
   return `
-    <div data-controller="search-results">
+    <div data-controller="search-results" data-action="rating-popover:rate->search-results#handleRating rating-popover:reset->search-results#handleRating query-row:toggle->search-results#handleQueryToggle search-result:show-document->search-results#handleShowDocument query-notes:close->search-results#closeNotes">
       <div data-search-results-target="content" class="sub-results container-fluid d-none">
         <div data-search-results-target="scoreAll"></div>
 
@@ -44,7 +44,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
         </div>
 
         <div class="notes-box d-none" data-search-results-target="notesBox">
-          <div class="notes-content" data-controller="query-notes" data-query-notes-url-value="api/cases/${caseId}/queries/${queryId}/notes">
+          <div class="notes-content" data-controller="query-notes" data-action="query-notes:open->query-notes#load" data-query-notes-url-value="api/cases/${caseId}/queries/${queryId}/notes">
             <form data-action="submit->query-notes#save">
               <div class="row mb-3"><label for="information-${queryId}" class="col-sm-2 col-form-label text-sm-end">Information Need</label><div class="col-sm-10"><input type="text" data-query-notes-target="informationNeed" class="form-control" id="information-${queryId}" placeholder="Info Need:"></div></div>
               <div class="row mb-3"><label for="notes-${queryId}" class="col-sm-2 col-form-label text-sm-end">Notes on this Query</label><div class="col-sm-10"><textarea data-query-notes-target="notes" id="notes-${queryId}" class="form-control"></textarea></div></div>

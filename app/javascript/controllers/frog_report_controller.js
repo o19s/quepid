@@ -28,6 +28,8 @@ export default class extends Controller {
     "chart", "refreshButton", "refreshIcon", "bookName", "error"
   ]
 
+  static values = { modalRoot: Boolean }
+
   open(event) {
     event.preventDefault()
     const modal = openDynamicModal({
@@ -39,12 +41,12 @@ export default class extends Controller {
 
     const content = modal.element.querySelector(".modal-content")
     content.dataset.controller = "frog-report"
-    content.dataset.frogReportModalRoot = "true"
+    content.dataset.frogReportModalRootValue = "true"
     content.frogReportModal = modal
   }
 
   connect() {
-    if (this.element.dataset.frogReportModalRoot !== "true") return
+    if (!this.modalRootValue) return
     this.store = getCoreStores().documents
     this.render()
     this.storeChange = () => this.render()

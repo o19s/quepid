@@ -16,13 +16,6 @@ export default class extends Controller {
 
   connect() {
     this.queryCapabilities = getCoreCapabilities().queryCapabilities
-    this.onQueryStateChange = () => {
-      this.queryCapabilities = getCoreCapabilities().queryCapabilities
-      this.render()
-    }
-    document.addEventListener("queries-state:changed", this.onQueryStateChange)
-    this.onComplete = event => this.complete(event)
-    this.element.addEventListener("add-query:complete", this.onComplete)
     this.detachPaste = attachTextPaste(this.inputTarget, text => {
       this.inputTarget.value = text.split("\n").join(";")
       this.render()
@@ -32,8 +25,11 @@ export default class extends Controller {
 
   disconnect() {
     this.detachPaste?.()
-    document.removeEventListener("queries-state:changed", this.onQueryStateChange)
-    this.element.removeEventListener("add-query:complete", this.onComplete)
+  }
+
+  refreshQueryState() {
+    this.queryCapabilities = getCoreCapabilities().queryCapabilities
+    this.render()
   }
 
   submit(event) {

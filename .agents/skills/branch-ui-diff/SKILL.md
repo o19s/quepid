@@ -94,9 +94,10 @@ is safe to parallelize.
    `git checkout`/`stash`/rebase can bump many files' mtimes without changing their content) — that
    just costs an unnecessary rerun of one scenario, which is a fine tradeoff for staying simple.
 
-   - `bin/manual_test_status` will still list such a scenario as "DUE" if its paths are currently
-     *uncommitted* — that flag means "not yet committed," not "not yet verified." Don't confuse
-     the two: read the actual `notes`/`last_run`, don't just trust the DUE list to mean unverified.
+   - `bin/manual_test_status` uses modification times for dirty files. For clean files, both
+     modification and commit times must be newer than `last_run` to flag a code change.
+     Committing the same files tested after their last edit therefore keeps verification current.
+     See `DEVELOPER_GUIDE.md` § Manual testing tracker for limitations; preserve actual test times.
    - A scenario whose last verification predates the sweep (an older `last_run` with no
      branch-ui-diff-style note) has NOT had an old-vs-new comparison yet — it's a genuine gap.
    Report the split to the user: e.g. "88 scenarios matched; 42 already have an explicit

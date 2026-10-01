@@ -76,6 +76,18 @@ function buildModalController(overrides = {}) {
 }
 
 describe("JudgementsCoreController", () => {
+  it("keeps View navigation independent of book selection", () => {
+    const controller = buildModalController({ books: [{ id: 2, name: "Catalog" }] })
+    controller._renderBooks()
+    const link = controller.bookListTarget.querySelector("a")
+    expect(link.getAttribute("href")).toBe("books/2")
+    expect(link.dataset.action).toBe("click->judgements-core#viewBook")
+    const event = { stopPropagation: vi.fn(), preventDefault: vi.fn() }
+    controller.viewBook(event)
+    expect(event.stopPropagation).toHaveBeenCalledOnce()
+    expect(event.preventDefault).not.toHaveBeenCalled()
+  })
+
   it("highlights only the selected book target, including None", () => {
     const controller = buildModalController()
     controller.books = [{ id: 8, name: "Book" }]

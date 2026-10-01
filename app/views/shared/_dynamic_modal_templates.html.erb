@@ -70,7 +70,7 @@
     <h3 class="modal-title" id="missing-documents-modal-title">Find and Rate Missing Documents</h3>
     <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
-  <div class="modal-body" data-controller="missing-documents" data-missing-documents-modal-root="true"></div>
+  <div class="modal-body" data-controller="missing-documents" data-action="rating-popover:rate->missing-documents#rate rating-popover:reset->missing-documents#rate" data-missing-documents-modal-root-value="true"></div>
   <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
 </template>
 

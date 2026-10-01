@@ -16,20 +16,18 @@ export default class extends Controller {
     this.documentsStore = stores.documents
     this.handleDocumentCommand = event => this.routeDocumentCommand(event.detail || {})
     this.handleCollectionCommand = event => this.routeCollectionCommand(event.detail || {})
-    this.handleQueryDeleteCompleted = event => this.reconcileQueryRemoval(event.detail || {}, true)
-    this.handleQueryMoveCompleted = event => this.reconcileQueryRemoval(event.detail || {}, true)
 
     this.documentsStore.addEventListener("command", this.handleDocumentCommand)
     this.collectionStore.addEventListener("command", this.handleCollectionCommand)
-    document.addEventListener("query-command:delete-completed", this.handleQueryDeleteCompleted)
-    document.addEventListener("query-command:move-completed", this.handleQueryMoveCompleted)
   }
 
   disconnect() {
     this.documentsStore?.removeEventListener("command", this.handleDocumentCommand)
     this.collectionStore?.removeEventListener("command", this.handleCollectionCommand)
-    document.removeEventListener("query-command:delete-completed", this.handleQueryDeleteCompleted)
-    document.removeEventListener("query-command:move-completed", this.handleQueryMoveCompleted)
+  }
+
+  handleQueryRemovalCompleted(event) {
+    this.reconcileQueryRemoval(event.detail || {}, true)
   }
 
   routeDocumentCommand({ command, queryId, docId, rating, ratedOnly }) {

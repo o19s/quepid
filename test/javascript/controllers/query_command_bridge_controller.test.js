@@ -15,8 +15,6 @@ describe("query_command_bridge_controller", () => {
   let documentsStore
 
   beforeEach(() => {
-    vi.spyOn(document, "addEventListener")
-    vi.spyOn(document, "removeEventListener")
     collectionStore = store()
     documentsStore = store()
     controller = new QueryCommandBridgeController()
@@ -52,8 +50,6 @@ describe("query_command_bridge_controller", () => {
 
     expect(documentsStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleDocumentCommand)
     expect(collectionStore.removeEventListener).toHaveBeenCalledWith("command", controller.handleCollectionCommand)
-    expect(document.removeEventListener).toHaveBeenCalledWith("query-command:delete-completed", controller.handleQueryDeleteCompleted)
-    expect(document.removeEventListener).toHaveBeenCalledWith("query-command:move-completed", controller.handleQueryMoveCompleted)
   })
 
   it("routes document commands through the explicit query command runtime", () => {
@@ -85,13 +81,13 @@ describe("query_command_bridge_controller", () => {
   it("keeps live queries synchronized after Stimulus-owned mutations", () => {
     controller.connect()
 
-    controller.handleQueryDeleteCompleted(new CustomEvent("query-command:delete-completed", {
+    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:delete-completed", {
       detail: { queryId: 4 }
     }))
-    controller.handleQueryMoveCompleted(new CustomEvent("query-command:move-completed", {
+    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:move-completed", {
       detail: { caseId: 7, queryId: 5 }
     }))
-    controller.handleQueryMoveCompleted(new CustomEvent("query-command:move-completed", {
+    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:move-completed", {
       detail: { caseId: 8, queryId: 6 }
     }))
 

@@ -1119,6 +1119,21 @@ heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging
 ```
 
+## Manual testing tracker
+
+Run `ruby bin/manual_test_status --due-only` to find scenarios needing review.
+Keep `last_run` as the actual test time. Uncommitted files are compared by edit
+time; committed files are due only when both their edit and commit times are
+newer than the test. Editing, testing, then committing the same files therefore
+keeps the verification current. Never-run scenarios and the default 90-day
+expiry still make a scenario due.
+
+This is a timestamp heuristic. Fresh clones or rebases can still report due;
+tools that preserve or backdate file timestamps can hide changes.
+
+See [the manual testing guide](docs/manual-testing/README.md) for scenarios and
+coverage recording.
+
 ## Seed Data
 
 The following accounts are created through the `bin/setup_docker` process. They all follow the following format:

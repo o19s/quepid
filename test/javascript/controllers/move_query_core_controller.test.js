@@ -78,7 +78,8 @@ describe("MoveQueryCoreController", () => {
     await controller.open({ preventDefault: vi.fn(), currentTarget: trigger() })
 
     const caseButton = controller.caseListTarget.querySelector("button")
-    controller.selectCase({ currentTarget: caseButton })
+    expect(caseButton.dataset.moveQueryCoreCaseIdParam).toBe("8")
+    controller.selectCase({ params: { caseId: 8 } })
     expect(controller.submitButtonTarget.textContent).toBe("Move to Other Case")
     expect(controller.submitButtonTarget.disabled).toBe(false)
 

@@ -301,7 +301,7 @@ describe("queries_list_controller", () => {
     controller.scheduleRender = vi.fn()
     controller.connect()
 
-    document.dispatchEvent(new CustomEvent("query-command:delete-completed", {
+    controller.handleQueryDeleteCompleted(new CustomEvent("query-command:delete-completed", {
       detail: { queryId: 7 }
     }))
 
