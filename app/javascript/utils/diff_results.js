@@ -66,55 +66,12 @@ export function createQueryDiff({
       const searcher = diffSearchers[searcherIndex]
       if (!searcher) return []
       return searcher.docs.filter((doc) => doc.ratedOnly === onlyRated)
-    },
-
-    name(searcherIndex) {
-      if (searcherIndex !== undefined && diffSearchers[searcherIndex]) {
-        return diffSearchers[searcherIndex].name()
-      }
-      return diffSearchers.map((searcher) => searcher.name()).join(" vs ")
-    },
-
-    names() {
-      return diffSearchers.map((searcher) => searcher.name())
-    },
-
-    version(searcherIndex) {
-      if (searcherIndex !== undefined && diffSearchers[searcherIndex]) {
-        return diffSearchers[searcherIndex].version()
-      }
-      return diffSearchers.map((searcher) => searcher.version())
-    },
-
-    score(searcherIndex) {
-      if (searcherIndex !== undefined && diffSearchers[searcherIndex]) {
-        return Promise.resolve(
-          diffSearchers[searcherIndex].diffScore || { score: null, allRated: false }
-        )
-      }
-      return Promise.resolve(
-        diffSearchers.map((searcher) => {
-          return searcher.diffScore || { score: null, allRated: false }
-        })
-      )
     }
   }
 
   if (diffSettings.length === 1 && query.diffs) {
     query.diff = {
-      fetch: () => query.diffs.fetch(),
-      docs: (onlyRated) => query.diffs.docs(0, onlyRated),
-      name: () => query.diffs.name(0),
-      version: () => query.diffs.version(0),
-      score: () => query.diffs.score(0),
-      type: () => "snapshot",
-      get diffScore() {
-        const searchers = query.diffs.getSearchers()
-        return searchers[0]?.diffScore || { score: null, allRated: false }
-      },
-      get currentScore() {
-        return this.diffScore
-      }
+      fetch: () => query.diffs.fetch()
     }
   } else {
     query.diff = null

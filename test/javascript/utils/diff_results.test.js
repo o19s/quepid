@@ -49,10 +49,12 @@ describe("createQueryDiff", () => {
     })
 
     expect(factory).toHaveBeenCalledWith("one", query, { id: "settings" })
-    expect(query.diff.name()).toBe("Snapshot one")
-    expect(query.diff.docs()).toEqual([{ id: "unrated", ratedOnly: false }])
+    expect(query.diffs.docs(0)).toEqual([{ id: "unrated", ratedOnly: false }])
     expect(query.scoreOthers).toHaveBeenCalledWith([{ id: "unrated", ratedOnly: false }])
-    await expect(query.diff.score()).resolves.toEqual({ score: 50, allRated: true })
+    expect(searcher.diffScore).toEqual({ score: 50, allRated: true })
+    searcher.search.mockClear()
+    await query.diff.fetch()
+    expect(searcher.search).toHaveBeenCalledOnce()
   })
 
   it("retains multiple diff searchers and skips missing snapshots", async () => {
@@ -68,7 +70,6 @@ describe("createQueryDiff", () => {
 
     expect(query.diff).toBeNull()
     expect(query.diffs.getSearchers()).toEqual([first])
-    expect(query.diffs.names()).toEqual(["Snapshot one"])
     expect(query.diffs.docs(3)).toEqual([])
   })
 

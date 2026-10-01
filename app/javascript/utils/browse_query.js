@@ -25,21 +25,3 @@ export function buildBrowseCurlCommand({ url, headers = {} } = {}) {
   })
   return lines.join("")
 }
-
-export function parseBrowseHeaders(customHeaders, basicAuthCredential) {
-  let headers = {}
-
-  if (customHeaders) {
-    try {
-      headers = typeof customHeaders === "string" ? JSON.parse(customHeaders) : customHeaders
-    } catch (error) {
-      headers = {}
-    }
-  }
-
-  if (!headers || typeof headers !== "object" || Array.isArray(headers)) headers = {}
-  else headers = { ...headers }
-
-  if (basicAuthCredential) headers.Authorization = `Basic ${window.btoa(basicAuthCredential)}`
-  return headers
-}

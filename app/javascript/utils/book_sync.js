@@ -81,10 +81,6 @@ export function createBookSyncRuntime({ fetcher = apiFetch, logger = console } =
     autoPopulate = nextAutoPopulate === true
   }
 
-  const clearSyncCache = (targetBookId = bookId) => {
-    if (targetBookId != null && syncedPairs[targetBookId]) delete syncedPairs[targetBookId]
-  }
-
   const reset = () => {
     syncedPairs = {}
   }
@@ -128,5 +124,5 @@ export function createBookSyncRuntime({ fetcher = apiFetch, logger = console } =
     )
   }
 
-  return { configure, clearSyncCache, getSyncCacheStats, reset, sync }
+  return { configure, getSyncCacheStats, reset, sync }
 }

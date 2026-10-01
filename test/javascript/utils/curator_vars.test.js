@@ -8,6 +8,11 @@ describe("extractCuratorVars", () => {
     expect(extractCuratorVars(query)).toEqual(["k", "k"])
   })
 
+  it("ignores multi-digit keyword placeholders and empty #### markers", () => {
+    expect(extractCuratorVars("q=#$keyword10## title:##boost##")).toEqual(["boost"])
+    expect(extractCuratorVars("bq=####")).toEqual([])
+  })
+
   it("returns an empty list when no curator variables are present", () => {
     expect(extractCuratorVars("q=#$query##&keywords=#$keyword1##")).toEqual([])
   })

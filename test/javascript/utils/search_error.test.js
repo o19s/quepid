@@ -38,4 +38,13 @@ describe("search error utilities", () => {
     expect(message).toContain("invalid setting")
     expect(message).not.toContain("undefined")
   })
+
+  it("appends the engine's error body, serializing Elasticsearch-style error objects", () => {
+    const esError = { type: "parsing_exception", reason: "Unknown key [qury]" }
+
+    expect(parseResponseObject({ status: 400, data: { error: esError } }, "", "es"))
+      .toMatch(/: \{"type":"parsing_exception","reason":"Unknown key \[qury\]"\}$/)
+    expect(parseResponseObject({ status: 400, data: { error: "bad field" } }, "", "os"))
+      .toMatch(/: bad field$/)
+  })
 })

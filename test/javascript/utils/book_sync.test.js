@@ -66,6 +66,74 @@ describe("buildQueryDocPairsPayload", () => {
       .toEqual({ title: "Mapped title", title_field: "Original title" })
   })
 
+  it("only syncs when the case has a book with auto-populate on", async () => {
+    const fetcher = vi.fn(() => Promise.resolve({ ok: true, status: 204 }))
+    const runtime = createBookSyncRuntime({ fetcher })
+    const query = { queryText: "search", docs: [{ id: "doc-1" }] }
+
+    await runtime.sync([query])
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: false })
+    await runtime.sync([query])
+    runtime.configure({ caseId: 42, bookId: null, autoPopulate: true })
+    await runtime.sync([query])
+
+    expect(fetcher).not.toHaveBeenCalled()
+  })
+
+  it("sends only unsynced documents, in batches of 100 queries", async () => {
+    const fetcher = vi.fn(() => Promise.resolve({ ok: true, status: 204 }))
+    const runtime = createBookSyncRuntime({ fetcher })
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+    const queries = Array.from({ length: 250 }, (_, i) => ({ queryText: `q${i}`, docs: [{ id: "d" }] }))
+
+    await runtime.sync(queries)
+    expect(fetcher).toHaveBeenCalledTimes(3)
+    const batchSizes = fetcher.mock.calls.map(([, init]) => JSON.parse(init.body).query_doc_pairs.length)
+    expect(batchSizes).toEqual([100, 100, 50])
+
+    fetcher.mockClear()
+    await runtime.sync([{ queryText: "q0", docs: [{ id: "d" }, { id: "new" }] }])
+    expect(JSON.parse(fetcher.mock.calls[0][1].body).query_doc_pairs.map((pair) => pair.doc_id)).toEqual(["new"])
+  })
+
+  it("forgets synced pairs on reset or when the case's book changes, but not on a same-book reconfigure", async () => {
+    const fetcher = vi.fn(() => Promise.resolve({ ok: true, status: 204 }))
+    const runtime = createBookSyncRuntime({ fetcher })
+    const query = { queryText: "search", docs: [{ id: "doc-1" }] }
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+    await runtime.sync([query])
+
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+    expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(1)
+
+    runtime.reset()
+    expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(0)
+    await runtime.sync([query])
+
+    runtime.configure({ caseId: 42, bookId: 8, autoPopulate: true })
+    await runtime.sync([query])
+    expect(fetcher).toHaveBeenCalledTimes(3)
+    expect(fetcher.mock.calls[2][0]).toBe("api/books/8/populate")
+  })
+
+  it("reads thumb and image flags whether they are methods or booleans", () => {
+    const [pair] = buildQueryDocPairsPayload([{
+      queryText: "q",
+      docs: [{
+        id: "d",
+        title: "T",
+        hasThumb: () => true,
+        thumb: "t.png",
+        thumb_options: { prefix: "https://img/" },
+        hasImage: false,
+        image: "i.png"
+      }]
+    }])
+
+    expect(pair.document_fields.thumb).toBe("https://img/t.png")
+    expect(pair.document_fields).not.toHaveProperty("image")
+  })
+
   it("deduplicates automatic syncs and retries failed batches", async () => {
     const fetcher = vi.fn()
       .mockResolvedValueOnce({ ok: false, status: 500, json: async () => ({ error: "failed" }) })

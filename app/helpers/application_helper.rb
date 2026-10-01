@@ -124,17 +124,6 @@ module ApplicationHelper
     super
   end
 
-  def form_with_disabled( **options, &)
-    if options[:html].nil?
-      options[:html] = { data: { turbo: false } }
-    elsif options[:html][:data].nil?
-      options[:html][:data] = { turbo: false }
-    end
-
-    # Call the original `form_with` method with the modified options
-    super
-  end
-
   # Match the link to the core case url with the endpoint_url
   # if we have one.  Avoids a swap in the core application.
   def link_to_core_case name, kase, try_number, options = {}

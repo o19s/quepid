@@ -91,6 +91,9 @@ export function createLiveQueryCollectionRuntime({
         logger.debug?.("Failed to bootstrap queries")
         setBootstrapping(false)
         publishState()
+        // A handler above threw before settling; reject so callers waiting on
+        // the bootstrap (and the searchable promise) don't hang forever.
+        requestDeferred.reject(response)
         return response
       })
 

@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from "vitest"
-import { buildBrowseCurlCommand, engineDisplayName, parseBrowseHeaders } from "utils/browse_query"
+import { describe, expect, it } from "vitest"
+import { buildBrowseCurlCommand, engineDisplayName } from "utils/browse_query"
 
 describe("browse query utilities", () => {
   it("encodes spaces in browse URL query parameters for curl", () => {
@@ -20,15 +20,6 @@ describe("browse query utilities", () => {
 
     expect(command).toContain("\\\n -H 'Authorization: Basic abc123'")
     expect(command).not.toContain("+ -H")
-  })
-
-  it("adds basic auth to configured custom headers", () => {
-    vi.stubGlobal("window", { btoa: (value) => Buffer.from(value).toString("base64") })
-
-    expect(parseBrowseHeaders('{"X-Test":"yes"}', "user:secret")).toEqual({
-      "X-Test": "yes",
-      Authorization: "Basic dXNlcjpzZWNyZXQ="
-    })
   })
 
   it("matches the legacy engine labels", () => {

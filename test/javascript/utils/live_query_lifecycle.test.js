@@ -54,6 +54,53 @@ describe("createLiveQueryLifecycleRuntime", () => {
     expect(updateScores).not.toHaveBeenCalled()
   })
 
+  it("rescores after a single query searches successfully", async () => {
+    const updateScores = vi.fn()
+    const registerQuery = vi.fn()
+    const runtime = runtimeFor({ updateScores, registerQuery })
+
+    await expect(runtime.commitQueries({ query: {} }, { status: 204 })).resolves.toEqual({})
+
+    expect(registerQuery).not.toHaveBeenCalled()
+    expect(updateScores).toHaveBeenCalledOnce()
+  })
+
+  it("replaces the collection from the response for bulk commits, then searches", async () => {
+    const clearQueries = vi.fn()
+    const addQueriesFromResponse = vi.fn()
+    const searchError = new Error("engine down")
+    const searchAll = vi.fn().mockResolvedValueOnce().mockRejectedValueOnce(searchError)
+    const runtime = runtimeFor({ clearQueries, addQueriesFromResponse, searchAll })
+    const persisted = { data: { queries: [{ query_id: 1 }, { query_id: 2 }] } }
+
+    await expect(runtime.commitQueries({ queries: [{}, {}] }, persisted)).resolves.toEqual({})
+    await expect(runtime.commitQueries({ queries: [{}, {}] }, persisted)).resolves.toEqual({ searchError })
+
+    expect(clearQueries).toHaveBeenCalledTimes(2)
+    expect(addQueriesFromResponse).toHaveBeenCalledWith(persisted.data, 7)
+  })
+
+  it("commits already-persisted queries without searching", () => {
+    const clearQueries = vi.fn()
+    const addQueriesFromResponse = vi.fn()
+    const searchAll = vi.fn()
+    const runtime = runtimeFor({ clearQueries, addQueriesFromResponse, searchAll })
+
+    expect(runtime.commitPersistedQueries({ data: { queries: [] } })).toEqual({})
+
+    expect(clearQueries).toHaveBeenCalledOnce()
+    expect(addQueriesFromResponse).toHaveBeenCalledWith({ queries: [] }, 7)
+    expect(searchAll).not.toHaveBeenCalled()
+  })
+
+  it("does not rescore a reconciled removal unless asked to", () => {
+    const updateScores = vi.fn()
+    const runtime = runtimeFor({ updateScores })
+
+    expect(runtime.reconcileQueryRemoval(12)).toBe(true)
+    expect(updateScores).not.toHaveBeenCalled()
+  })
+
   it("refreshes by resetting, bootstrapping, and searching", async () => {
     const reset = vi.fn()
     const bootstrapQueries = vi.fn(() => Promise.resolve())

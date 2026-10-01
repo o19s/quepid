@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-09-30
+**Last updated:** 2026-10-01
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -39,6 +39,28 @@ Score and rating controls still convey state by color alone; add text or icons s
 Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
+
+### [MIGRATION-FOLLOWUP] P3 — Extract untestable read-model logic from `live_query_runtime_owner.js`
+
+Three pieces of real logic in `app/javascript/utils/live_query_runtime_owner.js`
+are closure-private and can only be reached by driving a full search through the
+runtime graph, so they have no unit coverage (StrykerJS: the file scores ~17%,
+almost all of it wiring that is covered elsewhere):
+
+- `createDocList` — builds the user-facing "ID field missing" / "ID shared with
+  another doc" errors and the placeholder ids for those docs.
+- `documentUrlFor` (inside `publishQueryDocuments`) — injects
+  `basicAuthCredential` into document links and prefixes the proxy URL when
+  `proxyRequests` is on.
+- `buildDiffReadModel` — snapshot-comparison columns: hides docs under
+  show-only-rated, computes `maxDocScore`, defaults name/score.
+
+**Fix direction:** Move them into a small pure module (e.g.
+`app/javascript/utils/live_query_read_models.js`) that takes its dependencies as
+arguments (`normalDocsSvc.createNormalDoc`, `proxyUrlFor`, `showOnlyRated`), have
+the owner call it, and add a Vitest spec. Re-run
+`yarn test:mutation --mutate "app/javascript/utils/live_query_read_models.js"`
+to confirm the new tests kill its mutants.
 
 ---
 

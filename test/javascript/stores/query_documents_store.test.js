@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueryDocumentsStore } from "stores/query_documents_store"
 
 describe("QueryDocumentsStore", () => {
@@ -45,6 +45,95 @@ describe("QueryDocumentsStore", () => {
     expect(snapshot.docs[0].thumbOptions).toBeUndefined()
     expect(snapshot.docs[0].imageOptions).toBeUndefined()
     expect(snapshot.docs[0].hasRating).toBeUndefined()
+  })
+
+  it("snapshots match-explain bars, falling back to JSON when the explain has no child terms", () => {
+    const explainDoc = (children) => ({
+      id: "d",
+      title: "T",
+      score: () => 4,
+      hotMatchesOutOf: (max) => [{ description: "title", percentage: (4 / max) * 100 }],
+      explain: () => ({ children, toStr: () => "explained", asJson: { value: 4 }, rawStr: () => "raw" })
+    })
+
+    store.replaceQuery(1, { docs: [explainDoc([{}]), explainDoc([])], maxDocScore: 8 })
+    const [withChildren, withoutChildren] = store.query(1).docs
+
+    expect(withChildren.matchExplain).toEqual({
+      hasChildren: true,
+      hots: [{ description: "title", percentage: 50 }],
+      explainToStr: "explained",
+      explainAsJson: null,
+      explainRawStr: "raw",
+      docTitle: "T",
+      docId: "d",
+      docScore: 4
+    })
+    expect(withoutChildren.matchExplain).toMatchObject({ hasChildren: false, explainToStr: null, explainAsJson: '{\n  "value": 4\n}' })
+  })
+
+  it("still renders a document whose explain throws", () => {
+    store.replaceQuery(1, {
+      docs: [{ id: "d", title: "T", hotMatchesOutOf: () => [], explain: () => { throw new Error("bad explain") } }]
+    })
+
+    expect(store.query(1).docs[0]).toMatchObject({ id: "d", title: "T", matchExplain: null })
+  })
+
+  it("snapshots comparison columns with defaults and each snapshot's own max doc score", () => {
+    const explainDoc = (id) => ({
+      id,
+      explain: () => ({ children: [], asJson: {}, rawStr: () => "" }),
+      hotMatchesOutOf: vi.fn(() => [])
+    })
+    const doc = explainDoc("d")
+    const ratedDoc = explainDoc("r")
+
+    store.replaceQuery(1, {
+      maxDocScore: 99,
+      diffs: {
+        searchers: [
+          { name: "Snap A", version: 2, inError: 1, searchError: "boom", score: { score: 0.5, allRated: true }, maxDocScore: 7, docs: [doc], ratedDocs: [ratedDoc] },
+          {}
+        ]
+      }
+    })
+    const [first, second] = store.query(1).diffs.searchers
+
+    expect(first).toMatchObject({ name: "Snap A", version: 2, inError: true, searchError: "boom", score: { score: 0.5, allRated: true } })
+    expect(first.docs.map((d) => d.id)).toEqual(["d"])
+    expect(first.ratedDocs.map((d) => d.id)).toEqual(["r"])
+    expect(doc.hotMatchesOutOf).toHaveBeenCalledWith(7)
+    expect(ratedDoc.hotMatchesOutOf).toHaveBeenCalledWith(7)
+    expect(second).toEqual({ name: "Snapshot", version: null, inError: false, searchError: "", score: { score: "?", allRated: false }, docs: [], ratedDocs: [] })
+    store.replaceQuery(2, {})
+    expect(store.query(2).diffs).toBeNull()
+  })
+
+  it.each([
+    ["replaceQuery", (s) => s.replaceQuery(1, {})],
+    ["updateQueryState for a known query", (s) => { s.replaceQuery(1, {}); s.updateQueryState(1, { expanded: true }) }],
+    ["updateQueryState for a pending query", (s) => s.updateQueryState(5, { expanded: true })],
+    ["setCaseDiffs", (s) => s.setCaseDiffs([{ name: "A" }])],
+    ["setShowOnlyRated", (s) => s.setShowOnlyRated(true)],
+    ["collapseAll", (s) => s.collapseAll()]
+  ])("notifies subscribers after %s", (_label, mutate) => {
+    const changed = vi.fn()
+    store.addEventListener("change", changed)
+
+    mutate(store)
+
+    expect(changed).toHaveBeenCalled()
+    expect(changed.mock.calls.at(-1)[0].detail).toEqual(expect.objectContaining({ queries: expect.any(Object) }))
+  })
+
+  it("publishes a reset event", () => {
+    const reset = vi.fn()
+    store.addEventListener("reset", reset)
+
+    store.reset()
+
+    expect(reset).toHaveBeenCalledOnce()
   })
 
   it("keeps the resolved document link in the plain snapshot", () => {

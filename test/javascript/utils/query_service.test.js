@@ -260,6 +260,27 @@ describe("query service helpers", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
+  it("tells the user to pick a search endpoint when no searcher can be built", async () => {
+    const query = { hasBeenScored: true }
+    const onError = vi.fn()
+    const createRatedSearcher = vi.fn()
+    const message = "No Search Endpoint configured. Please select a search endpoint in Settings."
+
+    await expect(searchQuery({
+      query,
+      createSearcher: () => null,
+      createRatedSearcher,
+      setDocs: vi.fn(),
+      onError,
+      parseError: vi.fn(),
+      logDebug: vi.fn()
+    })).rejects.toBe(message)
+
+    expect(onError).toHaveBeenCalledWith(message)
+    expect(query.hasBeenScored).toBe(false)
+    expect(createRatedSearcher).not.toHaveBeenCalled()
+  })
+
   it("rejects after preserving the legacy search-error callbacks", async () => {
     const query = {
       searcher: { search: vi.fn().mockRejectedValue({ status: 502 }) }

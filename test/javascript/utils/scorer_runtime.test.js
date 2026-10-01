@@ -94,6 +94,82 @@ describe("scorer runtime", () => {
     await expect(scorer.checkCode()).rejects.toContain("Loops are currently not supported")
   })
 
+  // Hand-computed for returned ratings [3, 0, 2] and best ratings [3, 2, 1] on a 0-3 scale.
+  it.each([
+    ["p@10", 2 / 3],
+    ["rr@10", 1],
+    ["ap@10", (1 + 2 / 3) / 3],
+    ["dcg@10", 7 + 3 / 2],
+    ["ndcg@10", 8.5 / (7 + 3 / Math.log2(3) + 1 / 2)],
+    ["ndcg_cut@10", 8.5 / (7 + 3 / Math.log2(3) + 1 / 2)],
+    // floor(avg 5/3 scaled to 100 over max 3) = 55, minus edit distance 2 from [3, 2, 1].
+    ["v1", 53]
+  ])("scores the built-in %s scorer", async (name, expected) => {
+    const code = readFileSync(`db/scorers/${name}.js`, "utf8")
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code })
+    const docs = [makeDoc(3), makeDoc(0), makeDoc(2)]
+    const bestDocs = [{ rating: 3 }, { rating: 2 }, { rating: 1 }]
+
+    const score = await scorer.score({ ratedDocs: [] }, 3, docs, bestDocs)
+
+    expect(scorer.error).toBeFalsy()
+    expect(score).toBeCloseTo(expected, 10)
+  })
+
+  it("exposes rated-doc, rating-filter, and option helpers to scorer code", async () => {
+    const scorer = createScorer({
+      scale: [0, 1, 2, 3],
+      code: `
+        const ids = []
+        eachRatedDoc(function (doc, i) { ids.push(doc.id + "@" + i) }, 2)
+        let threes = 0
+        eachDocWithRatingEqualTo(3, function () { threes += 1 })
+        setScore([ids.join(","), threes, qOption("boost"), qOption("missing"), docAt(5).id, docRating(9)].join("|"))
+      `
+    })
+    const query = { ratedDocs: [{ id: "a" }, { id: "b" }, { id: "c" }] }
+
+    const result = await scorer.runCode(query, 1, [makeDoc(1)], [{ rating: 3 }, { rating: 1 }, { rating: 3 }], undefined, { boost: 2 })
+
+    expect(result).toBe("a@0,b@1|2|2|||")
+  })
+
+  it("lets scorer code pass, fail, and short-circuit with assertions", async () => {
+    const run = (code) => createScorer({ scale: [0, 1], code }).runCode({ ratedDocs: [] }, 1, [makeDoc(1)], [])
+
+    await expect(run("pass()")).resolves.toBe(100)
+    await expect(run("fail()")).rejects.toBe(0)
+    await expect(run("assert(true); setScore(7)")).resolves.toBe(7)
+    await expect(run("assert(false); setScore(7)")).rejects.toBe(0)
+    await expect(run("assertOrScore(false, 3); setScore(7)")).resolves.toBe(3)
+    await expect(run("assertOrScore(true, 3); setScore(7)")).resolves.toBe(7)
+  })
+
+  it("scores every document at the scale max in max mode without mutating the originals", async () => {
+    const scorer = createScorer({ scale: [0, 1, 2, 3], code: "setScore(avgRating())" })
+    const docs = [makeDoc(1), makeDoc(0)]
+
+    await expect(scorer.runCode({ ratedDocs: [] }, 2, docs, [], "max")).resolves.toBe(3)
+    expect(docs[0].getRating()).toBe(1)
+    // pass()-style scorers short-circuit to 100 synchronously instead of running.
+    expect(createScorer({ scale: [0, 1], code: "pass()" }).runCode({ ratedDocs: [] }, 1, docs, [], "max")).toBe(100)
+  })
+
+  it("records a scorer error and returns null when scorer code throws", async () => {
+    const scorer = createScorer({ scale: [0, 1], code: "throw new Error('bad scorer')" })
+
+    await expect(scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [])).resolves.toBeNull()
+    expect(scorer.error).toBeInstanceOf(Error)
+    expect(scorer.error.message).toBe("bad scorer")
+  })
+
+  it("reports zero-results and unrated queries distinctly when the scorer returns null", async () => {
+    const scorer = createScorer({ scale: [0, 1], code: "setScore(null)" })
+
+    await expect(scorer.score({ ratedDocs: [] }, 0, [], [{ rating: 1 }])).resolves.toBe("zsr")
+    await expect(scorer.score({ ratedDocs: [] }, 1, [makeDoc(1)], [{ rating: 1 }])).resolves.toBeNull()
+  })
+
   it("delegates rated-document refresh through the injected capability", async () => {
     const refreshRatedDocs = vi.fn().mockResolvedValue(undefined)
     const scorer = createScorer({

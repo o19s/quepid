@@ -69,4 +69,43 @@ describe("QueryOptionsCoreController", () => {
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to save query options.")
     expect(instance.saveButtonTarget.disabled).toBe(false)
   })
+
+  it("opens the modal for the clicked query with its options pretty-printed", async () => {
+    const { showBsModal } = await import("utils/bs_modal")
+    const instance = controller()
+    instance.hasTitleTarget = true
+    instance.titleTarget = { textContent: "" }
+    instance.saveButtonTarget.disabled = true
+    const button = document.createElement("button")
+    button.dataset.queryOptionsCoreQueryIdValue = "7"
+    button.dataset.queryOptionsCoreSaveUrlValue = "api/cases/1/queries/7/options"
+    button.dataset.queryOptionsCoreOptionsValue = '{"boost":2}'
+
+    instance.openAsRoot({ currentTarget: button })
+
+    expect(instance.queryId).toBe("7")
+    expect(instance.saveUrl).toBe("api/cases/1/queries/7/options")
+    expect(instance.editor.setValue).toHaveBeenCalledWith('{\n  "boost": 2\n}')
+    expect(instance.titleTarget.textContent).toBe("Query Options")
+    expect(instance.saveButtonTarget.disabled).toBe(false)
+    expect(showBsModal).toHaveBeenCalledOnce()
+  })
+
+  it("shows empty options as {} and leaves unparseable stored options as-is", () => {
+    const instance = controller()
+
+    expect(instance.formatOptions(undefined)).toBe("{}")
+    expect(instance.formatOptions("")).toBe("{}")
+    expect(instance.formatOptions("{not json")).toBe("{not json")
+  })
+
+  it("does not save without an editor or a save URL", async () => {
+    const instance = controller()
+    instance.saveUrl = ""
+
+    await instance.save({ preventDefault: vi.fn() })
+
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
 })
+

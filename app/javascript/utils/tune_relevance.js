@@ -42,12 +42,6 @@ export function validateNumberOfRows(value) {
   return Number.isInteger(number) && number >= 1 && number <= 100
 }
 
-export function customHeadersForType(type) {
-  if (type === "API Key") return '{\n  "Authorization": "ApiKey XXX"\n}'
-  if (type === "Custom") return '{\n  "KEY": "VALUE"\n}'
-  return ""
-}
-
 export function urlBucket(url, urls) {
   const index = urls.indexOf(url)
   return (index === -1 ? urls.length : index) % 3

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueryCollectionStore } from "stores/query_collection_store"
 
 describe("QueryCollectionStore", () => {
@@ -199,5 +199,47 @@ describe("QueryCollectionStore", () => {
 
     expect(store.finishSearch(secondGeneration)).toBe(true)
     expect(store.searchStatus).toBe("ready")
+  })
+
+  it("marks a failed bootstrap as an error and publishes it with the cause", () => {
+    const errored = vi.fn()
+    store.addEventListener("error", errored)
+
+    store.markError({ status: 500 })
+
+    expect(store.snapshot().status).toBe("error")
+    expect(errored.mock.calls[0][0].detail).toMatchObject({ error: { status: 500 }, status: "error" })
+  })
+
+  it.each([
+    ["beginBootstrap", (s) => s.beginBootstrap(3)],
+    ["replace", (s) => s.replace({ caseId: 3, queries: [{ query_id: 1 }] })],
+    ["upsert", (s) => s.upsert({ queryId: 1 })],
+    ["remove", (s) => { s.upsert({ queryId: 1 }); s.remove(1) }],
+    ["setDisplayOrder", (s) => s.setDisplayOrder([2, 1])],
+    ["setExpanded", (s) => s.setExpanded(1, true)],
+    ["collapseAll", (s) => s.collapseAll()],
+    ["beginSearch", (s) => s.beginSearch()],
+    ["finishSearch", (s) => s.finishSearch(s.beginSearch())],
+    ["failSearch", (s) => s.failSearch("boom", s.beginSearch())]
+  ])("publishes a change after %s", (_label, mutate) => {
+    const changed = vi.fn()
+    store.addEventListener("change", changed)
+
+    mutate(store)
+
+    expect(changed).toHaveBeenCalled()
+    expect(changed.mock.calls.at(-1)[0].detail).toEqual(store.snapshot())
+  })
+
+  it("does not publish an upsert made with publish: false, or one without a query id", () => {
+    const changed = vi.fn()
+    store.addEventListener("change", changed)
+
+    store.upsert({ queryId: 1 }, { publish: false })
+    store.upsert({})
+
+    expect(changed).not.toHaveBeenCalled()
+    expect(store.orderedQueryIds()).toEqual([1])
   })
 })

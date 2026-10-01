@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import {
-  customHeadersForType,
   curatorVariableEntries,
   formatJson,
   queryParamsMode,
@@ -30,12 +29,6 @@ describe("tune relevance utilities", () => {
     expect(validateNumberOfRows(100)).toBe(true)
     expect(validateNumberOfRows(0)).toBe(false)
     expect(validateNumberOfRows(1.5)).toBe(false)
-  })
-
-  it("creates the same header presets as the legacy editor", () => {
-    expect(customHeadersForType("None")).toBe("")
-    expect(customHeadersForType("API Key")).toContain("Authorization")
-    expect(customHeadersForType("Custom")).toContain("KEY")
   })
 
   it("groups endpoint URLs into three history buckets", () => {

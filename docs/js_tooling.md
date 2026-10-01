@@ -127,11 +127,17 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mutation-report.html
 ```
 
-The incremental cache is only written when a run finishes, so a crash mid-run loses that run's results. To build results up in small pieces, narrow `--mutate` and give each slice its own cache file:
+The incremental cache is only written when a run finishes, so a crash mid-run loses that run's results. To build results up in small pieces, narrow `--mutate` to a slice. The shared cache keeps results for files outside the slice so successive slices accumulate in the same `incremental.json` and a later full run reuses them:
 
 ```bash
-bin/docker r yarn test:mutation --mutate "app/javascript/api/**/*.js" \
-  --incrementalFile tmp/stryker-tmp/incremental-api.json
+bin/docker r yarn test:mutation --mutate "app/javascript/api/**/*.js"
+bin/docker r yarn test:mutation --mutate "app/javascript/utils/core_*.js"
+```
+
+**`--ignoreStatic`** — Stryker can't tell which tests cover module-level code (constant tables, top-level `new Set([...])`, and similar), so for each of those "static" mutants it reloads the module and re-runs the whole suite. When the planner warns that static mutants dominate the run (e.g. *"155 static mutants (7% of total) … estimated to take 94% of the time"*), add `--ignoreStatic` to skip them; they are reported as `Ignored` rather than tested. On one 16-file `utils/` slice this cut the estimate from about an hour to under two minutes. The trade-off is that mutations to module-level constants go unchecked, which is usually fine — they tend to be preset and lookup data.
+
+```bash
+bin/docker r yarn test:mutation --mutate "app/javascript/utils/query_service.js" --ignoreStatic
 ```
 
 Survived/no-coverage mutants in the report point at either a missing test case or genuinely dead/defensive code — triage per file rather than chasing 100%.

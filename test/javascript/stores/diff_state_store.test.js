@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { DiffStateStore } from "stores/diff_state_store"
 
 describe("DiffStateStore", () => {
@@ -30,5 +30,19 @@ describe("DiffStateStore", () => {
 
     expect(store.selections()).toEqual([])
     expect(store.snapshot().disabled).toBe(false)
+  })
+
+  it.each([
+    ["enable", (s) => s.enable([7])],
+    ["disable", (s) => s.disable()],
+    ["reset", (s) => s.reset()]
+  ])("publishes a change after %s", (_label, mutate) => {
+    const changed = vi.fn()
+    store.addEventListener("change", changed)
+
+    mutate(store)
+
+    expect(changed).toHaveBeenCalledOnce()
+    expect(changed.mock.calls[0][0].detail).toEqual(store.snapshot())
   })
 })

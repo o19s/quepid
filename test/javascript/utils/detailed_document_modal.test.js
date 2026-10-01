@@ -74,6 +74,39 @@ describe("detailed document modal", () => {
     expect(sanitized).not.toContain("&lt;section")
   })
 
+  it("removes executable and embedded content, and unwraps unknown tags but keeps their text", () => {
+    const sanitized = sanitizeDocumentHtml(
+      "<p onclick='steal()'>Hi</p><script>steal()</script><iframe src='x'></iframe><style>p{}</style><blink>kept <b>bold</b></blink>"
+    )
+
+    expect(sanitized).toBe("<p>Hi</p>kept <b>bold</b>")
+    expect(sanitizeDocumentHtml(null)).toBe("")
+  })
+
+  it("keeps only http(s) links, opening them safely in a new tab", () => {
+    const anchors = (html) => {
+      const container = document.createElement("div")
+      container.innerHTML = sanitizeDocumentHtml(html)
+      return Array.from(container.querySelectorAll("a"))
+    }
+
+    const [external] = anchors("<a href='https://example.test/doc' style='x'>Doc</a>")
+    expect(external.getAttribute("href")).toBe("https://example.test/doc")
+    expect(external.getAttribute("target")).toBe("_blank")
+    expect(external.getAttribute("rel")).toBe("noopener noreferrer")
+    expect(external.hasAttribute("style")).toBe(false)
+
+    const [relative] = anchors("<a href='/docs/1'>Rel</a>")
+    expect(relative.getAttribute("href")).toBe(new URL("/docs/1", document.baseURI).href)
+
+    for (const unsafe of ["<a href='javascript:alert(1)'>JS</a>", "<a href='data:text/html,x'>Data</a>", "<a>None</a>"]) {
+      const [link] = anchors(unsafe)
+      expect(link.hasAttribute("href")).toBe(false)
+      expect(link.hasAttribute("target")).toBe(false)
+      expect(link.textContent).not.toBe("")
+    }
+  })
+
   it("renders scalar subfields as sanitized HTML like the legacy detailed view", () => {
     openDetailedDocumentModal({
       doc: {

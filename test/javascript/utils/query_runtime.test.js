@@ -193,6 +193,105 @@ describe("query runtime", () => {
     expect(query.ratedDocs).toEqual([{ id: "fresh-doc", rateable: true }])
   })
 
+  it("loads Search API rated documents by id and publishes them", async () => {
+    const searcher = { linkUrl: "rated-url", numFound: 2 }
+    const searchApiRatedDocs = vi.fn(() => Promise.resolve({ searcher, docs: [{ id: "a" }, { id: "b" }] }))
+    const settings = { searchEngine: "searchapi", selectedTry: {}, createFieldSpec: () => ({}) }
+    const { query, runtime, publish } = buildRuntime({
+      query: { ratings: { a: 1, "": 2, b: 3 }, ratingsGeneration: 0 },
+      getSettings: () => settings,
+      searchApiRatedDocs
+    })
+
+    await runtime.refreshRatedDocs()
+
+    expect(searchApiRatedDocs).toHaveBeenCalledWith(expect.objectContaining({ searchEngine: "searchapi" }), query, ["a", "b"])
+    expect(query).toMatchObject({
+      ratedSearcher: searcher,
+      ratedUrl: "rated-url",
+      ratedDocs: [{ id: "a", rateable: true }, { id: "b", rateable: true }],
+      ratedDocsFound: 2,
+      ratingsReady: true,
+      ratingsPromise: null
+    })
+    expect(publish).toHaveBeenCalledWith(query)
+  })
+
+  it("treats a Search API rated lookup with no ratings, or a null result, as empty", async () => {
+    const getSettings = () => ({ searchEngine: "searchapi", selectedTry: {}, createFieldSpec: () => ({}) })
+    const searchApiRatedDocs = vi.fn(() => Promise.resolve(null))
+
+    const noRatings = buildRuntime({ query: { ratings: {}, ratedDocs: [{ id: "old" }] }, getSettings, searchApiRatedDocs })
+    await noRatings.runtime.refreshRatedDocs()
+    expect(searchApiRatedDocs).not.toHaveBeenCalled()
+    expect(noRatings.query).toMatchObject({ ratedDocs: [], ratedDocsFound: 0, ratingsReady: true })
+
+    const nullResult = buildRuntime({ query: { ratings: { a: 1 }, ratingsGeneration: 0 }, getSettings, searchApiRatedDocs })
+    await nullResult.runtime.refreshRatedDocs()
+    expect(nullResult.query).toMatchObject({ ratedDocsUnsupported: true, ratedDocs: [], ratingsPromise: null })
+  })
+
+  it("shares an in-flight rated refresh and clears it after a failure so the next call retries", async () => {
+    const error = new Error("engine down")
+    const createRatedSearcher = vi
+      .fn()
+      .mockReturnValueOnce({ search: () => Promise.reject(error) })
+      .mockReturnValueOnce({ search: () => Promise.resolve(), linkUrl: "ok" })
+    const { query, runtime } = buildRuntime({ query: { ratingsGeneration: 0 }, createRatedSearcher })
+
+    const first = runtime.refreshRatedDocs()
+    expect(runtime.refreshRatedDocs()).toBe(first)
+    await expect(first).rejects.toBe(error)
+    expect(query.ratingsPromise).toBeNull()
+
+    await runtime.refreshRatedDocs()
+    expect(createRatedSearcher).toHaveBeenCalledTimes(2)
+  })
+
+  it("loads snapshot results into the query", async () => {
+    const searcher = { search: vi.fn(() => Promise.resolve()), docs: [{ id: "s1" }], numFound: 9, linkUrl: "snap-url" }
+    const setDocs = vi.fn(() => undefined)
+    const { query, runtime } = buildRuntime({
+      query: { hasBeenScored: true },
+      createSnapshotSearcher: vi.fn(() => searcher),
+      setDocs
+    })
+
+    await expect(runtime.searchFromSnapshot(42)).resolves.toBeUndefined()
+
+    expect(query.hasBeenScored).toBe(false)
+    expect(query.linkUrl).toBe("snap-url")
+    expect(setDocs).toHaveBeenCalledWith([{ id: "s1" }], 9)
+  })
+
+  it.each([
+    ["the snapshot searcher is in error", { inError: true, searchError: "bad snapshot" }, () => undefined, "bad snapshot"],
+    ["the snapshot searcher errors without a message", { inError: true }, () => undefined, "Error loading snapshot results"],
+    ["setDocs reports an error", {}, () => "scoring broke", "scoring broke"]
+  ])("rejects and reports when %s", async (_label, searcherState, setDocsResult, message) => {
+    const onError = vi.fn()
+    const searcher = { search: () => Promise.resolve(), docs: [{ id: "s1" }], numFound: 1, ...searcherState }
+    const { runtime } = buildRuntime({
+      createSnapshotSearcher: () => searcher,
+      setDocs: vi.fn(setDocsResult),
+      onError
+    })
+
+    await expect(runtime.searchFromSnapshot(42)).rejects.toBe(message)
+    expect(onError).toHaveBeenCalledWith(message)
+  })
+
+  it("reports a failed snapshot search with the snapshot id", async () => {
+    const onError = vi.fn()
+    const { runtime } = buildRuntime({
+      createSnapshotSearcher: () => ({ search: () => Promise.reject(new Error("404")) }),
+      onError
+    })
+
+    await expect(runtime.searchFromSnapshot(42)).rejects.toBe("Failed to load snapshot: 42")
+    expect(onError).toHaveBeenCalledWith("Failed to load snapshot: 42")
+  })
+
   it("reports missing snapshots through the injected error boundary", async () => {
     const onError = vi.fn()
     const { runtime } = buildRuntime({ createSnapshotSearcher: vi.fn(() => null), onError })
