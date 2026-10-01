@@ -345,19 +345,35 @@ test.describe('core layout golden paths', () => {
       // Reset first so the following positive rating is a known mutation even
       // when the shared static case already has a rating on this document.
       await resultRating.click();
-      await expect(page.locator('.popover').last()).toBeVisible();
-      await page.locator('.popover').last().locator('.reset').click();
-      await expect(page.locator('.popover')).toHaveCount(0);
+      const visiblePopover = () => page.locator('.popover:visible').last();
+      await expect(visiblePopover()).toBeVisible();
+      await visiblePopover().locator('.reset').click();
+      await expect(page.locator('.popover:visible')).toHaveCount(0);
+      // RESET rerenders the result row; wait for the replacement Stimulus
+      // controller to reconnect its Bootstrap popover before clicking again.
+      await page.waitForFunction(() => {
+        const trigger = document.querySelector('search-result .single-rating');
+        const application = (window as unknown as {
+          Stimulus?: {
+            getControllerForElementAndIdentifier: (element: Element, identifier: string) => {
+              handle?: { instance?: unknown };
+            } | undefined;
+          };
+        }).Stimulus;
+        return Boolean(
+          trigger && application?.getControllerForElementAndIdentifier(trigger, 'rating-popover')?.handle?.instance
+        );
+      });
 
       const scoreBeforeRating = await queryScore.textContent();
       const caseScoreBeforeRating = await caseScore.textContent();
       const badgeColorBeforeRating = await resultRating.locator('span.btn').evaluate((el) => getComputedStyle(el).backgroundColor);
 
       await resultRating.click();
-      const ratingOption = page.locator('.popover').last().locator('.ratingNum').last();
+      const ratingOption = visiblePopover().locator('.ratingNum').last();
       await expect(ratingOption).toBeVisible();
       await ratingOption.click();
-      await expect(page.locator('.popover')).toHaveCount(0);
+      await expect(page.locator('.popover:visible')).toHaveCount(0);
 
       await expect.poll(async () => (await queryScore.textContent())?.trim()).not.toBe(scoreBeforeRating?.trim());
       await expect.poll(async () => (await caseScore.textContent())?.trim()).not.toBe(caseScoreBeforeRating?.trim());

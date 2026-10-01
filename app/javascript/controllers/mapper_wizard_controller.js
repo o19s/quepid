@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { escapeHtml } from "utils/html"
-import { apiFetch } from "api/fetch"
+import { HttpError } from "api/http_error"
+import { postJson } from "api/json"
 import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
@@ -146,21 +147,13 @@ export default class extends Controller {
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
-      const response = await apiFetch(this.fetchUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          search_url: url,
-          http_method: httpMethod,
-          test_query: testQuery,
-          custom_headers: customHeaders,
-          basic_auth_credential: basicAuthCredential
-        })
+      const data = await this.postWizardJson(this.fetchUrlValue, {
+        search_url: url,
+        http_method: httpMethod,
+        test_query: testQuery,
+        custom_headers: customHeaders,
+        basic_auth_credential: basicAuthCredential
       })
-
-      const data = await response.json()
 
       if (data.success) {
         this.htmlPreviewTarget.textContent = data.html_preview
@@ -174,6 +167,19 @@ export default class extends Controller {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
       this.setButtonLoading(this.fetchButtonTarget, false)
+    }
+  }
+
+  // The wizard endpoints answer validation failures with a 422 and a
+  // `{ success: false, error|errors }` body that the callers render. Hand those
+  // bodies back; anything else (HTML error page, expired CSRF token, network
+  // failure) stays an error with a readable message.
+  async postWizardJson(url, body) {
+    try {
+      return await postJson(url, body)
+    } catch (error) {
+      if (error instanceof HttpError && error.data && typeof error.data === "object") return error.data
+      throw error
     }
   }
 
@@ -191,15 +197,7 @@ export default class extends Controller {
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
-      const response = await apiFetch(this.generateUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ api_key: apiKey })
-      })
-
-      const data = await response.json()
+      const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
 
       if (data.success) {
         // Re-capture editors in case they weren't ready before
@@ -270,18 +268,10 @@ export default class extends Controller {
     this.setButtonLoading(button, true)
 
     try {
-      const response = await apiFetch(this.testUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          mapper_type: mapperType,
-          code: code
-        })
+      const data = await this.postWizardJson(this.testUrlValue, {
+        mapper_type: mapperType,
+        code: code
       })
-
-      const data = await response.json()
 
       if (data.success) {
         const resultStr = JSON.stringify(data.result, null, 2)
@@ -367,20 +357,12 @@ export default class extends Controller {
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
     try {
-      const response = await apiFetch(this.refineUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          mapper_type: mapperType,
-          current_code: currentCode,
-          feedback: feedback,
-          api_key: apiKey
-        })
+      const data = await this.postWizardJson(this.refineUrlValue, {
+        mapper_type: mapperType,
+        current_code: currentCode,
+        feedback: feedback,
+        api_key: apiKey
       })
-
-      const data = await response.json()
 
       if (data.success) {
         if (editor) {
@@ -439,26 +421,18 @@ export default class extends Controller {
       : []
 
     try {
-      const response = await apiFetch(this.saveUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: name,
-          number_of_results_mapper: numberOfResultsMapper,
-          docs_mapper: docsMapper,
-          endpoint_url: this.searchUrlTarget.value.trim(),
-          api_method: httpMethod,
-          proxy_requests: this.proxyRequestsTarget.checked,
-          test_query: testQuery,
-          custom_headers: customHeaders,
-          basic_auth_credential: basicAuthCredential,
-          team_ids: teamIds
-        })
+      const data = await this.postWizardJson(this.saveUrlValue, {
+        name: name,
+        number_of_results_mapper: numberOfResultsMapper,
+        docs_mapper: docsMapper,
+        endpoint_url: this.searchUrlTarget.value.trim(),
+        api_method: httpMethod,
+        proxy_requests: this.proxyRequestsTarget.checked,
+        test_query: testQuery,
+        custom_headers: customHeaders,
+        basic_auth_credential: basicAuthCredential,
+        team_ids: teamIds
       })
-
-      const data = await response.json()
 
       if (data.success) {
         this.showStatus("Search endpoint saved successfully! Redirecting...", "success")

@@ -58,7 +58,7 @@ bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
 bin/docker r yarn format:js:check      # Prettier check — api/, utils/, classic core scripts
 bin/docker r yarn format:js            # Prettier write — api/, utils/, classic core scripts
 bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
-bin/docker r rails test:frontend       # Vitest + Karma + ESLint + Stylelint
+bin/docker r rails test:frontend       # Vitest + ESLint + Stylelint
 ```
 
 Per-file ESLint (e.g. a controller outside the Prettier scope):
@@ -90,7 +90,7 @@ After pulling these dependencies, run `bin/docker r yarn install` once.
 
 ## Vitest (`app/javascript`)
 
-Unit tests for the modern importmap stack. Legacy Angular specs remain on Karma (`spec/javascripts/`).
+Unit tests for the modern importmap stack.
 
 ### Setup
 
@@ -106,14 +106,12 @@ bin/docker r yarn test:unit:watch     # watch mode
 bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 ```
 
-`rails test:frontend` runs Vitest **before** Karma so fast failures surface first.
-
 Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
 
 ### PR policy
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.
-- **`controllers/`** — Add Vitest when you touch a controller for Angular migration or meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
+- **`controllers/`** — Add Vitest when you touch a controller for meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
 ## StrykerJS mutation testing (`app/javascript/api`, `app/javascript/utils`)
@@ -131,19 +129,14 @@ bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mut
 
 Survived/no-coverage mutants in the report point at either a missing test case or genuinely dead/defensive code — triage per file rather than chasing 100%.
 
-## Unit test strategy: Karma vs Vitest
+## Unit test strategy
 
-### Current state
-
-- **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
-- **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
-- Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
-- **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. Now fully Stimulus — `teamSvc.js` and its Karma spec were dead code and have been deleted; `caseSvc_spec.js` covers the `quepid:case-team-changed` bridge.
+Unit tests are **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`). The Karma/Jasmine suite was removed with AngularJS.
 
 ---
 
 ## Related docs
 
-- [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Karma, Playwright
+- [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Playwright
 - [`app_structure.md`](./app_structure.md) — frontend layout
 - [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) — frontend cleanup after Angular removal

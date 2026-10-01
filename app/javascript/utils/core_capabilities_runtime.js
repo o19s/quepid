@@ -10,6 +10,8 @@ import { createCaseRuntime } from "utils/case_runtime"
 import { createScorer } from "utils/scorer_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { apiFetch } from "api/fetch"
+import { HttpError } from "api/http_error"
+import { readJson } from "api/json"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
 const mapperSearchRuntime = createMapperSearchRuntime()
@@ -63,15 +65,11 @@ export function createNativeFramework({ schedule, applyAsync } = {}) {
     }
 
     const response = await apiFetch(url.toString(), init)
-    const data = response.status === 204 ? null : await response.json().catch(() => null)
-    const result = {
-      data,
-      ok: response.ok,
-      status: response.status,
-      statusText: response.statusText
+    const data = await readJson(response)
+    if (!response.ok) {
+      throw new HttpError({ status: response.status, statusText: response.statusText, data })
     }
-    if (!response.ok) throw result
-    return result
+    return { data, ok: true, status: response.status, statusText: response.statusText }
   }
 
   return {

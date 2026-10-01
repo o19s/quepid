@@ -134,16 +134,19 @@ export default class extends Controller {
     const extension = source.split("?")[0].split(".").pop()?.toLowerCase()
     if (["mp3", "wav", "ogg"].includes(extension)) {
       const audio = document.createElement("audio")
+      audio.className = "media-embed"
       audio.controls = true
       audio.src = source
       media.appendChild(audio)
     } else if (["mp4", "webm"].includes(extension)) {
       const video = document.createElement("video")
+      video.className = "media-embed"
       video.controls = true
       video.src = source
       media.appendChild(video)
     } else if (["jpg", "jpeg", "gif", "png"].includes(extension)) {
       const image = document.createElement("img")
+      image.className = "media-embed"
       image.src = source
       image.alt = ""
       media.appendChild(image)

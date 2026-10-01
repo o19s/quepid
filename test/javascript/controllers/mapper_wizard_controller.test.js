@@ -6,6 +6,10 @@ vi.mock("api/fetch", () => ({
   apiFetch: vi.fn(),
 }))
 
+function jsonResponse(body, status = 200) {
+  return new Response(JSON.stringify(body), { status })
+}
+
 function buildController(overrides = {}) {
   const controller = Object.create(MapperWizardController.prototype)
 
@@ -29,6 +33,7 @@ function buildController(overrides = {}) {
   controller.hasStatusTarget = true
   controller.captureEditors = vi.fn()
   controller.setButtonLoading = vi.fn()
+  controller.showStatus = vi.fn()
 
   Object.assign(controller, overrides)
   return controller
@@ -47,14 +52,11 @@ describe("MapperWizardController fetchHtml", () => {
       basicAuthCredentialTarget: { value: "user:pass" },
     })
 
-    apiFetch.mockResolvedValue({
-      json: () =>
-        Promise.resolve({
+    apiFetch.mockResolvedValue(jsonResponse({
           success: true,
           html_preview: "<html>preview</html>",
           html_length: 1234,
-        }),
-    })
+        }))
 
     await MapperWizardController.prototype.fetchHtml.call(controller, {
       preventDefault: vi.fn(),
@@ -63,7 +65,7 @@ describe("MapperWizardController fetchHtml", () => {
     expect(apiFetch).toHaveBeenCalledOnce()
     expect(apiFetch).toHaveBeenCalledWith("/mapper_wizard/new/fetch_html", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({
         search_url: "https://example.com/search",
         http_method: "GET",
@@ -93,6 +95,30 @@ describe("MapperWizardController fetchHtml", () => {
       "Custom headers must be valid JSON",
       "error"
     )
+  })
+})
+
+describe("MapperWizardController error responses", () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("still renders the server's own message from a 422 JSON body", async () => {
+    const controller = buildController()
+    apiFetch.mockResolvedValue(jsonResponse({ success: false, error: "Bad URL" }, 422))
+
+    await MapperWizardController.prototype.fetchHtml.call(controller, { preventDefault: vi.fn() })
+
+    expect(controller.showStatus).toHaveBeenCalledWith("Bad URL", "error")
+  })
+
+  it("reports a readable error when the server returns a non-JSON error page", async () => {
+    const controller = buildController()
+    apiFetch.mockResolvedValue(new Response("<html>boom</html>", { status: 500 }))
+
+    await MapperWizardController.prototype.fetchHtml.call(controller, { preventDefault: vi.fn() })
+
+    expect(controller.showStatus).toHaveBeenCalledWith("Error: Request failed (500)", "error")
   })
 })
 
@@ -130,13 +156,10 @@ describe("MapperWizardController save", () => {
       saveUrlValue: "/mapper_wizard/new/save",
     })
 
-    apiFetch.mockResolvedValue({
-      json: () =>
-        Promise.resolve({
+    apiFetch.mockResolvedValue(jsonResponse({
           success: true,
           redirect_url: "/search_endpoints/42",
-        }),
-    })
+        }))
 
     await MapperWizardController.prototype.save.call(controller, {
       preventDefault: vi.fn(),
@@ -145,7 +168,7 @@ describe("MapperWizardController save", () => {
     expect(apiFetch).toHaveBeenCalledOnce()
     expect(apiFetch).toHaveBeenCalledWith("/mapper_wizard/new/save", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({
         name: "Solr Books",
         number_of_results_mapper: "numberOfResultsMapper = function() { return 1; }",
@@ -198,14 +221,11 @@ describe("MapperWizardController testMapper", () => {
     logsContainerTarget.style = {}
     controller.showStatus = vi.fn()
 
-    apiFetch.mockResolvedValue({
-      json: () =>
-        Promise.resolve({
+    apiFetch.mockResolvedValue(jsonResponse({
           success: true,
           result: 42,
           logs: [],
-        }),
-    })
+        }))
 
     await MapperWizardController.prototype.testMapper.call(
       controller,
@@ -221,7 +241,7 @@ describe("MapperWizardController testMapper", () => {
     expect(apiFetch).toHaveBeenCalledOnce()
     expect(apiFetch).toHaveBeenCalledWith("/mapper_wizard/new/test_mapper", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
       body: JSON.stringify({
         mapper_type: "numberOfResultsMapper",
         code: "numberOfResultsMapper = function() { return 42; }",
@@ -245,13 +265,10 @@ describe("MapperWizardController testMapper", () => {
     logsContainerTarget.style = {}
     controller.showStatus = vi.fn()
 
-    apiFetch.mockResolvedValue({
-      json: () =>
-        Promise.resolve({
+    apiFetch.mockResolvedValue(jsonResponse({
           success: false,
           error: "ReferenceError: foo is not defined",
-        }),
-    })
+        }))
 
     await MapperWizardController.prototype.testMapper.call(
       controller,

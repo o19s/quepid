@@ -40,17 +40,6 @@
     margin: 8px auto; /* Center the spinner */
 }
 
-.big-spinner {
-    display: inline-block; /* Inline to work with <i> */
-    width: 80px;
-    height: 80px;
-    border: 5px solid lightgray; /* Background color */
-    border-top: 5px solid #007bff; /* Spinner color */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 40px auto; /* Center the spinner */
-}
-
 
 
 /* Get the spinner to align nicer */

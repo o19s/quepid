@@ -1,12 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { downloadBlob } from "utils/download_file"
+import { showFlash } from "utils/flash"
 import { queryDocumentsStore } from "stores/query_documents_store"
 import ExportCaseCoreController from "controllers/export_case_core_controller"
 import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
+}))
+
+vi.mock("utils/flash", () => ({
+  showFlash: vi.fn()
 }))
 
 vi.mock("utils/download_file", () => ({
@@ -386,6 +391,7 @@ describe("ExportCaseCoreController", () => {
       await controller.submit()
 
       expect(consoleSpy).toHaveBeenCalled()
+      expect(showFlash).toHaveBeenCalledWith("error", expect.stringContaining("Export failed"))
       expect(downloadBlob).not.toHaveBeenCalled()
     })
   })

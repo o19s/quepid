@@ -51,10 +51,7 @@ For changes to the core case surface:
   testing tracker entry.
 - `[MIGRATION]` For visual changes, keep matched before/after screenshots for the core surface.
 
-### [MIGRATION-FOLLOWUP] Cleanup candidates
 
-- `[MIGRATION-FOLLOWUP]` Remove remaining Angular-era build or CSS compatibility steps only after verifying
-  that no core or Rails surface still depends on them.
 
 ---
 
@@ -282,6 +279,69 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
+## [PREEXISTING] P1 — Backend correctness and authorization
+
+### [PREEXISTING] Elasticsearch/OpenSearch document IDs are not persisted
+
+**Location:** `app/services/fetch_service.rb:75-100,118-125`
+
+The Elasticsearch/OpenSearch extractor stores the backend identifier as
+`doc[:_id]`, while snapshot persistence reads `doc[:id]`. Results from these
+engines can therefore create `SnapshotDoc` rows with a blank document ID,
+breaking later judgement, snapshot comparison, and document identity behavior.
+
+**Fix direction:** Normalize the extractor to the same `:id` contract used by
+Solr and Search API results, then add an extractor-to-`SnapshotDoc` regression
+test for both Elasticsearch and OpenSearch.
+
+### [PREEXISTING] Search-endpoint updates accept unauthorized team IDs
+
+**Location:** `app/controllers/search_endpoints_controller.rb:59-74`
+
+The HTML update action preserves hidden teams, but resolves submitted team IDs
+with `Team.find` rather than scoping them to `current_user.teams`. A user who
+can edit an endpoint can submit another team's ID and attach that endpoint to
+the foreign team.
+
+**Fix direction:** Resolve submitted IDs through `current_user.teams.where(id:
+...)`, reject or report unauthorized IDs, and add a negative controller test.
+
+### [PREEXISTING] Mapper wizard function extraction is not lexical-aware
+
+**Location:** `app/services/mapper_wizard_service.rb:265-296`
+
+`extract_single_function` counts every brace, including braces inside strings,
+comments, and regular expressions. Generated mapper code containing one of
+those can be truncated before it is saved.
+
+**Fix direction:** Use a JavaScript-aware extraction strategy or the existing
+V8/parser path, and add regression cases for braces in strings, comments, and
+regular expressions.
+
+### [PREEXISTING] Safe LLM judgement handling misses malformed success bodies
+
+**Location:** `app/services/llm_service.rb:32-40,209-220`
+
+`parse_response` calls `JSON.parse` on model content, but
+`perform_safe_judgement` does not rescue `JSON::ParserError` or a missing
+content value. A successful HTTP response with malformed model output can
+escape the safe-judgement path and leave the job unhandled.
+
+**Fix direction:** Treat malformed/missing content as an unrateable judgement
+with the same recorded explanation as other safe-judgement failures, and add
+tests for malformed JSON and missing provider content.
+
+### [PREEXISTING] Whitespace-prefixed JSON takes the bare-query path
+
+**Location:** `app/models/try.rb:207-218`
+
+`json_query_params?` checks only whether the raw value starts with `{`.
+Whitespace-prefixed JSON is accepted by `JSON.parse` but is classified as bare
+text, so `resolved_api_method` can select the wrong request method.
+
+**Fix direction:** Strip surrounding whitespace for dispatch (while preserving
+the original payload), and add tests for leading/trailing whitespace.
+
 ## [PREEXISTING] P2 — Error handling consistency
 
 ### [PREEXISTING] Missing team resources redirect instead of using the app-wide 404
@@ -308,19 +368,16 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 **Location:** `app/controllers/proxy_controller.rb:75-80` (`extract_extra_url_params`)
 
-Manual `split('?')` / `split('=')` only captures the first embedded query param (e.g. loses `rows` from `?q=test&rows=10`).
+Manual `split('?')` / `split('=')` only captures the first embedded query param for proxied GET requests (e.g. loses `rows` from `?q=test&rows=10`). The shared HTTP client already reapplies the embedded URL query for POST requests, so this item does not include a separate POST-loss defect.
 
-Fix together with URL extraction deduplication below. Add multi-parameter and encoded-value tests (code review 2026-09-29 recommends `Addressable::URI#query_values`).
+Fix the overlapping URL parsing call sites together. Add multi-parameter and
+encoded-value tests (code review 2026-09-29 recommends
+`Addressable::URI#query_values`). The duplicate parsing in
+`api/v1/search_endpoints/validations_controller.rb` and
+`application_helper.rb` (`get_protocol_from_url`) should use the same helper;
+this is a refactoring part of this item, not a separate bug.
 
 **Recommendation:** Cherry-pick `UrlParserService` from `origin/deangularjs-experimental` (commit `db1c4e50`) as its own small PR rather than reimplementing from scratch. That branch is a 1092-file, big-bang AngularJS→Rails rewrite that changed core architecture (server-side search execution, two-tier scoring, dropped/relocated features) — almost certainly why it was never merged, since it conflicts with this project's incremental per-surface migration strategy (see `angular-case-migration` skill). But `UrlParserService` itself is small, self-contained, and clean: wraps `Addressable::URI` (already a `Gemfile` dependency — no new gem needed), has 9 focused unit tests, and its `query_values` method fixes exactly this bug. Note that branch's `ProxyController` still had the CSRF-skip issue above — that fix wasn't part of the same effort and needs doing separately regardless.
-
----
-
-### [PREEXISTING] URL parameter extraction duplication
-
-**Locations:** `proxy_controller.rb`, `api/v1/search_endpoints/validations_controller.rb`, `application_helper.rb` (`get_protocol_from_url`)
-
-Overlapping parse logic. Same fix as "Proxy URL parsing bug" above — `UrlParserService` (cherry-picked from `deangularjs-experimental`) was purpose-built as the shared helper for exactly these three call sites (per its own docstring); use it here too rather than writing a separate helper.
 
 ---
 
@@ -428,17 +485,3 @@ Candidates for extraction into smaller methods or services:
 - `[PREEXISTING]` `BookImporter` / `RatingsImporter`
 - `[PREEXISTING]` `MapperWizardsController`
 - `[PREEXISTING]` `TeamsController` / `BooksController` / `HomeController`
-
----
-
-## [MIGRATION-FOLLOWUP] P2 — Stimulus HTTP infra follow-ups (hybrid migration)
-
-Shared `apiFetch` / `getQuepidRootUrl()` landed on `main` (see [DEVELOPER_GUIDE § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)). Remaining consistency work:
-
-Add `data-quepid-root-url` to `analytics.html.erb` if that layout ever loads Stimulus HTTP code.
-
----
-
-## [MIGRATION-FOLLOWUP] P2 — match-explain Stimulus controller follow-ups
-
-From the match/explain popover + Debug/Expand modal migration (`match_explain_controller.js`, `utils/json_explorer.js`, and the former Angular result bridge). The result snapshot is now produced in `query_documents_store.js`.

@@ -36,11 +36,9 @@ describe("core runtime capabilities", () => {
 
     expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:3000/quepid-app/api/cases/1/ratings")
     expect(fetchMock.mock.calls[0][1].body).toBe(JSON.stringify({ rating: { doc_id: "doc-1" } }))
-    await expect(framework.request({ url: "api/cases/1/queries" })).rejects.toMatchObject({
-      data: { error: "nope" },
-      status: 422,
-      ok: false
-    })
+    const failure = await framework.request({ url: "api/cases/1/queries" }).catch((error) => error)
+    expect(failure).toBeInstanceOf(Error)
+    expect(failure).toMatchObject({ data: { error: "nope" }, status: 422, ok: false })
   })
 
   it("publishes named capabilities without exposing a service lookup to callers", async () => {

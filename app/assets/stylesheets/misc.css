@@ -2,18 +2,6 @@
  .border-bottom {
 	 border-bottom: 1px #aaa solid;
 }
- a.action-icon {
-	 color: #666;
-	 text-decoration: none;
-	 margin: 0 2px;
-}
- a.action-icon:hover {
-	 color: #999;
-}
- a.action-icon sup {
-	 top: -1em;
-	 font-size: 10px;
-}
  .query-help {
 	 font-size: 1.5em;
 }

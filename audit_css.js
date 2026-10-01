@@ -58,9 +58,7 @@ const SOURCES = [
   'app/assets/stylesheets/panes.css',
   'app/assets/stylesheets/stackedChart.css',
   'app/assets/stylesheets/tour.css',
-  'app/assets/stylesheets/cases.css',
   'app/assets/stylesheets/docs.css',
-  'app/assets/stylesheets/settings.css',
   'app/assets/stylesheets/qscore.css',
   'app/assets/stylesheets/qgraph.css',
   'app/assets/stylesheets/misc.css',
@@ -79,9 +77,6 @@ const CONTENT = [
   'app/views/**/*.erb',
   'app/views/**/*.html',
   'app/helpers/**/*.rb',
-  'app/assets/javascripts/**/*.js',
-  'app/assets/javascripts/**/*.html',
-  'app/assets/templates/**/*.html',
   'app/javascript/**/*.js',
   'app/javascript/**/*.html',
   'config/locales/**/*.yml',
@@ -107,8 +102,8 @@ const SAFELIST = {
   // literals in templates but the CSS rules supporting them are live.
   greedy: [
     /^shepherd-/,       // tether-shepherd tour
-    /^tooltip/,         // BS3/BS5 tooltip variants
-    /^popover/,         // BS3/BS5 popover variants
+    /^tooltip/,         // BS5 tooltip variants
+    /^popover/,         // BS5 popover variants
     /^bs-tooltip-/,
     /^bs-popover-/,
     /^ace_/,            // Ace editor
@@ -199,7 +194,7 @@ function writeSummary(reports) {
   lines.push('1. Start with non-vendored files (highest signal).');
   lines.push('2. For each candidate selector, grep the codebase one more time before deleting —');
   lines.push('   PurgeCSS can miss class names built from computed strings or stored in YAML/JSON.');
-  lines.push('3. Delete in small batches and verify visually per the CLAUDE.md BS3 screenshot policy.');
+  lines.push('3. Delete in small batches and verify visually per the AGENTS.md screenshot policy.');
   lines.push('');
   lines.push('See `<source>.dead.css` for the full rule bodies (suitable for review/diff).');
   lines.push('See `<source>.dead.txt` for a plain selector list.');
@@ -208,7 +203,7 @@ function writeSummary(reports) {
 }
 
 async function main() {
-  console.log('Auditing BS3 core.css sources for unreferenced selectors...');
+  console.log('Auditing core.css sources for unreferenced selectors...');
   console.log(`Content globs: ${CONTENT.length} patterns`);
   console.log(`CSS sources: ${SOURCES.length} files`);
   console.log(`Output directory: ${AUDIT_OUTPUT_DIR}`);

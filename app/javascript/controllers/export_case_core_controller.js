@@ -1,5 +1,7 @@
 import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
 import { apiFetch } from "api/fetch"
+import { HttpError } from "api/http_error"
+import { showFlash } from "utils/flash"
 import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
@@ -8,6 +10,10 @@ import { getCoreStores } from "utils/core_store_access"
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
 const FORMAT_PLACEHOLDER = "__FORMAT__"
+
+function httpErrorFor(response) {
+  return new HttpError({ status: response.status, statusText: response.statusText })
+}
 
 /**
  * Export-case modal for the core case toolbar — one radio-button
@@ -118,6 +124,7 @@ export default class extends ModalTriggerControllerBase {
       await this._performExport()
     } catch (error) {
       console.error("export-case-core: export failed", error)
+      showFlash("error", "Export failed. Please try again.")
     }
   }
 
@@ -213,10 +220,8 @@ export default class extends ModalTriggerControllerBase {
       apiFetch(this._url(this.caseUrlTemplateValue), { headers: { Accept: "application/json" } }),
       apiFetch(this._url(this.queriesUrlTemplateValue), { headers: { Accept: "application/json" } })
     ])
-    if (!caseResponse.ok || !queriesResponse.ok) {
-      console.error("export-case-core: general export failed", caseResponse.status, queriesResponse.status)
-      return
-    }
+    if (!caseResponse.ok) throw httpErrorFor(caseResponse)
+    if (!queriesResponse.ok) throw httpErrorFor(queriesResponse)
 
     const caseData = await caseResponse.json()
     const queriesData = await queriesResponse.json()
@@ -228,10 +233,7 @@ export default class extends ModalTriggerControllerBase {
     const response = await apiFetch(this._url(this.caseUrlTemplateValue), {
       headers: { Accept: "application/json" }
     })
-    if (!response.ok) {
-      console.error("export-case-core: detailed export failed", response.status)
-      return
-    }
+    if (!response.ok) throw httpErrorFor(response)
 
     const caseData = await response.json()
     const queries = getCoreStores().documents.snapshot().queries
@@ -244,10 +246,7 @@ export default class extends ModalTriggerControllerBase {
     if (!snapshotId) return
 
     const response = await apiFetch(this._snapshotShowUrl(snapshotId), { headers: { Accept: "application/json" } })
-    if (!response.ok) {
-      console.error("export-case-core: snapshot export failed", response.status)
-      return
-    }
+    if (!response.ok) throw httpErrorFor(response)
 
     const snapshotData = await response.json()
     const csv = buildSnapshotCsv(this.currentCaseId, snapshotData)
@@ -266,10 +265,7 @@ export default class extends ModalTriggerControllerBase {
 
   async _downloadUrl(url, fileSuffix) {
     const response = await apiFetch(url, { headers: { Accept: "*/*" } })
-    if (!response.ok) {
-      console.error("export-case-core: export failed", url, response.status)
-      return
-    }
+    if (!response.ok) throw httpErrorFor(response)
 
     const blob = await response.blob()
     downloadBlob(blob, this._fileName(fileSuffix))
@@ -277,10 +273,7 @@ export default class extends ModalTriggerControllerBase {
 
   async _downloadJson(url, fileSuffix) {
     const response = await apiFetch(url, { headers: { Accept: "application/json" } })
-    if (!response.ok) {
-      console.error("export-case-core: export failed", url, response.status)
-      return
-    }
+    if (!response.ok) throw httpErrorFor(response)
 
     const data = await response.json()
     const blob = new Blob([ JSON.stringify(data, null, 2) ], { type: "application/json" })
