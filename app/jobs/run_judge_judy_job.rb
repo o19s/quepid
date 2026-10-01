@@ -84,6 +84,8 @@ class RunJudgeJudyJob < ApplicationJob
     counter = 0
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     llm_service = LlmService.new judge.llm_key, judge.judge_options
+    # The judge is told the book's scale, and never sees the book itself.
+    scale = JudgeScale.for(book)
     # Only jobs actually dispatched through SolidQueue have a row to poll for
     # cancellation - under the :test adapter (or inline execution) there's
     # never a row to begin with, so we skip the check rather than misread
@@ -101,8 +103,8 @@ class RunJudgeJudyJob < ApplicationJob
 
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
-      llm_service.perform_safe_judgement(judgement, book: book)
-      mark_unrateable_if_invalid(judgement, book)
+      llm_service.perform_safe_judgement(judgement, scale: scale)
+      JudgementFinalizer.call(judgement, scale: scale)
 
       judgement.save!
       counter += 1
@@ -125,22 +127,6 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   private
-
-  # If we don't have a rating, assume it's not rateable and mark it so. If the
-  # LLM returned a rating outside this book's configured scale -- a human
-  # judge could never produce this (the judging UI only offers buttons for
-  # the book's actual scale values) -- don't trust it, but keep the raw value
-  # visible for review rather than silently dropping it. (A book with no
-  # scale configured at all is left alone here -- there's nothing to
-  # validate against, so its rating passes through as-is.)
-  def mark_unrateable_if_invalid judgement, book
-    if judgement.rating.blank?
-      judgement.mark_unrateable
-    elsif book.scale.present? && book.scale.map(&:to_f).exclude?(judgement.rating.to_f)
-      judgement.explanation = "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, outside this book's scale #{book.scale.inspect}]".strip
-      judgement.mark_unrateable
-    end
-  end
 
   def broadcast_judging_detail book, judge, counter, total_pairs, judgement
     Turbo::StreamsChannel.broadcast_update_to(

@@ -35,7 +35,7 @@ class LlmServiceTest < ActiveSupport::TestCase
   describe 'Hacking with Scott' do
     test 'can we make it run' do
       user_prompt = USER_PROMPT_COMPOSED
-      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+      system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
       result = service.get_llm_response(user_prompt, system_prompt)
 
       assert_kind_of Numeric, result[:judgment]
@@ -102,7 +102,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         )
         .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "ok"}' } } ] }.to_json, headers: {})
 
-      service.perform_judgement judgement, book: book
+      service.perform_judgement judgement, scale: JudgeScale.for(book)
 
       assert_requested(:post, 'https://api.openai.com/v1/chat/completions', times: 1)
     end
@@ -118,7 +118,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         )
         .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "ok"}' } } ] }.to_json, headers: {})
 
-      service.perform_judgement judgement, book: book
+      service.perform_judgement judgement, scale: JudgeScale.for(book)
 
       assert_requested(:post, 'https://api.openai.com/v1/chat/completions', times: 1)
     end
@@ -137,7 +137,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         end
         .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "ok"}' } } ] }.to_json, headers: {})
 
-      service.perform_judgement judgement, book: book
+      service.perform_judgement judgement, scale: JudgeScale.for(book)
 
       assert_not_nil captured_system_prompt
       # the raw injection text (newline intact, full length) never appears verbatim --
@@ -164,7 +164,7 @@ class LlmServiceTest < ActiveSupport::TestCase
     test 'using a bad API key' do
       service = LlmService.new 'BAD_OPENAI_KEY'
       user_prompt = USER_PROMPT_COMPOSED
-      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+      system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
 
       error = assert_raises(RuntimeError) do
         service.get_llm_response(user_prompt, system_prompt)
@@ -176,7 +176,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       # the Faraday Retry may mean we don't need this
       service = LlmService.new 'OPENAI_429_ERROR'
       user_prompt = USER_PROMPT_COMPOSED
-      system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+      system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
 
       error = assert_raises(RuntimeError) do
         service.get_llm_response(user_prompt, system_prompt)
@@ -208,7 +208,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         service = LlmService.new 'ollama', opts
 
         user_prompt = [ { type: 'text', text: USER_PROMPT_TEXT } ]
-        system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+        system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
         result = service.get_llm_response(user_prompt, system_prompt)
 
         assert_kind_of Numeric, result[:judgment]
@@ -246,7 +246,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         service = LlmService.new 'api-key', opts
 
         user_prompt = USER_PROMPT_COMPOSED
-        system_prompt = AiJudgesController::DEFAULT_SYSTEM_PROMPT
+        system_prompt = LlmProvider::CHAT_SYSTEM_PROMPT
 
         service.get_llm_response(user_prompt, system_prompt)
 
@@ -273,7 +273,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_api_version: '2024-10-21',
       }
       service = LlmService.new 'my-azure-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
       assert_requested(:post, azure_url)
@@ -295,7 +295,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_api_version: '2025-01-01-preview',
       }
       service = LlmService.new 'my-foundry-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 1, result[:judgment]
       assert_requested(:post, foundry_url)
@@ -316,7 +316,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_service_url: 'https://haiku-35.eastus.models.ai.azure.com',
       }
       service = LlmService.new 'my-serverless-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
       assert_requested(:post, serverless_url,
@@ -337,7 +337,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_service_url: 'https://myresource.openai.azure.com',
       }
       service = LlmService.new 'my-azure-key', opts
-      service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_requested(:post, azure_url,
                        headers: { 'api-key' => 'my-azure-key' })
@@ -370,7 +370,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_model:       'claude-haiku-4-5',
       }
       service = LlmService.new 'my-anthropic-azure-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 2, result[:judgment]
       assert_equal 'Relevant result', result[:explanation]
@@ -404,7 +404,7 @@ class LlmServiceTest < ActiveSupport::TestCase
         llm_model:       'claude-sonnet-4-20250514',
       }
       service = LlmService.new 'my-anthropic-key', opts
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_equal 3, result[:judgment]
       assert_equal 'Highly relevant', result[:explanation]
@@ -416,7 +416,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       # Uses the existing webmock stub for https://api.openai.com/v1/chat/completions
       # with Authorization: Bearer 1234asdf5678
       service = LlmService.new '1234asdf5678', { llm_service_url: 'https://api.openai.com' }
-      result = service.get_llm_response(USER_PROMPT_COMPOSED, AiJudgesController::DEFAULT_SYSTEM_PROMPT)
+      result = service.get_llm_response(USER_PROMPT_COMPOSED, LlmProvider::CHAT_SYSTEM_PROMPT)
 
       assert_kind_of Numeric, result[:judgment]
       assert_requested(:post, 'https://api.openai.com/v1/chat/completions',

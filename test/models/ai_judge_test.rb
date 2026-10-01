@@ -134,5 +134,33 @@ class AiJudgeTest < ActiveSupport::TestCase
       judge_options = judge_judy.judge_options
       assert_equal('gpt-3.5-turbo', judge_options[:model])
     end
+
+    it 'stores everything under one string key, whatever keys you hand it' do
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+
+      judge.judge_options = { 'llm_provider' => 'openai' }
+      judge.judge_options = { llm_provider: 'ollama', llm_model: 'qwen3:0.6b' }
+      judge.save!
+
+      # A symbol key here would sit alongside the string one and serialize to a JSON
+      # object with two "judge_options" entries.
+      assert_equal [ 'judge_options' ], judge.read_attribute(:options).keys
+      assert_equal 1, judge.read_attribute(:options).to_json.scan('judge_options').size
+
+      judge.reload
+      assert_equal 'ollama', judge.judge_options[:llm_provider]
+      assert_equal 'qwen3:0.6b', judge.judge_options[:llm_model]
+    end
+
+    it 'keeps other options entries when judge options are written' do
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', options: { 'special_options' => { 'key1' => 'opt1' } })
+
+      judge.judge_options = { llm_provider: 'openai' }
+      judge.save!
+      judge.reload
+
+      assert_equal 'opt1', judge.options.dig('special_options', 'key1')
+      assert_equal 'openai', judge.judge_options[:llm_provider]
+    end
   end
 end

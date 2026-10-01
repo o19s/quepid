@@ -74,8 +74,11 @@ class AiJudge < User
     opts.deep_symbolize_keys
   end
 
+  # `options` is a JSON column, so the merge key must match the string key the reader
+  # looks up -- merging under a symbol leaves a duplicate "judge_options" entry in the
+  # serialized JSON, which `json` 3.0 refuses to parse back. The value is stringified
+  # too, so the in-memory object already matches what a reload from the database returns.
   def judge_options= value
-    self.options ||= {}
-    self.options = options.merge(judge_options: value)
+    self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 end

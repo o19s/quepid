@@ -160,7 +160,7 @@ class SampleData < Thor
     user_specifics = {
       name:          'OSC AI Judge',
       llm_key:       'key123456',
-      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
     osc_ai_judge = seed_judge user_params
@@ -181,7 +181,7 @@ class SampleData < Thor
     user_specifics = {
       name:          'Azure OpenAI Judge',
       llm_key:       'your-azure-openai-key',
-      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
     azure_openai_judge = seed_judge user_params
@@ -202,7 +202,7 @@ class SampleData < Thor
     user_specifics = {
       name:          'Azure Anthropic Judge',
       llm_key:       'your-azure-ai-services-key',
-      system_prompt: AiJudgesController::DEFAULT_SYSTEM_PROMPT,
+      system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics
     azure_anthropic_judge = seed_judge user_params
