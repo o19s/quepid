@@ -87,7 +87,10 @@ export function createLiveQueryCollectionRuntime({
         }
       )
       .catch((response) => {
-        if (requestGeneration !== generation) return response
+        if (requestGeneration !== generation) {
+          requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
+          return response
+        }
         logger.debug?.("Failed to bootstrap queries")
         setBootstrapping(false)
         publishState()

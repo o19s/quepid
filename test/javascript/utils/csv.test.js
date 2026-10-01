@@ -35,8 +35,13 @@ describe("parseCsv", () => {
     expect(rows[0]).toEqual({ a: "1", b: "2", c: "" })
   })
 
-  it("counts lines inside quoted values when reporting later rows", () => {
-    expect(parseCsv('a,b\n"x\ny",1\n2\n').errors).toEqual(["line 4: expected 2 columns but found 1."])
+  it.each([
+    ["LF", "\n"],
+    ["CRLF", "\r\n"],
+    ["CR", "\r"]
+  ])("counts %s line breaks inside quoted values when reporting later rows", (_label, eol) => {
+    const content = ["a,b", '"x', 'y",1', "2", ""].join(eol)
+    expect(parseCsv(content).errors).toEqual(["line 4: expected 2 columns but found 1."])
   })
 
   it("reports an unclosed quote", () => {

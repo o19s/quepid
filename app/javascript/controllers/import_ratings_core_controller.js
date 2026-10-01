@@ -77,9 +77,10 @@ export default class extends ModalTriggerControllerBase {
     const file = event.currentTarget.files[0]
     if (!file) return
 
+    // Choosing a file selects its import type, even if reading it fails, so the error shows.
+    this.selectedType = type
     try {
       const content = await this.readFile(file)
-      this.selectedType = type
       this.files[type] = file
       this.contents[type] = content
       this.errors[type] = this.validate(type, content)
@@ -93,7 +94,7 @@ export default class extends ModalTriggerControllerBase {
 
   async submit(event) {
     event.preventDefault()
-    if (!this.canImport()) return
+    if (this.busy || !this.canImport()) return
 
     this.setBusy(true)
     try {

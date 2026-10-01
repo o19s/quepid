@@ -71,6 +71,8 @@ Do not run `prettier --write` on paths outside `api/`/`utils/` unless you delibe
 
 After pulling these dependencies, run `bin/docker r yarn install` once.
 
+Run Vitest and Stryker inside the container, not on the host. `node_modules/` is shared with the Linux container, so it holds Linux-only native bindings (e.g. `@rolldown/binding-linux-*`), and host runs fail with `Cannot find module './rolldown-binding.wasi.cjs'`. ESLint and Prettier have no native bindings and run either way. `docker exec quepid_app …` reuses the running app container, which is faster than `bin/docker r` for repeated Vitest/Stryker runs.
+
 ### Pre-commit
 
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
@@ -121,7 +123,7 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 - Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
 - Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
 - Default scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. `stores/` and nearly every controller also have specs, so run them on demand with `--mutate` (see below) rather than widening the default, which would make a full run much slower.
-- Controller specs use the Stimulus stub (`app/javascript/test/stimulus_stub.js`) and call methods directly, so `connect()`/`disconnect()` wiring always shows up as `NoCoverage`; Playwright covers it. Judge a controller by its actions and error paths, not its overall score.
+- Controller specs use the Stimulus stub (`app/javascript/test/stimulus_stub.js`) and call methods directly, so Stimulus never runs `connect()`/`disconnect()`, resolves targets/values from markup, or wires `data-action`. Lifecycle code shows up as `NoCoverage` unless the spec calls it itself; Playwright covers the wiring. Judge a controller by its actions and error paths, not its overall score.
 - The classic core scripts are out of scope for mutation testing; browser verification covers their DOM and global-script behavior.
 
 ```bash

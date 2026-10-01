@@ -127,9 +127,35 @@ describe("createLiveQueryCollectionRuntime", () => {
   it("rejects the searchable promise and marks the store on an active bootstrap failure", async () => {
     const request = vi.fn(() => Promise.reject({ status: 500 }))
     const markStoreError = vi.fn()
-    const runtime = runtimeFor({ request, markStoreError })
+    const setBootstrapping = vi.fn()
+    const publishState = vi.fn()
+    const runtime = runtimeFor({ request, markStoreError, setBootstrapping, publishState })
 
     await expect(runtime.bootstrapQueries(4)).rejects.toMatchObject({ status: 500 })
     expect(markStoreError).toHaveBeenCalledWith({ status: 500 })
+    expect(setBootstrapping.mock.calls).toEqual([[true], [false]])
+    expect(publishState).toHaveBeenCalledTimes(2)
+  })
+
+  it("leaves a newer bootstrap in charge when a superseded one throws mid-processing", async () => {
+    const error = new Error("malformed query")
+    const setBootstrapping = vi.fn()
+    const requests = [
+      Promise.resolve({ data: { queries: [{ query_id: 1 }] } }),
+      new Promise(() => {})
+    ]
+    const runtime = runtimeFor({
+      request: vi.fn(() => requests.shift()),
+      createQuery: vi.fn(() => {
+        runtime.bootstrapQueries(4)
+        throw error
+      }),
+      setBootstrapping
+    })
+
+    await expect(runtime.bootstrapQueries(4)).rejects.toMatchObject({
+      statusText: "Stale bootstrap request"
+    })
+    expect(setBootstrapping).toHaveBeenLastCalledWith(true)
   })
 })
