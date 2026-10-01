@@ -76,6 +76,12 @@ function mount(settingsOverrides) {
   }
   const controller = Object.create(TuneRelevanceController.prototype)
   controller.element = element
+  controller.tabTargets = [...element.querySelectorAll("[data-tune-tab]")]
+  controller.panelTargets = [...element.querySelectorAll("[data-tune-panel]")]
+  controller.actionTargets = [...element.querySelectorAll("[data-tune-action]")]
+  controller.sectionBodyTargets = []
+  controller.hasSaveButtonTarget = true
+  controller.saveButtonTarget = controller.actionTargets[0]
 
   target("fieldSpec", Object.assign(document.createElement("input"), { value: "" }))
   target("numberOfRows", Object.assign(document.createElement("input"), { value: "10" }))
@@ -129,6 +135,44 @@ describe("TuneRelevanceController", () => {
     delete window.bootstrap
     vi.useRealTimers()
     vi.restoreAllMocks()
+  })
+
+  describe("delegated Stimulus actions", () => {
+    it("routes nested tab clicks and collapses the matching section target", () => {
+      const { controller, element } = mount()
+      const tab = element.querySelector('[data-tune-tab="history"]')
+      const icon = document.createElement("i")
+      tab.append(icon)
+      controller.handleClick({ target: icon })
+      expect(controller.tab).toBe("history")
+
+      const section = document.createElement("div")
+      section.dataset.section = "fields"
+      const body = document.createElement("div")
+      body.dataset.sectionBody = "fields"
+      controller.sectionBodyTargets = [body]
+      controller.handleClick({ target: section })
+      expect(body.classList.contains("d-none")).toBe(true)
+      controller.handleClick({ target: section })
+      expect(body.classList.contains("d-none")).toBe(false)
+    })
+
+    it("routes change, input and submit actions to the matching control", () => {
+      const { controller } = mount()
+      controller.updateEndpoint = vi.fn()
+      controller.renderEndpointSuggestions = vi.fn()
+      controller.renameTry = vi.fn()
+      const change = { target: controller.endpointSelectTarget }
+      controller.handleChange(change)
+      expect(controller.updateEndpoint).toHaveBeenCalledWith(change)
+      controller.endpointSearchTarget.value = "movies"
+      controller.handleInput({ target: controller.endpointSearchTarget })
+      expect(controller.renderEndpointSuggestions).toHaveBeenCalledWith("movies")
+      const preventDefault = vi.fn()
+      controller.handleSubmit({ target: controller.tryRenameFormTarget, preventDefault })
+      expect(preventDefault).toHaveBeenCalledOnce()
+      expect(controller.renameTry).toHaveBeenCalledOnce()
+    })
   })
 
   describe("loading", () => {

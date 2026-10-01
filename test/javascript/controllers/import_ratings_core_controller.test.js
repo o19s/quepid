@@ -64,6 +64,8 @@ function modalController() {
     instance[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
     instance[`${name}Target`] = target(name)
   }
+  instance.fileTargets = [...element.querySelectorAll("input[type=file]")]
+  instance.formatTargets = [...element.querySelectorAll("input[type=radio]")]
   instance.contentTargets = [...element.querySelectorAll('[data-target="content"]')]
   instance.initialize()
   return instance
@@ -152,6 +154,8 @@ describe("ImportRatingsCoreController", () => {
     instance.element = document.createElement("div")
     instance.hasLoadingTarget = true
     instance.loadingTarget = document.createElement("div")
+    instance.fileTargets = []
+    instance.formatTargets = []
     instance.contentTargets = []
     instance.hasAlertTarget = false
     instance.hasWarningTarget = false
@@ -188,7 +192,10 @@ describe("ImportRatingsCoreController", () => {
     expect(instance.reset).toHaveBeenCalledOnce()
   })
 
-  it("opens the import modal", () => {
+  it("opens its own modal root even when an earlier element has the same ID", () => {
+    const decoy = document.createElement("div")
+    decoy.id = "importRatingsModal"
+    document.body.appendChild(decoy)
     const instance = modalController()
 
     instance.openAsRoot()

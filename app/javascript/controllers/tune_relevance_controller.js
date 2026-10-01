@@ -8,7 +8,7 @@ const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
 export default class extends Controller {
   static targets = [
-    "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
+    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
     "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsReloadLink", "tlsProtocol",
     "troubleshootingLink", "historyList", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
@@ -17,43 +17,39 @@ export default class extends Controller {
     this.tab = "developer"
     this.editor = null
     this.pollHandle = null
-    this.handleClick = event => {
-      const tab = event.target.closest("[data-tune-tab]")
-      if (tab) return this.showTab(tab.dataset.tuneTab)
-      const action = event.target.closest("[data-tune-action]")
-      if (action && action.dataset.tuneAction === "save") return this.save()
-      if (action && action.dataset.tuneAction === "run-evaluation") return this.runEvaluation()
-      const tryAction = event.target.closest("[data-try-action]")
-      if (tryAction) return this.handleTryAction(tryAction.dataset.tryAction)
-      const section = event.target.closest("[data-section]")
-      if (section) this.element.querySelector(`[data-section-body="${section.dataset.section}"]`)?.classList.toggle("d-none")
-    }
-    this.handleChange = event => {
-      if (event.target === this.endpointSelectTarget) this.updateEndpoint(event)
-      if (event.target === this.nightlyTarget && event.target.dataset.tuneAction === "nightly") this.updateNightly()
-    }
-    this.handleInput = event => {
-      if (event.target === this.endpointSearchTarget) this.renderEndpointSuggestions(event.target.value)
-    }
-    this.handleSubmit = event => {
-      if (event.target === this.tryRenameFormTarget) {
-        event.preventDefault()
-        this.renameTry()
-      }
-    }
-    this.element.addEventListener("click", this.handleClick)
-    this.element.addEventListener("change", this.handleChange)
-    this.element.addEventListener("input", this.handleInput)
-    this.element.addEventListener("submit", this.handleSubmit)
     this.loadCapabilities()
+  }
+
+  handleClick(event) {
+    const tab = event.target.closest("[data-tune-tab]")
+    if (tab) return this.showTab(tab.dataset.tuneTab)
+    const action = event.target.closest("[data-tune-action]")
+    if (action && action.dataset.tuneAction === "save") return this.save()
+    if (action && action.dataset.tuneAction === "run-evaluation") return this.runEvaluation()
+    const tryAction = event.target.closest("[data-try-action]")
+    if (tryAction) return this.handleTryAction(tryAction.dataset.tryAction)
+    const section = event.target.closest("[data-section]")
+    if (section) this.sectionBodyTargets.find(body => body.dataset.sectionBody === section.dataset.section)?.classList.toggle("d-none")
+  }
+
+  handleChange(event) {
+    if (event.target === this.endpointSelectTarget) this.updateEndpoint(event)
+    if (event.target === this.nightlyTarget && event.target.dataset.tuneAction === "nightly") this.updateNightly()
+  }
+
+  handleInput(event) {
+    if (event.target === this.endpointSearchTarget) this.renderEndpointSuggestions(event.target.value)
+  }
+
+  handleSubmit(event) {
+    if (event.target === this.tryRenameFormTarget) {
+      event.preventDefault()
+      this.renameTry()
+    }
   }
 
   disconnect() {
     if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
-    this.element.removeEventListener("click", this.handleClick)
-    this.element.removeEventListener("change", this.handleChange)
-    this.element.removeEventListener("input", this.handleInput)
-    this.element.removeEventListener("submit", this.handleSubmit)
     this.editor?.view?.destroy()
   }
 
@@ -95,13 +91,13 @@ export default class extends Controller {
 
   showTab(tab) {
     this.tab = tab
-    this.element.querySelectorAll("[data-tune-tab]").forEach(button => {
+    this.tabTargets.forEach(button => {
       const active = button.dataset.tuneTab === tab
       button.classList.toggle("active", active)
       button.setAttribute("aria-selected", active ? "true" : "false")
     })
-    this.element.querySelectorAll("[data-tune-panel]").forEach(panel => { panel.hidden = panel.dataset.tunePanel !== tab })
-    this.element.querySelectorAll("[data-tune-action]").forEach(action => { action.hidden = !EDITABLE_TABS.has(tab) })
+    this.panelTargets.forEach(panel => { panel.hidden = panel.dataset.tunePanel !== tab })
+    this.actionTargets.forEach(action => { action.hidden = !EDITABLE_TABS.has(tab) })
   }
 
   mountEditor() {
@@ -123,7 +119,7 @@ export default class extends Controller {
     const isStatic = this.settings.searchEngine === "static"
     if (this.hasStaticEngineMessageTarget) this.staticEngineMessageTarget.hidden = !isStatic
     if (this.hasStaticKnobsMessageTarget) this.staticKnobsMessageTarget.hidden = !isStatic
-    const editorShell = this.hasQueryEditorTarget ? this.queryEditorTarget.closest("#query-params-editor") : null
+    const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
     if (editorShell) editorShell.hidden = isStatic
     const value = this.settings.selectedTry.queryParams || ""
     if (this.editor && this.editor.getValue() !== value) this.editor.setValue(value)
@@ -240,7 +236,7 @@ export default class extends Controller {
       this.tlsReloadLinkTarget.href = this.capability.navigation.appendQueryParams(url, params.toString())
       this.tlsProtocolTarget.textContent = protocol
     }
-    const save = this.element.querySelector('[data-tune-action="save"]')
+    const save = this.hasSaveButtonTarget ? this.saveButtonTarget : null
     if (save) save.hidden = mismatch || !EDITABLE_TABS.has(this.tab)
   }
 

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueryOptionsCoreController from "controllers/query_options_core_controller"
 import { apiFetch } from "api/fetch"
+import { getOrCreateBsModal } from "utils/bs_modal"
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 vi.mock("modules/editor", () => ({
@@ -16,6 +17,7 @@ vi.mock("utils/bs_modal", () => ({
 
 function controller() {
   const instance = Object.create(QueryOptionsCoreController.prototype)
+  instance.element = document.createElement("div")
   instance.editor = { getValue: vi.fn(() => '{"boost": 2}'), setValue: vi.fn() }
   instance.hasSaveButtonTarget = true
   instance.saveButtonTarget = { disabled: false }
@@ -57,6 +59,7 @@ describe("QueryOptionsCoreController", () => {
       detail: { queryId: "2", options: { boost: 2 } }
     }))
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Query options saved successfully.")
+    expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
     document.removeEventListener("query-options:saved", saved)
   })
 
@@ -89,6 +92,7 @@ describe("QueryOptionsCoreController", () => {
     expect(instance.titleTarget.textContent).toBe("Query Options")
     expect(instance.saveButtonTarget.disabled).toBe(false)
     expect(showBsModal).toHaveBeenCalledOnce()
+    expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
   })
 
   it("shows empty options as {} and leaves unparseable stored options as-is", () => {

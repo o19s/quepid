@@ -17,7 +17,7 @@ const mounted = []
 
 function mount({ width = 200, height = 50 } = {}) {
   const element = document.createElement("div")
-  element.dataset.qgraphCaseId = "5"
+  element.dataset.qgraphCaseIdValue = "5"
   Object.defineProperty(element, "clientWidth", { value: width })
   Object.defineProperty(element, "clientHeight", { value: height })
   const container = document.createElement("div")
@@ -26,6 +26,7 @@ function mount({ width = 200, height = 50 } = {}) {
 
   const controller = Object.create(QgraphController.prototype)
   controller.element = element
+  controller.caseIdValue = 5
   controller.hasContainerTarget = true
   controller.containerTarget = container
   controller.scoresUrlValue = "/api/cases/5/scores"

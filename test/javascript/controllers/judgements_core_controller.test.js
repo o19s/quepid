@@ -66,12 +66,27 @@ function buildModalController(overrides = {}) {
   controller.hasCancelButtonTarget = true
   controller.cancelButtonTarget = document.createElement("button")
   controller.element = document.createElement("div")
+  controller.element.appendChild(controller.bookListTarget)
 
   Object.assign(controller, overrides)
+  Object.defineProperty(controller, "itemTargets", {
+    get: () => [...controller.element.querySelectorAll('[data-judgements-core-target~="item"]')]
+  })
   return controller
 }
 
 describe("JudgementsCoreController", () => {
+  it("highlights only the selected book target, including None", () => {
+    const controller = buildModalController()
+    controller.books = [{ id: 8, name: "Book" }]
+    controller.activeBookId = 8
+    controller._renderBooks()
+    expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([false, true])
+    controller.activeBookId = null
+    controller._refreshBookSelection()
+    expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([true, false])
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
   })

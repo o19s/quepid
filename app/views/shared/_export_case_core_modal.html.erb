@@ -11,7 +11,7 @@
   <p>There are a number of formats for exporting data from Quepid.</p>
 
   <div class="mb-3">
-    <input type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"
+    <input data-export-case-core-target="format" type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="information_need">
     <label for="exportInformationNeed">Information Need</label>
     <span class="form-text d-block">
@@ -20,7 +20,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportGeneral" name="export-case-format" value="general"
+    <input data-export-case-core-target="format" type="radio" id="exportGeneral" name="export-case-format" value="general"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="general">
     <label for="exportGeneral">General</label>
     <span class="form-text d-block">
@@ -30,7 +30,7 @@
 
   <div class="mb-3">
     <input type="radio" id="exportDetailed" name="export-case-format" value="detailed"
-           data-export-case-core-target="detailedRadio"
+           data-export-case-core-target="detailedRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="detailed">
     <label for="exportDetailed">Detailed</label>
     <p class="alert alert-warning p-3 d-none" role="alert" data-export-case-core-target="detailedWarning">
@@ -44,7 +44,7 @@
 
   <div class="mb-3">
     <input type="radio" id="exportSnapshot" name="export-case-format" value="snapshot"
-           data-export-case-core-target="snapshotRadio"
+           data-export-case-core-target="snapshotRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="snapshot">
     <label for="exportSnapshot">Snapshot</label>
     <span class="form-text d-block">
@@ -61,7 +61,7 @@
   <hr>
   <div class="mb-3">
     <input type="radio" id="exportBasic" name="export-case-format" value="basic"
-           data-export-case-core-target="basicRadio"
+           data-export-case-core-target="basicRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="basic">
     <label for="exportBasic">Basic</label>
     <span class="form-text d-block">
@@ -69,7 +69,7 @@
       Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank" rel="noopener noreferrer">Quaerite</a> among others.
     </span>
 
-    <input type="radio" id="exportTrec" name="export-case-format" value="trec"
+    <input data-export-case-core-target="format" type="radio" id="exportTrec" name="export-case-format" value="trec"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="trec">
     <label for="exportTrec">TREC</label>
     <span class="form-text d-block">
@@ -87,7 +87,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportRre" name="export-case-format" value="rre"
+    <input data-export-case-core-target="format" type="radio" id="exportRre" name="export-case-format" value="rre"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="rre">
     <label for="exportRre">Rated Ranking Evaluator / RankQuest</label>
     <span class="form-text d-block">
@@ -95,7 +95,7 @@
     </span>
   </div>
   <div class="mb-3">
-    <input type="radio" id="exportLtr" name="export-case-format" value="ltr"
+    <input data-export-case-core-target="format" type="radio" id="exportLtr" name="export-case-format" value="ltr"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="ltr">
     <label for="exportLtr">Learning to Rank</label>
     <span class="form-text d-block">
@@ -124,7 +124,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportQuepid" name="export-case-format" value="quepid"
+    <input data-export-case-core-target="format" type="radio" id="exportQuepid" name="export-case-format" value="quepid"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="quepid">
     <label for="exportQuepid">Quepid</label>
     <span class="form-text d-block">

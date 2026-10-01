@@ -3,6 +3,8 @@ import { Controller } from "@hotwired/stimulus"
 const DEFAULT_EAST_PANE_WIDTH = 450
 
 export default class extends Controller {
+  static targets = ["east", "main", "slider"]
+
   connect() {
     this.toggled = false
     this.eastPaneWidth = DEFAULT_EAST_PANE_WIDTH
@@ -24,9 +26,9 @@ export default class extends Controller {
 
   refreshElements() {
     this.container = this.element
-    this.east = this.element.querySelector(".pane_east")
-    this.main = this.element.querySelector(".pane_main")
-    this.slider = this.element.querySelector(".east-slider")
+    this.east = this.hasEastTarget ? this.eastTarget : null
+    this.main = this.hasMainTarget ? this.mainTarget : null
+    this.slider = this.hasSliderTarget ? this.sliderTarget : null
 
     if (!this.container || !this.east || !this.main || !this.slider) return
 

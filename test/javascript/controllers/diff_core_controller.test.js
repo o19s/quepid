@@ -43,10 +43,29 @@ function buildController() {
     controller.progressTarget
   )
   controller.element.insertAdjacentHTML("beforeend", "<div data-diff-core-target='alert'></div>")
+  controller.hasAlertTarget = true
+  controller.alertTarget = controller.element.querySelector("[data-diff-core-target='alert']")
   return controller
 }
 
 describe("DiffCoreController", () => {
+  it("routes generated remove and delete buttons using their row parameters", () => {
+    const controller = buildController()
+    controller.selectionValues = ["2", "3"]
+    controller.renderSelections()
+    const secondRow = controller.selectionsTarget.children[1]
+    const buttons = secondRow.querySelectorAll("button")
+    expect(buttons[0].dataset.action).toBe("click->diff-core#removeSelectionAt")
+    expect(buttons[1].dataset.action).toBe("click->diff-core#deleteSelectionAt")
+    expect(buttons[0].dataset.diffCoreIndexParam).toBe("1")
+    expect(buttons[1].dataset.diffCoreIndexParam).toBe("1")
+    controller.deleteSelected = vi.fn()
+    controller.deleteSelectionAt({ params: { index: 1 } })
+    expect(controller.deleteSelected).toHaveBeenCalledWith(1)
+    controller.removeSelectionAt({ params: { index: 1 } })
+    expect(controller.selectionValues).toEqual(["2"])
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({ ok: true, json: async () => ({ snapshots: [] }) })
@@ -190,7 +209,8 @@ describe("DiffCoreController", () => {
     const second = controller.selectionsTarget.querySelectorAll("select")[1]
 
     second.value = "3"
-    second.dispatchEvent(new Event("change"))
+    expect(second.dataset.action).toBe("change->diff-core#selectChanged")
+    controller.selectChanged({ currentTarget: second })
 
     expect(controller.selectionValues).toEqual(["2", "3"])
   })

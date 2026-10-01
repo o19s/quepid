@@ -17,7 +17,7 @@ export default class extends ModalTriggerControllerBase {
     "title", "alert", "content", "warning", "loading", "importButton",
     "clearQueries", "createQueries", "csvFile", "rreFile", "ltrFile",
     "informationNeedsFile", "snapshotsFile", "csvPreview", "informationNeedsPreview",
-    "snapshotsPreview"
+    "snapshotsPreview", "file", "format"
   ]
 
   static values = {
@@ -44,8 +44,7 @@ export default class extends ModalTriggerControllerBase {
     event?.preventDefault?.()
     this.reset()
     if (this.hasTitleTarget) this.titleTarget.textContent = `Import into Case: ${caseNameFromHeader()}`
-    const modal = document.getElementById(this.modalElementId)
-    showBsModal(getOrCreateBsModal(modal))
+    showBsModal(getOrCreateBsModal(this.element))
   }
 
   reset() {
@@ -57,8 +56,8 @@ export default class extends ModalTriggerControllerBase {
     this.setError(this.hasAlertTarget ? this.alertTarget : null, "")
     if (this.hasClearQueriesTarget) this.clearQueriesTarget.checked = false
     if (this.hasCreateQueriesTarget) this.createQueriesTarget.checked = false
-    this.element.querySelectorAll("input[type=file]").forEach((input) => { input.value = "" })
-    this.element.querySelectorAll("input[type=radio]").forEach((input) => { input.checked = false })
+    this.fileTargets.forEach((input) => { input.value = "" })
+    this.formatTargets.forEach((input) => { input.checked = false })
     this.setBusy(false) // also hides the "Importing…" row left over from a previous successful import
   }
 
@@ -103,7 +102,7 @@ export default class extends ModalTriggerControllerBase {
 
       this.dispatchReload()
       this.flash("success", this.successMessage())
-      hideBsModal(getOrCreateBsModal(document.getElementById(this.modalElementId)))
+      hideBsModal(getOrCreateBsModal(this.element))
     } catch (error) {
       this.flash("error", this.errorMessage(error))
       this.setBusy(false)

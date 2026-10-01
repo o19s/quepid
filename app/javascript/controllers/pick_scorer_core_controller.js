@@ -16,6 +16,7 @@ import { getQuepidRootUrl } from "utils/quepid_root"
  */
 export default class extends ModalTriggerControllerBase {
   static targets = [
+    "item",
     "title",
     "alert",
     "warning",
@@ -199,6 +200,7 @@ export default class extends ModalTriggerControllerBase {
     const li = document.createElement("li")
     li.className = "list-group-item"
     li.textContent = scorer.name
+    li.dataset.pickScorerCoreTarget = "item"
     li.dataset.pickScorerCoreScorerIdParam = String(scorer.scorer_id)
     li.dataset.action = "click->pick-scorer-core#selectScorer"
     return li
@@ -206,7 +208,7 @@ export default class extends ModalTriggerControllerBase {
 
   _refreshListActive() {
     const selectedId = this.selectedScorer ? Number(this.selectedScorer.scorer_id) : null
-    const items = this.element.querySelectorAll(".list-group-item")
+    const items = this.itemTargets
     items.forEach((li) => {
       const id = Number(li.dataset.pickScorerCoreScorerIdParam)
       li.classList.toggle("active", selectedId != null && id === selectedId)

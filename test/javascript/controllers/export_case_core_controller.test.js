@@ -32,6 +32,7 @@ function buildModalController(overrides = {}) {
     <input type="radio" name="export-case-format" value="basic">
     <input type="radio" name="export-case-format" value="trec">
   `
+  controller.formatTargets = [...controller.element.querySelectorAll('input[name="export-case-format"]')]
 
   controller.snapshotsIndexUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots"
   controller.hasSnapshotsIndexUrlTemplateValue = true

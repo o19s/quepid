@@ -32,6 +32,7 @@ export default class extends ModalTriggerControllerBase {
 
   static targets = [
     "title",
+    "format",
     "submitButton",
     "detailedRadio",
     "detailedWarning",
@@ -77,7 +78,7 @@ export default class extends ModalTriggerControllerBase {
       this.titleTarget.textContent = caseName ? `Export Case: ${caseName}` : "Export Case"
     }
 
-    this.element.querySelectorAll('input[name="export-case-format"]').forEach((radio) => { radio.checked = false })
+    this.formatTargets.forEach((radio) => { radio.checked = false })
     if (this.hasDetailedRadioTarget) this.detailedRadioTarget.disabled = !supportsDetailedExport
     if (this.hasDetailedWarningTarget) this.detailedWarningTarget.classList.add("d-none")
 

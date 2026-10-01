@@ -46,10 +46,26 @@ function buildModalController(overrides = {}) {
   controller.element.appendChild(controller.customListTarget)
 
   Object.assign(controller, overrides)
+  Object.defineProperty(controller, "itemTargets", {
+    get: () => [...controller.element.querySelectorAll('[data-pick-scorer-core-target~="item"]')]
+  })
   return controller
 }
 
 describe("PickScorerCoreController", () => {
+  it("updates scorer targets without changing unrelated list items", () => {
+    const controller = buildModalController()
+    const scorer = controller._listItem({ scorer_id: 8, name: "Scorer" })
+    controller.communalListTarget.append(scorer)
+    const unrelated = document.createElement("li")
+    unrelated.className = "list-group-item active"
+    controller.element.append(unrelated)
+    controller.selectedScorer = { scorer_id: 8 }
+    controller._refreshListActive()
+    expect(scorer.classList.contains("active")).toBe(true)
+    expect(unrelated.classList.contains("active")).toBe(true)
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
   })

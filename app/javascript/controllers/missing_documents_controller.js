@@ -245,11 +245,14 @@ export default class extends Controller {
     rating.appendChild(ratingButton)
     ratings.appendChild(rating)
     scoreAll.append(scoreLabel, ratings)
-    this.resultsTarget.appendChild(scoreAll)
     const warning = document.createElement("div")
     warning.className = "alert alert-warning float-start score-all-alert"
     warning.textContent = "Changing ratings will affect the query score."
-    this.resultsTarget.appendChild(warning)
+    // Contain the two floats so the results below start on their own full-width line.
+    const scoreAllRow = document.createElement("div")
+    scoreAllRow.className = "clearfix"
+    scoreAllRow.append(scoreAll, warning)
+    this.resultsTarget.appendChild(scoreAllRow)
 
     this.adapter.docs.forEach((doc, index) => {
       const result = document.createElement("search-result")

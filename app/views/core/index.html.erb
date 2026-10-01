@@ -32,7 +32,7 @@
 <div>
       <div id="main">
         <div class="pane_container" data-controller="pane">
-          <div class="pane_main results-control">
+          <div class="pane_main results-control" data-pane-target="main">
             <div id="case-header" class="row">
               <div class="col-sm-12">
                 <div
@@ -45,7 +45,7 @@
                       class="qgraph"
                       data-controller="qgraph"
                       hidden
-                      data-qgraph-case-id="<%= @case.id %>"
+                      data-qgraph-case-id-value="<%= @case.id %>"
                       data-qgraph-scores-url-value="<%= api_case_scores_path(case_id: @case.id) %>/all"
                       data-qgraph-annotations-url-value="<%= api_case_annotations_path(case_id: @case.id) %>"
                       data-qgraph-max-score-value="1"
@@ -86,10 +86,10 @@
             ></div>
           </div>
 
-          <div class="east-slider">
+          <div class="east-slider" data-pane-target="slider">
           </div>
 
-          <div class="pane_east"
+          <div class="pane_east" data-pane-target="east"
                data-controller="annotations"
                data-annotations-url-template-value="<%= api_case_annotations_path(case_id: '__CASE_ID__') %>"
                data-annotations-case-id-value="<%= @case.id %>"

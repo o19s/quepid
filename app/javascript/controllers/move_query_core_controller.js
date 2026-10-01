@@ -107,7 +107,7 @@ export default class extends ModalTriggerControllerBase {
       item.dataset.caseId = acase.case_id
       item.textContent = acase.case_name
       item.classList.toggle("active", this.selectedCase?.case_id === acase.case_id)
-      item.addEventListener("click", (event) => this.selectCase(event))
+      item.dataset.action = "click->move-query-core#selectCase"
       this.caseListTarget.appendChild(item)
     })
 

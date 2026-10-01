@@ -33,7 +33,7 @@ export default class extends ModalTriggerControllerBase {
     if (this.hasTitleTarget) this.titleTarget.textContent = "Query Options"
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
 
-    showBsModal(getOrCreateBsModal(document.getElementById(this.modalElementId)))
+    showBsModal(getOrCreateBsModal(this.element))
   }
 
   formatOptions(rawOptions) {
@@ -73,7 +73,7 @@ export default class extends ModalTriggerControllerBase {
         detail: { queryId: this.queryId, options }
       }))
       coreFlash.show("success", "Query options saved successfully.")
-      getOrCreateBsModal(document.getElementById(this.modalElementId))?.hide()
+      getOrCreateBsModal(this.element)?.hide()
     } catch (error) {
       console.error("query-options-core: save failed", error)
       coreFlash.show("error", "Unable to save query options.")

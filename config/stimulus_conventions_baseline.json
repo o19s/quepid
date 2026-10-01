@@ -1,0 +1,83 @@
+{
+  "app/javascript/controllers/add_query_controller.js": {
+    "documentListener": 1
+  },
+  "app/javascript/controllers/annotations_controller.js": {
+    "innerHTML": 2
+  },
+  "app/javascript/controllers/bulk_judgement_controller.js": {
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/case_toolbar_controller.js": {
+    "documentListener": 4
+  },
+  "app/javascript/controllers/clone_case_core_controller.js": {
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/confirm_delete_controller.js": {
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/diff_core_controller.js": {
+    "innerHTML": 2
+  },
+  "app/javascript/controllers/export_case_core_controller.js": {
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/flash_controller.js": {
+    "documentListener": 2,
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/invite_controller.js": {
+    "innerHTML": 2
+  },
+  "app/javascript/controllers/judgements_core_controller.js": {
+    "innerHTML": 3
+  },
+  "app/javascript/controllers/mapper_wizard_controller.js": {
+    "innerHTML": 10
+  },
+  "app/javascript/controllers/pane_controller.js": {
+    "documentListener": 3
+  },
+  "app/javascript/controllers/pick_scorer_core_controller.js": {
+    "innerHTML": 4
+  },
+  "app/javascript/controllers/qgraph_controller.js": {
+    "documentListener": 2
+  },
+  "app/javascript/controllers/qscore_case_controller.js": {
+    "documentListener": 2
+  },
+  "app/javascript/controllers/queries_list_controller.js": {
+    "documentListener": 3,
+    "innerHTML": 4
+  },
+  "app/javascript/controllers/query_command_bridge_controller.js": {
+    "documentListener": 2
+  },
+  "app/javascript/controllers/scorer_scale_controller.js": {
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/search_result_controller.js": {
+    "innerHTML": 4
+  },
+  "app/javascript/controllers/search_results_controller.js": {
+    "innerHTML": 4
+  },
+  "app/javascript/controllers/share_case_core_controller.js": {
+    "documentListener": 1,
+    "innerHTML": 1
+  },
+  "app/javascript/controllers/share_entity_controller_base.js": {
+    "innerHTML": 3
+  },
+  "app/javascript/controllers/snapshot_bridge_controller.js": {
+    "documentListener": 5
+  },
+  "app/javascript/controllers/team_member_autocomplete_controller.js": {
+    "innerHTML": 2
+  },
+  "app/javascript/controllers/tune_relevance_controller.js": {
+    "innerHTML": 3
+  }
+}

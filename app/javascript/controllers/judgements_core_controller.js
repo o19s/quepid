@@ -25,6 +25,7 @@ const REDIRECT_DELAY_MS = 500
  */
 export default class extends ModalTriggerControllerBase {
   static targets = [
+    "item",
     "title",
     "loading",
     "noTeams",
@@ -340,6 +341,7 @@ export default class extends ModalTriggerControllerBase {
     const none = document.createElement("li")
     none.className = "list-group-item"
     none.innerHTML = "<em>None (disconnect from any book)</em>"
+    none.dataset.judgementsCoreTarget = "item"
     none.dataset.judgementsCoreBookIdParam = ""
     none.dataset.action = "click->judgements-core#selectBook"
     this.bookListTarget.appendChild(none)
@@ -347,6 +349,7 @@ export default class extends ModalTriggerControllerBase {
     this.books.forEach((book) => {
       const li = document.createElement("li")
       li.className = "list-group-item"
+      li.dataset.judgementsCoreTarget = "item"
       li.dataset.judgementsCoreBookIdParam = String(book.id)
       li.dataset.action = "click->judgements-core#selectBook"
 
@@ -371,7 +374,7 @@ export default class extends ModalTriggerControllerBase {
 
   _refreshBookSelection() {
     if (!this.hasBookListTarget) return
-    this.bookListTarget.querySelectorAll(".list-group-item").forEach((li) => {
+    this.itemTargets.forEach((li) => {
       const raw = li.dataset.judgementsCoreBookIdParam
       const id = raw === "" ? null : Number(raw)
       li.classList.toggle("active", id === this.activeBookId)

@@ -6,6 +6,7 @@ import { getCoreStores } from "utils/core_store_access"
 export default class extends Controller {
   static targets = ["container"]
   static values = {
+    caseId: Number,
     scoresUrl: String,
     annotationsUrl: String,
     maxScore: Number
@@ -21,10 +22,10 @@ export default class extends Controller {
       this.render()
     }
     this.onScorePersisted = (event) => {
-      if (String(event.detail?.caseId) === this.element.dataset.qgraphCaseId) this.loadScores()
+      if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadScores()
     }
     this.onAnnotationsChanged = (event) => {
-      if (String(event.detail?.caseId) === this.element.dataset.qgraphCaseId) this.loadAnnotations()
+      if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadAnnotations()
     }
     this.scoringStore?.addEventListener("scoring-complete", this.onScoringComplete)
     document.addEventListener("case-score:persisted", this.onScorePersisted)

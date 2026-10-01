@@ -9,6 +9,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Build the stack
         run: bin/setup_docker
+      - name: JavaScript lint
+        run: bin/docker r yarn lint:js
       - name: Test
         run: bin/docker r rails test
 

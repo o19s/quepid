@@ -4,6 +4,10 @@
  * Scope is defined in `config/javascript_lint_scope.mjs` (shared with Prettier).
  */
 import js from '@eslint/js';
+import stimulusConventions from './scripts/eslint/stimulus_conventions.mjs';
+import { readFileSync } from 'node:fs';
+
+const stimulusBaseline = JSON.parse(readFileSync(new URL('./config/stimulus_conventions_baseline.json', import.meta.url), 'utf8'));
 import globals from 'globals';
 import eslintConfigPrettier from 'eslint-config-prettier';
 import {
@@ -47,6 +51,11 @@ export default [
       // Relaxed during migration — revisit when cleaning debug logging.
       'no-unused-vars': 'off',
     },
+  },
+  {
+    files: ['app/javascript/controllers/**/*.js'],
+    plugins: { quepid: { rules: { 'stimulus-conventions': stimulusConventions } } },
+    rules: { 'quepid/stimulus-conventions': ['error', stimulusBaseline] },
   },
   {
     files: LEGACY_SCRIPT_FILES,

@@ -838,6 +838,16 @@ Those re-render from a client-side store that Stimulus controllers subscribe to,
 directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
 page that is the exception, not the default.
 
+### Stimulus conventions
+
+- Use targets for elements inside a controller's scope and typed values for controller configuration. Keep per-row data on the row when it represents dynamic client-side data rather than controller configuration.
+- Use `data-action` for interactions and document/window events when the receiving controller owns the markup. Stimulus manages listener cleanup. Keep direct listeners for Bootstrap popover/tooltip content relocated outside that scope, and keep store subscriptions paired in `connect()` / `disconnect()`.
+- Use outlets when asking a known peer controller to perform an operation. Keep named events for facts broadcast to multiple consumers or emitted by runtime modules, and stores for shared mutable state.
+- Render static structure in ERB and populate targets. Client-computed query rows, results and scores stay in JavaScript. Keep interactive regions out of Turbo Frames unless their lifecycle is supported.
+- Before converting Boolean dataset checks, verify absent and empty values: Stimulus treats an empty value attribute as true. Value callbacks also run during connection.
+
+ESLint enforces a per-controller count ceiling for direct `document.addEventListener` calls and `innerHTML` assignments, recorded in `config/stimulus_conventions_baseline.json`. New controllers have zero allowance. The AST check includes literal computed properties and compound assignments, and ignores reads, comments and strings. It prevents count growth; it does not detect replacing an old use with a different use, aliases or dynamically computed property names. Reduce the baseline when removing existing uses; increases require a documented scope/lifecycle reason reviewed with the change. Run `yarn lint:js` through the established Docker workflow.
+
 ### Core event bus
 
 The case page's controllers and module-owned runtime talk to each other with `CustomEvent`s. Most go on `document`; a few stay on a store or on a controller's own element. Every event is emitted by one owner; the rest are listeners. Names are free-form strings, so grep the name before renaming one.

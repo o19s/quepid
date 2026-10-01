@@ -12,6 +12,7 @@ import { showStatusMessage } from "utils/status_message"
 export default class extends ModalTriggerControllerBase {
   static targets = [
     "title",
+    "alert",
     "selections",
     "addButton",
     "warning",
@@ -90,6 +91,14 @@ export default class extends ModalTriggerControllerBase {
     if (this.selectionValues.length > 1) this.selectionValues.splice(index, 1)
     else this.selectionValues[0] = ""
     this.renderSelections()
+  }
+
+  removeSelectionAt(event) {
+    this.removeSelection(event.params.index)
+  }
+
+  deleteSelectionAt(event) {
+    this.deleteSelected(event.params.index)
   }
 
   selectChanged(event) {
@@ -171,7 +180,7 @@ export default class extends ModalTriggerControllerBase {
       select.style.width = "auto"
       select.style.minWidth = "200px"
       select.style.marginRight = "10px"
-      select.addEventListener("change", (event) => this.selectChanged(event))
+      select.dataset.action = "change->diff-core#selectChanged"
       this.addOption(select, "", "-- Select Snapshot --")
       this.snapshots.forEach((snapshot) => {
         this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), selected === String(snapshot.id))
@@ -184,7 +193,8 @@ export default class extends ModalTriggerControllerBase {
       remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
       remove.setAttribute("aria-label", remove.title)
       remove.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>'
-      remove.addEventListener("click", () => this.removeSelection(index))
+      remove.dataset.diffCoreIndexParam = String(index)
+      remove.dataset.action = "click->diff-core#removeSelectionAt"
 
       const del = document.createElement("button")
       del.type = "button"
@@ -194,7 +204,8 @@ export default class extends ModalTriggerControllerBase {
       del.title = "Delete this snapshot"
       del.setAttribute("aria-label", del.title)
       del.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i>'
-      del.addEventListener("click", () => this.deleteSelected(index))
+      del.dataset.diffCoreIndexParam = String(index)
+      del.dataset.action = "click->diff-core#deleteSelectionAt"
 
       row.append(label, select, remove, del)
       this.selectionsTarget.append(row)
@@ -272,7 +283,7 @@ export default class extends ModalTriggerControllerBase {
     this.warningTarget.classList.add("d-none")
     this.processingWarningTarget.classList.add("d-none")
     this.deleteWarningTarget.classList.add("d-none")
-    showStatusMessage(this.element.querySelector("[data-diff-core-target='alert']"), { message: "", className: "alert d-none" })
+    showStatusMessage(this.hasAlertTarget ? this.alertTarget : null, { message: "", className: "alert d-none" })
   }
 
   showWarning(message) {
@@ -281,7 +292,7 @@ export default class extends ModalTriggerControllerBase {
   }
 
   showError(message) {
-    const alert = this.element.querySelector("[data-diff-core-target='alert']")
+    const alert = this.hasAlertTarget ? this.alertTarget : null
     if (alert) showStatusMessage(alert, { message, className: "alert alert-danger" })
   }
 }
