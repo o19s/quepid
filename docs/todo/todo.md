@@ -488,7 +488,6 @@ Inline `rubocop:disable` only on this branch (no config-level excludes). Search 
 ### [PREEXISTING] Metrics/ParameterLists
 
 - `[PREEXISTING]` `Case#clone_case` — `app/models/case.rb:130`
-- `[PREEXISTING]` `MapperWizardState#store_fetch_result` — `app/models/mapper_wizard_state.rb:58`
 - `[PREEXISTING]` `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
 
 ### [PREEXISTING] Complex methods (Metrics/*)

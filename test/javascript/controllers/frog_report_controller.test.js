@@ -1,5 +1,14 @@
-import { describe, expect, it } from "vitest"
-import { buildFrogReportStats } from "controllers/frog_report_controller"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import FrogReportController, { buildFrogReportStats } from "controllers/frog_report_controller"
+import { QueryDocumentsStore } from "stores/query_documents_store"
+import {
+  resetCoreCapabilitiesForTest,
+  resetCoreFlashForTest,
+  resetCoreStoresForTest,
+  setCoreCapabilitiesForTest,
+  setCoreFlashForTest,
+  setCoreStoresForTest
+} from "utils/core_test_overrides"
 
 describe("buildFrogReportStats", () => {
   it("counts results, ratings, and missing ratings from document snapshots", () => {
@@ -25,5 +34,150 @@ describe("buildFrogReportStats", () => {
 
   it("recognizes fully rated queries", () => {
     expect(buildFrogReportStats([{ docs: [{ id: 1 }], missingRatings: 0, allRated: true }]).allRated).toBe(true)
+  })
+
+  it("treats unknown missing counts as every returned doc up to the rating depth", () => {
+    expect(buildFrogReportStats([
+      { docs: [{ id: 1 }, { id: 2 }, { id: 3 }], depthOfRating: 2 },
+      { docs: [{ id: 4 }] }
+    ])).toMatchObject({ ratingsNeeded: 4, missingRatings: 2, missingRate: 50, allRated: false })
+    expect(buildFrogReportStats([]).allRated).toBe(false)
+  })
+})
+
+const TARGETS = [
+  "caseName", "queryCount", "withResults", "withoutResults", "ratingsNeeded",
+  "allRated", "notAllRated", "missingRatings", "missingRate", "hopMessage",
+  "chart", "refreshButton", "refreshIcon", "bookName", "error"
+]
+
+function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) {
+  const store = new QueryDocumentsStore()
+  Object.entries(queries).forEach(([id, state]) => store.replaceQuery(id, state))
+  setCoreStoresForTest({ documents: store })
+  setCoreCapabilitiesForTest({ caseState, queryLifecycle })
+  const controller = Object.create(FrogReportController.prototype)
+  controller.element = document.createElement("div")
+  TARGETS.forEach((name) => {
+    const element = document.createElement("div")
+    controller[`${name}Target`] = element
+    controller[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
+  })
+  controller.store = store
+  return controller
+}
+
+describe("FrogReportController", () => {
+  afterEach(() => {
+    resetCoreCapabilitiesForTest()
+    resetCoreStoresForTest()
+    resetCoreFlashForTest()
+    vi.restoreAllMocks()
+    delete document.body.dataset.frogReportRefreshUrlTemplate
+  })
+
+  it("buckets queries by missing ratings for the chart, labelling the extremes", () => {
+    const controller = buildController()
+
+    expect(controller.distribution([
+      { depthOfRating: 3, missingRatings: 0 },
+      { depthOfRating: 3, missingRatings: 0 },
+      { missingRatings: 2 },
+      { missingRatings: 3 },
+      { docs: [{ id: 1 }] }
+    ])).toEqual([
+      { category: "Fully Rated", amount: 2 },
+      { category: "Missing 1", amount: 1 },
+      { category: "Missing 2", amount: 1 },
+      { category: "No Ratings", amount: 1 }
+    ])
+  })
+
+  it("renders the case's rating stats and shows the hop-to-it message past 5% missing", () => {
+    const controller = buildController({
+      queries: { 1: { docs: [{ id: "a" }, { id: "b" }], missingRatings: 1 }, 2: { docs: [] } },
+      caseState: { caseName: "Books", bookName: "Catalog", bookId: 3 }
+    })
+
+    controller.render()
+
+    expect(controller.caseNameTarget.textContent).toBe("Books")
+    expect(controller.bookNameTarget.textContent).toBe("Catalog")
+    expect(controller.queryCountTarget.textContent).toBe("2")
+    expect(controller.withResultsTarget.textContent).toBe("1")
+    expect(controller.withoutResultsTarget.textContent).toBe("1")
+    expect(controller.ratingsNeededTarget.textContent).toBe("2")
+    expect(controller.missingRatingsTarget.textContent).toBe("1")
+    expect(controller.missingRateTarget.textContent).toBe("50")
+    expect(controller.allRatedTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.notAllRatedTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.hopMessageTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.refreshButtonTarget.classList.contains("d-none")).toBe(false)
+  })
+
+  it("hides the hop message and refresh button for a fully rated case with no book", () => {
+    const controller = buildController({ queries: { 1: { docs: [{ id: "a" }], missingRatings: 0, allRated: true } } })
+
+    controller.render()
+
+    expect(controller.allRatedTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.notAllRatedTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.hopMessageTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.refreshButtonTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.caseNameTarget.textContent).toBe("")
+  })
+
+  it("refreshes ratings from the book in the foreground for a small case, then reloads queries", async () => {
+    document.body.dataset.frogReportRefreshUrlTemplate = "books/__BOOK_ID__/cases/__CASE_ID__/refresh?background=__BACKGROUND__"
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    const refreshQueries = vi.fn(() => Promise.resolve())
+    const flash = { show: vi.fn() }
+    setCoreFlashForTest(flash)
+    const controller = buildController({ queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
+
+    await controller.refresh()
+
+    expect(fetch).toHaveBeenCalledWith("books/3/cases/9/refresh?background=false", expect.objectContaining({ method: "PUT" }))
+    expect(refreshQueries).toHaveBeenCalledWith(9)
+    expect(flash.show).toHaveBeenCalledWith("success", "Ratings have been refreshed.")
+    expect(controller.refreshButtonTarget.disabled).toBe(false)
+    expect(controller.refreshIconTarget.classList.contains("spintime")).toBe(false)
+  })
+
+  it("refreshes a case with 50+ queries in the background and returns to the home page", async () => {
+    document.body.dataset.frogReportRefreshUrlTemplate = "refresh?background=__BACKGROUND__"
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    const assign = vi.spyOn(window.location, "assign").mockImplementation(() => {})
+    const refreshQueries = vi.fn()
+    setCoreFlashForTest({ show: vi.fn() })
+    const queries = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [i + 1, {}]))
+    const controller = buildController({ queries, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
+
+    await controller.refresh()
+
+    expect(fetch.mock.calls[0][0]).toBe("refresh?background=true")
+    expect(refreshQueries).not.toHaveBeenCalled()
+    expect(assign).toHaveBeenCalledOnce()
+  })
+
+  it("shows the error and re-enables refresh when the request fails", async () => {
+    document.body.dataset.frogReportRefreshUrlTemplate = "refresh"
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 500, statusText: "Server Error" }))))
+    const controller = buildController({ caseState: { bookId: 3, caseNo: 9 } })
+
+    await controller.refresh()
+
+    expect(controller.errorTarget.textContent).toBe("An error (500 Server Error) occurred, please try again.")
+    expect(controller.errorTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.refreshButtonTarget.disabled).toBe(false)
+  })
+
+  it("does not refresh without a book and case", async () => {
+    vi.stubGlobal("fetch", vi.fn())
+    const controller = buildController({ caseState: { bookId: 3 } })
+
+    await controller.refresh()
+
+    expect(fetch).not.toHaveBeenCalled()
   })
 })

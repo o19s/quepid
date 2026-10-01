@@ -51,4 +51,50 @@ describe("query-delete controller", () => {
     expect(flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
     resetCoreFlashForTest()
   })
+
+  it("deletes with DELETE, disables the button while pending, and tells the live list", async () => {
+    window.confirm.mockReturnValue(true)
+    let resolveFetch
+    window.fetch.mockReturnValue(new Promise((resolve) => { resolveFetch = resolve }))
+    const deleted = vi.fn()
+    document.addEventListener("query-command:delete-completed", deleted)
+    const event = { preventDefault: vi.fn() }
+
+    const pending = controller.remove(event)
+    expect(event.preventDefault).toHaveBeenCalledOnce()
+    expect(controller.element.disabled).toBe(true)
+    resolveFetch({ ok: true })
+    await pending
+
+    expect(window.fetch).toHaveBeenCalledWith("api/cases/1/queries/42", expect.objectContaining({ method: "DELETE" }))
+    expect(deleted).toHaveBeenCalledOnce()
+    expect(deleted.mock.calls[0][0].detail).toEqual({ queryId: 42 })
+    document.removeEventListener("query-command:delete-completed", deleted)
+  })
+
+  it("re-enables the button after a failed delete so the user can retry", async () => {
+    window.confirm.mockReturnValue(true)
+    window.fetch.mockResolvedValue({ ok: false, status: 500 })
+    vi.spyOn(console, "error").mockImplementation(() => {})
+
+    await controller.remove({ preventDefault: vi.fn() })
+
+    expect(controller.element.disabled).toBe(false)
+  })
+
+  it("does not request anything when declined, and reports a missing delete URL", async () => {
+    window.confirm.mockReturnValue(false)
+    controller.remove({ preventDefault: vi.fn() })
+    expect(window.fetch).not.toHaveBeenCalled()
+
+    const flash = { show: vi.fn() }
+    setCoreFlashForTest(flash)
+    Object.defineProperty(controller, "deleteUrlValue", { configurable: true, value: "" })
+    await controller.deleteQuery()
+    expect(window.fetch).not.toHaveBeenCalled()
+    expect(controller.element.disabled).toBe(false)
+    expect(flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
+    resetCoreFlashForTest()
+  })
 })
+

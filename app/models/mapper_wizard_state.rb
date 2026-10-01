@@ -55,23 +55,6 @@ class MapperWizardState < ApplicationRecord
     find_or_create_by!(user: user)
   end
 
-  # rubocop:disable Metrics/ParameterLists
-  # Store HTML content from a fetched URL
-  # test_query stores either query params (for GET) or JSON body (for POST)
-  # custom_headers stores a hash of headers to send with the request
-  # basic_auth_credential stores credentials in format "username:password"
-  def store_fetch_result url, html, method: 'GET', test_query: nil, custom_headers: nil, basic_auth_credential: nil
-    update!(
-      search_url:            url,
-      html_content:          html,
-      http_method:           method,
-      test_query:            test_query,
-      custom_headers:        custom_headers,
-      basic_auth_credential: basic_auth_credential
-    )
-  end
-  # rubocop:enable Metrics/ParameterLists
-
   # Store generated mapper code
   def store_mappers number_of_results_mapper:, docs_mapper:
     update!(

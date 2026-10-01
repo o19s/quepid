@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
+import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
 
 describe("CoreBootstrapController", () => {
   beforeEach(() => {
@@ -59,7 +60,29 @@ describe("CoreBootstrapController", () => {
   afterEach(() => {
     delete window.quepidStore
     delete window.quepidSearch
+    delete window.quepidCoreBootstrap
+    resetCoreFlashForTest()
   })
+
+  const core = () => window.quepidSearch.caseRuntime.bootstrap.core
+
+  async function bootstrapCase(caseNo = 2) {
+    const flash = { show: vi.fn(), hide: vi.fn() }
+    setCoreFlashForTest(flash)
+    const failed = vi.fn()
+    const ready = vi.fn()
+    document.addEventListener("core-bootstrap:failed", failed)
+    document.addEventListener("core-bootstrap:ready", ready)
+    const controller = Object.create(CoreBootstrapController.prototype)
+    controller.caseNoValue = caseNo
+    controller.tryNoValue = 1
+    controller.communalScorersOnlyValue = "false"
+    controller.queryListSortableValue = "true"
+    await controller.bootstrap()
+    document.removeEventListener("core-bootstrap:failed", failed)
+    document.removeEventListener("core-bootstrap:ready", ready)
+    return { flash, failed, ready }
+  }
 
   it("resets the shared window diff store, not the imported fallback singleton", async () => {
     const controller = Object.create(CoreBootstrapController.prototype)
@@ -75,4 +98,80 @@ describe("CoreBootstrapController", () => {
     expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
     expect(window.quepidSearch.caseRuntime.bootstrap.core.user.loadCurrent).toHaveBeenCalledOnce()
   })
+
+  it("marks the workspace ready, clears old errors, and reports a successful search", async () => {
+    const { flash, ready, failed } = await bootstrapCase()
+    await Promise.resolve()
+
+    expect(ready.mock.calls[0][0].detail).toEqual({ caseNo: 2, tryNo: 1 })
+    expect(window.quepidCoreBootstrap).toEqual({ ready: true, caseNo: 2, tryNo: 1 })
+    expect(failed).not.toHaveBeenCalled()
+    expect(flash.hide).toHaveBeenCalledWith("search-error")
+    expect(core().case.trackLastViewedAt).toHaveBeenCalledWith(2)
+    expect(flash.show).toHaveBeenCalledWith("success", "All queries finished successfully!")
+  })
+
+  it("flashes the search error when some queries fail after loading", async () => {
+    window.quepidSearch.queryCommands.searchAll.mockRejectedValue("engine down")
+
+    const { flash } = await bootstrapCase()
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(flash.show).toHaveBeenCalledWith("error", "Some queries failed to resolve!")
+    expect(flash.show).toHaveBeenCalledWith("error", "engine down", "search-error")
+  })
+
+  it("tells a user with no cases how to create one", async () => {
+    const { flash, failed, ready } = await bootstrapCase(0)
+
+    expect(flash.show).toHaveBeenCalledWith("error", expect.stringContaining("You don't have any Cases created in Quepid"))
+    expect(flash.show).toHaveBeenCalledOnce()
+    expect(failed.mock.calls[0][0].detail.error.message).toBe("No case selected")
+    expect(ready).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    [
+      "the case can't be loaded",
+      () => core().case.load.mockResolvedValue(undefined),
+      ["error", expect.stringMatching(/^Could not retrieve case 2\. Confirm that the case has been shared/), "search-error"]
+    ],
+    [
+      "the try doesn't exist",
+      () => core().settings.isTrySelected.mockReturnValue(false),
+      ["error", "Could not load case 2 due to try number 1 not existing", "search-error"]
+    ],
+    [
+      "the search engine is on the other protocol",
+      () => {
+        core().navigation.needToRedirectQuepidProtocol.mockReturnValue(true)
+        core().navigation.getQuepidProtocol = () => "https"
+        core().navigation.createSearchEndpointLink = (id) => `/search_endpoints/${id}`
+      },
+      ["error", expect.stringMatching(/^Blocked Request: mixed-content\. You have specified a search engine url .*<code>https<\/code>/), "search-error", { html: true }]
+    ],
+    [
+      "anything else goes wrong",
+      () => core().case.load.mockRejectedValue(new Error("boom")),
+      ["error", "Could not load the case 2 due to: boom", "search-error"]
+    ]
+  ])("explains the failure when %s", async (_label, arrange, flashArgs) => {
+    arrange()
+
+    const { flash, failed, ready } = await bootstrapCase()
+
+    expect(flash.show).toHaveBeenCalledWith(...flashArgs)
+    expect(failed).toHaveBeenCalledOnce()
+    expect(ready).not.toHaveBeenCalled()
+  })
+
+  it("does not block a proxied endpoint on a protocol mismatch", async () => {
+    core().settings.editable.mockReturnValue({ searchUrl: "http://search", proxyRequests: true })
+    core().navigation.needToRedirectQuepidProtocol.mockReturnValue(true)
+
+    const { ready } = await bootstrapCase()
+
+    expect(ready).toHaveBeenCalledOnce()
+  })
 })
+

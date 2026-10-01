@@ -25,6 +25,30 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     assert_select 'h1', 'Mapper Wizard'
   end
 
+  test 'fetch_html preserves the real credential when its masked value is resubmitted' do
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+    wizard_state.update!(basic_auth_credential: 'bob:password')
+    html = '<html>Search results</html>'
+    request = stub_request(:get, 'https://search.example.com/results')
+      .with(basic_auth: %w[bob password])
+      .to_return(status: 200, body: html)
+
+    post mapper_wizard_fetch_html_url('new'),
+         params: {
+           search_url:            'https://search.example.com/results',
+           basic_auth_credential: wizard_state.masked_basic_auth_credential,
+         },
+         as:     :json
+
+    assert_response :success
+    assert response.parsed_body['success']
+    assert_requested request
+    wizard_state.reload
+    assert_equal 'bob:password', wizard_state.basic_auth_credential
+    assert_equal html, wizard_state.html_content
+    assert_not_includes response.body, 'bob:password'
+  end
+
   test 'fetch_html returns error for blank URL' do
     post mapper_wizard_fetch_html_url('new'),
          params: { search_url: '' },
