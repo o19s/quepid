@@ -81,10 +81,12 @@ angular.module('QuepidApp')
           angular.forEach(query.docs, function(doc) {
             i = i + 1;
             var fields = {};
+            // Set first so it's the first key in document_fields - object insertion
+            // order is what ends up stored (see QueryDocPair#document_fields).
+            fields['title'] = doc.title;
             angular.forEach(Object.values(doc.subsList), function(field) {
               fields[field['field']] = field['value'];
             });
-            fields['title'] = doc.title;
             // interesting issue, which is for a doc with attributes title and text, if the fieldspec is
             // title:text, title, then we need special logic to actually GET the title attribute out and map it to title_field,
             // because otherwise we just overwrite it.

@@ -56,8 +56,28 @@ export default class extends Controller {
     const response = await fetch(this.urlValue, { headers: { Accept: "text/html" } })
     if (!response.ok) return
 
+    // While BroadcastJudgeActivityJob's live push is working (the common
+    // case - this poll is only a fallback for when it isn't), the fetched
+    // content here matches what's already on screen almost every time, since
+    // the active row was just freshly replaced moments earlier by that same
+    // broadcast. Skipping a no-op replace avoids tearing down and rebuilding
+    // *every* row's Vega chart (a fresh div + re-rendered SVG per row) every
+    // 5 seconds for rows that have nothing new to show - that's what reads
+    // as the whole table "flickering periodically" even when only one judge
+    // is active. Compared with the chart ids normalized away, since the
+    // Vega gem gives each chart's wrapper div a brand new random id on every
+    // render (see _judge_activity_row.html.erb) even when the underlying
+    // data is byte-for-byte identical - without this, that alone would make
+    // every fetch look "changed" and this check would never skip anything.
+    const html = await response.text()
+    if (this.normalize(html) === this.normalize(this.element.innerHTML)) return
+
     // Setting innerHTML triggers the observer above, which re-schedules (or
     // stops) polling based on the freshly-fetched content.
-    this.element.innerHTML = await response.text()
+    this.element.innerHTML = html
+  }
+
+  normalize(html) {
+    return html.replace(/chart-[0-9a-f]{32}/g, "chart-ID")
   }
 }

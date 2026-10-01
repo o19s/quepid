@@ -93,6 +93,39 @@ describe("JudgeActivityPollController", () => {
     controller.disconnect()
   })
 
+  it("does not touch the DOM when a poll fetches content identical to what's already shown", async () => {
+    const controller = buildController(ACTIVE_ROW)
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(ACTIVE_ROW) })
+
+    controller.connect()
+    await nextTick()
+
+    const original = controller.element.firstChild
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(global.fetch).toHaveBeenCalledTimes(1)
+    // A real DOM write (even of identical markup) would replace this node -
+    // same node reference proves the no-op path was taken, not just equal text.
+    expect(controller.element.firstChild).toBe(original)
+  })
+
+  it("ignores a chart's random wrapper id when deciding whether a poll changed anything", async () => {
+    const rowWithChart = (chartId) =>
+      `<tr data-actively-judging="true"><td><div id="chart-${chartId}"></div></td></tr>`
+    const controller = buildController(rowWithChart("a".repeat(32)))
+    global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(rowWithChart("b".repeat(32))) })
+
+    controller.connect()
+    await nextTick()
+
+    const original = controller.element.firstChild
+    await vi.advanceTimersByTimeAsync(1000)
+
+    // Only the random chart id differs between what's on screen and what was
+    // fetched - that alone must not count as a real change.
+    expect(controller.element.firstChild).toBe(original)
+  })
+
   it("stops polling on disconnect", async () => {
     const controller = buildController(ACTIVE_ROW)
     global.fetch = vi.fn().mockResolvedValue({ ok: true, text: () => Promise.resolve(ACTIVE_ROW) })
