@@ -33,7 +33,7 @@ jobs:
 
       - run:
           name: Specify bundler!
-          command: gem install bundler:4.0.14
+          command: gem install bundler:4.0.21
 
       - run:
           name: Which bundler?
