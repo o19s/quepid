@@ -6,17 +6,26 @@
 
 ## 0. What today's code actually does (checked, not assumed)
 
-Four facts the whole design rests on:
+Facts the whole design rests on:
 
 1. **Unrateable judgements still occupy a slot.** `SelectionStrategy`'s cap counts rows, not
-   ratings: `HAVING COUNT(judgements.id) < 3` (`selection_strategy.rb:77`). Nothing filters on
-   `unrateable`.
+   ratings: `HAVING COUNT(judgements.id) < 3`
+   (`SelectionStrategy.random_query_doc_pair_for_multiple_judges`). Nothing filters on `unrateable`.
 2. **Scoring ignores them.** `RatingsManager` averages `query_doc_pair.judgements.rateable`
-   (`ratings_manager.rb:58`), so an unrateable row never moves a rating.
+   (`RatingsManager#sync_judgements_to_ratings`), so an unrateable row never moves a rating.
 3. **A pair's rating is the mean of whoever rated it.** Same place — so on an escalated pair the
    rating is the expensive judge's alone, because the cheap judge's row is excluded.
-4. **`RunJudgeJudyJob` has no concurrency limit** (unlike `PopulateBookJob` and
-   `RunCaseEvaluationJob`). Two runs on one book can already overlap today.
+4. **`RunJudgeJudyJob` allows one run per (book, judge), not per book.** Its
+   `limits_concurrency` key is `run_judge_judy_<book>_<judge>` with `on_conflict: :discard`, so the
+   same judge cannot run twice on a book, but two *different* judges can run on one book at once.
+   Inline escalation calls the expensive judge from inside the cheap judge's job, under the cheap
+   judge's key — so a manual run of the expensive judge on the same book is not blocked by it.
+5. **Runs can also start without a button.** `QueryDocPair`'s `after_create_commit` enqueues a run
+   for every `auto_run` judge on the book (`BooksAiJudge#auto_run`). An `auto_run` cheap judge at
+   the head of a chain escalates — and spends — every time pairs are populated.
+6. **The confidence floor is applied in the Jev adapter, not in `JudgementFinalizer`.** The adapter
+   marks the judgement unrateable and clears its rating, so the finalizer cannot tell a
+   low-confidence answer from a blank one.
 
 ## 1. The judgement set stops being homogeneous — and nothing says so
 
@@ -83,7 +92,10 @@ in advance (§3). The plan's budget cap helps, but:
 - the default (10% of the run) is invented; the right number is per book and per wallet;
 - there is no preview: no "this would have escalated 412 pairs" dry run;
 - there is no spend readout afterwards, only a count of escalations;
-- two overlapping runs (fact 4) double it, and nothing stops them.
+- a chain whose cheap judge is `auto_run` (fact 5) spends on every population, with nobody
+  pressing anything;
+- the expensive judge can be running on its own over the same book while it is also being woken
+  by escalation (fact 4), and nothing serializes the two.
 
 ## 5. A pair that fails escalation is stuck forever
 
@@ -119,6 +131,7 @@ What that buys, against the inline version:
 | Failure blast radius | one run, mixed judges | passes fail independently |
 | Progress reporting | interleaved, two judges in one counter | one judge per run, as today |
 | Latency mixing | expensive calls stall the cheap loop | none |
+| Cancellation | one cancel must stop both judges mid-pair | each pass is its own job, cancelled as today |
 | New machinery | escalation service + budget + depth guard inside the job | one selection predicate + the existing job |
 | Fits the deferred batch work | poorly (conditional requests can't be pre-built) | naturally (the second pass is just another batch) |
 
@@ -163,8 +176,9 @@ threshold on a real corpus) is precisely what the test suite cannot tell us.
 - **Disagreement as a trigger.** Two cheap judges that disagree is at least as strong a signal as
   one cheap judge that is unsure, and it needs the same plumbing.
 - **Implicit judgements.** `Book#support_implicit_judgements` decides whether the averaged rating
-  is rounded (`ratings_manager.rb:66`). With one rater per escalated pair, rounding behaviour is
-  unchanged — but it is worth a test, because "average of one" is exactly the case people forget.
+  is rounded (`RatingsManager#sync_judgements_to_ratings`). With one rater per escalated pair,
+  rounding behaviour is unchanged — but it is worth a test, because "average of one" is exactly the
+  case people forget.
 
 ## 12. What I would want to know before building any of it
 

@@ -22,20 +22,28 @@ it is not sure about. The expensive judge never runs on its own — it sleeps un
 
 | Piece | Where | How it serves this |
 | --- | --- | --- |
-| "Is this answer usable?" in one place | `JudgementFinalizer` | becomes the escalation trigger |
-| A judge saying it is unsure | `jev_min_confidence` (`LlmJudgeAdapters::Jev`) | today marks unrateable; becomes "ask someone else" |
+| "Is this answer usable?" for blank and out-of-scale ratings | `JudgementFinalizer` | becomes the escalation trigger |
+| A judge saying it is unsure | `jev_min_confidence` (`LlmJudgeAdapters::Jev`) | today the adapter itself marks unrateable, before the finalizer runs; becomes "ask someone else" |
 | One adapter per dialect, resolved from the registry | `LlmJudgeAdapters.for` | a run can build a *second* judge's service mid-loop |
 | Judge = a `User`; judgements unique per (user, pair) | `judgements` index | two judges can both judge a pair, and neither can judge it twice |
-| Book ↔ judge assignment as a real table with a PK | `books_ai_judges` | can carry the chain's order without a new table |
+| Book ↔ judge assignment as a model with a PK | `BooksAiJudge` (`books_ai_judges`, already carries `auto_run`) | can carry the chain's order without a new table |
+| One run per (book, judge), cancellable | `RunJudgeJudyJob` (`limits_concurrency`, `.cancel`) | the cheap judge's run is already serialized and stoppable |
 
 ## 3. Decisions
 
 ### D1 — Escalate when the answer is not usable, and say why
 
-`JudgementFinalizer` already decides blank / out-of-scale / below-confidence. It should return the
-**reason** alongside the judgement (`:blank`, `:out_of_scale`, `:low_confidence`, `:error`), and the
-run escalates on it. The reason is not a new column — it is derived, passed in memory, and ends up
-in the escalated judgement's explanation.
+`JudgementFinalizer` decides blank and out-of-scale. The confidence floor does **not** live there:
+`LlmJudgeAdapters::Jev` applies `jev_min_confidence` itself and calls `mark_unrateable`, which
+clears the rating — so by the time the finalizer runs, a low-confidence answer is indistinguishable
+from a blank one. Errors are handled before either, in `LlmService#perform_safe_judgement`.
+
+The finalizer should return the **reason** alongside the judgement (`:blank`, `:out_of_scale`,
+`:low_confidence`, `:error`), and the run escalates on it. That needs the low-confidence and error
+signals to reach the finalizer: either the adapter records why it marked the judgement unrateable,
+or the confidence check moves into the finalizer (which then needs the confidence value, not just
+the rating). The reason is not a new column — it is derived, passed in memory, and ends up in the
+escalated judgement's explanation.
 
 Which reasons escalate is configurable per chain, defaulting to **all of them**: a cheap judge that
 returned nothing usable is exactly the case worth paying for. `:out_of_scale` is arguably the model
@@ -58,7 +66,8 @@ first judge punts, which is the number that tells you whether the arrangement is
 
 ### D3 — The chain is an explicit, ordered list on the book
 
-Promote `books_ai_judges` to a model (`BookAiJudge`) and add two columns:
+`books_ai_judges` is already a model (`BooksAiJudge`, which also carries `auto_run`). Add two
+columns:
 
 ```ruby
 add_column :books_ai_judges, :position, :integer, null: false, default: 0
@@ -78,12 +87,14 @@ behaviour (all judges awake, order irrelevant because nothing escalates).
 
 ### D4 — A sleeping judge is unselectable, enforced where it can actually be reached
 
-Three doors, all of which must be shut:
+Four doors, all of which must be shut:
 - `BooksController#run_judge_judy` — refuse an `escalation_only` judge with a clear notice;
 - Judgement Stats — render sleeping judges as "on call", with the "Prepare to Judge!" button
   replaced by who wakes them;
+- `QueryDocPair#queue_auto_run_ai_judges` — the `after_create_commit` that enqueues a run for every
+  `auto_run` judge on the book; a sleeping judge must never be `auto_run` (D6);
 - `RunJudgeJudyJob` — guard at the top, so a queued job for a judge that has since been put to
-  sleep does not run anyway.
+  sleep does not run anyway. This is the backstop for all the other doors.
 
 `SelectionStrategy` needs no change: it selects *pairs for a judge*, and nobody asks it for pairs
 on behalf of a sleeping judge.
@@ -96,6 +107,14 @@ service and judges the same pair. Simple, ordered, and the progress broadcast st
 The cost of "simple" is that the expensive judge's latency lands in the middle of the cheap judge's
 loop. That is acceptable precisely because escalation should be rare — and if it is not rare, the
 arrangement is not paying off and you want to notice.
+
+Two consequences of running inside the cheap judge's job:
+- `RunJudgeJudyJob`'s concurrency key is per (book, judge), so escalated calls run under the
+  *cheap* judge's key. A manual run of the expensive judge on the same book is not blocked by it.
+  The duplicate-judgement skip below keeps that safe, but nothing serializes the two.
+- The loop's cancellation check (`.cancel` destroys the job's SolidQueue row; the loop polls for it)
+  runs once per pair. An escalation must not add a second, uncancellable wait — check again before
+  calling the next judge.
 
 Guards, all required before this is safe to run on a big book:
 - `escalation_budget` per run (default ~10% of `number_of_pairs`, minimum 5), after which
@@ -112,8 +131,12 @@ a harder question than it is today. Worth revisiting if escalation ever becomes 
 ### D6 — Cycles and nonsense are refused when configured, not at 3am
 
 Validation on the book's judge list: positions unique, at least one non-sleeping judge, every
-escalation target assigned to this book, and a sleeping judge must have somebody above it (a judge
-nobody can wake is dead configuration, not a judge).
+escalation target assigned to this book, a sleeping judge must have somebody above it (a judge
+nobody can wake is dead configuration, not a judge), and a sleeping judge cannot be `auto_run`.
+
+An awake judge that is `auto_run` *and* heads a chain escalates automatically every time pairs are
+populated — no button press. That is allowed, but the book's settings should say so next to the
+checkbox.
 
 ## 4. The consequence nobody will notice until it bites
 
@@ -132,13 +155,14 @@ and the book overview banners inherit the same arithmetic, so their wording may 
 
 Every step is deployable on its own and changes nothing until a chain is configured.
 
-**S1 · `BookAiJudge` + the two columns.** Model, migration, validations (D6), `Book#judging_chain`
+**S1 · The two columns on `BooksAiJudge`.** Migration, validations (D6), `Book#judging_chain`
 returning assignments ordered by position, `Book#awake_judges` / `#sleeping_judges`. No behaviour:
 defaults leave every existing book with one flat, awake list.
 *Verify:* model tests; existing book/judge tests unedited.
 
 **S2 · `JudgementFinalizer` reports a reason.** `.call` returns a small result object
-(`usable?`, `reason`) instead of just the judgement. Callers ignore it for now.
+(`usable?`, `reason`) instead of just the judgement, with the Jev adapter's confidence floor and
+`perform_safe_judgement`'s errors feeding it (D1). Callers ignore it for now.
 *Verify:* finalizer tests extended; job and preview tests unedited.
 
 **S3 · Sleeping judges cannot be run directly** (D4). The first visible change: a sleeping judge
