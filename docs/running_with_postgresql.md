@@ -45,12 +45,12 @@ see [§6](#6-production).
 
 | | |
 | --- | --- |
-| Image | `postgres:17-alpine` |
+| Image | `postgres:18-alpine` |
 | Container | `quepid_postgres` |
 | Host port | `35432` |
 | In-network | `postgres:5432` |
 | User / password | `root` / `password` (`POSTGRES_USER` / `POSTGRES_PASSWORD`) |
-| Data directory | `./volumes/postgres/data` on the host |
+| Data directory | `./volumes/postgres/18/docker` on the host |
 
 Credentials on the Rails side come from `.env`'s `DB_USERNAME`, `DB_PASSWORD`
 and `DB_NAME`, which default to `root` / `password` / `quepid` — giving you the
@@ -59,8 +59,12 @@ databases `quepid_development` and `quepid_test`.
 The app service `depends_on` postgres with a `pg_isready` healthcheck, so it
 starts and is waited on with the rest of the stack.
 
-The cluster is bind-mounted to `./volumes/postgres/data`, the same arrangement
-`mysql` uses with `./volumes/mysql/data`; `volumes` is gitignored. A bind mount
+`./volumes/postgres` is bind-mounted to `/var/lib/postgresql`, the layout the
+PostgreSQL 18+ images expect: the cluster lives in a major-version subdirectory
+(`./volumes/postgres/18/docker`), so a future major upgrade gets a fresh
+directory beside the old one instead of failing to start on it. Mounting
+`/var/lib/postgresql/data` directly, as pre-18 images did, makes the container
+refuse to start. `volumes` is gitignored. A bind mount
 is not a Docker volume, so the data survives container recreation and
 `docker compose down -v` alike — `bin/setup_docker`'s teardown leaves the cluster
 in place, and `db:reset` is what rebuilds the databases, exactly as on MySQL.
@@ -70,9 +74,15 @@ while the container is down:
 
 ```bash
 docker compose stop postgres
-rm -rf volumes/postgres/data
+rm -rf volumes/postgres/18
 docker compose up -d postgres
 ```
+
+A cluster created by an older image (PostgreSQL 17 kept it in
+`./volumes/postgres/data`) is not readable by 18 and is simply ignored. To keep
+its data, `pg_dump` it from a `postgres:17-alpine` container before switching
+and restore into the new cluster; otherwise recreate the databases as in §3 and
+delete `./volumes/postgres/data`.
 
 ## 3. First-time setup
 
