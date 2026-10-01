@@ -54,6 +54,55 @@ The plan's `judgements.escalated_from_id` (its D4) makes (a) possible: which rat
 escalation becomes a query rather than a parse of explanation text. It does not do (a) by itself —
 the UI, the export and `RatingsManager` still have to use it.
 
+### 1.1 Calibration — same scale, different judges
+
+Making the mixture visible says *who* rated each pair. It does not say whether the two judges
+*mean the same thing* by a grade. Sharing the book's `JudgeScale` (plan D5) guarantees the same
+values and labels; it does not stop one judge being systematically stricter about "Relevant", or
+avoiding the middle grades. Sources and numbers are in `docs/todo/judge_calibration_research.md`;
+the short version:
+
+- **Label-level disagreement is large and its direction is not predictable.** GPT-4o reaches
+  κ ≈ 0.31–0.37 against TREC assessors on a 4-grade scale, worst on the middle grades. Bing's GPT-4
+  prompt was *stricter* than its assessors; other LLM judges are *more lenient* than humans; and a
+  paraphrase of the same prompt moved κ between 0.50 and 0.72. "The expensive judge is stricter"
+  cannot be assumed — it has to be measured, per judge and per prompt.
+- **Rankings survive disagreement better than scores.** Swapping one judge's set for another's
+  keeps the ranking of search configurations largely stable but moves absolute scores. Comparing
+  two configurations on a chain-judged book is safer than reading a case's score trend over time.
+- **Nobody has studied a difficulty-routed mixture.** Every robustness result swaps whole judgement
+  sets or whole topics. A set where the judge was chosen per pair by how hard it was is untested —
+  which is why the measurement below is a prerequisite, not a nice-to-have.
+
+Today Quepid has **no inter-judge agreement measure at all**: Judgement Stats shows per-judge
+counts, nothing compares judges on the pairs they share. What a chain needs before it is trusted
+on a real book:
+
+1. **An agreement figure per pair of judges** — Krippendorff's α (ordinal), because it handles a
+   graded scale, more than two judges, and judges who rated different subsets of the book — plus a
+   confusion matrix that shows the *direction* of any offset (stricter, more lenient, avoids
+   grade 2).
+2. **Overlap on random pairs, not escalated ones.** Escalated pairs are hard by construction;
+   comparing the judges only there measures difficulty, not calibration. The expensive judge must
+   also rate a small random sample of the pairs the cheap judge answered confidently.
+3. **Humans as the reference where they exist.** A book that already has human judgements has a
+   gold set: each AI judge's α and confusion matrix against the humans is the number that says
+   whether to trust it at all, and which one to put first.
+4. **A threshold chosen from that data.** The confidence floor that triggers escalation should be
+   the point where accepting the cheap judge still meets an agreement target — which needs Jev's
+   confidence persisted (§3), and needs it checked: an LLM's stated confidence is not calibrated
+   until it has been compared with labels.
+
+What I would *not* do in v1 is remap one judge's grades onto the other's through the confusion
+matrix. It is possible (the Dawid–Skene model does exactly that) but opaque, and it needs more
+overlap than a first chain will have. Show the offset; decide on correction once it has been seen
+on real books.
+
+One related trap: if a case's search configuration uses the same model family as a judge (a GPT-4o
+reranker judged by GPT-4o), the judge is likely to favour it. That is true without escalation, but
+escalation makes it more likely the expensive judge is a big general-purpose model — worth a
+warning where a judge is assigned.
+
 ## 2. Escalation spends the per-pair judgement budget twice as fast
 
 From fact 1 + fact 2: an escalated pair consumes **two of three** slots and produces **one**

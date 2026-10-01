@@ -263,6 +263,11 @@ that says whether the chain is worth keeping.
 - **Naming.** "Sleeping" is good in prose; the field wants to be `escalation_only`, and the UI
   probably says **on call**. Worth settling before S1 so the vocabulary matches everywhere.
 - **Budget default.** 10% of the run is a guess. It should probably be per book, and visible.
+- **Calibration between the judges.** Sharing a scale does not mean reading it the same way. A
+  chain should not be trusted on a real book until the two judges' agreement and offset have been
+  measured on overlapping random pairs (and against humans where the book has them) — see
+  `docs/todo/judgements-escalation.md` §1.1 and `docs/todo/judge_calibration_research.md`. Whether
+  that measurement is a step of this plan or its own feature is still open.
 - **Does a human count as a rung?** "Nobody could judge this" is useful information — the chain
   could end by flagging the pair for a person (`judge_later`) rather than unrateable.
 - **Disagreement as a second trigger.** Two cheap judges that disagree is at least as good a signal
