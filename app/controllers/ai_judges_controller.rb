@@ -75,10 +75,10 @@ class AiJudgesController < ApplicationController
     @ai_judge = AiJudge.for_user(current_user).find(params.expect(:id))
   end
 
-  # Arriving from a book (e.g. its Judgement Stats "Refine Prompt" link), the form shows
-  # that book's scale as the judge will be sent it. Scoped like AiJudges::WizardController.
-  # Covers create/update too (via the form's hidden book_id field) so a
-  # validation failure re-render doesn't lose that context.
+  # Lets the form show the book's scale (scoped the same way as
+  # AiJudges::WizardController), matching what the judge will actually be
+  # sent. Included on create/update, not just new/edit, so a validation
+  # failure re-render still has the book from the form's hidden field.
   def set_book
     @book_id = params[:book_id]
     @book = current_user.books_involved_with.where(id: @book_id).first if @book_id.present?

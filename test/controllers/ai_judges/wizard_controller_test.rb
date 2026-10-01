@@ -97,7 +97,7 @@ module AiJudges
       end
 
       test 'a rating this book would reject is shown as unrateable, not as a usable rating' do
-        # the book's scale is 0,1 and the judge answers 3
+        # The fixture book's scale is 0-1, so stubbing a judgment of 3 exercises the out-of-range path.
         stub_request(:post, 'https://api.openai.com/v1/chat/completions')
           .with(headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" })
           .to_return(status: 200,

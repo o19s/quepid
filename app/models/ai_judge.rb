@@ -74,12 +74,10 @@ class AiJudge < User
     opts.deep_symbolize_keys
   end
 
-  # `options` is a JSON column, so the key this writes under has to be the same *string*
-  # the reader digs for. Merging under a symbol adds a second entry next to any existing
-  # string one, which serializes to a JSON object with two "judge_options" keys -- last
-  # one wins on the way back, and `json` 3.0 raises on it outright. Strings both ways.
-  # The value is stringified for the same reason: what we hold in memory before a reload
-  # should be the shape that comes back from the database.
+  # `options` is a JSON column, so the merge key must match the string key the reader
+  # looks up -- merging under a symbol leaves a duplicate "judge_options" entry in the
+  # serialized JSON, which `json` 3.0 refuses to parse back. The value is stringified
+  # too, so the in-memory object already matches what a reload from the database returns.
   def judge_options= value
     self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end

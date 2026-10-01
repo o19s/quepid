@@ -63,9 +63,9 @@ module AiJudges
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
       llm_service.perform_safe_judgement judgement, scale: scale
-      # Hold the preview to the same rules a real judging run applies, so a
-      # rating this book would reject can't look fine while you tune the prompt.
-      # Nothing is persisted here -- the finalizer only marks the in-memory record.
+      # Apply the same acceptance rules a real judging run uses, so a rating
+      # this book would reject can't look valid during preview. The finalizer
+      # only marks the in-memory judgement -- nothing here is persisted.
       JudgementFinalizer.call judgement, scale: scale
 
       render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }

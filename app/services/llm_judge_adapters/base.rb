@@ -58,7 +58,6 @@ module LlmJudgeAdapters
       { path: path, headers: headers, body: body_for(user_prompt, system_prompt) }
     end
 
-    # @return [Hash] { explanation:, judgment: } exactly as the provider gave them
     def extract_judgement response_body
       parsed_content = JSON.parse(content_from(response_body))
 
@@ -82,8 +81,9 @@ module LlmJudgeAdapters
         { type: 'text', text: text_prompt }
       ]
 
-      # This is hard coded to `image` and should be any image.
-      # image or thumb ;-(
+      # Only a field literally named `image` is attached as an image; a document
+      # whose image lives under a different key (e.g. a `thumb:` mapping) is not
+      # detected and is sent as plain text instead.
       if '' != document_fields['image'].to_s.strip
         image_url = document_fields['image']
         prompt << { type: 'image_url', image_url: { url: image_url } }

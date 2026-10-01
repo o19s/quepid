@@ -7,7 +7,7 @@ import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
 // where the stored text had LF.
 const normalizePrompt = (text) => (text || "").replace(/\r\n?/g, "\n").trim()
 
-// null for text that isn't JSON, so a typo can be told apart from real content.
+// Returns null for text that isn't JSON, so a typo can be told apart from real content.
 function parseJsonOrNull(text) {
   try {
     return JSON.parse(text)
@@ -243,8 +243,8 @@ export default class extends Controller {
     })
   }
 
-  // For a typed model the book's scale is sent as the question's criteria; a chat
-  // model gets it described in prose inside the prompt. Show whichever this is.
+  // A typed model receives the book's scale as the question's criteria; a chat
+  // model receives it as prose inside the prompt instead. Toggle the matching element.
   showCriteria(preset) {
     const asCriteria = Boolean(preset?.scale_as_criteria)
 

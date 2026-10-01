@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
-# Copies a scorer's scale onto a book. The scorer is scoped to the current
-# user (rather than looked up unscoped) so a book can't pick up the scale of
-# a scorer nobody has actually shared with whoever is creating/editing it.
-# Shared by BooksController and Api::V1::BooksController so both entry points
-# for creating/updating a book actually apply a chosen scorer_id, instead of
-# just accepting it as a param and silently doing nothing with it.
+# Scoped to the current user's scorers, not looked up unscoped, so a book
+# can't pick up the scale of a scorer nobody has actually shared with whoever
+# is creating or editing it. Shared by BooksController and
+# Api::V1::BooksController so both entry points handle scorer_id the same way.
 module BookScorerAssignment
   extend ActiveSupport::Concern
 

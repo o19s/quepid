@@ -82,7 +82,8 @@ class LlmProvider
     The rating scale and the meaning of each rating come from the book and are sent with this request; rate against those, and say nothing about output format.
   TEXT
 
-  # Long enough to crowd the registry entry it belongs to.
+  # Pulled out of DEFINITIONS because this much HTML inline would crowd out the rest
+  # of the registry entry.
   JEV_HELP_HTML = <<~HTML.squish
     <strong>TypeSafe Jev</strong> &mdash; A typed evaluation model rather than a
     chat model: it answers with a rating, a probability distribution and a
@@ -108,7 +109,6 @@ class LlmProvider
     <b>API Version:</b> Leave blank
   HTML
 
-  # Value stored in judge_options[:llm_provider].
   attribute :key,                   :string
   # Shown in the AI Judge form's provider dropdown.
   attribute :label,                 :string
@@ -133,7 +133,6 @@ class LlmProvider
   # What the form calls that text: a system prompt to a chat model, but instructions
   # on a question to a typed one.
   attribute :prompt_label,          :string, default: 'System prompt'
-  # One line under the field explaining what belongs in it.
   attribute :prompt_hint,           :string
   # judge_options this provider understands beyond the common ones, as
   # key => { label:, hint:, ... }, so the form can offer them instead of leaving
@@ -292,8 +291,8 @@ class LlmProvider
       all.find { |provider| provider.key == key.to_s }
     end
 
-    # Not just indirection: `LlmProvider.all.each` reads to Rails/FindEach like an
-    # ActiveRecord relation and gets flagged.
+    # Not just indirection: RuboCop's Rails/FindEach cop mistakes `LlmProvider.all.each`
+    # for an ActiveRecord relation and flags it, so callers use this instead.
     def each(&)
       all.each(&)
     end

@@ -3,9 +3,9 @@
 # Decides whether a judgement an AI judge produced is usable, and marks it
 # unrateable when it isn't.
 #
-# One definition, because more than one caller needs it: the bulk judging job
-# today, the prompt preview and (when it exists) batch ingest tomorrow. A rating
-# that would be rejected in a run should look rejected everywhere.
+# Centralized so every caller applies the same rule -- the bulk judging job,
+# the prompt preview, and any future batch-ingest path. A rating that would
+# be rejected in a run should look rejected everywhere.
 class JudgementFinalizer
   def self.call judgement, scale: JudgeScale::NONE
     new(judgement, scale: scale).call
@@ -18,7 +18,6 @@ class JudgementFinalizer
 
   def call
     if judgement.rating.blank?
-      # if we don't have a rating, let's assume it's not rateable and mark it so.
       judgement.mark_unrateable
     elsif out_of_scale?
       annotate_out_of_scale

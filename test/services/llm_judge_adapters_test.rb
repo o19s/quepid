@@ -137,7 +137,8 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     test 'a request built, stored as a JSONL line and answered later still lands' do
       envelope = openai.request_envelope(query_doc_pair, system_prompt: 'Judge it.')
 
-      # what a batch writer would put in the file...
+      # Round-trips the envelope through what a batch writer would persist to a
+      # JSONL file and what a separate process would read back from it hours later.
       line = {
         custom_id: "qdp-#{query_doc_pair.id}",
         method:    'POST',
@@ -145,7 +146,6 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
         body:      envelope[:body],
       }.to_json
 
-      # ...and what it would read back hours later, in another process.
       replayed = JSON.parse(line)
       response = { 'status_code' => 200,
                    'body'        => openai_body('{"judgment": 2, "explanation": "from a batch"}') }

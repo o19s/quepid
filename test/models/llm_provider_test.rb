@@ -3,9 +3,8 @@
 require 'test_helper'
 
 class LlmProviderTest < ActiveSupport::TestCase
-  # The values the AI Judge form hardcoded before the registry existed. This table is
-  # the guard for that extraction: it must keep passing unchanged, so a provider's
-  # defaults can only move deliberately.
+  # Pins each provider's label and form defaults so a change to any of them is
+  # deliberate rather than an accidental side effect elsewhere in the registry.
   EXPECTED = {
     'openai'                      => [ 'OpenAI', 'https://api.openai.com', '', 'gpt-4o' ],
     'azure_openai'                => [ 'Azure OpenAI', 'https://RESOURCE.openai.azure.com', '', 'gpt-4.1' ],
