@@ -584,7 +584,10 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       liveQueryServices.scoring.bootstrap(newCaseNo)
     },
     bootstrapQueries: function (newCaseNo) {
-      liveQueryCollectionRuntime.bootstrapQueries(newCaseNo)
+      // A failure reaches the caller through searchablePromise(), which
+      // changeSettings() returns; this copy is only silenced so it isn't
+      // reported as an unhandled rejection.
+      liveQueryCollectionRuntime.bootstrapQueries(newCaseNo).catch(() => {})
     },
     configureBook: function (newCaseNo) {
       runtimeFramework.get("api/cases/" + newCaseNo).then(function (response) {

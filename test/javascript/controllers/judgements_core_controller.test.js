@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import JudgementsCoreController from "controllers/judgements_core_controller"
+import { showFlash } from "utils/flash"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -237,4 +238,154 @@ describe("JudgementsCoreController", () => {
 
     expect(controller.cancelButtonTarget.disabled).toBe(false)
   })
+
+  describe("saving and refreshing against a book", () => {
+    const ok = (data = {}) => ({ ok: true, json: () => Promise.resolve(data) })
+
+    function linkedController(state = {}) {
+      return Object.assign(buildModalController(), {
+        currentCaseId: "42",
+        activeBookId: 2,
+        savedBookId: 2,
+        autoPopulateBookPairs: true,
+        savedAutoPopulateBookPairs: true,
+        autoPopulateCaseJudgements: false,
+        savedAutoPopulateCaseJudgements: false,
+        queriesCount: 3
+      }, state)
+    }
+
+    it("does nothing when there are no unsaved changes", async () => {
+      await linkedController().save({ preventDefault() {} })
+
+      expect(apiFetch).not.toHaveBeenCalled()
+    })
+
+    it("saves the book link and sync flags, then announces the new settings", async () => {
+      apiFetch.mockResolvedValueOnce(ok({ book_name: "Catalog" }))
+      const saved = vi.fn()
+      document.addEventListener("judgements:book-settings-saved", saved)
+      const controller = linkedController({ autoPopulateCaseJudgements: true, savedBookId: 2 })
+
+      await controller.save({ preventDefault() {} })
+
+      const [url, init] = apiFetch.mock.calls[0]
+      expect(url).toBe("/api/cases/42")
+      expect(init.method).toBe("PUT")
+      expect(JSON.parse(init.body)).toEqual({ book_id: 2, auto_populate_book_pairs: true, auto_populate_case_judgements: true })
+      expect(saved.mock.calls[0][0].detail).toEqual({
+        caseId: 42, bookId: 2, bookName: "Catalog", autoPopulateBookPairs: true, autoPopulateCaseJudgements: true
+      })
+      expect(controller.hasUnsavedChanges()).toBe(false)
+      expect(showFlash).toHaveBeenCalledWith("success", "Settings saved.")
+      document.removeEventListener("judgements:book-settings-saved", saved)
+    })
+
+    it("turns both sync flags off when the book is unlinked", async () => {
+      apiFetch.mockResolvedValueOnce(ok())
+      const controller = linkedController({ activeBookId: null, autoPopulateCaseJudgements: true })
+
+      await controller.save({ preventDefault() {} })
+
+      expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
+        book_id: null, auto_populate_book_pairs: false, auto_populate_case_judgements: false
+      })
+    })
+
+    it("refreshes ratings straight after linking a new book with case judgements on", async () => {
+      apiFetch.mockResolvedValueOnce(ok()).mockResolvedValueOnce(ok())
+      const reload = vi.fn()
+      document.addEventListener("judgements:queries-need-reload", reload)
+      const controller = linkedController({ activeBookId: 5, savedBookId: 2, autoPopulateCaseJudgements: true })
+
+      await controller.save({ preventDefault() {} })
+
+      expect(apiFetch.mock.calls[1][0]).toBe("/api/books/5/cases/42/refresh?create_missing_queries=false&process_in_background=false")
+      expect(showFlash).toHaveBeenCalledWith("success", "Settings saved. Ratings have been refreshed.")
+      expect(reload).toHaveBeenCalledOnce()
+      document.removeEventListener("judgements:queries-need-reload", reload)
+    })
+
+    it("shows the server's message when saving fails", async () => {
+      apiFetch.mockResolvedValueOnce({ ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
+      vi.spyOn(console, "error").mockImplementation(() => {})
+      const controller = linkedController({ activeBookId: 9 })
+
+      await controller.save({ preventDefault() {} })
+
+      expect(controller.errorTarget.textContent).toContain("An error (Book not found) occurred")
+      expect(controller.savedBookId).toBe(2)
+      expect(controller.cancelButtonTarget.disabled).toBe(false)
+    })
+
+    it.each([
+      ["manualRefreshRatings", "false", "Case ratings refreshed from book."],
+      ["manualSyncQueries", "true", "Missing queries synced from book."]
+    ])("%s refreshes from the book (create missing queries: %s) and reloads the queries", async (action, createMissing, message) => {
+      apiFetch.mockResolvedValueOnce(ok())
+      const reload = vi.fn()
+      document.addEventListener("judgements:queries-need-reload", reload)
+
+      await linkedController()[action]({ preventDefault() {} })
+
+      expect(apiFetch.mock.calls[0][0]).toBe(`/api/books/2/cases/42/refresh?create_missing_queries=${createMissing}&process_in_background=false`)
+      expect(showFlash).toHaveBeenCalledWith("success", message)
+      expect(reload.mock.calls[0][0].detail).toEqual({ caseId: 42 })
+      document.removeEventListener("judgements:queries-need-reload", reload)
+    })
+
+    it("refreshes a case with 50+ queries in the background and sends the user home with a notice", async () => {
+      const originalHref = window.location.href
+      vi.useFakeTimers()
+      try {
+        apiFetch.mockResolvedValueOnce(ok())
+        const reload = vi.fn()
+        document.addEventListener("judgements:queries-need-reload", reload)
+        document.body.dataset.quepidRootUrl = "https://quepid.test"
+        const controller = linkedController({ queriesCount: 50 })
+
+        await controller.manualSyncQueries({ preventDefault() {} })
+
+        const background = "Missing queries are being synced from book in the background."
+        expect(apiFetch.mock.calls[0][0]).toContain("process_in_background=true")
+        expect(showFlash).toHaveBeenCalledWith("success", background)
+        expect(reload).not.toHaveBeenCalled()
+        vi.advanceTimersByTime(500)
+        expect(window.location.href).toBe(`https://quepid.test/?notice=${encodeURIComponent(background)}`)
+        document.removeEventListener("judgements:queries-need-reload", reload)
+      } finally {
+        vi.useRealTimers()
+        delete document.body.dataset.quepidRootUrl
+        window.location.href = originalHref
+      }
+    })
+
+    it("ignores a refresh result once the modal has moved on to another case", async () => {
+      let resolveRefresh
+      apiFetch.mockReturnValueOnce(new Promise((resolve) => { resolveRefresh = resolve }))
+      const controller = linkedController()
+
+      const pending = controller.manualRefreshRatings({ preventDefault() {} })
+      controller.currentCaseId = "43"
+      resolveRefresh({ ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
+      await pending
+
+      expect(showFlash).not.toHaveBeenCalled()
+      expect(controller.errorTarget.textContent).not.toContain("stale")
+    })
+
+    it("reports a failed refresh and skips the action without a book", async () => {
+      apiFetch.mockResolvedValueOnce({ ok: false, status: 500, json: () => Promise.resolve({}) })
+      vi.spyOn(console, "error").mockImplementation(() => {})
+      const controller = linkedController()
+
+      await controller.manualRefreshRatings({ preventDefault() {} })
+      expect(controller.errorTarget.textContent).toContain("An error (Refresh failed (500)) occurred")
+
+      apiFetch.mockClear()
+      await linkedController({ activeBookId: null }).manualSyncQueries({ preventDefault() {} })
+      expect(apiFetch).not.toHaveBeenCalled()
+    })
+  })
 })
+

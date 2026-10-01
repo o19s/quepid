@@ -120,7 +120,8 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 
 - Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
 - Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
-- Scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. Controllers are excluded for now (many are intentionally untested per that same policy, which would just show up as noisy `NoCoverage` mutants); add specific controller files to `mutate` in `stryker.config.mjs` once they have solid Vitest coverage.
+- Default scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. `stores/` and nearly every controller also have specs, so run them on demand with `--mutate` (see below) rather than widening the default, which would make a full run much slower.
+- Controller specs use the Stimulus stub (`app/javascript/test/stimulus_stub.js`) and call methods directly, so `connect()`/`disconnect()` wiring always shows up as `NoCoverage`; Playwright covers it. Judge a controller by its actions and error paths, not its overall score.
 - The classic core scripts are out of scope for mutation testing; browser verification covers their DOM and global-script behavior.
 
 ```bash
@@ -132,6 +133,7 @@ The incremental cache is only written when a run finishes, so a crash mid-run lo
 ```bash
 bin/docker r yarn test:mutation --mutate "app/javascript/api/**/*.js"
 bin/docker r yarn test:mutation --mutate "app/javascript/utils/core_*.js"
+bin/docker r yarn test:mutation --mutate "app/javascript/controllers/import_*_controller.js" --ignoreStatic
 ```
 
 **`--ignoreStatic`** — Stryker can't tell which tests cover module-level code (constant tables, top-level `new Set([...])`, and similar), so for each of those "static" mutants it reloads the module and re-runs the whole suite. When the planner warns that static mutants dominate the run (e.g. *"155 static mutants (7% of total) … estimated to take 94% of the time"*), add `--ignoreStatic` to skip them; they are reported as `Ignored` rather than tested. On one 16-file `utils/` slice this cut the estimate from about an hour to under two minutes. The trade-off is that mutations to module-level constants go unchecked, which is usually fine — they tend to be preset and lookup data.

@@ -27,6 +27,7 @@ export default defineConfig({
       { find: "api/json", replacement: path.resolve(repoRoot, "app/javascript/api/json.js") },
       { find: "modules/editor", replacement: path.resolve(repoRoot, "app/javascript/modules/editor.js") },
       { find: "utils/quepid_root", replacement: path.resolve(repoRoot, "app/javascript/utils/quepid_root.js") },
+      { find: "utils/csv", replacement: path.resolve(repoRoot, "app/javascript/utils/csv.js") },
       { find: "utils/case_header", replacement: path.resolve(repoRoot, "app/javascript/utils/case_header.js") },
       { find: "utils/bs_tooltip", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_tooltip.js") },
       { find: "utils/bs_popover", replacement: path.resolve(repoRoot, "app/javascript/utils/bs_popover.js") },

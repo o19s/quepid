@@ -3,6 +3,7 @@ import { apiFetch } from "api/fetch"
 import { hideBsModal, showBsModal, getOrCreateBsModal } from "utils/bs_modal"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
+import { parseCsv } from "utils/csv"
 
 const REQUIRED_HEADERS = {
   csv: ["query", "docid", "rating"],
@@ -183,49 +184,7 @@ export default class extends ModalTriggerControllerBase {
   }
 
   parseCsv(content) {
-    const parsedRows = []
-    const errors = []
-    let row = []
-    let value = ""
-    let quoted = false
-    let line = 1
-    let rowStartLine = 1
-
-    const pushRow = () => {
-      if (row.some(Boolean) || row.length) parsedRows.push({ values: row, line: rowStartLine })
-      row = []
-      value = ""
-      rowStartLine = line + 1
-    }
-
-    for (let index = 0; index < content.length; index += 1) {
-      const char = content[index]
-      if (char === '"') {
-        if (quoted && content[index + 1] === '"') { value += '"'; index += 1 }
-        else quoted = !quoted
-      } else if (char === "," && !quoted) { row.push(value.trim()); value = "" }
-      else if ((char === "\n" || char === "\r") && !quoted) {
-        if (char === "\r" && content[index + 1] === "\n") index += 1
-        row.push(value.trim())
-        pushRow()
-        line += 1
-      } else value += char
-    }
-    if (quoted) {
-      errors.push(`line ${rowStartLine}: unclosed quote.`)
-      row.push(value.trim())
-      pushRow()
-    } else if (value || row.length) { row.push(value.trim()); pushRow() }
-
-    const headerRow = parsedRows.shift()
-    const headers = headerRow?.values || []
-    const rows = parsedRows.map(({ values, line: rowLine }) => {
-      if (values.length !== headers.length) {
-        errors.push(`line ${rowLine}: expected ${headers.length} columns but found ${values.length}.`)
-      }
-      return Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]))
-    })
-    return { headers, rows, errors }
+    return parseCsv(content)
   }
 
   renderPreview(type, content, sourceInput) {

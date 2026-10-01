@@ -190,10 +190,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/controllers/api/v1/import/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/controllers/import_case_controller.js", "app/javascript/application_modern.js", "config/importmap.rb", "app/views/shared/_import_case_modal.html.erb", "app/views/api/v1/import/cases/create.json.jbuilder", "test/javascript/controllers/import_case_controller.test.js", "test/controllers/api/v1/import/cases_controller_test.rb"]
       "3.4":
         title: "Import snapshots from CSV"
-        last_run: 2026-09-25T15:55:00Z
+        last_run: 2026-10-01T18:02:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: opened Import Snapshot, confirmed Import stayed disabled with no file, uploaded a correctly headed one-row CSV for existing case 219, verified the CSV Preview, and submitted. The modal closed and the case reflected the imported snapshot. Did not test multi-row, invalid Case ID, or missing-header rejection in this pass."
-        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "test/javascript/controllers/import_snapshot_controller.test.js", "app/views/shared/_import_snapshot_modal.html.erb"]
+        notes: "Covered live via Playwright MCP on a disposable case with queries `shoes, red`, `\"star wars\"`, and `plain`: a malformed CSV was refused with 'CSV format error: line 3: expected 6 columns but found 7.' and imported nothing; a current-format export (from buildSnapshotCsv) and a pre-8.7 export (`\"\"star wars\"\"` unwrapped) both imported, and the DB showed every row attached to the existing queries with no duplicates. Not covered live: exporting through the case page's Export modal, invalid Case ID, missing-header rejection."
+        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/utils/csv.js", "test/javascript/controllers/import_snapshot_controller.test.js", "test/javascript/utils/csv.test.js", "app/views/shared/_import_snapshot_modal.html.erb"]
       "3.5":
         title: "Archive / unarchive a case from the list"
         last_run: 2026-09-21T19:36:00Z

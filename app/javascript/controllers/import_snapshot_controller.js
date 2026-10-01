@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { showStatusMessage } from "utils/status_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
+import { parseCsv } from "utils/csv"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
@@ -48,12 +49,11 @@ export default class extends Controller {
   }
 
   validateCSV(content) {
-    const lines = content.trim().split('\n')
-    if (lines.length < 2) {
+    const { headers, rows, errors } = parseCsv(content.trim())
+    if (rows.length === 0) {
       return { valid: false, error: 'CSV file is empty or has no data rows.' }
     }
 
-    const headers = lines[0].split(',').map(h => h.trim())
     const expectedHeaders = [
       'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
     ]
@@ -65,6 +65,12 @@ export default class extends Controller {
         valid: false,
         error: `Missing required headers: ${missingHeaders.join(', ')}. Please check spelling and capitalization.`
       }
+    }
+
+    // Report malformed rows instead of dropping them, so a partial import
+    // never looks like a successful one.
+    if (errors.length > 0) {
+      return { valid: false, error: `CSV format error: ${errors.join(' ')}` }
     }
 
     return { valid: true }
@@ -87,14 +93,16 @@ export default class extends Controller {
       // Read the file content
       const fileContent = await this.readFileAsText(file)
       
-      // Parse CSV to structured data
-      const snapshotData = this.parseCSV(fileContent)
-      
-      if (snapshotData.length === 0) {
-        this.showAlert('No valid data found in CSV file.', 'danger')
+      // The file may have changed since it was selected, so re-check it here.
+      const validation = this.validateCSV(fileContent)
+      if (!validation.valid) {
+        this.showAlert(validation.error, 'danger')
         this.setLoading(false)
         return
       }
+
+      // Parse CSV to structured data (validation above guarantees at least one row)
+      const snapshotData = this.parseCSV(fileContent)
 
       // Group data by case and send to API
       await this.importSnapshots(snapshotData)
@@ -112,22 +120,7 @@ export default class extends Controller {
   }
 
   parseCSV(content) {
-    const lines = content.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim())
-    
-    const data = []
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      if (values.length !== headers.length) continue
-      
-      const row = {}
-      headers.forEach((header, index) => {
-        row[header] = values[index]
-      })
-      data.push(row)
-    }
-    
-    return data
+    return parseCsv(content.trim()).rows
   }
 
   async importSnapshots(docs) {

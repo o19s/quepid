@@ -75,6 +75,8 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Upload a CSV missing/misnamed headers — should be rejected with a clear message.
   - [ ] Upload a CSV with two different `Snapshot Name` values — confirm two separate snapshots are created correctly split by name.
   - [ ] Try submitting with no file chosen — the Import button should stay disabled until a file is selected (button starts `disabled`).
+  - [ ] Round trip: export a snapshot from a case (**Export** → snapshot) whose queries include a comma (`shoes, red`) and a quoted phrase (`"star wars"`), then import that file here. Every row should import, and in Compare Snapshots each query's docs should line up with the case's existing query — no new `shoes` / `star wars` query should appear. (8.6.0 silently dropped rows containing commas.)
+  - [ ] Upload a CSV with one malformed row (e.g. an extra unquoted comma in one line) — it should be refused with `CSV format error: line N: expected 6 columns but found 7.`, and nothing imported.
 
 ### 3.5 Archive / unarchive a case from the list
 

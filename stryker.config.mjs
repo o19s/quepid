@@ -1,8 +1,8 @@
 // StrykerJS mutation testing config for the modern `app/javascript/` tree (Vitest).
 //
-// Scope starts at `api/` and `utils/` since those are the directories with a strict
-// "new/changed logic needs a test in test/javascript/" policy (CLAUDE.md § Tests). Expand
-// `mutate` to specific controllers as they gain solid Vitest coverage.
+// The default scope is `api/` and `utils/`, the directories with a strict "new/changed
+// logic needs a test in test/javascript/" policy (CLAUDE.md § Tests). `stores/` and
+// controllers have specs too; run them on demand with `--mutate` (docs/js_tooling.md).
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {
   packageManager: "yarn",

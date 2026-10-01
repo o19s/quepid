@@ -285,3 +285,331 @@ describe("MapperWizardController testMapper", () => {
     expect(controller.showStatus).toHaveBeenCalledWith("docsMapper test failed", "error")
   })
 })
+
+describe("MapperWizardController AI generation and refinement", () => {
+  const editor = (value = "") => ({ getValue: vi.fn(() => value), setValue: vi.fn() })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.unstubAllGlobals()
+  })
+
+  function aiController(overrides = {}) {
+    return buildController({
+      apiKeyTarget: { value: "  sk-test  " },
+      generateButtonTarget: document.createElement("button"),
+      generateUrlValue: "/mapper_wizard/new/generate",
+      refineUrlValue: "/mapper_wizard/new/refine",
+      step3Target: { style: {} },
+      ...overrides
+    })
+  }
+
+  it("requires an OpenAI key before generating or refining", async () => {
+    const controller = aiController({ apiKeyTarget: { value: "   " } })
+
+    await controller.generateMappers({ preventDefault: vi.fn() })
+    await controller.refineMapper("docsMapper", editor("x"), null, "faster", document.createElement("button"))
+
+    expect(apiFetch).not.toHaveBeenCalled()
+    expect(controller.showStatus).toHaveBeenCalledTimes(2)
+    expect(controller.showStatus).toHaveBeenCalledWith("Please enter your OpenAI API key", "error")
+  })
+
+  it("fills both editors with the generated mappers and reveals step 3", async () => {
+    const numberOfResultsEditor = editor()
+    const docsEditor = editor()
+    const controller = aiController({ numberOfResultsEditor, docsEditor })
+    apiFetch.mockResolvedValue(jsonResponse({ success: true, number_of_results_mapper: "n()", docs_mapper: "d()" }))
+
+    await controller.generateMappers({ preventDefault: vi.fn() })
+
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ api_key: "sk-test" })
+    expect(apiFetch.mock.calls[0][0]).toBe("/mapper_wizard/new/generate")
+    expect(numberOfResultsEditor.setValue).toHaveBeenCalledWith("n()")
+    expect(docsEditor.setValue).toHaveBeenCalledWith("d()")
+    expect(controller.step3Target.style.display).toBe("block")
+    expect(controller.showStatus).toHaveBeenLastCalledWith("Mapper functions generated successfully!", "success")
+    expect(controller.setButtonLoading).toHaveBeenNthCalledWith(1, controller.generateButtonTarget, true)
+    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
+  })
+
+  it("falls back to the plain textareas when the code editors aren't ready", async () => {
+    const controller = aiController({
+      hasNumberOfResultsMapperTarget: true,
+      numberOfResultsMapperTarget: { value: "" },
+      hasDocsMapperTarget: true,
+      docsMapperTarget: { value: "" }
+    })
+    apiFetch.mockResolvedValue(jsonResponse({ success: true, number_of_results_mapper: "n()", docs_mapper: "d()" }))
+
+    await controller.generateMappers({ preventDefault: vi.fn() })
+
+    expect(controller.numberOfResultsMapperTarget.value).toBe("n()")
+    expect(controller.docsMapperTarget.value).toBe("d()")
+  })
+
+  it.each([
+    ["the server's error from a 422 body", () => jsonResponse({ success: false, error: "Quota exceeded" }, 422), "Quota exceeded"],
+    ["a generic message without one", () => jsonResponse({ success: false }), "Failed to generate mappers"],
+    ["a network failure", () => Promise.reject(new Error("offline")), "Error: offline"]
+  ])("reports %s when generation fails, and leaves step 3 hidden", async (_label, respond, message) => {
+    const controller = aiController()
+    apiFetch.mockImplementation(respond)
+
+    await controller.generateMappers({ preventDefault: vi.fn() })
+
+    expect(controller.showStatus).toHaveBeenLastCalledWith(message, "error")
+    expect(controller.step3Target.style.display).toBeUndefined()
+    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
+  })
+
+  it("refines the current code with the user's feedback and replaces it", async () => {
+    const docsEditor = editor("docsMapper = old")
+    const button = document.createElement("button")
+    const controller = aiController()
+    apiFetch.mockResolvedValue(jsonResponse({ success: true, code: "docsMapper = new" }))
+
+    await controller.refineMapper("docsMapper", docsEditor, null, "handle empty hits", button)
+
+    expect(apiFetch.mock.calls[0][0]).toBe("/mapper_wizard/new/refine")
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
+      mapper_type: "docsMapper", current_code: "docsMapper = old", feedback: "handle empty hits", api_key: "sk-test"
+    })
+    expect(docsEditor.setValue).toHaveBeenCalledWith("docsMapper = new")
+    expect(controller.showStatus).toHaveBeenLastCalledWith("docsMapper refined successfully!", "success")
+    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(button, false)
+  })
+
+  it("refines from and into the textarea when there is no editor, and reports a failed refinement", async () => {
+    const textarea = { value: "numberOfResultsMapper = old" }
+    const controller = aiController()
+    apiFetch.mockResolvedValueOnce(jsonResponse({ success: true, code: "numberOfResultsMapper = new" }))
+      .mockResolvedValueOnce(jsonResponse({ success: false }))
+
+    await controller.refineMapper("numberOfResultsMapper", null, textarea, "fix", document.createElement("button"))
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body).current_code).toBe("numberOfResultsMapper = old")
+    expect(textarea.value).toBe("numberOfResultsMapper = new")
+
+    await controller.refineMapper("numberOfResultsMapper", null, textarea, "fix", document.createElement("button"))
+    expect(controller.showStatus).toHaveBeenLastCalledWith("Refinement failed", "error")
+    expect(textarea.value).toBe("numberOfResultsMapper = new")
+  })
+
+  it.each([
+    ["refineDocsMapper", "docsMapper", "docsEditor", "refineDocsButtonTarget"],
+    ["refineNumberOfResultsMapper", "numberOfResultsMapper", "numberOfResultsEditor", "refineNumberButtonTarget"]
+  ])("%s only refines when the user gives feedback", async (action, mapperType, editorKey, buttonKey) => {
+    const controller = aiController({ [editorKey]: editor("old"), [buttonKey]: document.createElement("button") })
+    controller.refineMapper = vi.fn()
+
+    vi.stubGlobal("prompt", vi.fn(() => null))
+    await controller[action]({ preventDefault: vi.fn() })
+    expect(controller.refineMapper).not.toHaveBeenCalled()
+
+    vi.stubGlobal("prompt", vi.fn(() => "be stricter"))
+    await controller[action]({ preventDefault: vi.fn() })
+    expect(controller.refineMapper).toHaveBeenCalledWith(mapperType, controller[editorKey], undefined, "be stricter", controller[buttonKey])
+  })
+})
+
+describe("MapperWizardController save validation and errors", () => {
+  afterEach(() => vi.clearAllMocks())
+
+  function saveController(overrides = {}) {
+    return buildController({
+      endpointNameTarget: { value: "Books" },
+      numberOfResultsEditor: { getValue: () => "n()" },
+      docsEditor: { getValue: () => "d()" },
+      proxyRequestsTarget: { checked: false },
+      hasTeamCheckboxTarget: false,
+      saveButtonTarget: document.createElement("button"),
+      saveUrlValue: "/mapper_wizard/new/save",
+      ...overrides
+    })
+  }
+
+  it("requires a name and both mapper functions before saving", async () => {
+    const unnamed = saveController({ endpointNameTarget: { value: "  " } })
+    await unnamed.save({ preventDefault: vi.fn() })
+    expect(unnamed.showStatus).toHaveBeenCalledWith("Please enter a name for the search endpoint", "error")
+
+    const missingDocs = saveController({ docsEditor: { getValue: () => "   " } })
+    await missingDocs.save({ preventDefault: vi.fn() })
+    expect(missingDocs.showStatus).toHaveBeenCalledWith("Both mapper functions are required", "error")
+
+    expect(apiFetch).not.toHaveBeenCalled()
+  })
+
+  it("sends POST, test query, headers, and credentials from the form fields", async () => {
+    const controller = saveController({
+      httpMethodTarget: { value: "POST" },
+      testQueryTarget: { value: ' {"q":"x"} ' },
+      hasCustomHeadersTarget: true,
+      customHeadersTarget: { value: ' {"X-Key":"k"} ' },
+      hasBasicAuthCredentialTarget: true,
+      basicAuthCredentialTarget: { value: " user:pass " }
+    })
+    apiFetch.mockResolvedValue(jsonResponse({ success: false, errors: ["x"] }))
+
+    await controller.save({ preventDefault: vi.fn() })
+
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toMatchObject({
+      api_method: "POST", test_query: '{"q":"x"}', custom_headers: '{"X-Key":"k"}', basic_auth_credential: "user:pass", team_ids: []
+    })
+  })
+
+  it.each([
+    [{ success: false, errors: ["Name has already been taken", "URL is invalid"] }, "Name has already been taken, URL is invalid"],
+    [{ success: false }, "Save failed"]
+  ])("reports the save errors and re-enables Save", async (body, message) => {
+    const controller = saveController()
+    apiFetch.mockResolvedValue(jsonResponse(body, 422))
+
+    await controller.save({ preventDefault: vi.fn() })
+
+    expect(controller.showStatus).toHaveBeenLastCalledWith(message, "error")
+    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.saveButtonTarget, false)
+  })
+})
+
+describe("MapperWizardController helpers", () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+  })
+
+  function realHelpers(overrides = {}) {
+    const controller = buildController(overrides)
+    delete controller.showStatus
+    delete controller.setButtonLoading
+    delete controller.captureEditors
+    return controller
+  }
+
+  it("shows mapper logs with a level label, escaping their text, and hides an empty log", () => {
+    const controller = realHelpers()
+    const logs = document.createElement("div")
+    const container = { style: {} }
+
+    controller.displayLogs([
+      { level: "error", message: "<b>bad</b>" },
+      { level: "warn", message: "careful" },
+      { level: "info", message: "fyi" },
+      { level: "log", message: "plain" }
+    ], logs, container)
+
+    expect(container.style.display).toBe("block")
+    expect([...logs.children].map((el) => [el.className, el.textContent])).toEqual([
+      ["text-danger", "[ERROR] <b>bad</b>"],
+      ["text-warning", "[WARN] careful"],
+      ["text-info", "[INFO] fyi"],
+      ["text-light", "[LOG] plain"]
+    ])
+    expect(logs.querySelector("b")).toBeNull()
+
+    controller.displayLogs([], logs, container)
+    expect(container.style.display).toBe("none")
+  })
+
+  it("explains the test query format for the chosen HTTP method", () => {
+    const controller = realHelpers({
+      hasTestQueryHintTarget: true,
+      testQueryHintTarget: document.createElement("small"),
+      testQueryTarget: {}
+    })
+
+    controller.httpMethodTarget.value = "POST"
+    controller.updateTestQueryHint()
+    expect(controller.testQueryHintTarget.textContent).toContain("JSON body for POST")
+    expect(controller.testQueryTarget.placeholder).toBe('{"query": "test", "size": 10}')
+
+    controller.httpMethodTarget.value = "GET"
+    controller.updateTestQueryHint()
+    expect(controller.testQueryHintTarget.textContent).toContain("query params")
+    expect(controller.testQueryTarget.placeholder).toBe("q=shirts&rows=10")
+  })
+
+  it("styles status messages by type and auto-hides only success", () => {
+    vi.useFakeTimers()
+    const controller = realHelpers()
+
+    controller.showStatus("Nope", "error")
+    expect(controller.statusTarget.className).toBe("alert alert-danger")
+    expect(controller.statusTarget.textContent).toBe("Nope")
+
+    controller.showStatus("Working", "info")
+    expect(controller.statusTarget.className).toBe("alert alert-info")
+    vi.advanceTimersByTime(10000)
+    expect(controller.statusTarget.style.display).toBe("block")
+
+    controller.showStatus("Done", "success")
+    expect(controller.statusTarget.className).toBe("alert alert-success")
+    vi.advanceTimersByTime(5000)
+    expect(controller.statusTarget.style.display).toBe("none")
+  })
+
+  it("shows a spinner while loading and restores the button label after", () => {
+    const controller = realHelpers()
+    const button = document.createElement("button")
+    button.innerHTML = "Generate"
+
+    controller.setButtonLoading(button, true)
+    expect(button.disabled).toBe(true)
+    expect(button.textContent).toContain("Loading...")
+
+    controller.setButtonLoading(button, false)
+    expect(button.disabled).toBe(false)
+    expect(button.innerHTML).toBe("Generate")
+  })
+
+  it("picks up code editors once they are attached to their textareas", () => {
+    const controller = realHelpers({
+      hasNumberOfResultsMapperTarget: true,
+      numberOfResultsMapperTarget: { editor: "n-editor" },
+      hasDocsMapperTarget: true,
+      docsMapperTarget: { editor: "d-editor" },
+      hasCustomHeadersTarget: true,
+      customHeadersTarget: {}
+    })
+
+    controller.captureEditors()
+
+    expect(controller.numberOfResultsEditor).toBe("n-editor")
+    expect(controller.docsEditor).toBe("d-editor")
+    expect(controller.customHeadersEditor).toBeUndefined()
+  })
+
+  it("copies the HTML preview, briefly confirming on the button", async () => {
+    vi.useFakeTimers()
+    const writeText = vi.fn(() => Promise.resolve())
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
+    const controller = realHelpers()
+    controller.htmlPreviewTarget.textContent = "<html>results</html>"
+    const button = document.createElement("button")
+    button.innerHTML = "Copy"
+
+    await controller.copyHtmlPreview({ preventDefault: vi.fn(), currentTarget: button })
+
+    expect(writeText).toHaveBeenCalledWith("<html>results</html>")
+    expect(button.textContent).toContain("Copied!")
+    vi.advanceTimersByTime(2000)
+    expect(button.innerHTML).toBe("Copy")
+  })
+
+  it("reports an empty preview or a clipboard failure instead of copying", async () => {
+    const writeText = vi.fn(() => Promise.reject(new Error("denied")))
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
+    const controller = buildController()
+    const event = () => ({ preventDefault: vi.fn(), currentTarget: document.createElement("button") })
+
+    await controller.copyHtmlPreview(event())
+    expect(controller.showStatus).toHaveBeenLastCalledWith("No content to copy", "error")
+    expect(writeText).not.toHaveBeenCalled()
+
+    controller.htmlPreviewTarget.textContent = "x"
+    await controller.copyHtmlPreview(event())
+    expect(controller.showStatus).toHaveBeenLastCalledWith("Failed to copy: denied", "error")
+  })
+})
+
