@@ -132,6 +132,8 @@ is unknown until it is checked against labels.
 
 ## 3. Implications for Quepid's escalation plan
 
+The measurement itself is planned in `docs/todo/inter_judge_agreement.md`.
+
 1. **Measure before trusting the mixture.** Ship nothing that mixes judges by difficulty without a
    way to compute agreement between them. Krippendorff's α (ordinal) fits Quepid's books directly:
    graded scales, several judges, and judges who rated different subsets.

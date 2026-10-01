@@ -75,8 +75,9 @@ the short version:
   which is why the measurement below is a prerequisite, not a nice-to-have.
 
 Today Quepid has **no inter-judge agreement measure at all**: Judgement Stats shows per-judge
-counts, nothing compares judges on the pairs they share. What a chain needs before it is trusted
-on a real book:
+counts, nothing compares judges on the pairs they share. Measuring that is planned as its own
+feature, useful well beyond escalation, in `docs/todo/inter_judge_agreement.md`. What a chain needs
+from it before the chain is trusted on a real book:
 
 1. **An agreement figure per pair of judges** — Krippendorff's α (ordinal), because it handles a
    graded scale, more than two judges, and judges who rated different subsets of the book — plus a
