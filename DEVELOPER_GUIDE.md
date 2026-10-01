@@ -281,14 +281,12 @@ tail -f log/test.log
 
 ### Vitest
 
-Unit tests for the modern `app/javascript/` tree (Stimulus `controllers/`, `api/`, `utils/`), specs under `test/javascript/` mirroring `app/javascript/` (not colocated):
+See [`docs/js_tooling.md`](docs/js_tooling.md) for the canonical JavaScript tooling scope, commands, import rules, and Vitest PR policy. The quick entry points are:
 
 ```bash
 bin/docker r yarn test:unit          # Vitest
 bin/docker r rails test:vitest       # same as yarn test:unit
 ```
-
-**Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
 
 ### Pre-commit hooks
 
@@ -320,7 +318,7 @@ bin/prettier-staged path/to/app/javascript/file.js
 
 ### JS Lint
 
-**First-party JavaScript** — ESLint covers the modern runtime, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Prettier is limited to `api/`, `utils/`, and the classic core scripts (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+The detailed JavaScript lint and formatting scope is maintained in [`docs/js_tooling.md`](docs/js_tooling.md). The quick entry points are:
 
 ```bash
 bin/docker r yarn lint:js

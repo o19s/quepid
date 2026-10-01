@@ -122,6 +122,8 @@ class Book < ApplicationRecord
     update(archived: false)
   end
 
+  validates :name, presence: true
+
   # Custom validation to prevent scale changes but allow label changes
   validate :scale_cannot_be_changed_if_judgements_exist
 

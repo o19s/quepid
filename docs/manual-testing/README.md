@@ -40,10 +40,11 @@ Use the checkboxes (`- [ ]`) to track your pass through each test case; check th
 | 14 | [Admin Area](14-admin-area.md) | User management (incl. admin create), announcements, websocket tester, job/SQL admin tools |
 | 15 | [Global Navigation & Notebooks](15-global-navigation-and-notebooks.md) | Sidebar, navbar quick-access dropdowns, avatar menu, API Docs, cookies page, the JupyterLite Notebooks integration |
 | 16 | [Cross-Cutting: BS5, Responsive & Accessibility](16-cross-cutting-bs5-responsive-and-accessibility.md) | Bootstrap 3→5 migration regression checks, narrow-viewport reflow, modal accessibility |
+| 17 | [Documentation coverage audit](17-documentation-coverage.md) | Ordered coverage review of the published User Manual and GitHub wiki, plus manual checks for the integration seams that were previously missing |
 
 ## General testing notes
 
-- **Test across browsers** where feasible (Chrome, Firefox, Safari) — the core workbench uses a fair amount of custom JS/CSS (AngularJS + Bootstrap 5) and has known cross-browser layout traps.
+- **Test across browsers** where feasible (Chrome, Firefox, Safari) — the core workbench uses a fair amount of custom JavaScript/CSS and Bootstrap 5, with known cross-browser layout traps.
 - **Test at multiple viewport widths.** Several modals (case wizard, export/import, diff) are tall and scroll internally; narrow/mobile widths are a known regression area. See Part 16 for the dedicated checklist.
 - **This app is mid-migration from Bootstrap 3 to Bootstrap 5.** A whole class of bug exists where an element is present and technically working but not actually visible (wrong `display`/`opacity`/`transform`/`font-size`). Functional click-through testing won't catch this — you have to actually look. Part 16 covers this in depth; keep it in mind throughout every other part too, especially around popovers, tooltips, modals, dropdowns, and accordions.
 - **Watch for flash messages.** Quepid surfaces most success/failure feedback as flash banners at the top of the page or inline alerts in modals — always confirm the message text matches the action taken, not just that "something happened."

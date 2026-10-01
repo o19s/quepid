@@ -131,59 +131,11 @@ User → Book → QueryDocPairs → Judgements (per user)
 
 **Per-table schema (columns, associations, scopes):** [`complete_application_specification.md` §3](../complete_application_specification.md#3-data-model).
 
-**Case UI implementation quirks:** [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md). **Edge-case business rules:** [`complete_application_specification.md` § Edge Cases](../complete_application_specification.md#edge-cases-and-business-rules).
+**Case UI implementation quirks:** [`core_ui_implementation_reference.md`](../core_ui_implementation_reference.md). **Edge-case business rules:** [`complete_application_specification.md` § Edge Cases](../complete_application_specification.md#edge-cases-and-business-rules).
 
-### Core Tables (31)
-
-| Table | Purpose | Key Fields |
-|-------|---------|------------|
-| `users` | User accounts | email, name, password, administrator, llm_key (encrypted), system_prompt, default_scorer_id |
-| `cases` | Search evaluation containers | case_name, archived, public, nightly, owner_id, scorer_id, book_id |
-| `queries` | Search queries within cases | query_text (2048 chars, case-sensitive), information_need, arranged_at, case_id |
-| `ratings` | Document relevance ratings | rating (float), doc_id (500 chars), query_id, user_id |
-| `tries` | Search configuration experiments | query_params (20KB), field_spec, try_number, ancestry, search_endpoint_id, case_id |
-| `search_endpoints` | Search engine connections | endpoint_url, search_engine, api_method, mapper_code, proxy_requests, custom_headers |
-| `scorers` | Scoring algorithms | code (JS), scale, scale_with_labels, communal, owner_id |
-| `case_scores` | Time-series scores | score (float), all_rated, queries (binary/JSON), case_id, try_id, scorer_id |
-| `snapshots` | Point-in-time result captures | name, case_id, try_id, scorer_id |
-| `snapshot_queries` | Query results in snapshots | all_rated, number_of_results, response_status, score, query_id, snapshot_id |
-| `snapshot_docs` | Documents in snapshot results | doc_id, explain, fields, position, rated_only, snapshot_query_id |
-| `books` | Judgment collection sets | name, scale, scale_with_labels, scoring_guidelines, archived, show_rank, owner_id |
-| `query_doc_pairs` | Query-doc combinations to judge | query_text, doc_id, document_fields, information_need, position, book_id |
-| `judgements` | User ratings on query-doc pairs | rating (float), explanation, judge_later, unrateable, query_doc_pair_id, user_id |
-| `teams` | Collaboration groups | name (unique) |
-| `annotations` | Notes on scores | message, source, user_id |
-| `curator_variables` | Dynamic Try parameters | name, value (float), try_id |
-| `api_keys` | Token-based API access | token_digest (HMAC-SHA256), user_id |
-| `announcements` | System notifications | text, live (unique), author_id |
-| `announcement_viewed` | Notification read tracking | announcement_id, user_id |
-| `case_metadata` | Per-user case activity | last_viewed_at, case_id, user_id |
-| `book_metadata` | Per-user book activity | last_viewed_at, book_id, user_id |
-| `mapper_wizard_states` | Search mapper wizard state | search_url, docs_mapper, number_of_results_mapper, html_content, user_id |
-| `web_requests` | Cached HTTP request/response | request (binary), response (binary long), response_status |
-| `ahoy_visits` | Session analytics | browser, device_type, ip, landing_page, UTM params, geolocation |
-| `ahoy_events` | Event analytics | name, properties (JSON), time |
-
-### Join Tables (6)
-
-| Table | Relationship |
-|-------|-------------|
-| `teams_members` | Users ↔ Teams |
-| `teams_cases` | Cases ↔ Teams |
-| `teams_books` | Books ↔ Teams |
-| `teams_scorers` | Scorers ↔ Teams |
-| `teams_search_endpoints` | SearchEndpoints ↔ Teams |
-| `books_ai_judges` | Books ↔ AI Judge Users |
-
-### Framework Tables
-
-- `active_storage_blobs`, `active_storage_attachments`, `active_storage_variant_records` (file storage)
-- `active_storage_db_files` (database-backed file storage)
-- `solid_queue_*` (11 tables for job queue)
-- `solid_cable_messages` (WebSocket messaging)
-- `blazer_*` (5 tables for BI dashboard)
-
-### Total Migration Count: 187
+The complete schema, including application, join, and framework tables, is maintained in
+[`complete_application_specification.md` §3](../complete_application_specification.md#3-data-model).
+Use that section as the authoritative source for columns, associations, and migration details.
 
 ---
 

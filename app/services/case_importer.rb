@@ -22,8 +22,12 @@ class CaseImporter
     list_of_emails_of_users = []
     params_to_use = @data_to_process
 
-    scorer_name = params_to_use[:scorer][:name]
-    @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.") unless Scorer.exists?(name: scorer_name)
+    scorer_name = params_to_use.dig(:scorer, :name)
+    if scorer_name.blank?
+      @case.errors.add(:scorer, 'is required. Import a file exported from a Quepid case.')
+    elsif !Scorer.exists?(name: scorer_name)
+      @case.errors.add(:scorer, "Scorer with name '#{scorer_name}' needs to be migrated over first.")
+    end
 
     params_to_use[:queries]&.each do |query|
       next unless query[:ratings]

@@ -44,7 +44,7 @@ describe("AnnotationsController", () => {
         id: 9,
         message: "Tokenizer changed",
         created_at: new Date().toISOString(),
-        score: { case_id: 7, try_id: 3, score: 0.8 },
+        score: { case_id: 7, try_id: 3, try_number: 2, score: 0.8 },
         user: { name: "Ada" },
         source: "Imported review"
       })
@@ -66,6 +66,7 @@ describe("AnnotationsController", () => {
     })
     expect(controller.listTarget.textContent).toContain("Tokenizer changed")
     expect(controller.listTarget.textContent).toContain("by Imported review")
+    expect(controller.listTarget.textContent).toContain("Try No: 2")
   })
 
   it("does not create before the first score is available", async () => {

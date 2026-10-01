@@ -45,6 +45,25 @@ describe("ImportRatingsCoreController", () => {
     expect(instance.validate("csv", "query,docid,rating\n\"foo,doc-1,2")).toContain("unclosed quote")
   })
 
+  it("hides the Importing row when the modal is reset after a successful import", () => {
+    const instance = controller()
+    instance.element = document.createElement("div")
+    instance.hasLoadingTarget = true
+    instance.loadingTarget = document.createElement("div")
+    instance.contentTargets = []
+    instance.hasAlertTarget = false
+    instance.hasWarningTarget = false
+    instance.hasImportButtonTarget = false
+
+    instance.setBusy(true)
+    expect(instance.loadingTarget.classList.contains("d-none")).toBe(false)
+
+    instance.reset()
+
+    expect(instance.busy).toBe(false)
+    expect(instance.loadingTarget.classList.contains("d-none")).toBe(true)
+  })
+
   it("reads the current case name from the header when opening", () => {
     const instance = controller()
     instance.reset = vi.fn()

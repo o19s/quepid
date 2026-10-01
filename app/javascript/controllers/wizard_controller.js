@@ -7,6 +7,7 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 import {
   addUniqueQuery,
   buildFieldSpec,
+  formatValidationError,
   formatWizardSaveError,
   invalidProxyApiMethod,
   parseCsvRows,
@@ -243,7 +244,7 @@ export default class extends Controller {
     } catch (error) {
       this.setBusy(false)
       this.urlInvalid = true
-      this.showError(error?.toString()?.replace(/^Error:\s*/, "") || "Quepid could not search this endpoint.")
+      this.showError(formatValidationError(error))
       this.render()
     }
   }

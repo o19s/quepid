@@ -462,11 +462,11 @@ export default class extends Controller {
     const diffSnapshot = this.documentStore?.query(query.queryId)?.diffs
     diffSnapshot?.searchers?.forEach((searcher, index) => {
       const badge = document.createElement("div")
-      badge.className = "results-score diff-score"
+      badge.className = "results-score diff-score qscore-query-badge"
       badge.dataset.controller = "diff-score"
       badge.dataset.diffScoreQueryIdValue = String(query.queryId)
       badge.dataset.diffScoreIndexValue = String(index)
-      badge.innerHTML = '<span class="overall-rating"><span class="scorable-score" data-diff-score-target="value"></span></span>'
+      badge.innerHTML = '<span class="scorable-score" data-diff-score-target="value"></span>'
       diffScores.appendChild(badge)
     })
   }
@@ -486,6 +486,12 @@ export default class extends Controller {
 
       const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
       const dispatchResult = detail => explain.dispatchEvent(new CustomEvent("query-explain:template-rendered", { detail }))
+
+      // Only templated queries can be rendered; asking the engine to render anything else is a 400.
+      if (!isTemplatedQuery) {
+        dispatchResult({ isTemplatedQuery })
+        return
+      }
 
       searcher.renderTemplate().then(() => {
         dispatchResult({

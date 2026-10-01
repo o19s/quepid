@@ -26,6 +26,15 @@
 require 'test_helper'
 
 class BookTest < ActiveSupport::TestCase
+  describe 'name' do
+    test 'is required' do
+      book = Book.new name: ''
+
+      assert_not book.valid?
+      assert_predicate book.errors[:name], :present?
+    end
+  end
+
   describe 'archive functionality' do
     let(:active_book)   { books(:james_bond_movies) }
     let(:archived_book) { books(:archived_book) }

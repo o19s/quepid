@@ -1,4 +1,5 @@
 <%= form_with(model: search_endpoint) do |form| %>
+  <%= hidden_field_tag :clone_of, local_assigns[:cloned_from_id] if local_assigns[:cloned_from_id] %>
   <div class="card">
     <div class="card-body">
       <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>

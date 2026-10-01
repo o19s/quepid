@@ -41,6 +41,7 @@ module Api
             assert_response :ok
 
             assert_equal data[:score][:score], response.parsed_body['score']['score']
+            assert_equal first_try.try_number, response.parsed_body['score']['try_number']
           end
         end
 

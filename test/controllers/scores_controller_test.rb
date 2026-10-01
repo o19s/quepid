@@ -34,6 +34,15 @@ class ScoresControllerTest < ActionController::TestCase
       assert_equal [ other_scorer_score ], assigns(:scores).to_a
     end
 
+    test 'lists scores that have no scorer without crashing' do
+      score_for_try_1.update_column :scorer_id, nil # rubocop:disable Rails/SkipsModelValidations
+
+      get :index, params: { case_id: case_with_score.id }
+
+      assert_response :ok
+      assert_not_includes assigns(:scorer_options).flatten, nil
+    end
+
     describe 'a case this user cannot access' do
       let(:matt_case) { cases(:matt_case) } # owned by a different user, not public, not shared with random
 

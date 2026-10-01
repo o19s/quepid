@@ -15,7 +15,8 @@ class SearchEndpointsController < ApplicationController
     query = query.where(archived: @archived)
 
     query = query.where(owner_id: current_user.id) if params[:owned].present?
-    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
+    # for_user matches on ids and does not join teams, so filter by team with its own subquery.
+    query = query.where(id: SearchEndpoint.joins(:teams).where(teams: { id: params[:team_id] }).select(:id)) if params[:team_id].present?
 
     if params[:q].present?
       q = "%#{params[:q].to_s.downcase}%"
@@ -35,6 +36,7 @@ class SearchEndpointsController < ApplicationController
   end
 
   def clone
+    @cloned_from_id = @search_endpoint.id
     @search_endpoint = @search_endpoint.dup
     @search_endpoint.name = "Clone of #{@search_endpoint.name}"
     respond_with(@search_endpoint)
@@ -51,6 +53,7 @@ class SearchEndpointsController < ApplicationController
   def create
     @search_endpoint = SearchEndpoint.new(search_endpoint_params)
     @search_endpoint.owner = @current_user
+    restore_cloned_credential
 
     @search_endpoint.save
     respond_with(@search_endpoint)
@@ -89,6 +92,17 @@ class SearchEndpointsController < ApplicationController
   end
 
   private
+
+  # The clone form shows the source's masked credential (user:******). If it comes back unchanged,
+  # copy the real secret from the source instead of storing the placeholder.
+  def restore_cloned_credential
+    return if params[:clone_of].blank?
+
+    source = current_user.search_endpoints_involved_with.find_by(id: params[:clone_of])
+    return if source.nil? || @search_endpoint.basic_auth_credential != source.masked_basic_auth_credential
+
+    @search_endpoint.basic_auth_credential = source.basic_auth_credential
+  end
 
   def set_search_endpoint
     @search_endpoint = current_user.search_endpoints_involved_with.where(id: params[:id]).first

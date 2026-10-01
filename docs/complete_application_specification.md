@@ -22,8 +22,7 @@
 12. [Analytics and Visualization](#12-analytics-and-visualization) → see other docs
 13. [Admin](#13-admin) → see other docs
 14. [Proxy and HTTP](#14-proxy-and-http) → see other docs
-15. [Frontend (AngularJS SPA)](#15-frontend-angularjs-spa) → see other docs
-16. [Frontend (Rails/Stimulus)](#16-frontend-railsstimulus) → see other docs
+15. [Frontend architecture](#15-frontend-architecture) → see other docs
 17. [Background Jobs](#17-background-jobs) → see other docs
 18. [Real-Time (Turbo Streams)](#18-real-time-turbo-streams) → see other docs
 19. [Configuration and Environment](#19-configuration-and-environment) → see other docs
@@ -42,7 +41,7 @@ Quepid is a **search relevance evaluation platform** (cases, queries, ratings, b
 | Domain narrative (entities, workflows) | [`data_mapping.md`](./data_mapping.md), [`erd.png`](./erd.png) |
 | Whole-app feature inventory | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) |
 | Case workspace (`/case/...`) | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) |
-| Core UI implementation quirks | [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) |
+| Core UI implementation quirks | [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md) |
 | Frontend cleanup after Angular removal | [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) |
 | Open bugs and hardening | [`todo/todo.md`](./todo/todo.md) |
 | Encryption | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) |
@@ -411,7 +410,7 @@ Stores raw request/response for snapshot queries (debugging).
 ---
 ## 4. Cases and Queries (Live Search Evaluation)
 
-See [`todo/QUEPID_FEATURES.md` §5–7, §10](./todo/QUEPID_FEATURES.md#5-case-management), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), and [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md).
+See [`todo/QUEPID_FEATURES.md` §5–7, §10](./todo/QUEPID_FEATURES.md#5-case-management), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), and [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md).
 
 ---
 
@@ -475,15 +474,14 @@ See [`todo/QUEPID_FEATURES.md` §20](./todo/QUEPID_FEATURES.md#20-proxy--http-la
 
 ---
 
-## 15. Frontend (AngularJS SPA)
+## 15. Frontend architecture
 
-See [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), and [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md).
+The application uses server-rendered Rails views with Stimulus controllers, Hotwire, and
+plain JavaScript modules. The case workspace is bootstrapped by
+`core_bootstrap_controller.js`; shared live-query modules own query state, search execution,
+scoring, and updates.
 
----
-
-## 16. Frontend (Rails/Stimulus)
-
-See [`todo/QUEPID_FEATURES.md` §18](./todo/QUEPID_FEATURES.md#18-frontend-architecture), [§15 Mapper Wizard](./todo/QUEPID_FEATURES.md#15-mapper-wizard), and [§19 Bulk Judging](./todo/QUEPID_FEATURES.md#19-bulk-judging-interface).
+See [`app_structure.md`](./app_structure.md), [`todo/QUEPID_FEATURES.md` §18](./todo/QUEPID_FEATURES.md#18-frontend-architecture), [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md), and [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md).
 
 ---
 

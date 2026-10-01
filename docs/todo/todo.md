@@ -40,19 +40,6 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION] Verification requirements
-
-For changes to the core case surface:
-
-- `[MIGRATION]` Preserve the core surface’s existing behavior and appearance; do not collapse it
-  with a Rails-page interaction model that used different UX.
-- `[MIGRATION]` Add or update Vitest contracts for changed modules and controllers.
-- `[MIGRATION]` Drive the affected user flow through Playwright and update the matching manual
-  testing tracker entry.
-- `[MIGRATION]` For visual changes, keep matched before/after screenshots for the core surface.
-
-
-
 ---
 
 ## [PREEXISTING] P0 — Product bugs (Playwright MCP verified)
@@ -220,6 +207,14 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 **Cause:** `config.paranoid` commented out in `config/initializers/devise.rb`.
 
 **Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
+
+### [PREEXISTING] No minimum password length (Playwright MCP)
+
+**Observed:** Resetting a password through the reset link with `abc` succeeds and the user can then log in with it. Manual test 1.4's short-password edge case expects a validation error.
+
+**Cause:** `User` validates only presence and `maximum: 80` on `password` (`app/models/user.rb`). `config.password_length = 8..72` in `config/initializers/devise.rb` is never applied because `:validatable` is not enabled.
+
+**Fix direction:** Add a minimum length validation (match the Devise 8..72 setting) on password create/change paths, then check seed data, fixtures, and existing tests for shorter passwords.
 
 ---
 

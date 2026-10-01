@@ -15,21 +15,18 @@ The user account and password section are a few pages for the user to set or res
 The API endpoints all live under the `app/controllers/api` folder. The API is versioned, even though there's only one version at the moment: `V1`.
 
 ## Frontend
-The Frontend is built in two different ways.  Much of the application is standard Rails views that are rendered on the server.   However, the "core" of the application is a rich JavaScript app that runs in the browser.
+The frontend uses server-rendered Rails views with Stimulus controllers, Hotwire, and plain JavaScript modules. The case workspace is a richer browser application, but Rails still owns its page structure, URLs, and static modal shells.
 
 ### Core Frontend App
 
-The first place to look would be inside of the `app/assets/javascripts/components` directory. That directory has a bunch of sub-directories, each representing a component.
+Start with the relevant Rails view under `app/views/` and the Stimulus controller under
+`app/javascript/controllers/`. Shared case-page behavior lives in plain modules under
+`app/javascript/utils/`, `app/javascript/stores/`, and `app/javascript/api/`.
 
-A component is comprised of a controller file typically ending with `_controller.js`, a directive file typically ending with `_directive.js` and a template file typically ending with `.html`. Some components may have multiple controllers and templates, especially the ones that have a modal associated with it.
-
-If what you're looking for isn't a component (we haven't been able to refactor the entire frontend into components yet), it is then probably setup as a controller in `app/assets/javascripts/controllers` and an HTML template in `app/assets/templates`.
-
-The AngularJS app starts with the `app/assets/javascripts/app.js` file.
-
-The main entry to the app is through a case page, which is bootstrapped by the Stimulus
-`app/javascript/controllers/core_bootstrap_controller.js` controller. The live query/search
-services remain temporarily available through the Angular compatibility layer.
+The main entry to a case page is bootstrapped by
+`app/javascript/controllers/core_bootstrap_controller.js`. The live-query runtime modules
+own query state, search execution, scoring, and updates; controllers own page behavior and
+DOM interaction. Static page and modal structure remains in Rails ERB partials.
 
 This is the basic structure of the app and should get you started.
 

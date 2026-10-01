@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   addUniqueQuery,
   buildFieldSpec,
+  formatValidationError,
   formatWizardSaveError,
   invalidProxyApiMethod,
   parseCustomHeaders,
@@ -48,5 +49,14 @@ describe("wizard contracts", () => {
   it("formats API validation errors for the finish step", () => {
     expect(formatWizardSaveError({ data: { case_name: ["is invalid"] } })).toContain("case_name is invalid")
     expect(formatWizardSaveError({})).toBe("Could not save your case settings. Please click Finish to try again.")
+  })
+
+  it("turns any validator rejection into readable text instead of [object Object]", () => {
+    expect(formatValidationError(new Error("boom"))).toBe("boom")
+    expect(formatValidationError("plain")).toBe("plain")
+    expect(formatValidationError({ searchError: "Error with Solr query or server." })).toBe("Error with Solr query or server.")
+    expect(formatValidationError({ status: -1, statusText: "Not Found" })).toBe("Not Found")
+    expect(formatValidationError({ status: 0 })).toBe("Quepid could not search this endpoint.")
+    expect(formatValidationError(undefined)).toBe("Quepid could not search this endpoint.")
   })
 })

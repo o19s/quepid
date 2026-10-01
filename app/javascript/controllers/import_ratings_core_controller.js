@@ -52,14 +52,13 @@ export default class extends ModalTriggerControllerBase {
     this.files = {}
     this.contents = {}
     this.errors = {}
-    this.busy = false
     this.contentTargets.forEach((target) => { target.textContent = "" })
     this.setError(this.hasAlertTarget ? this.alertTarget : null, "")
     if (this.hasClearQueriesTarget) this.clearQueriesTarget.checked = false
     if (this.hasCreateQueriesTarget) this.createQueriesTarget.checked = false
     this.element.querySelectorAll("input[type=file]").forEach((input) => { input.value = "" })
     this.element.querySelectorAll("input[type=radio]").forEach((input) => { input.checked = false })
-    this.refreshUi()
+    this.setBusy(false) // also hides the "Importing…" row left over from a previous successful import
   }
 
   selectType(event) {

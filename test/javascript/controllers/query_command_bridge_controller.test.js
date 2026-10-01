@@ -95,7 +95,7 @@ describe("query_command_bridge_controller", () => {
       detail: { caseId: 8, queryId: 6 }
     }))
 
-    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, false)
+    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, true)
     expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
     expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
   })

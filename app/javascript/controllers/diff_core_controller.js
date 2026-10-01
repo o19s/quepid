@@ -126,12 +126,14 @@ export default class extends ModalTriggerControllerBase {
     this.renderSelections()
   }
 
-  cancelDelete() {
+  cancelDelete(event) {
+    event?.preventDefault()
     this.deleteId = null
     this.renderSelections()
   }
 
-  async confirmDelete() {
+  async confirmDelete(event) {
+    event?.preventDefault()
     if (!this.deleteId) return
     this.setBusy(true)
     await this.dispatchAndWait("diff:delete", { snapshotId: this.deleteId, snapshotsUrl: this.snapshotsUrlValue })

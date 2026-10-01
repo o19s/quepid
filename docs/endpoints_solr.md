@@ -11,21 +11,21 @@ When your endpoint is set up to be JSONP, then the Query responses are JSON form
 wrapped in [JSONP](https://en.wikipedia.org/wiki/JSONP) function name:
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=yoursearchgoeshere&wt=json&json.wrf=angular.callbacks._2
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=yoursearchgoeshere&wt=json&json.wrf=quepidJsonpCallback._2
 ```
 
-The name of the function `angular.callbacks._2` is dynamically generated, so if you see a parameter called `json.wrf`,
+The name of the function `quepidJsonpCallback._2` is dynamically generated, so if you see a parameter called `json.wrf`,
 then you need to take your resulting JSON formatted response and wrap it to look like a JavaScript function:
 
 ```
-angular.callbacks._2({
+quepidJsonpCallback._2({
   "responseHeader":{
     "zkConnected":true,
     "status":0,
     "QTime":0,
     "params":{
       "q":"*:*",
-      "json.wrf":"angular.callbacks._0",
+      "json.wrf":"quepidJsonpCallback._0",
       "debug":"true",
       "wt":"json"}},
   "response":{"numFound":100384,"start":0,"numFoundExact":true,"docs":[
@@ -47,7 +47,7 @@ Otherwise, if you use GET, then you get a normal JSON response that looks like:
   "QTime":0,
   "params":{
     "q":"*:*",
-    "json.wrf":"angular.callbacks._0",
+    "json.wrf":"quepidJsonpCallback._0",
     "debug":"true",
     "wt":"json"}},
 "response":{"numFound":100384,"start":0,"numFoundExact":true,"docs":[
@@ -67,20 +67,20 @@ then Quepid attempts to provide you some workarounds.  You can bypass this check
 fix your connectivity setup yourself in the Case Settings window ;-).
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._5
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=*:*&fl=*&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=quepidJsonpCallback._5
 ```
 
 1. `q=*:*` is meant to be a query all docs, and is just to help you get a sample doc.  As long as you get one doc back, this is fine.
 1. `fl=*` is to get a listing of fields back, for the UI in the Case Setup Wizard.
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
-1. `json.wrf=angular.callbacks._5` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._5()`.
+1. `json.wrf=quepidJsonpCallback._5` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `quepidJsonpCallback._5()`.
 
 ## Queries
 
 Queries are sent off to Solr using the standard GET request handler.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star%20wars&fl=id title&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&start=0&json.wrf=angular.callbacks._2
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star%20wars&fl=id title&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&start=0&json.wrf=quepidJsonpCallback._2
 ```
 
 Quepid adds some parameters:
@@ -93,7 +93,7 @@ Quepid adds some parameters:
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may be able to be removed.
 1. `rows=10` is driven by the Settings Pane in the UI.
 1. `start=1` is added when you start to paginate through the results.
-1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`.  
+1. `json.wrf=quepidJsonpCallback._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `quepidJsonpCallback._2()`.  
 
 
 ## Find and Rate Missing Documents
@@ -104,7 +104,7 @@ This Modal UI in Quepid  has two query patterns for interacting with Solr.   The
 This function sends off whatever you enter to Solr using the standard GET request handler and expects a response type of JSON, wrapped in JSONP.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:war&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=angular.callbacks._8
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:war&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=quepidJsonpCallback._8
 ```
 1. `q=star` comes from the actual Query that you clicked Missing Documents button in the UI.
 1. `explainOther=title:war` comes from the query you entered on the Find and Rate Missing Documents modal and is a Lucene query.   If you are building an adapter, you probably just want to search for the `explainOther` property.
@@ -113,13 +113,13 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may change.
 1. `rows=10` is driven by the Settings Pane in the UI.
-1. `json.wrf=angular.callbacks._8` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._8()`.  
+1. `json.wrf=quepidJsonpCallback._8` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `quepidJsonpCallback._8()`.  
 
 ### List All Documents That Have Been Rated
 This function sends off a query using the `{!terms}` component to look up the docs by their ids, using the GET request handler and expects a response type of JSON, wrapped in JSONP.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?qf=title%20id&rows=10&start=0&q={!terms%20f=id}193,13475&defType=lucene&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&json.wrf=angular.callbacks._z
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?qf=title%20id&rows=10&start=0&q={!terms%20f=id}193,13475&defType=lucene&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&json.wrf=quepidJsonpCallback._z
 ```
 1. `q={!terms%20f=id}193,13475` is the lookup by document id, in this case docs _193_ and _13475_.  This list will be as long as the number of rated docs.
 1. `defType=lucene` changes the query parser to be specific to Lucene.  (Do we need it?).
@@ -129,7 +129,7 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?qf=title%20id&rows=10&star
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may change.
 1. `rows=10` is driven by the Settings Pane in the UI.
-1. `json.wrf=angular.callbacks._8` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._8()`.  
+1. `json.wrf=quepidJsonpCallback._8` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `quepidJsonpCallback._8()`.  
 
 ## Show Only Rated Documents
 
@@ -140,7 +140,7 @@ When you have a snapshot and you want to diff it to the current try, we need to 
 fields for the documents that were snapshotted.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?defType=lucene&rows=15&q=id:(12697 OR 18645 OR 26965 OR 71714 OR 81899 OR 124136 OR 129848 OR 164258 OR 202337 OR 228649 OR 253150 OR 327390 OR 404021 OR 416182 OR 432613)&fl=id title poster_path overview cast&wt=json&hl=false&json.wrf=angular.callbacks._2
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?defType=lucene&rows=15&q=id:(12697 OR 18645 OR 26965 OR 71714 OR 81899 OR 124136 OR 129848 OR 164258 OR 202337 OR 228649 OR 253150 OR 327390 OR 404021 OR 416182 OR 432613)&fl=id title poster_path overview cast&wt=json&hl=false&json.wrf=quepidJsonpCallback._2
 ```
 
 1. `defType=lucene` is to specify the lucene query parser, though not sure if that is needed.
@@ -149,7 +149,7 @@ http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?defType=lucene&rows=15&q=i
 1. `fl=id title` comes from the Settings Pane in the UI.
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `hl=false` disables highlighting.  We used to actually use highlighting in our snippets, so this may be able to be removed.
-1. `json.wrf=angular.callbacks._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `angular.callbacks._2()`.
+1. `json.wrf=quepidJsonpCallback._2` to avoid needing to use CORS, we use JSONP, which requires this parameter to be sent to Solr, and wraps the resulting JSON response in the function `quepidJsonpCallback._2()`.
 
 
 ## View Document

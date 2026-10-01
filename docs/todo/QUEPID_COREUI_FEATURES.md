@@ -966,7 +966,7 @@ For the Static engine type, the wizard includes:
 6. Sets this as the search URL, continuing the wizard flow
 
 ### Post-Wizard Tour
-After wizard completion, if user hasn't completed the case wizard tour, `setupAndStartTour()` launches an interactive guided tour of the evaluation UI using **Shepherd.js** — see [`core_ui_implementation_reference.md` §1](./core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs) (`tour.js`).
+After wizard completion, if user hasn't completed the case wizard tour, `setupAndStartTour()` launches an interactive guided tour of the evaluation UI using **Shepherd.js** — see [`core_ui_implementation_reference.md` §1](../core_ui_implementation_reference.md#1-shepherd-post-wizard-tour-tourjs) (`tour.js`).
 
 ---
 
@@ -1442,6 +1442,6 @@ File-level inventories and internals change quickly, so they are not duplicated 
 
 **Read source for deep internals:** [`core_stimulus.js`](../../app/javascript/core_stimulus.js) (registered controllers), `core_bootstrap_controller.js`, `live_query_runtime_owner.js`, `query_service.js`, `query_scoring.js`, `scorer_runtime.js`, `diff_results.js`, `core_controller.rb`, `tour.js`.
 
-**Hybrid Stimulus on case pages:** Book bulk judging uses `bulk_judgement_controller.js`; see [`core_ui_implementation_reference.md` §4](./core_ui_implementation_reference.md#4-bulk_judgement_controller-stimulus) and [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions).
+**Hybrid Stimulus on case pages:** Book bulk judging uses `bulk_judgement_controller.js`; see [`core_ui_implementation_reference.md` §4](../core_ui_implementation_reference.md#4-bulk_judgement_controller-stimulus) and [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions).
 
-**Deep internals** (tour steps, `queriesSvc` quirks, TryFactory map, bulk judgement states, Rails controller edge cases): [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md).
+**Deep internals** (tour steps, `queriesSvc` quirks, TryFactory map, bulk judgement states, Rails controller edge cases): [`core_ui_implementation_reference.md`](../core_ui_implementation_reference.md).

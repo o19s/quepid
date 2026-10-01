@@ -16,7 +16,7 @@ export default class extends Controller {
     this.documentsStore = stores.documents
     this.handleDocumentCommand = event => this.routeDocumentCommand(event.detail || {})
     this.handleCollectionCommand = event => this.routeCollectionCommand(event.detail || {})
-    this.handleQueryDeleteCompleted = event => this.reconcileQueryRemoval(event.detail || {}, false)
+    this.handleQueryDeleteCompleted = event => this.reconcileQueryRemoval(event.detail || {}, true)
     this.handleQueryMoveCompleted = event => this.reconcileQueryRemoval(event.detail || {}, true)
 
     this.documentsStore.addEventListener("command", this.handleDocumentCommand)

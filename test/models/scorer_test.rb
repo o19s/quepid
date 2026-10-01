@@ -41,6 +41,23 @@ class ScorerTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'scale_list' do
+    test 'accepts integers with stray spaces' do
+      scorer = Scorer.new name: 'spaces', code: 'setScore(1);', scale_list: '0, 1, 2'
+
+      assert_predicate scorer, :valid?
+      assert_equal [ 0, 1, 2 ], scorer.scale
+    end
+
+    test 'reports a validation error instead of raising for non-integer values' do
+      scorer = Scorer.new name: 'letters', code: 'setScore(1);', scale_list: 'a,b,c'
+
+      assert_not scorer.valid?
+      assert_predicate scorer.errors[:scale], :present?
+      assert_equal 'a,b,c', scorer.scale_list
+    end
+  end
+
   describe 'emoji support' do
     test 'handles emoji in name' do
       scorer = Scorer.create name: '👍 👎 💩'

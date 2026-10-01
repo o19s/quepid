@@ -4,28 +4,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const checkboxes = document.querySelectorAll('input[name="score_ids[]"]');
   const button = document.getElementById('delete_button');
   
-  button.disabled = true; // default
-  
-  // Handle "Check All" checkbox
+  // Delete is enabled whenever at least one score is selected; "Check All" mirrors whether every
+  // row is selected.
+  const syncSelection = () => {
+    const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+    checkAll.checked = checkboxes.length > 0 && selected === checkboxes.length;
+    button.disabled = selected === 0;
+  };
+
+  syncSelection(); // default
+
   checkAll.addEventListener('change', function() {
     checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-        button.disabled = !this.checked;
+      checkbox.checked = this.checked;
     });
+    syncSelection();
   });
-  
+
   checkboxes.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      // If any checkbox is unchecked, uncheck the "Check All"
-      if (!this.checked) {
-          checkAll.checked = false;
-      }
-      
-      // If all checkboxes are checked, check the "Check All"
-      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-      checkAll.checked = allChecked;
-      button.disabled = !checkbox.checked;
-    });
+    checkbox.addEventListener('change', syncSelection);
   });
 });
 </script>
@@ -55,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="d-flex mx-2">
             <%= select_tag 'scorer_id', 
               options_for_select(
-                [['Scorer', '']] + @case.scores.map(&:scorer).uniq.map { |s| [s.name, s.id] },
+                [['Scorer', '']] + @scorer_options,
                 params[:scorer_id]
               ),
               id: 'scorer_id',
@@ -96,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
               %>
             </td>
             <td>
-              <%= score.scorer.name %>
+              <%= score.scorer&.name %>
             </td>
             <td>
               <%= score.try&.try_number %>

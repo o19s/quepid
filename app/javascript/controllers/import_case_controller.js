@@ -70,7 +70,10 @@ export default class extends Controller {
           }
         }, 1500)
       } else {
-        const errorMessage = result.error || result.message || 'Failed to import case. Please check the file format.'
+        const validationMessages = Object.entries(result)
+          .filter(([, value]) => Array.isArray(value))
+          .map(([field, messages]) => `${field} ${messages.join(', ')}`)
+        const errorMessage = result.error || result.message || validationMessages.join('. ') || 'Failed to import case. Please check the file format.'
         this.showAlert(errorMessage, 'danger')
         this.setLoading(false)
       }

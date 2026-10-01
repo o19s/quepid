@@ -12,7 +12,7 @@ class ScoresController < ApplicationController
 
     @pagy, @scores = pagy(query.order(:updated_at))
 
-    scorers = @case.scores.includes([ :scorer ]).map(&:scorer).uniq
+    scorers = @case.scores.includes([ :scorer ]).filter_map(&:scorer).uniq
     @scorer_options = scorers.map { |scorer| [ scorer.name, scorer.id ] }
   end
 

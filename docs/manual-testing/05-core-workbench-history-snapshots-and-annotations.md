@@ -22,7 +22,7 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 
 ### 5.2 Create a snapshot
 
-Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); the snapshot bridge now owns shallow bootstrap, payload construction, POST, and hydration while live query state remains Angular-owned.
+Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); the snapshot bridge owns shallow bootstrap, payload construction, POST, and hydration while live query state remains in the shared live-query runtime.
 
 - [ ] **Steps:**
   1. Click **Create snapshot** in the case toolbar.

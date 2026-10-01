@@ -127,13 +127,19 @@ class ProxyController < ApplicationController
   end
 
   def blocked_proxy_address? address
+    # An IPv4-mapped IPv6 address (::ffff:a.b.c.d) is judged by the IPv4 address it wraps.
+    address = address.native if address.ipv6? && address.ipv4_mapped?
+
     return true if address.loopback?
     return true if address.link_local?
 
     private_ranges = [
+      IPAddr.new('0.0.0.0/8'), # "this host": 0.0.0.0 connects to localhost on Linux
       IPAddr.new('10.0.0.0/8'),
+      IPAddr.new('100.64.0.0/10'), # carrier-grade NAT, commonly used for internal networks
       IPAddr.new('172.16.0.0/12'),
       IPAddr.new('192.168.0.0/16'),
+      IPAddr.new('::/128'),
       IPAddr.new('fc00::/7')
     ]
 

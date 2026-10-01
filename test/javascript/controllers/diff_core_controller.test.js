@@ -49,6 +49,22 @@ describe("DiffCoreController", () => {
 
   afterEach(() => vi.restoreAllMocks())
 
+  it("keeps the yes/no delete-confirmation links from following their href", async () => {
+    const controller = buildController()
+    controller.dispatchAndWait = vi.fn(() => Promise.resolve())
+    controller.setBusy = vi.fn()
+    controller.deleteId = "2"
+    const cancel = { preventDefault: vi.fn() }
+    const confirm = { preventDefault: vi.fn() }
+
+    controller.cancelDelete(cancel)
+    controller.deleteId = "2"
+    await controller.confirmDelete(confirm)
+
+    expect(cancel.preventDefault).toHaveBeenCalledOnce()
+    expect(confirm.preventDefault).toHaveBeenCalledOnce()
+  })
+
   it("renders the selected snapshot and available snapshots", () => {
     const controller = buildController()
     controller.renderSelections()

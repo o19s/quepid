@@ -17,6 +17,24 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'filters the index by team without raising' do
+    @search_endpoint.teams << team unless @search_endpoint.teams.include?(team)
+
+    get search_endpoints_url, params: { team_id: team.id }
+
+    assert_response :success
+    assert_includes response.body, @search_endpoint.name
+  end
+
+  test 'a team filter hides endpoints that are not shared with that team' do
+    @search_endpoint.teams.clear
+
+    get search_endpoints_url, params: { team_id: team.id }
+
+    assert_response :success
+    assert_not_includes response.body, @search_endpoint.endpoint_url
+  end
+
   test 'should get new' do
     get new_search_endpoint_url
     assert_response :success
@@ -55,6 +73,44 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
     assert_includes SearchEndpoint.last.teams, team
+  end
+
+  test 'cloning keeps the real basic auth secret instead of the masked placeholder' do
+    @search_endpoint.update!(basic_auth_credential: 'alice:s3cr3t', owner: user)
+
+    get clone_search_endpoint_url(@search_endpoint)
+    assert_response :success
+    assert_select 'input[name=clone_of][value=?]', @search_endpoint.id.to_s
+
+    assert_difference('SearchEndpoint.count', 1) do
+      post search_endpoints_url,
+           params: { clone_of: @search_endpoint.id, search_endpoint: {
+             api_method:            @search_endpoint.api_method,
+             endpoint_url:          @search_endpoint.endpoint_url,
+             name:                  "Clone of #{@search_endpoint.name}",
+             search_engine:         @search_endpoint.search_engine,
+             basic_auth_credential: @search_endpoint.masked_basic_auth_credential,
+             team_ids:              [],
+           } }
+    end
+
+    assert_equal 'alice:s3cr3t', SearchEndpoint.last.basic_auth_credential
+  end
+
+  test 'a typed credential on a clone wins over the source credential' do
+    @search_endpoint.update!(basic_auth_credential: 'alice:s3cr3t', owner: user)
+
+    post search_endpoints_url,
+         params: { clone_of: @search_endpoint.id, search_endpoint: {
+           api_method:            @search_endpoint.api_method,
+           endpoint_url:          @search_endpoint.endpoint_url,
+           name:                  'Clone with new password',
+           search_engine:         @search_endpoint.search_engine,
+           basic_auth_credential: 'bob:newpass',
+           team_ids:              [],
+         } }
+
+    assert_equal 'bob:newpass', SearchEndpoint.last.basic_auth_credential
   end
 
   test 'should show search_endpoint' do

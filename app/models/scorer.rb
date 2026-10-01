@@ -73,11 +73,25 @@ class Scorer < ApplicationRecord
     scorer.name       = "Scorer #{Scorer.count + 1}" if scorer.name.blank?
   end
 
+  # Raw text the user entered that is not a list of integers. Assigning it to the serialized scale
+  # would raise SerializationTypeMismatch (a 500), so keep it aside for ScaleValidator to report.
+  attr_reader :invalid_scale_list
+
   def scale_list=value
-    self.scale = value.split(',') if value.present?
+    @invalid_scale_list = nil
+    return if value.blank?
+
+    values = value.split(',').map(&:strip)
+    if values.all? { |v| /\A[-+]?\d+\z/.match?(v) }
+      self.scale = values
+    else
+      @invalid_scale_list = value
+    end
   end
 
   def scale_list
+    return invalid_scale_list if invalid_scale_list
+
     # rubocop:disable Style/SafeNavigation
     scale.join(',') unless scale.nil?
     # scale&.join(',')

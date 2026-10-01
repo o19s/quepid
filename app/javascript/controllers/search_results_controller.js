@@ -163,15 +163,28 @@ export default class extends Controller {
 
   setNotesOpen(open) {
     this.store.updateQueryState(this.queryId, { notes: Boolean(open) })
-    if (open && this.hasNotesBoxTarget) {
-      this.notesBoxTarget.querySelector('[data-controller~="query-notes"]')?.dispatchEvent(
-        new CustomEvent("query-notes:open")
-      )
-    }
   }
 
+  // The query list rebuilds every row on a store change, so the notes panel that is open after a
+  // toggle is a different element from the one that was clicked. Ask each panel instance to load
+  // its own saved values the first time it renders open, once its query-notes controller is connected.
   renderNotes(snapshot) {
-    if (this.hasNotesBoxTarget) this.notesBoxTarget.classList.toggle("d-none", snapshot?.notes !== true)
+    if (!this.hasNotesBoxTarget) return
+
+    const box = this.notesBoxTarget
+    const open = snapshot?.notes === true
+    box.classList.toggle("d-none", !open)
+    if (!open) {
+      delete box.dataset.notesRequested
+      return
+    }
+    if (box.dataset.notesRequested) return
+
+    box.dataset.notesRequested = "true"
+    requestAnimationFrame(() => {
+      if (!box.isConnected) return
+      box.querySelector('[data-controller~="query-notes"]')?.dispatchEvent(new CustomEvent("query-notes:open"))
+    })
   }
 
   renderDocuments(docs, snapshot) {

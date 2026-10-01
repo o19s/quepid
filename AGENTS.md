@@ -93,6 +93,13 @@
 ## Documentation
 
 - Documentation goes in the `docs` directory, not a toplevel `doc` directory.
+- Every actionable item in `docs/todo/todo.md` must carry a provenance marker:
+  `[MIGRATION]` for defects introduced by or required to complete AngularJS
+  removal, `[MIGRATION-FOLLOWUP]` for related cleanup that is not necessarily a
+  regression, and `[PREEXISTING]` for defects that predate the removal. When
+  reviewing migration work, use these markers to keep pre-existing defects out
+  of the migration-fix scope; preserve or update the marker when moving or
+  splitting an item.
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
 - **DEVELOPER_GUIDE.md is the primary human-facing doc; AGENTS.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have AGENTS.md point to it — never the other way around. Skill files (`.agents/skills/**/SKILL.md`, exposed to Claude Code through `.claude/skills`) are agent-only too, so they may reference AGENTS.md directly.
@@ -114,15 +121,13 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 **Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
-- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
+- Prettier pre-commit is limited to **`api/`, `utils/`, and the classic core scripts (`ace_config`, `footer`, `tour`)** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) and the JavaScript tests under `test/javascript/`; follow the conventions above when you add specs.
     - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
-    - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
+    - Do **not** run Prettier outside `api/`/`utils/`/the classic core scripts for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
 - **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy habits (`var`, semicolons) on greenfield Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
 - Use `const` or `let`, not `var`.
-
-**Legacy core JS** (`app/assets/javascripts/`) — ESLint and Prettier run as advisory checks on staged files. Avoid reformatting it as part of modern JavaScript changes.
 
 **Ruby** — `.rubocop.yml` (opposite comma rule from JS):
 

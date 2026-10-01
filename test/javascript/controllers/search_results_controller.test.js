@@ -233,6 +233,37 @@ describe("SearchResultsController", () => {
     expect(snapshot.notes).toBe(true)
   })
 
+  it("asks the open notes panel to load its saved values once per open", () => {
+    const rafCallbacks = []
+    vi.stubGlobal("requestAnimationFrame", (callback) => rafCallbacks.push(callback))
+    const { controller, snapshot } = controllerFor()
+    document.body.append(controller.element)
+    controller.element.insertAdjacentHTML("beforeend", `
+      <div data-search-results-target="notesBox" class="d-none"><div data-controller="query-notes"></div></div>
+    `)
+    controller.notesBoxTarget = controller.element.querySelector('[data-search-results-target="notesBox"]')
+    controller.hasNotesBoxTarget = true
+    const opened = vi.fn()
+    controller.notesBoxTarget.firstElementChild.addEventListener("query-notes:open", opened)
+
+    snapshot.notes = true
+    controller.renderNotes(snapshot)
+    controller.renderNotes(snapshot)
+    rafCallbacks.splice(0).forEach((callback) => callback())
+
+    expect(controller.notesBoxTarget.classList.contains("d-none")).toBe(false)
+    expect(opened).toHaveBeenCalledTimes(1)
+
+    snapshot.notes = false
+    controller.renderNotes(snapshot)
+    snapshot.notes = true
+    controller.renderNotes(snapshot)
+    rafCallbacks.splice(0).forEach((callback) => callback())
+
+    expect(opened).toHaveBeenCalledTimes(2)
+    vi.unstubAllGlobals()
+  })
+
   it("copies the query text from the document store", () => {
     const { controller } = controllerFor()
 

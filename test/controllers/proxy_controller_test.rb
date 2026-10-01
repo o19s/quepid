@@ -197,6 +197,17 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
       assert_response :bad_request
     end
 
+    test 'blocks the unspecified address, which reaches localhost' do
+      get proxy_fetch_url params: { url: 'http://0.0.0.0:3000/healthcheck' }
+      assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
+    end
+
+    test 'blocks carrier-grade NAT 100.64.0.0/10 addresses' do
+      get proxy_fetch_url params: { url: 'http://100.64.0.1/' }
+      assert_response :bad_request
+    end
+
     test 'blocks IPv6 unique-local addresses' do
       get proxy_fetch_url params: { url: 'http://[fc00::1]/' }
       assert_response :bad_request

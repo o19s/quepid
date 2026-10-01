@@ -215,7 +215,7 @@ export default class extends Controller {
 
     const score = document.createElement("div")
     score.innerHTML = `<span class="annotation-try">Try No: </span><i class="bi bi-circle-fill"></i><span class="annotation-score"> Score: </span>`
-    score.querySelector(".annotation-try").append(annotation.score.try_id ?? "")
+    score.querySelector(".annotation-try").append(annotation.score.try_number ?? annotation.score.try_id ?? "")
     score.querySelector(".annotation-score").append(annotation.score.score ?? "")
     item.appendChild(score)
 

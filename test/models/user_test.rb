@@ -495,4 +495,26 @@ class UserTest < ActiveSupport::TestCase
       assert_equal('Anonymous', user.fullname)
     end
   end
+
+  describe 'password reset' do
+    test 'clears the reset token once the password is reset so the link cannot be reused' do
+      user = users(:doug)
+      raw = user.send_reset_password_instructions
+
+      assert user.reload.reset_password_token.present?
+
+      reset = User.reset_password_by_token(
+        reset_password_token: raw, password: 'newpassword1', password_confirmation: 'newpassword1'
+      )
+
+      assert_empty reset.errors
+      assert_nil user.reload.reset_password_token
+
+      again = User.reset_password_by_token(
+        reset_password_token: raw, password: 'another12', password_confirmation: 'another12'
+      )
+
+      assert_predicate again.errors, :present?
+    end
+  end
 end

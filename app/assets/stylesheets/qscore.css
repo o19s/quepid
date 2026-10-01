@@ -80,6 +80,15 @@ qscore-query.diff-score .overall-rating {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
+/* Per-query diff badge: a .qscore-query-badge (so it floats beside the primary badge) that butts
+   against its neighbor on the left and is rounded on the right. */
+.qscore-query-badge.diff-score {
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
+  border-radius: 0;
+  border-top-right-radius: var(--qscore-border-radius);
+  border-bottom-right-radius: var(--qscore-border-radius);
+}
+
 /* Diff score styling */
 .diff-score .overall-rating,
 qscore-case .overall-rating.diff-score,

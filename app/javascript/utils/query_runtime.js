@@ -254,6 +254,7 @@ export function createTargetedSearchAdapter({
   normalizeDocExplains,
   searchApiRatedDocs,
   supportsRatedDocsLookup,
+  ratingScale,
   promiseApi = Promise
 }) {
   const adapter = {
@@ -276,7 +277,7 @@ export function createTargetedSearchAdapter({
     ratedDocsLookupUnsupported: false,
     totalRatings: 0,
     numFound: 0,
-    ratingScale: query.ratings?.scale || {}
+    ratingScale: ratingScale || query.ratings?.scale || {}
   }
 
   adapter.initialQueryParams = () =>

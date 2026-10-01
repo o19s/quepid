@@ -47,6 +47,13 @@ function buildAdapter(overrides = {}) {
 }
 
 describe("targeted search adapter", () => {
+  it("prefers the injected rating scale (scorer colors) over the query's own scale, which is the fallback", () => {
+    const scale = { 0: { color: "red" }, 1: { color: "green" } }
+
+    expect(buildAdapter({ ratingScale: scale }).adapter.ratingScale).toBe(scale)
+    expect(buildAdapter().adapter.ratingScale).toEqual({ 1: "Not relevant" })
+  })
+
   it("runs a preview search through injected engine dependencies", async () => {
     const { adapter, config, searcher } = buildAdapter()
 

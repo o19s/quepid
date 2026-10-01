@@ -200,6 +200,12 @@ class User < ApplicationRecord
     password_changed?
   end
 
+  # Devise's recoverable calls this (not the legacy method above) to decide whether to clear
+  # the reset_password_token, so without it a used reset link stays valid until it expires.
+  def will_save_change_to_encrypted_password?
+    will_save_change_to_password?
+  end
+
   # Because we want to be able to send the acceptance invite later,
   # store the raw invitation token in our own column for reuse later
   before_invitation_created :store_raw_invitation_token

@@ -615,6 +615,18 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     return search.ratedDocs.supportsLookup(aTry)
   }
 
+  // Rating scale for a query's rating controls: the query's own scale, else its scorer's colors.
+  function resolveQueryRatingScale(query) {
+    let ratingScale = query.ratings && query.ratings.scale
+    if (!ratingScale) {
+      const effectiveScorer = isFunction(query.effectiveScorer) ? query.effectiveScorer() : null
+      if (effectiveScorer && isFunction(effectiveScorer.getColors)) {
+        ratingScale = effectiveScorer.getColors()
+      }
+    }
+    return ratingScale
+  }
+
   // Temporary store-transition publisher: the runtime keeps the live Query objects, but
   // Stimulus receives a plain read model for expanded result rendering.
   function publishQueryDocuments(query) {
@@ -622,11 +634,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       return
     }
 
-    const effectiveScorer = isFunction(query.effectiveScorer) ? query.effectiveScorer() : null
-    let ratingScale = query.ratings && query.ratings.scale
-    if (!ratingScale && effectiveScorer && isFunction(effectiveScorer.getColors)) {
-      ratingScale = effectiveScorer.getColors()
-    }
+    const ratingScale = resolveQueryRatingScale(query)
     const applicableSettings = runtimeDomain.settings.applicable() || {}
     const readModel = search.queryDocuments.buildState({
       query: query,
@@ -1109,6 +1117,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         normalizeDocExplains: liveQueryServices.runtime.executionOptions.documents.normalize,
         searchApiRatedDocs: searchApiRatedDocs,
         supportsRatedDocsLookup: trySupportsRatedDocsLookup,
+        ratingScale: resolveQueryRatingScale(query),
         promiseApi: runtimeFramework.promiseApi
       })
     }

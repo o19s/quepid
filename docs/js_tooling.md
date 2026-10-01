@@ -131,7 +131,7 @@ Survived/no-coverage mutants in the report point at either a missing test case o
 
 ## Unit test strategy
 
-Unit tests are **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`). The Karma/Jasmine suite was removed with AngularJS.
+Unit tests are **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
 
 ---
 

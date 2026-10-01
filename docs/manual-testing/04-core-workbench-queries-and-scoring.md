@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Core Workbench is the case-tuning screen you land on at `/case/:id` (or `/case/:id/try/:try_number`). The query/results workspace still has Angular live-search bridges, while the Tune Relevance drawer is Stimulus-owned with the existing settings services behind it. This is where the actual relevance-tuning workflow happens: add queries, run them against your search endpoint, rate documents, watch the score change, and tweak query/engine settings live.
+The Core Workbench is the case-tuning screen you land on at `/case/:id` (or `/case/:id/try/:try_number`). The query/results workspace is driven by Stimulus controllers and shared live-query modules, while the Tune Relevance drawer owns its page behavior through Stimulus and the settings runtime. This is where the actual relevance-tuning workflow happens: add queries, run them against your search endpoint, rate documents, watch the score change, and tweak query/engine settings live.
 
 This part covers the query list and its per-query tools, rating, scoring, and the "Tune Relevance" settings drawer. Parts 5 and 6 cover the rest of this same page (history/snapshots/diff/annotations, and export/import/explain/case-level actions respectively).
 
@@ -90,7 +90,7 @@ Before testing individual features, get oriented:
 
 ### 4.8 Select a scorer for the case
 
-Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); after save it rescored live queries via an Angular bridge until that state is migrated.
+Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); after save the live-query runtime rescored the active queries.
 
 - [ ] **Steps:**
   1. Click **Select scorer** in the case toolbar.
@@ -201,7 +201,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   1. Navigate directly to `/case/:id/try/:try_number` for an existing case. Confirm the workbench boots (header, toolbar, query list) with no console errors.
   2. From the header's **Relevancy Cases** dropdown, click a different case. Confirm the browser does a full page navigation (URL changes, page reloads) to that case's workbench, which then boots correctly.
   3. Navigate to bare `/case` (no id). Confirm it loads your most recent non-archived case's workbench rather than a "Not Found" page.
-  4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404, not an Angular-rendered one.
+  4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404 rather than a client-side application shell.
 - **Expected:** All four load the workbench (or a real 404) via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
 - **Edge cases:**
   - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
@@ -293,4 +293,3 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 - **Edge cases:**
   - [ ] Open the pane at a narrow window width — the query list must remain usable (see Part 16.2).
   - [ ] Open/close the pane rapidly several times; confirm no duplicate event handling (one toggle per click).
-

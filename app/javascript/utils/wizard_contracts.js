@@ -122,3 +122,15 @@ export function formatWizardSaveError(response) {
     return `Could not save your case settings: ${detail}. Please click Finish to try again.`
   return "Could not save your case settings. Please click Finish to try again."
 }
+
+const DEFAULT_VALIDATION_ERROR = "Quepid could not search this endpoint."
+
+// The search validator rejects with Error instances, plain strings, or response-like objects
+// (e.g. { searchError, status, statusText }), so String(error) alone yields "[object Object]".
+export function formatValidationError(error) {
+  if (typeof error === "string") return error || DEFAULT_VALIDATION_ERROR
+  const detail = error?.searchError || error?.message || error?.statusText
+  if (typeof detail === "string" && detail) return detail.replace(/^Error:\s*/, "")
+  if (typeof error?.data === "string" && error.data) return error.data
+  return DEFAULT_VALIDATION_ERROR
+}
