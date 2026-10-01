@@ -148,6 +148,14 @@ The cost is that it is not "automatic" — somebody has to trigger the second pa
 job does. Given §4 and §5, I think that is a feature rather than a defect for v1, and the inline
 version becomes an option once the numbers from §3 exist.
 
+One thing the two-pass shape gives up: inline, both judges see the scale exactly as it was for that
+run. Scale **values** are locked once a book has judgements, but **labels** and
+`scoring_guidelines` are not, and the second pass may run days later. If someone renames
+"Relevant" to "Somewhat relevant" in between, the expensive judge is answering a slightly
+different question than the cheap judge was, on the same numbers. Either record the labels the
+first pass used and check them before the second pass, or accept it and say so in the second
+pass's completion message.
+
 ## 8. Configuration can rot underneath a chain
 
 A chain names judges; judges get removed from teams (that happened during this session), lose their

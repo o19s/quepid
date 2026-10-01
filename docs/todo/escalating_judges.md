@@ -139,6 +139,14 @@ on behalf of a sleeping judge.
 The run judges a pair, finalizes it, and on an unusable result immediately builds the next judge's
 service and judges the same pair. Simple, ordered, and the progress broadcast stays accurate.
 
+The woken judge is held to **the run's scale** — the same `JudgeScale` object the cheap judge got,
+passed down, not rebuilt. The scale belongs to the book (`JudgeScale.for(book)`), and
+`Book#scale_cannot_be_changed_if_judgements_exist` locks its values once any judgement exists, so
+both judges rate on the same values. Passing the object rather than rebuilding it also pins the
+labels and `scoring_guidelines`, which stay editable, for the whole run. `JudgementFinalizer` then
+checks the escalated judgement against that same scale, so the expensive judge cannot introduce an
+out-of-scale rating either.
+
 The cost of "simple" is that the expensive judge's latency lands in the middle of the cheap judge's
 loop. That is acceptable precisely because escalation should be rare — and if it is not rare, the
 arrangement is not paying off and you want to notice.
@@ -247,6 +255,8 @@ that says whether the chain is worth keeping.
 - Merging a book with an escalated pair copies both rows and re-points the link; merging into a
   book where that judge is awake still works.
 - The prompt preview for a sleeping judge still returns a rating.
+- The escalated judge is called with the run's `JudgeScale` instance (the same object the cheap
+  judge got), and an out-of-scale answer from it is marked unrateable like any other.
 
 ## 7. Open questions
 
