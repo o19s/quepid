@@ -59,6 +59,10 @@ Escalated from Jev (confidence 0.13, below this judge's floor of 0.5).
 This document addresses the query directly...
 ```
 
+The link is also structural: the woken judge's row carries `escalated_from_id` pointing at the
+cheap judge's row (D4). The explanation is for people; the column is for queries — "which ratings
+came from escalation", "which unrateable rows are still waiting for a second opinion".
+
 *Rejected:* overwriting the cheap judge's row with the expensive judge's rating — it attributes an
 answer to a model that did not give it, and destroys the evidence of what the escalation cost.
 *Rejected:* discarding the cheap judge's row — cheaper on the cap (§4) but it hides how often the
@@ -67,11 +71,12 @@ first judge punts, which is the number that tells you whether the arrangement is
 ### D3 — The chain is an explicit, ordered list on the book
 
 `books_ai_judges` is already a model (`BooksAiJudge`, which also carries `auto_run`). Add two
-columns:
+columns there, and the escalation link on `judgements` (D2, D4):
 
 ```ruby
 add_column :books_ai_judges, :position, :integer, null: false, default: 0
 add_column :books_ai_judges, :escalation_only, :boolean, null: false, default: false
+add_reference :judgements, :escalated_from, foreign_key: { to_table: :judgements }, null: true
 ```
 
 `position` is the explicit order the user asked for; `escalation_only` is the sleeping flag. A run
@@ -82,19 +87,49 @@ hands the pair to the next judge by position.
 cheap relative to another's, and "who backs up whom" is a property of how this book is being
 judged. A per-judge `escalate_to` pointer (no migration) is the smaller change but pins one chain
 to a judge everywhere it is used, and reads as a linked list rather than the explicit order asked
-for. Both columns are additive with safe defaults: every existing book keeps exactly today's
+for. All three columns are additive with safe defaults: every existing book keeps exactly today's
 behaviour (all judges awake, order irrelevant because nothing escalates).
 
-### D4 — A sleeping judge is unselectable, enforced where it can actually be reached
+Sleeping is therefore a property of the **assignment**, not of the judge: the same judge can be on
+call in one book and awake in another, and judges directly there.
 
-Four doors, all of which must be shut:
-- `BooksController#run_judge_judy` — refuse an `escalation_only` judge with a clear notice;
+### D4 — A sleeping judge never judges except through escalation, enforced on `Judgement`
+
+Guarding the places that start a *run* is not enough, because many paths write a judgement
+without a run, and several accept any `user_id`: `Api::V1::JudgementsController#create`/`#update`,
+`JudgementsController#create`, the book merge in `BooksController`, `BookImporter`, and
+`JudgementFromRatingJob`. Any new path would be one more door to remember.
+
+So the rule lives on the model, where every path goes through it:
+
+> A judgement whose user is `escalation_only` on the pair's book must have `escalated_from` set,
+> and that judgement must be on the same pair, by a different user, and unrateable.
+
+Only the escalation service sets `escalated_from`, so every other path is refused by the same
+validation, including paths that do not exist yet.
+
+Scope of the rule:
+- **On create, and when `user_id` changes** — not on every save. Putting a judge to sleep must not
+  make its existing direct judgements in that book invalid; those stay as they are, and editing
+  their rating still works.
+- **Per book.** The check reads the assignment for the pair's book; the same judge awake in another
+  book is unaffected (D3).
+- **Persistence only.** The prompt preview (`AiJudges::WizardController`) builds a judgement it
+  never saves, so tuning a sleeping judge's prompt keeps working.
+- **Book merge and import carry the pair.** The merge copies only rateable judgements, so it would
+  bring the escalated row without the unrateable row it points at, and the validation would refuse
+  it. Copy the two together and re-point `escalated_from` at the copy; the importer does the same
+  from the exported link.
+
+The run-level guards stay, but as UX rather than enforcement — they turn a validation error into a
+clear message:
+- `BooksController#run_judge_judy` — refuse an `escalation_only` judge with a notice;
 - Judgement Stats — render sleeping judges as "on call", with the "Prepare to Judge!" button
   replaced by who wakes them;
-- `QueryDocPair#queue_auto_run_ai_judges` — the `after_create_commit` that enqueues a run for every
-  `auto_run` judge on the book; a sleeping judge must never be `auto_run` (D6);
-- `RunJudgeJudyJob` — guard at the top, so a queued job for a judge that has since been put to
-  sleep does not run anyway. This is the backstop for all the other doors.
+- `QueryDocPair#queue_auto_run_ai_judges` — skip sleeping judges (D6 already forbids the
+  combination);
+- `RunJudgeJudyJob` — stop at the top, so a job queued before the judge was put to sleep ends
+  cleanly instead of failing its first save.
 
 `SelectionStrategy` needs no change: it selects *pairs for a judge*, and nobody asks it for pairs
 on behalf of a sleeping judge.
@@ -145,19 +180,26 @@ them** — the cheap judge's unrateable row and the expensive judge's answer. A 
 chain therefore reaches "fully judged" sooner in terms of rows, with fewer independent opinions per
 pair than the cap implies.
 
-For v1 this is accepted and documented, because the alternative — teaching the cap that an
-escalation pair counts as one logical judgement — means either a `judgements.superseded_by` column
-or counting only rateable rows, and both change what "3 judgements" means for human judging too.
-Worth revisiting once someone actually runs a chain over a full book. `moar_judgements_needed?`
-and the book overview banners inherit the same arithmetic, so their wording may need a look.
+`escalated_from_id` (D4) makes the fix cheap: the cap can count **logical** judgements by not
+counting a row that another judgement was escalated from. Human judgements never have an
+escalation child, so "3 judgements" means exactly what it does today for human judging; only
+escalated pairs change, and they count once. Counting only rateable rows was the other option, and
+it is rejected because it does change human judging — a book full of human "unrateable" rows
+would suddenly ask for more.
+
+Do it in S4, alongside the escalation itself, so no book is ever judged by a chain under the old
+arithmetic. `moar_judgements_needed?` and the book overview banners go through the same counts and
+need no wording change once they do.
 
 ## 5. Code, in the order it would land
 
 Every step is deployable on its own and changes nothing until a chain is configured.
 
-**S1 · The two columns on `BooksAiJudge`.** Migration, validations (D6), `Book#judging_chain`
-returning assignments ordered by position, `Book#awake_judges` / `#sleeping_judges`. No behaviour:
-defaults leave every existing book with one flat, awake list.
+**S1 · The columns.** `position` and `escalation_only` on `BooksAiJudge`, `escalated_from_id` on
+`judgements` (with `belongs_to :escalated_from, optional: true` and the reverse `has_one`).
+Validations (D6), `Book#judging_chain` returning assignments ordered by position,
+`Book#awake_judges` / `#sleeping_judges`. No behaviour: defaults leave every existing book with one
+flat, awake list.
 *Verify:* model tests; existing book/judge tests unedited.
 
 **S2 · `JudgementFinalizer` reports a reason.** `.call` returns a small result object
@@ -165,16 +207,19 @@ defaults leave every existing book with one flat, awake list.
 `perform_safe_judgement`'s errors feeding it (D1). Callers ignore it for now.
 *Verify:* finalizer tests extended; job and preview tests unedited.
 
-**S3 · Sleeping judges cannot be run directly** (D4). The first visible change: a sleeping judge
-loses its "Prepare to Judge!" button and the controller refuses it.
-*Verify:* controller test; Judgement Stats rendering test; manual 12.7.
+**S3 · Sleeping judges cannot judge directly** (D4). The `Judgement` validation, the merge and
+import changes that carry an escalated pair together, and the run-level guards. The first visible
+change: a sleeping judge loses its "Prepare to Judge!" button and the controller refuses it.
+*Verify:* model tests for the validation; API, merge and import tests; controller test; Judgement
+Stats rendering test; manual 12.7.
 
 **S4 · `JudgementEscalation` service + the run loop.** Given a book, a judgement, its reason and
-the chain, decide the next judge (or nobody) and judge the pair with it; `RunJudgeJudyJob` calls it
-and counts escalations against the budget. Inert until a book has a sleeping judge.
+the chain, decide the next judge (or nobody) and judge the pair with it, setting `escalated_from`;
+`RunJudgeJudyJob` calls it and counts escalations against the budget. `SelectionStrategy` counts
+logical judgements (§4). Inert until a book has a sleeping judge.
 *Verify:* service unit tests with stubbed adapters (escalates, stops at the end of the chain,
-respects budget/cap/duplicate-judgement); job tests for a two-judge chain; a live run on a small
-book with Jev → an OpenAI judge.
+respects budget/cap/duplicate-judgement); selection-strategy tests showing an escalated pair counts
+once; job tests for a two-judge chain; a live run on a small book with Jev → an OpenAI judge.
 
 **S5 · Configure the chain in the UI.** On the book's settings: drag/select order over the
 assigned judges, and an "on call — only judges when escalated to" checkbox per judge, with the
@@ -192,7 +237,16 @@ that says whether the chain is worth keeping.
 - A pair that the expensive judge has already judged (from an earlier run): skipped, not raised.
 - Budget exhaustion mid-run: the rest of the run still completes, unusable answers stay unrateable.
 - A sleeping judge queued before it was put to sleep: the job refuses.
-- Both rows land with the right attribution, and the escalated explanation names its origin.
+- Both rows land with the right attribution, the escalated row's `escalated_from` points at the
+  cheap judge's row, and the escalated explanation names its origin.
+- Every non-escalation path refuses a sleeping judge's judgement: the API `create` with its
+  `user_id`, an API `update` that moves a judgement onto it, `JudgementsController#create`, and a
+  book import row without the link.
+- Putting a judge to sleep leaves its existing direct judgements valid and editable.
+- The same judge, awake on a second book, judges that book directly.
+- Merging a book with an escalated pair copies both rows and re-points the link; merging into a
+  book where that judge is awake still works.
+- The prompt preview for a sleeping judge still returns a rating.
 
 ## 7. Open questions
 
@@ -214,4 +268,6 @@ New scenario **12.7 "A judge that only wakes on escalation"**: configure Jev →
 the OpenAI judge on call; confirm it has no "Prepare to Judge!" button; run Jev over a handful of
 pairs; confirm the pairs Jev was unsure about carry two judgements — Jev's unrateable one and the
 OpenAI judge's rating, whose explanation names the escalation — and that confident pairs carry only
-Jev's. Then exhaust the budget deliberately and confirm the run finishes cleanly.
+Jev's. Then exhaust the budget deliberately and confirm the run finishes cleanly. Finally, assign
+the same OpenAI judge to a second book without putting it on call, and confirm it has a "Prepare
+to Judge!" button there and judges directly.

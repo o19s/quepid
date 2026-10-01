@@ -50,6 +50,10 @@ Not a reason to abandon the feature: a human panel has the same property wheneve
 rater answers first. It *is* a reason to (a) make provenance visible wherever ratings are
 consumed, and (b) never quietly present a chain-judged book as if one judge rated it.
 
+The plan's `judgements.escalated_from_id` (its D4) makes (a) possible: which ratings came from
+escalation becomes a query rather than a parse of explanation text. It does not do (a) by itself —
+the UI, the export and `RatingsManager` still have to use it.
+
 ## 2. Escalation spends the per-pair judgement budget twice as fast
 
 From fact 1 + fact 2: an escalated pair consumes **two of three** slots and produces **one**
@@ -59,13 +63,16 @@ opinions than a flat book of the same size. Worse, the shortfall lands precisely
 pairs, which are the ones that deserve more opinions, not fewer.
 
 Options, none free:
-- accept and document (the plan's choice) — cheap, but the banners now lie a little;
+- accept and document — cheap, but the banners now lie a little;
 - stop counting unrateable rows toward the cap — arguably correct anyway, but it changes human
   judging too: a book full of "unrateable" rows would suddenly want more judgements;
-- give `judgements` a `superseded_by` (escalated-from) link and count a chain as one logical
-  judgement — the honest model, and the most schema churn.
+- give `judgements` an escalated-from link and count a chain as one logical judgement — the
+  honest model.
 
-I would not ship a chain over a large book without picking one deliberately.
+**Picked: the third.** The plan now adds `judgements.escalated_from_id` anyway, to enforce that a
+sleeping judge only judges through escalation (its D4), so the schema churn is already paid for.
+The cap stops counting a row that another judgement was escalated from; human judging is
+unaffected because human rows never have an escalation child (plan §4).
 
 ## 3. We route on a number we throw away
 
@@ -104,7 +111,9 @@ rate-limited, or the budget ran out, the pair keeps its unrateable rows and **no
 retry it** — the cheap judge won't pick it again, and the expensive judge is only reachable through
 the cheap judge's escalation. The chain has no resumability.
 
-This alone makes me want the two-pass design in §7.
+This alone makes me want the two-pass design in §7. `escalated_from_id` (plan D4) gives that design
+its selection predicate directly: *judge X's unrateable judgements in this book that nothing has
+been escalated from yet*. Re-running the second pass retries exactly the pairs still stuck.
 
 ## 6. Escalation is nondeterministic, so the book changes shape between runs
 
