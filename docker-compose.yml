@@ -53,7 +53,7 @@ services:
 
   postgres:
     container_name: quepid_postgres
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     ports:
       - 35432:5432
     environment:
