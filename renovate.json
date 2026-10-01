@@ -28,6 +28,17 @@
         "/^Dockerfile\\.prod$/"
       ],
       "matchStrings": [
+        "ARG RUBY_VERSION=(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "ruby",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^Dockerfile\\.prod$/"
+      ],
+      "matchStrings": [
         "ARG NODE_VERSION=(?<currentValue>[\\d.]+)"
       ],
       "depNameTemplate": "node",
@@ -43,6 +54,28 @@
       ],
       "depNameTemplate": "yarn",
       "datasourceTemplate": "npm"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.circleci/config\\.yml$/"
+      ],
+      "matchStrings": [
+        "cimg/ruby:(?<currentValue>[\\d.]+)-browsers"
+      ],
+      "depNameTemplate": "cimg/ruby",
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.circleci/config\\.yml$/"
+      ],
+      "matchStrings": [
+        "gem install bundler:(?<currentValue>[\\d.]+)"
+      ],
+      "depNameTemplate": "bundler",
+      "datasourceTemplate": "rubygems"
     }
   ],
   "packageRules": [
@@ -79,7 +112,8 @@
       ],
       "matchPackageNames": [
         "ruby",
-        "docker.io/library/ruby"
+        "docker.io/library/ruby",
+        "cimg/ruby"
       ]
     },
     {
