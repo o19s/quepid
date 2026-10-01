@@ -9,8 +9,8 @@
     "node": ">=24 <25"
   },
   "dependencies": {
-    "@rails/actioncable": "8.1.301",
-    "@rails/activestorage": "8.1.301",
+    "@rails/actioncable": "8.1.400",
+    "@rails/activestorage": "8.1.400",
     "ace-builds": "^1.43.4",
     "angular": "~1.8.3",
     "autocompleter": "^10.0.0",

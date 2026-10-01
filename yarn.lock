@@ -835,15 +835,15 @@
     modern-tar "^0.8.0"
     yargs "^18.0.0"
 
-"@rails/actioncable@8.1.301":
-  version "8.1.301"
-  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.1.301.tgz#924ae5e44522e06770ae84d42b23e7488299fa89"
-  integrity sha512-n4Q6DfnqnZ604xgqeqURNyUmk6JtPoKf++UeV9agvecIkV3AcpgJs5D08Kx8WnZNgM7u4av9ezfIXv+CgdV94A==
+"@rails/actioncable@8.1.400":
+  version "8.1.400"
+  resolved "https://registry.yarnpkg.com/@rails/actioncable/-/actioncable-8.1.400.tgz#af41a431614e4abb007e65429197d1c5dbf43741"
+  integrity sha512-Qffc3/I9xcpeaal12hmi9EPRV3hz9FvakUHBR7kL0jpZviWwO9dyaG8F1ltcjkHIdFxQ5QqzRyequAWHMq17xQ==
 
-"@rails/activestorage@8.1.301":
-  version "8.1.301"
-  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-8.1.301.tgz#3d5e4204fb106bb30277f025058dbcc36dc475cb"
-  integrity sha512-o+gxhV96Wa/NpVdTWib9iR9RWlqWjjsylPv16muSFUjIhI6usZJBjM1y93h9cjwWfuW/FxI5QONeH3EFv3+cbg==
+"@rails/activestorage@8.1.400":
+  version "8.1.400"
+  resolved "https://registry.yarnpkg.com/@rails/activestorage/-/activestorage-8.1.400.tgz#355c3b59e238f837ef422d148b361d9a96b28fe6"
+  integrity sha512-ScpkkHXTQ7QByvzLbnrnubpsWRKhlu08kXyRhSV+Hh1s1X43lv5T0PFLhXAvmqrIcq8nQ2up8iyuCmIzacPDDw==
   dependencies:
     spark-md5 "^3.0.1"
 
