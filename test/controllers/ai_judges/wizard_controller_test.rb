@@ -152,6 +152,22 @@ module AiJudges
         assert_not_requested(:post, /api\.typesafe\.ai/)
       end
 
+      test 'refuses to preview a judge that needs a scale when the given book has none, and says where to go' do
+        scaleless_book = Book.create!(name: 'book with no scale', owner: user)
+
+        post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: scaleless_book.id), params: {
+          system_prompt:  'Judge this',
+          llm_key:        'abc123',
+          judge_options:  { llm_provider: 'typesafe_jev' },
+          query_doc_pair: { query_text: 'cheese', doc_id: 'd1', document_fields: '{}' },
+        }
+
+        assert_response :unprocessable_content
+        assert_match(/can only be tested from a book that has one/, response.parsed_body['error'])
+        assert_match(/Judgement Stats/, response.parsed_body['error'])
+        assert_not_requested(:post, /api\.typesafe\.ai/)
+      end
+
       test 'returns a validation error instead of running the LLM when document_fields is malformed JSON' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
