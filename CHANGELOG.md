@@ -46,7 +46,7 @@ The Bootstrap 5 migration is complete, with refreshed dialogs, toolbars, navigat
 * The case listing identifies nightly evaluation runs beside “Last run by.”
 * Administrators can schedule announcements with publish and expiration dates.
 
-For individual pull requests, dependency updates, and contributor credits, see the [GitHub release notes](https://github.com/o19s/quepid/releases).
+Thanks @davidshq, @frutik, @chuckmeyer, @flaxsearch and @radu-gheorghe for contributing to this release!
 
 ## 8.6.0 -- 2026-08-16
 
