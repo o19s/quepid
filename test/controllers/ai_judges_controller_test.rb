@@ -147,6 +147,25 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input#judge_options_llm_include_images[checked]', count: 0
   end
 
+  test 'edit shows the include images switch disabled for a provider that cannot take images' do
+    ai_judge.update!(judge_options: { llm_provider: 'ollama', llm_include_images: 'true' })
+
+    get edit_ai_judge_url(ai_judge)
+
+    assert_select 'input#judge_options_llm_include_images[disabled]'
+    assert_select 'input#judge_options_llm_include_images[checked]', count: 0
+    # the judge's own choice still posts, kept for a provider that can
+    assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'true'
+    assert_select '[data-ai-judge-wizard-target=includeImagesNotice]:not([style])', text: /Ollama\s+doesn't support images/
+  end
+
+  test 'new shows the include images switch enabled for the default provider' do
+    get new_ai_judge_url
+
+    assert_select 'input#judge_options_llm_include_images[disabled]', count: 0
+    assert_select '[data-ai-judge-wizard-target=includeImagesNotice][style*="display:none"]'
+  end
+
   test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do
     assert_nil ai_judge.judge_options[:llm_provider], "fixture shouldn't carry llm_provider, to match a pre-existing judge"
 

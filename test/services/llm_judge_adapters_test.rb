@@ -159,6 +159,16 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
       end
     end
 
+    test 'a provider that cannot take an image URL never gets one, whatever the judge says' do
+      [ nil, 'true' ].each do |setting|
+        ollama = LlmJudgeAdapters.for('', { llm_provider: 'ollama', llm_model: 'qwen3:0.6b',
+                                            llm_include_images: setting })
+        prompt = ollama.user_prompt(pair_with('thumb' => 'https://example.com/thumb.jpg'))
+
+        assert_equal [ 'text' ], prompt.pluck(:type), "llm_include_images: #{setting.inspect}"
+      end
+    end
+
     test 'Anthropic gets a case thumb as a URL image source' do
       anthropic = LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-4-5-20250514' })
       pair = pair_with('title' => 'Han', 'thumb' => 'https://example.com/thumb.jpg')

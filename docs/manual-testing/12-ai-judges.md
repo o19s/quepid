@@ -86,14 +86,15 @@ Jev is a typed evaluation model rather than a chat model: the book's rating scal
 
 ### 12.8 Send document images to a judge
 
-A chat judge (every provider except TypeSafe Jev) attaches the document's image to the request as an image URL: the `image` field if the case maps one, otherwise the case's `thumb` (with the case's thumb prefix already applied). Each judge has an **Include images if any** switch so text-only models can be left out.
+A judge whose provider takes image URLs (every one except Ollama and TypeSafe Jev) attaches the document's image to the request as an image URL: the `image` field if the case maps one, otherwise the case's `thumb` (with the case's thumb prefix already applied). Each judge has an **Judge with images** switch so text-only models can be left out. Providers whose API cannot take an image URL (Ollama, TypeSafe Jev) show the switch disabled and off, with a message naming the provider, and never send an image whatever the judge's setting.
 
 - [ ] **Steps:**
-  1. Open `/ai_judges/new` — confirm **Include images if any** is a switch and is **on**.
+  1. Open `/ai_judges/new` — confirm **Judge with images** is a switch and is **on**.
   2. Edit an existing judge saved before the switch existed — confirm it shows **on** too (unset means on).
   3. Turn the switch **off**, open the **JSON** tab — confirm `judge_options` carries `"llm_include_images": "false"`; switch back to **Structured Fields** and confirm it is still off. Save, reopen the judge, confirm it is still off.
-  4. In **Test & Refine**, put a document with a `thumb` URL in Document Fields (e.g. `{"title": "Mallard Duck", "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Anas_platyrhynchos_male_female_quadrat.jpg/330px-Anas_platyrhynchos_male_female_quadrat.jpg"}`) and **Run Judgement** with the switch on, then off.
-- **Expected:** with the switch on, a vision model's explanation refers to what the picture shows; with it off, the judge rates from the text alone, and a judge that failed on the image succeeds. Ollama rejects image *URLs* outright (400, "please use base64 encoded data instead") whatever the model, so an Ollama judge needs the switch off.
+  4. Switch the provider to **Ollama**, then **TypeSafe Jev** — confirm the switch goes disabled and off with "<provider> doesn't support images, so none are sent." Switch back to **OpenAI** — confirm the switch is enabled again and shows the choice from before (turn it on before switching away to see it come back on).
+  5. In **Test & Refine**, put a document with a `thumb` URL in Document Fields (e.g. `{"title": "Mallard Duck", "thumb": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bf/Anas_platyrhynchos_male_female_quadrat.jpg/330px-Anas_platyrhynchos_male_female_quadrat.jpg"}`) and **Run Judgement** with the switch on, then off.
+- **Expected:** with the switch on, a vision model's explanation refers to what the picture shows; with it off, the judge rates from the text alone, and a judge that failed on the image succeeds. Ollama rejects image *URLs* outright (400, "please use base64 encoded data instead") whatever the model, which is why its switch is disabled.
 - **Edge cases:**
   - [ ] A `thumb` that is a relative path (a case whose thumb mapping has no prefix, e.g. `/t/p/w500/abc.jpg`) — confirm judging still works and no image is sent, rather than the provider rejecting the request.
   - [ ] A document with both `image` and `thumb` — `image` is the one sent.
