@@ -326,3 +326,38 @@ describe("AiJudgeWizardController provider switching", () => {
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
   })
 })
+
+describe("AiJudgeWizardController include images switch", () => {
+  function switchField(checked) {
+    const field = judgeOptionField("llm_include_images", "true")
+    field.type = "checkbox"
+    field.checked = checked
+    return field
+  }
+
+  it("sends the switch as true or false, not the checkbox's fixed value", () => {
+    const field = switchField(false)
+    const controller = buildController()
+    controller.structuredFieldTargets = [...controller.structuredFieldTargets, field]
+
+    expect(AiJudgeWizardController.prototype.judgeOptions.call(controller).llm_include_images).toBe("false")
+
+    field.checked = true
+    expect(AiJudgeWizardController.prototype.judgeOptions.call(controller).llm_include_images).toBe("true")
+  })
+
+  it("sets the switch from the JSON tab, treating anything but false as on", () => {
+    const field = switchField(true)
+    const element = document.createElement("div")
+    element.appendChild(field)
+    const controller = buildController({ element, hasJsonFieldTarget: true, hasLlmProviderTarget: false })
+
+    controller.jsonFieldTarget = { value: JSON.stringify({ judge_options: { llm_include_images: false } }) }
+    AiJudgeWizardController.prototype.applyJsonToFields.call(controller)
+    expect(field.checked).toBe(false)
+
+    controller.jsonFieldTarget = { value: JSON.stringify({ judge_options: { llm_include_images: "true" } }) }
+    AiJudgeWizardController.prototype.applyJsonToFields.call(controller)
+    expect(field.checked).toBe(true)
+  })
+})

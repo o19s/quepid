@@ -172,7 +172,13 @@ export default class extends Controller {
 
     Object.entries(judgeOptions).forEach(([key, value]) => {
       const field = this.element.querySelector(`#judge_options_${key}`)
-      if (field) field.value = value === null || value === undefined ? "" : value
+      if (!field) return
+
+      if (field.type === "checkbox") {
+        field.checked = String(value) !== "false"
+      } else {
+        field.value = value === null || value === undefined ? "" : value
+      }
     })
 
     if (this.hasLlmProviderTarget && judgeOptions.llm_provider) {
@@ -320,7 +326,7 @@ export default class extends Controller {
       const optionRow = field.closest(".provider-option-field")
       if (optionRow && optionRow.style.display === "none") return
 
-      collected[field.id.replace("judge_options_", "")] = field.value
+      collected[field.id.replace("judge_options_", "")] = field.type === "checkbox" ? String(field.checked) : field.value
     })
 
     return collected

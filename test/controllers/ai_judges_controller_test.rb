@@ -116,6 +116,37 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal '0.4', judge.options.dig('judge_options', 'jev_min_confidence')
   end
 
+  test 'new offers the include images switch, on' do
+    get new_ai_judge_url
+
+    assert_select 'input#judge_options_llm_include_images[type=checkbox][role=switch][checked]'
+    assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'false'
+  end
+
+  test 'edit shows the include images switch on for a judge saved before it existed' do
+    assert_nil ai_judge.judge_options[:llm_include_images]
+
+    get edit_ai_judge_url(ai_judge)
+
+    assert_select 'input#judge_options_llm_include_images[checked]'
+  end
+
+  test 'turning include images off is stored with the judge' do
+    patch ai_judge_url(ai_judge),
+          params: { user: { judge_options: { llm_provider: 'ollama', llm_include_images: 'false' } } }
+
+    assert_equal 'false', ai_judge.reload.judge_options[:llm_include_images]
+  end
+
+  test 'edit shows the include images switch off for a judge that turned it off' do
+    ai_judge.update!(judge_options: ai_judge.judge_options.merge(llm_include_images: 'false'))
+
+    get edit_ai_judge_url(ai_judge)
+
+    assert_select 'input#judge_options_llm_include_images'
+    assert_select 'input#judge_options_llm_include_images[checked]', count: 0
+  end
+
   test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do
     assert_nil ai_judge.judge_options[:llm_provider], "fixture shouldn't carry llm_provider, to match a pre-existing judge"
 
