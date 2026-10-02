@@ -3,6 +3,7 @@ import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
+import { searchEngineDisplayName } from "utils/search_engine_name"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -10,7 +11,7 @@ export default class extends Controller {
   static targets = [
     "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
     "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsReloadLink", "tlsProtocol",
-    "troubleshootingLink", "historyList", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
+    "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
   connect() {
@@ -208,10 +209,17 @@ export default class extends Controller {
       this.endpointIconTarget.src = selected.searchEngine ? `images/${selected.mapperBasedSearchEngineId || selected.searchEngine}-icon.png` : ""
     }
     if (this.hasEndpointArchivedTarget) this.endpointArchivedTarget.hidden = !selected.endpointArchived
+    if (this.hasEndpointMoreLinkTarget) {
+      this.endpointMoreLinkTarget.hidden = !selected.searchEndpointId
+      this.endpointMoreLinkTarget.href = selected.searchEndpointId ? `search_endpoints/${selected.searchEndpointId}` : "#"
+    }
     if (this.hasTroubleshootingLinkTarget) {
       const url = this.capability.settings.troubleshootingWikiUrl(selected.searchEngine, selected.mapperBasedSearchEngineId)
       this.troubleshootingLinkTarget.hidden = !url
       this.troubleshootingLinkTarget.href = url || "#"
+    }
+    if (this.hasTroubleshootingEngineTarget) {
+      this.troubleshootingEngineTarget.textContent = searchEngineDisplayName(selected.mapperBasedSearchEngineName || selected.searchEngine)
     }
   }
 
@@ -342,7 +350,14 @@ export default class extends Controller {
     this.tryFieldSpecTarget.textContent = item.fieldSpec || ""
     this.tryVariablesTarget.replaceChildren(...(item.curatorVars || []).map(variable => {
       const row = document.createElement("div")
-      row.textContent = `##${variable.name}## = ${variable.value}`
+      row.className = "row"
+      const name = document.createElement("div")
+      name.className = "col-sm-3 text-end"
+      name.textContent = `##${variable.name}##`
+      const value = document.createElement("div")
+      value.className = "col-sm-9"
+      value.textContent = variable.value
+      row.append(name, value)
       return row
     }))
     this.tryNameInputTarget.value = item.name || ""

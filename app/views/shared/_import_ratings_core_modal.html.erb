@@ -2,7 +2,7 @@
   <div data-import-ratings-core-target="alert" class="alert alert-danger d-none" role="alert"></div>
   <div data-import-ratings-core-target="warning" class="alert alert-warning d-none">
     <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
-    This operation will override existing data. Proceed with caution!
+    <span data-import-ratings-core-target="warningText">This operation will override existing data. Proceed with caution!</span>
   </div>
 
   <ul class="nav nav-tabs" role="tablist">
@@ -15,22 +15,66 @@
 
   <div class="tab-content pt-3">
     <div class="tab-pane active show" id="import-ratings-pane" role="tabpanel">
-      <p>Importing ratings is a great way to manage the rating process outside of Quepid. Select the file format to import.</p>
-      <div class="form-check"><input id="core-clear-existing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="clearQueries"><label class="form-check-label" for="core-clear-existing-queries">Clear existing queries?</label></div>
+      <p>Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application. There are a number of formats for importing this data into Quepid.</p>
+      <div class="form-check">
+        <input id="core-clear-existing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="clearQueries">
+        <label class="form-check-label" for="core-clear-existing-queries">Clear existing queries?
+          <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-placement-value="right" data-bs-popover-content-value="Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid"></i>
+        </label>
+      </div>
+      <p class="mt-2">Please select the file format to import:</p>
       <% [["csv", "CSV", "csvFile"], ["rre", "Rated Ranking Evaluator", "rreFile"], ["ltr", "Learning to Rank", "ltrFile"]].each do |key, label, target| %>
-        <div class="mb-3 mt-3"><div class="form-check"><input id="core-<%= key %>" type="radio" data-import-ratings-core-target="format" name="core-import-format" value="<%= key %>" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-<%= key %>"><%= label %></label></div><input type="file" class="form-control mt-2" accept="<%= key == 'rre' ? '.json,application/json' : key == 'ltr' ? '.txt,text/plain' : '.csv,text/csv' %>" data-import-ratings-core-target="<%= target %> file" data-import-type="<%= key %>" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="<%= key == 'csv' ? 'csvPreview' : 'content' %>"></pre></div>
+        <div class="mb-3 mt-3">
+          <div class="form-check"><input id="core-<%= key %>" type="radio" data-import-ratings-core-target="format" name="core-import-format" value="<%= key %>" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-<%= key %>"><%= label %></label></div>
+          <div class="form-text">
+            <% case key %>
+            <% when "csv" %>
+              The CSV file should have the headers: <code>query,docid,rating</code> and lines similar to:
+              <pre>query,docid,rating
+star wars,3574597,3
+star wars,3557771,
+star trek,,</pre>
+            <% when "rre" %>
+              Quepid only imports the ratings part of the <a href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings" target="_blank" rel="noopener noreferrer">RRE judgement</a> file.
+            <% when "ltr" %>
+              LTR uses a rather odd format of <code>rating qid:queryid # docid query</code>, eg <code>3 qid:1 # 1370 star trek</code>. We ignore the <code>qid:queryid</code> and use the <code>query</code> for matching up to existing queries.
+            <% end %>
+          </div>
+          <label class="form-label mb-0" for="core-<%= key %>-file">Select <%= { "csv" => "CSV", "rre" => "RRE ratings", "ltr" => "LTR ratings" }[key] %> file to import:</label>
+          <input id="core-<%= key %>-file" type="file" class="form-control mt-1" accept="<%= key == 'rre' ? '.json,application/json' : key == 'ltr' ? '.txt,text/plain' : '.csv,text/csv' %>" data-import-ratings-core-target="<%= target %> file" data-import-type="<%= key %>" data-action="change->import-ratings-core#fileSelected">
+          <pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="<%= key == 'csv' ? 'csvPreview' : 'content' %>"></pre>
+        </div>
       <% end %>
     </div>
     <div class="tab-pane" id="import-information_needs-pane" role="tabpanel">
-      <p>Import information needs from a CSV exported from Quepid. Missing queries can optionally be created.</p>
-      <div class="form-check mb-2"><input id="core-create-missing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="createQueries"><label class="form-check-label" for="core-create-missing-queries">Create missing queries?</label></div>
-      <input type="radio" data-import-ratings-core-target="format" name="core-import-format" value="information_needs" id="core-information-needs" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-information-needs">Information Needs CSV</label>
-      <input type="file" class="form-control mt-2" accept=".csv,text/csv" data-import-ratings-core-target="informationNeedsFile file" data-import-type="information_needs" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="informationNeedsPreview"></pre>
+      <p>Importing information needs is the easiest way to update a lot of queries. You should export the template file via the 'Export' feature first.</p>
+      <div class="form-check"><input type="radio" data-import-ratings-core-target="format" name="core-import-format" value="information_needs" id="core-information-needs" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-information-needs">Information Needs CSV</label></div>
+      <div class="form-check mb-2">
+        <input id="core-create-missing-queries" type="checkbox" class="form-check-input" data-import-ratings-core-target="createQueries">
+        <label class="form-check-label" for="core-create-missing-queries">Create missing queries?
+          <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-placement-value="right" data-bs-popover-content-value="Select to create any missing queries, useful when populating a new case with queries with info needs."></i>
+        </label>
+      </div>
+      <div class="form-text">
+        The CSV file should have the headers: <code>query,information_need</code> and lines similar to:
+        <pre>query,information_need
+star wars,"The original movie"</pre>
+      </div>
+      <label class="form-label mb-0" for="core-information-needs-file">Select CSV file to import:</label>
+      <input id="core-information-needs-file" type="file" class="form-control mt-1" accept=".csv,text/csv" data-import-ratings-core-target="informationNeedsFile file" data-import-type="information_needs" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="informationNeedsPreview"></pre>
     </div>
     <div class="tab-pane" id="import-snapshots-pane" role="tabpanel">
-      <p>Importing snapshots creates any missing queries and replaces snapshots with the same name. The Case ID column is ignored.</p>
-      <input type="radio" data-import-ratings-core-target="format" name="core-import-format" value="snapshots" id="core-snapshots" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-snapshots">Snapshot CSV</label>
-      <input type="file" class="form-control mt-2" accept=".csv,text/csv" data-import-ratings-core-target="snapshotsFile file" data-import-type="snapshots" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="snapshotsPreview"></pre>
+      <p>Importing snapshots is fun! Any missing queries will be created. The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case.</p>
+      <div class="form-check"><input type="radio" data-import-ratings-core-target="format" name="core-import-format" value="snapshots" id="core-snapshots" class="form-check-input" data-action="change->import-ratings-core#selectType"><label class="form-check-label fw-bold" for="core-snapshots">Snapshot CSV</label></div>
+      <div class="form-text">
+        The CSV file should have the headers: <code>Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position</code> and lines similar to:
+        <pre>Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1
+Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,9426,2
+Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3</pre>
+        Please note that the <code>Case ID</code> column is ignored so you can export from one case and import into another. Any additional columns will be treated as document fields and stored in the Snapshot.
+      </div>
+      <label class="form-label mb-0" for="core-snapshots-file">Select Snapshot CSV file to import:</label>
+      <input id="core-snapshots-file" type="file" class="form-control mt-1" accept=".csv,text/csv" data-import-ratings-core-target="snapshotsFile file" data-import-type="snapshots" data-action="change->import-ratings-core#fileSelected"><pre class="small bg-light p-2 mt-2 import-content" data-import-ratings-core-target="snapshotsPreview"></pre>
     </div>
   </div>
   <div data-import-ratings-core-target="loading" class="d-none text-center py-2"><i class="bi bi-arrow-repeat spintime" aria-hidden="true"></i> Importing…</div>

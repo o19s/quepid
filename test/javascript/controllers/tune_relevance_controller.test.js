@@ -457,6 +457,27 @@ describe("TuneRelevanceController", () => {
     })
   })
 
+  describe("endpoint details", () => {
+    it("names the engine in the troubleshooting link and links to the endpoint", () => {
+      const { controller, capability } = mount({ selectedTry: makeTry({ searchEngine: "solr", searchEndpointId: 44 }) })
+      capability.settings.troubleshootingWikiUrl.mockReturnValue("https://wiki/solr")
+      const target = (name, node) => {
+        controller[`has${name.charAt(0).toUpperCase()}${name.slice(1)}Target`] = true
+        controller[`${name}Target`] = node
+      }
+      target("troubleshootingLink", document.createElement("a"))
+      target("troubleshootingEngine", document.createElement("span"))
+      target("endpointMoreLink", document.createElement("a"))
+
+      controller.refreshEndpointDetails()
+
+      expect(controller.troubleshootingEngineTarget.textContent).toBe("Solr")
+      expect(controller.troubleshootingLinkTarget.hidden).toBe(false)
+      expect(controller.endpointMoreLinkTarget.getAttribute("href")).toBe("search_endpoints/44")
+      expect(controller.endpointMoreLinkTarget.hidden).toBe(false)
+    })
+  })
+
   describe("try management", () => {
     it("disables delete when only one try remains", () => {
       const { controller, settings } = mount()

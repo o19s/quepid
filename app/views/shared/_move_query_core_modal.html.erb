@@ -9,11 +9,12 @@
     <p>Please create another case to move this query to first.</p>
   </div>
 
+  <p data-move-query-core-target="caseListLabel" class="d-none">Select a case:</p>
   <div data-move-query-core-target="caseList" class="list-group move-query-cases-list d-none"></div>
 <% end %>
 
 <% modal_footer = capture do %>
-  <button type="button" class="btn btn-success" disabled
+  <button type="button" class="btn btn-success" disabled hidden
           data-move-query-core-target="submitButton"
           data-action="click->move-query-core#submit">Move</button>
 <% end %>

@@ -55,6 +55,8 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
 
         <div data-search-results-target="diffResults"></div>
         <div data-search-results-target="error" class="alert alert-danger d-none" role="alert"></div>
+
+        <div data-search-results-target="results"></div>
         <div data-search-results-target="footer" class="row results-pane-footer d-none">
           <button type="button" class="btn btn-link p-0 results-pane-toggle" aria-label="Close the results pane" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane">
             <i class="bi bi-caret-up-fill" aria-hidden="true"></i>
@@ -64,8 +66,6 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
           <div data-search-results-target="depthNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> Only the top <span data-search-results-target="depthValue"></span> results are used in the scoring calculations.</div>
           <div data-search-results-target="ratedNote" class="alert alert-warning mb-0 d-none" role="alert"><strong>Note:</strong> You are only viewing documents that have been rated</div>
         </div>
-
-        <div data-search-results-target="results"></div>
       </div>
     </div>
   `

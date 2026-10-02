@@ -26,6 +26,8 @@ function buildController(overrides = {}) {
   controller.emptyTarget = document.createElement("div")
   controller.hasCaseListTarget = true
   controller.caseListTarget = document.createElement("div")
+  controller.hasCaseListLabelTarget = true
+  controller.caseListLabelTarget = document.createElement("p")
   controller.hasSubmitButtonTarget = true
   controller.submitButtonTarget = document.createElement("button")
   controller.cases = []
@@ -70,7 +72,9 @@ describe("MoveQueryCoreController", () => {
     expect(controller.currentCaseId).toBe("4")
     expect(controller.caseListTarget.textContent).toContain("Other Case")
     expect(controller.caseListTarget.textContent).not.toContain("Current")
+    expect(controller.caseListLabelTarget.classList.contains("d-none")).toBe(false)
     expect(controller.submitButtonTarget.disabled).toBe(true)
+    expect(controller.submitButtonTarget.hidden).toBe(true)
   })
 
   it("selects a case and moves the query through the API command seam", async () => {
@@ -82,6 +86,7 @@ describe("MoveQueryCoreController", () => {
     controller.selectCase({ params: { caseId: 8 } })
     expect(controller.submitButtonTarget.textContent).toBe("Move to Other Case")
     expect(controller.submitButtonTarget.disabled).toBe(false)
+    expect(controller.submitButtonTarget.hidden).toBe(false)
 
     await controller.submit({ preventDefault: vi.fn() })
 

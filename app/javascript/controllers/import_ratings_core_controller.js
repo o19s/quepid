@@ -14,7 +14,7 @@ const REQUIRED_HEADERS = {
 /** Core case import modal. Keeps the established core import formats and wording. */
 export default class extends ModalTriggerControllerBase {
   static targets = [
-    "title", "alert", "content", "warning", "loading", "importButton",
+    "title", "alert", "content", "warning", "warningText", "loading", "importButton",
     "clearQueries", "createQueries", "csvFile", "rreFile", "ltrFile",
     "informationNeedsFile", "snapshotsFile", "csvPreview", "informationNeedsPreview",
     "snapshotsPreview", "file", "format"
@@ -197,7 +197,14 @@ export default class extends ModalTriggerControllerBase {
     const activeError = this.errors[this.selectedType]
     this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError || "")
     if (this.hasWarningTarget) this.warningTarget.classList.toggle("d-none", !this.selectedType)
+    if (this.hasWarningTextTarget && this.selectedType) this.warningTextTarget.textContent = this.warningMessage()
     if (this.hasImportButtonTarget) this.importButtonTarget.disabled = !this.canImport() || this.busy
+  }
+
+  warningMessage() {
+    if (this.selectedType === "snapshots") return "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
+    if (this.selectedType === "information_needs") return "This operation WILL override your existing information needs. Proceed with caution!"
+    return "This operation WILL override your existing ratings. Proceed with caution!"
   }
 
   canImport() { return Boolean(this.selectedType && this.contents[this.selectedType] && !this.errors[this.selectedType]) }

@@ -52,6 +52,14 @@ describe("query document read model", () => {
     expect(state.documentUrlFor({})).toBe("https://search.example/doc/1")
   })
 
+  it("switches to the diff view only when snapshot searchers are present", () => {
+    const query = { fieldSpec: () => ({}) }
+
+    expect(buildQueryDocumentsState({ query }).resultsView).toBe(2)
+    expect(buildQueryDocumentsState({ query, diffs: { searchers: [] } }).resultsView).toBe(2)
+    expect(buildQueryDocumentsState({ query, diffs: { searchers: [{ name: "Baseline" }] } }).resultsView).toBe(3)
+  })
+
   it("disables pagination for Search API mapper engines", () => {
     const state = buildQueryDocumentsState({
       query: { fieldSpec: () => ({}) },

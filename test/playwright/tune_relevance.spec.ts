@@ -72,24 +72,26 @@ test('generated endpoint and history controls route through Stimulus', async ({ 
   await expect(modal).toBeVisible();
   await expect(root).not.toHaveAttribute('data-navigated-try');
 
-  // Dispatch clicks directly: the try-details backdrop issue is tracked separately.
+  // Real clicks: the modal renders outside the pane so the backdrop stays behind it.
   const renameAction = modal.locator('[data-tune-relevance-target="tryRenameAction"]');
   const renameForm = modal.locator('[data-tune-relevance-target="tryRenameForm"]');
-  await renameAction.dispatchEvent('click');
-  // Assert the toggled state: the form's d-flex class overrides [hidden] (logged in docs/todo/todo.md).
-  await expect(renameForm).toHaveJSProperty('hidden', false);
+  await expect(renameForm).toBeHidden();
+  await renameAction.click();
+  await expect(renameForm).toBeVisible();
   await expect(renameAction).toHaveText('Cancel Rename');
   const url = page.url();
   await modal.locator('[data-tune-relevance-target="tryNameInput"]').fill('Routing test name');
-  await renameForm.locator('button[type="submit"]').dispatchEvent('click');
-  await modal.getByRole('button', { name: 'Duplicate' }).dispatchEvent('click');
+  await renameForm.locator('button[type="submit"]').click();
+  await modal.getByRole('button', { name: 'Duplicate' }).click();
   await modal.locator('[data-tune-relevance-target="tryDelete"]').evaluate(button => {
     (button as HTMLButtonElement).disabled = false;
     button.click();
   });
   expect(await actionCalls()).toEqual(['updateNightly', 'runEvaluation', 'save', 'renameTry', 'duplicateTry', 'deleteTry']);
   expect(page.url()).toBe(url);
-  await renameAction.dispatchEvent('click');
-  await expect(renameForm).toHaveJSProperty('hidden', true);
+  await renameAction.click();
+  await expect(renameForm).toBeHidden();
   await expect(renameAction).toHaveText('Rename');
+  await modal.locator('.modal-footer').getByRole('button', { name: 'Dismiss' }).click();
+  await expect(modal).toBeHidden();
 });

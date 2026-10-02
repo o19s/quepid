@@ -12,7 +12,7 @@ import coreFlash from "utils/core_flash"
  * through the query-command bridge without issuing a second request.
  */
 export default class extends ModalTriggerControllerBase {
-  static targets = ["title", "loading", "empty", "caseList", "submitButton"]
+  static targets = ["title", "loading", "empty", "caseList", "caseListLabel", "submitButton"]
 
   static values = {
     casesUrl: String
@@ -122,6 +122,7 @@ export default class extends ModalTriggerControllerBase {
     if (!loading && this.cases.length === 0 && this.hasEmptyTarget) {
       this.emptyTarget.classList.remove("d-none")
     }
+    if (this.hasCaseListLabelTarget) this.caseListLabelTarget.classList.toggle("d-none", loading || this.cases.length === 0)
     this.refreshUi()
   }
 
@@ -129,6 +130,7 @@ export default class extends ModalTriggerControllerBase {
     if (!this.hasSubmitButtonTarget) return
 
     this.submitButtonTarget.disabled = this.loading || !this.selectedCase
+    this.submitButtonTarget.hidden = !this.selectedCase
     this.submitButtonTarget.textContent = this.selectedCase
       ? `Move to ${this.selectedCase.case_name}`
       : "Move"

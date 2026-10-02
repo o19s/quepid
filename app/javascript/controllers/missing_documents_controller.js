@@ -60,7 +60,12 @@ export default class extends Controller {
     const fragment = document.createDocumentFragment()
     if (supported) {
       const intro = document.createElement("p")
-      intro.textContent = "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer."
+      const code = text => Object.assign(document.createElement("code"), { textContent: text })
+      intro.append(
+        "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer. For example, NDCG is based on your global scores, so if your top 10 are all ",
+        code("1"), "'s, and you find and rate a document as a ", code("3"),
+        ", then the score will drop if that ", code("3"), " rated document doesn't show up first!"
+      )
       fragment.appendChild(intro)
 
       const form = document.createElement("form")
@@ -83,7 +88,7 @@ export default class extends Controller {
       }
       const hint = document.createElement("p")
       hint.className = "form-text"
-      hint.textContent = "This is pre-filled from your current try's query. Edit it however you like; it won't change your saved try."
+      hint.textContent = "This is pre-filled from your current try's query, just like the Query Sandbox \u2014 edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query."
       editorColumn.appendChild(hint)
       row.appendChild(editorColumn)
       const searchColumn = document.createElement("div")
@@ -216,7 +221,13 @@ export default class extends Controller {
     heading.textContent = this.adapter.defaultList ? "Already Rated Documents" : "Query Results"
     this.resultsTarget.appendChild(heading)
     const summary = document.createElement("p")
-    summary.textContent = this.adapter.defaultList ? `${this.adapter.numFound} rating${this.adapter.numFound === 1 ? "" : "s"} for your original query ${this.adapter.queryText}.` : `${this.adapter.numFound} matching document${this.adapter.numFound === 1 ? "" : "s"}.`
+    if (this.adapter.defaultList) {
+      const count = this.adapter.numFound
+      const lead = count === 0 ? "There are no ratings created yet" : count === 1 ? "There is one rating" : `There are ${count} ratings`
+      summary.append(`${lead} for your original query `, Object.assign(document.createElement("em"), { textContent: this.adapter.queryText }), ".")
+    } else {
+      summary.textContent = `${this.adapter.numFound} matching document${this.adapter.numFound === 1 ? "" : "s"}.`
+    }
     this.resultsTarget.appendChild(summary)
 
     const scoreAll = document.createElement("div")

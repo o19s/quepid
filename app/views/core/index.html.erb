@@ -30,7 +30,7 @@
 </div>
 
 <div>
-      <div id="main">
+      <div id="main" data-controller="tune-relevance">
         <div class="pane_container" data-controller="pane" data-action="toggleEast@document->pane#toggle resize@window->pane#resize">
           <div class="pane_main results-control" data-pane-target="main">
             <div id="case-header" class="row">
@@ -99,6 +99,7 @@
             <%= render 'core/tune_relevance' %>
           </div>
         </div>
+        <%= render 'core/try_details_modal' %>
       </div>
 </div>
 <%# Keep the modal outside the pane stacking context so Bootstrap's body-level backdrop stays behind it. %>

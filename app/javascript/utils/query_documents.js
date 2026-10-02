@@ -31,7 +31,8 @@ export function buildQueryDocumentsState({
     paginationSupported:
       selectedTry.searchEngine !== "searchapi" ||
       selectedTry.mapperBasedSearchEngineSupportsPagination === true,
-    resultsView: 2,
+    // 2 = results, 3 = snapshot diff (main switched whenever query.diffs was set).
+    resultsView: diffs?.searchers?.length ? 3 : 2,
     errorText: query.errorText,
     depthOfRating: query.depthOfRating,
     ratingScale,

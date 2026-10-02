@@ -437,6 +437,8 @@ header .dropdown-item:focus {
 	 * across the five dev-panel tab labels to force "Annotations" onto
 	 * its own row even with the tab density fix in bootstrap5-compat.css. */
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	/* main's .dev-section wrapper inset the whole panel by 15px. */
+	padding: 15px;
 }
 
 #dev-settings .dev-header {
@@ -537,6 +539,11 @@ header .dropdown-item:focus {
 	padding: 3px 0 8px 0;
 }
 
+/* Try-details rename form: flex only while shown, so [hidden] actually hides it. */
+.try-rename-form:not([hidden]) {
+  display: flex;
+}
+
 .try-details {
   position: absolute;
   display: none;
@@ -628,6 +635,11 @@ footer {
 .import-content {
   max-height: 200px;
   overflow:   scroll;
+}
+
+/* No empty preview bars before a file is chosen. */
+.import-content:empty {
+  display: none;
 }
 
 li.annotation {

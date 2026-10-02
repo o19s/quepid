@@ -68,6 +68,17 @@ describe("SearchResultController", () => {
     expect(controller.contentTarget.textContent).toContain("missing id")
   })
 
+  it("separates each field label from its value with a space", () => {
+    const controller = buildController(snapshotFor({
+      snippets: { structure: "Corporations" },
+      rawFields: { structure: "Corporations" }
+    }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+
+    const label = controller.contentTarget.querySelector(".subLabel")
+    expect(label.parentElement.textContent).toContain("structure: Corporations")
+  })
+
   it("preserves falsy field values", () => {
     const controller = buildController(snapshotFor({
       snippets: { zero: "0", falseValue: "false" },

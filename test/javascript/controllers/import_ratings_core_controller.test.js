@@ -241,6 +241,19 @@ describe("ImportRatingsCoreController", () => {
     expect(instance.warningTarget.classList.contains("d-none")).toBe(true)
   })
 
+  it("words the override warning for the selected import type", () => {
+    const instance = modalController()
+    instance.hasWarningTextTarget = true
+    instance.warningTextTarget = document.createElement("span")
+
+    instance.selectType({ target: { value: "csv" } })
+    expect(instance.warningTextTarget.textContent).toContain("override your existing ratings")
+    instance.selectType({ target: { value: "information_needs" } })
+    expect(instance.warningTextTarget.textContent).toContain("override your existing information needs")
+    instance.selectType({ target: { value: "snapshots" } })
+    expect(instance.warningTextTarget.textContent).toContain("same Snapshot Name")
+  })
+
   it("selects the file's type, previews it, and enables Import for a valid file", async () => {
     const instance = modalController()
 

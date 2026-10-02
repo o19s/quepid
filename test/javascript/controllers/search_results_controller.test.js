@@ -111,6 +111,16 @@ describe("SearchResultsController", () => {
       .toBe("Browse 1 Current Results on Solr")
   })
 
+  it("renders a snapshot document that matches the current result without a difference class", () => {
+    const { controller, snapshot } = controllerFor({ results: false })
+    snapshot.diffs.searchers[0].docs = [{ id: "all", title: "Same doc" }]
+    controller.render()
+
+    const matched = controller.diffResultsTarget.querySelectorAll('[data-doc-id="all"]')
+    expect(matched).toHaveLength(2)
+    expect(matched[1].classList.contains("different")).toBe(false)
+  })
+
   it("does not show a no-result message beneath a snapshot error", () => {
     const { controller } = controllerFor({ results: false, diffError: true })
     controller.render()

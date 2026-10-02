@@ -241,7 +241,8 @@ export default class extends Controller {
 
         if (doc) {
           const result = this.buildSearchResult(doc, snapshot, index + 1, column.maxDocScore)
-          if (columnIndex > 0) result.classList.add(this.resultDifferenceClass(currentDoc, doc))
+          const difference = columnIndex > 0 ? this.resultDifferenceClass(currentDoc, doc) : ""
+          if (difference) result.classList.add(difference)
           cell.appendChild(result)
         } else if (!(columnIndex > 0 && index === 0 && column.inError)) {
           const empty = document.createElement("div")

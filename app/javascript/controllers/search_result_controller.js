@@ -131,7 +131,7 @@ export default class extends Controller {
 
   embedField(name, value) {
     const item = document.createElement("li")
-    item.append(this.fieldLabel(name))
+    item.append(this.fieldLabel(name), " ")
     const media = document.createElement("span")
     const source = String(value ?? "")
     const extension = source.split("?")[0].split(".").pop()?.toLowerCase()
@@ -162,7 +162,7 @@ export default class extends Controller {
 
   htmlField(name, value, translation = false) {
     const item = document.createElement("li")
-    item.append(this.fieldLabel(name))
+    item.append(this.fieldLabel(name), " ")
     const content = document.createElement("span")
     this.appendSanitized(content, value)
     item.appendChild(content)

@@ -236,6 +236,18 @@ const jsonLinter = linter(view => {
   return diagnostics;
 });
 
+// "text" is free-form input (e.g. Solr query params): no syntax mode and no linting.
+// JSON modes get JSON support; anything else keeps the historical JavaScript default.
+export function languageFor(mode) {
+  if (mode === "text") return [];
+  return isJsonEditorMode(mode) ? json() : javascript();
+}
+
+export function linterFor(mode) {
+  if (mode === "text") return [];
+  return isJsonEditorMode(mode) ? jsonLinter : javascriptLinter;
+}
+
 /**
  * Create a CodeMirror editor from a textarea
  */
@@ -244,28 +256,8 @@ export function fromTextArea(textarea, options = {}) {
   textarea.parentNode.insertBefore(wrapper, textarea);
   textarea.style.display = 'none';
   
-  // Choose language extension based on mode
-  let languageExtension;
-  let isJsonMode = false;
-  if (options.mode === 'javascript') {
-    languageExtension = javascript();
-  } else if (isJsonEditorMode(options.mode)) {
-    languageExtension = json();
-    isJsonMode = true;
-  } else {
-    // Default to JavaScript
-    languageExtension = javascript();
-  }
-  
-  // Choose appropriate linter
-  let linterExtension;
-  if (options.mode === 'javascript') {
-    linterExtension = javascriptLinter;
-  } else if (isJsonEditorMode(options.mode)) {
-    linterExtension = jsonLinter;
-  } else {
-    linterExtension = javascriptLinter; // Default to JavaScript linter
-  }
+  const languageExtension = languageFor(options.mode);
+  const linterExtension = linterFor(options.mode);
 
   const languageCompartment = new Compartment();
   const linterCompartment = new Compartment();
@@ -326,11 +318,10 @@ export function fromTextArea(textarea, options = {}) {
       });
     },
     setMode: (mode) => {
-      const isJson = isJsonEditorMode(mode);
       view.dispatch({
         effects: [
-          languageCompartment.reconfigure(isJson ? json() : javascript()),
-          linterCompartment.reconfigure(isJson ? jsonLinter : javascriptLinter)
+          languageCompartment.reconfigure(languageFor(mode)),
+          linterCompartment.reconfigure(linterFor(mode))
         ]
       });
     },
@@ -381,7 +372,7 @@ export function fromTextArea(textarea, options = {}) {
   }
   
   // Automatically format JSON content if in JSON mode
-  if (isJsonMode && textarea.value.trim()) {
+  if (isJsonEditorMode(options.mode) && textarea.value.trim()) {
     try {
       // Only format if it's valid JSON
       JSON.parse(textarea.value);
