@@ -72,7 +72,7 @@ async function importBook(page: Page, json: Record<string, unknown>): Promise<nu
   await page.getByRole('button', { name: 'Upload' }).click();
 
   await page.waitForURL(/\/books\/\d+$/, { timeout: 10_000 });
-  await expect(page.locator('#flash')).toContainText(/successfully created/i);
+  await expect(page.locator('#flash-messages')).toContainText(/successfully created/i);
 
   const bookId = Number(page.url().match(/\/books\/(\d+)$/)?.[1]);
   expect(bookId).toBeGreaterThan(0);
@@ -141,7 +141,7 @@ test.describe('Book import/export', () => {
       // ExportController#update redirects back to the book show page with a
       // "queued" notice; ExportBookJob then attaches export_file async.
       await page.waitForURL(`**/books/${bookId}`, { timeout: 10_000 });
-      await expect(page.locator('#flash')).toContainText(/queued up export/i);
+      await expect(page.locator('#flash-messages')).toContainText(/queued up export/i);
 
       const exportLink = page.getByRole('link', { name: /Book Exported as JSON file/i });
       await expect(async () => {

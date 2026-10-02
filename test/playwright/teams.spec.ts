@@ -66,7 +66,7 @@ test.describe('team management', () => {
 
     await expect(page).toHaveURL(/\/teams\/\d+$/);
     await expect(page.getByRole('heading', { name: `Team: ${NEW_TEAM_NAME}` })).toBeVisible();
-    await expect(page.locator('#flash')).toContainText('Team created.');
+    await expect(page.locator('#flash-messages')).toContainText('Team created.');
 
     newTeamId = page.url().match(/\/teams\/(\d+)$/)?.[1] ?? '';
     expect(newTeamId).toBeTruthy();
@@ -79,7 +79,7 @@ test.describe('team management', () => {
     await page.getByRole('button', { name: 'Add user' }).click();
 
     await expect(page).toHaveURL(new RegExp(`/teams/${newTeamId}$`));
-    await expect(page.locator('#flash')).toContainText('added to the team');
+    await expect(page.locator('#flash-messages')).toContainText('added to the team');
     await expect(page.locator('.list-group-item', { hasText: MEMBER_EMAIL })).toBeVisible();
   });
 
@@ -97,7 +97,7 @@ test.describe('team management', () => {
     await modal.locator('.confirm-delete-confirm').click();
 
     await expect(page).toHaveURL(new RegExp(`/teams/${newTeamId}$`));
-    await expect(page.locator('#flash')).toContainText('removed from the team');
+    await expect(page.locator('#flash-messages')).toContainText('removed from the team');
     await expect(page.locator('.list-group-item', { hasText: MEMBER_EMAIL })).toHaveCount(0);
   });
 
@@ -117,7 +117,7 @@ test.describe('team management', () => {
     await modal.locator('#share-case-submit').click();
 
     await expect(page).toHaveURL(/\/cases(\?.*)?$/);
-    await expect(page.locator('#flash')).toContainText('shared with');
+    await expect(page.locator('#flash-messages')).toContainText('shared with');
 
     await page.goto(`teams/${newTeamId}`);
     await expect(page.getByRole('link', { name: caseName, exact: true })).toBeVisible();

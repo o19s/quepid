@@ -1,13 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Fallback safety net for BroadcastJudgeActivityJob's live Turbo Stream
-// push.   We are seeing that often it looses it's connection if the job runs and finishes queickly, and then it just pulses forever.
-// if that broadcast is ever missed (a dropped ActionCable connection,
-// a broadcast that fires before this page's subscription is ready, etc.), a
-// row could be left showing as "actively judging" forever with nothing to
-// correct it. While at least one row is actively judging, poll the server
-// periodically and swap in its response - cheap self-healing that doesn't
-// depend on the broadcast arriving at all.
+// push: if a broadcast is ever missed (a dropped ActionCable connection, one
+// that fires before this page's subscription is ready, etc.), a row could be
+// left showing as "actively judging" forever with nothing to correct it.
+// While at least one row is actively judging, poll the server periodically
+// and apply its response - cheap self-healing that doesn't depend on the
+// broadcast arriving at all.
+//
+// The poll response is real Turbo Stream HTML (see
+// BooksController#judge_activity), applied via Turbo's own
+// renderStreamMessage - the same per-cell replace targets the live
+// broadcast uses, so polling can never redraw a judge's sparkline chart
+// any more than a broadcast can.
 //
 // A MutationObserver (rather than only checking on connect) means polling
 // also kicks in if a row becomes active later via a live broadcast, and
@@ -53,31 +58,14 @@ export default class extends Controller {
   }
 
   async poll() {
-    const response = await fetch(this.urlValue, { headers: { Accept: "text/html" } })
+    const knownJudgeIds = [...this.element.querySelectorAll('[id^="judge-row-"]')]
+      .map((row) => row.id.replace("judge-row-", ""))
+      .join(",")
+    const url = `${this.urlValue}?known_judge_ids=${knownJudgeIds}`
+
+    const response = await fetch(url, { headers: { Accept: "text/vnd.turbo-stream.html" } })
     if (!response.ok) return
 
-    // While BroadcastJudgeActivityJob's live push is working (the common
-    // case - this poll is only a fallback for when it isn't), the fetched
-    // content here matches what's already on screen almost every time, since
-    // the active row was just freshly replaced moments earlier by that same
-    // broadcast. Skipping a no-op replace avoids tearing down and rebuilding
-    // *every* row's Vega chart (a fresh div + re-rendered SVG per row) every
-    // 5 seconds for rows that have nothing new to show - that's what reads
-    // as the whole table "flickering periodically" even when only one judge
-    // is active. Compared with the chart ids normalized away, since the
-    // Vega gem gives each chart's wrapper div a brand new random id on every
-    // render (see _judge_activity_row.html.erb) even when the underlying
-    // data is byte-for-byte identical - without this, that alone would make
-    // every fetch look "changed" and this check would never skip anything.
-    const html = await response.text()
-    if (this.normalize(html) === this.normalize(this.element.innerHTML)) return
-
-    // Setting innerHTML triggers the observer above, which re-schedules (or
-    // stops) polling based on the freshly-fetched content.
-    this.element.innerHTML = html
-  }
-
-  normalize(html) {
-    return html.replace(/chart-[0-9a-f]{32}/g, "chart-ID")
+    Turbo.renderStreamMessage(await response.text())
   }
 }

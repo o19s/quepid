@@ -25,7 +25,9 @@ class JudgementFromRatingJob < ApplicationJob
     rating_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/Rating/') }
     return false unless rating_arg
 
-    GlobalID::Locator.locate(rating_arg['_aj_globalid'])&.query&.case_id == kase.id
+    # safely_locate returns nil (rather than raising) for a rating deleted
+    # after this job was enqueued - it can't target any case anymore.
+    safely_locate(rating_arg['_aj_globalid'])&.query&.case_id == kase.id
   end
   private_class_method :job_targets_case?
 

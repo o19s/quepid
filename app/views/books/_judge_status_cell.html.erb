@@ -1,0 +1,54 @@
+<%# locals: (row:, flash_active: false, book: nil) %>
+<% is_ai_judge = row[:judge].ai_judge? %>
+<%# row[:refinable] is nil when this cell is rendered from a job broadcast (no
+    viewer to scope "can open" to - see BroadcastJudgeActivityJob), which
+    defaults to showing the link; AiJudgesController#edit re-checks access
+    itself, so an over-permissive link here is a dead end, never a security hole. %>
+<% can_refine = is_ai_judge && row[:refinable] != false %>
+<td id="judge-status-<%= row[:judge].id %>" data-actively-judging="<%= row[:actively_judging] %>">
+  <% if is_ai_judge %>
+    <i class="bi bi-robot <%= row[:actively_judging] ? 'text-primary' : 'text-secondary' %> <%= 'judge-icon-flash' if flash_active %>"
+       id="judge-icon-<%= row[:judge].id %>"></i>
+  <% else %>
+    <%= avatar_tag row[:judge], size: 18, classes: (flash_active ? 'judge-icon-flash' : ''),
+                   id: "judge-icon-#{row[:judge].id}" %>
+  <% end %>
+  <%= row[:judge].fullname %>
+  <% if is_ai_judge && row[:auto_run] %>
+    <i class="bi bi-repeat text-muted" title="Auto-runs when new query/doc pairs are added"></i>
+  <% end %>
+  <% if is_ai_judge %>
+    <span class="d-inline-flex align-items-center gap-1 ms-1">
+      <% if row[:actively_judging] %>
+        <button class="badge bg-primary border-0"
+                data-bs-toggle="modal"
+                data-bs-target="#judging-modal-<%= row[:judge].id %>"
+                style="cursor:pointer;"
+                title="Click to see what's being judged">
+          <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
+        </button>
+        <%= render 'books/cancel_judging_button', book: book, judge: row[:judge],
+              css_class: 'btn btn-outline-danger btn-sm py-0 px-1',
+              style: 'font-size:0.7rem; line-height:1.4;',
+              icon: 'bi-x-circle', title: 'Cancel judging' %>
+      <% else %>
+        <button type="button"
+                class="btn btn-outline-success btn-sm py-0 px-1"
+                style="font-size:0.7rem; line-height:1.4;"
+                title="Judge documents"
+                data-bs-toggle="modal"
+                data-bs-target="#unleash_modal_<%= row[:judge].id %>">
+          <i class="bi bi-play-fill"></i>
+        </button>
+      <% end %>
+      <% if can_refine %>
+        <%= link_to edit_ai_judge_path(row[:judge], book_id: book.id),
+              class: 'btn btn-outline-secondary btn-sm py-0 px-1',
+              style: 'font-size:0.7rem; line-height:1.4;',
+              title: 'Refine Prompt' do %>
+          <i class="bi bi-sliders"></i>
+        <% end %>
+      <% end %>
+    </span>
+  <% end %>
+</td>

@@ -240,6 +240,24 @@ class Book < ApplicationRecord
     rows.sort_by { |row| row[:judge].fullname }
   end
 
+  # Same shape as one entry from judge_activity_rows, computed without the
+  # book-wide joins judge_activity_rows needs to build every row at once -
+  # the live per-judgement broadcast (BroadcastJudgeActivityJob) only ever
+  # needs to refresh the one judge who just judged, not reload every judge
+  # on the book to throw away every row but one. Returns nil if that judge
+  # doesn't qualify for a row at all (see judge_activity_rows) - same
+  # "shouldn't normally happen" case its caller already falls back on.
+  def judge_activity_row_for judge, days: 30
+    return nil unless ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
+
+    activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)
+    auto_run = books_ai_judges.where(user_id: judge.id).pick(:auto_run) || false
+    actively_judging = RunJudgeJudyJob.actively_judging_user_ids(self).include?(judge.id)
+
+    { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
+      count: activity[:count], actively_judging: actively_judging, auto_run: auto_run }
+  end
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Book to actually delete!
   # Otherwise our foreign key on judgements to query_doc_pairs gets violated with
