@@ -12,6 +12,7 @@ vi.mock("modules/editor", () => ({
 }))
 vi.mock("utils/bs_modal", () => ({
   getOrCreateBsModal: vi.fn(() => ({ hide: vi.fn() })),
+  hideBsModal: vi.fn((modal) => modal?.hide()),
   showBsModal: vi.fn()
 }))
 
@@ -112,4 +113,3 @@ describe("QueryOptionsCoreController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
   })
 })
-

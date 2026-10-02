@@ -204,15 +204,15 @@ export default class extends CoreModalControllerBase {
       this.selectionsTarget.append(row)
     })
 
-    this.addButtonTarget.classList.toggle("d-none", this.selectionValues.length >= this.maxSnapshotsValue)
+    this.toggleVisible(this.addButtonTarget, this.selectionValues.length < this.maxSnapshotsValue)
     this.warningTarget.textContent = "You have selected the same snapshot multiple times. Each snapshot should be unique."
-    this.warningTarget.classList.toggle("d-none", !this.hasDuplicateSelections())
+    this.toggleVisible(this.warningTarget, this.hasDuplicateSelections())
     const processing = this.selectionValues.some((id) => {
       const snapshot = this.snapshots.find((candidate) => String(candidate.id) === String(id))
       return Boolean(snapshot?.has_snapshot_file || snapshot?.hasSnapshotFile)
     })
-    this.processingWarningTarget.classList.toggle("d-none", !processing)
-    this.deleteWarningTarget.classList.toggle("d-none", !this.deleteId)
+    this.toggleVisible(this.processingWarningTarget, processing)
+    this.toggleVisible(this.deleteWarningTarget, this.deleteId)
   }
 
   addOption(select, value, text, selected = false) {
@@ -267,9 +267,8 @@ export default class extends CoreModalControllerBase {
 
   setBusy(busy) {
     this.busy = busy
-    if (this.hasUpdateButtonTarget) this.updateButtonTarget.disabled = busy
-    if (this.hasClearButtonTarget) this.clearButtonTarget.disabled = busy
-    if (this.hasProgressTarget) this.progressTarget.classList.toggle("d-none", !busy)
+    this.setButtonsDisabled(busy, ["updateButton", "clearButton"])
+    this.setProgress(busy)
   }
 
   clearMessages() {

@@ -1,7 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { postJson } from "api/json"
 import { fromTextArea } from "modules/editor"
-import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
 
 /**
@@ -61,7 +60,7 @@ export default class extends CoreModalControllerBase {
         detail: { queryId: this.queryId, options }
       }))
       coreFlash.show("success", "Query options saved successfully.")
-      getOrCreateBsModal(this.element)?.hide()
+      this.hide()
     } catch (error) {
       console.error("query-options-core: save failed", error)
       coreFlash.show("error", "Unable to save query options.")

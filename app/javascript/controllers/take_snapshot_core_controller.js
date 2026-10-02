@@ -1,5 +1,4 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { searchEngineDisplayName } from "utils/search_engine_name"
 import { supportsLookupById } from "utils/search_engines"
 
@@ -40,12 +39,8 @@ export default class extends CoreModalControllerBase {
       this.engineNameTarget.textContent = mapperName || searchEngineDisplayName(searchEngine)
     }
 
-    if (this.hasLookupFieldsTarget) {
-      this.lookupFieldsTarget.classList.toggle("d-none", !this.supportsLookup)
-    }
-    if (this.hasNoLookupFieldsTarget) {
-      this.noLookupFieldsTarget.classList.toggle("d-none", this.supportsLookup)
-    }
+    this.toggleVisible("lookupFields", this.supportsLookup)
+    this.toggleVisible("noLookupFields", !this.supportsLookup)
 
     this.clearAlert()
     this.setProgress(false)
@@ -82,32 +77,19 @@ export default class extends CoreModalControllerBase {
             this.setProgress(false)
             if (error) {
               this.showAlert(
-                `An error (${error}) occurred, please try again.\nIf the error persist, contact adminstrator for further assistance.`,
+                this.actionErrorMessage(error),
                 "danger"
               )
               this.setSubmitting(false)
               return
             }
 
-            hideBsModal(getOrCreateBsModal(this.element))
+            this.hide()
             this.setSubmitting(false)
           }
         }
       })
     )
-  }
-
-  setProgress(visible) {
-    if (!this.hasProgressTarget) return
-    this.progressTarget.classList.toggle("d-none", !visible)
-  }
-
-  setSubmitting(isSubmitting) {
-    if (this.hasSubmitButtonTarget) this.submitButtonTarget.disabled = isSubmitting
-    // Cancel is disabled while the snapshot request is in flight, so a stale
-    // completion handler cannot fire against a modal the user has dismissed
-    // and possibly reopened.
-    if (this.hasCancelButtonTarget) this.cancelButtonTarget.disabled = isSubmitting
   }
 
   showAlert(message, variant) {

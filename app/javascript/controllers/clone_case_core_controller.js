@@ -156,12 +156,8 @@ export default class extends CoreModalControllerBase {
       this.historyOnButtonTarget.classList.toggle("btn-primary", this.history)
       this.historyOnButtonTarget.classList.toggle("btn-outline-secondary", !this.history)
     }
-    if (this.hasTryFieldWrapperTarget) {
-      this.tryFieldWrapperTarget.classList.toggle("d-none", this.history)
-    }
-    if (this.hasNoQueriesAlertTarget) {
-      this.noQueriesAlertTarget.classList.toggle("d-none", this.includeQueries)
-    }
+    this.toggleVisible("tryFieldWrapper", !this.history)
+    this.toggleVisible("noQueriesAlert", !this.includeQueries)
     this.refreshSubmitState()
   }
 
@@ -171,7 +167,6 @@ export default class extends CoreModalControllerBase {
   }
 
   setSubmitting(isSubmitting) {
-    if (!this.hasSubmitButtonTarget) return
-    this.submitButtonTarget.disabled = isSubmitting || !this.newCaseName
+    this.setButtonsDisabled(isSubmitting || !this.newCaseName, ["submitButton"])
   }
 }

@@ -1121,6 +1121,14 @@ heroku restart -a quepid-staging
 
 ## Manual testing tracker
 
+During incremental development, use a representative sample of affected browser
+flows per meaningful batch, including a success and an error path when relevant.
+A full manual sweep is not required for every commit. Record the sampled coverage
+and deferred flows in the task doc, and update only scenarios actually exercised.
+Keep before/after screenshots for the sampled UI states and inspect them. Run the
+broader pass separately before declaring full manual coverage; expand the sample
+when a failure or a higher-risk behavior change warrants it.
+
 Run `ruby bin/manual_test_status --due-only` to find scenarios needing review.
 Keep `last_run` as the actual test time. Uncommitted files are compared by edit
 time; committed files are due only when both their edit and commit times are

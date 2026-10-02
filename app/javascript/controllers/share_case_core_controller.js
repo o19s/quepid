@@ -1,6 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, postJson, requestJson } from "api/json"
-import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 import {
   deactivateListItem,
   parseTeamsJson,
@@ -77,7 +76,7 @@ export default class extends CoreModalControllerBase {
   // there is no real trigger. Hand Bootstrap a stand-in carrying the case id.
   openFromExternal(event) {
     const detail = event.detail || {}
-    showBsModal(getOrCreateBsModal(this.element), {
+    this.show({
       dataset: { shareCaseCoreIdValue: String(detail.caseNo ?? "") }
     })
   }
@@ -232,14 +231,10 @@ export default class extends CoreModalControllerBase {
       // A team that already has this case is not shareable again, but it
       // still means the user has a team. Reserve this empty state for users
       // with no teams at all.
-      this.emptyShareableTarget.classList.toggle("d-none", !hasNoTeams)
+      this.toggleVisible("emptyShareable", hasNoTeams)
     }
-    if (this.hasSharePickerTarget) {
-      this.sharePickerTarget.classList.toggle("d-none", !hasShareable)
-    }
-    if (this.hasSharedSectionTarget) {
-      this.sharedSectionTarget.classList.toggle("d-none", !hasShared)
-    }
+    this.toggleVisible("sharePicker", hasShareable)
+    this.toggleVisible("sharedSection", hasShared)
 
     if (!hasShareable) this.clearShareSelection()
     if (!hasShared) this.clearSharedSelection()
@@ -378,22 +373,12 @@ export default class extends CoreModalControllerBase {
   }
 
   setLoading(isLoading) {
-    if (this.hasLoadingTarget) {
-      this.loadingTarget.classList.toggle("d-none", !isLoading)
-    }
-    if (this.hasBodyContentTarget) {
-      this.bodyContentTarget.classList.toggle("d-none", isLoading)
-    }
+    super.setLoading(isLoading)
+    this.toggleVisible("bodyContent", !isLoading)
   }
 
   setSubmitting(isSubmitting) {
-    if (this.hasSubmitButtonTarget) {
-      this.submitButtonTarget.disabled =
-        isSubmitting || !this.selectedShareTeamId
-    }
-    if (this.hasUnshareButtonTarget) {
-      this.unshareButtonTarget.disabled =
-        isSubmitting || !this.selectedSharedTeamId
-    }
+    this.setButtonsDisabled(isSubmitting || !this.selectedShareTeamId, ["submitButton"])
+    this.setButtonsDisabled(isSubmitting || !this.selectedSharedTeamId, ["unshareButton"])
   }
 }

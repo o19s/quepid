@@ -87,7 +87,7 @@ export default class extends CoreModalControllerBase {
     this.selectedFormat = event.params.format
     if (this.hasDetailedWarningTarget) {
       const showWarning = this.selectedFormat === "detailed" && !this.supportsDetailedExport
-      this.detailedWarningTarget.classList.toggle("d-none", !showWarning)
+      this.toggleVisible("detailedWarning", showWarning)
     }
     this._refreshSubmitState()
   }
@@ -110,7 +110,7 @@ export default class extends CoreModalControllerBase {
     if (!this.hasApiSnapshotSelectTarget) return
     const snapshotId = this.apiSnapshotSelectTarget.value
 
-    if (this.hasApiSnapshotWrapperTarget) this.apiSnapshotWrapperTarget.classList.toggle("d-none", !snapshotId)
+    this.toggleVisible("apiSnapshotWrapper", snapshotId)
     if (this.hasApiSnapshotLinkTarget && snapshotId) {
       this.apiSnapshotLinkTarget.href = this._snapshotShowUrl(snapshotId)
     }

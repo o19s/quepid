@@ -1,6 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson } from "api/json"
-import { getOrCreateBsModal } from "utils/bs_modal"
 import { moveQuery } from "utils/query_lifecycle"
 import coreFlash from "utils/core_flash"
 
@@ -77,7 +76,7 @@ export default class extends CoreModalControllerBase {
         }
       }))
       coreFlash.show("success", "Query moved successfully!")
-      getOrCreateBsModal(this.element)?.hide()
+      this.hide()
     } catch (error) {
       console.error("move-query-core: move failed", error)
       coreFlash.show("error", "Unable to move query.")
@@ -105,13 +104,13 @@ export default class extends CoreModalControllerBase {
 
   setLoading(loading) {
     this.loading = loading
-    if (this.hasLoadingTarget) this.loadingTarget.classList.toggle("d-none", !loading)
-    if (this.hasCaseListTarget) this.caseListTarget.classList.toggle("d-none", loading)
+    super.setLoading(loading)
+    this.toggleVisible("caseList", !loading)
     if (this.hasEmptyTarget) this.emptyTarget.classList.add("d-none")
     if (!loading && this.cases.length === 0 && this.hasEmptyTarget) {
       this.emptyTarget.classList.remove("d-none")
     }
-    if (this.hasCaseListLabelTarget) this.caseListLabelTarget.classList.toggle("d-none", loading || this.cases.length === 0)
+    this.toggleVisible("caseListLabel", !loading && this.cases.length > 0)
     this.refreshUi()
   }
 

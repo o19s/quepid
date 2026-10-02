@@ -1,10 +1,8 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
-import { showStatusMessage } from "utils/status_message"
 import { getCoreStores } from "utils/core_store_access"
 import { populateBook } from "utils/book_sync"
 
@@ -108,7 +106,7 @@ export default class extends CoreModalControllerBase {
 
   goToTeamsPage(event) {
     event?.preventDefault?.()
-    hideBsModal(getOrCreateBsModal(this.element))
+    this.hide()
     window.location.href = `${getQuepidRootUrl()}/teams`
   }
 
@@ -132,7 +130,7 @@ export default class extends CoreModalControllerBase {
     }
     this._pendingOpenShare = openShare
     this.element.addEventListener("hidden.bs.modal", openShare, { once: true })
-    hideBsModal(getOrCreateBsModal(this.element))
+    this.hide()
   }
 
   async save(event) {
@@ -160,7 +158,7 @@ export default class extends CoreModalControllerBase {
       }
 
       showFlash("success", "Settings saved.")
-      hideBsModal(getOrCreateBsModal(this.element))
+      this.hide()
       this.setBusy(false)
     } catch (error) {
       this._handleActionError(error)
@@ -184,7 +182,7 @@ export default class extends CoreModalControllerBase {
       if (String(this.currentCaseId) !== String(caseId)) return
       this.setProgress(false)
       showFlash("success", "Updating Book with Query Doc Pairs.")
-      hideBsModal(getOrCreateBsModal(this.element))
+      this.hide()
       this.setBusy(false)
     } catch (error) {
       if (String(this.currentCaseId) !== String(caseId)) return
@@ -238,7 +236,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async _load() {
-    this._setLoading(true)
+    this.setLoading(true)
     this._setSectionsVisible({ books: false, noTeams: false, noBooks: false })
 
     try {
@@ -272,7 +270,7 @@ export default class extends CoreModalControllerBase {
       this._updateCreateBookLinks()
 
       if (this.teams.length === 0) {
-        this._setLoading(false)
+        this.setLoading(false)
         this._setSectionsVisible({ noTeams: true })
         this._refreshIntegrationVisibility()
         this._refreshSaveVisibility()
@@ -288,7 +286,7 @@ export default class extends CoreModalControllerBase {
       )
 
       this.books = this._dedupeAndSortBooks(bookLists.flat())
-      this._setLoading(false)
+      this.setLoading(false)
 
       if (this.books.length === 0) {
         this._setSectionsVisible({ noBooks: true })
@@ -301,7 +299,7 @@ export default class extends CoreModalControllerBase {
       this._refreshSaveVisibility()
     } catch (error) {
       console.error("judgements-core: load failed", error)
-      this._setLoading(false)
+      this.setLoading(false)
       this.showError(error.message || "Unable to load judgements settings.")
     }
   }
@@ -376,7 +374,7 @@ export default class extends CoreModalControllerBase {
 
     if (this.hasJudgeLinkTarget) {
       const show = this.activeBookId != null
-      this.judgeLinkTarget.classList.toggle("d-none", !show)
+      this.toggleVisible(this.judgeLinkTarget, show)
       if (show) {
         this.judgeLinkTarget.href = this.judgeUrlTemplateValue.replaceAll(
           BOOK_ID_PLACEHOLDER,
@@ -388,18 +386,14 @@ export default class extends CoreModalControllerBase {
 
   _refreshIntegrationVisibility() {
     const hasBooks = this.books.length > 0
-    if (this.hasSelectHintTarget) {
-      this.selectHintTarget.classList.toggle("d-none", !hasBooks || this.activeBookId != null)
-    }
-    if (this.hasIntegrationTarget) {
-      this.integrationTarget.classList.toggle("d-none", !this.activeBookId)
-    }
+    this.toggleVisible("selectHint", hasBooks && this.activeBookId == null)
+    this.toggleVisible("integration", this.activeBookId)
   }
 
   _refreshSaveVisibility() {
     if (!this.hasSaveButtonTarget) return
     const hasChanges = this.hasUnsavedChanges()
-    this.saveButtonTarget.classList.toggle("d-none", !hasChanges)
+    this.toggleVisible(this.saveButtonTarget, hasChanges)
     this.saveButtonTarget.disabled = this._busy || !hasChanges
   }
 
@@ -481,7 +475,7 @@ export default class extends CoreModalControllerBase {
       )
     }
 
-    hideBsModal(getOrCreateBsModal(this.element))
+    this.hide()
     this.setBusy(false)
 
     if (processInBackground && backgroundMessage) {
@@ -491,14 +485,10 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  _setLoading(loading) {
-    if (this.hasLoadingTarget) this.loadingTarget.classList.toggle("d-none", !loading)
-  }
-
   _setSectionsVisible({ books = false, noTeams = false, noBooks = false } = {}) {
-    if (this.hasNoTeamsTarget) this.noTeamsTarget.classList.toggle("d-none", !noTeams)
-    if (this.hasNoBooksTarget) this.noBooksTarget.classList.toggle("d-none", !noBooks)
-    if (this.hasBookPickerTarget) this.bookPickerTarget.classList.toggle("d-none", !books)
+    this.toggleVisible("noTeams", noTeams)
+    this.toggleVisible("noBooks", noBooks)
+    this.toggleVisible("bookPicker", books)
   }
 
   setBusy(busy) {
@@ -513,28 +503,7 @@ export default class extends CoreModalControllerBase {
     // Preserve the existing behavior: Cancel is disabled while a save/refresh/sync request is
     // in flight, so a stale request's completion handler can't fire against a
     // modal the user has since dismissed and possibly reopened.
-    if (this.hasCancelButtonTarget) {
-      this.cancelButtonTarget.disabled = busy
-    }
-  }
-
-  setProgress(visible) {
-    if (!this.hasProgressTarget) return
-    this.progressTarget.classList.toggle("d-none", !visible)
-  }
-
-  showError(message) {
-    if (!this.hasErrorTarget) return
-    showStatusMessage(this.errorTarget, {
-      message: `An error (${message}) occurred, please try again.\nIf the error persist, contact adminstrator for further assistance.`,
-      className: "text-danger"
-    })
-    this.errorTarget.style.whiteSpace = "pre-line"
-  }
-
-  clearError() {
-    if (!this.hasErrorTarget) return
-    showStatusMessage(this.errorTarget, { message: "", className: "text-danger d-none" })
+    this.setButtonsDisabled(busy, ["cancelButton"])
   }
 
   _handleActionError(error) {

@@ -73,6 +73,22 @@ function buildModalController(overrides = {}) {
 }
 
 describe("JudgementsCoreController", () => {
+  it("shows the selection hint only with available books and no active book", () => {
+    const controller = buildModalController({ books: [], activeBookId: null })
+    controller._refreshIntegrationVisibility()
+    expect(controller.selectHintTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.integrationTarget.classList.contains("d-none")).toBe(true)
+
+    controller.books = [{ id: 2, name: "Catalog" }]
+    controller._refreshIntegrationVisibility()
+    expect(controller.selectHintTarget.classList.contains("d-none")).toBe(false)
+
+    controller.activeBookId = 2
+    controller._refreshIntegrationVisibility()
+    expect(controller.selectHintTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.integrationTarget.classList.contains("d-none")).toBe(false)
+  })
+
   it("keeps View navigation independent of book selection", () => {
     const controller = buildModalController({ books: [{ id: 2, name: "Catalog" }] })
     controller._renderBooks()

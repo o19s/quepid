@@ -72,3 +72,74 @@ describe("CoreModalControllerBase open", () => {
     expect(controller.openFor).not.toHaveBeenCalled()
   })
 })
+
+describe("CoreModalControllerBase modal state", () => {
+  it("does not read missing Stimulus targets", () => {
+    const controller = Object.create(CoreModalControllerBase.prototype)
+    Object.defineProperty(controller, "progressTarget", {
+      get() { throw new Error("Missing target") }
+    })
+
+    expect(() => controller.setProgress(true)).not.toThrow()
+    expect(() => controller.setLoading(true)).not.toThrow()
+    expect(() => controller.setSubmitting(true)).not.toThrow()
+    expect(() => controller.showError("Failure")).not.toThrow()
+    expect(() => controller.clearError()).not.toThrow()
+  })
+
+  it("disables submit and cancel without disabling unrelated buttons", () => {
+    const controller = buildController()
+    controller.hasSubmitButtonTarget = true
+    controller.submitButtonTarget = document.createElement("button")
+    controller.hasCancelButtonTarget = true
+    controller.cancelButtonTarget = document.createElement("button")
+    controller.hasUnshareButtonTarget = true
+    controller.unshareButtonTarget = document.createElement("button")
+
+    controller.setSubmitting(true)
+    expect(controller.submitButtonTarget.disabled).toBe(true)
+    expect(controller.cancelButtonTarget.disabled).toBe(true)
+    expect(controller.unshareButtonTarget.disabled).toBe(false)
+
+    controller.setSubmitting(false)
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+    expect(controller.cancelButtonTarget.disabled).toBe(false)
+
+    controller.setButtonsDisabled(true, ["unshareButton"])
+    expect(controller.unshareButtonTarget.disabled).toBe(true)
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+  })
+
+  it("renders action errors as plain text and preserves their line break", () => {
+    const controller = buildController()
+    controller.hasErrorTarget = true
+    controller.errorTarget = document.createElement("div")
+    controller.showError("<b>Failure</b>")
+    expect(controller.errorTarget.querySelector("b")).toBeNull()
+    expect(controller.errorTarget.textContent).toContain("(<b>Failure</b>)")
+    expect(controller.errorTarget.textContent).toContain("\nIf the error persist")
+    expect(controller.errorTarget.style.whiteSpace).toBe("pre-line")
+
+    controller.clearError()
+    expect(controller.errorTarget.textContent).toBe("")
+    expect(controller.errorTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("passes external context to Bootstrap and hides the same modal", () => {
+    const previous = window.bootstrap
+    const modal = { show: vi.fn(), hide: vi.fn() }
+    window.bootstrap = { Modal: { getOrCreateInstance: vi.fn(() => modal) } }
+    try {
+      const controller = buildController()
+      controller.element = document.createElement("div")
+      const trigger = { dataset: { caseId: "6" } }
+      controller.show(trigger)
+      controller.hide()
+      expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(controller.element, undefined)
+      expect(modal.show).toHaveBeenCalledWith(trigger)
+      expect(modal.hide).toHaveBeenCalledOnce()
+    } finally {
+      window.bootstrap = previous
+    }
+  })
+})

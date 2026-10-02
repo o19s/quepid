@@ -1,7 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { hideBsModal, getOrCreateBsModal } from "utils/bs_modal"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
 import { parseCsv } from "utils/csv"
@@ -97,7 +96,7 @@ export default class extends CoreModalControllerBase {
 
       this.dispatchReload()
       this.flash("success", this.successMessage())
-      hideBsModal(getOrCreateBsModal(this.element))
+      this.hide()
     } catch (error) {
       this.flash("error", this.errorMessage(error))
       this.setBusy(false)
@@ -191,7 +190,7 @@ export default class extends CoreModalControllerBase {
   refreshUi() {
     const activeError = this.errors[this.selectedType]
     this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError || "")
-    if (this.hasWarningTarget) this.warningTarget.classList.toggle("d-none", !this.selectedType)
+    this.toggleVisible("warning", this.selectedType)
     if (this.hasWarningTextTarget && this.selectedType) this.warningTextTarget.textContent = this.warningMessage()
     if (this.hasImportButtonTarget) this.importButtonTarget.disabled = !this.canImport() || this.busy
   }
@@ -210,7 +209,11 @@ export default class extends CoreModalControllerBase {
   errorMessage(error) { return error.message || "Import failed. Please try again." }
   dispatchReload() { document.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: this.caseIdValue } })) }
   flash(type, message) { coreFlash.show(type, message) }
-  setBusy(busy) { this.busy = busy; if (this.hasLoadingTarget) this.loadingTarget.classList.toggle("d-none", !busy); this.refreshUi() }
+  setBusy(busy) {
+    this.busy = busy
+    this.setLoading(busy)
+    this.refreshUi()
+  }
   setError(target, message) { if (!target) return; target.textContent = message; target.classList.toggle("d-none", !message) }
   readFile(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(file) }) }
 }

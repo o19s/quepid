@@ -1,7 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
 /**
@@ -71,7 +70,7 @@ export default class extends CoreModalControllerBase {
 
   gotoScorers(event) {
     event?.preventDefault?.()
-    hideBsModal(getOrCreateBsModal(this.element))
+    this.hide()
     window.location.href = `${getQuepidRootUrl()}/scorers`
   }
 
@@ -97,7 +96,7 @@ export default class extends CoreModalControllerBase {
         })
       )
 
-      hideBsModal(getOrCreateBsModal(this.element))
+      this.hide()
     } catch (error) {
       console.error("pick-scorer-core: save failed", error)
       const message = error instanceof HttpError
@@ -161,11 +160,9 @@ export default class extends CoreModalControllerBase {
     }
 
     const showCustom = !this.communalScorersOnlyValue
-    if (this.hasCustomSectionTarget) {
-      this.customSectionTarget.classList.toggle("d-none", !showCustom)
-    }
+    this.toggleVisible("customSection", showCustom)
     if (this.hasCustomListTarget) {
-      this.customListTarget.classList.toggle("d-none", !showCustom)
+      this.toggleVisible("customList", showCustom)
       this.customListTarget.innerHTML = ""
       if (showCustom) {
         this.userScorers.forEach((scorer) => {
@@ -206,7 +203,7 @@ export default class extends CoreModalControllerBase {
     // Warning tracks the *case's* current scorer (initialScorerId), not the
     // in-modal selection.
     const accessible = this._initialScorerAccessible()
-    this.warningTarget.classList.toggle("d-none", accessible)
+    this.toggleVisible("warning", !accessible)
     if (this.hasWarningNameTarget) {
       const name =
         this.initialScorerName ||
@@ -226,9 +223,7 @@ export default class extends CoreModalControllerBase {
   }
 
   _refreshCreateVisibility() {
-    if (this.hasCreateButtonTarget) {
-      this.createButtonTarget.classList.toggle("d-none", this.communalScorersOnlyValue)
-    }
+    this.toggleVisible("createButton", !this.communalScorersOnlyValue)
   }
 
   setSubmitting(isSubmitting) {
@@ -237,8 +232,9 @@ export default class extends CoreModalControllerBase {
   }
 
   _refreshSubmitEnabled() {
-    if (!this.hasSubmitButtonTarget) return
-    this.submitButtonTarget.disabled =
-      this._isSubmitting || !this.selectedScorer || this.selectedScorer.inaccessible
+    this.setButtonsDisabled(
+      this._isSubmitting || !this.selectedScorer || this.selectedScorer.inaccessible,
+      ["submitButton"]
+    )
   }
 }
