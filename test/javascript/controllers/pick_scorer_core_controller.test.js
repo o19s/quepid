@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import PickScorerCoreController from "controllers/pick_scorer_core_controller"
@@ -12,33 +13,26 @@ vi.mock("utils/bs_modal", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(PickScorerCoreController.prototype)
-  controller.scorersUrlValue = "/api/scorers"
-  controller.caseScorerUrlTemplateValue = "/api/cases/__CASE_ID__/scorers/__SCORER_ID__"
-  controller.communalScorersOnlyValue = false
-  controller.hasCommunalScorersOnlyValue = true
+  const controller = buildControllerFixture(PickScorerCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      alert: document.createElement("div"),
+      warning: document.createElement("div"),
+      warningName: document.createElement("span"),
+      communalList: document.createElement("ul"),
+      customSection: document.createElement("div"),
+      customList: document.createElement("ul"),
+      customEmpty: document.createElement("p"),
+      createButton: document.createElement("button"),
+      submitButton: document.createElement("button")
+    },
+    values: {
+      scorersUrl: "/api/scorers",
+      caseScorerUrlTemplate: "/api/cases/__CASE_ID__/scorers/__SCORER_ID__",
+      communalScorersOnly: false
+    }
+  })
 
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasWarningTarget = true
-  controller.warningTarget = document.createElement("div")
-  controller.hasWarningNameTarget = true
-  controller.warningNameTarget = document.createElement("span")
-  controller.hasCommunalListTarget = true
-  controller.communalListTarget = document.createElement("ul")
-  controller.hasCustomSectionTarget = true
-  controller.customSectionTarget = document.createElement("div")
-  controller.hasCustomListTarget = true
-  controller.customListTarget = document.createElement("ul")
-  controller.hasCustomEmptyTarget = true
-  controller.customEmptyTarget = document.createElement("p")
-  controller.hasCreateButtonTarget = true
-  controller.createButtonTarget = document.createElement("button")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
-  controller.element = document.createElement("div")
   controller.element.appendChild(controller.communalListTarget)
   controller.element.appendChild(controller.customListTarget)
 

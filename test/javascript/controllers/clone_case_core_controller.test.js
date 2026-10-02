@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import CloneCaseCoreController from "controllers/clone_case_core_controller"
@@ -8,33 +9,25 @@ vi.mock("api/fetch", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(CloneCaseCoreController.prototype)
-  controller.triesUrlTemplateValue = "/api/cases/__CASE_ID__/tries"
-  controller.hasTriesUrlTemplateValue = true
-  controller.cloneUrlValue = "/api/clone/cases"
-
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasNoQueriesAlertTarget = true
-  controller.noQueriesAlertTarget = document.createElement("div")
-  controller.hasCaseNameInputTarget = true
-  controller.caseNameInputTarget = document.createElement("input")
-  controller.hasHistoryOffButtonTarget = true
-  controller.historyOffButtonTarget = document.createElement("button")
-  controller.hasHistoryOnButtonTarget = true
-  controller.historyOnButtonTarget = document.createElement("button")
-  controller.hasTryFieldWrapperTarget = true
-  controller.tryFieldWrapperTarget = document.createElement("div")
-  controller.hasTrySelectTarget = true
-  controller.trySelectTarget = document.createElement("select")
-  controller.hasQueriesCheckboxTarget = true
-  controller.queriesCheckboxTarget = document.createElement("input")
-  controller.hasRatingsCheckboxTarget = true
-  controller.ratingsCheckboxTarget = document.createElement("input")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
+  const controller = buildControllerFixture(CloneCaseCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      alert: document.createElement("div"),
+      noQueriesAlert: document.createElement("div"),
+      caseNameInput: document.createElement("input"),
+      historyOffButton: document.createElement("button"),
+      historyOnButton: document.createElement("button"),
+      tryFieldWrapper: document.createElement("div"),
+      trySelect: document.createElement("select"),
+      queriesCheckbox: document.createElement("input"),
+      ratingsCheckbox: document.createElement("input"),
+      submitButton: document.createElement("button")
+    },
+    values: {
+      triesUrlTemplate: "/api/cases/__CASE_ID__/tries",
+      cloneUrl: "/api/clone/cases"
+    }
+  })
 
   Object.assign(controller, overrides)
   return controller

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import AnnotationsController from "controllers/annotations_controller"
 import { apiFetch } from "api/fetch"
@@ -8,11 +9,23 @@ vi.mock("utils/flash", () => ({ showFlash: vi.fn() }))
 
 function buildController() {
   const element = document.createElement("div")
-  const controller = Object.create(AnnotationsController.prototype)
+  const controller = buildControllerFixture(AnnotationsController, {
+    targets: {
+      message: document.createElement("textarea"),
+      createButton: document.createElement("button"),
+      list: document.createElement("ul"),
+      empty: document.createElement("p"),
+      editModal: document.createElement("div"),
+      editMessage: document.createElement("textarea"),
+      editSave: document.createElement("button")
+    },
+    values: {
+      urlTemplate: "/api/cases/__CASE_ID__/annotations",
+      caseId: 7,
+      tryId: 3
+    }
+  })
   controller.element = element
-  controller.urlTemplateValue = "/api/cases/__CASE_ID__/annotations"
-  controller.caseIdValue = 7
-  controller.tryIdValue = 3
   controller.scoringStore = {
     caseScore: { score: 0.8, allRated: true },
     snapshot: () => ({ queryScores: { "11": { score: 1, maxScore: 1 } } }),
@@ -20,14 +33,6 @@ function buildController() {
     removeEventListener: vi.fn()
   }
   controller.annotations = []
-  controller.messageTarget = document.createElement("textarea")
-  controller.hasCreateButtonTarget = true
-  controller.createButtonTarget = document.createElement("button")
-  controller.listTarget = document.createElement("ul")
-  controller.emptyTarget = document.createElement("p")
-  controller.editModalTarget = document.createElement("div")
-  controller.editMessageTarget = document.createElement("textarea")
-  controller.editSaveTarget = document.createElement("button")
   return controller
 }
 

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import MoveQueryCoreController from "controllers/move_query_core_controller"
@@ -11,22 +12,19 @@ vi.mock("utils/bs_modal", () => ({
 }))
 
 function buildController(overrides = {}) {
-  const controller = Object.create(MoveQueryCoreController.prototype)
-  controller.element = document.createElement("div")
-  controller.casesUrlValue = "/api/cases"
-  controller.hasCasesUrlValue = true
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasLoadingTarget = true
-  controller.loadingTarget = document.createElement("div")
-  controller.hasEmptyTarget = true
-  controller.emptyTarget = document.createElement("div")
-  controller.hasCaseListTarget = true
-  controller.caseListTarget = document.createElement("div")
-  controller.hasCaseListLabelTarget = true
-  controller.caseListLabelTarget = document.createElement("p")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
+  const controller = buildControllerFixture(MoveQueryCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      loading: document.createElement("div"),
+      empty: document.createElement("div"),
+      caseList: document.createElement("div"),
+      caseListLabel: document.createElement("p"),
+      submitButton: document.createElement("button")
+    },
+    values: {
+      casesUrl: "/api/cases"
+    }
+  })
   controller.cases = []
   Object.assign(controller, overrides)
   return controller

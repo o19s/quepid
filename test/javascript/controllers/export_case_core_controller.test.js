@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { downloadBlob } from "utils/download_file"
@@ -19,8 +20,38 @@ vi.mock("utils/download_file", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(ExportCaseCoreController.prototype)
-  controller.element = document.createElement("div")
+  const controller = buildControllerFixture(ExportCaseCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      submitButton: document.createElement("button"),
+      detailedRadio: document.createElement("input"),
+      detailedWarning: document.createElement("p"),
+      snapshotRadio: document.createElement("input"),
+      snapshotSelect: document.createElement("select"),
+      basicRadio: document.createElement("input"),
+      basicSnapshotSelect: document.createElement("select"),
+      apiSnapshotSelect: document.createElement("select"),
+      apiSnapshotLink: document.createElement("a"),
+      apiSnapshotWrapper: document.createElement("span"),
+      caseLink: document.createElement("a"),
+      queriesLink: document.createElement("a"),
+      annotationsLink: document.createElement("a"),
+      scoresLink: document.createElement("a"),
+      ratingsLink: document.createElement("a"),
+      quepidPeekLink: document.createElement("a")
+    },
+    values: {
+      snapshotsIndexUrlTemplate: "/api/cases/__CASE_ID__/snapshots",
+      snapshotShowUrlTemplate: "/api/cases/__CASE_ID__/snapshots/__SNAPSHOT_ID__",
+      caseUrlTemplate: "/api/cases/__CASE_ID__",
+      queriesUrlTemplate: "/api/cases/__CASE_ID__/queries",
+      annotationsUrlTemplate: "/api/cases/__CASE_ID__/annotations",
+      scoresUrlTemplate: "/api/cases/__CASE_ID__/scores",
+      ratingsExportUrlTemplate: "/api/export/ratings/__CASE_ID__.__FORMAT__",
+      informationNeedUrlTemplate: "/api/export/queries/information_needs/__CASE_ID__.csv",
+      quepidExportUrlTemplate: "/api/export/cases/__CASE_ID__"
+    }
+  })
   controller.element.innerHTML = `
     <input type="radio" name="export-case-format" value="information_need">
     <input type="radio" name="export-case-format" value="general">
@@ -30,52 +61,6 @@ function buildModalController(overrides = {}) {
     <input type="radio" name="export-case-format" value="trec">
   `
   controller.formatTargets = [...controller.element.querySelectorAll('input[name="export-case-format"]')]
-
-  controller.snapshotsIndexUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots"
-  controller.hasSnapshotsIndexUrlTemplateValue = true
-  controller.snapshotShowUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots/__SNAPSHOT_ID__"
-  controller.caseUrlTemplateValue = "/api/cases/__CASE_ID__"
-  controller.queriesUrlTemplateValue = "/api/cases/__CASE_ID__/queries"
-  controller.annotationsUrlTemplateValue = "/api/cases/__CASE_ID__/annotations"
-  controller.scoresUrlTemplateValue = "/api/cases/__CASE_ID__/scores"
-  controller.ratingsExportUrlTemplateValue = "/api/export/ratings/__CASE_ID__.__FORMAT__"
-  controller.informationNeedUrlTemplateValue = "/api/export/queries/information_needs/__CASE_ID__.csv"
-  controller.quepidExportUrlTemplateValue = "/api/export/cases/__CASE_ID__"
-
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
-  controller.hasDetailedRadioTarget = true
-  controller.detailedRadioTarget = document.createElement("input")
-  controller.hasDetailedWarningTarget = true
-  controller.detailedWarningTarget = document.createElement("p")
-  controller.hasSnapshotRadioTarget = true
-  controller.snapshotRadioTarget = document.createElement("input")
-  controller.hasSnapshotSelectTarget = true
-  controller.snapshotSelectTarget = document.createElement("select")
-  controller.hasBasicRadioTarget = true
-  controller.basicRadioTarget = document.createElement("input")
-  controller.hasBasicSnapshotSelectTarget = true
-  controller.basicSnapshotSelectTarget = document.createElement("select")
-  controller.hasApiSnapshotSelectTarget = true
-  controller.apiSnapshotSelectTarget = document.createElement("select")
-  controller.hasApiSnapshotLinkTarget = true
-  controller.apiSnapshotLinkTarget = document.createElement("a")
-  controller.hasApiSnapshotWrapperTarget = true
-  controller.apiSnapshotWrapperTarget = document.createElement("span")
-  controller.hasCaseLinkTarget = true
-  controller.caseLinkTarget = document.createElement("a")
-  controller.hasQueriesLinkTarget = true
-  controller.queriesLinkTarget = document.createElement("a")
-  controller.hasAnnotationsLinkTarget = true
-  controller.annotationsLinkTarget = document.createElement("a")
-  controller.hasScoresLinkTarget = true
-  controller.scoresLinkTarget = document.createElement("a")
-  controller.hasRatingsLinkTarget = true
-  controller.ratingsLinkTarget = document.createElement("a")
-  controller.hasQuepidPeekLinkTarget = true
-  controller.quepidPeekLinkTarget = document.createElement("a")
 
   Object.assign(controller, overrides)
   return controller

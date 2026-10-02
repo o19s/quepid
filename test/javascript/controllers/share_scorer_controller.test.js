@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import ShareScorerController from "controllers/share_scorer_controller"
 
@@ -9,26 +10,20 @@ function buildController(overrides = {}) {
   submitButton.disabled = true
   unshareButton.disabled = true
 
-  const controller = Object.create(ShareScorerController.prototype)
-  controller.element = document.createElement("div")
+  const controller = buildControllerFixture(ShareScorerController, {
+    targets: {
+      title: document.createElement("h5"),
+      recordId: { value: "" },
+      unshareRecordId: { value: "" },
+      unshareTeamId: { value: "" },
+      sharedList: document.createElement("div"),
+      teamSelect,
+      submitButton,
+      unshareButton
+    }
+  })
   controller.identifier = "share-scorer"
   controller.selectedSharedTeamId = null
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasRecordIdTarget = true
-  controller.recordIdTarget = { value: "" }
-  controller.hasUnshareRecordIdTarget = true
-  controller.unshareRecordIdTarget = { value: "" }
-  controller.hasUnshareTeamIdTarget = true
-  controller.unshareTeamIdTarget = { value: "" }
-  controller.hasTeamSelectTarget = true
-  controller.teamSelectTarget = teamSelect
-  controller.hasSharedListTarget = true
-  controller.sharedListTarget = document.createElement("div")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = submitButton
-  controller.hasUnshareButtonTarget = true
-  controller.unshareButtonTarget = unshareButton
 
   Object.assign(controller, overrides)
   return controller
@@ -98,7 +93,6 @@ describe("ShareScorerController — Rails scorers index / teams", () => {
     expect(controller.submitButtonTarget.disabled).toBe(true)
     expect(controller.unshareButtonTarget.disabled).toBe(true)
   })
-
 
   it("toggleRailsSharedSelect toggles unshare footer", () => {
     const controller = buildController()

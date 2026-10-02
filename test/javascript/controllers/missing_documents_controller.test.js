@@ -1,21 +1,24 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it, vi } from "vitest"
 import MissingDocumentsController from "controllers/missing_documents_controller"
 
 function buildController(adapter) {
   const element = document.createElement("div")
   document.body.appendChild(element)
-  const controller = Object.create(MissingDocumentsController.prototype)
+  const controller = buildControllerFixture(MissingDocumentsController, {
+    targets: {
+      queryParams: document.createElement("textarea"),
+      searchButton: document.createElement("button"),
+      resetButton: document.createElement("button"),
+      status: document.createElement("div"),
+      results: document.createElement("div"),
+      next: document.createElement("button"),
+      spinner: document.createElement("span"),
+      engineName: document.createElement("strong")
+    }
+  })
   controller.element = element
   controller.adapter = adapter
-  controller.queryParamsTarget = document.createElement("textarea")
-  controller.hasQueryParamsTarget = true
-  controller.searchButtonTarget = document.createElement("button")
-  controller.resetButtonTarget = document.createElement("button")
-  controller.statusTarget = document.createElement("div")
-  controller.resultsTarget = document.createElement("div")
-  controller.nextTarget = document.createElement("button")
-  controller.spinnerTarget = document.createElement("span")
-  controller.engineNameTarget = document.createElement("strong")
   element.append(
     controller.queryParamsTarget,
     controller.searchButtonTarget,

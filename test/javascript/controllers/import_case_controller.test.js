@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import ImportCaseController from "controllers/import_case_controller"
@@ -7,13 +8,16 @@ vi.mock("api/fetch", () => ({
 }))
 
 function buildController() {
-  const controller = Object.create(ImportCaseController.prototype)
-  controller.formTarget = { action: "/api/import/cases" }
-  controller.fileInputTarget = { files: [] }
-  controller.alertTarget = document.createElement("div")
-  controller.submitButtonTarget = document.createElement("button")
-  controller.submitTextTarget = document.createElement("span")
-  controller.spinnerTarget = document.createElement("span")
+  const controller = buildControllerFixture(ImportCaseController, {
+    targets: {
+      form: { action: "/api/import/cases" },
+      fileInput: { files: [] },
+      alert: document.createElement("div"),
+      submitButton: document.createElement("button"),
+      submitText: document.createElement("span"),
+      spinner: document.createElement("span")
+    }
+  })
   controller.showAlert = vi.fn()
   controller.hideAlert = vi.fn()
   controller.setLoading = vi.fn()

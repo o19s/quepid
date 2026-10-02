@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import MapperWizardController from "controllers/mapper_wizard_controller"
@@ -11,26 +12,27 @@ function jsonResponse(body, status = 200) {
 }
 
 function buildController(overrides = {}) {
-  const controller = Object.create(MapperWizardController.prototype)
-
-  controller.searchUrlTarget = { value: "https://example.com/search" }
-  controller.hasHttpMethodTarget = true
-  controller.httpMethodTarget = { value: "GET" }
-  controller.hasTestQueryTarget = true
-  controller.testQueryTarget = { value: "" }
+  const controller = buildControllerFixture(MapperWizardController, {
+    targets: {
+      searchUrl: { value: "https://example.com/search" },
+      httpMethod: { value: "GET" },
+      testQuery: { value: "" },
+      fetchButton: document.createElement("button"),
+      htmlPreview: document.createElement("div"),
+      htmlPreviewContainer: document.createElement("div"),
+      step2: document.createElement("div"),
+      status: document.createElement("div")
+    },
+    values: {
+      fetchUrl: "/mapper_wizard/new/fetch_html"
+    }
+  })
   controller.hasCustomHeadersTarget = false
   controller.hasBasicAuthCredentialTarget = false
 
-  controller.fetchButtonTarget = document.createElement("button")
-  controller.fetchUrlValue = "/mapper_wizard/new/fetch_html"
-  controller.htmlPreviewTarget = document.createElement("div")
-  controller.htmlPreviewContainerTarget = document.createElement("div")
   controller.htmlPreviewContainerTarget.style = {}
-  controller.step2Target = document.createElement("div")
   controller.step2Target.style = {}
 
-  controller.statusTarget = document.createElement("div")
-  controller.hasStatusTarget = true
   controller.captureEditors = vi.fn()
   controller.setButtonLoading = vi.fn()
   controller.showStatus = vi.fn()

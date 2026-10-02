@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import ShareCaseCoreController from "controllers/share_case_core_controller"
@@ -8,12 +9,30 @@ vi.mock("api/fetch", () => ({
 }))
 
 function buildController(overrides = {}) {
-  const controller = Object.create(ShareCaseCoreController.prototype)
-  controller.element = document.createElement("div")
-  controller.teamsUrlValue = "/api/teams"
-  controller.hasTeamsUrlValue = true
-  controller.teamCasesUrlTemplateValue = "/api/teams/__TEAM_ID__/cases"
-  controller.teamCaseUrlTemplateValue = "/api/teams/__TEAM_ID__/cases/__CASE_ID__"
+  const controller = buildControllerFixture(ShareCaseCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      caseId: { value: "" },
+      unshareCaseId: { value: "" },
+      teamId: { value: "" },
+      unshareTeamId: { value: "" },
+      sharedList: document.createElement("div"),
+      submitButton: document.createElement("button"),
+      unshareButton: document.createElement("button"),
+      alert: document.createElement("div"),
+      loading: document.createElement("div"),
+      bodyContent: document.createElement("div"),
+      emptyShareable: document.createElement("div"),
+      sharePicker: document.createElement("div"),
+      shareableList: document.createElement("div"),
+      sharedSection: document.createElement("div")
+    },
+    values: {
+      teamsUrl: "/api/teams",
+      teamCasesUrlTemplate: "/api/teams/__TEAM_ID__/cases",
+      teamCaseUrlTemplate: "/api/teams/__TEAM_ID__/cases/__CASE_ID__"
+    }
+  })
   controller.selectedShareTeamId = null
   controller.selectedShareTeamName = null
   controller.selectedSharedTeamId = null
@@ -21,39 +40,9 @@ function buildController(overrides = {}) {
   controller.currentCaseId = null
   controller.allTeams = []
   controller.sharedTeams = []
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasCaseIdTarget = true
-  controller.caseIdTarget = { value: "" }
-  controller.hasUnshareCaseIdTarget = true
-  controller.unshareCaseIdTarget = { value: "" }
-  controller.hasTeamIdTarget = true
-  controller.teamIdTarget = { value: "" }
-  controller.hasUnshareTeamIdTarget = true
-  controller.unshareTeamIdTarget = { value: "" }
-  controller.hasSharedListTarget = true
-  controller.sharedListTarget = document.createElement("div")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
   controller.submitButtonTarget.classList.add("d-none")
-  controller.hasUnshareButtonTarget = true
-  controller.unshareButtonTarget = document.createElement("button")
   controller.unshareButtonTarget.classList.add("d-none")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasLoadingTarget = true
-  controller.loadingTarget = document.createElement("div")
-  controller.hasBodyContentTarget = true
-  controller.bodyContentTarget = document.createElement("div")
-  controller.hasEmptyShareableTarget = true
-  controller.emptyShareableTarget = document.createElement("div")
   controller.emptyShareableTarget.classList.add("d-none")
-  controller.hasSharePickerTarget = true
-  controller.sharePickerTarget = document.createElement("div")
-  controller.hasShareableListTarget = true
-  controller.shareableListTarget = document.createElement("div")
-  controller.hasSharedSectionTarget = true
-  controller.sharedSectionTarget = document.createElement("div")
   controller.sharedSectionTarget.classList.add("d-none")
 
   Object.assign(controller, overrides)

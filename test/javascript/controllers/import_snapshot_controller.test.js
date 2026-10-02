@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import ImportSnapshotController from "controllers/import_snapshot_controller"
@@ -108,15 +109,18 @@ describe("ImportSnapshotController importSnapshots", () => {
 const HEADER = "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
 
 function uiController() {
-  const controller = Object.create(ImportSnapshotController.prototype)
-  controller.alertTarget = document.createElement("div")
-  controller.submitButtonTarget = document.createElement("button")
-  controller.submitTextTarget = document.createElement("span")
-  controller.spinnerTarget = document.createElement("span")
-  controller.previewTarget = document.createElement("div")
+  const controller = buildControllerFixture(ImportSnapshotController, {
+    targets: {
+      alert: document.createElement("div"),
+      submitButton: document.createElement("button"),
+      submitText: document.createElement("span"),
+      spinner: document.createElement("span"),
+      preview: document.createElement("div"),
+      previewContent: document.createElement("pre"),
+      fileInput: { files: [] }
+    }
+  })
   controller.previewTarget.classList.add("d-none")
-  controller.previewContentTarget = document.createElement("pre")
-  controller.fileInputTarget = { files: [] }
   return controller
 }
 

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCoreController from "controllers/diff_core_controller"
 import { showStatusMessage } from "utils/status_message"
@@ -10,29 +11,29 @@ vi.mock("utils/status_message", () => ({
 }))
 
 function buildController() {
-  const controller = Object.create(DiffCoreController.prototype)
-  controller.element = document.createElement("div")
+  const controller = buildControllerFixture(DiffCoreController, {
+    targets: {
+      selections: document.createElement("div"),
+      title: document.createElement("h5"),
+      addButton: document.createElement("button"),
+      warning: document.createElement("div"),
+      processingWarning: document.createElement("div"),
+      deleteWarning: document.createElement("div"),
+      progress: document.createElement("div"),
+      updateButton: document.createElement("button"),
+      clearButton: document.createElement("button")
+    },
+    values: {
+      maxSnapshots: 5
+    }
+  })
+  controller.hasAlertTarget = true
   controller.snapshots = [
     { id: 2, name: "Weekly" },
     { id: 3, name: "Monthly" }
   ]
   controller.selectionValues = ["2"]
-  controller.maxSnapshotsValue = 5
   controller.deleteId = null
-  controller.hasSelectionsTarget = true
-  controller.selectionsTarget = document.createElement("div")
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.addButtonTarget = document.createElement("button")
-  controller.warningTarget = document.createElement("div")
-  controller.processingWarningTarget = document.createElement("div")
-  controller.deleteWarningTarget = document.createElement("div")
-  controller.hasProgressTarget = true
-  controller.progressTarget = document.createElement("div")
-  controller.hasUpdateButtonTarget = true
-  controller.updateButtonTarget = document.createElement("button")
-  controller.hasClearButtonTarget = true
-  controller.clearButtonTarget = document.createElement("button")
   controller.element.append(
     controller.selectionsTarget,
     controller.addButtonTarget,
@@ -42,7 +43,6 @@ function buildController() {
     controller.progressTarget
   )
   controller.element.insertAdjacentHTML("beforeend", "<div data-diff-core-target='alert'></div>")
-  controller.hasAlertTarget = true
   controller.alertTarget = controller.element.querySelector("[data-diff-core-target='alert']")
   return controller
 }

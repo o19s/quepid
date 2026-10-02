@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import TakeSnapshotCoreController from "controllers/take_snapshot_core_controller"
 
@@ -7,31 +8,22 @@ vi.mock("utils/bs_modal", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(TakeSnapshotCoreController.prototype)
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasNameInputTarget = true
-  controller.nameInputTarget = document.createElement("input")
-  controller.hasLookupFieldsTarget = true
-  controller.lookupFieldsTarget = document.createElement("div")
-  controller.hasNoLookupFieldsTarget = true
-  controller.noLookupFieldsTarget = document.createElement("div")
-  controller.hasFieldSpecTarget = true
-  controller.fieldSpecTarget = document.createElement("code")
-  controller.hasEngineNameTarget = true
-  controller.engineNameTarget = document.createElement("span")
-  controller.hasRecordFieldsCheckboxTarget = true
-  controller.recordFieldsCheckboxTarget = document.createElement("input")
+  const controller = buildControllerFixture(TakeSnapshotCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      alert: document.createElement("div"),
+      nameInput: document.createElement("input"),
+      lookupFields: document.createElement("div"),
+      noLookupFields: document.createElement("div"),
+      fieldSpec: document.createElement("code"),
+      engineName: document.createElement("span"),
+      recordFieldsCheckbox: document.createElement("input"),
+      submitButton: document.createElement("button"),
+      progress: document.createElement("div"),
+      cancelButton: document.createElement("button")
+    }
+  })
   controller.recordFieldsCheckboxTarget.type = "checkbox"
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
-  controller.hasProgressTarget = true
-  controller.progressTarget = document.createElement("div")
-  controller.hasCancelButtonTarget = true
-  controller.cancelButtonTarget = document.createElement("button")
-  controller.element = document.createElement("div")
 
   Object.assign(controller, overrides)
   return controller

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import JudgementsCoreController from "controllers/judgements_core_controller"
@@ -17,52 +18,39 @@ vi.mock("utils/flash", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(JudgementsCoreController.prototype)
-  controller.caseUrlTemplateValue = "/api/cases/__CASE_ID__"
-  controller.teamBooksUrlTemplateValue = "/api/teams/__TEAM_ID__/books"
+  const controller = buildControllerFixture(JudgementsCoreController, {
+    targets: {
+      title: document.createElement("h5"),
+      loading: document.createElement("div"),
+      noTeams: document.createElement("div"),
+      noBooks: document.createElement("div"),
+      bookPicker: document.createElement("div"),
+      bookList: document.createElement("ul"),
+      selectHint: document.createElement("div"),
+      integration: document.createElement("div"),
+      autoPopulateBookPairs: document.createElement("input"),
+      autoPopulateCaseJudgements: document.createElement("input"),
+      createBookLink: document.createElement("a"),
+      createBookEmptyLink: document.createElement("a"),
+      judgeLink: document.createElement("a"),
+      saveButton: document.createElement("button"),
+      error: document.createElement("div"),
+      progress: document.createElement("div"),
+      actionButton: [],
+      cancelButton: document.createElement("button")
+    },
+    values: {
+      caseUrlTemplate: "/api/cases/__CASE_ID__",
+      teamBooksUrlTemplate: "/api/teams/__TEAM_ID__/books",
+      newBookUrlTemplate: "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__",
+      judgeUrlTemplate: "books/__BOOK_ID__/judge"
+    }
+  })
   controller.refreshUrlTemplateValue =
     "/api/books/__BOOK_ID__/cases/__CASE_ID__/refresh?create_missing_queries=__CREATE_MISSING__&process_in_background=__BACKGROUND__"
-  controller.newBookUrlTemplateValue = "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__"
-  controller.judgeUrlTemplateValue = "books/__BOOK_ID__/judge"
 
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasLoadingTarget = true
-  controller.loadingTarget = document.createElement("div")
-  controller.hasNoTeamsTarget = true
-  controller.noTeamsTarget = document.createElement("div")
-  controller.hasNoBooksTarget = true
-  controller.noBooksTarget = document.createElement("div")
-  controller.hasBookPickerTarget = true
-  controller.bookPickerTarget = document.createElement("div")
-  controller.hasBookListTarget = true
-  controller.bookListTarget = document.createElement("ul")
-  controller.hasSelectHintTarget = true
-  controller.selectHintTarget = document.createElement("div")
-  controller.hasIntegrationTarget = true
-  controller.integrationTarget = document.createElement("div")
-  controller.hasAutoPopulateBookPairsTarget = true
-  controller.autoPopulateBookPairsTarget = document.createElement("input")
   controller.autoPopulateBookPairsTarget.type = "checkbox"
-  controller.hasAutoPopulateCaseJudgementsTarget = true
-  controller.autoPopulateCaseJudgementsTarget = document.createElement("input")
   controller.autoPopulateCaseJudgementsTarget.type = "checkbox"
-  controller.hasCreateBookLinkTarget = true
-  controller.createBookLinkTarget = document.createElement("a")
-  controller.hasCreateBookEmptyLinkTarget = true
-  controller.createBookEmptyLinkTarget = document.createElement("a")
-  controller.hasJudgeLinkTarget = true
-  controller.judgeLinkTarget = document.createElement("a")
-  controller.hasSaveButtonTarget = true
-  controller.saveButtonTarget = document.createElement("button")
-  controller.hasErrorTarget = true
-  controller.errorTarget = document.createElement("div")
-  controller.hasProgressTarget = true
-  controller.progressTarget = document.createElement("div")
-  controller.actionButtonTargets = []
-  controller.hasCancelButtonTarget = true
-  controller.cancelButtonTarget = document.createElement("button")
-  controller.element = document.createElement("div")
   controller.element.appendChild(controller.bookListTarget)
 
   Object.assign(controller, overrides)
