@@ -2,7 +2,7 @@
 
 > **Status:** plan only, nothing implemented. Background and sources:
 > `docs/todo/judge_calibration_research.md`. The escalation work depends on this
-> (`docs/todo/judgements-escalation.md` §1.1), but it stands on its own: any book with more than
+> (`docs/todo/escalating_judges.md` §5.2), but it stands on its own: any book with more than
 > one judge needs it.
 
 ## 1. The scenario
@@ -124,7 +124,7 @@ ask a judge to rate a **random sample of pairs another judge has already rated**
 
 This is the piece the escalation plan needs: the expensive judge rates a random sample of pairs
 the cheap judge answered confidently, and the confusion matrix between them is the calibration
-check (risk register §1.1, item 2).
+check (`escalating_judges.md` §5.2, item 2).
 
 ## 4. Code, in the order it would land
 
@@ -181,7 +181,7 @@ hand. Then confirm a pair of judges with too little overlap shows "not enough sh
 - **Over time.** A judge's agreement before and after a prompt edit is exactly what someone tuning
   a prompt wants, and needs either history or a snapshot per run.
 - **Labels changed mid-book.** Agreement between judgements made under different label wording
-  (risk register §7) measures the wording change as much as the judges. Nothing records which
+  (`escalating_judges.md` D5) measures the wording change as much as the judges. Nothing records which
   wording a judgement was made under, so this cannot be filtered yet.
 - **Export (S4).** Agreement in the export is useful to anyone training or evaluating on the book;
   whether it belongs in the existing export format or a separate report is undecided.

@@ -1,9 +1,8 @@
 # Judge calibration — how IR research and industry handle judges who disagree
 
-> **Status:** research note, no code. Feeds the calibration section of
-> `docs/todo/judgements-escalation.md` (§1.1) and the escalation plan in
-> `docs/todo/escalating_judges.md`. Every claim cites its source; where a point is our own
-> inference rather than a finding, it says so.
+> **Status:** research note, no code. Feeds the calibration section of the escalation plan
+> (`docs/todo/escalating_judges.md` §5.2) and `docs/todo/inter_judge_agreement.md`. Every claim
+> cites its source; where a point is our own inference rather than a finding, it says so.
 
 ## 1. The question
 
@@ -145,7 +144,7 @@ The measurement itself is planned in `docs/todo/inter_judge_agreement.md`.
    gold set: report each AI judge's α/κ and confusion matrix against them, as Bing did with
    first-party labels (§2.4.1).
 4. **Pick the threshold from data.** A confidence floor of 0.5 is a guess. With Jev's confidence
-   persisted (risk register §3) and a gold sample, the floor can be chosen as the point where
+   persisted (`escalating_judges.md` §5.3) and a gold sample, the floor can be chosen as the point where
    accepting the cheap judge's answer still meets an agreement target (§2.5).
 5. **Report, don't remap, in v1.** A per-judge confusion matrix could remap the expensive judge's
    grades onto the cheap judge's (§2.4.3), but it is opaque and needs enough overlap to estimate.
