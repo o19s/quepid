@@ -235,7 +235,7 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    await page.locator('a[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
     const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
     const shareCaseLink = judgementsModal.getByText('share case', { exact: true });

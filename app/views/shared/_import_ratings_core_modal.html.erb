@@ -85,5 +85,5 @@ Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3</pre>
 <% end %>
 
 <%= render "shared/modal_shell", id: "importRatingsModal", title: "Import into Case", dialog_class: "modal-xl",
-  data: { controller: "import-ratings-core", import_ratings_core_case_id_value: kase.id, import_ratings_core_ratings_url_value: api_import_ratings_path, import_ratings_core_information_needs_url_value: api_import_queries_information_needs_path, import_ratings_core_snapshots_url_value: api_case_snapshots_imports_path(case_id: kase.id) },
+  data: { controller: "import-ratings-core", action: "show.bs.modal->import-ratings-core#open", import_ratings_core_case_id_value: kase.id, import_ratings_core_ratings_url_value: api_import_ratings_path, import_ratings_core_information_needs_url_value: api_import_queries_information_needs_path, import_ratings_core_snapshots_url_value: api_case_snapshots_imports_path(case_id: kase.id) },
   title_data: { import_ratings_core_target: "title" }, footer: modal_footer, body: modal_body %>

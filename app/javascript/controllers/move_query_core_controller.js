@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { moveQuery } from "utils/query_lifecycle"
@@ -11,20 +11,14 @@ import coreFlash from "utils/core_flash"
  * the completion event lets the remaining live query object be reconciled
  * through the query-command bridge without issuing a second request.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = ["title", "loading", "empty", "caseList", "caseListLabel", "submitButton"]
 
   static values = {
     casesUrl: String
   }
 
-  get modalElementId() {
-    return "moveQueryModal"
-  }
-
-  async openAsRoot(event) {
-    const btn = event.currentTarget || event.target
-
+  async openFor(btn) {
     this.queryId = btn?.dataset?.moveQueryCoreQueryIdValue || ""
     this.currentCaseId = btn?.dataset?.moveQueryCoreCaseIdValue || ""
     this.selectedCase = null

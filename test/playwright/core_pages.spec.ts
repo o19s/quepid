@@ -115,7 +115,7 @@ test.describe('Core pages — interaction screenshots', () => {
 
     await page.keyboard.press('Escape');
 
-    await page.locator('a[data-controller="take-snapshot-core"]').click();
+    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
     await expect(page.locator('#takeSnapshotModal.show')).toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveScreenshot('rating-ui-04-snapshot-modal.png', {
       mask: dynamicRegions(page),
@@ -135,7 +135,7 @@ test.describe('Core pages — interaction screenshots', () => {
     await expandFirstQuery(page);
     await expect(page).toHaveScreenshot('scorer-config-01-before-scorer-modal.png', expandedCaseScreenshotOpts(page));
 
-    await page.locator('a[data-controller="pick-scorer-core"]').click();
+    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
     await expect(page.locator('#pickScorerModal.show')).toContainText(/How would you like to score/i);
     await expect(page).toHaveScreenshot('scorer-config-02-pick-scorer-modal.png', expandedCaseScreenshotOpts(page));
 

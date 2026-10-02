@@ -8,9 +8,6 @@ vi.mock("utils/bs_modal", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(TakeSnapshotCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
   controller.hasAlertTarget = true
@@ -56,7 +53,7 @@ describe("TakeSnapshotCoreController", () => {
     trigger.dataset.takeSnapshotCoreFieldSpecValue = "id:id title:title"
     trigger.dataset.takeSnapshotCoreSearchEngineValue = "vectara"
 
-    controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    controller.openFor(trigger)
 
     expect(controller.supportsLookup).toBe(false)
     expect(controller.lookupFieldsTarget.classList.contains("d-none")).toBe(true)
@@ -82,7 +79,7 @@ describe("TakeSnapshotCoreController", () => {
     trigger.dataset.takeSnapshotCoreIdValue = "3"
     trigger.dataset.takeSnapshotCoreSearchEngineValue = "solr"
 
-    controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    controller.openFor(trigger)
     controller.nameInputTarget.value = "Solr snap"
     controller.recordFieldsCheckboxTarget.checked = true
 
@@ -98,7 +95,7 @@ describe("TakeSnapshotCoreController", () => {
     const trigger = document.createElement("a")
     trigger.dataset.takeSnapshotCoreIdValue = "3"
     trigger.dataset.takeSnapshotCoreSearchEngineValue = "solr"
-    controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    controller.openFor(trigger)
 
     let capturedDone
     document.addEventListener("take-snapshot:create", (e) => {

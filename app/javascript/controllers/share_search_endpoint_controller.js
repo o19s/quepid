@@ -7,8 +7,4 @@ export default class extends ShareEntityControllerBase {
   get entityLabel() {
     return "Search Endpoint"
   }
-
-  get modalElementId() {
-    return "shareSearchEndpointModal"
-  }
 }

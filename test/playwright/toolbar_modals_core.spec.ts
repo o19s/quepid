@@ -96,7 +96,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     pickScorerCaseId = caseId;
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-controller="pick-scorer-core"]').click();
+    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
 
     const modal = page.locator('#pickScorerModal.show');
     await expect(modal).toBeVisible();
@@ -124,7 +124,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     takeSnapshotCaseId = caseId;
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-controller="take-snapshot-core"]').click();
+    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
 
     const modal = page.locator('#takeSnapshotModal.show');
     await expect(modal).toBeVisible();
@@ -159,7 +159,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     const teamId = await shareCaseWithFirstTeam(page, caseId);
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-controller="judgements-core"]').click();
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
 
     const modal = page.locator('#judgementsModal.show');
     await expect(modal).toBeVisible();

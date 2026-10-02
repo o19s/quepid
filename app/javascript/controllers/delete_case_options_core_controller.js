@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { submitDestructiveForm } from "utils/destructive_form"
 import { caseNameFromHeader } from "utils/case_header"
 
@@ -18,12 +18,9 @@ const ACTION_METHODS = {
  * Delete/archive options for the core case toolbar — list UI, form-post
  * (stay-Rails) transport, mirrors the former delete-case-options modal.
  *
- * One controller class instantiated on both the toolbar trigger and the
- * modal root (same dual-role pattern as share-case-core, shared via
- * ModalTriggerControllerBase): the trigger reads case id/name off its own
- * dataset and delegates to the modal-root instance.
+ * The toolbar trigger carries the case id.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [ "title", "optionButton", "description", "submitButton" ]
 
   static values = {
@@ -32,12 +29,7 @@ export default class extends ModalTriggerControllerBase {
     destroyQueriesUrlTemplate: String
   }
 
-  get modalElementId() {
-    return "deleteCaseOptionsModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.deleteCaseOptionsCoreIdValue
     const caseName = caseNameFromHeader()
 

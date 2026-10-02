@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
@@ -12,9 +12,8 @@ import { getQuepidRootUrl } from "utils/quepid_root"
  *
  * When the case's current scorer is missing from the accessible lists, it
  * stays selected and the warning banner shows.
- * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "item",
     "title",
@@ -35,12 +34,7 @@ export default class extends ModalTriggerControllerBase {
     communalScorersOnly: Boolean
   }
 
-  get modalElementId() {
-    return "pickScorerModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.pickScorerCoreIdValue
     const currentScorerId = btn?.dataset?.pickScorerCoreCurrentScorerIdValue
     const currentScorerName = btn?.dataset?.pickScorerCoreCurrentScorerNameValue

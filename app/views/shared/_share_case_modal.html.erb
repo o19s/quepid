@@ -35,7 +35,7 @@
 
 <%= render "shared/modal_shell", id: "shareCaseModal", title: "Share Case",
                                  dialog_class: "modal-lg",
-                                 data: { controller: "share-case" },
+                                 data: { controller: "share-case", action: "show.bs.modal->share-case#open" },
                                  title_data: { share_case_target: "title" },
                                  footer: modal_footer,
                                  body: modal_body %>

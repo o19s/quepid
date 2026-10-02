@@ -76,7 +76,7 @@ test.describe('core case header: rename (server-rendered Turbo Frame)', () => {
 
     // The toolbar sits outside the frame and carries no copy of the name: each modal reads it
     // live from the header when it opens. Prove that end to end rather than trusting the DOM.
-    await page.locator('a[data-controller="share-case-core"]').click();
+    await page.locator('a[data-bs-target="#shareCaseModal"]').click();
     await expect(page.locator('#shareCaseModal.show')).toContainText(`Share Case: ${newName}`, {
       timeout: 15_000
     });

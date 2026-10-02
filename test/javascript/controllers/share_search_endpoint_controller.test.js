@@ -11,15 +11,8 @@ function buildController(overrides = {}) {
 
   const controller = Object.create(ShareSearchEndpointController.prototype)
   controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.identifier = "share-search-endpoint"
   controller.selectedSharedTeamId = null
-  controller.idValue = ""
-  controller.nameValue = ""
-  controller.allTeamsJsonValue = ""
-  controller.sharedTeamsJsonValue = ""
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
   controller.hasRecordIdTarget = true
@@ -79,18 +72,21 @@ describe("ShareSearchEndpointController — Rails search endpoints index / teams
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
-  it("open reads its own Values-API data and populates the modal", () => {
-    const controller = buildController({
-      idValue: "5",
-      nameValue: "Index Endpoint",
-      allTeamsJsonValue: JSON.stringify([
+  it("open reads the clicked trigger's data attributes and populates the modal", () => {
+    const controller = buildController()
+    const trigger = document.createElement("button")
+    trigger.setAttribute("data-share-search-endpoint-id-value", "5")
+    trigger.setAttribute("data-share-search-endpoint-name-value", "Index Endpoint")
+    trigger.setAttribute(
+      "data-share-search-endpoint-all-teams-json-value",
+      JSON.stringify([
         { id: 1, name: "OSC" },
         { id: 2, name: "Other" }
-      ]),
-      sharedTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }])
-    })
+      ])
+    )
+    trigger.setAttribute("data-share-search-endpoint-shared-teams-json-value", JSON.stringify([{ id: 1, name: "OSC" }]))
 
-    controller.open()
+    controller.open({ target: controller.element, relatedTarget: trigger })
 
     expect(controller.titleTarget.textContent).toBe("Share Search Endpoint: Index Endpoint")
     expect(controller.recordIdTarget.value).toBe("5")
@@ -103,36 +99,6 @@ describe("ShareSearchEndpointController — Rails search endpoints index / teams
     expect(controller.unshareButtonTarget.disabled).toBe(true)
   })
 
-  it("a non-root trigger delegates its own values to the modal root's openWith", () => {
-    const modalElement = document.createElement("div")
-    modalElement.id = "shareSearchEndpointModal"
-    document.body.appendChild(modalElement)
-
-    const modalController = buildController()
-    const openWithSpy = vi.spyOn(modalController, "openWith")
-
-    const trigger = buildController({
-      hasTitleTarget: false,
-      idValue: "7",
-      nameValue: "Trigger Endpoint",
-      allTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }]),
-      sharedTeamsJsonValue: "[]",
-      application: {
-        getControllerForElementAndIdentifier: vi.fn(() => modalController)
-      }
-    })
-
-    trigger.open()
-
-    expect(openWithSpy).toHaveBeenCalledWith({
-      id: "7",
-      name: "Trigger Endpoint",
-      allTeamsJson: JSON.stringify([{ id: 1, name: "OSC" }]),
-      sharedTeamsJson: "[]"
-    })
-
-    modalElement.remove()
-  })
 
   it("toggleRailsSharedSelect toggles unshare footer", () => {
     const controller = buildController()

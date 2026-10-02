@@ -186,22 +186,18 @@ describe("ImportRatingsCoreController", () => {
     document.body.innerHTML =
       '<turbo-frame id="case_header"><div data-case-header-case-name="Renamed case"></div></turbo-frame>'
 
-    instance.openAsRoot({ preventDefault: vi.fn() })
+    instance.openFor(null)
 
     expect(instance.titleTarget.textContent).toBe("Import into Case: Renamed case")
     expect(instance.reset).toHaveBeenCalledOnce()
   })
 
-  it("opens its own modal root even when an earlier element has the same ID", () => {
-    const decoy = document.createElement("div")
-    decoy.id = "importRatingsModal"
-    document.body.appendChild(decoy)
+  it("leaves showing the modal to Bootstrap when it opens", () => {
     const instance = modalController()
 
-    instance.openAsRoot()
+    instance.openFor(null)
 
-    expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
-    expect(showBsModal).toHaveBeenCalledOnce()
+    expect(showBsModal).not.toHaveBeenCalled()
   })
 
   it("clears everything from the previous import when reopened", async () => {

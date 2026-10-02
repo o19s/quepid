@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { HttpError } from "api/http_error"
 import { showFlash } from "utils/flash"
@@ -23,13 +23,9 @@ function httpErrorFor(response) {
  * Every format is reconstructed from persisted API data plus the live
  * document read model for "detailed" exports.
  *
- * Same dual-role pattern as share/clone/delete-case-options-core (shared via
- * ModalTriggerControllerBase): the trigger reads case id/name off its own
- * dataset and delegates to the modal-root instance.
+ * The toolbar trigger carries the case id and whether detailed export is supported.
  */
-export default class extends ModalTriggerControllerBase {
-  modalElementId = "exportCaseModal"
-
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "format",
@@ -63,8 +59,7 @@ export default class extends ModalTriggerControllerBase {
     quepidExportUrlTemplate: String
   }
 
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.exportCaseCoreIdValue
     const caseName = caseNameFromHeader()
     const supportsDetailedExport = btn?.dataset?.exportCaseCoreSupportsDetailedExportValue !== "false"

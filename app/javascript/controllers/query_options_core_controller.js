@@ -1,7 +1,7 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { fromTextArea } from "modules/editor"
-import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
+import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
 
 /**
@@ -9,21 +9,16 @@ import coreFlash from "utils/core_flash"
  * so the successful save is handed back through a document event for the
  * existing query/scoring adapter to consume.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = ["title", "editor", "saveButton"]
 
-  get modalElementId() {
-    return "queryOptionsModal"
-  }
-
   connect() {
-    if (!this.isModalRoot || !this.hasEditorTarget) return
+    if (!this.hasEditorTarget) return
 
     this.editor = fromTextArea(this.editorTarget, { mode: "json", height: 400 })
   }
 
-  openAsRoot(event) {
-    const button = event.currentTarget || event.target
+  openFor(button) {
     this.queryId = button?.dataset?.queryOptionsCoreQueryIdValue || ""
     this.saveUrl = button?.dataset?.queryOptionsCoreSaveUrlValue || ""
 
@@ -32,8 +27,6 @@ export default class extends ModalTriggerControllerBase {
     }
     if (this.hasTitleTarget) this.titleTarget.textContent = "Query Options"
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
-
-    showBsModal(getOrCreateBsModal(this.element))
   }
 
   formatOptions(rawOptions) {

@@ -10,13 +10,14 @@ import {
  * share-case/share-book/share-scorer/share-search-endpoint: `<select>` + two form
  * POSTs + redirect.
  *
- * Each row's trigger button carries `data-controller="<identifier>"` alongside this
- * controller's own `id`/`name`/`allTeamsJson`/`sharedTeamsJson` values — Stimulus
- * reads those straight off the button via the Values API. The modal element (also
- * `data-controller="<identifier>"`, elsewhere in the DOM) is the "modal root"
- * instance; a trigger's `open()` hands its values to the modal root's `openWith`.
+ * The controller lives only on the modal element, which declares
+ * `show.bs.modal-><identifier>#open`. Each row's share button is a plain
+ * `data-bs-toggle="modal"` trigger carrying `data-<identifier>-id-value`,
+ * `-name-value`, `-all-teams-json-value`, and `-shared-teams-json-value`.
+ * Bootstrap passes the clicked button as `event.relatedTarget`, and `open`
+ * reads those attributes off it.
  *
- * A concrete controller only needs to supply `entityLabel` and `modalElementId`.
+ * A concrete controller only needs to supply `entityLabel`.
  */
 export default class extends Controller {
   static targets = [
@@ -30,39 +31,22 @@ export default class extends Controller {
     "sharedList"
   ]
 
-  static values = {
-    id: String,
-    name: String,
-    allTeamsJson: String,
-    sharedTeamsJson: String
-  }
-
   connect() {
-    if (!this.isModalRoot) return
     this.selectedSharedTeamId = null
   }
 
-  get isModalRoot() {
-    return this.hasTitleTarget
-  }
-
   open(event) {
-    event?.preventDefault?.()
+    // show.bs.modal bubbles; ignore it when it comes from a nested modal.
+    if (event.target !== this.element) return
 
-    const data = {
-      id: this.idValue,
-      name: this.nameValue,
-      allTeamsJson: this.allTeamsJsonValue,
-      sharedTeamsJson: this.sharedTeamsJsonValue
-    }
-
-    if (this.isModalRoot) {
-      this.openWith(data)
-      return
-    }
-
-    const modalController = this.modalController()
-    if (modalController) modalController.openWith(data)
+    const trigger = event.relatedTarget
+    const read = (name) => trigger?.getAttribute?.(`data-${this.identifier}-${name}-value`) ?? ""
+    this.openWith({
+      id: read("id"),
+      name: read("name"),
+      allTeamsJson: read("all-teams-json"),
+      sharedTeamsJson: read("shared-teams-json")
+    })
   }
 
   openWith({ id, name, allTeamsJson, sharedTeamsJson }) {
@@ -79,13 +63,6 @@ export default class extends Controller {
     this.rebuildTeamDropdown(allTeamsJson, sharedTeamsJson)
     this.toggleSubmit()
     this.renderSharedTeamsFromJson(sharedTeamsJson)
-  }
-
-  modalController() {
-    const modal = document.getElementById(this.modalElementId)
-    if (!modal) return null
-
-    return this.application.getControllerForElementAndIdentifier(modal, this.identifier)
   }
 
   toggleSubmit() {

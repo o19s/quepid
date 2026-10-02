@@ -11,15 +11,8 @@ function buildController(overrides = {}) {
 
   const controller = Object.create(ShareScorerController.prototype)
   controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.identifier = "share-scorer"
   controller.selectedSharedTeamId = null
-  controller.idValue = ""
-  controller.nameValue = ""
-  controller.allTeamsJsonValue = ""
-  controller.sharedTeamsJsonValue = ""
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
   controller.hasRecordIdTarget = true
@@ -79,18 +72,21 @@ describe("ShareScorerController — Rails scorers index / teams", () => {
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
-  it("open reads its own Values-API data and populates the modal", () => {
-    const controller = buildController({
-      idValue: "5",
-      nameValue: "Index Scorer",
-      allTeamsJsonValue: JSON.stringify([
+  it("open reads the clicked trigger's data attributes and populates the modal", () => {
+    const controller = buildController()
+    const trigger = document.createElement("button")
+    trigger.setAttribute("data-share-scorer-id-value", "5")
+    trigger.setAttribute("data-share-scorer-name-value", "Index Scorer")
+    trigger.setAttribute(
+      "data-share-scorer-all-teams-json-value",
+      JSON.stringify([
         { id: 1, name: "OSC" },
         { id: 2, name: "Other" }
-      ]),
-      sharedTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }])
-    })
+      ])
+    )
+    trigger.setAttribute("data-share-scorer-shared-teams-json-value", JSON.stringify([{ id: 1, name: "OSC" }]))
 
-    controller.open()
+    controller.open({ target: controller.element, relatedTarget: trigger })
 
     expect(controller.titleTarget.textContent).toBe("Share Scorer: Index Scorer")
     expect(controller.recordIdTarget.value).toBe("5")
@@ -103,36 +99,6 @@ describe("ShareScorerController — Rails scorers index / teams", () => {
     expect(controller.unshareButtonTarget.disabled).toBe(true)
   })
 
-  it("a non-root trigger delegates its own values to the modal root's openWith", () => {
-    const modalElement = document.createElement("div")
-    modalElement.id = "shareScorerModal"
-    document.body.appendChild(modalElement)
-
-    const modalController = buildController()
-    const openWithSpy = vi.spyOn(modalController, "openWith")
-
-    const trigger = buildController({
-      hasTitleTarget: false,
-      idValue: "7",
-      nameValue: "Trigger Scorer",
-      allTeamsJsonValue: JSON.stringify([{ id: 1, name: "OSC" }]),
-      sharedTeamsJsonValue: "[]",
-      application: {
-        getControllerForElementAndIdentifier: vi.fn(() => modalController)
-      }
-    })
-
-    trigger.open()
-
-    expect(openWithSpy).toHaveBeenCalledWith({
-      id: "7",
-      name: "Trigger Scorer",
-      allTeamsJson: JSON.stringify([{ id: 1, name: "OSC" }]),
-      sharedTeamsJson: "[]"
-    })
-
-    modalElement.remove()
-  })
 
   it("toggleRailsSharedSelect toggles unshare footer", () => {
     const controller = buildController()

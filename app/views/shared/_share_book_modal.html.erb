@@ -34,7 +34,7 @@
 
 <%= render "shared/modal_shell", id: "shareBookModal", title: "Share Book",
                                  dialog_class: "modal-lg",
-                                 data: { controller: "share-book" },
+                                 data: { controller: "share-book", action: "show.bs.modal->share-book#open" },
                                  title_data: { share_book_target: "title" },
                                  footer: modal_footer,
                                  body: modal_body %>

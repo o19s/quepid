@@ -34,11 +34,11 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
               <button class="btn btn-outline-secondary btn-sm" data-controller="missing-documents" data-missing-documents-query-id-value="${queryId}" data-action="click->missing-documents#open">Missing Documents</button>
             </div>
             <div class="btn-group me-2">
-              <button class="btn btn-outline-secondary btn-sm" data-controller="query-options-core" data-query-options-core-query-id-value="${queryId}" data-query-options-core-save-url-value="api/cases/${caseId}/queries/${queryId}/options" data-query-options-core-options-value="${queryOptionsData}" data-bs-toggle="modal" data-bs-target="#queryOptionsModal" data-action="click->query-options-core#open">Set Options</button>
+              <button class="btn btn-outline-secondary btn-sm" data-query-options-core-query-id-value="${queryId}" data-query-options-core-save-url-value="api/cases/${caseId}/queries/${queryId}/options" data-query-options-core-options-value="${queryOptionsData}" data-bs-toggle="modal" data-bs-target="#queryOptionsModal">Set Options</button>
             </div>
           </div>
           <div class="btn-group">
-            <button class="btn btn-warning btn-sm" data-controller="move-query-core" data-move-query-core-query-id-value="${queryId}" data-move-query-core-case-id-value="${caseId}" data-bs-toggle="modal" data-bs-target="#moveQueryModal" data-action="click->move-query-core#open">Move Query</button>
+            <button class="btn btn-warning btn-sm" data-move-query-core-query-id-value="${queryId}" data-move-query-core-case-id-value="${caseId}" data-bs-toggle="modal" data-bs-target="#moveQueryModal">Move Query</button>
             <button class="btn btn-danger btn-sm" data-controller="query-delete" data-query-delete-query-id-value="${queryId}" data-query-delete-delete-url-value="api/cases/${caseId}/queries/${queryId}" data-action="click->query-delete#remove">Delete Query</button>
           </div>
         </div>

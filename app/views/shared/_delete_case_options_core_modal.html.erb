@@ -40,6 +40,7 @@
 <%= render "shared/modal_shell", id: "deleteCaseOptionsModal", title: "Delete Options for Case",
                                  data: {
                                    controller: "delete-case-options-core",
+                                   action: "show.bs.modal->delete-case-options-core#open",
                                    delete_case_options_core_archive_url_template_value: archive_case_path(id: '__CASE_ID__'),
                                    delete_case_options_core_destroy_url_template_value: case_path(id: '__CASE_ID__'),
                                    delete_case_options_core_destroy_queries_url_template_value: case_queries_path(id: '__CASE_ID__')

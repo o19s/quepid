@@ -321,7 +321,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    await page.locator('a[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
     const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
     const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
@@ -341,7 +341,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('clone-case popover', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('a[data-controller="clone-case-core"]').click();
+    await page.locator('a[data-bs-target="#cloneCaseModal"]').click();
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 760 });
@@ -353,7 +353,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('a[data-controller="judgements-core"]').getByText('Judgements', { exact: true }).click();
+    await page.locator('a[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
     const modal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
@@ -365,7 +365,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('import-ratings modal', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('a[data-controller="import-ratings-core"]').click();
+    await page.locator('a[data-bs-target="#importRatingsModal"]').click();
     const modal = page.locator('#importRatingsModal.show');
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 900 });

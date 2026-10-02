@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { searchEngineDisplayName } from "utils/search_engine_name"
 import { supportsLookupById } from "utils/search_engines"
@@ -7,10 +7,8 @@ import { supportsLookupById } from "utils/search_engines"
  * Take-snapshot modal for the core case toolbar. Collects name + optional
  * document-fields checkbox, then dispatches `take-snapshot:create` so the
  * Stimulus snapshot bridge can build the payload from live query results.
- *
- * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "alert",
@@ -25,12 +23,7 @@ export default class extends ModalTriggerControllerBase {
     "cancelButton"
   ]
 
-  get modalElementId() {
-    return "takeSnapshotModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.takeSnapshotCoreIdValue
     const fieldSpec = btn?.dataset?.takeSnapshotCoreFieldSpecValue || ""
     const searchEngine = btn?.dataset?.takeSnapshotCoreSearchEngineValue || ""

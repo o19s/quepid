@@ -37,10 +37,11 @@ export function getOrCreateBsModal(element, options) {
 
 /**
  * @param {import("bootstrap").Modal | null | undefined} instance
+ * @param {object} [relatedTarget] passed to listeners as `show.bs.modal`'s `event.relatedTarget`
  */
-export function showBsModal(instance) {
+export function showBsModal(instance, relatedTarget) {
   if (!instance) return
-  instance.show()
+  instance.show(relatedTarget)
 }
 
 /**

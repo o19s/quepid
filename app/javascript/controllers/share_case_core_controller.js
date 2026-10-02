@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 import {
@@ -11,9 +11,8 @@ import { caseNameFromHeader } from "utils/case_header"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
- * Dual-role trigger/modal-root pattern shared via ModalTriggerControllerBase.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "alert",
     "loading",
@@ -39,8 +38,6 @@ export default class extends ModalTriggerControllerBase {
   }
 
   connect() {
-    if (!this.isModalRoot) return
-
     this.selectedShareTeamId = null
     this.selectedShareTeamName = null
     this.selectedSharedTeamId = null
@@ -50,12 +47,7 @@ export default class extends ModalTriggerControllerBase {
     this.sharedTeams = []
   }
 
-  get modalElementId() {
-    return "shareCaseModal"
-  }
-
-  async openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  async openFor(btn) {
     const caseId = btn?.dataset?.shareCaseCoreIdValue
     const caseName = caseNameFromHeader()
 
@@ -81,19 +73,12 @@ export default class extends ModalTriggerControllerBase {
     }
   }
 
+  // Opened by another modal (judgements) rather than a toolbar link, so
+  // there is no real trigger. Hand Bootstrap a stand-in carrying the case id.
   openFromExternal(event) {
     const detail = event.detail || {}
-    if (this.element) {
-      showBsModal(getOrCreateBsModal(this.element))
-    }
-
-    return this.open({
-      preventDefault: () => {},
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: String(detail.caseNo ?? "")
-        }
-      }
+    showBsModal(getOrCreateBsModal(this.element), {
+      dataset: { shareCaseCoreIdValue: String(detail.caseNo ?? "") }
     })
   }
 

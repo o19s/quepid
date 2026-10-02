@@ -252,7 +252,7 @@ describe("queries_list_controller", () => {
     controller.renderSearchResults(row, { queryId: 7, caseNo: 4, options: {} })
 
     expect(row.querySelector('[data-controller="search-results"]')).not.toBeNull()
-    expect(row.querySelector('[data-controller="query-options-core"]')).not.toBeNull()
+    expect(row.querySelector('[data-bs-target="#queryOptionsModal"]')).not.toBeNull()
     expect(row.querySelector('[data-controller="missing-documents"]')).not.toBeNull()
   })
 

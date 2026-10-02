@@ -18,9 +18,6 @@ vi.mock("utils/flash", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(JudgementsCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.caseUrlTemplateValue = "/api/cases/__CASE_ID__"
   controller.teamBooksUrlTemplateValue = "/api/teams/__TEAM_ID__/books"
   controller.refreshUrlTemplateValue =
@@ -118,7 +115,7 @@ describe("JudgementsCoreController", () => {
     trigger.dataset.judgementsCoreIdValue = "42"
     trigger.dataset.judgementsCoreScorerIdValue = "7"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(false)
     expect(controller.createBookLinkTarget.href).toContain("books/new?scorer_id=7&origin_case_id=42")
@@ -154,7 +151,7 @@ describe("JudgementsCoreController", () => {
     trigger.dataset.judgementsCoreIdValue = "42"
     trigger.dataset.judgementsCoreBookIdValue = "2"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.books[0].id).toBe(2)
     expect(controller.hasUnsavedChanges()).toBe(false)
@@ -185,7 +182,7 @@ describe("JudgementsCoreController", () => {
     trigger.dataset.judgementsCoreIdValue = "42"
     trigger.dataset.judgementsCoreBookIdValue = "2"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.savedBookId).toBe(7)
     expect(controller.activeBookId).toBe(7)
@@ -212,7 +209,7 @@ describe("JudgementsCoreController", () => {
     const trigger = document.createElement("a")
     trigger.dataset.judgementsCoreIdValue = "42"
     trigger.dataset.judgementsCoreBookIdValue = "2"
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     const documentsStore = window.quepidStore?.documents
       || (await import("stores/query_documents_store")).queryDocumentsStore
@@ -246,7 +243,7 @@ describe("JudgementsCoreController", () => {
     const controller = buildModalController()
     const trigger = document.createElement("a")
     trigger.dataset.judgementsCoreIdValue = "42"
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     controller.selectBook({ params: { bookId: 2 } })
 

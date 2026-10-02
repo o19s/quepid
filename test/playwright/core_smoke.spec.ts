@@ -384,7 +384,7 @@ test.describe('core layout golden paths', () => {
   test('take a snapshot', async ({ page }) => {
     await gotoCase(page);
     // queriesLayout.html — Stimulus take-snapshot-core toolbar trigger
-    await page.locator('a[data-controller="take-snapshot-core"]').click();
+    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
     await expect(page.locator('#takeSnapshotModal.show, .modal.show').first()).toBeVisible({ timeout: 5_000 });
     await expect(page).toHaveScreenshot('snapshot-modal.png', {
       mask: dynamicRegions(page),

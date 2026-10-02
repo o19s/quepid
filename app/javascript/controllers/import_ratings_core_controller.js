@@ -1,6 +1,6 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
-import { hideBsModal, showBsModal, getOrCreateBsModal } from "utils/bs_modal"
+import { hideBsModal, getOrCreateBsModal } from "utils/bs_modal"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
 import { parseCsv } from "utils/csv"
@@ -12,7 +12,7 @@ const REQUIRED_HEADERS = {
 }
 
 /** Core case import modal. Keeps the established core import formats and wording. */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title", "alert", "content", "warning", "warningText", "loading", "importButton",
     "clearQueries", "createQueries", "csvFile", "rreFile", "ltrFile",
@@ -27,10 +27,6 @@ export default class extends ModalTriggerControllerBase {
     snapshotsUrl: String
   }
 
-  get modalElementId() {
-    return "importRatingsModal"
-  }
-
   initialize() {
     this.selectedType = ""
     this.files = {}
@@ -40,11 +36,9 @@ export default class extends ModalTriggerControllerBase {
     if (this.hasLoadingTarget) this.loadingTarget.classList.add("d-none")
   }
 
-  openAsRoot(event) {
-    event?.preventDefault?.()
+  openFor() {
     this.reset()
     if (this.hasTitleTarget) this.titleTarget.textContent = `Import into Case: ${caseNameFromHeader()}`
-    showBsModal(getOrCreateBsModal(this.element))
   }
 
   reset() {

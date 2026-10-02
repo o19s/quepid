@@ -13,9 +13,6 @@ vi.mock("utils/bs_modal", () => ({
 function buildController(overrides = {}) {
   const controller = Object.create(MoveQueryCoreController.prototype)
   controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.casesUrlValue = "/api/cases"
   controller.hasCasesUrlValue = true
   controller.hasTitleTarget = true
@@ -66,7 +63,7 @@ describe("MoveQueryCoreController", () => {
   it("loads and filters the current case while preserving the list-group UI", async () => {
     const controller = buildController()
 
-    await controller.open({ preventDefault: vi.fn(), currentTarget: trigger() })
+    await controller.openFor(trigger())
 
     expect(controller.queryId).toBe("12")
     expect(controller.currentCaseId).toBe("4")
@@ -79,7 +76,7 @@ describe("MoveQueryCoreController", () => {
 
   it("selects a case and moves the query through the API command seam", async () => {
     const controller = buildController()
-    await controller.open({ preventDefault: vi.fn(), currentTarget: trigger() })
+    await controller.openFor(trigger())
 
     const caseButton = controller.caseListTarget.querySelector("button")
     expect(caseButton.dataset.moveQueryCoreCaseIdParam).toBe("8")

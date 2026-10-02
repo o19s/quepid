@@ -34,7 +34,7 @@
 
 <%= render "shared/modal_shell", id: "shareScorerModal", title: "Share Scorer",
                                  dialog_class: "modal-lg",
-                                 data: { controller: "share-scorer" },
+                                 data: { controller: "share-scorer", action: "show.bs.modal->share-scorer#open" },
                                  title_data: { share_scorer_target: "title" },
                                  footer: modal_footer,
                                  body: modal_body %>

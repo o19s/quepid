@@ -202,9 +202,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-10-02T16:23:05Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main 86e3de9f (Playwright MCP, read-only): cases-list share icon on already-shared case 6 opened the modal; selecting OSC under 'Already shared with' highlighted it and enabled Unshare, identical to main. Not covered live: submitting share/unshare, flashes, repeat-action alerts."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened the share modal from the cases list and the team page on both, pixel-identical, title and team lists filled from the clicked row. Playwright E2E cases-index share specs and teams 'share a case from the cases index' pass. Not covered live: submitting a share/unshare."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js"]
 
   "04":
@@ -230,15 +230,15 @@ parts:
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js"]
       "4.4":
         title: "Move a query to another case"
-        last_run: 2026-10-02T18:58:27Z
-        result: pass_with_fixes
-        notes: "FIXED: the Move Query modal lost main's 'Select a case:' label and showed a disabled Move button before a choice. The label now shows once cases load, and the button stays hidden until a case is picked (move_query_core_controller.js, unit-tested). Covered live: label present, button hidden, then 'Move to SEARCHAPI CASE' after selecting. Not covered live: completing a move after the fix (verified in the 18:25 sweep); Escape after selection is logged in todo.md. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/fixed/."
+        last_run: 2026-10-02T19:27:27Z
+        result: pass
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Move Query from an expanded row on both, pixel-identical, current case excluded from the list. E2E 'move query ... submits through the query API seam' passes. Not covered live: submitting a move."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/quepid_search.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: invalid JSON flashes 'Please provide a valid JSON object.' and keeps the modal open; valid JSON saves with 'Query options saved successfully.' and closes it, on both sides. Not covered live: save-failure flash. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Set Options from an expanded row on both, pixel-identical. E2E 'query options saves through the Stimulus modal' passes. Not covered live: saving."
         paths: ["app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.6":
         title: "Rate a document"
@@ -254,9 +254,9 @@ parts:
         paths: ["app/models/score.rb", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/ratings_store.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/core_stimulus.js", "config/importmap.rb", "app/views/core/index.html.erb", "app/assets/stylesheets/qscore.css", "app/javascript/utils/live_query_runtime_owner.js"]
       "4.8":
         title: "Select a scorer for the case"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: pick-scorer modal lists the same communal scorers, empty custom list and Create New Scorer on both sides; differences are BS5 styling only. Not covered live: saving a different scorer, inaccessible-scorer warning. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Select scorer on both, pixel-identical, current scorer selected. E2E 'select scorer saves via API and closes the modal' and the header-rename scorer spec pass. Not covered live: saving."
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
@@ -366,15 +366,15 @@ parts:
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: 'retro snap' snapshot created, the modal closes and it appears in the Compare selector on both sides. Not covered live: Record Document Fields. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Create snapshot on both, pixel-identical, field spec shown from the trigger. E2E 'take a snapshot' and 'take snapshot creates via bridge' pass. Not covered live: creating one."
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-10-02T18:58:27Z
-        result: pass_with_fixes
-        notes: "FIXED: an expanded query in compare mode shows the side-by-side Current Results and snapshot columns again. query_documents.js derives resultsView from diffs.searchers, and a latent classList.add('') crash for matching documents in renderDiffResults is fixed; both unit-tested. Covered live: 'Current Results' beside '(9/30/2026) Fetch [COMPLETED]', no console errors, and Clear returns to the normal results view. Not covered live: multi-snapshot compare. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/fixed/."
+        last_run: 2026-10-02T19:27:27Z
+        result: pass
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Compare snapshots on both, pixel-identical. E2E 'creating a snapshot lists it in the compare-snapshots picker' passes. Not covered live: applying a comparison."
         paths: ["app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/quepid_search.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/core.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts"]
       "5.4":
         title: "Annotations"
@@ -394,39 +394,39 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: the Export modal and its format descriptions are identical on both sides. Not covered live: downloads. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Export on both, pixel-identical. Not covered: any download (no E2E covers export)."
         paths: ["app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-10-02T18:58:27Z
-        result: pass_with_fixes
-        notes: "FIXED: the Import modal restores main's per-format help on all three tabs (CSV and info-need headers with samples, RRE and LTR notes, snapshot columns and Case ID note), the help popovers, 'Please select the file format', the per-type override warnings, and hides empty preview boxes. Covered live: help text present, no empty previews, CSV warning wording. Not covered live: actual imports. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/fixed/."
+        last_run: 2026-10-02T19:27:27Z
+        result: pass
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Import on both, pixel-identical, title from the case header. Not covered: any import."
         paths: ["app/controllers/api/v1/import/ratings_controller.rb", "app/controllers/api/v1/import/queries/information_needs_controller.rb", "app/services/snapshot_importer.rb", "app/javascript/controllers/import_ratings_core_controller.js", "app/views/shared/_import_ratings_core_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "test/javascript/controllers/import_ratings_core_controller.test.js", "test/playwright/dom_migration_screenshots.spec.ts"]
       "6.3":
         title: "Clone a case"
-        last_run: 2026-10-02T15:02:15Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "Covered live via Playwright MCP: Clone blank name disabled submit; named clone with queries/ratings created and loaded results. Not covered live: Full history, no queries and failure."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Clone on both, pixel-identical. E2E 'cloning a case creates a new case and navigates to it' passes."
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/views/core/_case_toolbar.html.erb"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
-        last_run: 2026-10-01T01:36:22Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "Covered live on disposable clones: the Delete Options modal keeps the footer disabled until an option is picked and the footer label and warning copy match each option; Delete All Queries removed the queries and their ratings but kept the case, its annotation and its snapshot (verified in the DB); Archive Case went to /cases with 'Case MT clone of 468 archived.'; Delete Case went to /cases with 'Case Movies Search deleted.' and the row is gone. Not covered: forced server failures."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Delete options on both, pixel-identical. E2E 'Delete All Queries' and 'Delete Case' specs pass. Not covered: Archive."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-10-02T16:22:54Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main 86e3de9f (read-only): in-case Share case modal lists OSC under 'Already shared with'; selecting it enables 'Unshare from OSC' as on main. Current modal omits main's 'No teams to share with?' prompt for users who have teams (intentional earlier change). Not covered live: submitting share/unshare, Create a team shortcut."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Share case from the toolbar on both, pixel-identical. E2E share_case and share_case_smoke specs pass, including share-then-unshare and the judgements 'share case' link (openFromExternal)."
         paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: the Judgements modal lists the same books, and choosing Book of Ratings reveals the same Case Integration controls, on both sides. Not covered live: Save, Populate Now, Refresh Ratings, Sync Queries. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened Judgements on both, pixel-identical (no-teams state for this user). E2E 'judgements modal links a book and saves settings' passes."
         paths: ["app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
@@ -494,9 +494,9 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
-        last_run: 2026-10-02T16:23:07Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main 86e3de9f (read-only): share modal for already-shared endpoint 3 lists OSC; selecting it highlights the row and enables Unshare, identical to main. Not covered live: submitting share/unshare and their flashes."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened the share modal from /search_endpoints and the team page on both, pixel-identical, already-shared team listed. Not covered: submitting a share/unshare."
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
@@ -610,9 +610,9 @@ parts:
         paths: ["app/controllers/teams_controller.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-10-02T16:23:56Z
+        last_run: 2026-10-02T19:27:27Z
         result: pass
-        notes: "branch-ui-diff sweep vs main 86e3de9f (read-only): share modals for case (cases list and team page), book, search endpoint and a temporary scorer each list OSC under 'Already shared with'; selecting it enables Unshare, identical to main. Not covered live: submitting share/unshare, Create a team shortcut, no-access errors."
+        notes: "Re-verified after moving modal controllers off their trigger buttons (show.bs.modal + relatedTarget; DRY item 1). branch-ui-diff old (HEAD) vs new (working tree): opened the case, book, and search-endpoint share modals on the team page on both, pixel-identical. Not covered: the scorer share (no custom scorers for this user, so no button) and submitting any share."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
@@ -959,7 +959,7 @@ parts:
         last_run: 2026-10-01T02:10:23Z
         result: pass
         notes: "Covered live on Explain Query: the open modal has role=dialog, aria-modal=true and an aria-labelledby that resolves to 'Explain Query Parsing'; tabbing cycles through its 6 controls (Close, Params, Parsing, Query Template, Copy, Close) and back into the modal (it passes through <body> briefly, then returns to Close), never reaching background content; Escape closes it (focus then rests on <body>, not on the Explain Query trigger, a minor gap). All 14 workbench modals have a valid aria-labelledby and labelled close buttons. No automated scanner (axe/Lighthouse) was run. Not covered: a second modal's keyboard walk-through."
-        paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/core_modal_trigger_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts"]
+        paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
         last_run: 2026-09-02

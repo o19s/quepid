@@ -10,9 +10,6 @@ vi.mock("api/fetch", () => ({
 function buildController(overrides = {}) {
   const controller = Object.create(ShareCaseCoreController.prototype)
   controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.teamsUrlValue = "/api/teams"
   controller.hasTeamsUrlValue = true
   controller.teamCasesUrlTemplateValue = "/api/teams/__TEAM_ID__/cases"
@@ -98,12 +95,8 @@ describe("ShareCaseCoreController — modal list UI", () => {
 
     const controller = buildController()
     mountCaseHeader("Demo Case")
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5"
-        }
-      }
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
     expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
@@ -182,18 +175,11 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     })
 
     const controller = buildController()
-    const preventDefault = vi.fn()
     mountCaseHeader("Demo Case")
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      preventDefault,
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5"
-        }
-      }
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
-    expect(preventDefault).toHaveBeenCalled()
     expect(apiFetch).toHaveBeenCalledWith("/api/teams", {
       headers: { Accept: "application/json" }
     })
@@ -260,12 +246,8 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
     const controller = buildController()
     mountCaseHeader("Demo Case")
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5"
-        }
-      }
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
     expect(controller.alertTarget.textContent).toBe("Unable to load teams. Please try again.")
@@ -386,20 +368,26 @@ describe("ShareCaseCoreController — API share/unshare", () => {
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
+    const controller = buildController()
+    controller.element = document.createElement("div")
+    // Stand in for Bootstrap: show() fires show.bs.modal with the relatedTarget it was given.
+    let opening
+    const show = vi.fn((relatedTarget) => {
+      opening = controller.open({ target: controller.element, relatedTarget })
+    })
     window.bootstrap = {
       Modal: {
-        getOrCreateInstance: vi.fn(() => ({ show: vi.fn() }))
+        getOrCreateInstance: vi.fn(() => ({ show }))
       }
     }
 
-    const controller = buildController()
-    controller.element = document.createElement("div")
-
-    await ShareCaseCoreController.prototype.openFromExternal.call(controller, {
+    ShareCaseCoreController.prototype.openFromExternal.call(controller, {
       detail: { caseNo: 5 }
     })
+    await opening
 
-    expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalled()
+    expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(controller.element, undefined)
+    expect(show).toHaveBeenCalledOnce()
     expect(controller.titleTarget.textContent).toBe("Share Case: From Judgements")
     expect(controller.currentCaseId).toBe("5")
   })

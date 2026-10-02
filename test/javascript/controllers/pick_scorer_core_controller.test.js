@@ -13,9 +13,6 @@ vi.mock("utils/bs_modal", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(PickScorerCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.scorersUrlValue = "/api/scorers"
   controller.caseScorerUrlTemplateValue = "/api/cases/__CASE_ID__/scorers/__SCORER_ID__"
   controller.communalScorersOnlyValue = false
@@ -89,7 +86,7 @@ describe("PickScorerCoreController", () => {
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "9"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(apiFetch).toHaveBeenCalledWith("/api/scorers", expect.any(Object))
     expect(controller.selectedScorer.scorer_id).toBe(9)
@@ -114,7 +111,7 @@ describe("PickScorerCoreController", () => {
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "99"
     trigger.dataset.pickScorerCoreCurrentScorerNameValue = "Secret Team Scorer"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.selectedScorer.scorer_id).toBe(99)
     expect(controller.warningTarget.classList.contains("d-none")).toBe(false)
@@ -136,7 +133,7 @@ describe("PickScorerCoreController", () => {
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "1"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.customSectionTarget.classList.contains("d-none")).toBe(true)
     expect(controller.customListTarget.classList.contains("d-none")).toBe(true)
@@ -159,7 +156,7 @@ describe("PickScorerCoreController", () => {
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "default"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.initialScorerId).toBeNull()
     expect(controller.selectedScorer).toBeNull()
@@ -182,7 +179,7 @@ describe("PickScorerCoreController", () => {
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "99"
     trigger.dataset.pickScorerCoreCurrentScorerNameValue = "Secret Team Scorer"
 
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.selectedScorer.inaccessible).toBe(true)
     expect(controller.submitButtonTarget.disabled).toBe(true)
@@ -207,7 +204,7 @@ describe("PickScorerCoreController", () => {
     const trigger = document.createElement("a")
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "99"
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     expect(controller.submitButtonTarget.disabled).toBe(true)
 
@@ -242,7 +239,7 @@ describe("PickScorerCoreController", () => {
     const trigger = document.createElement("a")
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "1"
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     const submitPromise = controller.submit({ preventDefault() {} })
     expect(controller.submitButtonTarget.disabled).toBe(true)
@@ -272,7 +269,7 @@ describe("PickScorerCoreController", () => {
     const trigger = document.createElement("a")
     trigger.dataset.pickScorerCoreIdValue = "5"
     trigger.dataset.pickScorerCoreCurrentScorerIdValue = "1"
-    await controller.openAsRoot({ currentTarget: trigger, preventDefault() {} })
+    await controller.openFor(trigger)
 
     const events = []
     document.addEventListener("pick-scorer:selected", (e) => events.push(e))

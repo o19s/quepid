@@ -12,7 +12,6 @@ vi.mock("utils/status_message", () => ({
 function buildController() {
   const controller = Object.create(DiffCoreController.prototype)
   controller.element = document.createElement("div")
-  controller.application = { getControllerForElementAndIdentifier: vi.fn() }
   controller.snapshots = [
     { id: 2, name: "Weekly" },
     { id: 3, name: "Monthly" }
@@ -146,7 +145,7 @@ describe("DiffCoreController", () => {
     const answer = (event) => event.detail.done([4])
     document.addEventListener("diff:selection-request", answer)
 
-    await controller.openAsRoot({ preventDefault: vi.fn() })
+    await controller.openFor(null)
 
     document.removeEventListener("diff:selection-request", answer)
     expect(controller.selectionValues).toEqual(["4"])
@@ -159,7 +158,7 @@ describe("DiffCoreController", () => {
     vi.useFakeTimers()
     try {
       const controller = buildController()
-      const opening = controller.openAsRoot()
+      const opening = controller.openFor(null)
       await vi.advanceTimersByTimeAsync(250)
       await opening
 

@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { caseNameFromHeader } from "utils/case_header"
@@ -11,13 +11,9 @@ const REDIRECT_DELAY_MS = 1000
  * open showing an inline success alert for REDIRECT_DELAY_MS before
  * navigating; on failure it stays open with an inline alert.
  *
- * One controller class instantiated on both the toolbar trigger and the modal
- * root (same dual-role pattern as share-case-core / delete-case-options-core,
- * shared via ModalTriggerControllerBase): the trigger reads case
- * id/name/last-try off its own dataset and delegates to the modal-root
- * instance.
+ * The toolbar trigger carries the case id and last try number.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "alert",
@@ -37,12 +33,7 @@ export default class extends ModalTriggerControllerBase {
     cloneUrl: String
   }
 
-  get modalElementId() {
-    return "cloneCaseModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.cloneCaseCoreIdValue
     const caseName = caseNameFromHeader()
     const lastTry = btn?.dataset?.cloneCaseCoreLastTryValue

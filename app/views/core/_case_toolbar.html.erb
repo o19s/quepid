@@ -44,8 +44,6 @@
         <i class="bi bi-card-list"></i>
         <a
           href="#"
-          data-controller="pick-scorer-core"
-          data-action="click->pick-scorer-core#open"
           data-bs-toggle="modal"
           data-bs-target="#pickScorerModal"
           data-pick-scorer-core-id-value="<%= kase.id %>"
@@ -63,8 +61,6 @@
         ></i>
         <a
           href="#"
-          data-controller="judgements-core"
-          data-action="click->judgements-core#open"
           data-bs-toggle="modal"
           data-bs-target="#judgementsModal"
           data-judgements-core-id-value="<%= kase.id %>"
@@ -81,8 +77,6 @@
         <i class="bi bi-camera-fill"></i>
         <a
           href="#"
-          data-controller="take-snapshot-core"
-          data-action="click->take-snapshot-core#open"
           data-bs-toggle="modal"
           data-bs-target="#takeSnapshotModal"
           data-take-snapshot-core-id-value="<%= kase.id %>"
@@ -97,15 +91,13 @@
           <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
           <a
             href="#"
-            data-controller="diff-core"
-            data-action="click->diff-core#open"
             data-bs-toggle="modal"
             data-bs-target="#diffModal"
           >Compare snapshots</a>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
-        <a href="#" data-controller="import-ratings-core" data-action="click->import-ratings-core#open" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</a>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</a>
       </li>
       <li class="list-inline-item">
         <i
@@ -115,8 +107,6 @@
         ></i>
         <a
           href="#"
-          data-controller="share-case-core"
-          data-action="click->share-case-core#open"
           data-bs-toggle="modal"
           data-bs-target="#shareCaseModal"
           data-share-case-core-id-value="<%= kase.id %>"
@@ -126,8 +116,6 @@
         <i class="bi bi-copy" aria-hidden="true"></i>
         <a
           href="#"
-          data-controller="clone-case-core"
-          data-action="click->clone-case-core#open"
           data-bs-toggle="modal"
           data-bs-target="#cloneCaseModal"
           data-clone-case-core-id-value="<%= kase.id %>"
@@ -138,8 +126,6 @@
         <i class="bi bi-x-lg" aria-hidden="true"></i>
         <a
           href="#"
-          data-controller="delete-case-options-core"
-          data-action="click->delete-case-options-core#open"
           data-bs-toggle="modal"
           data-bs-target="#deleteCaseOptionsModal"
           data-delete-case-options-core-id-value="<%= kase.id %>"
@@ -149,8 +135,6 @@
         <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
         <a
           href="#"
-          data-controller="export-case-core"
-          data-action="click->export-case-core#open"
           data-bs-toggle="modal"
           data-bs-target="#exportCaseModal"
           data-export-case-core-id-value="<%= kase.id %>"

@@ -20,9 +20,6 @@ vi.mock("utils/download_file", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(ExportCaseCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.element = document.createElement("div")
   controller.element.innerHTML = `
     <input type="radio" name="export-case-format" value="information_need">
@@ -106,19 +103,12 @@ describe("ExportCaseCoreController", () => {
     vi.restoreAllMocks()
   })
 
-  it("is not a modal root without a title target", () => {
-    const trigger = Object.create(ExportCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-
-    expect(trigger.isModalRoot).toBe(false)
-  })
-
   it("open resets state from the trigger's dataset, disables submit, and loads snapshots", async () => {
     apiFetch.mockResolvedValue(okJsonResponse({ snapshots: [] }))
     const controller = buildModalController()
     const trigger = buildTrigger()
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.currentCaseId).toBe("5")
     expect(controller.titleTarget.textContent).toBe("Export Case: Movies")
@@ -135,7 +125,7 @@ describe("ExportCaseCoreController", () => {
     const controller = buildModalController()
     const trigger = buildTrigger({ supportsDetailedExport: "false" })
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.detailedRadioTarget.disabled).toBe(true)
     expect(controller.supportsDetailedExport).toBe(false)

@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
@@ -20,10 +20,8 @@ const REDIRECT_DELAY_MS = 500
  * the books refresh API. "Populate Now" reads the document
  * store, while live search continues publishing the store from the live-query runtime. After ratings refresh that
  * should re-bootstrap queries, dispatches `judgements:queries-need-reload`.
- *
- * Dual-role trigger/modal-root pattern via ModalTriggerControllerBase.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "item",
     "title",
@@ -54,12 +52,7 @@ export default class extends ModalTriggerControllerBase {
     judgeUrlTemplate: String
   }
 
-  get modalElementId() {
-    return "judgementsModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
+  openFor(btn) {
     const caseId = btn?.dataset?.judgementsCoreIdValue
     const scorerId = btn?.dataset?.judgementsCoreScorerIdValue
     const bookId = btn?.dataset?.judgementsCoreBookIdValue

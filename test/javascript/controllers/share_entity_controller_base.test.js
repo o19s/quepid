@@ -5,10 +5,6 @@ class ShareWidgetController extends ShareEntityControllerBase {
   get entityLabel() {
     return "Widget"
   }
-
-  get modalElementId() {
-    return "shareWidgetModal"
-  }
 }
 
 const TARGETS = {
@@ -22,7 +18,7 @@ const TARGETS = {
   sharedList: () => document.createElement("div")
 }
 
-// The modal root: every target present unless listed in `without`.
+// The modal: every target present unless listed in `without`.
 function buildModal({ without = [] } = {}) {
   const controller = Object.create(ShareWidgetController.prototype)
   controller.element = document.createElement("div")
@@ -36,13 +32,13 @@ function buildModal({ without = [] } = {}) {
   return controller
 }
 
-function buildTrigger(values, application) {
-  const controller = Object.create(ShareWidgetController.prototype)
-  controller.identifier = "share-widget"
-  controller.hasTitleTarget = false
-  controller.application = application
-  Object.assign(controller, values)
-  return controller
+// A plain Bootstrap trigger: no controller, just the data attributes the modal reads.
+function buildTrigger(attributes) {
+  const trigger = document.createElement("button")
+  for (const [name, value] of Object.entries(attributes)) {
+    trigger.setAttribute(`data-share-widget-${name}-value`, value)
+  }
+  return trigger
 }
 
 const teams = JSON.stringify([
@@ -200,48 +196,34 @@ describe("ShareEntityControllerBase", () => {
     expect(controller.unshareButtonTarget.disabled).toBe(true)
   })
 
-  it("prevents the trigger's default action and hands its values to the modal root", () => {
-    const modalElement = document.createElement("div")
-    modalElement.id = "shareWidgetModal"
-    document.body.appendChild(modalElement)
+  it("on show, reads the clicked trigger's data attributes into the modal", () => {
     const modal = buildModal()
-    const application = { getControllerForElementAndIdentifier: vi.fn(() => modal) }
-    const trigger = buildTrigger(
-      { idValue: "5", nameValue: "Boots", allTeamsJsonValue: teams, sharedTeamsJsonValue: "[]" },
-      application
-    )
-    const event = { preventDefault: vi.fn() }
+    const trigger = buildTrigger({ id: "5", name: "Boots", "all-teams-json": teams, "shared-teams-json": "[]" })
 
-    trigger.open(event)
+    modal.open({ target: modal.element, relatedTarget: trigger })
 
-    expect(event.preventDefault).toHaveBeenCalledOnce()
-    expect(application.getControllerForElementAndIdentifier).toHaveBeenCalledWith(
-      modalElement,
-      "share-widget"
-    )
     expect(modal.titleTarget.textContent).toBe("Share Widget: Boots")
+    expect(modal.recordIdTarget.value).toBe("5")
     expect(modal.unshareRecordIdTarget.value).toBe("5")
+    expect(modal.teamSelectTarget.options).toHaveLength(4)
   })
 
-  it("does nothing when the page has no share modal", () => {
-    const application = { getControllerForElementAndIdentifier: vi.fn(() => buildModal()) }
-    const trigger = buildTrigger({ idValue: "5" }, application)
+  it("opens blank when shown without a trigger", () => {
+    const modal = buildModal()
 
-    expect(() => trigger.open()).not.toThrow()
-    expect(trigger.modalController()).toBe(null)
-    expect(application.getControllerForElementAndIdentifier).not.toHaveBeenCalled()
+    modal.open({ target: modal.element })
+
+    expect(modal.titleTarget.textContent).toBe("Share Widget")
+    expect(modal.recordIdTarget.value).toBe("")
   })
 
-  it("does nothing when the modal's controller hasn't connected yet", () => {
-    const modalElement = document.createElement("div")
-    modalElement.id = "shareWidgetModal"
-    document.body.appendChild(modalElement)
-    const trigger = buildTrigger(
-      { idValue: "5" },
-      { getControllerForElementAndIdentifier: vi.fn(() => null) }
-    )
+  it("ignores show events bubbling up from a nested modal", () => {
+    const modal = buildModal()
+    const openWith = vi.spyOn(modal, "openWith")
 
-    expect(() => trigger.open()).not.toThrow()
+    modal.open({ target: document.createElement("div"), relatedTarget: buildTrigger({ id: "5" }) })
+
+    expect(openWith).not.toHaveBeenCalled()
   })
 
   it("tolerates a modal that only renders some of its targets", () => {

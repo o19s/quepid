@@ -47,7 +47,8 @@
 <%= render "shared/modal_shell", id: "takeSnapshotModal",
                                  title: "Take a Snapshot of all your queries?",
                                  data: {
-                                   controller: "take-snapshot-core"
+                                   controller: "take-snapshot-core",
+                                   action: "show.bs.modal->take-snapshot-core#open"
                                  },
                                  title_data: { take_snapshot_core_target: "title" },
                                  footer: modal_footer,

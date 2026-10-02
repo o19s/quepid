@@ -23,9 +23,6 @@ function buildDescription(action) {
 function buildModalController(overrides = {}) {
   const controller = Object.create(DeleteCaseOptionsCoreController.prototype)
   controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.archiveUrlTemplateValue = "/cases/__CASE_ID__/archive"
   controller.destroyUrlTemplateValue = "/cases/__CASE_ID__"
   controller.destroyQueriesUrlTemplateValue = "/cases/__CASE_ID__/queries"
@@ -57,40 +54,17 @@ describe("DeleteCaseOptionsCoreController", () => {
     vi.restoreAllMocks()
   })
 
-  it("is not a modal root without a title target", () => {
-    const trigger = Object.create(DeleteCaseOptionsCoreController.prototype)
-    trigger.hasTitleTarget = false
-
-    expect(trigger.isModalRoot).toBe(false)
-  })
-
   it("open titles itself from the live case header and disables the submit button until a choice is made", () => {
     const controller = buildModalController()
     mountCaseHeader("Movies")
     const trigger = document.createElement("a")
     trigger.dataset.deleteCaseOptionsCoreIdValue = "42"
 
-    controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    controller.openFor(trigger)
 
     expect(controller.currentCaseId).toBe("42")
     expect(controller.titleTarget.textContent).toBe("Delete Options for Case: Movies")
     expect(controller.submitButtonTarget.disabled).toBe(true)
-  })
-
-  it("a trigger instance (not the modal root) delegates open() to the modal-root controller", () => {
-    const modalController = buildModalController()
-    const trigger = Object.create(DeleteCaseOptionsCoreController.prototype)
-    trigger.hasTitleTarget = false
-    trigger.application = {
-      getControllerForElementAndIdentifier: vi.fn(() => modalController)
-    }
-    document.body.innerHTML = '<div id="deleteCaseOptionsModal"></div>'
-    const openSpy = vi.spyOn(modalController, "open")
-
-    const event = { preventDefault: () => {}, currentTarget: document.createElement("a") }
-    trigger.open(event)
-
-    expect(openSpy).toHaveBeenCalledWith(event)
   })
 
   it("selectAction highlights the chosen option, reveals its description, and enables the submit button with the matching label", () => {

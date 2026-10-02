@@ -9,9 +9,6 @@ vi.mock("api/fetch", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(CloneCaseCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
   controller.triesUrlTemplateValue = "/api/cases/__CASE_ID__/tries"
   controller.hasTriesUrlTemplateValue = true
   controller.cloneUrlValue = "/api/clone/cases"
@@ -64,34 +61,11 @@ describe("CloneCaseCoreController", () => {
     vi.restoreAllMocks()
   })
 
-  it("is not a modal root without a title target", () => {
-    const trigger = Object.create(CloneCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-
-    expect(trigger.isModalRoot).toBe(false)
-  })
-
-  it("a trigger instance (not the modal root) delegates open() to the modal-root controller", () => {
-    const modalController = buildModalController()
-    const trigger = Object.create(CloneCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-    trigger.application = {
-      getControllerForElementAndIdentifier: vi.fn(() => modalController)
-    }
-    document.body.innerHTML = '<div id="cloneCaseModal"></div>'
-    const openSpy = vi.spyOn(modalController, "open")
-
-    const event = { preventDefault: () => {}, currentTarget: document.createElement("a") }
-    trigger.open(event)
-
-    expect(openSpy).toHaveBeenCalledWith(event)
-  })
-
   it("open resets state from the trigger's dataset and disables submit until a case name is entered", async () => {
     const controller = buildModalController()
     const trigger = buildTrigger()
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.currentCaseId).toBe("5")
     expect(controller.titleTarget.textContent).toBe("Clone case: Movies")

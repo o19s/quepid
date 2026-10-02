@@ -179,6 +179,7 @@
                                  dialog_class: "modal-lg",
                                  data: {
                                    controller: "judgements-core",
+                                   action: "show.bs.modal->judgements-core#open",
                                    judgements_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__"),
                                    judgements_core_team_books_url_template_value: api_team_books_path(team_id: "__TEAM_ID__"),
                                    judgements_core_refresh_url_template_value: api_book_refresh_path(book_id: "__BOOK_ID__", case_id: "__CASE_ID__", create_missing_queries: "__CREATE_MISSING__", process_in_background: "__BACKGROUND__"),

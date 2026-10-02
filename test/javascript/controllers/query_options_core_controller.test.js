@@ -73,7 +73,7 @@ describe("QueryOptionsCoreController", () => {
     expect(instance.saveButtonTarget.disabled).toBe(false)
   })
 
-  it("opens the modal for the clicked query with its options pretty-printed", async () => {
+  it("loads the clicked query and its options pretty-printed when the modal opens", async () => {
     const { showBsModal } = await import("utils/bs_modal")
     const instance = controller()
     instance.hasTitleTarget = true
@@ -84,15 +84,15 @@ describe("QueryOptionsCoreController", () => {
     button.dataset.queryOptionsCoreSaveUrlValue = "api/cases/1/queries/7/options"
     button.dataset.queryOptionsCoreOptionsValue = '{"boost":2}'
 
-    instance.openAsRoot({ currentTarget: button })
+    instance.openFor(button)
 
     expect(instance.queryId).toBe("7")
     expect(instance.saveUrl).toBe("api/cases/1/queries/7/options")
     expect(instance.editor.setValue).toHaveBeenCalledWith('{\n  "boost": 2\n}')
     expect(instance.titleTarget.textContent).toBe("Query Options")
     expect(instance.saveButtonTarget.disabled).toBe(false)
-    expect(showBsModal).toHaveBeenCalledOnce()
-    expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
+    // Bootstrap is already showing the modal; opening must not show it again.
+    expect(showBsModal).not.toHaveBeenCalled()
   })
 
   it("shows empty options as {} and leaves unparseable stored options as-is", () => {

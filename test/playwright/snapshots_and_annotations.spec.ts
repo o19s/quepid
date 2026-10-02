@@ -44,7 +44,7 @@ test.describe('snapshots', () => {
     let snapshotId: number | undefined;
 
     try {
-      await page.locator('a[data-controller="take-snapshot-core"]').click();
+      await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
       const snapshotModal = page.locator('#takeSnapshotModal.show');
       await expect(snapshotModal).toBeVisible();
 

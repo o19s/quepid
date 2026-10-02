@@ -35,6 +35,7 @@
                                  modal_class: "pick-scorer-modal",
                                  data: {
                                    controller: "pick-scorer-core",
+                                   action: "show.bs.modal->pick-scorer-core#open",
                                    pick_scorer_core_scorers_url_value: api_scorers_path,
                                    pick_scorer_core_case_scorer_url_template_value: api_case_scorer_path(case_id: "__CASE_ID__", id: "__SCORER_ID__"),
                                    pick_scorer_core_communal_scorers_only_value: Rails.application.config.communal_scorers_only

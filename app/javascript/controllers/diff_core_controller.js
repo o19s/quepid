@@ -1,4 +1,4 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { showStatusMessage } from "utils/status_message"
 
@@ -9,7 +9,7 @@ import { showStatusMessage } from "utils/status_message"
  * live Query/searcher adapter remain behind the temporary document-event seam
  * until the broader live query-state migration is complete.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "alert",
@@ -28,10 +28,6 @@ export default class extends ModalTriggerControllerBase {
     maxSnapshots: { type: Number, default: 5 }
   }
 
-  get modalElementId() {
-    return "diffModal"
-  }
-
   initialize() {
     this.snapshots = []
     this.selectionValues = []
@@ -39,8 +35,7 @@ export default class extends ModalTriggerControllerBase {
     this.busy = false
   }
 
-  async openAsRoot(event) {
-    event?.preventDefault?.()
+  async openFor() {
     this.clearMessages()
     this.setBusy(false)
 

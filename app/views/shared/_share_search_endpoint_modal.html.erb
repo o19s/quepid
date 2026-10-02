@@ -34,7 +34,7 @@
 
 <%= render "shared/modal_shell", id: "shareSearchEndpointModal", title: "Share Search Endpoint",
                                  dialog_class: "modal-lg",
-                                 data: { controller: "share-search-endpoint" },
+                                 data: { controller: "share-search-endpoint", action: "show.bs.modal->share-search-endpoint#open" },
                                  title_data: { share_search_endpoint_target: "title" },
                                  footer: modal_footer,
                                  body: modal_body %>
