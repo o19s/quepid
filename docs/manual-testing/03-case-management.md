@@ -19,6 +19,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
 - **Edge cases:**
   - [ ] Filter text that matches nothing — table should render empty, not error.
   - [ ] With zero cases at all (no filter applied), confirm the "Create your first case by clicking on Relevancy Cases > Create a case in the navigation bar above." message appears — and confirm it does **not** appear when a filter/search/team/archived selection simply matches zero cases (i.e. you still have cases overall, just none matching).
+  - [ ] For a case with a long score history, confirm Last Score, Last Run On, and Last Run By match its latest run. Cases without scores still show "Never Run"; a score without a user shows "System". The list should fetch only one score summary per visible case, without loading historical query payloads.
   - [ ] Pagination — with enough cases to span multiple pages, confirm page controls work and filters persist across pages.
   - [ ] Confirm only cases you're "involved with" (own, or shared via a team you belong to) ever appear — log in as a second unrelated account and confirm you don't see the first account's private cases.
 
