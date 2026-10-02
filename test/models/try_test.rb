@@ -164,6 +164,49 @@ class TryTest < ActiveSupport::TestCase
         assert_equal({ 'yql' => 'select * from movies where true' }, args)
       end
 
+      test 'parses Vespa parameter lists without wrapping the whole template as YQL' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        try.search_endpoint.api_method = 'AUTO'
+        yql = 'select * from movies where title contains "#$query##" or cast contains "#$query##" '
+        try.query_params = "yql=#{yql}&ranking.profile=bm25"
+
+        assert_equal({ 'yql' => yql, 'ranking.profile' => 'bm25' }, try.args)
+        assert_equal 'AUTO', try.resolved_api_method
+      end
+
+      test 'parses reordered multiline Vespa parameters and preserves equals signs and curator variables' do
+        try = tries(:try_with_curator_vars)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        try.query_params = "  ranking.profile=bm25&\nyql=select * from movies where year >= 2000&hits=##one##"
+
+        assert_equal({ 'ranking.profile' => 'bm25', 'yql' => 'select * from movies where year >= 2000',
+                       'hits' => '1' }, try.args)
+      end
+
+      test 'preserves bare Vespa YQL containing equals signs and ampersands' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        yql = 'select * from movies where year >= 2000 and title contains "A&B"'
+        try.query_params = yql
+
+        assert_equal({ 'yql' => yql }, try.args)
+      end
+
+      test 'keeps Vespa JSON queries working' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        args = { 'yql' => 'select * from movies where title contains "#$query##"', 'ranking.profile' => 'bm25' }
+        try.query_params = args.to_json
+
+        assert_equal args, try.args
+        assert_equal 'POST', try.resolved_api_method
+      end
+
       test 'still uses SolrArgParser for bare text when the endpoint has no mapper-based search engine' do
         try = tries(:one)
         try.search_endpoint.search_engine = 'searchapi'

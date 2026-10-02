@@ -47,8 +47,8 @@ class MapperBasedSearchEngine
   attribute :query_params,        :string
   # The query_params key to wrap bare (non-JSON) query text into when a user types plain
   # text directly into the Query Sandbox instead of JSON (e.g. Vespa's YQL: 'select * from
-  # ...' rather than '{"yql": "select * from ..."}'). Nil means this engine only accepts
-  # query_params as JSON - see Try#searchapi_args.
+  # ...' rather than '{"yql": "select * from ..."}'). Explicit key=value parameter
+  # lists are parsed separately, whether or not this is set - see Try#searchapi_args.
   attribute :bare_query_param,    :string
   attribute :custom_headers,      :string, default: ''
   attribute :header_type,         :string, default: 'None'
@@ -84,11 +84,9 @@ class MapperBasedSearchEngine
       # hydrated query's length (searchApiSearcherPreprocessorSvc.js in splainer-search) -
       # a short query rides as a GET querystring (nicer to read/share), a long one (e.g.
       # ratedDocsQueryParamsMapper's "movie_id in (...)" list with many ratings) falls back
-      # to POST so it isn't truncated by URL-length limits. Try#searchapi_args only picks
-      # JsonArgParser (plain scalar values) over SolrArgParser (array-per-key values) when
-      # query_params starts with '{', so this has to be real JSON for that path - or, since
-      # bare_query_param above is set, plain YQL text typed directly into the Query Sandbox
-      # works too.
+      # to POST so it isn't truncated by URL-length limits. Try#searchapi_args accepts
+      # JSON, key=value parameter lists, or bare YQL and produces scalar parameter values
+      # for both GET and POST.
       query_params:               '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
       bare_query_param:           'yql',
       # Vespa's own document id (e.g. "id:movies:movies::603") isn't a queryable field in

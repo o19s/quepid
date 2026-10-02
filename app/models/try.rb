@@ -157,16 +157,20 @@ class Try < ApplicationRecord
     JsonArgParser.parse(query_params, curator_vars_map)
   end
 
-  # This JSON-vs-bare-text split (and the bare-text wrapping below) is mirrored in
+  # JSON, parameter-list, and bare-text parsing is mirrored in
   # app/assets/javascripts/controllers/wizardModal.js's validate() function, which has to
   # apply the same rule client-side before a Try exists to call this method on - keep both
   # in sync if this logic changes.
   def searchapi_args
     if json_query_params?
-      # Same JSON-vs-bare-text split as #solr_args above, just with a third option (below) for
-      # engines - e.g. Vespa - that also accept bare text.
       JsonArgParser.parse(query_params,
                           curator_vars_map)
+    elsif bare_query_param.present? && query_params.to_s.match?(/\A\s*[\w.-]+=/)
+      # Parameter lists must stay separate from bare YQL. Scalar values also keep
+      # AUTO's JSON POST fallback equivalent to the GET request.
+      SolrArgParser.parse(query_params, curator_vars_map).transform_values do |values|
+        values.one? ? values.first : values
+      end
     elsif bare_query_param.present?
       # The mapper-based search engine (e.g. Vespa) opted into a bare-text authoring mode -
       # a user typed plain query text (e.g. YQL) straight into the Query Sandbox instead of

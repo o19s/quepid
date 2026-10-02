@@ -111,10 +111,13 @@ Before testing individual features, get oriented:
 
 - [ ] **Steps:**
   1. Click the wrench icon ("Tune Relevance") to open the east drawer.
-  2. On the **Query** tab, edit the raw query template (textarea for Solr, Ace/JSON editor for ES/OS/Vectara/Algolia/SearchAPI).
+  2. On the **Query** tab, edit the raw query template (text or JSON mode for Solr/SearchAPI, JSON editor for ES/OS/Vectara/Algolia).
   3. Click **Rerun My Searches!**.
 - **Expected:** All queries re-run against the edited template and rescore.
 - **Edge cases:**
+  - [ ] On a Vespa case, run `yql=select * from movies where title contains "#$query##" or cast contains "#$query##" &ranking.profile=bm25`. Confirm results return and the request has separate `yql` and `ranking.profile` parameters. Repeat with `ranking.profile` first and parameters on separate lines joined by `&`.
+  - [ ] Repeat with the equivalent JSON object and with bare YQL (`select * from movies where title contains "#$query##"`). All three formats should work; equals signs within bare YQL must not trigger parameter-list parsing.
+  - [ ] In the Vespa setup wizard, use a parameter-list Test Query such as `yql=select * from sources * where true&ranking.profile=bm25` and click **ping it**. Confirm validation succeeds; also check bare YQL and JSON Test Queries.
   - [ ] On a `static` engine case, confirm the tab shows "With a Static search endpoint there are no query settings to play with" instead of an editor.
   - [ ] If a TLS/protocol mismatch is detected (HTTP vs HTTPS), confirm the button instead reads "Reload Quepid in {protocol}" and behaves accordingly.
 

@@ -246,7 +246,7 @@ parts:
         last_run: 2026-09-15T16:45:00Z
         result: pass
         notes: "Re-verified via Playwright MCP on disposable case 6840. Opened the drawer via Tune Relevance, landed on the Query tab showing the real stored template (q=#$query##&magicBoost=20); edited magicBoost to 50 and clicked 'Rerun My Searches!' — a new Try (Try 2) was created, all 3 queries re-ran with the new param, and scores updated accordingly. Did not test static-engine empty-state or TLS/protocol-mismatch messaging this pass."
-        paths: ["app/assets/javascripts/controllers/"]
+        paths: ["app/assets/javascripts/controllers/", "app/models/try.rb", "lib/solr_arg_parser.rb"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
         last_run: 2026-09-15T16:46:00Z
