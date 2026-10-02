@@ -145,15 +145,16 @@ describe("MissingDocumentsController", () => {
     expect(controller.queryParams).toBe("q=#$query##")
   })
 
-  it("renders the unsupported-engine message without a query editor target", () => {
+  it("renders the unsupported-engine message, labelled from the engine catalog, without a query editor target", () => {
     const controller = buildController(adapter({
       usesQueryParamsEditor: false,
-      engineName: "Static"
+      engineName: "static"
     }))
+    controller.engineLabelsValue = { static: "Static File" }
     controller.hasQueryParamsTarget = false
 
     expect(() => controller.renderShell()).not.toThrow()
-    expect(controller.element.textContent).toContain("Static")
+    expect(controller.element.textContent).toContain("Static File")
   })
 
   it("renders documents with the shared search-result controller", () => {

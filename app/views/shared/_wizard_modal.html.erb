@@ -31,9 +31,9 @@
           <hr>
           <label class="form-label" for="wizardEngine">Create a new endpoint</label>
           <select id="wizardEngine" class="form-select" data-wizard-target="engine" data-wizard-field="searchEnginePreset" data-action="change->wizard#updateSetting">
-            <option value="solr">Solr</option><option value="es">Elasticsearch</option><option value="os">OpenSearch</option><option value="vectara">Vectara</option><option value="algolia">Algolia</option><option value="static">Static</option><option value="searchapi">Search API</option>
+            <%= options_for_select(SearchEngine.select_options) %>
           </select>
-          <label class="form-label mt-3" for="wizardStaticFile">Static CSV (when Static is selected)</label>
+          <label class="form-label mt-3" for="wizardStaticFile">Static CSV (when Static File is selected)</label>
           <input id="wizardStaticFile" type="file" accept=".csv,text/csv" class="form-control" data-wizard-target="staticFile" data-action="change->wizard#importStatic">
           <input class="form-control mt-3" placeholder="Search endpoint URL" data-wizard-target="searchUrl" data-wizard-field="searchUrl" data-action="input->wizard#updateSetting">
           <label class="form-label mt-3" for="wizardApiMethod">API method</label>

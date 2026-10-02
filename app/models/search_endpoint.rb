@@ -72,8 +72,8 @@ class SearchEndpoint < ApplicationRecord
   validate :validate_mapper_code_immutable_for_preset
 
   def fullname
-    label = mapper_based_search_engine&.name || search_engine.titleize
-    name.presence || middle_truncate("#{label} #{endpoint_url}")
+    label = mapper_based_search_engine&.name || SearchEngine.label(search_engine)
+    name.presence || middle_truncate([ label, endpoint_url ].compact_blank.join(' '))
   end
 
   # mapper_based_search_engine_id is a plain string column (see DEFINITIONS in

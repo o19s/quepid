@@ -1,28 +1,15 @@
 import { describe, expect, it } from "vitest"
 import {
   buildRatedDocsFilter,
-  normalizeSearchEngine,
   ratedDocIds,
   supportsRatedDocsLookup,
   supportsSearchApiRatedDocsLookup
 } from "utils/rated_docs"
 
 /**
- * Unit contract for the Solr ratings filter (options.filterToRated) and static-engine
- * normalization.
+ * Unit contract for the Solr ratings filter (options.filterToRated).
  */
 describe("rated_docs", () => {
-  describe("normalizeSearchEngine", () => {
-    it("treats a static case as Solr", () => {
-      expect(normalizeSearchEngine("static")).toBe("solr")
-    })
-
-    it("passes every other engine through untouched", () => {
-      expect(normalizeSearchEngine("es")).toBe("es")
-      expect(normalizeSearchEngine("searchapi")).toBe("searchapi")
-      expect(normalizeSearchEngine(undefined)).toBe(undefined)
-    })
-  })
 
   describe("supportsSearchApiRatedDocsLookup", () => {
     it("is true only for a searchapi try whose mapper opted in", () => {

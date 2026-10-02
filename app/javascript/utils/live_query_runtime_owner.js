@@ -1110,15 +1110,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       queryId: queryId,
       settings: settings,
       selectedTry: settings.selectedTry,
-      engineNames: {
-        solr: "Solr",
-        es: "Elasticsearch",
-        os: "OpenSearch",
-        algolia: "Algolia",
-        vectara: "Vectara",
-        static: "Static",
-        searchapi: "Search API"
-      },
       supportedEngines: ["solr", "es", "os", "searchapi"],
       previewArgs: function (tryNo, queryParams) {
         return runtimeDomain.settings.previewArgs(tryNo, queryParams)

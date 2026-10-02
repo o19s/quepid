@@ -246,7 +246,6 @@ export function createTargetedSearchAdapter({
   queryId,
   settings,
   selectedTry,
-  engineNames,
   supportedEngines,
   previewArgs,
   settingsWithTryOverrides,
@@ -262,10 +261,7 @@ export function createTargetedSearchAdapter({
     query,
     queryText: query.queryText,
     settings,
-    engineName:
-      engineNames[selectedTry.mapperBasedSearchEngineName || settings.searchEngine] ||
-      selectedTry.mapperBasedSearchEngineName ||
-      settings.searchEngine,
+    engineName: selectedTry.mapperBasedSearchEngineName || settings.searchEngine,
     usesQueryParamsEditor: supportedEngines.includes(settings.searchEngine),
     docs: [],
     searcher: null,

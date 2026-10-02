@@ -46,6 +46,20 @@ describe("TakeSnapshotCoreController", () => {
     vi.restoreAllMocks()
   })
 
+  it("names the engine from the server's engine labels, preferring a mapper engine's own name", () => {
+    const controller = buildModalController({ engineLabelsValue: { vectara: "Vectara", searchapi: "Search API" } })
+    const trigger = document.createElement("a")
+    trigger.dataset.takeSnapshotCoreSearchEngineValue = "vectara"
+
+    controller.openFor(trigger)
+    expect(controller.engineNameTarget.textContent).toBe("Vectara")
+
+    trigger.dataset.takeSnapshotCoreSearchEngineValue = "searchapi"
+    trigger.dataset.takeSnapshotCoreMapperEngineNameValue = "Vespa"
+    controller.openFor(trigger)
+    expect(controller.engineNameTarget.textContent).toBe("Vespa")
+  })
+
   it("forces recordDocumentFields for engines without id lookup", () => {
     const controller = buildModalController()
     const trigger = document.createElement("a")

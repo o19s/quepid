@@ -40,7 +40,6 @@ function buildAdapter(overrides = {}) {
     queryId: 7,
     settings,
     selectedTry,
-    engineNames: { solr: "Solr" },
     supportedEngines: ["solr"],
     previewArgs: vi.fn(() => Promise.resolve({ q: "heart" })),
     settingsWithTryOverrides: vi.fn((base, changes) => ({ ...base, ...changes })),

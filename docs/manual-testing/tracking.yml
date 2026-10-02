@@ -172,9 +172,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-02T19:46:03Z
+        last_run: 2026-10-02T21:23:26Z
         result: pass
-        notes: "Covered live via Playwright MCP after DRY #2: Welcome, Name, existing TMDB Solr endpoint validation, Fields, Query and Finish on a disposable case; star wars persisted after reload. No application console errors; Finish screenshots in .playwright-mcp/dry2/. Disposable case deleted and original wizard flag restored. Not covered live: new-endpoint engines, invalid endpoint and tour edge cases."
+        notes: "Covered live via Playwright MCP after DRY #13 (search engine catalog), on case 219 without finishing: the engine select shows the ERB-rendered built-ins (Static File label) followed by the Vespa preset once, and reopening the wizard does not duplicate it; the Static CSV label reads 'when Static File is selected'. Not covered live: Welcome-to-Finish flow, new-endpoint validation, tour edge cases."
         paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -260,9 +260,9 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-10-02T20:52:31Z
+        last_run: 2026-10-02T21:23:26Z
         result: pass
-        notes: "Re-verified after replacing the Ace query editor with CodeMirror (modules/editor) and adding undo history, keymap, Tab indent and bracket pairing to it. Headless Chromium against the live dev server on ES CASE (case 2, es): editor opens 400px tall prefilled with the try's JSON; Ctrl+Z right after opening keeps the query; typing { inserts {} and Ctrl+Z undoes it; Tab indents and keeps focus; invalid JSON shows a lint error; edited match_all search returned 8516 matching documents; Reset to All Rated Docs restored the query; no console errors. Esc inside the editor closes the modal (same as Ace on main), so Esc-then-Tab can't be used to leave the editor here. Not covered live: OpenSearch, rating a found doc, Solr (unchanged textarea path, unit-tested)."
+        notes: "Covered live via Playwright MCP after DRY #13 on static case 219: the modal opened from a query row and showed 'isn't supported for the Static File search engine yet', with the label coming from the server catalog. Screenshot: .playwright-mcp/search-engine-catalog/. Not covered live: searching and rating on a Solr/ES case, rated-docs lookup message."
         paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/quepid_search.js", "test/javascript/utils/targeted_search.test.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -278,9 +278,9 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-10-02T18:58:27Z
-        result: pass_with_fixes
-        notes: "FIXED: the Settings link reads 'Troubleshooting Solr and Quepid' (searchEngineDisplayName) and the Endpoint Details More link is back (search_endpoints/:id); both unit-tested. Covered live on case 6. Not covered live: sections starting expanded (existing todo), editing settings. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/fixed/."
+        last_run: 2026-10-02T21:23:26Z
+        result: pass
+        notes: "Covered live via Playwright MCP after DRY #13 on static case 219: the troubleshooting link names 'Static File' from the server engine catalog. Not covered live: editing settings, switching endpoints."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
@@ -366,9 +366,9 @@ parts:
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-10-02T20:38:39Z
+        last_run: 2026-10-02T21:23:26Z
         result: pass
-        notes: "Covered live via Playwright MCP for DRY #4 on case 6 / try 32: loaded, delayed POST busy (Submit and Cancel disabled), forced 503 error (buttons restored), Cancel close and reopen (error cleared). Modal before/after screenshots inspected in .playwright-mcp/dry4/; background header/scroll varies. Additional real snapshot POST returned 200 and closed the modal; temporary snapshot deleted (204), after screenshot only. Not covered: Record Document Fields toggle, large-case processing or comparison hydration."
+        notes: "Covered live via Playwright MCP after DRY #13 on case 219: the modal opened with the engine named 'Static File' from the server catalog. Not covered live: actually taking a snapshot, the no-lookup (Vectara/Search API) field-recording path."
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "5.3":
         title: "Compare snapshots (diff)"
@@ -470,9 +470,9 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-10-01T20:49:36Z
+        last_run: 2026-10-02T21:23:26Z
         result: pass
-        notes: "Covered live: created Solr (blank name falls back to engine + url), ES, OS, Vectara, Algolia and Search API endpoints; required fields block submit; JSON array and malformed JSON in Custom Headers/Options, colonless basic auth, and JSONP + proxy each show the documented error; a user with no teams sees the Create a Team alert."
+        notes: "Covered live via Playwright MCP after DRY #13: the new-endpoint engine select lists Solr, Elasticsearch, OpenSearch, Vectara, Algolia, Static File and Search API from the SearchEngine catalog. Not covered live: creating an endpoint for each engine."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb", "app/views/search_endpoints/new.html.erb", "app/views/search_endpoints/edit.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb"]
       "7.3":
         title: "View / Edit a Search Endpoint"

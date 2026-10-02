@@ -1,4 +1,4 @@
-import { isEsLikeEngine } from "utils/search_engines"
+import { isEsLikeEngine, normalizeSearchEngine } from "utils/search_engines"
 
 /**
  * Rated-document lookup rules — which engines can retrieve already-rated docs by
@@ -7,23 +7,6 @@ import { isEsLikeEngine } from "utils/search_engines"
  */
 
 const NATIVELY_RATED_DOCS_LOOKUP_ENGINES = new Set(["es", "os", "solr"])
-
-/**
- * A static (CSV-backed) case is served by a Solr-compatible endpoint, so the
- * searcher and filter paths treat it as Solr. The searcher path achieves this by rewriting
- * `settings.searchEngine` in place inside `createSearcherFromSettings()`, which
- * made every downstream branch depend on that call having run first.
- *
- * Only for the searcher/filter seam. The capability predicates below read the
- * *try*, whose `searchEngine` remains unchanged — normalizing there would
- * enable "Show only rated" for static cases, which it is not today.
- *
- * @param {string | null | undefined} searchEngine
- * @returns {string | null | undefined}
- */
-export function normalizeSearchEngine(searchEngine) {
-  return searchEngine === "static" ? "solr" : searchEngine
-}
 
 /**
  * Can this searchapi try look up rated docs? Only true when its mapper defines a

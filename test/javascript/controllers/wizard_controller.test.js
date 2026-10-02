@@ -508,6 +508,21 @@ describe("WizardController", () => {
       expect(controller.endpointSelectTarget.disabled).toBe(false)
     })
 
+    it("adds mapper-based engines after the ERB-rendered built-ins without duplicating them on reopen", () => {
+      const controller = mount()
+      controller.hasEngineTarget = true
+      controller.engineTarget = document.createElement("select")
+      controller.engineTarget.innerHTML = `<option value="solr">Solr</option><option value="static">Static File</option>`
+      controller.mapperEngines = [{ id: "vespa", name: "Vespa" }]
+
+      controller.renderEndpointChoices()
+      controller.renderEndpointChoices()
+
+      expect([...controller.engineTarget.options].map(o => [o.value, o.textContent])).toEqual([
+        ["solr", "Solr"], ["static", "Static File"], ["vespa", "Vespa"]
+      ])
+    })
+
     it("disables the dropdown when there are no endpoints", () => {
       const controller = mount()
       controller.hasEndpointSelectTarget = true

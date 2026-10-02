@@ -19,10 +19,7 @@
 
       <div class="mb-3">
         <%= form.label :search_engine, class: 'form-label' %>
-        <%
-        options = [['Solr', 'solr'], ['Elasticsearch', 'es'], ['OpenSearch', 'os'], ['Vectara', 'vectara'], ['Algolia', 'algolia'], ['Static File', 'static'], ['Search API', 'searchapi']]
-        %>
-        <%= form.collection_select :search_engine, options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
+        <%= form.collection_select :search_engine, SearchEngine.select_options, :last, :first, required: true, prompt:true,  class: 'form-control' %>
 
       </div>
 

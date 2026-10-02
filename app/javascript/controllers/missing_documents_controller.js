@@ -2,12 +2,12 @@ import { Controller } from "@hotwired/stimulus"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { snapshotDocument } from "stores/query_documents_store"
 import { getCoreCapabilities } from "utils/core_capability_access"
-import { isEsLikeEngine } from "utils/search_engines"
+import { isEsLikeEngine, searchEngineLabel } from "utils/search_engines"
 import { fromTextArea } from "modules/editor"
 
 export default class extends Controller {
   static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
-  static values = { queryId: Number, modalRoot: Boolean }
+  static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
     event.preventDefault()
@@ -31,6 +31,10 @@ export default class extends Controller {
 
   get isModalRoot() {
     return this.modalRootValue
+  }
+
+  get engineLabel() {
+    return searchEngineLabel(this.engineLabelsValue, this.adapter.engineName)
   }
 
   disconnect() {
@@ -99,7 +103,7 @@ export default class extends Controller {
       warning.className = "alert alert-warning"
       const engineName = document.createElement("strong")
       engineName.dataset.missingDocumentsTarget = "engineName"
-      engineName.textContent = this.adapter.engineName || ""
+      engineName.textContent = this.engineLabel
       warning.append("Finding and rating missing documents isn't supported for the ", engineName, " search engine yet.")
       fragment.appendChild(warning)
     }
@@ -187,7 +191,7 @@ export default class extends Controller {
       message.className = "alert alert-warning"
       message.append("There are ", String(this.adapter.totalRatings), " ratings for your original query, but looking up already-rated documents by ID isn't supported for the ")
       const engine = document.createElement("strong")
-      engine.textContent = this.adapter.engineName
+      engine.textContent = this.engineLabel
       message.append(engine, " search engine.")
       this.statusTarget.appendChild(message)
     } else if (!this.adapter.defaultList && this.adapter.numFound === 0) {

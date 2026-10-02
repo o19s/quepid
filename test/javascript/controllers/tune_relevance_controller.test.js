@@ -461,6 +461,7 @@ describe("TuneRelevanceController", () => {
     it("names the engine in the troubleshooting link and links to the endpoint", () => {
       const { controller, capability } = mount({ selectedTry: makeTry({ searchEngine: "solr", searchEndpointId: 44 }) })
       capability.settings.troubleshootingWikiUrl.mockReturnValue("https://wiki/solr")
+      controller.engineLabelsValue = { solr: "Solr" }
       const target = (name, node) => {
         controller[`has${name.charAt(0).toUpperCase()}${name.slice(1)}Target`] = true
         controller[`${name}Target`] = node

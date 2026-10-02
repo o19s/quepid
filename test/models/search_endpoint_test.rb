@@ -39,13 +39,15 @@ class SearchEndpointTest < ActiveSupport::TestCase
       endpoint = SearchEndpoint.new endpoint_url: 'http://something'
       assert_not endpoint.valid?
       assert_includes endpoint.errors[:search_engine], "can't be blank"
-
-      assert_raises(StandardError) do
-        endpoint.fullname
-      end
+      assert_equal 'http://something', endpoint.fullname
 
       endpoint.search_engine = 'solr'
       assert_equal 'Solr http://something', endpoint.fullname
+    end
+
+    it 'labels the engine from the SearchEngine catalog' do
+      endpoint = SearchEndpoint.new endpoint_url: 'http://something', search_engine: 'es'
+      assert_equal 'Elasticsearch http://something', endpoint.fullname
     end
   end
 

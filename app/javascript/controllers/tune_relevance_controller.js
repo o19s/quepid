@@ -3,7 +3,7 @@ import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
-import { searchEngineDisplayName } from "utils/search_engine_name"
+import { searchEngineLabel } from "utils/search_engines"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -13,6 +13,8 @@ export default class extends Controller {
     "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsReloadLink", "tlsProtocol",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
+
+  static values = { engineLabels: Object }
 
   connect() {
     this.tab = "developer"
@@ -219,7 +221,7 @@ export default class extends Controller {
       this.troubleshootingLinkTarget.href = url || "#"
     }
     if (this.hasTroubleshootingEngineTarget) {
-      this.troubleshootingEngineTarget.textContent = searchEngineDisplayName(selected.mapperBasedSearchEngineName || selected.searchEngine)
+      this.troubleshootingEngineTarget.textContent = searchEngineLabel(this.engineLabelsValue, selected.mapperBasedSearchEngineName || selected.searchEngine)
     }
   }
 

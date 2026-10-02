@@ -1,6 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { searchEngineDisplayName } from "utils/search_engine_name"
-import { supportsLookupById } from "utils/search_engines"
+import { searchEngineLabel, supportsLookupById } from "utils/search_engines"
 
 /**
  * Take-snapshot modal for the core case toolbar. Collects name + optional
@@ -22,6 +21,8 @@ export default class extends CoreModalControllerBase {
     "cancelButton"
   ]
 
+  static values = { engineLabels: Object }
+
   openFor(btn) {
     const caseId = btn?.dataset?.takeSnapshotCoreIdValue
     const fieldSpec = btn?.dataset?.takeSnapshotCoreFieldSpecValue || ""
@@ -36,7 +37,7 @@ export default class extends CoreModalControllerBase {
     if (this.hasRecordFieldsCheckboxTarget) this.recordFieldsCheckboxTarget.checked = false
     if (this.hasFieldSpecTarget) this.fieldSpecTarget.textContent = fieldSpec
     if (this.hasEngineNameTarget) {
-      this.engineNameTarget.textContent = mapperName || searchEngineDisplayName(searchEngine)
+      this.engineNameTarget.textContent = mapperName || searchEngineLabel(this.engineLabelsValue, searchEngine)
     }
 
     this.toggleVisible("lookupFields", this.supportsLookup)

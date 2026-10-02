@@ -5,6 +5,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import { persistQueries } from "utils/query_lifecycle"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { getQuepidRootUrl } from "utils/quepid_root"
+import { normalizeSearchEngine } from "utils/search_engines"
 import {
   addUniqueQuery,
   buildFieldSpec,
@@ -216,7 +217,7 @@ export default class extends Controller {
     if (invalidProxyApiMethod(this.settings.proxyRequests, this.settings.apiMethod)) return this.fail("You must change from JSONP to another API method when proxying.")
 
     const settings = { ...this.settings }
-    if (settings.searchEngine === "static") settings.searchEngine = "solr"
+    settings.searchEngine = normalizeSearchEngine(settings.searchEngine)
     if (settings.searchEngine === "searchapi") {
       const queryParams = settings.queryParams || ""
       settings.args = settings.testQuery || queryParams.replace(/#\$query##/g, "test")
@@ -370,14 +371,13 @@ export default class extends Controller {
 
   renderEndpointChoices() {
     if (this.hasEngineTarget) {
-      const builtIns = [
-        ["solr", "Solr"], ["es", "Elasticsearch"], ["os", "OpenSearch"], ["vectara", "Vectara"],
-        ["algolia", "Algolia"], ["static", "Static"], ["searchapi", "Search API"]
-      ]
-      this.engineTarget.replaceChildren(...builtIns.concat(this.mapperEngines.map((engine) => [engine.id, engine.name])).map(([value, label]) => {
+      // The built-in engines are rendered in ERB; only the mapper-based ones are added here.
+      this.engineTarget.querySelectorAll("option[data-mapper-engine]").forEach((option) => option.remove())
+      this.engineTarget.append(...this.mapperEngines.map((engine) => {
         const option = document.createElement("option")
-        option.value = value
-        option.textContent = label
+        option.value = engine.id
+        option.textContent = engine.name
+        option.dataset.mapperEngine = ""
         return option
       }))
     }

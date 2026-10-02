@@ -1,4 +1,4 @@
-import { isEsLikeEngine } from "utils/search_engines"
+import { isEsLikeEngine, normalizeSearchEngine } from "utils/search_engines"
 
 /**
  * Helpers extracted from the live-query runtime.
@@ -41,7 +41,7 @@ export function buildSearcherRequest({
   if (!selectedTry) return undefined
 
   const args = JSON.parse(JSON.stringify(selectedTry.args || {}))
-  const searchEngine = settings.searchEngine === "static" ? "solr" : settings.searchEngine
+  const searchEngine = normalizeSearchEngine(settings.searchEngine)
   const searcherOptions = {
     customHeaders:
       typeof settings.customHeaders === "object" && settings.customHeaders !== null
