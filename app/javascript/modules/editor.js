@@ -1,10 +1,12 @@
 // Simplest CodeMirror 6 implementation
-import { Compartment, EditorState } from "@codemirror/state";
-import { EditorView, lineNumbers } from "@codemirror/view";
+import { Compartment, EditorState, Transaction } from "@codemirror/state";
+import { EditorView, keymap, lineNumbers } from "@codemirror/view";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { linter, lintGutter } from "@codemirror/lint";
-import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { syntaxHighlighting, HighlightStyle, indentOnInput } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { isJsonEditorMode } from "utils/editor_mode";
 
@@ -266,6 +268,13 @@ export function fromTextArea(textarea, options = {}) {
   const extensions = [
     lineNumbers(),
     lintGutter(),
+    // Standard editing: undo/redo, auto-indent, bracket pairing, and Tab to
+    // indent. Outside modals, Esc then Tab moves focus out so keyboard users
+    // aren't trapped; inside a Bootstrap modal, Esc closes the modal instead.
+    history(),
+    indentOnInput(),
+    closeBrackets(),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
     languageCompartment.of(languageExtension),
     linterCompartment.of(linterExtension),
     syntaxHighlighting(highlightStyle),
@@ -308,13 +317,16 @@ export function fromTextArea(textarea, options = {}) {
   const editor = {
     view,
     getValue: () => view.state.doc.toString(),
+    // Loading content isn't a user edit, so keep it out of undo history:
+    // otherwise Ctrl+Z right after opening would blank the editor.
     setValue: (value) => {
       view.dispatch({
         changes: {
           from: 0,
           to: view.state.doc.length,
           insert: value || ""
-        }
+        },
+        annotations: Transaction.addToHistory.of(false)
       });
     },
     setMode: (mode) => {
@@ -350,7 +362,8 @@ export function fromTextArea(textarea, options = {}) {
               from: 0,
               to: view.state.doc.length,
               insert: formatted
-            }
+            },
+            annotations: Transaction.addToHistory.of(false)
           });
         }
         return true;

@@ -9,7 +9,6 @@ function buildController(adapter) {
   controller.adapter = adapter
   controller.queryParamsTarget = document.createElement("textarea")
   controller.hasQueryParamsTarget = true
-  controller.hasQueryParamsEditorTarget = false
   controller.searchButtonTarget = document.createElement("button")
   controller.resetButtonTarget = document.createElement("button")
   controller.statusTarget = document.createElement("div")
@@ -28,6 +27,14 @@ function buildController(adapter) {
     controller.engineNameTarget
   )
   return controller
+}
+
+// renderShell replaces the element's children, so point the target at the
+// textarea it rendered, as Stimulus would.
+function trackRenderedQueryParams(controller) {
+  Object.defineProperty(controller, "queryParamsTarget", {
+    get: () => controller.element.querySelector("[data-missing-documents-target='queryParams']")
+  })
 }
 
 function adapter(overrides = {}) {
@@ -105,6 +112,37 @@ describe("MissingDocumentsController", () => {
     await controller.reset()
 
     expect(controller.queryParamsTarget.value).toBe("q=original")
+  })
+
+  it("edits Elasticsearch-like query params in a CodeMirror JSON editor", () => {
+    const controller = buildController(adapter({
+      settings: { searchEngine: "es" },
+      initialQueryParams: () => '{"query":{"match_all":{}}}'
+    }))
+    trackRenderedQueryParams(controller)
+    controller.renderShell()
+
+    expect(controller.element.querySelector(".cm-editor")).not.toBeNull()
+    expect(controller.queryParamsTarget.style.display).toBe("none")
+    expect(controller.queryParams).toBe('{"query":{"match_all":{}}}')
+
+    controller.setQueryParams('{"size":5}')
+    expect(controller.queryParams).toBe('{"size":5}')
+
+    controller.disconnect()
+  })
+
+  it("keeps a plain textarea for engines without JSON query params", () => {
+    const controller = buildController(adapter({
+      settings: { searchEngine: "solr" },
+      initialQueryParams: () => "q=#$query##"
+    }))
+    trackRenderedQueryParams(controller)
+    controller.renderShell()
+
+    expect(controller.element.querySelector(".cm-editor")).toBeNull()
+    expect(controller.queryParamsTarget.style.display).toBe("")
+    expect(controller.queryParams).toBe("q=#$query##")
   })
 
   it("renders the unsupported-engine message without a query editor target", () => {

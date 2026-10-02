@@ -8,7 +8,6 @@ exclude_patterns = [
   "**/*.spec.js",              # Legacy JavaScript specs wherever located
   "app/assets/**",             # Legacy assets and generated builds
   "app/javascript/vendor/**",  # Vendored JavaScript
-  "public/javascripts/ace/**"  # Vendored Ace editor assets
 ]
 
 test_patterns = [

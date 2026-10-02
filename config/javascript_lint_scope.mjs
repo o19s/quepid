@@ -12,7 +12,6 @@ export const LEGACY_ESBUILD_ENTRIES = [
 
 /** Classic scripts still loaded directly by the core layout (ESLint + Prettier enforced). */
 export const LEGACY_SCRIPT_FILES = [
-  'app/javascript/ace_config.js',
   'app/javascript/footer.js',
   'app/javascript/tour.js',
 ];

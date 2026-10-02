@@ -580,18 +580,6 @@ footer {
   border-radius: 15px;
 }
 
-.ace_editor {
-    height: 400px;
-}
-
-.customheaders.code .ace_editor {
-  height: 125px;
-}
-
-.detaileddoc.code .ace_editor {
-  height: 300px;
-}
-
 .search-feedback {
   margin: 20px 0;
 }

@@ -3,9 +3,10 @@ import { openDynamicModal } from "utils/dynamic_modal"
 import { snapshotDocument } from "stores/query_documents_store"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { isEsLikeEngine } from "utils/search_engines"
+import { fromTextArea } from "modules/editor"
 
 export default class extends Controller {
-  static targets = ["queryParams", "queryParamsEditor", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
+  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
   static values = { queryId: Number, modalRoot: Boolean }
 
   open(event) {
@@ -33,7 +34,7 @@ export default class extends Controller {
   }
 
   disconnect() {
-    this.editor?.destroy()
+    this.editor?.view?.destroy()
   }
 
   renderShell() {
@@ -41,17 +42,8 @@ export default class extends Controller {
     const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
     this.element.replaceChildren(this.missingDocumentsContentTemplate(jsonEditor, supported))
     this.editor = null
-    if (jsonEditor && this.hasQueryParamsEditorTarget && window.ace) {
-      this.editor = window.ace.edit(this.queryParamsEditorTarget)
-      this.editor.setTheme("ace/theme/chrome")
-      this.editor.session.setMode("ace/mode/json")
-      this.editor.setOptions({
-        enableLiveAutocompletion: true,
-        enableSnippets: true,
-        wrap: true
-      })
-    } else if (this.hasQueryParamsTarget) {
-      this.queryParamsTarget.classList.remove("d-none")
+    if (jsonEditor && this.hasQueryParamsTarget) {
+      this.editor = fromTextArea(this.queryParamsTarget, { mode: "json", height: 400 })
     }
     this.setQueryParams(this.adapter.initialQueryParams() || "")
   }
@@ -75,17 +67,10 @@ export default class extends Controller {
       const editorColumn = document.createElement("div")
       editorColumn.className = "mb-3 col-sm-6"
       const queryParams = document.createElement("textarea")
-      queryParams.className = `form-control${jsonEditor ? " d-none" : ""}`
+      queryParams.className = "form-control"
       queryParams.rows = 4
       queryParams.dataset.missingDocumentsTarget = "queryParams"
       editorColumn.appendChild(queryParams)
-      if (jsonEditor) {
-        const editor = document.createElement("div")
-        editor.id = "missing-documents-query-params-editor"
-        editor.className = "es-query-params os-query-params"
-        editor.dataset.missingDocumentsTarget = "queryParamsEditor"
-        editorColumn.appendChild(editor)
-      }
       const hint = document.createElement("p")
       hint.className = "form-text"
       hint.textContent = "This is pre-filled from your current try's query, just like the Query Sandbox \u2014 edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query."
@@ -148,7 +133,7 @@ export default class extends Controller {
 
   setQueryParams(value) {
     if (this.editor) {
-      this.editor.setValue(value, -1)
+      this.editor.setValue(value)
     }
     if (this.hasQueryParamsTarget) this.queryParamsTarget.value = value
   }

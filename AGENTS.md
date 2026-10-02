@@ -127,7 +127,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 **Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
-- Prettier pre-commit is limited to **`api/`, `utils/`, and the classic core scripts (`ace_config`, `footer`, `tour`)** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
+- Prettier pre-commit is limited to **`api/`, `utils/`, and the classic core scripts (`footer`, `tour`)** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) and the JavaScript tests under `test/javascript/`; follow the conventions above when you add specs.
     - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
     - Do **not** run Prettier outside `api/`/`utils/`/the classic core scripts for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.

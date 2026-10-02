@@ -14,6 +14,14 @@ Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
+### [MIGRATION-FOLLOWUP] Remove the legacy footer script at verified parity
+
+Incomplete: render `layouts/footer_core_app` directly at the end of the Rails-owned `.pane_main`, remove the redundant layout footer and `footer.js` include, delete the script, and update lint scope and pipeline/tooling documentation. Check other uses of the core layout before removing its fallback footer.
+
+Acceptance: inspect matching before/after viewport screenshots with the case pane scrolled to the footer, with Tune Relevance closed/open, and at a narrow viewport; preserve footer content, links, placement and scrolling. Record the representative coverage in the manual tracker.
+
+Blocked before editing: Playwright MCP `browser_tabs` reports “Browser is already in use for /Users/dave/Library/Caches/ms-playwright-mcp/mcp-chrome-914434f, use --isolated to run multiple instances of the same browser” on both attempts. Smallest prerequisite: release that MCP browser profile through its owning session or provide an isolated MCP browser session. Reuse the existing `quepid_app` server on host port 3000.
+
 ### [MIGRATION] Search failure flashes expose link markup
 
 A controlled failed search shows literal `<a href="...">` markup in the error flash instead of clickable endpoint/troubleshooting links (manual scenario 4.21; `.playwright-mcp/due-sweep/query-error.png`). The search-error translator returns markup, while `flash_controller.js` renders messages as text unless explicitly opted into HTML.
@@ -389,6 +397,19 @@ Right after **Create** in Tune Relevance → Annotations, the new entry reads e.
 ---
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
+
+### [PREEXISTING] One scorer implementation for browser and server
+
+Custom scorers run in two places:
+
+- The browser runs them through `app/javascript/utils/scorer_runtime.js`.
+- Server-side evaluation (`RunCaseEvaluationJob` → `FetchService#score_snapshot`) runs `lib/scorer_logic.js` through `JavascriptScorer`. Its header says it is "duplicated and tweaked" from `runCode()`.
+
+The server copy is missing `avgRating100`, `editDistanceFromBest`, `eachDocWithRatingEqualTo`, `recordDepthOfRanking`, `pass`, `fail`, `assert` and `assertOrScore`. A custom scorer that works in the case UI can fail when the same case is evaluated server-side.
+
+The helper gap dates to the server scorer’s introduction in `3bfa92d7` (January 2025), before AngularJS removal. The browser migration in `d7a7fcde` retained the separate server implementation.
+
+**Fix direction:** Build one framework-free scorer file that both the browser bundle and the server's V8 executor load, and test it once.
 
 ### [PREEXISTING] Elasticsearch/OpenSearch document IDs are not persisted
 

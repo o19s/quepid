@@ -14,14 +14,6 @@ window.Sortable = Sortable;
 
 import 'file-saver';
 
-// ACE editor
-import ace from 'ace-builds/src-min-noconflict/ace';
-import 'ace-builds/src-min-noconflict/ext-language_tools';
-import 'ace-builds/src-min-noconflict/mode-json';
-import 'ace-builds/src-min-noconflict/mode-javascript';
-import 'ace-builds/src-min-noconflict/mode-lucene';
-window.ace = ace;
-
 // Vega for charts is loaded separately via the `vega_globals` importmap pin
 // (see app/views/layouts/core.html.erb), not through this bundle.
 
