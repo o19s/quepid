@@ -172,6 +172,8 @@ hand. Then confirm a pair of judges with too little overlap shows "not enough sh
 
 ## 7. Open questions
 
+- **Tuning prompts against the reference.** Once a reference judge exists, the same agreement
+  numbers drive prompt tuning: `docs/todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md`.
 - **Human consensus as one reference.** Compare an AI judge with each human separately (v1), or
   with the humans' majority grade where two or more rated a pair? The second is closer to how TREC
   uses gold labels, but needs enough multiply-judged pairs to be meaningful.

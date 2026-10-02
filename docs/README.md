@@ -17,6 +17,7 @@
 | [`adr/0001-llm-judge-provider-architecture.md`](./adr/0001-llm-judge-provider-architecture.md) | Why the LLM-as-Judge adapter seam exists, why Jev lands now and OpenAI Batch is deferred, and the deployable step order |
 | [`todo/escalating_judges.md`](./todo/escalating_judges.md) | Planned: a cheap judge that wakes an expensive one when it is unsure (explicit escalation order per book) — plan, decisions and risk register in one doc |
 | [`todo/inter_judge_agreement.md`](./todo/inter_judge_agreement.md) | Planned: Krippendorff's α and confusion matrices between a book's judges on Judgement Stats, plus a calibration sample to create overlap |
+| [`todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md`](./todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md) | How-to and plan: build a golden dataset from expert judgements, tune an AI judge's prompt against it (DSPy for chat judges), and re-validate inside Quepid |
 | [`todo/judge_calibration_research.md`](./todo/judge_calibration_research.md) | Research: how IR research and industry measure and correct disagreement between relevance judges (human and LLM), with implications for escalation |
 | [`todo/todo.md`](./todo/todo.md) | Open bugs, hardening, and cleanup on `main` (excludes obviated Angular UI — see [§ Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular)) |
 

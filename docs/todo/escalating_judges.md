@@ -317,7 +317,9 @@ book:
    must also rate a small random sample of the pairs the cheap judge answered confidently (the
    calibration sample in `inter_judge_agreement.md` D6).
 3. **Humans as the reference where they exist.** Each AI judge's α and confusion matrix against a
-   book's human judgements says whether to trust it at all, and which one to put first.
+   book's human judgements says whether to trust it at all, and which one to put first. The same
+   gold set can tune each judge's prompt first
+   (`docs/todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md`).
 4. **A threshold chosen from that data.** The confidence floor that triggers escalation should be
    the point where accepting the cheap judge still meets an agreement target — which needs Jev's
    confidence persisted (§5.3), and checked: an LLM's stated confidence is not calibrated until it
