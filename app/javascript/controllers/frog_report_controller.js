@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -151,8 +152,7 @@ export default class extends Controller {
       .replace("__CASE_ID__", state.caseNo)
       .replace("__BACKGROUND__", background ? "true" : "false")
     try {
-      const response = await apiFetch(url, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) })
-      if (!response.ok) throw new Error(`${response.status} ${response.statusText}`)
+      await postJson(url, {}, { method: "PUT" })
       if (!background) {
         const refreshQueries = getCoreCapabilities().queryLifecycle?.refreshQueries
         if (typeof refreshQueries !== "function") {
@@ -163,6 +163,7 @@ export default class extends Controller {
     coreFlash.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
       if (background) window.location.assign(getQuepidRootUrl())
     } catch (error) {
+      if (error instanceof HttpError) error.message = `${error.status} ${error.statusText}`
       this.errorTarget.textContent = `An error (${error.message}) occurred, please try again.`
       this.errorTarget.classList.remove("d-none")
     } finally {

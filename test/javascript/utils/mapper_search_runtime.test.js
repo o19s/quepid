@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { createMapperSearchRuntime } from "utils/mapper_search_runtime"
 
-const response = data => ({ ok: true, status: 200, json: vi.fn(async () => data) })
+const response = data => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 200, json: vi.fn(async () => data) })
 
 describe("mapper search runtime", () => {
   it("loads and maps mapper-based search engines", async () => {
@@ -52,9 +52,9 @@ describe("mapper search runtime", () => {
   })
 
   it("surfaces failed API responses", async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, status: 500 })
+    const request = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     const runtime = createMapperSearchRuntime({ request })
 
-    await expect(runtime.list()).rejects.toThrow("Unable to load mapper search engines (500)")
+    await expect(runtime.list()).rejects.toThrow("Request failed (500)")
   })
 })

@@ -396,7 +396,7 @@ describe("queries_list_controller", () => {
       <li><div data-query-row-query-id-value="11"></div></li>
       <li><div data-query-row-query-id-value="12"></div></li>
     `
-    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: vi.fn(async () => null).mockResolvedValue({ display_order: [12, 11] }) })
     const setDisplayOrder = vi.fn()
     controller.queryCapabilities = { setDisplayOrder }
 
@@ -418,7 +418,7 @@ describe("queries_list_controller", () => {
       <li><div data-query-row-query-id-value="11"></div></li>
       <li><div data-query-row-query-id-value="12"></div></li>
     `
-    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [12, 11] }) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: vi.fn(async () => null).mockResolvedValue({ display_order: [12, 11] }) })
 
     controller.dragStart()
     await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
@@ -434,7 +434,7 @@ describe("queries_list_controller", () => {
       <li><div data-query-row-query-id-value="31"></div></li>
       <li><div data-query-row-query-id-value="32"></div></li>
     `
-    apiFetch.mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ display_order: [32, 31] }) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: vi.fn(async () => null).mockResolvedValue({ display_order: [32, 31] }) })
 
     controller.dragStart()
     await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
@@ -450,7 +450,7 @@ describe("queries_list_controller", () => {
       <li><div data-query-row-query-id-value="11"></div></li>
       <li><div data-query-row-query-id-value="12"></div></li>
     `
-    apiFetch.mockResolvedValue({ ok: false, status: 500 })
+    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     window.quepidDom = { flash: { show: vi.fn() } }
 
     controller.dragStart()

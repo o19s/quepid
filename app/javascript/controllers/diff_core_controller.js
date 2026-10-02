@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson } from "api/json"
 import { showStatusMessage } from "utils/status_message"
 
 /**
@@ -47,9 +47,7 @@ export default class extends CoreModalControllerBase {
   async loadSnapshots() {
     this.setBusy(true)
     try {
-      const response = await apiFetch(`${this.snapshotsUrlValue}?shallow=true`)
-      if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
-      const payload = await response.json()
+      const payload = await getJson(`${this.snapshotsUrlValue}?shallow=true`)
       this.snapshots = payload.snapshots || []
       this.renderSelections()
     } catch (error) {

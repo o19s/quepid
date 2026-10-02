@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 import coreFlash from "utils/core_flash"
 
 /**
@@ -28,8 +28,7 @@ export default class extends Controller {
     this.element.disabled = true
 
     try {
-      const response = await apiFetch(this.deleteUrlValue, { method: "DELETE" })
-      if (!response.ok) throw new Error(`Delete failed (${response.status})`)
+      await requestJson(this.deleteUrlValue, { method: "DELETE" })
 
       document.dispatchEvent(new CustomEvent("query-command:delete-completed", {
         detail: { queryId: this.queryIdValue }

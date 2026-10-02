@@ -1,3 +1,4 @@
+import { getJson } from "api/json"
 // vegaEmbed is available globally via the `vega_globals` importmap pin,
 // loaded as part of application_modern.js on every page using this controller.
 import { Controller } from "@hotwired/stimulus"
@@ -136,12 +137,7 @@ export default class UserActivityController extends Controller {
     const url = `${this.urlValue}&start=${start}&end=${end}`
 
     try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const rawData = await response.json()
+      const rawData = await getJson(url)
 
       // Transform the data from timestamp: count to array of {date, value}
       // The backend returns Unix timestamps in seconds

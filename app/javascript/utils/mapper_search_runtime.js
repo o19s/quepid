@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 
 function mapEngine(data) {
   return {
@@ -32,11 +33,7 @@ export function createMapperSearchRuntime({ request = apiFetch } = {}) {
 
   return {
     list: async () => {
-      const response = await request("api/mapper_based_search_engines", {
-        headers: { Accept: "application/json" }
-      })
-      if (!response.ok) throw new Error(`Unable to load mapper search engines (${response.status})`)
-      const data = await response.json()
+      const data = await requestJson("api/mapper_based_search_engines", {}, request)
       engines = (data.mapper_based_search_engines || []).map(mapEngine)
       return engines
     },

@@ -74,8 +74,9 @@ describe("query_lifecycle", () => {
       { status: 422, headers: { "Content-Type": "application/json" } }
     )))
 
-    await expect(persistQueries(42, ["star wars", "dune"])).rejects.toEqual({
-      error: "Unable to add queries."
+    await expect(persistQueries(42, ["star wars", "dune"])).rejects.toMatchObject({
+      status: 422,
+      data: { error: "Unable to add queries." }
     })
     vi.unstubAllGlobals()
   })

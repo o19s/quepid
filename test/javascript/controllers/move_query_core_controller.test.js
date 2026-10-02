@@ -43,6 +43,9 @@ describe("MoveQueryCoreController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({
         all_cases: [

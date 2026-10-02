@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
@@ -88,16 +89,7 @@ export default class extends CoreModalControllerBase {
       const url = this.caseScorerUrlTemplateValue
         .replaceAll("__CASE_ID__", caseId)
         .replaceAll("__SCORER_ID__", String(scorerId))
-      const response = await apiFetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({})
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || "Unable to save scorer.")
-      }
+      await postJson(url, {}, { method: "PUT" })
 
       document.dispatchEvent(
         new CustomEvent("pick-scorer:selected", {
@@ -108,7 +100,10 @@ export default class extends CoreModalControllerBase {
       hideBsModal(getOrCreateBsModal(this.element))
     } catch (error) {
       console.error("pick-scorer-core: save failed", error)
-      this.showAlert(error.message || "Unable to save scorer.", "danger")
+      const message = error instanceof HttpError
+        ? error.data?.error || error.data?.message || "Unable to save scorer."
+        : error.message || "Unable to save scorer."
+      this.showAlert(message, "danger")
       this.setSubmitting(false)
     }
   }
@@ -118,12 +113,8 @@ export default class extends CoreModalControllerBase {
     if (this.hasCustomListTarget) this.customListTarget.innerHTML = ""
 
     try {
-      const response = await apiFetch(this.scorersUrlValue, {
-        headers: { Accept: "application/json" }
-      })
-      if (!response.ok) throw new Error(`Failed to load scorers (${response.status})`)
+      const data = await getJson(this.scorersUrlValue)
 
-      const data = await response.json()
       this.userScorers = Array.isArray(data.user_scorers) ? data.user_scorers : []
       this.communalScorers = Array.isArray(data.communal_scorers) ? data.communal_scorers : []
 

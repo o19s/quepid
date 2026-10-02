@@ -20,6 +20,9 @@ describe("ImportSnapshotController sendSnapshotToAPI", () => {
   it("builds the import URL under the quepid root, not a bare /api path", async () => {
     const controller = Object.create(ImportSnapshotController.prototype)
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({}),
     })
@@ -250,8 +253,8 @@ describe("ImportSnapshotController submit", () => {
 
   it("surfaces the server's message when a snapshot import is rejected", async () => {
     document.body.dataset.quepidRootUrl = "https://example.com/quepid"
-    apiFetch.mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({ message: "Case 4 not found" }) })
-      .mockResolvedValueOnce({ ok: false, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({ message: "Case 4 not found" }) })
+      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
     const controller = uiController()
 
     await expect(controller.sendSnapshotToAPI("4", {})).rejects.toThrow("Case 4 not found")

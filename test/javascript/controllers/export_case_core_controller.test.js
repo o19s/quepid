@@ -90,7 +90,7 @@ function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "tru
 }
 
 function okJsonResponse(body) {
-  return { ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
+  return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
 }
 
 describe("ExportCaseCoreController", () => {
@@ -373,7 +373,7 @@ describe("ExportCaseCoreController", () => {
 
     it("logs when the server responds with a non-2xx status instead of failing silently", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-      apiFetch.mockResolvedValue({ ok: false, status: 500 })
+      apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
       const controller = buildModalController()
       controller.currentCaseId = "5"
       controller.currentCaseName = "Movies"

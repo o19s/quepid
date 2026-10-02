@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { errorMessage } from "utils/error_message"
@@ -169,14 +169,7 @@ export default class extends Controller {
     const url = `${this.positionUrlValue}/${queryId}/position`
 
     try {
-      const response = await apiFetch(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ after: previousQueryId, reverse })
-      })
-      if (!response.ok) throw new Error(`Reorder failed (${response.status})`)
-
-      const data = await response.json()
+      const data = await postJson(url, { after: previousQueryId, reverse }, { method: "PUT" })
       if (this.queryCapabilities?.setDisplayOrder) {
         this.queryCapabilities.setDisplayOrder(data.display_order)
       } else {

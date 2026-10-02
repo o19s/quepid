@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson, requestJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { showFlash } from "utils/flash"
 import { getCoreStores } from "utils/core_store_access"
@@ -28,9 +28,7 @@ export default class extends Controller {
 
   async load() {
     try {
-      const response = await apiFetch(this.annotationUrl())
-      if (!response.ok) throw new Error(`Unable to load annotations (${response.status})`)
-      const data = await response.json()
+      const data = await getJson(this.annotationUrl())
       this.annotations = (data.annotations || []).map((annotation) => this.normalize(annotation))
       this.render()
     } catch {
@@ -52,13 +50,9 @@ export default class extends Controller {
 
     this.createButtonTarget.disabled = true
     try {
-      const response = await apiFetch(this.annotationUrl(), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ annotation: { message }, score })
-      })
-      if (!response.ok) throw new Error(`Unable to create annotation (${response.status})`)
-      this.annotations.unshift(this.normalize(await response.json()))
+      const data = await postJson(this.annotationUrl(), { annotation: { message }, score })
+
+      this.annotations.unshift(this.normalize(data))
       this.messageTarget.value = ""
       this.render()
       this.notifyScoreConsumers()
@@ -101,13 +95,9 @@ export default class extends Controller {
     const editSave = this.editSaveElement || this.editSaveTarget
     editSave.disabled = true
     try {
-      const response = await apiFetch(`${this.annotationUrl()}/${annotation.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ annotation: { message: editMessage.value } })
-      })
-      if (!response.ok) throw new Error(`Unable to update annotation (${response.status})`)
-      const updated = this.normalize(await response.json())
+      const data = await postJson(`${this.annotationUrl()}/${annotation.id}`, { annotation: { message: editMessage.value } }, { method: "PUT" })
+
+      const updated = this.normalize(data)
       this.annotations = this.annotations.map((item) => item.id === updated.id ? updated : item)
       this.render()
       this.editModalInstance?.hide()
@@ -126,8 +116,8 @@ export default class extends Controller {
     if (!annotation) return
 
     try {
-      const response = await apiFetch(`${this.annotationUrl()}/${annotation.id}`, { method: "DELETE" })
-      if (!response.ok) throw new Error(`Unable to delete annotation (${response.status})`)
+      await requestJson(`${this.annotationUrl()}/${annotation.id}`, { method: "DELETE" })
+
       this.annotations = this.annotations.filter((item) => item.id !== annotation.id)
       this.render()
       this.notifyScoreConsumers()

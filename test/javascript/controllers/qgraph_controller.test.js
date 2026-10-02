@@ -10,7 +10,7 @@ const scores = [
 ]
 
 function json(body, ok = true, status = 200) {
-  return { ok, status, json: async () => body }
+  return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok, status, json: async () => body }
 }
 
 const mounted = []
@@ -73,8 +73,8 @@ describe("QgraphController", () => {
     controller.connect()
     await flush()
 
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores")
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations")
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", { method: "GET", headers: { Accept: "application/json" } })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", { method: "GET", headers: { Accept: "application/json" } })
     expect(element.hidden).toBe(false)
     expect(window.vegaEmbed).toHaveBeenCalled()
     const spec = window.vegaEmbed.mock.calls.at(-1)[1]
@@ -152,7 +152,7 @@ describe("QgraphController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
 
     controller.handleScorePersisted({ detail: { caseId: "5" } })
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores")
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/scores", { method: "GET", headers: { Accept: "application/json" } })
   })
 
   it("reloads annotations only for its own case when annotations change", async () => {
@@ -165,7 +165,7 @@ describe("QgraphController", () => {
     expect(apiFetch).not.toHaveBeenCalled()
 
     controller.handleAnnotationsChanged({ detail: { caseId: "5" } })
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations")
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", { method: "GET", headers: { Accept: "application/json" } })
   })
 
   it("stops listening and finalizes the chart on disconnect", async () => {

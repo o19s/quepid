@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { parseCsv } from "utils/csv"
@@ -194,20 +195,14 @@ export default class extends Controller {
     // server-rendered URL to pass in - fall back to the root URL.
     const url = `${getQuepidRootUrl()}/api/cases/${caseId}/snapshots/imports`
 
-    const response = await apiFetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ snapshots: [snapshotData] })
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || `Failed to import snapshot for case ${caseId}`)
+    try {
+      return await postJson(url, { snapshots: [snapshotData] })
+    } catch (error) {
+      if (error instanceof HttpError) {
+        error.message = error.data?.message || `Failed to import snapshot for case ${caseId}`
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   readFileAsText(file) {

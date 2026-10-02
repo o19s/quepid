@@ -44,16 +44,23 @@ function withDefaults(supplied, defaults) {
 /**
  * @param {string} url
  * @param {RequestInit} [init]
- * @returns {Promise<unknown>} parsed body
+ * @param {typeof apiFetch} [fetcher] Injected transport for runtime callers.
+ * @returns {Promise<{ data: unknown, ok: boolean, status: number, statusText: string }>}
  * @throws {HttpError} on a non-2xx response
  */
-export async function requestJson(url, init = {}) {
+export async function requestJsonResponse(url, init = {}, fetcher = apiFetch) {
   const headers = withDefaults(init.headers, { Accept: "application/json" })
-  const response = await apiFetch(url, { ...init, headers })
+  const response = await fetcher(url, { ...init, headers })
   const data = await readJson(response)
   if (!response.ok) {
     throw new HttpError({ status: response.status, statusText: response.statusText, data })
   }
+  return { data, ok: true, status: response.status, statusText: response.statusText }
+}
+
+/** Returns only the parsed body; use requestJsonResponse when status is needed. */
+export async function requestJson(url, init = {}, fetcher = apiFetch) {
+  const { data } = await requestJsonResponse(url, init, fetcher)
   return data
 }
 

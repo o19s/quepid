@@ -2,6 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { createCaseRuntime } from "utils/case_runtime"
 
 const response = (data = {}, status = 200) => ({
+  async text() {
+    return JSON.stringify(await this.json()) || ""
+  },
   ok: true,
   status,
   json: vi.fn(async () => data)
@@ -67,10 +70,10 @@ describe("case runtime", () => {
   })
 
   it("rejects failed mutations with the action and status, and ignores a blank rename", async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, status: 403, json: vi.fn() })
+    const request = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 403, json: vi.fn(async () => null) })
     const runtime = createCaseRuntime({ request })
 
-    await expect(runtime.delete({ caseNo: 7 })).rejects.toThrow("Unable to delete case (403)")
+    await expect(runtime.delete({ caseNo: 7 })).rejects.toThrow("Request failed (403)")
     await runtime.rename({ caseNo: 7 }, "")
     expect(request).toHaveBeenCalledOnce()
   })

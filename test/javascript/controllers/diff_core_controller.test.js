@@ -67,7 +67,7 @@ describe("DiffCoreController", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    apiFetch.mockResolvedValue({ ok: true, json: async () => ({ snapshots: [] }) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [] }) })
   })
 
   afterEach(() => vi.restoreAllMocks())
@@ -141,7 +141,7 @@ describe("DiffCoreController", () => {
   it("opens with the bridge's current selections and loads snapshots shallowly", async () => {
     const controller = buildController()
     controller.snapshotsUrlValue = "api/cases/1/snapshots"
-    apiFetch.mockResolvedValue({ ok: true, json: async () => ({ snapshots: [{ id: 4, name: "Release" }] }) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 4, name: "Release" }] }) })
     const answer = (event) => event.detail.done([4])
     document.addEventListener("diff:selection-request", answer)
 
@@ -149,7 +149,7 @@ describe("DiffCoreController", () => {
 
     document.removeEventListener("diff:selection-request", answer)
     expect(controller.selectionValues).toEqual(["4"])
-    expect(apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true")
+    expect(apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", { method: "GET", headers: { Accept: "application/json" } })
     expect(controller.selectionsTarget.querySelector("select").value).toBe("4")
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
@@ -170,7 +170,7 @@ describe("DiffCoreController", () => {
 
   it("shows an error and an empty list when snapshots can't be loaded", async () => {
     const controller = buildController()
-    apiFetch.mockResolvedValue({ ok: false, status: 500 })
+    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
 
     await controller.loadSnapshots()
 

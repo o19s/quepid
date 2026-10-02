@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
 
 const STATUS_VARIANT_CLASSES = [
@@ -32,26 +33,21 @@ export default class extends Controller {
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await apiFetch(this.deleteUrlValue, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId
-        })
-      })
+      await postJson(this.deleteUrlValue, {
+        query_doc_pair_id: queryDocPairId
+        }, { method: "DELETE" })
 
-      // Successfully deleted the judgement or there was no judgement to delete
-      if (response.ok || response.status === 404) {
+      this.clearRatingUI(queryDocPairId)
+      this.showStatus(queryDocPairId, "reset")
+      button.remove()
+    } catch (error) {
+      // Reset is idempotent: a missing judgement is already reset.
+      if (error instanceof HttpError && error.status === 404) {
         this.clearRatingUI(queryDocPairId)
         this.showStatus(queryDocPairId, "reset")
         button.remove()
-      } else {
-        this.showStatus(queryDocPairId, "error")
-        console.error("Failed to reset judgement:", response.status)
+        return
       }
-    } catch (error) {
       this.showStatus(queryDocPairId, "error")
       console.error("Error resetting judgement:", error)
     }
@@ -96,24 +92,13 @@ export default class extends Controller {
     const explanation = explanationField ? explanationField.value : ""
 
     try {
-      const response = await apiFetch(this.saveUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId,
-          rating: rating,
-          explanation: explanation
+      await postJson(this.saveUrlValue, {
+        query_doc_pair_id: queryDocPairId,
+        rating: rating,
+        explanation: explanation
         })
-      })
 
-      if (response.ok) {
-        this.showStatus(queryDocPairId, "saved")
-      } else {
-        this.showStatus(queryDocPairId, "error")
-        console.error("Failed to save judgement")
-      }
+      this.showStatus(queryDocPairId, "saved")
     } catch (error) {
       this.showStatus(queryDocPairId, "error")
       console.error("Error saving judgement:", error)
@@ -151,23 +136,13 @@ export default class extends Controller {
       this.showStatus(queryDocPairId, "saving")
 
       try {
-        const response = await apiFetch(this.saveUrlValue, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            query_doc_pair_id: queryDocPairId,
-            rating: rating,
-            explanation: explanation
+        await postJson(this.saveUrlValue, {
+          query_doc_pair_id: queryDocPairId,
+          rating: rating,
+          explanation: explanation
           })
-        })
 
-        if (response.ok) {
-          this.showStatus(queryDocPairId, "saved")
-        } else {
-          this.showStatus(queryDocPairId, "error")
-        }
+        this.showStatus(queryDocPairId, "saved")
       } catch (error) {
         this.showStatus(queryDocPairId, "error")
         console.error("Error saving explanation:", error)

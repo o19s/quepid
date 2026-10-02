@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
 import { fromTextArea } from "modules/editor"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
@@ -55,12 +55,7 @@ export default class extends CoreModalControllerBase {
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
 
     try {
-      const response = await apiFetch(this.saveUrl, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: { options } })
-      })
-      if (!response.ok) throw new Error(`Unable to save query options (${response.status})`)
+      await postJson(this.saveUrl, { query: { options } }, { method: "PUT" })
 
       document.dispatchEvent(new CustomEvent("query-options:saved", {
         detail: { queryId: this.queryId, options }

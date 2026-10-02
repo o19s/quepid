@@ -22,8 +22,8 @@ describe("snapshot import runtime", () => {
 
   it("posts grouped snapshots sequentially and returns imported snapshots", async () => {
     const fetcher = vi.fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ snapshots: [{ id: 9 }] }) })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({ snapshots: [{ id: 10 }] }) })
+      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 9 }] }) })
+      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 10 }] }) })
 
     const imported = await importSnapshotsToCase(rows, 7, "", fetcher)
 

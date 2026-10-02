@@ -89,6 +89,9 @@ describe("ShareCaseCoreController — modal list UI", () => {
 
   it("partitions teams into shareable vs already shared for the case", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
@@ -170,6 +173,9 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
   it("opens the share modal with the bound case", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
@@ -181,6 +187,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     })
 
     expect(apiFetch).toHaveBeenCalledWith("/api/teams", {
+      method: "GET",
       headers: { Accept: "application/json" }
     })
     expect(controller.titleTarget.textContent).toBe("Share Case: Demo Case")
@@ -191,6 +198,9 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
   it("shows danger alert when share API fails", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: false,
       status: 422,
       statusText: "Unprocessable Entity",
@@ -215,6 +225,9 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
   it("shows danger alert when unshare API fails", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
@@ -238,7 +251,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("shows danger alert when loading teams fails on open", async () => {
-    apiFetch.mockResolvedValue({
+    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,
       ok: false,
       status: 500,
       statusText: "Error"
@@ -274,7 +287,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     apiFetch
       .mockImplementationOnce(() => firstFetch)
       .mockImplementationOnce(() =>
-        Promise.resolve({ ok: true, json: () => Promise.resolve(secondPayload) })
+        Promise.resolve({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(secondPayload) })
       )
 
     const controller = buildController()
@@ -291,7 +304,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
 
     // Case 5's stale response now arrives — it must not clobber case 9's UI.
-    resolveFirstFetch({ ok: true, json: () => Promise.resolve(TEAM_PAYLOAD) })
+    resolveFirstFetch({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(TEAM_PAYLOAD) })
     await staleLoad
 
     expect(controller.currentCaseId).toBe("9")
@@ -300,7 +313,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("shares via API and dispatches quepid:case-team-changed", async () => {
-    apiFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve({}) })
     const dispatchSpy = vi.spyOn(document, "dispatchEvent")
 
     const controller = buildController()
@@ -334,7 +347,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("unshares via API and dispatches quepid:case-team-changed", async () => {
-    apiFetch.mockResolvedValue({ ok: true, status: 204, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 204, json: () => Promise.resolve({}) })
     const dispatchSpy = vi.spyOn(document, "dispatchEvent")
 
     const controller = buildController()
@@ -365,6 +378,9 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   it("openFromExternal shows modal and loads teams", async () => {
     mountCaseHeader("From Judgements")
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })

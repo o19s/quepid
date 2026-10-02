@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
@@ -50,36 +51,26 @@ export default class extends Controller {
       }
 
       // Send to API - wrap in 'case' key as expected by API
-      const response = await apiFetch(this.formTarget.action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ case: caseData })
-      })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        this.showAlert('Case imported successfully! Redirecting...', 'success')
-        setTimeout(() => {
-          if (result.redirect_url) {
-            window.location.href = result.redirect_url
-          } else {
-            window.location.reload()
-          }
-        }, 1500)
-      } else {
-        const validationMessages = Object.entries(result)
-          .filter(([, value]) => Array.isArray(value))
-          .map(([field, messages]) => `${field} ${messages.join(', ')}`)
-        const errorMessage = result.error || result.message || validationMessages.join('. ') || 'Failed to import case. Please check the file format.'
-        this.showAlert(errorMessage, 'danger')
-        this.setLoading(false)
-      }
+      const result = await postJson(this.formTarget.action, { case: caseData })
+      this.showAlert("Case imported successfully! Redirecting...", "success")
+      setTimeout(() => {
+        if (result.redirect_url) {
+          window.location.href = result.redirect_url
+        } else {
+          window.location.reload()
+        }
+      }, 1500)
     } catch (error) {
       console.error('Import error:', error)
-      this.showAlert('An error occurred while importing the case. Please try again.', 'danger')
+      if (error instanceof HttpError) {
+        const result = error.data || {}
+        const validationMessages = Object.entries(result)
+          .filter(([, value]) => Array.isArray(value))
+          .map(([field, messages]) => `${field} ${messages.join(", ")}`)
+        this.showAlert(result.error || result.message || validationMessages.join(". ") || "Failed to import case. Please check the file format.", "danger")
+      } else {
+        this.showAlert("An error occurred while importing the case. Please try again.", "danger")
+      }
       this.setLoading(false)
     }
   }

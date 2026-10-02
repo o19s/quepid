@@ -166,7 +166,7 @@ describe("QscoreCaseController", () => {
   })
 
   it("persists a scored case through the server-owned score URL", async () => {
-    const fetch = vi.fn().mockResolvedValue({ ok: true })
+    const fetch = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: true })
     vi.stubGlobal("fetch", fetch)
     const controller = buildController(element, { caseId: 7 })
     controller.scoreUrlValue = "api/cases/1/scores"

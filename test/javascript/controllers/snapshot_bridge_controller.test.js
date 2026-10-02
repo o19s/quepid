@@ -162,13 +162,16 @@ describe("SnapshotBridgeController", () => {
   it("bootstraps shallow snapshots into the shared registry", async () => {
     controller.element = { dataset: { coreBootstrapCaseNoValue: "1" } }
     api.apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
-      json: vi.fn().mockResolvedValue({ snapshots: [{ id: 8 }] })
+      json: vi.fn(async () => null).mockResolvedValue({ snapshots: [{ id: 8 }] })
     })
 
     await controller.bootstrapSnapshots()
 
-    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true")
+    expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", { method: "GET", headers: { Accept: "application/json" } })
     expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
       snapshots: [{ id: 8 }]
     }))
@@ -194,8 +197,11 @@ describe("SnapshotBridgeController", () => {
       }
     }
     api.apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
-      json: vi.fn().mockResolvedValue({ id: 9 })
+      json: vi.fn(async () => null).mockResolvedValue({ id: 9 })
     })
 
     await controller.create({
@@ -204,7 +210,7 @@ describe("SnapshotBridgeController", () => {
 
     expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots", expect.objectContaining({
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: expect.stringContaining('"name":"new snapshot"')
     }))
     expect(services.queriesSvc.queryArray).toHaveBeenCalledOnce()

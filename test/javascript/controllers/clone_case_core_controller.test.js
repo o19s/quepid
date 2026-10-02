@@ -52,6 +52,9 @@ describe("CloneCaseCoreController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ tries: [] })
     })
@@ -81,6 +84,9 @@ describe("CloneCaseCoreController", () => {
 
   it("loadTries populates the try select and preselects the current try number", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -140,6 +146,9 @@ describe("CloneCaseCoreController", () => {
     })
 
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ case_id: 42, last_try_number: 1 })
     })
@@ -178,6 +187,9 @@ describe("CloneCaseCoreController", () => {
 
   it("submit shows an inline alert and re-enables submit on failure", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: false,
       json: () => Promise.resolve({ error: "Nope" })
     })

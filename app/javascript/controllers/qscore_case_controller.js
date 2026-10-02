@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
 import { formatScore, scoreToColor } from "utils/scoring"
 import { buildCaseDiffScores } from "utils/diff_scores"
 import { diffStateStore } from "stores/diff_state_store"
@@ -124,12 +124,7 @@ export default class extends Controller {
       )
     }
 
-    return apiFetch(this.scoreUrlValue, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ case_score: scoreData })
-    }).then(response => {
-      if (!response.ok) throw new Error(`Unable to persist case score (${response.status})`)
+    return postJson(this.scoreUrlValue, { case_score: scoreData }, { method: "PUT" }).then(() => {
       document.dispatchEvent(new CustomEvent("case-score:persisted", {
         detail: { caseId: this.caseIdValue }
       }))

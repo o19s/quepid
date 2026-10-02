@@ -71,6 +71,9 @@ describe("UserActivityController", () => {
   describe("fetchData", () => {
     it("requests the URL with a start/end range and converts unix seconds to dates", async () => {
       const fetchMock = vi.fn().mockResolvedValue({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: async () => ({ [String(Date.UTC(2026, 2, 2, 12) / 1000)]: 4 })
       })
@@ -78,12 +81,15 @@ describe("UserActivityController", () => {
 
       const data = await buildController().fetchData(new Date(2026, 0, 1), new Date(2026, 0, 31))
 
-      expect(fetchMock).toHaveBeenCalledWith("/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31")
+      expect(fetchMock).toHaveBeenCalledWith("/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31", {
+        method: "GET",
+        headers: { Accept: "application/json", "X-CSRF-Token": "" }
+      })
       expect(data).toEqual([{ date: "2026-03-02", value: 4 }])
     })
 
     it("returns no data when the server responds with an error status", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500 }))
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 }))
       expect(await buildController().fetchData(new Date(), new Date())).toEqual([])
     })
 
@@ -97,7 +103,7 @@ describe("UserActivityController", () => {
     it("renders the heatmap with vegaEmbed into the element", async () => {
       const vegaEmbed = vi.fn().mockResolvedValue({})
       vi.stubGlobal("vegaEmbed", vegaEmbed)
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) }))
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({}) }))
       const controller = buildController()
 
       await controller.initializeHeatmap()

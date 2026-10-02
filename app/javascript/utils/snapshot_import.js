@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 
 export function buildSnapshotImportGroups(rows, targetCaseId) {
   const cases = {}
@@ -47,13 +48,15 @@ export async function importSnapshotsToCase(rows, targetCaseId, rootUrl, fetcher
 
   for (const [caseId, caseData] of Object.entries(groups)) {
     for (const snapshot of Object.values(caseData.snapshots)) {
-      const response = await fetcher(`${rootUrl}/api/cases/${caseId}/snapshots/imports`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ snapshots: [snapshot] })
-      })
-      if (!response.ok) throw new Error(`Failed to import snapshot for case ${caseId}`)
-      const payload = await response.json()
+      const payload = await requestJson(
+        `${rootUrl}/api/cases/${caseId}/snapshots/imports`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ snapshots: [snapshot] })
+        },
+        fetcher
+      )
       imported.push(...(payload.snapshots || []))
     }
   }

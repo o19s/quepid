@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson } from "api/json"
 import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
@@ -17,9 +17,7 @@ export default class extends Controller {
     }
 
     try {
-      const response = await apiFetch(this.urlValue)
-      if (!response.ok) throw new Error(`Unable to load query notes (${response.status})`)
-      const data = await response.json()
+      const data = await getJson(this.urlValue)
       if (this.notesTarget.value === pending.notes) this.notesTarget.value = data.notes || ""
       if (this.informationNeedTarget.value === pending.informationNeed) {
         this.informationNeedTarget.value = data.information_need || ""
@@ -39,12 +37,7 @@ export default class extends Controller {
     const informationNeed = this.informationNeedTarget.value
 
     try {
-      const response = await apiFetch(this.urlValue, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: { notes, information_need: informationNeed } })
-      })
-      if (!response.ok) throw new Error(`Unable to save query notes (${response.status})`)
+      await postJson(this.urlValue, { query: { notes, information_need: informationNeed } }, { method: "PUT" })
 
       this.loadedValues = { notes, informationNeed }
       coreFlash.show("success", "Success! Your query details have been saved.")

@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { hideBsModal, getOrCreateBsModal } from "utils/bs_modal"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
@@ -150,14 +151,14 @@ export default class extends CoreModalControllerBase {
   }
 
   async post(url, body) {
-    const response = await apiFetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(body)
-    })
-    const data = await response.json().catch(() => ({}))
-    if (!response.ok) throw new Error(data.message || data.error || response.statusText || "Import failed.")
-    return data
+    try {
+      return await postJson(url, body)
+    } catch (error) {
+      if (error instanceof HttpError) {
+        error.message = error.data?.message || error.data?.error || error.statusText || "Import failed."
+      }
+      throw error
+    }
   }
 
   validate(type, content) {

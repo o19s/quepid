@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson, requestJson } from "api/json"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 import {
   deactivateListItem,
@@ -255,13 +255,7 @@ export default class extends CoreModalControllerBase {
   async loadTeamsFromApi(caseId) {
     this.setLoading(true)
     try {
-      const response = await apiFetch(this.teamsUrlValue, {
-        headers: { Accept: "application/json" }
-      })
-      if (!response.ok) {
-        throw new Error(`Failed to load teams (${response.status})`)
-      }
-      const data = await response.json()
+      const data = await getJson(this.teamsUrlValue)
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must
       // not clobber the now-current case's share UI.
@@ -312,16 +306,7 @@ export default class extends CoreModalControllerBase {
 
     try {
       const url = this.teamCasesUrlTemplateValue.replaceAll("__TEAM_ID__", teamId)
-      const response = await apiFetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ id: Number(caseId) })
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || response.statusText)
-      }
+      await postJson(url, { id: Number(caseId) })
 
       const team = this.allTeams.find((t) => String(t.id) === String(teamId)) || {
         id: Number(teamId),
@@ -358,15 +343,7 @@ export default class extends CoreModalControllerBase {
       const url = this.teamCaseUrlTemplateValue
         .replaceAll("__TEAM_ID__", teamId)
         .replaceAll("__CASE_ID__", caseId)
-      const response = await apiFetch(url, {
-        method: "DELETE",
-        headers: { Accept: "application/json" }
-      })
-
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || response.statusText)
-      }
+      await requestJson(url, { method: "DELETE" })
 
       const team =
         this.sharedTeams.find((t) => String(t.id) === String(teamId)) || {

@@ -1,3 +1,4 @@
+import { getJson } from "api/json"
 import { Controller } from "@hotwired/stimulus"
 
 /**
@@ -61,18 +62,12 @@ export default class extends Controller {
    */
   async fetchSuggestions(query) {
     try {
-      const response = await fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
+      const data = await getJson(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
         }
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
       this.suggestions = data
       this.hideLoading()
       this.showSuggestions(data)

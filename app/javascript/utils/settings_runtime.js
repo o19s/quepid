@@ -1,13 +1,8 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 import { extractCuratorVars } from "utils/curator_vars"
 
 const clone = (value) => JSON.parse(JSON.stringify(value))
-
-function responseData(response, message) {
-  if (!response.ok) throw new Error(`${message} (${response.status})`)
-  if (response.status === 204 || typeof response.json !== "function") return null
-  return response.json().catch(() => null)
-}
 
 function createTry(data, { request, caseNo, createFieldSpec }) {
   const source = { ...data }
@@ -73,12 +68,15 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
   }
   currentTry.createFieldSpec = () => createFieldSpec(currentTry.fieldSpec)
   currentTry.rename = async (name) => {
-    const response = await request(`api/cases/${caseNo()}/tries/${currentTry.tryNo}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ name })
-    })
-    await responseData(response, "Unable to rename try")
+    await requestJson(
+      `api/cases/${caseNo()}/tries/${currentTry.tryNo}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name })
+      },
+      request
+    )
     currentTry.name = name
   }
   currentTry.updateVars()
@@ -120,21 +118,25 @@ export function createSettingsRuntime({
       if (current.numTries() <= 1) return
       const item = getTry(number)
       if (!item) return
-      const response = await request(`api/cases/${caseNo()}/tries/${number}`, {
-        method: "DELETE",
-        headers: { Accept: "application/json" }
-      })
-      await responseData(response, "Unable to delete try")
+      await requestJson(
+        `api/cases/${caseNo()}/tries/${number}`,
+        {
+          method: "DELETE"
+        },
+        request
+      )
       item.deleted = true
       settingsId++
       if (current.selectedTry?.tryNo === number) navigate({ tryNo: current.lastTry().tryNo })
     }
     current.duplicateTry = async (number) => {
-      const response = await request(`api/clone/cases/${caseNo()}/tries/${number}`, {
-        method: "POST",
-        headers: { Accept: "application/json" }
-      })
-      const data = await responseData(response, "Unable to duplicate try")
+      const data = await requestJson(
+        `api/clone/cases/${caseNo()}/tries/${number}`,
+        {
+          method: "POST"
+        },
+        request
+      )
       const item = createTry(data, { request, caseNo, createFieldSpec })
       current.tries.unshift(item)
       settingsId++
@@ -221,15 +223,18 @@ export function createSettingsRuntime({
     settingsId: () => (state ? state.settingsId : -1),
     save: async (settings) => {
       if (settings.inError) return
-      const response = await request(`api/cases/${caseNo()}/tries`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          ...payloadFor(settings),
-          parent_try_number: settings.selectedTry.tryNo
-        })
-      })
-      const data = await responseData(response, "Unable to save settings")
+      const data = await requestJson(
+        `api/cases/${caseNo()}/tries`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payloadFor(settings),
+            parent_try_number: settings.selectedTry.tryNo
+          })
+        },
+        request
+      )
       const item = state.addTry(data)
       state.selectTry(item.tryNo)
       document.dispatchEvent(
@@ -243,12 +248,15 @@ export function createSettingsRuntime({
       settings.selectedTry.apiMethod = settings.apiMethod
       settings.selectedTry.queryParams = settings.queryParams
       const payload = payloadFor(settings)
-      const response = await request(`api/cases/${caseNo()}/tries/${tryNo()}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify(payload)
-      })
-      await responseData(response, "Unable to update settings")
+      await requestJson(
+        `api/cases/${caseNo()}/tries/${tryNo()}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        },
+        request
+      )
       document.dispatchEvent(
         new CustomEvent("case-settings:updated", {
           detail: { caseNo: caseNo(), lastTry: settings.selectedTry }
@@ -260,12 +268,15 @@ export function createSettingsRuntime({
     renameTry: (number, name) => state?.renameTry(number, name),
     deleteTry: (number) => state?.deleteTry(number),
     previewArgs: async (number, queryParams) => {
-      const response = await request(`api/cases/${caseNo()}/tries/${number}/preview_args`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ query_params: queryParams })
-      })
-      const data = await responseData(response, "Unable to preview query settings")
+      const data = await requestJson(
+        `api/cases/${caseNo()}/tries/${number}/preview_args`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query_params: queryParams })
+        },
+        request
+      )
       return data.args
     },
     reset: () => {

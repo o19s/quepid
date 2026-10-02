@@ -31,7 +31,7 @@ function mount() {
 
 const ratingButton = rating => ({ currentTarget: { dataset: { queryDocPairId: QDP, rating } } })
 const status = element => element.querySelector(`#status_${QDP}`)
-const ok = (ok = true, code = 200) => ({ ok, status: code })
+const ok = (ok = true, code = 200) => ({ text: async () => "", json: async () => null,  ok, status: code })
 
 describe("BulkJudgementController", () => {
   beforeEach(() => {

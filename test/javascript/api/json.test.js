@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getJson, postJson, readJson } from "api/json"
+import { getJson, postJson, readJson, requestJson, requestJsonResponse } from "api/json"
 import { HttpError } from "api/http_error"
 
 describe("api/json", () => {
@@ -89,4 +89,31 @@ describe("api/json", () => {
   it("rejects a malformed success body instead of returning null", async () => {
     await expect(readJson(new Response("not json", { status: 200 }))).rejects.toThrow(SyntaxError)
   })
+
+  it("retains response metadata for status-dependent callers", async () => {
+    stubFetch(new Response(JSON.stringify({ query_id: 7 }), { status: 201, statusText: "Created" }))
+    await expect(requestJsonResponse("api/queries", { method: "POST" })).resolves.toEqual({
+      data: { query_id: 7 },
+      ok: true,
+      status: 201,
+      statusText: "Created"
+    })
+  })
+
+  it("uses an injected transport and still rejects non-JSON failures with status", async () => {
+    const transport = vi.fn(async () => new Response("<html>Unavailable</html>", { status: 503 }))
+    await expect(requestJson("api/cases", {}, transport)).rejects.toMatchObject({
+      name: "HttpError",
+      status: 503,
+      data: null
+    })
+    expect(transport).toHaveBeenCalledWith("api/cases", { headers: { Accept: "application/json" } })
+  })
+
+  it("accepts an empty 200 response to a mutation", async () => {
+    stubFetch(new Response("", { status: 200 }))
+    await expect(postJson("api/cases/1", {}, { method: "PUT" })).resolves.toBeNull()
+    expect(fetch.mock.calls[0][1].method).toBe("PUT")
+  })
+
 })

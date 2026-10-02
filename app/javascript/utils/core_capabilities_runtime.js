@@ -9,9 +9,7 @@ import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
 import { createScorer } from "utils/scorer_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
-import { apiFetch } from "api/fetch"
-import { HttpError } from "api/http_error"
-import { readJson } from "api/json"
+import { requestJsonResponse } from "api/json"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
 const mapperSearchRuntime = createMapperSearchRuntime()
@@ -64,12 +62,7 @@ export function createNativeFramework({ schedule, applyAsync } = {}) {
       init.body = typeof options.data === "string" ? options.data : JSON.stringify(options.data)
     }
 
-    const response = await apiFetch(url.toString(), init)
-    const data = await readJson(response)
-    if (!response.ok) {
-      throw new HttpError({ status: response.status, statusText: response.statusText, data })
-    }
-    return { data, ok: true, status: response.status, statusText: response.statusText }
+    return requestJsonResponse(url.toString(), init)
   }
 
   return {

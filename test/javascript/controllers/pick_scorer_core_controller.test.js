@@ -73,6 +73,9 @@ describe("PickScorerCoreController", () => {
 
   it("loads communal and custom scorers and selects the current one", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -97,6 +100,9 @@ describe("PickScorerCoreController", () => {
 
   it("shows the inaccessible-scorer warning when the case scorer is not in the lists", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -120,6 +126,9 @@ describe("PickScorerCoreController", () => {
 
   it("hides the custom scorer list when communalScorersOnly is set", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -143,6 +152,9 @@ describe("PickScorerCoreController", () => {
 
   it("ignores a non-numeric current scorer id like the legacy default", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -165,6 +177,9 @@ describe("PickScorerCoreController", () => {
 
   it("disables submit for an inaccessible scorer and refuses to submit it", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -192,6 +207,9 @@ describe("PickScorerCoreController", () => {
 
   it("re-enables submit once a real scorer replaces an inaccessible selection", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -218,6 +236,9 @@ describe("PickScorerCoreController", () => {
     let resolvePut
     apiFetch
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -249,13 +270,16 @@ describe("PickScorerCoreController", () => {
     controller.selectScorer({ params: { scorerId: 2 } })
     expect(controller.submitButtonTarget.disabled).toBe(true)
 
-    resolvePut({ ok: true, json: () => Promise.resolve({}) })
+    resolvePut({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve({}) })
     await submitPromise
   })
 
   it("dispatches pick-scorer:selected after a successful save", async () => {
     apiFetch
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -263,7 +287,7 @@ describe("PickScorerCoreController", () => {
             user_scorers: []
           })
       })
-      .mockResolvedValueOnce({ ok: true, json: () => Promise.resolve({}) })
+      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve({}) })
 
     const controller = buildModalController()
     const trigger = document.createElement("a")

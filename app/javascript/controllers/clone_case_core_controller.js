@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { caseNameFromHeader } from "utils/case_header"
 
@@ -90,11 +91,7 @@ export default class extends CoreModalControllerBase {
 
     try {
       const url = this.triesUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
-      const response = await apiFetch(url, { headers: { Accept: "application/json" } })
-      if (!response.ok) {
-        throw new Error(`Failed to load tries (${response.status})`)
-      }
-      const data = await response.json()
+      const data = await getJson(url)
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must
       // not clobber the now-current case's try dropdown.
@@ -127,32 +124,25 @@ export default class extends CoreModalControllerBase {
     this.clearAlert()
 
     try {
-      const response = await apiFetch(this.cloneUrlValue, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          case_id: Number(this.currentCaseId),
-          clone_queries: this.includeQueries,
-          clone_ratings: this.includeRatings,
-          preserve_history: this.history,
-          try_number: this.tryNumber,
-          case_name: this.newCaseName
+      const acase = await postJson(this.cloneUrlValue, {
+        case_id: Number(this.currentCaseId),
+        clone_queries: this.includeQueries,
+        clone_ratings: this.includeRatings,
+        preserve_history: this.history,
+        try_number: this.tryNumber,
+        case_name: this.newCaseName
         })
-      })
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || "Unable to clone your case, please try again.")
-      }
-
-      const acase = await response.json()
       this.showAlert("Case cloned successfully! Redirecting…", "success")
       window.setTimeout(() => {
         window.location.href = `${getQuepidRootUrl()}/case/${acase.case_id}/try/${acase.last_try_number}`
       }, REDIRECT_DELAY_MS)
     } catch (error) {
       console.error("clone-case-core: clone failed", error)
-      this.showAlert(error.message || "Unable to clone your case, please try again.", "danger")
+      const message = error instanceof HttpError
+        ? error.data?.error || error.data?.message || "Unable to clone your case, please try again."
+        : error.message || "Unable to clone your case, please try again."
+      this.showAlert(message, "danger")
       this.setSubmitting(false)
     }
   }

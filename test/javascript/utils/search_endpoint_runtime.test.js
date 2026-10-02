@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 
-const response = data => ({ ok: true, status: 200, json: vi.fn(async () => data) })
+const response = data => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 200, json: vi.fn(async () => data) })
 
 describe("search endpoint runtime", () => {
   it("loads, maps, and deduplicates endpoints", async () => {
@@ -64,9 +64,9 @@ describe("search endpoint runtime", () => {
   })
 
   it("surfaces failed API responses", async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, status: 503 })
+    const request = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 503 })
     const runtime = createSearchEndpointRuntime({ request })
 
-    await expect(runtime.list()).rejects.toThrow("Unable to load search endpoints (503)")
+    await expect(runtime.list()).rejects.toThrow("Request failed (503)")
   })
 })

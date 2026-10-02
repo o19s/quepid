@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { moveQuery } from "utils/query_lifecycle"
 import coreFlash from "utils/core_flash"
@@ -35,12 +35,7 @@ export default class extends CoreModalControllerBase {
     try {
       if (!this.hasCasesUrlValue || !this.casesUrlValue) throw new Error("Missing cases URL")
 
-      const response = await apiFetch(this.casesUrlValue, {
-        headers: { Accept: "application/json" }
-      })
-      if (!response.ok) throw new Error(`Failed to load cases (${response.status})`)
-
-      const data = await response.json()
+      const data = await getJson(this.casesUrlValue)
       this.cases = (Array.isArray(data.all_cases) ? data.all_cases : []).filter(
         (acase) => String(acase.case_id) !== String(this.currentCaseId)
       )

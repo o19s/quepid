@@ -39,7 +39,7 @@ const users = [
 ]
 
 function respondWith(body, { ok = true, status = 200 } = {}) {
-  return vi.fn(() => Promise.resolve({ ok, status, json: () => Promise.resolve(body) }))
+  return vi.fn(() => Promise.resolve({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok, status, json: () => Promise.resolve(body) }))
 }
 
 describe("TeamMemberAutocompleteController", () => {
@@ -69,7 +69,8 @@ describe("TeamMemberAutocompleteController", () => {
     expect(controller.spinnerTarget.style.display).toBe("inline-block")
     expect(controller.isLoading).toBe(true)
     expect(fetch).toHaveBeenCalledWith("/teams/3/suggest_members?query=a%26b", {
-      headers: { Accept: "application/json", "X-Requested-With": "XMLHttpRequest" }
+      method: "GET",
+      headers: { Accept: "application/json", "X-CSRF-Token": "", "X-Requested-With": "XMLHttpRequest" }
     })
 
     await vi.runAllTimersAsync()
@@ -191,7 +192,7 @@ describe("TeamMemberAutocompleteController", () => {
   })
 
   it.each([
-    ["a non-OK response", () => respondWith(users, { ok: false, status: 500 })],
+    ["a non-OK response", () => respondWith(users, { text: async () => "", json: async () => null,  ok: false, status: 500 })],
     ["a network failure", () => vi.fn(() => Promise.reject(new Error("offline")))]
   ])("hides the spinner and dropdown after %s", async (_label, makeFetch) => {
     vi.stubGlobal("fetch", makeFetch())

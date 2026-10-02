@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson } from "api/json"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { buildSnapshotPayload } from "utils/snapshot_payload"
 import { createSnapshotModel } from "utils/snapshot_model"
@@ -88,9 +88,7 @@ export default class extends Controller {
     if (!caseNo) return
 
     try {
-      const response = await apiFetch(`api/cases/${caseNo}/snapshots?shallow=true`)
-      if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
-      const payload = await response.json()
+      const payload = await getJson(`api/cases/${caseNo}/snapshots?shallow=true`)
       const registry = this.snapshotRegistry()
       Object.keys(registry).forEach((id) => delete registry[id])
       await this.registerSnapshots(payload.snapshots || [])
@@ -115,13 +113,7 @@ export default class extends Controller {
         detail.recordDocumentFields,
         getCoreCapabilities().queryCapabilities.getQueryArray()
       )
-      const response = await apiFetch(`api/cases/${caseNo}/snapshots`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      })
-      if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
-      const snapshot = await response.json()
+      const snapshot = await postJson(`api/cases/${caseNo}/snapshots`, payload)
       await this.registerSnapshots([snapshot])
       coreFlash.show("success", "Snapshot created successfully.")
       detail.done?.(null)

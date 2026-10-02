@@ -39,6 +39,9 @@ describe("AnnotationsController", () => {
 
   it("creates an annotation from the current case score and renders it", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({
         id: 9,
@@ -81,7 +84,7 @@ describe("AnnotationsController", () => {
   })
 
   it("deletes an annotation and notifies the graph bridge", async () => {
-    apiFetch.mockResolvedValue({ ok: true })
+    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: true })
     const controller = buildController()
     controller.annotations = [{ id: 9, message: "Old", score: {} }]
     const changed = vi.fn()
@@ -90,7 +93,7 @@ describe("AnnotationsController", () => {
 
     await controller.delete({ preventDefault: vi.fn(), currentTarget: { dataset: { annotationId: "9" } } })
 
-    expect(apiFetch).toHaveBeenCalledWith("/api/cases/7/annotations/9", { method: "DELETE" })
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/7/annotations/9", { method: "DELETE", headers: { Accept: "application/json" } })
     expect(controller.annotations).toEqual([])
     expect(changed).toHaveBeenCalled()
   })

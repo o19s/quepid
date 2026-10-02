@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
+import { getJson } from "api/json"
 import { graphData, graphSpec } from "utils/qgraph"
 import { getCoreStores } from "utils/core_store_access"
 
@@ -47,9 +47,9 @@ export default class extends Controller {
 
   async loadScores() {
     try {
-      const response = await apiFetch(this.scoresUrlValue)
-      if (!response.ok) throw new Error(`Unable to load case scores (${response.status})`)
-      this.scores = (await response.json()).scores || []
+      const data = await getJson(this.scoresUrlValue)
+
+      this.scores = data.scores || []
       this.render()
     } catch {
       this.scores = []
@@ -59,9 +59,7 @@ export default class extends Controller {
 
   async loadAnnotations() {
     try {
-      const response = await apiFetch(this.annotationsUrlValue)
-      if (!response.ok) throw new Error(`Unable to load annotations (${response.status})`)
-      const data = await response.json()
+      const data = await getJson(this.annotationsUrlValue)
       this.annotations = (data.annotations || []).map((annotation) => ({
         ...annotation,
         updatedAt: annotation.updated_at

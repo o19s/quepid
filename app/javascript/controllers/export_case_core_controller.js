@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
+import { getJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { showFlash } from "utils/flash"
 import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
@@ -164,9 +165,7 @@ export default class extends CoreModalControllerBase {
 
     const caseId = this.currentCaseId
     try {
-      const response = await apiFetch(this._url(this.snapshotsIndexUrlTemplateValue), { headers: { Accept: "application/json" } })
-      if (!response.ok) return
-      const data = await response.json()
+      const data = await getJson(this._url(this.snapshotsIndexUrlTemplateValue))
       if (caseId !== this.currentCaseId) return
 
       const snapshots = Array.isArray(data.snapshots) ? data.snapshots : []
@@ -180,7 +179,7 @@ export default class extends CoreModalControllerBase {
         })
       })
     } catch (error) {
-      if (caseId !== this.currentCaseId) return
+      if (caseId !== this.currentCaseId || error instanceof HttpError) return
       console.error("export-case-core: load snapshots failed", error)
     }
   }
@@ -212,26 +211,16 @@ export default class extends CoreModalControllerBase {
   }
 
   async _downloadGeneral() {
-    const [ caseResponse, queriesResponse ] = await Promise.all([
-      apiFetch(this._url(this.caseUrlTemplateValue), { headers: { Accept: "application/json" } }),
-      apiFetch(this._url(this.queriesUrlTemplateValue), { headers: { Accept: "application/json" } })
+    const [ caseData, queriesData ] = await Promise.all([
+      getJson(this._url(this.caseUrlTemplateValue)),
+      getJson(this._url(this.queriesUrlTemplateValue))
     ])
-    if (!caseResponse.ok) throw httpErrorFor(caseResponse)
-    if (!queriesResponse.ok) throw httpErrorFor(queriesResponse)
-
-    const caseData = await caseResponse.json()
-    const queriesData = await queriesResponse.json()
     const csv = buildGeneralCaseCsv(caseData, queriesData.queries || [])
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("general.csv"))
   }
 
   async _downloadDetailed() {
-    const response = await apiFetch(this._url(this.caseUrlTemplateValue), {
-      headers: { Accept: "application/json" }
-    })
-    if (!response.ok) throw httpErrorFor(response)
-
-    const caseData = await response.json()
+    const caseData = await getJson(this._url(this.caseUrlTemplateValue))
     const queries = getCoreStores().documents.snapshot().queries
     const csv = buildDetailedCaseCsv(caseData, queries)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))
@@ -241,10 +230,7 @@ export default class extends CoreModalControllerBase {
     const snapshotId = this._selectedSnapshotId()
     if (!snapshotId) return
 
-    const response = await apiFetch(this._snapshotShowUrl(snapshotId), { headers: { Accept: "application/json" } })
-    if (!response.ok) throw httpErrorFor(response)
-
-    const snapshotData = await response.json()
+    const snapshotData = await getJson(this._snapshotShowUrl(snapshotId))
     const csv = buildSnapshotCsv(this.currentCaseId, snapshotData)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("snapshot.csv"))
   }
@@ -268,10 +254,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async _downloadJson(url, fileSuffix) {
-    const response = await apiFetch(url, { headers: { Accept: "application/json" } })
-    if (!response.ok) throw httpErrorFor(response)
-
-    const data = await response.json()
+    const data = await getJson(url)
     const blob = new Blob([ JSON.stringify(data, null, 2) ], { type: "application/json" })
     downloadBlob(blob, this._fileName(fileSuffix))
   }

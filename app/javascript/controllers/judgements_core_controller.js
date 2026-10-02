@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { apiFetch } from "api/fetch"
+import { getJson, postJson } from "api/json"
+import { HttpError } from "api/http_error"
 import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
@@ -242,10 +243,8 @@ export default class extends CoreModalControllerBase {
 
     try {
       const caseUrl = this.caseUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId)
-      const caseResponse = await apiFetch(caseUrl, { headers: { Accept: "application/json" } })
-      if (!caseResponse.ok) throw new Error(`Failed to load case (${caseResponse.status})`)
+      const caseData = await getJson(caseUrl)
 
-      const caseData = await caseResponse.json()
       this.teams = Array.isArray(caseData.teams) ? caseData.teams : []
       // Prefer the live API book_id over the trigger attribute — the toolbar
       // dataset can lag after a prior save in this session.
@@ -283,9 +282,7 @@ export default class extends CoreModalControllerBase {
       const bookLists = await Promise.all(
         this.teams.map(async (team) => {
           const url = this.teamBooksUrlTemplateValue.replaceAll(TEAM_ID_PLACEHOLDER, String(team.id))
-          const response = await apiFetch(url, { headers: { Accept: "application/json" } })
-          if (!response.ok) throw new Error(`Failed to load books (${response.status})`)
-          const data = await response.json()
+          const data = await getJson(url)
           return Array.isArray(data.books) ? data.books : []
         })
       )
@@ -423,17 +420,8 @@ export default class extends CoreModalControllerBase {
       auto_populate_case_judgements: bookId ? this.autoPopulateCaseJudgements : false
     }
 
-    const response = await apiFetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(payload)
-    })
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}))
-      throw new Error(data.statusText || data.error || data.message || `Save failed (${response.status})`)
-    }
+    const data = await postJson(url, payload, { method: "PUT" })
 
-    const data = await response.json().catch(() => ({}))
     this.savedBookId = bookId
     this.savedAutoPopulateBookPairs = payload.auto_populate_book_pairs
     this.savedAutoPopulateCaseJudgements = payload.auto_populate_case_judgements
@@ -443,7 +431,7 @@ export default class extends CoreModalControllerBase {
         detail: {
           caseId: Number(this.currentCaseId),
           bookId,
-          bookName: data.book_name || null,
+          bookName: data?.book_name || null,
           autoPopulateBookPairs: payload.auto_populate_book_pairs,
           autoPopulateCaseJudgements: payload.auto_populate_case_judgements
         }
@@ -466,22 +454,21 @@ export default class extends CoreModalControllerBase {
       .replaceAll("__BACKGROUND__", String(processInBackground))
 
     this.setProgress(true)
-    const response = await apiFetch(url, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({})
-    })
+    try {
+      await postJson(url, {}, { method: "PUT" })
+    } catch (error) {
+      if (String(this.currentCaseId) !== String(caseId)) return
+      if (error instanceof HttpError) {
+        error.message = error.data?.statusText || error.data?.error || error.data?.message || `Refresh failed (${error.status})`
+      }
+      throw error
+    }
 
     // The modal may have been closed and reopened for a different case
     // while this request was in flight — its result no longer applies here.
     if (String(this.currentCaseId) !== String(caseId)) return
 
     this.setProgress(false)
-
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}))
-      throw new Error(data.statusText || data.error || data.message || `Refresh failed (${response.status})`)
-    }
 
     const message = processInBackground ? backgroundMessage : successMessage
     if (message) showFlash("success", message)

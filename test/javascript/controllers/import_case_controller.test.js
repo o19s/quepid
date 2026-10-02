@@ -47,6 +47,9 @@ describe("ImportCaseController submit redirect", () => {
     controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
 
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ redirect_url: "https://example.com/quepid/case/42" }),
     })
@@ -75,6 +78,9 @@ describe("ImportCaseController submit redirect", () => {
     controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
 
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({}),
     })
@@ -132,7 +138,7 @@ describe("ImportCaseController validation and errors", () => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
     controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
-    apiFetch.mockResolvedValue({ ok: false, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
 
     await controller.submit({ preventDefault: vi.fn() })
 
@@ -151,7 +157,7 @@ describe("ImportCaseController validation and errors", () => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
     controller.readFileAsText.mockResolvedValue("{}")
-    apiFetch.mockResolvedValue({ ok: false, json: () => Promise.resolve(body) })
+    apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve(body) })
 
     await controller.submit({ preventDefault: vi.fn() })
 

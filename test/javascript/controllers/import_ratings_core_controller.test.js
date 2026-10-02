@@ -86,7 +86,7 @@ async function chooseFile(instance, type, content) {
 }
 
 function respond(body, { ok = true, status = 200, statusText = "OK" } = {}) {
-  apiFetch.mockResolvedValue({ ok, status, statusText, json: () => Promise.resolve(body) })
+  apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok, status, statusText, json: () => Promise.resolve(body) })
 }
 
 function postedRequests() {
@@ -487,6 +487,9 @@ describe("ImportRatingsCoreController", () => {
 
   it("falls back to the status text when the error response isn't JSON", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: false,
       statusText: "Bad Gateway",
       json: () => Promise.reject(new SyntaxError("Unexpected token <"))

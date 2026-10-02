@@ -106,6 +106,9 @@ describe("JudgementsCoreController", () => {
 
   it("shows the no-teams empty state when the case has no teams", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ teams: [], book_id: null, scorer_id: 7, queries_count: 0 })
     })
@@ -124,6 +127,9 @@ describe("JudgementsCoreController", () => {
   it("lists books with the active book first and tracks unsaved changes", async () => {
     apiFetch
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -136,6 +142,9 @@ describe("JudgementsCoreController", () => {
           })
       })
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -167,6 +176,9 @@ describe("JudgementsCoreController", () => {
 
   it("prefers the API book_id over a stale trigger attribute", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -191,6 +203,9 @@ describe("JudgementsCoreController", () => {
   it("populates the book from the document store for Populate Now", async () => {
     apiFetch
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -201,6 +216,9 @@ describe("JudgementsCoreController", () => {
           })
       })
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () => Promise.resolve({ books: [{ id: 2, name: "Beta" }] })
       })
@@ -226,6 +244,9 @@ describe("JudgementsCoreController", () => {
   it("disables Cancel while a save is in flight, re-enables on completion", async () => {
     apiFetch
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () =>
           Promise.resolve({
@@ -236,6 +257,9 @@ describe("JudgementsCoreController", () => {
           })
       })
       .mockResolvedValueOnce({
+        async text() {
+          return JSON.stringify(await this.json()) || ""
+        },
         ok: true,
         json: () => Promise.resolve({ books: [{ id: 2, name: "Beta" }] })
       })
@@ -257,14 +281,14 @@ describe("JudgementsCoreController", () => {
     const savePromise = controller.save({ preventDefault() {} })
     expect(controller.cancelButtonTarget.disabled).toBe(true)
 
-    resolveSave({ ok: true, json: () => Promise.resolve({}) })
+    resolveSave({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve({}) })
     await savePromise
 
     expect(controller.cancelButtonTarget.disabled).toBe(false)
   })
 
   describe("saving and refreshing against a book", () => {
-    const ok = (data = {}) => ({ ok: true, json: () => Promise.resolve(data) })
+    const ok = (data = {}) => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(data) })
 
     function linkedController(state = {}) {
       return Object.assign(buildModalController(), {
@@ -331,7 +355,7 @@ describe("JudgementsCoreController", () => {
     })
 
     it("shows the server's message when saving fails", async () => {
-      apiFetch.mockResolvedValueOnce({ ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
+      apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController({ activeBookId: 9 })
 
@@ -391,7 +415,7 @@ describe("JudgementsCoreController", () => {
 
       const pending = controller.manualRefreshRatings({ preventDefault() {} })
       controller.currentCaseId = "43"
-      resolveRefresh({ ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
+      resolveRefresh({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
       await pending
 
       expect(showFlash).not.toHaveBeenCalled()
@@ -399,7 +423,7 @@ describe("JudgementsCoreController", () => {
     })
 
     it("reports a failed refresh and skips the action without a book", async () => {
-      apiFetch.mockResolvedValueOnce({ ok: false, status: 500, json: () => Promise.resolve({}) })
+      apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: () => Promise.resolve({}) })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController()
 

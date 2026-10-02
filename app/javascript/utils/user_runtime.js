@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 
 function normalizeUser(data) {
   return {
@@ -19,23 +20,23 @@ export function createUserRuntime({ request = apiFetch } = {}) {
     },
 
     loadCurrent() {
-      return request("api/users/current", { headers: { Accept: "application/json" } }).then(
-        async (response) => {
-          if (!response.ok) throw new Error(`Unable to load the current user (${response.status})`)
-          currentUser = normalizeUser(await response.json())
-          return currentUser
-        }
-      )
+      return requestJson("api/users/current", {}, request).then((data) => {
+        currentUser = normalizeUser(data)
+        return currentUser
+      })
     },
 
     shownIntroWizard() {
       const url = `api/users/${currentUser.id}`
-      return request(url, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ user: { completed_case_wizard: true } })
-      }).then(async (response) => {
-        if (!response.ok) throw new Error(`Unable to update the current user (${response.status})`)
+      return requestJson(
+        url,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user: { completed_case_wizard: true } })
+        },
+        request
+      ).then(() => {
         currentUser.completedCaseWizard = true
         return currentUser
       })

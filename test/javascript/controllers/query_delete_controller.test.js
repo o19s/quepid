@@ -22,7 +22,7 @@ describe("query-delete controller", () => {
 
   it("dispatches the query id after confirmation", () => {
     window.confirm.mockReturnValue(true)
-    window.fetch.mockResolvedValue({ ok: true })
+    window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: true })
 
     return controller.remove({ preventDefault: vi.fn() }).then(() => {
       expect(controller.dispatch).toHaveBeenCalledWith("completed", { detail: { queryId: 42 } })
@@ -39,7 +39,7 @@ describe("query-delete controller", () => {
 
   it("reports a failed request without dispatching completion", async () => {
     window.confirm.mockReturnValue(true)
-    window.fetch.mockResolvedValue({ ok: false, status: 500 })
+    window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     controller.element = document.createElement("button")
     controller.element.disabled = false
     const flash = { show: vi.fn() }
@@ -63,7 +63,7 @@ describe("query-delete controller", () => {
     const pending = controller.remove(event)
     expect(event.preventDefault).toHaveBeenCalledOnce()
     expect(controller.element.disabled).toBe(true)
-    resolveFetch({ ok: true })
+    resolveFetch({ text: async () => "", json: async () => null,  ok: true })
     await pending
 
     expect(window.fetch).toHaveBeenCalledWith("api/cases/1/queries/42", expect.objectContaining({ method: "DELETE" }))
@@ -74,7 +74,7 @@ describe("query-delete controller", () => {
 
   it("re-enables the button after a failed delete so the user can retry", async () => {
     window.confirm.mockReturnValue(true)
-    window.fetch.mockResolvedValue({ ok: false, status: 500 })
+    window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     vi.spyOn(console, "error").mockImplementation(() => {})
 
     await controller.remove({ preventDefault: vi.fn() })

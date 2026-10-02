@@ -2,6 +2,9 @@ import { describe, expect, it, vi } from "vitest"
 import { createSettingsRuntime } from "utils/settings_runtime"
 
 const response = (data = {}, status = 200) => ({
+  async text() {
+    return JSON.stringify(await this.json()) || ""
+  },
   ok: true,
   status,
   json: vi.fn(async () => data)
@@ -163,10 +166,10 @@ describe("settings runtime", () => {
   it("previews query arguments and rejects failed API responses", async () => {
     const request = vi.fn()
       .mockResolvedValueOnce(response({ args: { q: ["books"] } }))
-      .mockResolvedValueOnce({ ok: false, status: 503, json: vi.fn() })
+      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 503, json: vi.fn(async () => null) })
     const runtime = createSettingsRuntime({ request, caseNo: () => 9 })
 
     await expect(runtime.previewArgs(1, "q=books")).resolves.toEqual({ q: ["books"] })
-    await expect(runtime.previewArgs(1, "q=books")).rejects.toThrow("Unable to preview query settings (503)")
+    await expect(runtime.previewArgs(1, "q=books")).rejects.toThrow("Request failed (503)")
   })
 })

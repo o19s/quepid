@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 import { isEsLikeEngine } from "utils/search_engines"
 
 function mapSearchEndpoint(data) {
@@ -22,9 +23,7 @@ export function createSearchEndpointRuntime({ request = apiFetch } = {}) {
 
   async function load(url) {
     searchEndpoints = []
-    const response = await request(url, { headers: { Accept: "application/json" } })
-    if (!response.ok) throw new Error(`Unable to load search endpoints (${response.status})`)
-    const data = await response.json()
+    const data = await requestJson(url, {}, request)
     const seen = new Set()
     searchEndpoints = (data.search_endpoints || []).map(mapSearchEndpoint).filter((endpoint) => {
       if (seen.has(endpoint.id)) return false

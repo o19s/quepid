@@ -1,4 +1,5 @@
 import { apiFetch } from "api/fetch"
+import { requestJson } from "api/json"
 
 const parseCase = (data) => ({
   caseNo: data.case_id,
@@ -23,25 +24,20 @@ const parseCase = (data) => ({
   queries: data.queries || []
 })
 
-const responseData = async (response, message) => {
-  if (!response.ok) throw new Error(`${message} (${response.status})`)
-  return response.status === 204 ? null : response.json()
-}
-
 const formatDate = (date) => {
   const pad = (value) => String(value).padStart(2, "0")
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
-const jsonHeaders = { "Content-Type": "application/json", Accept: "application/json" }
+const jsonHeaders = { "Content-Type": "application/json" }
 
 export function createCaseRuntime({ request = apiFetch, now = () => new Date() } = {}) {
   let selectedCase = null
 
   return {
     async load(caseNo) {
-      const response = await request(`api/cases/${caseNo}`)
-      return parseCase(await responseData(response, "Unable to load case"))
+      const data = await requestJson(`api/cases/${caseNo}`, {}, request)
+      return parseCase(data)
     },
     selected: () => selectedCase,
     select: (value) => {
@@ -61,21 +57,27 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
       return selectedCase
     },
     async delete(value) {
-      const response = await request(`api/cases/${value.caseNo}`, {
-        method: "DELETE",
-        headers: jsonHeaders
-      })
-      await responseData(response, "Unable to delete case")
+      await requestJson(
+        `api/cases/${value.caseNo}`,
+        {
+          method: "DELETE",
+          headers: jsonHeaders
+        },
+        request
+      )
       if (selectedCase?.caseNo === value.caseNo) selectedCase = null
     },
     async rename(value, name) {
       if (!name || name.length === 0) return
-      const response = await request(`api/cases/${value.caseNo}`, {
-        method: "PUT",
-        headers: jsonHeaders,
-        body: JSON.stringify({ case_name: name })
-      })
-      await responseData(response, "Unable to rename case")
+      await requestJson(
+        `api/cases/${value.caseNo}`,
+        {
+          method: "PUT",
+          headers: jsonHeaders,
+          body: JSON.stringify({ case_name: name })
+        },
+        request
+      )
       value.caseName = name
       document.dispatchEvent(
         new CustomEvent("quepid:case-renamed", {
@@ -84,12 +86,15 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
       )
     },
     async updateNightly(value) {
-      const response = await request(`api/cases/${value.caseNo}`, {
-        method: "PUT",
-        headers: jsonHeaders,
-        body: JSON.stringify({ nightly: value.nightly })
-      })
-      await responseData(response, "Unable to update nightly evaluation")
+      await requestJson(
+        `api/cases/${value.caseNo}`,
+        {
+          method: "PUT",
+          headers: jsonHeaders,
+          body: JSON.stringify({ nightly: value.nightly })
+        },
+        request
+      )
       document.dispatchEvent(
         new CustomEvent("quepid:case-header-stale", {
           detail: { caseNo: value.caseNo, reason: "nightly" }
@@ -98,17 +103,25 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
     },
     runEvaluation: (caseNo, tryNo) => {
       const params = tryNo ? `?try_number=${encodeURIComponent(tryNo)}` : ""
-      return request(`api/cases/${caseNo}/run_evaluation${params}`, {
-        method: "POST",
-        headers: jsonHeaders
-      })
+      return requestJson(
+        `api/cases/${caseNo}/run_evaluation${params}`,
+        {
+          method: "POST",
+          headers: jsonHeaders
+        },
+        request
+      )
     },
     trackLastViewedAt: (caseNo) =>
-      request(`api/cases/${caseNo}/metadata`, {
-        method: "PUT",
-        headers: jsonHeaders,
-        body: JSON.stringify({ metadata: { last_viewed_at: formatDate(now()) } })
-      }),
+      requestJson(
+        `api/cases/${caseNo}/metadata`,
+        {
+          method: "PUT",
+          headers: jsonHeaders,
+          body: JSON.stringify({ metadata: { last_viewed_at: formatDate(now()) } })
+        },
+        request
+      ),
     reset: () => {
       selectedCase = null
     }

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { createUserRuntime } from "utils/user_runtime"
 
-const response = data => ({ ok: true, status: 200, json: vi.fn(async () => data) })
+const response = data => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 200, json: vi.fn(async () => data) })
 
 describe("user runtime", () => {
   it("loads and normalizes the current user", async () => {
@@ -46,9 +46,9 @@ describe("user runtime", () => {
   })
 
   it("surfaces failed API responses", async () => {
-    const request = vi.fn().mockResolvedValue({ ok: false, status: 503, json: vi.fn() })
+    const request = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 503, json: vi.fn(async () => null) })
     const runtime = createUserRuntime({ request })
 
-    await expect(runtime.loadCurrent()).rejects.toThrow("Unable to load the current user (503)")
+    await expect(runtime.loadCurrent()).rejects.toThrow("Request failed (503)")
   })
 })

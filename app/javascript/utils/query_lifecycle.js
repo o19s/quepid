@@ -1,4 +1,4 @@
-import { apiFetch } from "api/fetch"
+import { requestJsonResponse } from "api/json"
 
 /**
  * Request contracts for the core query lifecycle.
@@ -54,19 +54,13 @@ export function moveRequest(query, targetCaseId) {
 }
 
 async function persist(request) {
-  const response = await apiFetch(request.url, {
+  const { data, status } = await requestJsonResponse(request.url, {
     method: request.method,
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(request.data)
   })
 
-  let data = null
-  if (response.status !== 204) {
-    data = await response.json()
-  }
-
-  if (!response.ok) throw data || { error: response.statusText }
-  return { status: response.status, data }
+  return { status, data }
 }
 
 export function persistQuery(caseId, queryText) {
