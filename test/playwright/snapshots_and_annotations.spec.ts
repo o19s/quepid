@@ -117,7 +117,7 @@ test.describe('annotations', () => {
     // "Tune Relevance" toggles the east dev-settings panel, whose Stimulus
     // "Annotations" tab hosts the annotation controller (create form + list).
     await page.locator('#tune-relevance-link a').click();
-    await page.locator('#dev-settings button[data-tune-tab="annotations"]').click();
+    await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
 
     const annotations = page.locator('#annotations');
     await expect(annotations).toBeVisible();

@@ -40,8 +40,6 @@ export default class extends Controller {
     const supported = this.adapter.usesQueryParamsEditor
     const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
     this.element.replaceChildren(this.missingDocumentsContentTemplate(jsonEditor, supported))
-    const engineNameTarget = this.element.querySelector("[data-missing-documents-target='engineName']")
-    if (engineNameTarget) engineNameTarget.textContent = this.adapter.engineName
     this.editor = null
     if (jsonEditor && this.hasQueryParamsEditorTarget && window.ace) {
       this.editor = window.ace.edit(this.queryParamsEditorTarget)

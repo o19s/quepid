@@ -260,15 +260,15 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-10-02T15:42:10Z
+        last_run: 2026-10-02T16:56:47Z
         result: pass
-        notes: "Covered live on f82e872b: Lucene search returns a count, inline rating saves, Reset to All Rated Docs shows the rated list, a no-match search says it returned no results; results render full width below the Score All row (clearfix fix from the previous pass, committed in a9e3878e)."
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): static case 4 opens Missing Documents with the unsupported-engine message naming the engine. Main labels it \"Static File\", this branch \"Static\" (adapter label, unchanged by this batch). Not covered live: search, rating and reset (unchanged this pass)."
         paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/quepid_search.js", "test/javascript/utils/targeted_search.test.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-10-02T15:43:08Z
+        last_run: 2026-10-02T16:52:32Z
         result: pass
-        notes: "Covered live: edited the Solr template, switched to Tuning Knobs and back with edits kept, Rerun created try 2; static case shows the no-query-settings message. Not covered live: TLS mismatch reload."
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): drawer opens on the Query tab, tab switching returns to Query, a real Rerun My Searches! click creates Try 33 and reruns searches on both sides. Observed (in docs/todo/todo.md): this branch closes the drawer after save (navigates to /case/6/try/N); main keeps it open; calling save() directly does the same, so it predates the action routing. Not covered live: TLS mismatch reload."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -278,21 +278,21 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-10-02T15:45:40Z
+        last_run: 2026-10-02T16:52:37Z
         result: pass
-        notes: "Covered live: Endpoint Details, Displayed Fields (added release_date, shown after rerun), Number of Results (5 limited docs; 150 is flagged invalid by max=100), Evaluate Nightly toggles the DB flag and shows the header repeat icon immediately without reload, background run queues RunCaseEvaluationJob and returns to the dashboard as on main. Observed: endpoint list only includes endpoints shared with the case's teams (as on main; prose updated). Escape Queries toggle persists across rerun. Not covered live: archived banner."
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): Settings tab; Displayed Fields header collapses and re-expands as on main; endpoint search input shows suggestions; a real Evaluate Nightly click flips the checkbox and persists nightly=false on both sides. Observed (in docs/todo/todo.md): main starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed, this branch starts all sections expanded. Not covered live: Rerun in the Background (routing covered by tune_relevance.spec.ts with the handler stubbed), archived banner."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-02T15:43:13Z
-        result: pass
-        notes: "Covered live: History links go to tries visualization, /scores and /ratings; try list renders; Scores Delete starts disabled. Observed (in docs/todo/todo.md): Ratings page heading says \"Scores for Case\". Not covered live: score deletion, ratings search."
+        last_run: 2026-10-02T16:53:56Z
+        result: fail
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): History list and try-details modal open on both sides. On this branch the modal renders inside #dev-settings beneath the body-level backdrop, so real clicks on Rename/Duplicate/Delete/Dismiss hit the backdrop; main's modal is on top and usable. With clicks dispatched directly, Rename toggles Cancel Rename, the rename form submits without navigating, Duplicate creates Try 34 with main's flash, and Delete removes Try 31 with main's flash (writes bracketed by DB snapshot/restore). The rename form is always visible because its d-flex class overrides [hidden]; main hides it until Rename. Both are logged in docs/todo/todo.md and predate the Stimulus action batch."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
-        last_run: 2026-10-02T15:47:19Z
+        last_run: 2026-10-02T16:47:38Z
         result: pass
-        notes: "Covered via 5.4 in the same run."
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): Annotations tab opens from the drawer tab action and lists existing annotations as on main. Not covered live: creating or editing an annotation."
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
@@ -326,9 +326,9 @@ parts:
         paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/core.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/controllers/search_results_template.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts"]
       "4.20":
         title: "Query-list sorting, pagination & Show only rated"
-        last_run: 2026-10-02T15:02:15Z
+        last_run: 2026-10-02T16:54:46Z
         result: pass
-        notes: "Covered live via Playwright MCP: All sort links, page 1/2 controls, rated-only search, and manual drag on page 2; dragged ordering survived reload. Not covered live: Reverse sorting, ES/OS rated filtering and error-group ordering."
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): Name sort ascending then reversed, then Manual; row order and sort indicators match main. Main writes a bare &reverse URL flag where this branch writes reverse=true. Not covered live: pagination, rated-only and manual drag this pass."
         paths: ["app/javascript/controllers/queries_list_controller.js", "app/views/core/_queries.html.erb", "app/javascript/utils/query_state.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_collection_store.js"]
       "4.21":
         title: "Query row states & score badge values"
@@ -500,10 +500,10 @@ parts:
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
-        last_run: 2026-09-14T18:37:01Z
+        last_run: 2026-10-02T16:57:59Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (new adapter_functions/v8_mapper_executor/mapper_based_search_engine backend). Blank-URL submit correctly blocked ('Please enter a search URL' — close to but not verbatim the doc's 'URL is required', worth a doc wording tweak). Pointed at an unreachable host (chorus.dev.o19s.com:8983, not routable from this sandbox) and got the expected 'Connection failed: ...' message verbatim. Fetched http://example.com successfully — 'Response fetched successfully (559 characters)', HTML preview displayed with Copy/Expand controls, Steps 2–3 revealed. Did not test invalid-URL-format, slow-endpoint-timeout, or invalid-JSON-headers edge cases this pass."
-        paths: ["app/controllers/mapper_wizards_controller.rb"]
+        notes: "Covered live (branch-ui-diff vs main 86e3de9f): fetched https://example.com/ (577 characters); the HTML preview's Expand and Collapse toggle the expanded class and button label as on main (writes bracketed by DB snapshot/restore). Not covered live: edge cases."
+        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
         last_run: 2026-10-01T03:12:00Z

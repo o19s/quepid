@@ -20,32 +20,21 @@ export default class extends Controller {
     this.loadCapabilities()
   }
 
-  handleClick(event) {
-    const tab = event.target.closest("[data-tune-tab]")
-    if (tab) return this.showTab(tab.dataset.tuneTab)
-    const action = event.target.closest("[data-tune-action]")
-    if (action && action.dataset.tuneAction === "save") return this.save()
-    if (action && action.dataset.tuneAction === "run-evaluation") return this.runEvaluation()
-    const tryAction = event.target.closest("[data-try-action]")
-    if (tryAction) return this.handleTryAction(tryAction.dataset.tryAction)
-    const section = event.target.closest("[data-section]")
-    if (section) this.sectionBodyTargets.find(body => body.dataset.sectionBody === section.dataset.section)?.classList.toggle("d-none")
+  selectTab(event) {
+    this.showTab(event.params.tab)
   }
 
-  handleChange(event) {
-    if (event.target === this.endpointSelectTarget) this.updateEndpoint(event)
-    if (event.target === this.nightlyTarget && event.target.dataset.tuneAction === "nightly") this.updateNightly()
+  toggleSection(event) {
+    this.sectionBodyTargets.find(body => body.dataset.sectionBody === event.params.section)?.classList.toggle("d-none")
   }
 
-  handleInput(event) {
-    if (event.target === this.endpointSearchTarget) this.renderEndpointSuggestions(event.target.value)
+  filterEndpoints(event) {
+    this.renderEndpointSuggestions(event.currentTarget.value)
   }
 
-  handleSubmit(event) {
-    if (event.target === this.tryRenameFormTarget) {
-      event.preventDefault()
-      this.renameTry()
-    }
+  submitRename(event) {
+    event.preventDefault()
+    this.renameTry()
   }
 
   disconnect() {
@@ -92,7 +81,7 @@ export default class extends Controller {
   showTab(tab) {
     this.tab = tab
     this.tabTargets.forEach(button => {
-      const active = button.dataset.tuneTab === tab
+      const active = button.dataset.tuneRelevanceTabParam === tab
       button.classList.toggle("active", active)
       button.setAttribute("aria-selected", active ? "true" : "false")
     })
@@ -364,21 +353,20 @@ export default class extends Controller {
     window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.show()
   }
 
-  handleTryAction(action) {
+  toggleRename() {
     if (!this.activeTry) return
-    if (action === "rename") {
-      this.tryRenameFormTarget.hidden = !this.tryRenameFormTarget.hidden
-      this.tryRenameActionTarget.textContent = this.tryRenameFormTarget.hidden ? "Rename" : "Cancel Rename"
-      if (!this.tryRenameFormTarget.hidden) this.tryNameInputTarget.focus()
-    } else if (action === "duplicate") {
-      this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
+    this.tryRenameFormTarget.hidden = !this.tryRenameFormTarget.hidden
+    this.tryRenameActionTarget.textContent = this.tryRenameFormTarget.hidden ? "Rename" : "Cancel Rename"
+    if (!this.tryRenameFormTarget.hidden) this.tryNameInputTarget.focus()
+  }
+
+  duplicateTry() {
+    if (!this.activeTry) return
+    this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
       coreFlash.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
-        this.reloadSettings()
-        window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
-      }).catch(() => this.showError("Unable to duplicate try."))
-    } else if (action === "delete") {
-      this.deleteTry()
-    }
+      this.reloadSettings()
+      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+    }).catch(() => this.showError("Unable to duplicate try."))
   }
 
   renameTry() {
@@ -392,6 +380,7 @@ export default class extends Controller {
   }
 
   deleteTry() {
+    if (!this.activeTry) return
     const activeTryNo = this.settings.selectedTry?.tryNo
     if (this.activeTry.tryNo === activeTryNo) {
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()

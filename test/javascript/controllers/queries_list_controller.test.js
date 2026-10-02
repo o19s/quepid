@@ -35,7 +35,7 @@ function controllerFor(values = {}) {
     ...values
   }
   Object.keys(state).forEach(key => {
-    Object.defineProperty(controller, key, { configurable: true, value: state[key] })
+    Object.defineProperty(controller, key, { configurable: true, writable: true, value: state[key] })
   })
   controller.dispatch = (name, options = {}) => {
     element.dispatchEvent(new CustomEvent(`queries-list:${name}`, { bubbles: true, detail: options.detail }))
@@ -96,6 +96,8 @@ describe("queries_list_controller", () => {
     controller.filter({ currentTarget: { value: "star" } })
 
     expect(controller.clientSortName).toBe("score")
+    expect(controller.sortNameValue).toBe("score")
+    expect(controller.reverseValue).toBe(false)
     expect(controller.filterValue).toBe("star")
     expect(collapseAll).toHaveBeenCalled()
     expect(sortStateChanged).toHaveBeenCalledWith({ sort: "score", reverse: "false" })

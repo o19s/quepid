@@ -61,13 +61,13 @@ function makeCapability(settingsOverrides = {}) {
 function mount(settingsOverrides) {
   const element = document.createElement("div")
   element.innerHTML = `
-    <button data-tune-tab="developer"></button>
-    <button data-tune-tab="curator"></button>
-    <button data-tune-tab="history"></button>
+    <button data-tune-relevance-tab-param="developer"></button>
+    <button data-tune-relevance-tab-param="curator"></button>
+    <button data-tune-relevance-tab-param="history"></button>
     <div data-tune-panel="developer"></div>
     <div data-tune-panel="curator"></div>
     <div data-tune-panel="history"></div>
-    <button data-tune-action="save"></button>`
+    <button data-tune-relevance-target="action" data-action="click->tune-relevance#save"></button>`
   const target = (name, node) => {
     const key = name.charAt(0).toUpperCase() + name.slice(1)
     controller[`has${key}Target`] = true
@@ -76,9 +76,9 @@ function mount(settingsOverrides) {
   }
   const controller = Object.create(TuneRelevanceController.prototype)
   controller.element = element
-  controller.tabTargets = [...element.querySelectorAll("[data-tune-tab]")]
+  controller.tabTargets = [...element.querySelectorAll("[data-tune-relevance-tab-param]")]
   controller.panelTargets = [...element.querySelectorAll("[data-tune-panel]")]
-  controller.actionTargets = [...element.querySelectorAll("[data-tune-action]")]
+  controller.actionTargets = [...element.querySelectorAll('[data-tune-relevance-target="action"]')]
   controller.sectionBodyTargets = []
   controller.hasSaveButtonTarget = true
   controller.saveButtonTarget = controller.actionTargets[0]
@@ -137,39 +137,30 @@ describe("TuneRelevanceController", () => {
     vi.restoreAllMocks()
   })
 
-  describe("delegated Stimulus actions", () => {
-    it("routes nested tab clicks and collapses the matching section target", () => {
-      const { controller, element } = mount()
-      const tab = element.querySelector('[data-tune-tab="history"]')
-      const icon = document.createElement("i")
-      tab.append(icon)
-      controller.handleClick({ target: icon })
+  describe("declared Stimulus actions", () => {
+    it("shows the tab and toggles the section named by the action params", () => {
+      const { controller } = mount()
+      controller.selectTab({ params: { tab: "history" } })
       expect(controller.tab).toBe("history")
 
-      const section = document.createElement("div")
-      section.dataset.section = "fields"
       const body = document.createElement("div")
       body.dataset.sectionBody = "fields"
       controller.sectionBodyTargets = [body]
-      controller.handleClick({ target: section })
+      controller.toggleSection({ params: { section: "fields" } })
       expect(body.classList.contains("d-none")).toBe(true)
-      controller.handleClick({ target: section })
+      controller.toggleSection({ params: { section: "fields" } })
       expect(body.classList.contains("d-none")).toBe(false)
     })
 
-    it("routes change, input and submit actions to the matching control", () => {
+    it("filters endpoints from the search input and submits renames without navigating", () => {
       const { controller } = mount()
-      controller.updateEndpoint = vi.fn()
       controller.renderEndpointSuggestions = vi.fn()
       controller.renameTry = vi.fn()
-      const change = { target: controller.endpointSelectTarget }
-      controller.handleChange(change)
-      expect(controller.updateEndpoint).toHaveBeenCalledWith(change)
       controller.endpointSearchTarget.value = "movies"
-      controller.handleInput({ target: controller.endpointSearchTarget })
+      controller.filterEndpoints({ currentTarget: controller.endpointSearchTarget })
       expect(controller.renderEndpointSuggestions).toHaveBeenCalledWith("movies")
       const preventDefault = vi.fn()
-      controller.handleSubmit({ target: controller.tryRenameFormTarget, preventDefault })
+      controller.submitRename({ preventDefault })
       expect(preventDefault).toHaveBeenCalledOnce()
       expect(controller.renameTry).toHaveBeenCalledOnce()
     })
@@ -230,14 +221,14 @@ describe("TuneRelevanceController", () => {
 
       controller.showTab("history")
 
-      expect(element.querySelector('[data-tune-tab="history"]').classList.contains("active")).toBe(true)
-      expect(element.querySelector('[data-tune-tab="history"]').getAttribute("aria-selected")).toBe("true")
+      expect(element.querySelector('[data-tune-relevance-tab-param="history"]').classList.contains("active")).toBe(true)
+      expect(element.querySelector('[data-tune-relevance-tab-param="history"]').getAttribute("aria-selected")).toBe("true")
       expect(element.querySelector('[data-tune-panel="history"]').hidden).toBe(false)
       expect(element.querySelector('[data-tune-panel="developer"]').hidden).toBe(true)
-      expect(element.querySelector('[data-tune-action="save"]').hidden).toBe(true)
+      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(true)
 
       controller.showTab("curator")
-      expect(element.querySelector('[data-tune-action="save"]').hidden).toBe(false)
+      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(false)
     })
   })
 
@@ -398,7 +389,7 @@ describe("TuneRelevanceController", () => {
       expect(controller.tlsWarningTarget.hidden).toBe(false)
       expect(controller.tlsProtocolTarget.textContent).toBe("https")
       expect(controller.tlsReloadLinkTarget.getAttribute("href")).toContain("https://x?")
-      expect(element.querySelector('[data-tune-action="save"]').hidden).toBe(true)
+      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(true)
     })
 
     it("does not warn when requests are proxied", () => {
@@ -480,18 +471,23 @@ describe("TuneRelevanceController", () => {
       const { controller, settings } = mount()
       controller.showTryDetails(settings.tries[0])
 
-      controller.handleTryAction("rename")
+      controller.toggleRename()
       expect(controller.tryRenameFormTarget.hidden).toBe(false)
       expect(controller.tryRenameActionTarget.textContent).toBe("Cancel Rename")
 
-      controller.handleTryAction("rename")
+      controller.toggleRename()
       expect(controller.tryRenameFormTarget.hidden).toBe(true)
       expect(controller.tryRenameActionTarget.textContent).toBe("Rename")
     })
 
     it("ignores try actions when no try is open", () => {
       const { controller, capability } = mount()
-      controller.handleTryAction("delete")
+      controller.tryRenameFormTarget.hidden = true
+      controller.toggleRename()
+      controller.duplicateTry()
+      controller.deleteTry()
+      expect(controller.tryRenameFormTarget.hidden).toBe(true)
+      expect(capability.settings.duplicateTry).not.toHaveBeenCalled()
       expect(capability.settings.deleteTry).not.toHaveBeenCalled()
     })
 
@@ -534,7 +530,7 @@ describe("TuneRelevanceController", () => {
       const { controller, capability, settings } = mount()
       controller.showTryDetails(settings.tries[0])
 
-      controller.handleTryAction("delete")
+      controller.deleteTry()
 
       expect(capability.settings.deleteTry).not.toHaveBeenCalled()
       expect(errorFlash()[0]).toMatch(/can not delete the currently active try \(Try 1\)/)
@@ -544,7 +540,7 @@ describe("TuneRelevanceController", () => {
       const { controller, capability, settings } = mount()
       controller.showTryDetails(settings.tries[1])
 
-      controller.handleTryAction("delete")
+      controller.deleteTry()
       await flush()
 
       expect(capability.settings.deleteTry).toHaveBeenCalledWith(2)
@@ -556,7 +552,7 @@ describe("TuneRelevanceController", () => {
       capability.settings.deleteTry.mockRejectedValue(new Error("x"))
       controller.showTryDetails(settings.tries[1])
 
-      controller.handleTryAction("delete")
+      controller.deleteTry()
       await flush()
 
       expect(errorFlash()).toEqual(["Unable to delete try."])
@@ -566,7 +562,7 @@ describe("TuneRelevanceController", () => {
       const { controller, capability, settings } = mount()
       controller.showTryDetails(settings.tries[0])
 
-      controller.handleTryAction("duplicate")
+      controller.duplicateTry()
       await flush()
 
       expect(capability.settings.duplicateTry).toHaveBeenCalledWith(1)
@@ -578,7 +574,7 @@ describe("TuneRelevanceController", () => {
       capability.settings.duplicateTry.mockReturnValue(Promise.reject(new Error("x")))
       controller.showTryDetails(settings.tries[0])
 
-      controller.handleTryAction("duplicate")
+      controller.duplicateTry()
       await flush()
 
       expect(errorFlash()).toEqual(["Unable to duplicate try."])

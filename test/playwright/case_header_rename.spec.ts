@@ -176,11 +176,11 @@ test.describe('core case header: stays in step with changes made outside the fra
     const shownBefore = await icon.count();
 
     await page.locator('#case-actions').getByText('Tune Relevance').click();
-    await page.locator('#dev-settings button[data-tune-tab="engineSettings"]').click();
+    await page.locator('#dev-settings button[data-tune-relevance-tab-param="engineSettings"]').click();
 
     const checkbox = page.locator('#evaluate-nightly-checkbox');
     if (!(await checkbox.isVisible())) {
-      await page.locator('#dev-settings .dev-header[data-section="nightly"]').click();
+      await page.locator('#dev-settings .dev-header[data-tune-relevance-section-param="nightly"]').click();
     }
     await expect(checkbox).toBeVisible({ timeout: 15_000 });
     await checkbox.click();

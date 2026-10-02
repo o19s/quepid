@@ -449,9 +449,8 @@ export default class extends Controller {
 
   // Toggle HTML preview expansion
   toggleHtmlPreview(event) {
-    const container = this.htmlPreviewContainerTarget.querySelector('.html-preview')
-    if (container) {
-      const isExpanded = container.classList.toggle("expanded")
+    if (this.hasHtmlPreviewTarget) {
+      const isExpanded = this.htmlPreviewTarget.classList.toggle("expanded")
       event.currentTarget.textContent = isExpanded ? "Collapse" : "Expand"
     }
   }

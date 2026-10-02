@@ -30,6 +30,25 @@ On pre-deangularization `main` (`86e3de9f`), Debug Explain (Matches popover → 
 
 On `main`, each hot-match bar under **Matches** declares `ng-click="showDetailed()"` (`views/stackedChart.html`), but in a live replay clicking a bar opened nothing; `showDetailed` lives on the search-result scope rather than the chart's. The Stimulus port opens Debug Explain on bar click. Decide whether to keep that new affordance or drop it for parity, and document the decision in scenario 6.8 or 4.23.
 
+### [MIGRATION] P1 — Try-details modal is covered by its own backdrop
+
+In the Tune Relevance **History** tab, the try-details modal (`data-tune-relevance-target="tryModal"` in `app/views/core/_tune_relevance.html.erb`) renders inside `#dev-settings`, while Bootstrap appends the `.modal-backdrop` to `document.body`. The backdrop paints over the modal, so real clicks on **Rename**, **Duplicate**, **Delete**, **Dismiss** and the close button land on the backdrop, and Escape doesn't close it either. On `main` (`86e3de9f`) the modal is on top and usable. Confirmed with a live before/after replay (`.playwright-mcp/branch-ui-diff/4.13-rename-toggled-{before,after}.png`); the actions themselves work when clicks are dispatched directly. Likely fix: move the modal out of the drawer's stacking context (for example, render it at body level and keep it in the controller's scope via an outlet or a separate controller). Recheck scenario 4.13.
+
+### [MIGRATION] Try rename form is always visible
+
+The try-details rename form has both `hidden` and Bootstrap's `d-flex` class; `d-flex` sets `display: flex !important`, so `hidden` never hides it. **Rename** still flips the state and its label (Rename/Cancel Rename), but the form shows from the start. On `main` the name field appears only after **Rename**. Drop `d-flex` while hidden (or toggle `d-none`) and recheck scenario 4.13.
+
+### [MIGRATION] Tune Relevance drawer closes after Rerun My Searches!
+
+On `main`, saving from the drawer keeps it open on the new try. This branch navigates to `case/:id/try/:n` and the drawer is closed afterward. Calling `save()` directly shows the same result, so this predates the Stimulus action routing. Decide whether to restore main's behavior; recheck scenario 4.10.
+
+### [MIGRATION] Minor Tune Relevance and Missing Documents differences
+
+Found in the same before/after replay against `main` (`86e3de9f`):
+- The Settings tab opens with every section expanded; `main` starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed (scenario 4.12).
+- The background-run button reads "Rerun My Searches in the Background!"; `main` says "Rerun My Searches Now in the Background!".
+- Missing Documents names the static engine "Static"; `main` says "Static File" (scenario 4.9).
+
 ### [PREEXISTING] P0 — Scorer sandboxing
 
 Client scorer code still executes through `new Function()`; evaluate a Web

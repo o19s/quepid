@@ -121,8 +121,8 @@ export default class extends Controller {
       this.clientSortName = field
       this.clientReverse = false
     }
-    this.element.dataset.queriesListSortNameValue = field
-    this.element.dataset.queriesListReverseValue = String(this.clientReverse)
+    this.sortNameValue = field
+    this.reverseValue = this.clientReverse
     this.persistSortToUrl()
     this.dispatch("sort-state-changed", {
       detail: {
