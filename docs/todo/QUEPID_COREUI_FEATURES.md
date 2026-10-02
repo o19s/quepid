@@ -1004,8 +1004,7 @@ Modals are Bootstrap 5 modals opened by Stimulus controllers through `utils/bs_m
 ### Libraries and UI Building Blocks
 | Component | Source | Usage |
 |-----------|--------|-------|
-| CodeMirror 6 | `modules/editor.js` | Query Sandbox, query options, JSON editors |
-| ACE | `ace-builds` (`ace_config.js`) | Missing-documents finder query input only |
+| CodeMirror 6 | `modules/editor.js` | Query Sandbox, query options, missing-documents finder, JSON editors |
 | Bootstrap 5 Modal | `utils/bs_modal.js`, `utils/dynamic_modal.js` | All modal dialogs |
 | Bootstrap 5 Popover / Tooltip | `utils/bs_popover.js`, `utils/bs_tooltip.js`; `bs-popover`, `bs-tooltip`, `rating-popover` controllers | Rating popovers, match explain, help icons, tooltips |
 | Bootstrap 5 Collapse / progress | Bootstrap | Match explain bars and "show more", Settings subsections |

@@ -14,14 +14,6 @@ Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [MIGRATION-FOLLOWUP] Remove the legacy footer script at verified parity
-
-Incomplete: render `layouts/footer_core_app` directly at the end of the Rails-owned `.pane_main`, remove the redundant layout footer and `footer.js` include, delete the script, and update lint scope and pipeline/tooling documentation. Check other uses of the core layout before removing its fallback footer.
-
-Acceptance: inspect matching before/after viewport screenshots with the case pane scrolled to the footer, with Tune Relevance closed/open, and at a narrow viewport; preserve footer content, links, placement and scrolling. Record the representative coverage in the manual tracker.
-
-Blocked before editing: Playwright MCP `browser_tabs` reports “Browser is already in use for /Users/dave/Library/Caches/ms-playwright-mcp/mcp-chrome-914434f, use --isolated to run multiple instances of the same browser” on both attempts. Smallest prerequisite: release that MCP browser profile through its owning session or provide an isolated MCP browser session. Reuse the existing `quepid_app` server on host port 3000.
-
 ### [MIGRATION] Search failure flashes expose link markup
 
 A controlled failed search shows literal `<a href="...">` markup in the error flash instead of clickable endpoint/troubleshooting links (manual scenario 4.21; `.playwright-mcp/due-sweep/query-error.png`). The search-error translator returns markup, while `flash_controller.js` renders messages as text unless explicitly opted into HTML.

@@ -12,7 +12,7 @@ Quepid serves JavaScript through two mechanisms. Which one a page uses depends o
 | Layout | Pages | JavaScript loaded |
 |--------|-------|-------------------|
 | `application.html.erb`, `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application_modern` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
-| `core.html.erb` | The case page (`/case/:id`) | Importmap for `vega_globals` and `bootstrap_globals`, then bundles `core_vendor.js` and `core_case.js`, then classic scripts `footer.js`, `tour.js` |
+| `core.html.erb` | The case page (`/case/:id`) | Importmap for `vega_globals` and `bootstrap_globals`, then bundles `core_vendor.js` and `core_case.js`, then classic script `tour.js` |
 | `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then bundle `analytics.js` |
 
 The case page is bundled because it depends on legacy UMD vendor libraries that need to be exposed as `window` globals, which esbuild handles in `core_vendor.js`.
@@ -58,4 +58,4 @@ In production, `jsbundling-rails` runs `yarn build` as part of `assets:precompil
 - **Edits to `controllers/`, `utils/` and similar affect both mechanisms.** A change that works on Rails pages (importmap, no build) can still need a `core-case` rebuild to show up on the case page.
 - **Bundles are IIFEs, so top-level `var`/`function` do not become globals.** Legacy code that expects a global must be assigned to `window` explicitly, as `core_vendor.js` does.
 - **`app/assets/builds/` is git-ignored.** A fresh checkout has no bundles until `yarn build` runs (`bin/setup_docker` does this).
-- **Classic scripts** (`footer.js`, `tour.js`) are plain `<script>` files included by the core layout. They are neither bundled nor importmapped.
+- **Classic script** (`tour.js`) is a plain `<script>` file included by the core layout. It is neither bundled nor importmapped. The case footer is rendered directly inside the scrolling case pane by Rails.

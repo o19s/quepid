@@ -61,3 +61,14 @@ Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per
 - [ ] Compare against a recent baseline screenshot if one exists (see `.playwright-mcp/` conventions in `CLAUDE.md`, or the automated suite's own baselines).
 - [ ] If something looks subtly off (wrong spacing, wrong font size, a control that's technically clickable but visually washed-out/misaligned), don't dismiss it as "probably fine" — this exact category of bug is what this part exists to catch, and it's easy to unconsciously explain away.
 - [ ] Report anything found with a screenshot and the computed-style values from DevTools (display/opacity/font-size/transform) — that's what turns a vague "this looks wrong" into an actionable bug report for this specific class of issue.
+
+
+### 16.6 Core footer placement and scrolling
+
+- [ ] **Steps:**
+  1. Open a case with enough queries to scroll, at 1280×900, and dismiss any search-error banners.
+  2. Scroll the main case pane to its bottom and inspect the footer.
+  3. Open Tune Relevance, then scroll the main pane to its bottom again.
+  4. Close the drawer and repeat at 600×900.
+- **Expected:** One footer is rendered at the end of the main case pane, scrolling with the query list. Copyright, configured policy links, API and community-support links retain their content and destinations. Opening the drawer wraps the footer within the narrower pane without duplicating it.
+- **Edge cases:** Existing workbench clipping below its minimum width may also clip footer text; compare with the baseline before attributing this to a footer change. Separately sample an empty case and deployments with configured policy links.

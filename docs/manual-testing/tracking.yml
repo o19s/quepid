@@ -967,6 +967,14 @@ parts:
         notes: "Not run as a single standalone sweep, but every JS/view change made this session (case.js, currSettings.js, query_options_modal_instance_controller.js, import_snapshot_controller.js, mapper_wizard_controller.js, queriesLayout.html, wizardModal.html, _sidebar.html.erb) was individually verified live via Playwright MCP screenshots immediately after the change, with no visual regressions observed in any of the affected pages (case workbench header, query options modal, mapper wizard, cases list import modals, sidebar icons)."
         paths: []
 
+
+      "16.6":
+        title: "Core footer placement and scrolling"
+        last_run: 2026-10-02T21:08:02Z
+        result: pass
+        notes: "Playwright MCP on case 219: inspected before/after viewport pairs at 1280x900 with drawer closed/open and 600x900 closed; footer geometry, pane scroll heights and link destinations matched. One server-rendered footer replaces the body footer plus clone. Search-error banners dismissed for comparison. Screenshots: .playwright-mcp/footer-removal/. Deferred: empty case, configured policy links, external link availability; existing narrow-pane clipping unchanged."
+        paths: ["app/views/core/index.html.erb", "app/views/layouts/core.html.erb", "app/views/layouts/_footer_core_app.html.erb", "app/views/shared/_osc_copyright.html.erb", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js"]
+
   "17":
     file: 17-documentation-coverage.md
     scenarios:
