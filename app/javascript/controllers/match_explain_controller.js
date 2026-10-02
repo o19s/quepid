@@ -77,10 +77,11 @@ export default class extends Controller {
 
   render(data) {
     const hots = data.hots || []
+    this.renderedData = data
 
     this.triggerEl.querySelector("span").textContent = hots.length > 0 ? "Matches" : "No Match"
     this.barsEl.replaceChildren(this.renderBars(data, hots))
-    this.wireBars(data, hots)
+    this.wireBars()
 
     this.popoverHandle.setTitle(`Relevancy Score: ${escapeHtml(data.docScore)}`)
     this.popoverHandle.setBody(this.popoverBody(data))
@@ -113,6 +114,7 @@ export default class extends Controller {
       toggle.className = "match-explain-toggle"
       toggle.style.fontSize = "10px"
       toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
+      toggle.dataset.action = "match-explain#toggleMore"
       wrapper.appendChild(toggle)
     }
     fragment.appendChild(wrapper)
@@ -124,6 +126,7 @@ export default class extends Controller {
     const clamped = pct > 100 ? 100 : pct < 0 ? 0 : pct
     const bar = document.createElement("div")
     bar.className = "graph-explain match-explain-bar"
+    bar.dataset.action = "click->match-explain#openBarDebug"
     const label = document.createElement("div")
     label.className = "graph-label"
     label.textContent = match.description || ""
@@ -141,30 +144,30 @@ export default class extends Controller {
     return bar
   }
 
-  wireBars(data, hots) {
+  wireBars() {
     if (this.collapseInstance) {
       this.collapseInstance.dispose()
       this.collapseInstance = null
     }
 
-    this.barsEl.querySelectorAll(".match-explain-bar").forEach((bar) => {
-      bar.addEventListener("click", () => this.openDebugModal(data))
-    })
-
-    const toggle = this.barsEl.querySelector(".match-explain-toggle")
-    if (!toggle) return
-
     const moreEl = this.barsEl.querySelector(".match-explain-more")
+    if (!moreEl) return
+
     const Collapse = window.bootstrap && window.bootstrap.Collapse
     this.collapseInstance = Collapse ? new Collapse(moreEl, { toggle: false }) : null
+  }
 
-    toggle.addEventListener("click", (event) => {
-      event.preventDefault()
-      this.showAll = !this.showAll
-      toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
-      if (this.showAll) this.collapseInstance?.show()
-      else this.collapseInstance?.hide()
-    })
+  openBarDebug() {
+    this.openDebugModal(this.renderedData)
+  }
+
+  toggleMore(event) {
+    event.preventDefault()
+    const hots = this.renderedData.hots || []
+    this.showAll = !this.showAll
+    event.currentTarget.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
+    if (this.showAll) this.collapseInstance?.show()
+    else this.collapseInstance?.hide()
   }
 
   popoverBody(data) {
@@ -193,6 +196,8 @@ export default class extends Controller {
     actions.append(debug, expand)
     body.append(explanation, actions)
 
+    // Bootstrap renders popover content under document.body, outside this
+    // controller's scope, so these buttons cannot use data-action.
     debug.addEventListener("click", (event) => {
       event.preventDefault()
       if (!data.hasChildren) return

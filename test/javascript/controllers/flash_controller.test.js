@@ -12,8 +12,15 @@ function buildController({ channel = "main", duration = 5000 } = {}) {
 }
 
 function connect(controller) {
-  FlashController.prototype.connect.call(controller)
   return () => FlashController.prototype.disconnect.call(controller)
+}
+
+function show(controller, detail) {
+  controller.onDocumentShow(new CustomEvent("flash:show", { detail }))
+}
+
+function hide(controller, detail) {
+  controller.onDocumentHide(new CustomEvent("flash:hide", { detail }))
 }
 
 describe("FlashController", () => {
@@ -33,9 +40,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
+    show(controller, { type: "success", message: "Saved!", target: "main" })
 
     expect(controller.messageTarget.textContent).toBe("Saved!")
     expect(controller.element.classList.contains("show")).toBe(true)
@@ -47,9 +52,7 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error" })
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
+    show(controller, { type: "success", message: "Saved!", target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })
@@ -58,9 +61,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "error", message: "Failed!", target: "main" } })
-    )
+    show(controller, { type: "error", message: "Failed!", target: "main" })
 
     expect(controller.element.classList.contains("alert-danger")).toBe(true)
     expect(controller.element.classList.contains("alert-success")).toBe(false)
@@ -70,9 +71,7 @@ describe("FlashController", () => {
     const controller = buildController({ duration: 5000 })
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
+    show(controller, { type: "success", message: "Saved!", target: "main" })
     expect(controller.element.classList.contains("show")).toBe(true)
 
     vi.advanceTimersByTime(5000)
@@ -84,11 +83,7 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error", duration: -1 })
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", {
-        detail: { type: "error", message: "search failed", target: "search-error" }
-      })
-    )
+    show(controller, { type: "error", message: "search failed", target: "search-error" })
     vi.advanceTimersByTime(60000)
 
     expect(controller.element.classList.contains("show")).toBe(true)
@@ -98,11 +93,7 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error" })
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", {
-        detail: { type: "error", message: "swap to <code>https</code>", target: "search-error", html: true }
-      })
-    )
+    show(controller, { type: "error", message: "swap to <code>https</code>", target: "search-error", html: true })
 
     expect(controller.messageTarget.innerHTML).toBe("swap to <code>https</code>")
     expect(controller.messageTarget.querySelector("code").textContent).toBe("https")
@@ -112,10 +103,8 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
-    document.dispatchEvent(new CustomEvent("flash:hide", { detail: { target: "main" } }))
+    show(controller, { type: "success", message: "Saved!", target: "main" })
+    hide(controller, { target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })
@@ -124,12 +113,8 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "", target: "main" } })
-    )
+    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "success", message: "", target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })
@@ -138,9 +123,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "error", message: "Failed!", target: "main" } })
-    )
+    show(controller, { type: "error", message: "Failed!", target: "main" })
     FlashController.prototype.hide.call(controller)
 
     expect(controller.element.classList.contains("show")).toBe(false)
@@ -148,16 +131,17 @@ describe("FlashController", () => {
     expect(controller.element.classList.contains("alert-success")).toBe(false)
   })
 
-  it("stops listening after disconnect", () => {
-    const controller = buildController()
+  it("cancels a pending auto-hide on disconnect", () => {
+    const controller = buildController({ duration: 5000 })
     const teardown = connect(controller)
+    show(controller, { type: "success", message: "Saved!", target: "main" })
+    const hideSpy = vi.spyOn(controller, "hide")
+
     teardown()
     disconnect = null
+    vi.advanceTimersByTime(5000)
 
-    document.dispatchEvent(
-      new CustomEvent("flash:show", { detail: { type: "success", message: "Saved!", target: "main" } })
-    )
-
-    expect(controller.element.classList.contains("show")).toBe(false)
+    expect(hideSpy).not.toHaveBeenCalled()
+    expect(controller.element.classList.contains("show")).toBe(true)
   })
 })

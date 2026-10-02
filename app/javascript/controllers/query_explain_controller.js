@@ -31,15 +31,17 @@ export default class extends Controller {
     button.type = "button"
     button.className = "btn btn-outline-secondary btn-sm"
     button.textContent = "Explain Query"
+    button.dataset.action = "query-explain#requestOpen"
     this.element.replaceChildren(button)
-    button.addEventListener("click", () => {
-      const event = new CustomEvent("query-explain:before-open", {
-        bubbles: true,
-        detail: { data: this.dataValue }
-      })
-      this.element.dispatchEvent(event)
-      this.open(event.detail.data)
+  }
+
+  requestOpen() {
+    const event = new CustomEvent("query-explain:before-open", {
+      bubbles: true,
+      detail: { data: this.dataValue }
     })
+    this.element.dispatchEvent(event)
+    this.open(event.detail.data)
   }
 
   open(data = this.dataValue) {

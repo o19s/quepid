@@ -19,6 +19,7 @@ export default class extends Controller {
 
   render() {
     if (!this.hasContentTarget || !this.documentSnapshot) return
+    this.renderedDocument = this.documentSnapshot
     this.contentTarget.replaceChildren(this.renderResult(this.documentSnapshot, this.querySnapshot))
   }
 
@@ -57,13 +58,7 @@ export default class extends Controller {
     const titleLink = document.createElement("a")
     titleLink.href = "#"
     titleLink.textContent = doc.title ?? ""
-    titleLink.addEventListener("click", (event) => {
-      event.preventDefault()
-      this.element.dispatchEvent(new CustomEvent("search-result:show-document", {
-        bubbles: true,
-        detail: { docId: doc.id }
-      }))
-    })
+    titleLink.dataset.action = "search-result#showDocument"
     title.appendChild(titleLink)
     fields.appendChild(title)
 
@@ -99,6 +94,14 @@ export default class extends Controller {
     const wrapper = document.createElement("div")
     wrapper.append(row, footer)
     return wrapper
+  }
+
+  showDocument(event) {
+    event.preventDefault()
+    this.element.dispatchEvent(new CustomEvent("search-result:show-document", {
+      bubbles: true,
+      detail: { docId: this.renderedDocument.id }
+    }))
   }
 
   ratingControl(doc, scale) {

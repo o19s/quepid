@@ -4,8 +4,9 @@ import { Controller } from "@hotwired/stimulus"
  * Renders one flash box on the core case page. Core controllers (still on
  * `/case/:id`) trigger it via `document`-level `flash:show` / `flash:hide`
  * CustomEvents dispatched from `utils/flash.js`, since they can't reach a
- * Stimulus controller's own actions directly. Each box picks its events out
- * of the shared events by `channelValue` ("main" or "search-error").
+ * Stimulus controller's own actions directly. The box declares
+ * `flash:show@document` / `flash:hide@document` actions and picks its events
+ * out of the shared events by `channelValue` ("main" or "search-error").
  */
 export default class extends Controller {
   static targets = ["message"]
@@ -14,16 +15,7 @@ export default class extends Controller {
     duration: { type: Number, default: 5000 }
   }
 
-  connect() {
-    this.onDocumentShow = this.onDocumentShow.bind(this)
-    this.onDocumentHide = this.onDocumentHide.bind(this)
-    document.addEventListener("flash:show", this.onDocumentShow)
-    document.addEventListener("flash:hide", this.onDocumentHide)
-  }
-
   disconnect() {
-    document.removeEventListener("flash:show", this.onDocumentShow)
-    document.removeEventListener("flash:hide", this.onDocumentHide)
     clearTimeout(this.timer)
   }
 

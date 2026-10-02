@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import SearchResultController from "controllers/search_result_controller"
 
 function buildController(documentSnapshot, querySnapshot = {}) {
@@ -43,6 +43,21 @@ describe("SearchResultController", () => {
     expect(controller.contentTarget.querySelector(".subTitle").textContent).toContain("A result")
     expect(controller.contentTarget.querySelector(".result-rank").textContent).toContain("Rank: #2")
     expect(controller.contentTarget.querySelector("strong").textContent).toBe("A result")
+  })
+
+  it("routes title clicks through a declared action that requests the rendered document", () => {
+    const controller = buildController(snapshotFor({ id: 42 }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+    const titleLink = controller.contentTarget.querySelector(".subTitle a")
+    const events = []
+    document.body.addEventListener("search-result:show-document", event => events.push(event.detail))
+    const event = { preventDefault: vi.fn() }
+
+    controller.showDocument(event)
+
+    expect(titleLink.dataset.action).toBe("search-result#showDocument")
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(events).toEqual([{ docId: 42 }])
   })
 
   it("renders an error without a rating control", () => {

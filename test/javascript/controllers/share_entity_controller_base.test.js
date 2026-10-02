@@ -55,6 +55,14 @@ function teamRows(controller) {
   return [...controller.sharedListTarget.querySelectorAll("[data-team-id]")]
 }
 
+// The Stimulus stub does not route data-action, so resolve the row's declared
+// action and typed param the way Stimulus would.
+function clickRow(controller, row) {
+  const [, identifier, method] = row.dataset.action.match(/^click->([\w-]+)#(\w+)$/)
+  const teamId = JSON.parse(row.getAttribute(`data-${identifier}-team-id-param`))
+  controller[method]({ type: "click", currentTarget: row, params: { teamId } })
+}
+
 describe("ShareEntityControllerBase", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
@@ -100,6 +108,8 @@ describe("ShareEntityControllerBase", () => {
     expect(rows.map((row) => row.dataset.teamId)).toEqual(["1", "7"])
     expect(rows[0].type).toBe("button")
     expect(rows[0].className).toBe("list-group-item list-group-item-action list-group-item-success")
+    expect(rows[0].dataset.action).toBe("click->share-widget#selectSharedTeam")
+    expect(rows[1].getAttribute("data-share-widget-team-id-param")).toBe("7")
   })
 
   it("says so when nothing is shared yet, and keeps unshare disabled", () => {
@@ -162,17 +172,17 @@ describe("ShareEntityControllerBase", () => {
     controller.openWith({ id: 1, allTeamsJson: teams, sharedTeamsJson: teams })
     const [osc, search] = teamRows(controller)
 
-    osc.click()
+    clickRow(controller, osc)
     expect(osc.classList.contains("active")).toBe(true)
     expect(controller.unshareTeamIdTarget.value).toBe("1")
     expect(controller.unshareButtonTarget.disabled).toBe(false)
 
-    search.click()
+    clickRow(controller, search)
     expect(osc.classList.contains("active")).toBe(false)
     expect(search.classList.contains("active")).toBe(true)
     expect(controller.unshareTeamIdTarget.value).toBe("2")
 
-    search.click()
+    clickRow(controller, search)
     expect(search.classList.contains("active")).toBe(false)
     expect(controller.unshareTeamIdTarget.value).toBe("")
     expect(controller.unshareButtonTarget.disabled).toBe(true)
@@ -181,7 +191,7 @@ describe("ShareEntityControllerBase", () => {
   it("clears a pending unshare selection when reopened for another record", () => {
     const controller = buildModal()
     controller.openWith({ id: 1, allTeamsJson: teams, sharedTeamsJson: teams })
-    teamRows(controller)[0].click()
+    clickRow(controller, teamRows(controller)[0])
 
     controller.openWith({ id: 2, allTeamsJson: teams, sharedTeamsJson: teams })
 

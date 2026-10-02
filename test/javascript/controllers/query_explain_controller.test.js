@@ -72,13 +72,14 @@ describe("QueryExplainController", () => {
 
     const button = element.querySelector("button")
     expect(button.textContent.trim()).toBe("Explain Query")
+    expect(button.dataset.action).toBe("query-explain#requestOpen")
   })
 
   it("opens a lg modal on click and renders the Params/Parsing json trees", () => {
     const data = baseData()
     const controller = buildController(element, data)
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
@@ -104,7 +105,7 @@ describe("QueryExplainController", () => {
       event.detail.data = baseData({ queryDetails: "fresh" })
     })
 
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       dynamicModal.element.querySelector(".query-explain-params"),
@@ -117,7 +118,7 @@ describe("QueryExplainController", () => {
     const data = baseData({ queryDetails: null, queryDetailsMessage: "Query parameters are not returned by the current Search Engine." })
     const controller = buildController(element, data)
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     expect(dynamicModal.element.textContent).toContain("Query parameters are not returned by the current Search Engine.")
     expect(renderJsonExplorer).not.toHaveBeenCalledWith(
@@ -130,7 +131,7 @@ describe("QueryExplainController", () => {
   it("only shows the Params copy button until another tab is shown, then switches", () => {
     const controller = buildController(element, baseData())
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     const el = dynamicModal.element
     const copyButtons = () => [...el.querySelectorAll(".query-explain-copy")]
@@ -144,7 +145,7 @@ describe("QueryExplainController", () => {
     const data = baseData()
     const controller = buildController(element, data)
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     const el = dynamicModal.element
     el.querySelector('.query-explain-copy[data-tab="queryDetails"]').click()
@@ -154,7 +155,7 @@ describe("QueryExplainController", () => {
   it("shows 'not a templated query' and never asks for a render when the searcher has no isTemplateCall", () => {
     const controller = buildController(element, baseData({ supportsTemplate: false }))
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
 
     const el = dynamicModal.element
     const dispatchSpy = vi.spyOn(controller.element, "dispatchEvent")
@@ -167,7 +168,7 @@ describe("QueryExplainController", () => {
   it("requests the rendered template from the host when the tab is shown, and renders the response", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
     const el = dynamicModal.element
 
     let requestEvent = null
@@ -191,7 +192,7 @@ describe("QueryExplainController", () => {
   it("shows 'not a templated query' when the host reports the query isn't templated after all", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
     const el = dynamicModal.element
     shownTab(el, "query-explain-tab-template")
 
@@ -205,7 +206,7 @@ describe("QueryExplainController", () => {
   it("shows a warning when the host reports an error rendering the template", () => {
     const controller = buildController(element, baseData({ supportsTemplate: true }))
     QueryExplainController.prototype.connect.call(controller)
-    element.querySelector("button").click()
+    controller.requestOpen()
     const el = dynamicModal.element
     shownTab(el, "query-explain-tab-template")
 

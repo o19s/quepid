@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-01
+**Last updated:** 2026-10-02
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -13,6 +13,22 @@ choosing migration work; do not treat pre-existing defects as migration regressi
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
+
+### [MIGRATION] Search failure flashes expose link markup
+
+A controlled failed search shows literal `<a href="...">` markup in the error flash instead of clickable endpoint/troubleshooting links (manual scenario 4.21; `.playwright-mcp/due-sweep/query-error.png`). The search-error translator returns markup, while `flash_controller.js` renders messages as text unless explicitly opted into HTML.
+
+Baseline source at pre-deangularization `main` commit `5f53d8f8c470d3471055510c1f41d490302ea75b` uses `ng-bind-html="flash.message"` in `app/assets/templates/views/common/search_flash.html` and builds these links in `searchErrorTranslatorSvc.js`. This establishes a migration difference by source inspection, not a live historical replay.
+
+Render the troubleshooting links safely, preferably as structured message/link data. Preserve escaping for endpoint URLs and server/user text; do not enable unrestricted HTML for all flash messages. Recheck the failed-search flow and ordinary plain-text errors.
+
+### [MIGRATION] Debug Explain opens with its tree collapsed
+
+On pre-deangularization `main` (`86e3de9f`), Debug Explain (Matches popover → **Debug**) opens with the explain tree fully expanded: `components/debug_matches/_modal.html` passes `collapsed="false"` to `json-explorer`. The Stimulus port shows only `+ details: [...]` until the user expands it, because `match_explain_controller.js#openDebugModal` passes `{ collapsed: true }` (introduced in `0be2aefb`). Confirmed with a live before/after replay (`.playwright-mcp/branch-ui-diff/6.8-debug-modal-{before,after}.png`). Pass `collapsed: false` and recheck manual scenario 6.8.
+
+### [MIGRATION-FOLLOWUP] Clicking a hot-match bar now opens Debug Explain
+
+On `main`, each hot-match bar under **Matches** declares `ng-click="showDetailed()"` (`views/stackedChart.html`), but in a live replay clicking a bar opened nothing; `showDetailed` lives on the search-result scope rather than the chart's. The Stimulus port opens Debug Explain on bar click. Decide whether to keep that new affordance or drop it for parity, and document the decision in scenario 6.8 or 4.23.
 
 ### [PREEXISTING] P0 — Scorer sandboxing
 
@@ -332,6 +348,12 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 ### [PREEXISTING] Ratings page heading says "Scores for Case"
 
 `app/views/ratings/index.html.erb` uses `page_header "Scores for #{case_title @case}"` — copy-pasted from the scores page. Should read "Ratings for …".
+
+---
+
+### [PREEXISTING] New annotation shows its score unrounded
+
+Right after **Create** in Tune Relevance → Annotations, the new entry reads e.g. `Score: 0.08723905360685648`; after an edit (re-rendered from the server) the same annotation reads `0.0872391`. `annotations_controller.js` appends `annotation.score.score` raw, as the Angular template did. Format the score consistently (e.g. two decimals, like the case score badge).
 
 ---
 

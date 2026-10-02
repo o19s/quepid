@@ -69,6 +69,13 @@ function buildController(element, data) {
   return controller
 }
 
+// The Stimulus stub does not route data-action, so resolve the declared
+// click action and call it the way Stimulus would.
+function clickAction(controller, target) {
+  const [, method] = target.dataset.action.match(/^(?:click->)?match-explain#(\w+)$/)
+  controller[method]({ type: "click", currentTarget: target, preventDefault: vi.fn() })
+}
+
 function lastBody() {
   return popoverHandle.setBody.mock.calls.at(-1)[0]
 }
@@ -157,12 +164,12 @@ describe("MatchExplainController", () => {
     MatchExplainController.prototype.connect.call(controller)
 
     const toggle = element.querySelector(".match-explain-toggle")
-    toggle.click()
+    clickAction(controller, toggle)
 
     expect(toggle.textContent).toBe("Show Less")
     expect(element.querySelector(".match-explain-more").classList.contains("show")).toBe(true)
 
-    toggle.click()
+    clickAction(controller, toggle)
     expect(toggle.textContent).toBe("Show 2 More")
   })
 
@@ -179,7 +186,7 @@ describe("MatchExplainController", () => {
     const controller = buildController(element, baseData())
     MatchExplainController.prototype.connect.call(controller)
 
-    element.querySelector(".match-explain-bar").click()
+    clickAction(controller, element.querySelector(".match-explain-bar"))
 
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
   })
@@ -242,7 +249,7 @@ describe("MatchExplainController", () => {
   it("updates the popover in place (setTitle/setBody) on a data change, without disposing or recreating it", () => {
     const controller = buildController(element, baseData({ hots: MANY_HOTS }))
     MatchExplainController.prototype.connect.call(controller)
-    element.querySelector(".match-explain-toggle").click()
+    clickAction(controller, element.querySelector(".match-explain-toggle"))
     expect(element.querySelector(".match-explain-toggle").textContent).toBe("Show Less")
 
     MatchExplainController.prototype.dataValueChanged.call(controller, baseData({ hots: MANY_HOTS, docScore: 4.2 }))

@@ -43,7 +43,11 @@ test('core event actions deliver once and follow controller reconnects', async (
       { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryToggle', event: 'query-row:toggle' },
       { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryDeleteCompleted', event: 'query-command:delete-completed' },
       { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryMoveCompleted', event: 'query-command:move-completed' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'refreshListState', event: 'queries-state:changed' }
+      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'refreshListState', event: 'queries-state:changed' },
+      { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentShow', event: 'flash:show' },
+      { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentHide', event: 'flash:hide' },
+      { selector: '[data-flash-channel-value="search-error"]', id: 'flash', method: 'onDocumentShow', event: 'flash:show' },
+      { selector: '[data-flash-channel-value="search-error"]', id: 'flash', method: 'onDocumentHide', event: 'flash:hide' }
     ].map(probe => {
       const element = document.querySelector(probe.selector)!;
       const controller = app.getControllerForElementAndIdentifier(element, probe.id);
@@ -73,7 +77,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     }
     return probes.map((probe: any) => probe.count);
   });
-  expect(await dispatch()).toEqual(Array(30).fill(1));
+  expect(await dispatch()).toEqual(Array(34).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.element.getAttribute('data-controller').split(' ').filter((id: string) => id !== probe.id).join(' '));
@@ -83,7 +87,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.every((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id));
   })).toBe(true);
-  expect(await dispatch()).toEqual(Array(30).fill(1));
+  expect(await dispatch()).toEqual(Array(34).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.originalControllers);
@@ -93,7 +97,43 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.filter((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id)).map((probe: any) => ({ id: probe.id, event: probe.event, attached: probe.element.isConnected }));
   })).toEqual([]);
-  expect(await dispatch()).toEqual(Array(30).fill(2));
+  expect(await dispatch()).toEqual(Array(34).fill(2));
+});
+
+test('generated result and match-explain controls route through declared actions', async ({ page }) => {
+  // Live-Solr case 6 returns explain data, so its results render hot-match bars.
+  await gotoCase(page, '', 6);
+  await expandFirstQuery(page);
+
+  await page.locator('search-result').first().locator('.subTitle a').click();
+  await expect(page.locator('.modal.show')).toBeVisible();
+  await page.locator('.modal.show').getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.locator('.modal.show')).toHaveCount(0);
+
+  const bar = page.locator('search-result .match-explain-bar').first();
+  await expect(bar).toBeVisible();
+  await bar.click();
+  await expect(page.locator('.modal.show [data-modal-target="json"]')).toBeVisible();
+  // This modal has no close button; Bootstrap ignores Esc until its fade-in ends.
+  await expect(async () => {
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.modal.show')).toHaveCount(0, { timeout: 1_000 });
+  }).toPass();
+
+  // Live results rarely have more than three hot matches; give one row five so it renders the toggle.
+  const explain = page.locator('search-result [data-controller="match-explain"]').first();
+  await explain.evaluate(element => {
+    const data = JSON.parse(element.getAttribute('data-match-explain-data-value')!);
+    data.hots = [1, 2, 3, 4, 5].map(i => ({ description: `term ${i}`, percentage: 100 - i * 10 }));
+    element.setAttribute('data-match-explain-data-value', JSON.stringify(data));
+  });
+  const toggle = explain.locator('.match-explain-toggle');
+  await expect(toggle).toHaveText('Show 2 More');
+  await toggle.click();
+  await expect(toggle).toHaveText('Show Less');
+  await expect(explain.locator('.match-explain-more')).toHaveClass(/show/);
+  await toggle.click();
+  await expect(toggle).toHaveText('Show 2 More');
 });
 
 test('missing-document rating actions stay inside the dynamic modal', async ({ page }) => {

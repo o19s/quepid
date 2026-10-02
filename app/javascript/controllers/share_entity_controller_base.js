@@ -107,6 +107,7 @@ export default class extends Controller {
     if (!this.hasSharedListTarget) return
 
     const teams = parseTeamsJson(rawJson)
+    this.renderedSharedTeams = teams
     this.sharedListTarget.innerHTML = ""
 
     if (teams.length === 0) {
@@ -123,11 +124,17 @@ export default class extends Controller {
         "list-group-item list-group-item-action list-group-item-success"
       item.textContent = team.name || `Team ${team.id}`
       item.dataset.teamId = team.id
-      item.addEventListener("click", (e) => this.toggleRailsSharedSelect(e, team))
+      item.setAttribute(`data-${this.identifier}-team-id-param`, String(team.id))
+      item.dataset.action = `click->${this.identifier}#selectSharedTeam`
       this.sharedListTarget.appendChild(item)
     })
 
     this.toggleUnshareSubmit()
+  }
+
+  selectSharedTeam(event) {
+    const team = this.renderedSharedTeams.find(team => String(team.id) === String(event.params.teamId))
+    if (team) this.toggleRailsSharedSelect(event, team)
   }
 
   toggleRailsSharedSelect(e, team) {
