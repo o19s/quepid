@@ -548,7 +548,7 @@ GEM
     ruby_llm-schema (0.4.0)
     rubyzip (3.7.0)
     safely_block (1.0.0)
-    scout_apm (6.3.0)
+    scout_apm (6.3.1)
       parser
     securerandom (0.4.1)
     selenium-webdriver (4.50.0)
