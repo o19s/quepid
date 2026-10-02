@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { persistQueries } from "utils/query_lifecycle"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import {
@@ -331,7 +332,7 @@ export default class extends Controller {
       await capabilities.queryCapabilities.changeSettings(navigation.caseNo(), latestSettings)
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
       if (texts.length && capabilities.queryLifecycle) {
-        const persisted = await capabilities.queryLifecycle.persistQueries(navigation.caseNo(), texts)
+        const persisted = await persistQueries(navigation.caseNo(), texts)
         await capabilities.queryLifecycle.commitPersistedQueries(persisted)
       }
       const currentUser = user.current()

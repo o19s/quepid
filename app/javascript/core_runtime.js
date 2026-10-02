@@ -1,4 +1,3 @@
-import quepidDom from "quepid_dom"
 import quepidSearch from "quepid_search"
 import quepidStore from "quepid_store"
 import { createSplainerSearchRuntime } from "utils/splainer_search_runtime"
@@ -12,4 +11,4 @@ document.addEventListener("quepid:case-selected", (event) => {
   Object.assign(quepidSearch.caseState, event.detail || {})
 })
 
-export { quepidDom, quepidSearch, quepidStore }
+export { quepidSearch, quepidStore }

@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
+import { createSnapshotModel } from "utils/snapshot_model"
 
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
@@ -18,6 +19,7 @@ const snapshotHydration = vi.hoisted(() => ({
 }))
 
 vi.mock("utils/snapshot_hydration", () => snapshotHydration)
+vi.mock("utils/snapshot_model", () => ({ createSnapshotModel: vi.fn() }))
 
 function buildController(services) {
   const controller = Object.create(SnapshotBridgeController.prototype)
@@ -51,10 +53,7 @@ describe("SnapshotBridgeController", () => {
     }
     window.quepidSearch = {
       docCache: services.docCache,
-      snapshotSearch: {
-        snapshots: {},
-        createSnapshotModel: vi.fn()
-      },
+      snapshotRegistry: {},
       queryCapabilities: {
         refreshAllDiffs: services.queriesSvc.refreshAllDiffs,
         getQueryArray: services.queriesSvc.queryArray
@@ -98,7 +97,7 @@ describe("SnapshotBridgeController", () => {
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
     expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
       snapshots: [{ id: 7 }],
-      registry: window.quepidSearch?.snapshotSearch?.snapshots
+      registry: window.quepidSearch?.snapshotRegistry
     }))
     expect(window.quepidStore.diff.enable).toHaveBeenCalledWith(["7"])
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
@@ -112,7 +111,7 @@ describe("SnapshotBridgeController", () => {
     await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
-    expect(window.quepidSearch.snapshotSearch.snapshots["7"]).toBeUndefined()
+    expect(window.quepidSearch.snapshotRegistry["7"]).toBeUndefined()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
   })
@@ -155,7 +154,7 @@ describe("SnapshotBridgeController", () => {
       log: vi.fn()
     })
 
-    const modelOptions = window.quepidSearch.snapshotSearch.createSnapshotModel.mock.calls.at(-1)[0]
+    const modelOptions = createSnapshotModel.mock.calls.at(-1)[0]
     expect(modelOptions.getDoc("doc-1")).toBe(scopedDoc)
     expect(services.docCache.getDoc).toHaveBeenLastCalledWith("doc-1", 7)
   })

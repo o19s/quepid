@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { errorMessage } from "utils/error_message"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { persistQueries, persistQuery } from "utils/query_lifecycle"
 import coreFlash from "utils/core_flash"
 
 /**
@@ -29,8 +30,8 @@ export default class extends Controller {
       const prepared = lifecycle.prepareQueries(queryTexts)
       const caseId = this.caseIdValue || lifecycle.caseId
       const persisted = queryTexts.length === 1
-        ? await lifecycle.persistQuery(caseId, queryTexts[0])
-        : await lifecycle.persistQueries(caseId, queryTexts)
+        ? await persistQuery(caseId, queryTexts[0])
+        : await persistQueries(caseId, queryTexts)
       const result = await lifecycle.commitQueries(prepared, persisted)
       if (result.searchError) {
         coreFlash.show("error", queryTexts.length === 1

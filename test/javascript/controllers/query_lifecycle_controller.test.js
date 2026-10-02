@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
+import * as queryLifecycle from "utils/query_lifecycle"
+
+vi.mock("utils/query_lifecycle", () => ({ persistQuery: vi.fn(), persistQueries: vi.fn() }))
 
 function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQueries }) {
   const element = document.createElement("div")
@@ -8,8 +11,10 @@ function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQue
   controller.element = element
   controller.hasAddQueryTarget = true
   controller.addQueryTarget = element.querySelector("form")
+  queryLifecycle.persistQuery.mockImplementation(persistQuery || vi.fn())
+  queryLifecycle.persistQueries.mockImplementation(persistQueries || vi.fn())
   window.quepidSearch = {
-    queryLifecycle: { persistQuery, persistQueries, prepareQueries, commitQueries }
+    queryLifecycle: { prepareQueries, commitQueries }
   }
   window.quepidDom = { flash: { show: vi.fn() } }
   return { controller, element }

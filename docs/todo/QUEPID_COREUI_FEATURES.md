@@ -259,7 +259,7 @@ The summary column shows a thumbnail column when `doc.hasThumb`, a full-image co
 - Click on any bar, or the Debug button, opens the **Detailed Explain modal** with `json_explorer` showing the raw explain string (collapsed)
 
 ### Detailed Document Modal
-- Opens when clicking document title (vanilla modal via `window.quepidDom.modal.open`)
+- Opens when clicking document title (vanilla modal via `utils/detailed_document_modal.js`)
 - Structure/text sub-fields; **View All Fields** toggles a formatted JSON `<pre>` of the full raw doc (not ACE)
 - Object/array field values use Stimulus `json-explorer` / `utils/json_explorer.js`
 - "View Document" button opens original document URL (with basic auth injection if configured, proxy wrapping if enabled)
@@ -628,7 +628,7 @@ The Doc Finder (Stimulus `missing-documents` controller) opens as a **modal** ("
    - Template calls (ES) can't use `explainOther`, falls back to regular search
    - Shows "There are N ratings for your original query 'X'"
 2. **Custom Search**: User enters arbitrary search query to find documents
-   - Creates new searcher via `createSearcherFromSettings()` (`utils/live_query_search.js`)
+   - Creates new searcher via `createSearcherFromSettings()` (`utils/live_query_runtime_owner.js`)
    - Calls `searcher.explainOther(queryText, fieldSpec)` for Solr
    - Normalizes results based on engine type via `normalDocsSvc.normalizeDocExplains()`
    - Creates rateable docs via `ratingsStore.createRateableDoc()`
@@ -646,7 +646,7 @@ The search execution pipeline abstracts 7 search engines behind a unified interf
 ```
 Settings (selected try)
     ↓
-createSearcherFromSettings() (utils/live_query_search.js → query_service.js)
+createSearcherFromSettings() (utils/live_query_runtime_owner.js → query_service.js)
     ↓
 searchSvc.createSearcher(fieldSpec, searchUrl, args, queryText, options, searchEngine)   [splainer-search]
     ↓

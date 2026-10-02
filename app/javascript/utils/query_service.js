@@ -5,8 +5,8 @@ import { isEsLikeEngine } from "utils/search_engines"
  *
  * These functions deliberately know nothing about framework internals, async
  * implementation details, or the case
- * workspace. They are shared through quepidSearch while the runtime owner
- * manages the live Query objects.
+ * workspace. The runtime owner imports them directly while it manages the
+ * live Query objects.
  */
 
 export function settingsWithTryOverrides(settings, tryOverrides) {
@@ -175,6 +175,18 @@ export function evaluateMapperFunctions(mapperCode, cache = {}, globalObject = w
   return functions
 }
 
+/**
+ * A mapper (e.g. db/mapper_based_search_engines/vespa.js) may spread a per-field score
+ * breakdown onto each doc as matchfeatures (Vespa's convention, e.g. {"bm25(overview)":
+ * 5.07, "bm25(title)": 2.64}). The generic searchapi engine has no explain concept of
+ * its own (SearchApiDocFactory#explain always returns {}), so build a synthetic explain
+ * tree in the same {description, value, details} shape Solr/ES explains use — the
+ * engine-agnostic bar rendering (explainSvc/normalDocsSvc) picks it up identically to
+ * how it already does for Solr's real explain output. Returns undefined (falling back to
+ * splainer-search's empty-explain placeholder - doc.explain().children.length === 0 - which
+ * the match-explain Stimulus controller (app/javascript/controllers/match_explain_controller.js)
+ * renders as "no per-term score breakdown for doc" when a doc has no matchfeatures to show.
+ */
 export function matchFeaturesExplain(doc) {
   const matchFeatures = doc?.matchfeatures
   if (!matchFeatures || Object.keys(matchFeatures).length === 0) return undefined

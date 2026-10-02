@@ -29,7 +29,6 @@ const BUNDLES = {
       api: `./${JS}/api`,
       modules: `./${JS}/modules`,
       core_runtime: `./${JS}/core_runtime.js`,
-      quepid_dom: `./${JS}/quepid_dom.js`,
       quepid_search: `./${JS}/quepid_search.js`,
       quepid_store: `./${JS}/quepid_store.js`
     }

@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { deleteSnapshot, fetchSnapshot } from "utils/snapshot_api"
 import { buildSnapshotPayload } from "utils/snapshot_payload"
+import { createSnapshotModel } from "utils/snapshot_model"
 import { registerAndHydrateSnapshots } from "utils/snapshot_hydration"
 import { getSnapshotCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
@@ -26,10 +27,9 @@ export default class extends Controller {
   }
 
   snapshotRegistry() {
-    const snapshotSearch = getCoreCapabilities().snapshotSearch
-    if (!snapshotSearch) return null
-    snapshotSearch.snapshots ||= {}
-    return snapshotSearch.snapshots
+    const capabilities = getCoreCapabilities()
+    capabilities.snapshotRegistry ||= {}
+    return capabilities.snapshotRegistry
   }
 
   refreshAllDiffs() {
@@ -39,10 +39,9 @@ export default class extends Controller {
   async registerSnapshots(payloads) {
     const { capability, docCache } = await getSnapshotCapabilities()
     const { settings, navigation, fieldSpec, documents } = capability
-    const snapshotSearch = getCoreCapabilities().snapshotSearch
     const registry = this.snapshotRegistry()
 
-    if (!settings || !navigation || !fieldSpec || !documents || !docCache || !snapshotSearch || !registry) {
+    if (!settings || !navigation || !fieldSpec || !documents || !docCache) {
       throw new Error("Snapshot runtime is not available")
     }
 
@@ -67,7 +66,7 @@ export default class extends Controller {
           ? id => docCache.getDoc(id, options.params.id)
           : options.getDoc
 
-        return snapshotSearch.createSnapshotModel({
+        return createSnapshotModel({
           params: options.params,
           getDoc,
           explainDoc: options.explainDoc,
@@ -93,7 +92,7 @@ export default class extends Controller {
       if (!response.ok) throw new Error(`Snapshot request failed (${response.status})`)
       const payload = await response.json()
       const registry = this.snapshotRegistry()
-      if (registry) Object.keys(registry).forEach((id) => delete registry[id])
+      Object.keys(registry).forEach((id) => delete registry[id])
       await this.registerSnapshots(payload.snapshots || [])
     } catch (error) {
       console.error("Could not bootstrap snapshots", error)
@@ -178,7 +177,7 @@ export default class extends Controller {
     try {
       await deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
       const registry = this.snapshotRegistry()
-      if (registry) delete registry[String(detail.snapshotId)]
+      delete registry[String(detail.snapshotId)]
       this.diffStore().disable()
       await this.refreshAllDiffs()
       detail.done?.(null)

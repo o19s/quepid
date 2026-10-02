@@ -4,6 +4,7 @@ import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { importSnapshotsToCase } from "utils/snapshot_import"
+import { persistQueries } from "utils/query_lifecycle"
 
 const modal = { show: vi.fn(), hide: vi.fn() }
 
@@ -11,6 +12,7 @@ vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => modal) }))
 vi.mock("utils/core_capabilities_runtime", () => ({ getWizardCapabilities: vi.fn() }))
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn() }))
 vi.mock("utils/snapshot_import", () => ({ importSnapshotsToCase: vi.fn() }))
+vi.mock("utils/query_lifecycle", () => ({ persistQueries: vi.fn() }))
 vi.mock("utils/quepid_root", () => ({ getQuepidRootUrl: () => "http://quepid" }))
 
 const STEPS = { welcome: 0, name: 1, endpoint: 2, fields: 3, query: 4, finish: 5 }
@@ -574,9 +576,9 @@ describe("WizardController", () => {
     beforeEach(() => {
       queryCapabilities = { changeSettings: vi.fn(() => Promise.resolve()) }
       queryLifecycle = {
-        persistQueries: vi.fn(() => Promise.resolve(["p"])),
         commitPersistedQueries: vi.fn(() => Promise.resolve())
       }
+      persistQueries.mockReset().mockResolvedValue(["p"])
       getCoreCapabilities.mockReturnValue({ queryCapabilities, queryLifecycle })
       getOrCreateBsModal.mockReturnValue(modal)
     })
@@ -591,7 +593,7 @@ describe("WizardController", () => {
       expect(c.rename).toHaveBeenCalledWith({ id: 5 }, "Named")
       expect(settings.update).toHaveBeenCalledWith(expect.objectContaining({ newQueries: controller.newQueries }))
       expect(queryCapabilities.changeSettings).toHaveBeenCalledWith(5, expect.anything())
-      expect(queryLifecycle.persistQueries).toHaveBeenCalledWith(5, ["a", "b"])
+      expect(persistQueries).toHaveBeenCalledWith(5, ["a", "b"])
       expect(queryLifecycle.commitPersistedQueries).toHaveBeenCalledWith(["p"])
       expect(controller.capability.user.shownIntroWizard).toHaveBeenCalled()
       expect(modal.hide).toHaveBeenCalled()
@@ -626,7 +628,7 @@ describe("WizardController", () => {
 
       await controller.finish()
 
-      expect(queryLifecycle.persistQueries).not.toHaveBeenCalled()
+      expect(persistQueries).not.toHaveBeenCalled()
     })
 
     it("starts the tour only for first-time wizard users", async () => {

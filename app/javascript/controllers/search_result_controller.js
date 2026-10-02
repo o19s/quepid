@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getCoreCapabilities } from "utils/core_capability_access"
+import { ratingBackgroundColor } from "utils/scoring"
 
 /**
  * Renders one document snapshot. Search, rating mutations, and detailed
@@ -228,8 +228,7 @@ export function createRatingControl(rating, scale) {
 }
 
 function ratingColor(rating, scale) {
-  const style = getCoreCapabilities().scoring?.ratingBackgroundColor?.({ rating, scale })
-  return style?.["background-color"] || scale[rating]?.color || ""
+  return ratingBackgroundColor({ rating, scale })["background-color"]
 }
 
 // Search snippets contain harmless markup such as <strong>, but their values

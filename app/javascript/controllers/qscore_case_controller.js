@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { apiFetch } from "api/fetch"
 import { formatScore, scoreToColor } from "utils/scoring"
+import { buildCaseDiffScores } from "utils/diff_scores"
 import { diffStateStore } from "stores/diff_state_store"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -143,9 +144,8 @@ export default class extends Controller {
     const stores = this.coreStores || getCoreStores()
     const documentsStore = stores.documents
     const capabilities = getCoreCapabilities()
-    const buildCaseDiffScores = capabilities.diffScores?.buildCaseDiffScores
 
-    if (!documentsStore || !buildCaseDiffScores) return
+    if (!documentsStore) return
 
     if (failed) {
       documentsStore.clearCaseDiffs()
