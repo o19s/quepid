@@ -96,13 +96,15 @@
   </div>
 </nav>
 
-<div id='flash'>
-  <% if @announcement&.persisted? %>
-    <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
-      <%= @announcement.text.html_safe %>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  <% end %>
+<% if @announcement&.persisted? %>
+  <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
+    <%= @announcement.text.html_safe %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<% end %>
 
+<%# Overlays the page instead of pushing content down - see #flash-messages
+    in application.css. Matches the core page's flash treatment. %>
+<div id="flash-messages">
   <%= flash_messages -%>
 </div>

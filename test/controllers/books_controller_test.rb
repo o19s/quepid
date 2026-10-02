@@ -184,15 +184,31 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
     end
 
-    test 'judge_activity renders the same partial content polled as a broadcast fallback' do
+    test 'judge_activity appends a full row for a judge the poller does not know about yet' do
       login_user_for_integration_test user
       james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
 
       get judge_activity_book_path(james_bond_movies)
 
       assert_response :success
+      assert_equal 'text/vnd.turbo-stream.html', response.media_type
+      assert_match 'action="append"', response.body
       assert_match "judge-row-#{judge_judy.id}", response.body
       assert_match 'Judge Judy', response.body
+    end
+
+    test 'judge_activity replaces only the status/count/last cells for a judge the poller already knows about' do
+      login_user_for_integration_test user
+      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+
+      get judge_activity_book_path(james_bond_movies), params: { known_judge_ids: judge_judy.id.to_s }
+
+      assert_response :success
+      assert_match "action=\"replace\" target=\"judge-status-#{judge_judy.id}\"", response.body
+      assert_match "action=\"replace\" target=\"judge-count-#{judge_judy.id}\"", response.body
+      assert_match "action=\"replace\" target=\"judge-last-#{judge_judy.id}\"", response.body
+      assert_no_match "judge-row-#{judge_judy.id}", response.body
+      assert_no_match 'judge-sparkline', response.body
     end
 
     test 'lists assigned AI judge in Judge Activity table even with no judgements' do
@@ -204,7 +220,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select "#judge-row-#{judge_judy.id}" do
-        assert_select 'button[title=?]', 'Start judging 10 pairs'
+        assert_select 'button[title=?][data-bs-target=?]', 'Judge documents', "#unleash_modal_#{judge_judy.id}"
       end
     end
 

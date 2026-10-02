@@ -228,8 +228,8 @@ class SampleData < Thor
     solr_case = realistic_activity_user.cases.find_or_create_by case_name: 'SOLR CASE'
     solr_try = solr_case.tries.latest
     solr_params = {
-      field_spec:   'id:id, title:title',
-      query_params: 'q=*:*',
+      field_spec:   'id:id, title:title, overview, cast, thumb:poster_path',
+      query_params: 'q=#$query##&defType=edismax&qf=text_all&pf=title&tie=1.0&bf=vote_average',
     }
     solr_try.search_endpoint = tmdb_solr_endpoint
     solr_try.update solr_params

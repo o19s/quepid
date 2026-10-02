@@ -85,8 +85,6 @@
   </div>
 </div>
 
-<%= render partial: 'unleash_modal', collection: @ai_judges, as: :ai_judge%>
-
 <p/>
 <h3>Judging Stats</h3>
 <table class="table">
@@ -105,14 +103,11 @@
         <%=display_judge_name (row[:judge]) %>
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
-          <div class="float-end d-flex gap-2">
-            <% if @refinable_ai_judge_ids.include?(row[:judge].id) %>
+          <% if @refinable_ai_judge_ids.include?(row[:judge].id) %>
+            <div class="float-end">
               <%= link_to 'Refine Prompt', edit_ai_judge_path(row[:judge], book_id: @book.id), class: 'btn btn-light', role: 'button' %>
-            <% end %>
-            <button type="button" class="btn btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
-              Prepare to Judge!
-            </button>      
-          </div>         
+            </div>
+          <% end %>
         <% end %>
       </th>
       <td>

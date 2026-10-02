@@ -1,0 +1,12 @@
+<%# locals: (row:) %>
+<%# The chart td (judge-sparkline-#{id}) is never itself replaced - see
+    broadcast_judge_activity_job.rb - so this cell is how fresh sparkline
+    values actually reach the already-mounted chart: judge-activity-stats
+    forwards its sparkline value straight to the judge-sparkline controller
+    every time this td is freshly rendered. %>
+<td id="judge-count-<%= row[:judge].id %>" class="text-end fw-semibold"
+    data-controller="judge-activity-stats"
+    data-judge-activity-stats-judge-id-value="<%= row[:judge].id %>"
+    data-judge-activity-stats-sparkline-value="<%= row[:sparkline].to_json %>">
+  <%= row[:count] %>
+</td>

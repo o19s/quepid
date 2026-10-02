@@ -83,6 +83,6 @@ test.describe('admin namespace', () => {
     // Admin::AdminController#require_administrator redirects non-admins to
     // root_path with a notice rather than rendering the admin panel.
     await expect(page).not.toHaveURL(/\/admin/);
-    await expect(page.locator('#flash')).toContainText('You must be a Quepid Administrator.');
+    await expect(page.locator('#flash-messages')).toContainText('You must be a Quepid Administrator.');
   });
 });

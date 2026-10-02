@@ -151,13 +151,13 @@ function updateModalTitle(judgeId) {
     <small class="text-muted">Last 30 days</small>
   </div>
   <div class="card-body p-0">
-    <table class="table table-hover mb-0 align-middle">
+    <table class="table table-hover mb-0 align-middle" style="table-layout:fixed">
       <thead class="table-light">
         <tr>
-          <th>Judge</th>
-          <th class="text-end">Judged</th>
-          <th class="text-end">Last Active</th>
-          <th style="min-width:220px">Activity (30d)</th>
+          <th style="width:35%">Judge</th>
+          <th class="text-end" style="width:10%">Judged</th>
+          <th class="text-end" style="width:25%">Last Active</th>
+          <th style="width:30%">Activity (30d)</th>
         </tr>
       </thead>
       <tbody id="judge-activity-table"
@@ -214,7 +214,7 @@ function updateModalTitle(judgeId) {
             <dt class="col-sm-3">Scale Labels</dt>
             <dd class="col-sm-9">
               <% @book.scale_with_labels.each do |value, label| %>
-                <span class="badge bg-secondary me-1"><%= label %>: <%= value %></span>
+                <span class="badge me-1" style="background-color: <%= calculate_hsl_color(value.to_i, @book.scale) %>;"><%= label %>: <%= value %></span>
               <% end %>
             </dd>
           <% end %>
