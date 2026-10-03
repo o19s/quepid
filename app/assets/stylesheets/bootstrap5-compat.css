@@ -115,12 +115,8 @@ pre {
   --bs-btn-disabled-border-color: #4cae4c;
 }
 
-/* BS5's Reboot resets color to `inherit` for any `<a>` with neither `href`
- * nor `class` — BS3 always styled these as links (blue, no underline). This
- * app has legacy templates using bare `<a ng-click="...">` as a client-side
- * click handler with no href/class, so without this override they silently
- * lost their blue link styling (e.g. the case-actions toolbar: "Select
- * scorer", "Judgements", "Import", etc.). */
+/* Keep bare action anchors styled as links when BS5 Reboot would inherit
+ * their text color. */
 a:not([href]):not([class]) {
   color: var(--bs-link-color);
   text-decoration: none;
@@ -244,7 +240,7 @@ label {
   max-height: 550px;
 }
 
-/* Nav tabs (replaces uib-tabset). Font size inherits BS5's 1rem. */
+/* Nav tabs. Font size inherits BS5's 1rem. */
 .nav {
   --bs-nav-link-padding-x: 16px;
   --bs-nav-link-padding-y: 8px;

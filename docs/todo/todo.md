@@ -244,9 +244,8 @@ results or scores to the server.
 
 ### [MIGRATION-FOLLOWUP] P3 — Audit remaining frontend globals
 
-`window.Stimulus` (`controllers/application.js`), `window.CodeMirror`
-(`modules/editor.js`), and `window.quepidWizardContracts` (`core_stimulus.js`)
-remain global compatibility seams. Identify consumers before replacing them
+`window.Stimulus` (`controllers/application.js`) and `window.CodeMirror`
+(`modules/editor.js`) remain global integration seams. Identify consumers before replacing them
 with imports or explicit dependencies; retain any supported external contract.
 
 ### [MIGRATION-FOLLOWUP] P3 — Replace native invite alerts

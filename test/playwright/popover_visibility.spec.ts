@@ -48,4 +48,25 @@ test.describe('BS3↔BS5 popover paint (trap #5)', () => {
 
     expect(opacity, 'getComputedStyle(opacity) must be > 0').toBeGreaterThan(0);
   });
+  test('rating and Matches popovers toggle and dismiss outside the tip', async ({ page }) => {
+    await gotoCase(page);
+    await expandFirstQuery(page);
+    const rating = page.locator('search-result .single-rating').first();
+    await rating.click();
+    await expect(page.locator('.popover')).toBeVisible();
+    await page.locator('.popover').click({ position: { x: 3, y: 3 } });
+    await expect(page.locator('.popover')).toBeVisible();
+    await rating.click();
+    await expect(page.locator('.popover')).toHaveCount(0);
+    await rating.click();
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await expect(page.locator('.popover')).toHaveCount(0);
+
+    await page.locator('search-result .matches-popper').first().click();
+    await expect(page.locator('.popover')).toBeVisible();
+    await expect(page.locator('.popover').getByText('Expand', { exact: false })).toBeVisible();
+    await page.locator('body').click({ position: { x: 1, y: 1 } });
+    await expect(page.locator('.popover')).toHaveCount(0);
+  });
+
 });

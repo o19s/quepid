@@ -20,15 +20,14 @@ export function createLiveQueryEventsRuntime({
   setScorer,
   reloadQueries,
   configureBook,
-  schedule,
-  scheduleApply
+  schedule
 }) {
   function currentCase(detail) {
     return !Number(detail.caseId) || Number(detail.caseId) === Number(getCaseNo())
   }
 
-  function ratingChanged(event, fallbackQueryId) {
-    const queryId = ratingChangedQueryId(event, fallbackQueryId)
+  function ratingChanged(event) {
+    const queryId = ratingChangedQueryId(event)
     const query = queryId !== undefined ? getQuery(queryId) : null
     if (query) {
       invalidateRatedDocs(query)
@@ -52,7 +51,7 @@ export function createLiveQueryEventsRuntime({
   function scorerSelected(event) {
     const detail = event.detail || {}
     if (Number(detail.caseId) !== Number(getCaseNo()) || !detail.scorer) return
-    scheduleApply(() => setScorer(detail.scorer).then(updateScores))
+    schedule(() => setScorer(detail.scorer).then(updateScores))
   }
 
   function queriesNeedReload(event) {

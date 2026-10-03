@@ -25,7 +25,7 @@ export function settingsWithTryOverrides(settings, tryOverrides) {
  * This is deliberately independent of application services. The caller supplies
  * the small engine predicates and the query's ratings filter, while this
  * helper owns the mutation-prone Solr/ES/Search API argument rules that used
- * to live inside the compatibility initializer.
+ * to live inside the query runtime initializer.
  */
 export function buildSearcherRequest({
   settings,
@@ -99,9 +99,9 @@ export function buildSearcherRequest({
 
 /**
  * Create a splainer-search searcher without coupling the construction rules to
- * application services. The caller injects the legacy searcher factory and the
+ * application services. The caller injects the searcher factory and the
  * small environment-specific predicates; the settings/query contract stays
- * portable for the future case-workspace bundle.
+ * independent of the case-workspace entry bundle.
  */
 export function createSearcherFromSettings({
   settings,
@@ -128,7 +128,7 @@ export function createSearcherFromSettings({
     ratingsFilter: options.filterToRated ? query.filterToRatings(settings) : undefined
   })
 
-  // Preserve the legacy normalization because later Query methods read the
+  // Normalize arguments because later Query methods read the
   // active settings object when constructing rated-doc searchers.
   settings.searchEngine = request.searchEngine
   return createSearcher(
@@ -238,7 +238,7 @@ export function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField
 
 /**
  * Run a live query search while leaving searcher construction, document
- * normalization, and error translation with the legacy service.
+ * normalization, and error translation with the live query runtime.
  */
 export function searchQuery({
   query,

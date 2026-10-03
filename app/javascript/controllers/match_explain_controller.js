@@ -42,8 +42,7 @@ export default class extends Controller {
     this.barsEl = this.element.querySelector(".match-explain-bars")
 
     this.popoverHandle = createBsPopover(this.triggerEl, {
-      mode: "text",
-      trigger: "outsideClick",
+      trigger: "outside-click",
       placement: "left",
       html: true
     })

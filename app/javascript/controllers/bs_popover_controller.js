@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsPopover } from "utils/bs_popover"
 
-/** BS5 text popover for Rails/Stimulus pages. Template-content popovers (ratings, match detail) still use the legacy template directive. */
+/** BS5 popover for Rails and core case pages. */
 export default class extends Controller {
   static values = {
     title: String,
@@ -14,7 +14,6 @@ export default class extends Controller {
 
   connect() {
     this.handle = createBsPopover(this.element, {
-      mode: "text",
       trigger: this.triggerValue,
       placement: this.placementValue,
       delayMs: this.delayValue,

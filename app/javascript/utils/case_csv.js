@@ -57,7 +57,7 @@ function mergeFieldNames(existing, names) {
   return merged
 }
 
-// display name: "($filter('date')(time, 'shortDate')) name"
+// Snapshot display dates use the short month/day/year format.
 export function formatShortDate(dateString) {
   const date = new Date(dateString)
   const year = String(date.getFullYear()).slice(-2)

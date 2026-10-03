@@ -1,17 +1,13 @@
 /**
- * Per-query state and scoring contract.
- *
- * The legacy live-query runtime still owns search, rated-document lookup, and API
- * persistence. This module owns query-local state transitions so those
- * operations can move behind the same contract without changing the live
- * case-page behavior in one large cutover.
+ * Query-local state transitions and scoring. The live query runtime owns
+ * search, rated-document lookup, and API persistence.
  */
 export function createQueryModel({
   query,
   ratingsStore,
   getDefaultScorer,
   scoreQuery,
-  promiseApi,
+  promiseApi = Promise,
   getFieldSpec,
   getQueryState,
   buildRatingsFilter,
@@ -52,9 +48,7 @@ export function createQueryModel({
 
     score() {
       if (query.lastScoreVersion === this.version()) {
-        const deferred = promiseApi.defer()
-        deferred.resolve(query.currentScore)
-        return deferred.promise
+        return promiseApi.resolve(query.currentScore)
       }
 
       return this.scoreOthers(query.docs).then((score) => {

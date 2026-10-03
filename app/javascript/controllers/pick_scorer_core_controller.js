@@ -7,7 +7,7 @@ import { getQuepidRootUrl } from "utils/quepid_root"
  * Pick-scorer modal for the core case toolbar. Lists communal (+ custom, when
  * allowed) scorers from `api/scorers`, saves via
  * `PUT api/cases/:id/scorers/:scorerId`, then dispatches
- * `pick-scorer:selected` so the legacy live-query scorer can rescore
+ * `pick-scorer:selected` so the live-query scorer can rescore
  * live queries until the live-query-state migration owns that path.
  *
  * When the case's current scorer is missing from the accessible lists, it

@@ -22,7 +22,7 @@ function buildController(element) {
   const controller = Object.create(RatingPopoverController.prototype)
   controller.element = element
   controller.scaleValue = SCALE
-  controller.placementValue = "auto right"
+  controller.placementValue = "right"
   return controller
 }
 
@@ -46,9 +46,8 @@ describe("RatingPopoverController", () => {
     expect(createBsPopover).toHaveBeenCalledTimes(1)
     const [calledElement, options] = createBsPopover.mock.calls[0]
     expect(calledElement).toBe(element)
-    expect(options.mode).toBe("text")
-    expect(options.trigger).toBe("outsideClick")
-    expect(options.placement).toBe("auto right")
+    expect(options.trigger).toBe("outside-click")
+    expect(options.placement).toBe("right")
     expect(options.html).toBe(true)
 
     const items = options.body.querySelectorAll(".ratingNum")

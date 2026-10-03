@@ -1,64 +1,13 @@
-/**
- * Bootstrap 5 popover helpers shared by legacy quepidPopover and Stimulus pages.
- *
- * Trigger mapping (uib → BS5) for legacy attributes:
- *   'mouseenter'   → hover focus
- *   'click'        → click
- *   'focus'        → focus
- *   'outsideClick' → manual + document capture listener
- */
-
-export const POPOVER_SELECTOR = "[quepid-popover], [quepid-popover-template]"
-
-export function parsePopoverTrigger(raw) {
-  if (!raw) return "click"
-  return raw.trim().replace(/^['"]|['"]$/g, "")
-}
-
-export function toBsPopoverTrigger(trigger) {
-  switch (trigger) {
-    case "mouseenter":
-      return "hover focus"
-    case "focus":
-      return "focus"
-    case "click":
-      return "click"
-    case "outsideClick":
-      return "manual"
-    default:
-      return "click"
-  }
-}
-
-export function normalizePopoverPlacement(raw) {
-  return (raw || "top").split(/\s+/).pop()
-}
+/** Bootstrap 5 popovers with optional outside-click dismissal. */
 
 export function getBootstrapPopover() {
   return window.bootstrap && window.bootstrap.Popover
 }
 
 /**
- * Wire a BS5 Popover on `element`. Template mode passes hooks via
- * `options`; Stimulus text mode uses static title/body values.
- *
  * @param {Element} element
- * @param {{
- *   mode?: "text" | "template",
- *   trigger?: string,
- *   placement?: string,
- *   delayMs?: number,
- *   title?: string,
- *   body?: string,
- *   html?: boolean,
- *   hasIsOpen?: boolean,
- *   hasNgClick?: boolean,
- *   getIsOpen?: () => boolean,
- *   setIsOpen?: (val: boolean) => void,
- *   onTemplateShow?: () => void,
- *   scopeApply?: (fn: () => void) => void
- * }} options
- * @returns {{ instance: import("bootstrap").Popover | null, dispose: () => void, setBody: (body: string | Element) => void, setTitle: (title: string) => void, showFromIsOpen: (val: boolean) => void }}
+ * @param {{ trigger?: string, placement?: string, delayMs?: number,
+ *   title?: string, body?: string | Element, html?: boolean }} options
  */
 export function createBsPopover(element, options = {}) {
   const Popover = getBootstrapPopover()
@@ -71,26 +20,17 @@ export function createBsPopover(element, options = {}) {
       instance: null,
       dispose() {},
       setBody() {},
-      setTitle() {},
-      showFromIsOpen() {}
+      setTitle() {}
     }
   }
 
-  const mode = options.mode || "text"
-  const trigger = parsePopoverTrigger(options.trigger)
-  const placement = normalizePopoverPlacement(options.placement)
+  const trigger = options.trigger || "click"
+  const placement = options.placement || "top"
   const delayMs = options.delayMs
-  const hasIsOpen = !!options.hasIsOpen
-  const getIsOpen = options.getIsOpen || (() => false)
-  const setIsOpen = options.setIsOpen
-  const scopeApply = options.scopeApply || ((fn) => fn())
-
-  // toBsPopoverTrigger already maps "outsideClick" -> "manual", so hasIsOpen
-  // is the only extra case this needs to force.
-  const bsTrigger = hasIsOpen ? "manual" : toBsPopoverTrigger(trigger)
+  const bsTrigger = trigger === "outside-click" ? "manual" : trigger
 
   let currentTitle = options.title || ""
-  let currentBody = mode === "text" ? options.body || "" : ""
+  let currentBody = options.body || ""
 
   const instance = new Popover(element, {
     placement,
@@ -127,54 +67,22 @@ export function createBsPopover(element, options = {}) {
     refreshContent()
   }
 
-  let onShow = null
-  let onShown = null
-  let onHidden = null
-
-  if (mode === "template" && options.onTemplateShow) {
-    onShow = () => {
-      options.onTemplateShow()
-    }
-    element.addEventListener("show.bs.popover", onShow)
-  }
-
-  let suppress = false
-  if (hasIsOpen && setIsOpen) {
-    onShown = () => {
-      if (suppress || getIsOpen() === true) return
-      scopeApply(() => setIsOpen(true))
-    }
-    onHidden = () => {
-      if (suppress || getIsOpen() === false) return
-      scopeApply(() => setIsOpen(false))
-    }
-    element.addEventListener("shown.bs.popover", onShown)
-    element.addEventListener("hidden.bs.popover", onHidden)
-  }
-
   let docHandler = null
-  if (trigger === "outsideClick") {
+  if (trigger === "outside-click") {
     docHandler = (ev) => {
       const tipId = element.getAttribute("aria-describedby")
       const tip = tipId ? document.getElementById(tipId) : null
       if (!tip) return
       if (element.contains(ev.target) || tip.contains(ev.target)) return
 
-      if (hasIsOpen && setIsOpen) {
-        scopeApply(() => setIsOpen(false))
-      } else {
-        instance.hide()
-      }
+      instance.hide()
     }
     document.addEventListener("click", docHandler, true)
   }
 
   let elClickHandler = null
-  if (trigger === "outsideClick" && !options.hasNgClick) {
-    elClickHandler =
-      hasIsOpen && setIsOpen
-        ? () => scopeApply(() => setIsOpen(!getIsOpen()))
-        : () => instance.toggle()
+  if (trigger === "outside-click") {
+    elClickHandler = () => instance.toggle()
     element.addEventListener("click", elClickHandler)
   }
 
@@ -182,18 +90,9 @@ export function createBsPopover(element, options = {}) {
     instance,
     setTitle,
     setBody,
-    showFromIsOpen(val) {
-      suppress = true
-      if (val) instance.show()
-      else instance.hide()
-      suppress = false
-    },
     dispose() {
       if (docHandler) document.removeEventListener("click", docHandler, true)
       if (elClickHandler) element.removeEventListener("click", elClickHandler)
-      if (onShow) element.removeEventListener("show.bs.popover", onShow)
-      if (onShown) element.removeEventListener("shown.bs.popover", onShown)
-      if (onHidden) element.removeEventListener("hidden.bs.popover", onHidden)
       instance.dispose()
     }
   }

@@ -54,8 +54,8 @@ describe("query_state", () => {
   })
 
   it("reads query ids from both store and legacy rating events", () => {
-    expect(ratingChangedQueryId({ detail: { queryId: 7 } }, 8)).toBe(7)
-    expect(ratingChangedQueryId({}, 8)).toBe(8)
+    expect(ratingChangedQueryId({ detail: { queryId: 7 } })).toBe(7)
+    expect(ratingChangedQueryId({})).toBeUndefined()
   })
 
   it("orders queries by server display order and records their positions", () => {

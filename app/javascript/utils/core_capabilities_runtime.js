@@ -27,27 +27,8 @@ const settingsRuntime = createSettingsRuntime({
 })
 const userRuntime = createUserRuntime()
 
-function createPromiseApi() {
-  return {
-    resolve: (value) => Promise.resolve(value),
-    reject: (value) => Promise.reject(value),
-    all: (values) => Promise.all(values),
-    defer: () => {
-      let resolve
-      let reject
-      const promise = new Promise((promiseResolve, promiseReject) => {
-        resolve = promiseResolve
-        reject = promiseReject
-      })
-      return { promise, resolve, reject }
-    }
-  }
-}
-
-export function createNativeFramework({ schedule, applyAsync } = {}) {
-  const promiseApi = createPromiseApi()
+export function createNativeFramework({ schedule } = {}) {
   const nativeSchedule = schedule || ((callback) => Promise.resolve().then(callback))
-  const nativeApplyAsync = applyAsync || nativeSchedule
   const request = async (options = {}) => {
     const method = options.method || "GET"
     const url = new URL(options.url, document.baseURI || window.location.href)
@@ -68,12 +49,9 @@ export function createNativeFramework({ schedule, applyAsync } = {}) {
   return {
     request,
     get: (url) => request({ method: "GET", url }),
-    promiseApi,
+    promiseApi: Promise,
     schedule: nativeSchedule,
-    applyAsync: nativeApplyAsync,
-    logger: console,
-    reject: promiseApi.reject,
-    resolve: promiseApi.resolve
+    logger: console
   }
 }
 

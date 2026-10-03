@@ -16,6 +16,17 @@ describe("core runtime capabilities", () => {
     vi.restoreAllMocks()
   })
 
+  it("uses native promises and the injected scheduler", () => {
+    const schedule = vi.fn(callback => callback())
+    const framework = createNativeFramework({ schedule })
+    const callback = vi.fn()
+    expect(framework.promiseApi).toBe(Promise)
+    framework.schedule(callback)
+    expect(callback).toHaveBeenCalledOnce()
+    expect(schedule).toHaveBeenCalledWith(callback)
+    expect(framework).not.toHaveProperty("applyAsync")
+  })
+
   it("preserves mounted paths, serialized bodies, and failed-request rejection", async () => {
     document.head.innerHTML = '<base href="/quepid-app/">'
     const framework = createNativeFramework()

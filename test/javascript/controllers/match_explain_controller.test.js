@@ -122,8 +122,7 @@ describe("MatchExplainController", () => {
     expect(createBsPopover).toHaveBeenCalledTimes(1)
     const [trigger, options] = createBsPopover.mock.calls[0]
     expect(trigger).toBe(element.querySelector(".matches-popper"))
-    expect(options.mode).toBe("text")
-    expect(options.trigger).toBe("outsideClick")
+    expect(options.trigger).toBe("outside-click")
     expect(options.placement).toBe("left")
     expect(popoverHandle.setTitle).toHaveBeenCalledWith("Relevancy Score: 3.5")
   })

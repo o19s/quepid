@@ -43,7 +43,6 @@ describe("BsPopoverController", () => {
     BsPopoverController.prototype.connect.call(controller)
 
     expect(createBsPopover).toHaveBeenCalledWith(element, {
-      mode: "text",
       trigger: "click",
       placement: "top",
       delayMs: undefined,

@@ -4,19 +4,18 @@ import { createBsPopover } from "utils/bs_popover"
 // Rating-scale popover for search results, "Score All", and the Document
 // Finder. Content here is plain DOM built from the scale value — the actual
 // rating mutation (doc.rate / doc.resetRating, scoreAll propagation, etc.)
-// still lives in the legacy query service. This dispatches bubbling
+// lives in the live query runtime. This dispatches bubbling
 // CustomEvents so the owning result/search controller or document finder can
 // handle the mutation without any id-based correlation.
 export default class extends Controller {
   static values = {
     scale: Object,
-    placement: { type: String, default: "auto right" }
+    placement: { type: String, default: "right" }
   }
 
   connect() {
     this.handle = createBsPopover(this.element, {
-      mode: "text",
-      trigger: "outsideClick",
+      trigger: "outside-click",
       placement: this.placementValue,
       html: true,
       body: this.renderBody()

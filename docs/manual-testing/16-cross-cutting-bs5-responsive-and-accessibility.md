@@ -10,12 +10,13 @@ This part is a checklist for exactly that class of regression, plus general resp
 
 ### 16.1 Popover & tooltip paint check (BS3↔BS5 trap)
 
-Every rating badge, and various icon buttons throughout the app, use BS5 popovers/tooltips (see `quepidPopover.js` / `quepidTooltip.js`).
+Every rating badge, and various icon buttons throughout the app, use BS5 popovers/tooltips (see `app/javascript/utils/bs_popover.js` / `bs_tooltip.js`).
 
 - [ ] **Steps:**
   1. In the Core Workbench, expand a query and click a document's rating badge to open its popover.
   2. Open your browser's DevTools, inspect the popover element, and check its **Computed** styles: `display`, `opacity`, `transform`, `font-size`.
-  3. Repeat for at least one tooltip (e.g., hover a sidebar icon, Part 15.1) and one other popover-driven control elsewhere in the app (e.g., a share modal's info icon, if any).
+  3. Confirm clicking the rating trigger again closes its popover; clicking inside the tip keeps it open, and clicking outside dismisses it. Repeat outside-click dismissal for Matches.
+  4. Repeat for at least one tooltip (e.g., hover a sidebar icon, Part 15.1) and one other popover-driven control elsewhere in the app (e.g., a share modal's info icon, if any).
 - **Expected:** `display` is not `none`, `opacity` is `1` (or transitioning toward it, not stuck at `0`), no unexpected `transform: scale(0)`/`translate` pushing it off-screen, and `font-size` looks proportionate to surrounding text (not collapsed to a tiny fixed px value from a legacy `small { font-size: 11px }`-style leak).
 - **Edge cases:**
   - [ ] Confirm the popover/tooltip is visible **on first click/hover**, not just after a second interaction (a common symptom of an early-layer CSS rule winning over the intended BS5 one).

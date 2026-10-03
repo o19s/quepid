@@ -3,16 +3,6 @@ import quepidSearch from "quepid_search"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { QueryCollectionStore } from "stores/query_collection_store"
 
-const deferred = () => {
-  let resolve
-  let reject
-  const promise = new Promise((res, rej) => {
-    resolve = res
-    reject = rej
-  })
-  return { promise, resolve, reject }
-}
-
 function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelected = true } = {}) {
   window.quepidSearch = quepidSearch
   quepidSearch.splainerSearch = {
@@ -28,12 +18,9 @@ function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelect
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
       get: vi.fn(() => Promise.resolve({ data: {} })),
-      promiseApi: { defer: deferred, reject: Promise.reject, resolve: Promise.resolve },
+      promiseApi: Promise,
       schedule: callback => callback(),
-      applyAsync: callback => callback(),
-      logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() },
-      reject: Promise.reject,
-      resolve: Promise.resolve
+      logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() }
     },
     domain: {
       settings: {

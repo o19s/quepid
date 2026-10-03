@@ -104,17 +104,17 @@ describe("bs_tooltip", () => {
   })
 
   it("hideTooltipsWithin hides open tooltips matching the selector", () => {
-    element.setAttribute("quepid-tooltip", "tip")
+    element.setAttribute("data-controller", "bs-tooltip")
     const instance = createBsTooltip(element, { title: "x" })
     const hideSpy = vi.spyOn(instance, "hide")
 
     hideTooltipsWithin(document.body)
     expect(hideSpy).toHaveBeenCalled()
-    expect(TOOLTIP_SELECTOR).toContain("quepid-tooltip")
+    expect(TOOLTIP_SELECTOR).toContain("bs-tooltip")
   })
 
   it("hideTooltipsWithin skips matching elements with no live tooltip instance", () => {
-    element.setAttribute("quepid-tooltip", "tip")
+    element.setAttribute("data-controller", "bs-tooltip")
     expect(() => hideTooltipsWithin(document.body)).not.toThrow()
   })
 

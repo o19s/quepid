@@ -46,9 +46,6 @@ describe("SnapshotBridgeController", () => {
       queriesSvc: {
         queryArray: vi.fn().mockReturnValue([]),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
-      },
-      $rootScope: {
-        $evalAsync: (callback) => callback()
       }
     }
     window.quepidSearch = {

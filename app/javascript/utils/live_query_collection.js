@@ -1,3 +1,13 @@
+function createSearchPromise() {
+  let resolve
+  let reject
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+  return { promise, resolve, reject }
+}
+
 /**
  * Orchestration for the live query collection boundary.
  *
@@ -17,11 +27,10 @@ export function createLiveQueryCollectionRuntime({
   markStoreError,
   setBootstrapping,
   publishState,
-  defer,
   logger = console
 }) {
   let generation = 0
-  let searchableDeferred = defer()
+  let searchableDeferred = createSearchPromise()
 
   function addQueriesFromResponse(data = {}, caseId) {
     const newQueries = []
@@ -45,7 +54,7 @@ export function createLiveQueryCollectionRuntime({
 
   function resetSearchPromise() {
     logger.debug?.("PROMISE reset...")
-    searchableDeferred = defer()
+    searchableDeferred = createSearchPromise()
   }
 
   function bootstrapQueries(caseId) {
@@ -54,7 +63,7 @@ export function createLiveQueryCollectionRuntime({
     publishState()
     beginStoreBootstrap(caseId)
 
-    const requestDeferred = defer()
+    const requestDeferred = createSearchPromise()
     searchableDeferred = requestDeferred
 
     request(caseId)

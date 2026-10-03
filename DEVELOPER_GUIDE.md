@@ -927,7 +927,7 @@ Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:com
 3. Add the listener in `connect()` and remove it in `disconnect()`, and cover both with a Vitest spec. Some specs already assert the dispatch, e.g. `share_case_core_controller.test.js` and `case_runtime.test.js`.
 4. Update the tables above.
 
-The globals `window.Stimulus`, `window.quepidWizardContracts`, Bootstrap, Sortable, and Ace are migration glue. Leave them unless one causes a bug.
+The globals `window.Stimulus`, Bootstrap, Sortable, and Ace support current browser integrations. Check their consumers before changing them; Angular compatibility globals are no longer required.
 
 ## Fonts
 

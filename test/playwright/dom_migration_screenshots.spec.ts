@@ -28,7 +28,7 @@ async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CA
 
 async function expandFirstQuery(page: import('@playwright/test').Page) {
   if ((await page.locator('search-result').count()) > 0) return;
-  const toggle = page.locator('.results-list-element li .toggleSign, .results-list-element li [ng-click*="toggle"]').first();
+  const toggle = page.locator('.results-list-element li .toggleSign').first();
   await expect(toggle).toBeVisible({ timeout: 20_000 });
   await toggle.click();
   await page.waitForSelector('search-result', { timeout: 15_000 });

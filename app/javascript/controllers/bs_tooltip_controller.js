@@ -5,7 +5,7 @@ import {
   updateBsTooltipContent
 } from "utils/bs_tooltip"
 
-/** BS5 tooltip for Rails/Stimulus pages and migrated core case tooltips. Template-backed popovers on core still use the legacy template directive. */
+/** BS5 tooltip for Rails and core case pages. */
 export default class extends Controller {
   static values = {
     title: String,

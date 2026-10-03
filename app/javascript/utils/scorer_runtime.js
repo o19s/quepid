@@ -6,26 +6,11 @@ const copyValue = (value) => {
   return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, copyValue(entry)]))
 }
 
-const promiseApiFor = (promiseApi = Promise) => ({
-  resolve: promiseApi.resolve.bind(promiseApi),
-  reject: promiseApi.reject.bind(promiseApi),
-  all: promiseApi.all.bind(promiseApi),
-  defer() {
-    let resolve
-    let reject
-    const promise = new Promise((promiseResolve, promiseReject) => {
-      resolve = promiseResolve
-      reject = promiseReject
-    })
-    return { promise, resolve, reject }
-  }
-})
-
 export function createScorer(
   data = {},
   { promiseApi = Promise, schedule, refreshRatedDocs = () => undefined } = {}
 ) {
-  const promises = promiseApiFor(promiseApi)
+  const promises = promiseApi
   const scorer = {}
   const source = { ...data }
 
@@ -172,7 +157,12 @@ export function createScorer(
 
   function runCode(query, total, originalDocs, originalBestDocs, mode, options) {
     const max = scorer.scale[scorer.scale.length - 1]
-    const deferred = promises.defer()
+    let resolveScore
+    let rejectScore
+    const scorePromise = new Promise((resolve, reject) => {
+      resolveScore = resolve
+      rejectScore = reject
+    })
     const bestDocs = originalBestDocs || []
     bestDocs.forEach((doc) => {
       if (typeof doc.getRating !== "function") doc.getRating = () => doc.rating
@@ -220,9 +210,9 @@ export function createScorer(
       query.depthOfRating = count
       scorer.depthOfRating = count
     }
-    const pass = () => deferred.resolve(100)
-    const fail = () => deferred.reject(0)
-    const setScore = (score) => deferred.resolve(score)
+    const pass = () => resolveScore(100)
+    const fail = () => rejectScore(0)
+    const setScore = (score) => resolveScore(score)
     const assert = (condition) => {
       if (!condition) fail()
     }
@@ -305,13 +295,13 @@ export function createScorer(
         // helper parameters instead of colliding with them.
         new Function(...names, `{\n${code}\n}`)(...values)
       } catch (error) {
-        deferred.reject(error)
+        rejectScore(error)
       }
     }
     if (schedule) schedule(execute)
     else if (typeof queueMicrotask === "function") queueMicrotask(execute)
     else execute()
-    return deferred.promise
+    return scorePromise
   }
 
   // Always undefined, as in the legacy ScorerFactory. Scores are not bounded

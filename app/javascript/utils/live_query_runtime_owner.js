@@ -424,9 +424,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       svc.isBootstrapping = value
     },
     publishState: publishQueryListState,
-    defer: function () {
-      return runtimeFramework.promiseApi.defer()
-    },
     logger: runtimeFramework.logger
   })
 
@@ -501,7 +498,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       runtimeFramework.schedule(callback)
     },
     reject: function (message) {
-      return runtimeFramework.reject(message)
+      return runtimeFramework.promiseApi.reject(message)
     }
   })
 
@@ -541,9 +538,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     },
     schedule: function (callback) {
       runtimeFramework.schedule(callback)
-    },
-    scheduleApply: function (callback) {
-      runtimeFramework.applyAsync(callback)
     }
   })
   liveQueryEventsRuntime.connect()
@@ -869,7 +863,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     )
 
     if (!ratedQueryParams) {
-      return runtimeFramework.resolve(null)
+      return runtimeFramework.promiseApi.resolve(null)
     }
 
     return runtimeDomain.settings

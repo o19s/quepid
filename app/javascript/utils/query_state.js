@@ -1,6 +1,6 @@
 /**
  * Query-row and query-list rules shared by the core query UI
- * and the eventual Stimulus query workspace.
+ * and the Stimulus query workspace.
  */
 
 export function querqyRuleTriggered(parsedQueryDetails) {
@@ -43,8 +43,8 @@ export function invalidateRatedDocsCache(query) {
   query.ratingsGeneration = (query.ratingsGeneration ?? 0) + 1
 }
 
-export function ratingChangedQueryId(event, legacyQueryId) {
-  return event?.detail?.queryId ?? legacyQueryId
+export function ratingChangedQueryId(event) {
+  return event?.detail?.queryId
 }
 
 export function orderedQueries(displayOrder = [], queries = {}) {

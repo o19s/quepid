@@ -14,15 +14,6 @@ function runtimeFor(overrides = {}) {
     markStoreError: vi.fn(),
     setBootstrapping: vi.fn(),
     publishState: vi.fn(),
-    defer: () => {
-      let resolve
-      let reject
-      const promise = new Promise((resolvePromise, rejectPromise) => {
-        resolve = resolvePromise
-        reject = rejectPromise
-      })
-      return { promise, resolve, reject }
-    },
     logger: { debug: vi.fn() },
     ...overrides
   })

@@ -1,11 +1,4 @@
-/**
- * Scorer catalog lifecycle.
- *
- * The custom scorer object is still supplied by the legacy factory because its
- * user-code execution contract has not moved yet. Catalog loading, default
- * selection, and case bootstrap do not need query state, so keep those
- * responsibilities here while that last factory seam is being retired.
- */
+/** Scorer loading and default selection with injected scorer construction. */
 export function createScorerCatalog({
   request,
   constructFromData,

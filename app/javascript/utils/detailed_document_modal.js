@@ -37,8 +37,7 @@ const DOCUMENT_HTML_TAGS = new Set([
 const DOCUMENT_DANGEROUS_TAGS = new Set(["IFRAME", "OBJECT", "SCRIPT", "STYLE", "TEMPLATE"])
 
 /**
- * Preserve the safe document markup that Angular's ng-bind-html rendered in
- * the legacy detailed-document view, while dropping response-controlled
+ * Preserve safe document markup while dropping response-controlled
  * attributes and executable/embed content.
  */
 export function sanitizeDocumentHtml(value) {

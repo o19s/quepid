@@ -1,28 +1,9 @@
 import { averageMaxScore } from "utils/scoring"
 
 /**
- * Dual-run shadow store for case/query score state — the first `EventTarget`-based
- * store in the case-workspace re-render plan.
- *
- * The legacy renderer still owns all rendering. `queriesSvc.scoreAll()` writes into
- * this store through its module-owned singleton.
- * so the store's output can be compared against what the page actually paints before
- * any Stimulus controller reads from it, and before `$scope` is touched. Nothing in
- * the DOM is driven by this store yet — dual-run only.
- *
- * Mirrors `queriesSvc.latestScoreInfo`'s exact shape (`{ allRated, score, queries }`)
- * verbatim; see `queriesSvc.scoreAll()`, and `queriesCtrl.js`'s `avgQuery.currentScore`,
- * which is that same object by reference. `caseScore.maxScore` is not part of that
- * shape — it's derived here via `averageMaxScore()` (average of each query's own
- * maxScore, same math as `queriesCtrl.js`'s `runScore()` computing `$scope.maxScore`,
- * but unconditional rather than gated on the case score being a plain number — see
- * `averageMaxScore()`'s own doc comment for why that gap doesn't matter today).
- * Per-query entries (`queryScore(id)`) carry `score`/`maxScore`/`text`/`numFound`
- * plus `allRated`/`countMissingRatings` — the latter two were added to
- * `queriesSvc.scoreAll()`'s `queryScores[id]` alongside this store (they already
- * existed on `scoreInfo`, from `Query.prototype.scoreOthers`, just weren't copied
- * through) so `query_unrated_badge_controller.js` has what it needs (re-render
- * mechanism step 5).
+ * Case and per-query scores published by the live query runtime.
+ * Stimulus subscribers render the score badges and graph from this store.
+ * Case maxScore is the average of the per-query maximum scores.
  */
 export class CaseScoreStore extends EventTarget {
   constructor() {
@@ -49,7 +30,7 @@ export class CaseScoreStore extends EventTarget {
   /**
    * Called by `queriesSvc.scoreAll()` with the exact object it assigns to
    * `svc.latestScoreInfo`. Replaces all query scores atomically and fires one
-   * "change" event, mirroring `scoreAll()`'s single `$scope.$emit('scoring-complete')`.
+   * "change" event followed by "scoring-complete".
    */
   setLatestScoreInfo({ allRated, score, queries }) {
     this._caseScore = { score, allRated, maxScore: averageMaxScore(queries ?? {}) }

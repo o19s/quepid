@@ -10,7 +10,6 @@ describe("live query events runtime", () => {
     const scoreAll = vi.fn().mockResolvedValue(undefined)
     const invalidateRatedDocs = vi.fn()
     const schedule = vi.fn(callback => callback())
-    const scheduleApply = vi.fn(callback => callback())
     const setScorer = vi.fn().mockResolvedValue(undefined)
     const reloadQueries = vi.fn().mockResolvedValue(undefined)
     const configureBook = vi.fn()
@@ -31,11 +30,10 @@ describe("live query events runtime", () => {
       setScorer,
       reloadQueries,
       configureBook,
-      schedule,
-      scheduleApply
+      schedule
     })
     runtime.connect()
-    return { eventTarget, scoringStore, query, scoreAll, schedule, scheduleApply, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
+    return { eventTarget, scoringStore, query, scoreAll, schedule, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
   }
 
   it("invalidates and rescoring on rating changes", () => {
@@ -59,14 +57,14 @@ describe("live query events runtime", () => {
   })
 
   it("applies a selected scorer and rescoring", async () => {
-    const { eventTarget, setScorer, scoreAll, scheduleApply } = setup()
+    const { eventTarget, setScorer, scoreAll, schedule } = setup()
 
     eventTarget.dispatchEvent(new CustomEvent("pick-scorer:selected", {
       detail: { caseId: 7, scorer: { id: 3 } }
     }))
     await Promise.resolve()
 
-    expect(scheduleApply).toHaveBeenCalledOnce()
+    expect(schedule).toHaveBeenCalledOnce()
     expect(setScorer).toHaveBeenCalledWith({ id: 3 })
     expect(scoreAll).toHaveBeenCalledOnce()
   })
