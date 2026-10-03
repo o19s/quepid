@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
+<%= render 'layouts/head_common' %>
 <title>Quepid -- Relevant Search Solved</title>
-<%= favicon_link_tag asset_path "favicon.ico" %>
 <meta name="description" content="Tired of irrelevant search results? Use Quepid to help improve the quality and relevancy of your search results.">
 <meta name="viewport" content="width=device-width">
 
 <%= stylesheet_link_tag 'core', media: 'all' %>
 <%= stylesheet_link_tag 'json-explorer', media: 'all' %>
-<%= csrf_meta_tags %>
 <%= javascript_importmap_tags 'vega_globals' %>
 <%= javascript_import_module_tag 'bootstrap_globals' %>
-
-<base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
 <body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
       data-core-bootstrap-case-toolbar-outlet="#case-actions"

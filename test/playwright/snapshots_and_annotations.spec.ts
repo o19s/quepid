@@ -24,7 +24,7 @@ async function gotoSnapshotCase(page: Page): Promise<void> {
   // Wait for `.search-feedback` ("Bootstrapping Queries" / "Updating Queries: X / Y")
   // to clear before proceeding -- see the identical wait in case_helpers.ts's
   // gotoCase() for why `state: 'hidden'` alone isn't enough (two elements share the
-  // class). Without this, clicking "Take Snapshot" before queriesSvc's state has
+  // class). Without this, clicking "Take Snapshot" before the query runtime's state has
   // actually settled can race the snapshot POST silently -- easy to miss when the
   // case was slow (live Solr always left enough slack), much easier to hit once the
   // case's search is instant (a local static/snapshot endpoint).

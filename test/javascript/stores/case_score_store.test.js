@@ -19,7 +19,7 @@ describe("CaseScoreStore", () => {
     expect(store.queryScore("1")).toBe(null)
   })
 
-  it("mirrors queriesSvc.latestScoreInfo's exact shape on setLatestScoreInfo", () => {
+  it("stores the live-query runtime's latestScoreInfo shape on setLatestScoreInfo", () => {
     store.setLatestScoreInfo({
       allRated: false,
       score: 0.75,

@@ -90,8 +90,8 @@ describe("core runtime capabilities", () => {
 
   it("publishes named capabilities without exposing a service lookup to callers", async () => {
     const services = {
-      settingsSvc: { editableSettings: vi.fn() },
-      caseTryNavSvc: { getCaseNo: vi.fn() },
+      settings: { editableSettings: vi.fn() },
+      navigation: { getCaseNo: vi.fn() },
       fieldSpecSvc: {},
       normalDocsSvc: {}
     }

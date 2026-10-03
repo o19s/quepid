@@ -3,8 +3,7 @@ import { isNotAllRated } from "utils/scoring"
 import { getCoreStores } from "utils/core_store_access"
 
 /**
- * Store-driven replacement for the expanded-results template's per-query "unrated
- * results" frog badge — the first `searchResults`/`queriesCtrl` slice.
+ * Store-driven per-query "unrated results" frog badge in the expanded results.
  *
  * Reads the core store through the shared store accessors. The bundled case
  * runtime and importmap controllers share the same store instances.

@@ -1,10 +1,7 @@
 /**
- * Score display and aggregation math extracted from the legacy score-display
- * paths and `queriesSvc.scoreAll()`'s averaging step. Framework-
- * free — no behavior change intended. Pulled out ahead of the case-workspace
- * re-render mechanism (a plain-JS store + Stimulus subscribers, see
- * the frontend cleanup migration notes § Re-render mechanism) so the display
- * rules are pinned down and unit-tested before the rendering code around them moves.
+ * Score display, color, and aggregation rules for the case page. Kept
+ * framework-free so the rules are unit-tested independently of the stores and
+ * Stimulus controllers that render them.
  */
 
 // 'zsr' ("zero search results" — no docs came back for the query) and '--' (no
@@ -69,9 +66,8 @@ export function ratingBackgroundColor({ rating, scale } = {}) {
   return { "background-color": entry ? entry.color : UNRATED_BACKGROUND_COLOR }
 }
 
-// Hue gradient from red (worst) to green (best), keyed by score rounded down
-// to the nearest 10% of maxScore. Mirrors `qscoreSvc.scoreToColor`'s lookup
-// table exactly.
+// Hue gradient from red (worst) to green (best), keyed by the 10% step of
+// maxScore that scoreToColor() computes.
 const SCORE_HUE_STEPS = {
   "-1": "hsl(0, 100%, 40%)",
   0: "hsl(5, 95%, 45%)",
@@ -87,28 +83,17 @@ const SCORE_HUE_STEPS = {
   10: "hsl(100, 90%, 35%)"
 }
 
-// Matches `qscoreSvc`'s `defaultStyle` background-color for the "no score
-// yet" ('?'/null) state.
+// Color for the "no score yet" ('?'/null) state.
 const UNSCORED_COLOR = "hsl(0, 0%, 0%, 0.5)"
 
-// Matches `qscoreSvc.scoreToColor`'s color for the "scored, nothing rated"
-// sentinels ('--'/'zsr').
+// Color for the "scored, nothing rated" sentinels ('--'/'zsr').
 const PENDING_RATING_SCORE_COLOR = "hsl(0, 0%, 91%)"
 
 /**
  * Background color for a score badge (case or query score), scaled between
- * red and green relative to `maxScore`. Mirrors `qscoreSvc.scoreToColor`'s
- * math exactly, including truncating (not rounding) the percentage before
- * dividing by 10 (`parseInt(percent, 10)`, not `Math.round`).
- *
- * Unlike `qscoreSvc.scoreToColor`, this always returns a plain color string
- * (never a `{'background-color': ...}` object) — the caller wraps it. The
- * The legacy '?' / null branch returns a style object that its callers
- * (`qscore_case_controller.js` / `qscore_query_controller.js`) then wrap in
- * a second `{'background-color': ...}`, producing a nested style object that
- * `ng-style` silently can't apply. Not reproduced here: it's an invisible
- * pre-existing bug (the "no score yet" badge briefly renders unstyled), not
- * a behavior worth preserving.
+ * red and green relative to `maxScore`. The percentage is truncated, not
+ * rounded (`parseInt(percent, 10)`), before dividing by 10; that result is
+ * then rounded to pick the step. Always returns a plain color string.
  */
 export function scoreToColor(score, maxScore) {
   if (score === "?" || score === null) {
@@ -125,23 +110,15 @@ export function scoreToColor(score, maxScore) {
 
 /**
  * Average per-query maxScore across `queryScores` (an object keyed by query
- * id, each entry shaped like `queriesSvc.scoreAll()`'s `queryScores` —
- * `{ maxScore, ... }`), floored at 1. Entries with a null/undefined maxScore
- * are excluded; an empty result set returns `NaN` — callers apply their own
- * `|| 1` fallback, matching the `max-score="maxScore || 1"` binding this
- * replaces.
+ * id, each entry `{ maxScore, ... }` as published by the live-query runtime's
+ * `scoreAll()`), floored at 1. Entries with a null/undefined maxScore are
+ * excluded; an empty result set returns `NaN`, and callers apply their own
+ * `|| 1` fallback.
  *
- * Unlike `queriesCtrl.js`'s `runScore()` (which this otherwise mirrors),
- * this runs unconditionally rather than only when the case-level score is a
- * plain number (`runScore()` guards on a numeric last score and
- * lastScore !== -1` before touching `$scope.maxScore` at all). That guard
- * doesn't need reproducing here: every current caller of `caseScore.maxScore`
- * (`scoreToColor()`) already short-circuits on a sentinel/`'?'`/null score
- * before it would ever consult maxScore, so the two behave identically in
- * practice. A future caller that uses `maxScore` without that same
- * sentinel-first branching would see a real value here where the legacy code would
- * have left `$scope.maxScore` at its prior (possibly stale/undefined) state
- * — worth re-checking this guard if one shows up.
+ * This runs whatever the case-level score is, even a sentinel ('--'/'zsr') or
+ * '?'. That is safe for today's only consumer, `scoreToColor()`, which returns
+ * early for those scores before it looks at maxScore. A new caller that uses
+ * `caseScore.maxScore` directly should handle those scores itself.
  */
 export function averageMaxScore(queryScores) {
   const maxScores = Object.values(queryScores)
@@ -158,10 +135,9 @@ export function averageMaxScore(queryScores) {
 
 /**
  * Whether a query has been scored but still has results left to rate — the
- * "hop to it" frog badge's visibility rule. Mirrors the legacy Query
- * object's `isNotAllRated()` implementation exactly: no score yet, an
- * explicit `null` score (scoring hasn't resolved),
- * or already fully rated all read as "nothing to flag".
+ * "hop to it" frog badge's visibility rule. No score yet, an explicit `null`
+ * score (scoring hasn't resolved), or already fully rated all read as
+ * "nothing to flag".
  */
 export function isNotAllRated(queryScore) {
   if (!queryScore || queryScore.score === null || queryScore.allRated) {
@@ -172,8 +148,8 @@ export function isNotAllRated(queryScore) {
 
 /**
  * Average of the numeric scores in `scores`, ignoring sentinels ('zsr', '--')
- * and nulls. Mirrors `queriesSvc.scoreAll()`'s aggregation: an empty or
- * all-sentinel set averages to '--' (a case-level "nothing rated yet" state)
+ * and nulls. Used for the case-level score (`utils/query_scoring.js`): an
+ * empty or all-sentinel set averages to '--' (a "nothing rated yet" state)
  * rather than 0 or NaN.
  */
 export function averageScore(scores) {

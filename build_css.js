@@ -44,144 +44,83 @@ function copyFileIfExists(src, dest) {
   return false;
 }
 
-function buildApplicationCSS() {
-  console.log('Building application.css...');
-  
-  const outputFile = 'app/assets/builds/application.css';
-  let output = '/* Application CSS Bundle (Bootstrap 5) */\n';
+const STYLES = 'app/assets/stylesheets';
+
+// Every bundle starts with Bootstrap 5, its icons, and Quepid's fonts.
+const BOOTSTRAP_BASE = [
+  'node_modules/bootstrap/dist/css/bootstrap.css',
+  'node_modules/bootstrap-icons/font/bootstrap-icons.css',
+  `${STYLES}/fonts.css`,
+];
+
+// Concatenates `files` in order (order matters for the cascade) into
+// app/assets/builds/<name>.css, followed by `trailer` if given.
+function writeBundle(name, title, files, trailer = '') {
+  console.log(`Building ${name}.css...`);
+
+  const outputFile = `app/assets/builds/${name}.css`;
+  let output = `/* ${title} */\n`;
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
-
-  // Bootstrap 5
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Application styles
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/signup.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/judgements.css');
-  output += '\n';
-
-  // Add the inline styles from application.css (excluding comments)
-  const appCSS = readFileIfExists('app/assets/stylesheets/application.css');
-  if (appCSS) {
-    const cleanedAppCSS = appCSS
-      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
-      .replace(/^\s*$/gm, '') // Remove empty lines
-      .trim();
-    if (cleanedAppCSS) {
-      output += cleanedAppCSS;
-    }
+  for (const file of files) {
+    output += readFileIfExists(file);
+    output += '\n';
   }
+  output += trailer;
 
   fs.writeFileSync(outputFile, output);
   const stats = fs.statSync(outputFile);
-  console.log(`application.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+  console.log(`${name}.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+}
+
+function buildApplicationCSS() {
+  // The inline rules from application.css, with comments and blank lines stripped.
+  const appCSS = readFileIfExists(`${STYLES}/application.css`)
+    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
+    .replace(/^\s*$/gm, '') // Remove empty lines
+    .trim();
+
+  writeBundle('application', 'Application CSS Bundle (Bootstrap 5)', [
+    ...BOOTSTRAP_BASE,
+    `${STYLES}/navbar-brand.css`,
+    `${STYLES}/bootstrap5-add.css`,
+    `${STYLES}/signup.css`,
+    `${STYLES}/judgements.css`,
+  ], appCSS);
 }
 
 function buildCoreCSS() {
-  console.log('Building core.css...');
-  
-  const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 5 for the core case UI) */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Bootstrap 5 base. The compat shim (loaded below) supplies BS5-vs-legacy
-  // resets, px sizing, and overrides (popover, header nav,
-  // modals, sub-results toolbar, …).
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Core application styles
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/core-additions.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/style.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/panes.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/stackedChart.css');
-  output += '\n';
-
-  // Tour/Guides
-  output += readFileIfExists('node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/tour.css');
-  output += '\n';
-
-  // Screen-specific styles
-  const screens = ['docs', 'qscore', 'qgraph'];
-  for (const screen of screens) {
-    output += readFileIfExists(`app/assets/stylesheets/${screen}.css`);
-    output += '\n';
-  }
-
-  // Other styles
-  output += readFileIfExists('app/assets/stylesheets/misc.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/animation.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/froggy.css');
-  output += '\n';
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+  writeBundle('core', 'Core CSS Bundle (Bootstrap 5 for the core case UI)', [
+    ...BOOTSTRAP_BASE,
+    // Quepid layout, then the BS5 overrides (px sizing, popovers, header nav,
+    // modals, sub-results toolbar, ...).
+    `${STYLES}/core-additions.css`,
+    `${STYLES}/navbar-brand.css`,
+    `${STYLES}/bootstrap5-compat.css`,
+    `${STYLES}/style.css`,
+    `${STYLES}/panes.css`,
+    `${STYLES}/stackedChart.css`,
+    // Tour/Guides
+    'node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css',
+    `${STYLES}/tour.css`,
+    // Screen-specific styles
+    `${STYLES}/docs.css`,
+    `${STYLES}/qscore.css`,
+    `${STYLES}/qgraph.css`,
+    // Other styles
+    `${STYLES}/misc.css`,
+    `${STYLES}/animation.css`,
+    `${STYLES}/froggy.css`,
+  ]);
 }
 
 function buildAdminCSS() {
-  console.log('Building admin.css...');
-  
-  const outputFile = 'app/assets/builds/admin.css';
-  let output = '/* Admin CSS Bundle (Bootstrap 5) */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Bootstrap 5
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Fonts
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-
-  // Bootstrap 5 additions
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
-  output += '\n';
-
-  // Admin-specific styles
-  output += readFileIfExists('app/assets/stylesheets/admin2.css');
-  output += '\n';
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`admin.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+  writeBundle('admin', 'Admin CSS Bundle (Bootstrap 5)', [
+    ...BOOTSTRAP_BASE,
+    `${STYLES}/navbar-brand.css`,
+    `${STYLES}/bootstrap5-add.css`,
+    `${STYLES}/admin2.css`,
+  ]);
 }
 
 // Standalone stylesheets linked from core.html.erb (not folded into core.css).

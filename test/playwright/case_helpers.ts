@@ -48,7 +48,8 @@ export async function gotoCase(page: Page, query: string = '', caseId: number = 
   await page.goto(`case/${caseId}${suffix}`);
   await page.waitForSelector('.results-list-element li, .modal.show', { timeout: 20_000 });
   // `.search-feedback` matches *two* elements (a "Bootstrapping Queries" div
-  // and a separate "Updating Queries: X / Y" div, both `ng-show`) -- while
+  // and a separate "Updating Queries: X / Y" div, both toggled with `d-none`
+  // by queries_list_controller.js) -- while
   // either is visible it occupies real layout space, so whether one happened
   // to still be up shifts everything below it, which no amount of
   // pixel-masking can fix (it's a layout difference, not a content one).

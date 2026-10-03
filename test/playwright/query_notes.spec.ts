@@ -5,8 +5,8 @@ import { gotoCase, expandFirstQuery } from './case_helpers';
  * Regression coverage for saving a query's Information Need / Notes when the save FAILS.
  *
  * This exists because the failure path was silently broken and no automated test noticed:
- * `queriesSvc#saveNotes` handled the rejection by *returning* the response, which resolves the
- * promise in the old async adapter, so the old query-notes controller ran its success branch on a failed save -- flashing
+ * the old client's notes save handled the rejection by *returning* the response, which resolved the
+ * promise, so the old query-notes controller ran its success branch on a failed save -- flashing
  * "Success! Your query details have been saved.", collapsing the panel, and discarding whatever
  * the user had typed. The controller's error callback was already written; it simply could never
  * fire. Found by hand via the manual-testing script (scenario 4.16), which is precisely the kind

@@ -12,12 +12,12 @@
       <div class="collapse navbar-collapse" id="coreNavbarContent">
       <ul class="navbar-nav me-auto">
         <!--
-          Begin case selector. Server-rendered (formerly HeaderCtrl). Same interaction model
+          Begin case selector. Server-rendered. Same interaction model
           (lazy-loaded Turbo Frame list, full-page link) as the Rails-page navbar's `dropdown/cases`
-          frame (`_header.html.erb`), but with `dropdown#cases_core`/`cases_core.html.erb` as the
-          core-specific twin: same list, links do a hard navigation (`turbo: false`) instead of a
-          Turbo AJAX visit, since AJAX-swapping this page's body would leave core controllers against
-          the old case - see config/routes.rb. The "(N active)" count and "Create a book"'s
+          frame (`_header.html.erb`), but loaded from `dropdown#cases_core`: same template, but its
+          links do a hard navigation (`turbo: false`) instead of a Turbo AJAX visit, since
+          AJAX-swapping this page's body would leave core controllers against the old case - see
+          DropdownController::CORE_LINK_OPTIONS. The "(N active)" count and "Create a book"'s
           case-derived query params are core-only additions that the case page showed but the Rails-page
           navbar doesn't.
         -->

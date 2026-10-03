@@ -3,8 +3,7 @@ import { Controller } from "@hotwired/stimulus"
 /**
  * Inline case-name / try-name rename in the server-rendered case header.
  *
- * Ports the behaviour that `CaseCtrl.caseName` and `CurrSettingsCtrl.tryName` provided on the
- * Core case page: double-click the name to toggle an edit form, Cancel restores the display,
+ * Double-click the case or try name to toggle an edit form, Cancel restores the display,
  * and Rename stays disabled while the field is blank or whitespace.
  *
  * The forms post to Core::CaseHeaderController and re-render the enclosing `case_header` Turbo

@@ -118,7 +118,8 @@ export function buildGeneralCaseCsv(caseData, queries) {
 /**
  * Detailed export from the live document read model. The case endpoint
  * supplies metadata and last-score state; each query contains the plain
- * document snapshots published by queriesSvc.
+ * document snapshots that the live-query runtime publishes to the documents
+ * store.
  */
 export function buildDetailedCaseCsv(caseData, queries) {
   const lastScore = caseData.last_score

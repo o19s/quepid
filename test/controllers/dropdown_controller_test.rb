@@ -27,7 +27,7 @@ class DropdownControllerTest < ActionController::TestCase
     # old case while the URL silently changed underneath it. Both `data-turbo="false"` (escapes
     # Turbo, which otherwise stays frame-navigable even with Drive off) and `target="_self"`
     # (escapes the containing Turbo Frame) are required together; either alone still leaves the
-    # old case page mounted. See app/views/dropdown/cases_core.html.erb.
+    # old case page mounted. See DropdownController::CORE_LINK_OPTIONS.
     test 'cases_core links force a hard navigation, unlike the Rails-page #cases links' do
       get :cases_core
       assert_response :success

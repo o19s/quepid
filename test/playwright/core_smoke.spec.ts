@@ -96,7 +96,6 @@ test.describe('core layout golden paths', () => {
     await expect(modal).toContainText('Find and Rate Missing Documents');
     await expect(modal.locator('[data-controller="missing-documents"]')).toHaveCount(1);
     await expect(modal.locator('textarea')).toBeVisible();
-    await expect(page.locator('[ng-controller="DocFinderCtrl"]')).toHaveCount(0);
   });
 
   test('query options saves through the Stimulus modal', async ({ page }) => {

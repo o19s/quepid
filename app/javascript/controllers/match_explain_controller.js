@@ -5,11 +5,9 @@ import { renderJsonExplorer } from "utils/json_explorer"
 import { escapeHtml } from "utils/html"
 
 /**
- * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row
- * (was the `stackedChart` directive/`HotMatchesCtrl`), the popover it opens
- * (was `matches/matches.html`, reached via the former
- * `quepidPopoverTemplate` directive) and the two modals reachable from that
- * popover (were the `debug-matches` and `expand-content` components).
+ * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row,
+ * the popover it opens, and the two modals reachable from that popover
+ * (debug matches and expanded content).
  *
  * doc.explain()/doc.hotMatchesOutOf() are still provided by splainer-search —
  * the query document store computes the plain `matchExplain` snapshot and

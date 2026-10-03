@@ -10,17 +10,14 @@ const TABS = [
 ]
 
 /**
- * "Explain Query" modal on the per-query toolbar (was the `query_explain`
- * former `$quepidModal` + `QueryExplainModalInstanceCtrl` component).
+ * "Explain Query" modal on the per-query toolbar.
  *
  * Params/Parsing tab data is read from the `queries-list` outlet when the modal
  * opens, so it reflects the query's latest search.
  * The Query Template tab needs a live network call
  * (`query.searcher.renderTemplate()`, ES/OS-only) that still runs through the
  * live searcher, so it's awaited from `queriesListOutlet.renderQueryTemplate()`.
- * Re-requested every time the tab is shown, matching the
- * deleted template's `ng-click="ctrl.renderQueryTemplate()"` on the tab
- * button itself.
+ * Re-requested every time the tab is shown.
  */
 export default class extends Controller {
   static outlets = ["queries-list"]

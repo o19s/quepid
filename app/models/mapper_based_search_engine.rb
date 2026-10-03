@@ -27,17 +27,18 @@ class MapperBasedSearchEngine
   attribute :supports_pagination, :boolean, default: false
   # The query_params key names for page size / offset (e.g. Vespa's 'hits'/'offset').
   # Deliberately no default: an engine claiming supports_pagination without naming both
-  # of these is a config bug we want to surface (queriesSvc.js's paginate() refuses to
-  # guess a key name), not silently fall back to some other engine's convention.
+  # of these is a config bug we want to surface (splainer-search's
+  # searchApiSearcherPreprocessorSvc refuses to guess a key name), not silently fall back to
+  # some other engine's convention.
   attribute :pagination_hits_param,   :string
   attribute :pagination_offset_param, :string
   # Whether "Already Rated Documents" (the Find-and-Rate-Missing-Documents modal) and
   # "Show only rated" (the queries list toggle) can look up a query's already-rated doc IDs
   # directly. Not every search API has a query syntax Quepid can use to build a "just these
   # IDs" filter generically (unlike Solr's {!terms f=id} or ES's terms query), so this
-  # defaults to false rather than assume one - queriesCtrl.js/queries.html disable "Show only
-  # rated" and explain why when false. When true, mapper_file must define a
-  # ratedDocsQueryParamsMapper(ratedIds, idField) function (queriesSvc.js's
+  # defaults to false rather than assume one - queries_list_controller.js disables "Show only
+  # rated" and explains why when false. When true, mapper_file must define a
+  # ratedDocsQueryParamsMapper(ratedIds, idField) function (query_service.js's
   # buildSearchApiRatedDocsQueryParams evaluates it, passing the case's own id field -
   # fieldSpec.id - as idField) - the actual ID-filter query syntax is the mapper's job, same
   # as numberOfResultsMapper/docsMapper above.
@@ -68,17 +69,18 @@ class MapperBasedSearchEngine
       proxy_requests:             true,
       supports_basic_auth:        false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
-      # queriesSvc.js's paginate() can widen the request by bumping offset on each click.
+      # the query runtime's paginate() can widen the request by bumping offset on each click.
       supports_pagination:        true,
       pagination_hits_param:      'hits',
       pagination_offset_param:    'offset',
       search_url:                 'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
       url_format:                 'https://<app>.<tenant>.z.vespa-app.cloud/search/',
       # hits/offset are deliberately not baked in here — they'd show up in the editable
-      # Query Sandbox as if they were part of the query. queriesSvc.js's
-      # createSearcherFromSettings() injects them at request-build time instead (using
-      # pagination_hits_param/pagination_offset_param below), the same way it already
-      # injects Solr's echoParams=all without persisting it into query_params.
+      # Query Sandbox as if they were part of the query. query_service.js's
+      # createSearcherFromSettings() passes pagination_hits_param/pagination_offset_param
+      # (below) to splainer-search, which injects them at request-build time instead - the
+      # same way query_service.js injects Solr's echoParams=all without persisting it into
+      # query_params.
       #
       # api_method: 'AUTO' lets splainer-search pick GET or POST per request, based on the
       # hydrated query's length (searchApiSearcherPreprocessorSvc.js in splainer-search) -
@@ -95,9 +97,9 @@ class MapperBasedSearchEngine
       # this schema ("where id = ..." 400s with "Field 'id' does not exist" - confirmed
       # against the live endpoint), so id_field points at movie_id instead: the schema's own
       # attribute field, which IS filterable and happens to hold the same value as the local
-      # part of that envelope id. wizardModal.js builds field_spec as "id:#{id_field}, ..."
-      # from this, so every new Vespa case picks up movie_id as its doc id automatically -
-      # queriesSvc.js passes that same id_field (as fieldSpec.id) into
+      # part of that envelope id. wizard_contracts.js's buildFieldSpec() builds field_spec as
+      # "id:#{id_field}, ..." from this, so every new Vespa case picks up movie_id as its doc
+      # id automatically - query_service.js passes that same id_field (as fieldSpec.id) into
       # ratedDocsQueryParamsMapper (mapper_file below), so it filters on whatever field a
       # given case's field_spec actually names, not a value hardcoded in the mapper.
       supports_rated_docs_lookup: true,

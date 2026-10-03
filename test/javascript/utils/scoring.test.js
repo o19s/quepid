@@ -10,9 +10,8 @@ import {
 } from "utils/scoring"
 
 /**
- * Unit contract for the score display/aggregation rules extracted from the legacy
- * `scoreDisplay` / `ratingBgStyle` filters and `queriesSvc.scoreAll()`. The
- * replacement is covered here directly.
+ * Unit contract for the score display, color, and aggregation rules in
+ * `utils/scoring`.
  */
 describe("scoring", () => {
   describe("isUnratedScore", () => {
@@ -99,7 +98,7 @@ describe("scoring", () => {
       expect(scoreToColor(100, 100)).toBe("hsl(100, 90%, 35%)")
     })
 
-    it("truncates (not rounds) the percentage before dividing by 10, matching qscoreSvc.scoreToColor", () => {
+    it("truncates (not rounds) the percentage before dividing by 10, into a 10% color bucket", () => {
       // 55/100 = 55% -> parseInt(55, 10) = 55 -> 55/10 = 5.5 -> round -> step 6
       expect(scoreToColor(55, 100)).toBe("hsl(60, 55%, 65%)")
       // 54.9/100 = 54.9% -> parseInt(54.9, 10) = 54 -> 54/10 = 5.4 -> round -> step 5
@@ -124,7 +123,7 @@ describe("scoring", () => {
       expect(averageScore(["zsr", "--", "zsr"])).toBe("--")
     })
 
-    it("excludes null (queriesSvc.scoreAll()'s 'skip this scorable' case) without diluting the average", () => {
+    it("excludes null (a scorable skipped by scoreAll()) without diluting the average", () => {
       // isUnratedScore(null) is false — null isn't a sentinel string — so the
       // numeric-type check has to do this exclusion on its own; a version of
       // averageScore built only on isUnratedScore would double-count here.
@@ -175,7 +174,7 @@ describe("scoring", () => {
       expect(averageMaxScore({ 1: { maxScore: 0.5 } })).toBe(1)
     })
 
-    it("returns NaN when no entry has a usable maxScore, matching queriesCtrl.js's runScore() leaving $scope.maxScore unset", () => {
+    it("returns NaN when no entry has a usable maxScore, so callers apply their own fallback", () => {
       expect(averageMaxScore({})).toBeNaN()
       expect(averageMaxScore({ 1: { maxScore: null } })).toBeNaN()
     })

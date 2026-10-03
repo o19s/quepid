@@ -5,27 +5,13 @@
 // `bootstrap_globals` importmap pin (see app/views/layouts/core.html.erb)
 // instead of being bundled here from npm — see config/importmap.rb for why.
 
-// SortableJS — vanilla replacement for the old jQuery UI sortable widget's
-// $.fn.sortable(). Pinned to window for the Stimulus query-list controller
-// (matches the bootstrap pattern above).
-import Sortable from 'sortablejs';
-window.Sortable = Sortable;
-
-
-import 'file-saver';
-
 // Vega for charts is loaded separately via the `vega_globals` importmap pin
 // (see app/views/layouts/core.html.erb), not through this bundle.
-
-// URI.js
-import URI from 'urijs';
-window.URI = URI;
 
 // Shepherd for tours. Both are UMD builds; under esbuild's CommonJS-like
 // module scope they resolve to their `module.exports` branch instead of
 // setting `root.Shepherd`/`root.Tether`, so legacy code (app/javascript/tour.js)
-// referencing the bare `Shepherd` global needs it pinned to window explicitly
-// (matches the URI/core-DOM pattern above).
+// referencing the bare `Shepherd` global needs it pinned to window explicitly.
 import Tether from 'tether-shepherd/dist/js/tether';
 window.Tether = Tether;
 import Shepherd from 'tether-shepherd/dist/js/shepherd';

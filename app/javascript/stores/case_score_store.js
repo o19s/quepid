@@ -28,8 +28,9 @@ export class CaseScoreStore extends EventTarget {
   }
 
   /**
-   * Called by `queriesSvc.scoreAll()` with the exact object it assigns to
-   * `svc.latestScoreInfo`. Replaces all query scores atomically and fires one
+   * Called by the live-query runtime (`utils/live_query_runtime_owner.js`)
+   * after a full `scoreAll()`, with the same object it keeps as
+   * `latestScoreInfo`. Replaces all query scores atomically and fires one
    * "change" event followed by "scoring-complete".
    */
   setLatestScoreInfo({ allRated, score, queries }) {

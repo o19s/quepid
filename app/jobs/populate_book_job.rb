@@ -3,8 +3,8 @@
 class PopulateBookJob < ApplicationJob
   queue_as :bulk_processing
 
-  # NOTE: Duplicate prevention is handled on the client side in queriesSvc.syncToBook
-  # which maintains a cache of already-synced query-doc pairs and only sends new ones.
+  # NOTE: Duplicate prevention is handled on the client side in utils/book_sync.js, which
+  # maintains a cache of already-synced query-doc pairs and only sends new ones.
   # Queries are batched in groups of 100 for efficiency.
   #
   # The client-side cache is reset on page reload though, so a case reloaded

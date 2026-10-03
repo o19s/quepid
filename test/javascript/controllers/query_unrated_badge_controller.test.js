@@ -4,11 +4,8 @@ import { CaseScoreStore } from "stores/case_score_store"
 import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
 
 /**
- * First `searchResults`/`queriesCtrl` slice (§ Re-render mechanism, step 5) —
- * replaces the legacy `SearchResultsCtrl`'s
- * `query.isNotAllRated()` "unrated results" frog badge in `searchResults.html`,
- * following the same store-subscriber pattern step 4 used for the qscore
- * badges (`qscore_query_controller.test.js`).
+ * Per-query "unrated results" frog badge, driven by the score store. Follows the
+ * same store-subscriber pattern as the qscore badges (`qscore_query_controller.test.js`).
  */
 function buildController(element, { queryId = "1" } = {}) {
   const controller = Object.create(QueryUnratedBadgeController.prototype)

@@ -10,12 +10,12 @@ import { Controller } from "@hotwired/stimulus"
  * It also handles the other direction: the new-case wizard can rename through the case runtime,
  * and the server-rendered header must be refreshed.
  *
- * Mounted on the always-present `#case-actions` wrapper rather than the `ng-if` gated toolbar
- * inside it, so a rename is never missed for want of a listener.
+ * Mounted on the `#case-actions` wrapper, which holds the `actions` target that stays hidden
+ * until the case runtime is ready (`showActions`).
  *
  * Note what this deliberately does NOT do: copy the case name onto the toolbar's modal triggers.
  * Those read it live from the header via `utils/case_header`, so there are no duplicates to keep
- * in step and nothing to repair when the toolbar is rebuilt.
+ * in step.
  */
 const HEADER_FRAME_ID = "case_header"
 const HEADER_META_SELECTOR = "[data-case-header-case-no]"

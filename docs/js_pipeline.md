@@ -24,7 +24,7 @@ All defined in [esbuild.config.js](../esbuild.config.js):
 | Name | Entry | Output | Purpose |
 |------|-------|--------|---------|
 | `core-case` | `app/javascript/core_stimulus.js` | `core_case.js` | Case page: registers only the Stimulus controllers the case layout renders, plus runtime modules |
-| `core-vendor` | `app/javascript/core_vendor.js` | `core_vendor.js` | Third-party code exposed as `window` globals (Ace, Sortable, Shepherd/Tether, URI.js, file-saver, splainer-search) |
+| `core-vendor` | `app/javascript/core_vendor.js` | `core_vendor.js` | Third-party code that legacy scripts need as `window` globals (Shepherd/Tether for `tour.js`) |
 | `analytics` | `app/javascript/analytics.js` | `analytics.js` | Analytics pages |
 
 Source files are shared with the importmap, so **imports in shared code must be bare names** (`utils/flash`, `controllers/application`). The `core-case` and `core-vendor` bundles teach esbuild how to resolve those names through the `alias` maps in `esbuild.config.js`, and the importmap does the same in the browser through `config/importmap.rb`.
@@ -38,7 +38,7 @@ Top-level modules (for example `core_runtime.js`) and other directories (for exa
 For a new npm package:
 
 - **Rails pages:** `bin/importmap pin <package>`, which adds a pin to `config/importmap.rb`.
-- **Case page:** import it from `core_vendor.js` (and assign it to `window` if legacy code needs the global), then rebuild.
+- **Case page:** import it directly in the module that uses it; esbuild bundles it into `core_case.js`. Add it to `core_vendor.js` only if legacy code needs a `window` global. Rebuild either way.
 
 ## Commands
 

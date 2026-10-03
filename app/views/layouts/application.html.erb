@@ -4,14 +4,11 @@
   <%= yield :debug_info %>
 <% end %>
 <head>
-  <meta charset="utf-8"/>
+  <%= render 'layouts/head_common' %>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
   <%= action_cable_meta_tag %>
-  <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
-
-  <%= favicon_link_tag asset_path "favicon.ico" %>
 
 
 <% if flash[:unfurl] %>
@@ -66,7 +63,6 @@
 
 
   <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
-  <%= csrf_meta_tags %>
 
   <%= javascript_importmap_tags 'application_modern' %>
   <%= debugbar_head  if defined? Debugbar %>

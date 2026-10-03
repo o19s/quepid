@@ -21,15 +21,14 @@ import { getCoreCapabilities } from "utils/core_capability_access"
  * preserves the bundled singleton while the runtimes are built separately.
  *
  * Colors relative to `caseScore.maxScore`, the average of each live query's own
- * maxScore (`CaseScoreStore` derives it via `averageMaxScore()`), mirroring
- * `queriesCtrl.js`'s `runScore()` computing `$scope.maxScore` the same way for the
- * old `max-score="maxScore || 1"` binding.
+ * maxScore (`CaseScoreStore` derives it via `averageMaxScore()`), falling back to 1
+ * when no query has a usable maxScore.
  *
  * The score label (the scorer's name) isn't part of the score store — it comes from
  * the case's scorer setting, which `pick-scorer-core` can change mid-session. It
  * starts from the server-rendered value and updates on `pick-scorer:selected`
  * (dispatched by `pick_scorer_core_controller.js` after saving), the same event
- * `queriesSvc` listens for to rescore with the new scorer.
+ * `utils/live_query_events.js` listens for to rescore with the new scorer.
  */
 export default class extends Controller {
   static targets = ["value", "label"]

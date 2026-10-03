@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import CaseRenameController from "controllers/case_rename_controller"
 
 /**
- * Contracts carried over from the former header: the former `CaseCtrl.caseName` /
- * `caseNameEditModeToggle` and `CurrSettingsCtrl.tryName` / `tryNameEditModeToggle` in
- * app/assets/javascripts/controllers/case.js and currSettings.js.
+ * Inline case-name and try-name rename: edit-mode toggling, cancel, and blank-name guarding.
  *
  * Not covered here, because it is Turbo's job rather than the controller's: the form POST and
  * the `case_header` frame re-render. Those are exercised by the Rails controller test and by

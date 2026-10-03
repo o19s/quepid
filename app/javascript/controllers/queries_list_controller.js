@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import Sortable from "sortablejs"
 import { postJson } from "api/json"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
@@ -201,9 +202,9 @@ export default class extends Controller {
   }
 
   setupSortable() {
-    if (!this.hasListTarget || !window.Sortable) return
+    if (!this.hasListTarget) return
 
-    this.sortable = window.Sortable.create(this.listTarget, {
+    this.sortable = Sortable.create(this.listTarget, {
       animation: 150,
       direction: "vertical",
       filter: ".unsortable",

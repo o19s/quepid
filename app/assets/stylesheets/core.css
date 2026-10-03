@@ -1,34 +1,5 @@
 /*
- * Core case CSS manifest (used by build_css.sh).
- * Former Sprockets directives converted to informational comments only.
- */
- 
- /*
- * Core case: Bootstrap 5 from npm plus Quepid sheets (see build_css.js buildCoreCSS()).
- *
- * Shared Bootstrap Icons
- * include bootstrap-icons/font/bootstrap-icons
- *
- * include fonts.css
- * include core-additions.css
- * include navbar-brand.css
- * include bootstrap5-compat.css
- *
- * include style.css
- * include panes.css
- * include stackedChart.css
- *
- * Tour/Guides
- * include tether-shepherd/dist/css/shepherd-theme-arrows.css
- * include tour.css
- *
- * Screens
- * include docs.css
- * include qscore.css
- * include qgraph.css
- *
- * Other
- * include misc.css
- * include animation.css
- * include froggy.css
+ * The core case CSS bundle (app/assets/builds/core.css) is assembled by
+ * build_css.js's buildCoreCSS(), which lists the files it includes and their
+ * order. The build does not read this file.
  */

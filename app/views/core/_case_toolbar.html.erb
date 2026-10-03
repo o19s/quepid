@@ -10,16 +10,14 @@
 
   The case *name* is deliberately absent from these triggers. Each modal reads it live from the
   header through `utils/case_header` when it opens, so a rename needs nothing copied or resynced
-  here - which also means an `ng-if` rebuild of this toolbar cannot reinstate a stale name.
+  here.
 
   Live query services remain behind the explicit core bootstrap boundary.
 %>
 <%#
-  `case-toolbar` is mounted out here rather than on the gated div below, so it is never torn
-  down: `ng-if` destroys and re-creates its contents, and a rename that lands while the toolbar
-  is detached would otherwise find no listener and leave the header showing the old name.
-  Mounting it on the always-present wrapper also lets it re-apply the current name on connect,
-  which matters because an `ng-if` re-create re-inserts the original server-rendered attributes.
+  `case-toolbar` is mounted on this wrapper so that it owns the hidden `actions` div below and
+  can un-hide it once the case runtime is ready (`showActions`). Its document-level rename,
+  scorer and header-stale listeners are live from first paint, before the actions are shown.
 %>
 <div
   id="case-actions"
@@ -30,14 +28,13 @@
   data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
 >
   <%#
-    The visibility gate is not client data binding - the attributes below are all server
-    rendered. It gates *visibility* only, and it has to stay until <diff> and the remaining
-    the snapshot/diff/export flows stop depending on live queriesSvc state.
+    The `hidden` gate is not client data binding - the attributes below are all server
+    rendered. It gates *visibility* only, and it has to stay until the snapshot, diff and export
+    flows stop depending on the client-side query runtime having loaded.
 
     Without it the toolbar is clickable from the first paint, roughly 1.5s before the case runtime has
     bootstrapped the case. "Create snapshot" clicked in that window posts with no query state
-    and hangs on "Snapshot Being Created" forever. The old client hid the whole toolbar until the case
-    loaded, so this also keeps the surface behavior stable.
+    and hangs on "Snapshot Being Created" forever.
   %>
   <div class="col-sm-12" data-case-toolbar-target="actions" hidden>
     <ul class="list-inline">

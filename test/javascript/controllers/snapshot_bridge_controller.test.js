@@ -43,7 +43,7 @@ describe("SnapshotBridgeController", () => {
         getDoc: vi.fn()
       },
       normalDocsSvc: { explainDoc: vi.fn() },
-      queriesSvc: {
+      queries: {
         queryArray: vi.fn().mockReturnValue([]),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
@@ -52,8 +52,8 @@ describe("SnapshotBridgeController", () => {
       docCache: services.docCache,
       snapshotRegistry: {},
       queryCapabilities: {
-        refreshAllDiffs: services.queriesSvc.refreshAllDiffs,
-        getQueryArray: services.queriesSvc.queryArray
+        refreshAllDiffs: services.queries.refreshAllDiffs,
+        getQueryArray: services.queries.queryArray
       }
     }
     window.quepidStore = {
@@ -77,7 +77,7 @@ describe("SnapshotBridgeController", () => {
     await controller.clear()
 
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
-    expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
+    expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
   it("applies selections while keeping refresh and scoring in the adapter", async () => {
@@ -89,7 +89,7 @@ describe("SnapshotBridgeController", () => {
       registry: window.quepidSearch?.snapshotRegistry
     }))
     expect(window.quepidStore.diff.enable).toHaveBeenCalledWith(["7"])
-    expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
+    expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
   it("deletes snapshots and refreshes comparisons inside the adapter", async () => {
@@ -98,7 +98,7 @@ describe("SnapshotBridgeController", () => {
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
     expect(window.quepidSearch.snapshotRegistry["7"]).toBeUndefined()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
-    expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
+    expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
   it("returns the current selections", () => {
@@ -107,11 +107,11 @@ describe("SnapshotBridgeController", () => {
 
   it.each(["apply", "delete"])("rejects %s without a snapshots URL", async (command) => {
     await expect(controller[command]({ selections: ["7"], snapshotId: "7" })).rejects.toThrow("Snapshot comparison services are not available")
-    expect(services.queriesSvc.refreshAllDiffs).not.toHaveBeenCalled()
+    expect(services.queries.refreshAllDiffs).not.toHaveBeenCalled()
   })
 
   it("rejects a failed refresh so the caller can report it", async () => {
-    services.queriesSvc.refreshAllDiffs.mockRejectedValue(new Error("refresh failed"))
+    services.queries.refreshAllDiffs.mockRejectedValue(new Error("refresh failed"))
 
     await expect(controller.clear()).rejects.toThrow("refresh failed")
   })
@@ -202,7 +202,7 @@ describe("SnapshotBridgeController", () => {
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: expect.stringContaining('"name":"new snapshot"')
     }))
-    expect(services.queriesSvc.queryArray).toHaveBeenCalledOnce()
+    expect(services.queries.queryArray).toHaveBeenCalledOnce()
   })
 
   it("refuses to snapshot a different case", async () => {
