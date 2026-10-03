@@ -26,11 +26,6 @@ test('core event actions deliver once and follow controller reconnects', async (
       { selector: '[data-controller="qscore-case"]', id: 'qscore-case', method: 'handleScorerSelected', event: 'pick-scorer:selected' },
       { selector: '#shareCaseModal', id: 'share-case-core', method: 'openFromExternal', event: 'quepid:open-share-case-core' },
       { selector: '#wizardModal', id: 'wizard', method: 'open', event: 'wizard:open' },
-      { selector: '[data-controller~="snapshot-bridge"]', id: 'snapshot-bridge', method: 'selectionRequest', event: 'diff:selection-request' },
-      { selector: '[data-controller~="snapshot-bridge"]', id: 'snapshot-bridge', method: 'apply', event: 'diff:apply' },
-      { selector: '[data-controller~="snapshot-bridge"]', id: 'snapshot-bridge', method: 'clear', event: 'diff:clear' },
-      { selector: '[data-controller~="snapshot-bridge"]', id: 'snapshot-bridge', method: 'delete', event: 'diff:delete' },
-      { selector: '[data-controller~="snapshot-bridge"]', id: 'snapshot-bridge', method: 'create', event: 'take-snapshot:create' },
       { selector: '[data-controller="pane"]', id: 'pane', method: 'toggle', event: 'toggleEast' },
       { selector: '[data-controller="pane"]', id: 'pane', method: 'resize', event: 'resize' },
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleRating', event: 'rating-popover:rate' },
@@ -51,8 +46,6 @@ test('core event actions deliver once and follow controller reconnects', async (
     ].map(probe => {
       const element = document.querySelector(probe.selector)!;
       const controller = app.getControllerForElementAndIdentifier(element, probe.id);
-      // Rehydration can replace query rows; keep the lifecycle probe's DOM stable.
-      if (probe.id === 'snapshot-bridge') controller.bootstrapSnapshots = async () => {};
       const state = { ...probe, element, controller, count: 0, originalControllers: element.getAttribute("data-controller") };
       const previous = controller[probe.method];
       controller[probe.method] = (event: Event) => {
@@ -77,7 +70,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     }
     return probes.map((probe: any) => probe.count);
   });
-  expect(await dispatch()).toEqual(Array(34).fill(1));
+  expect(await dispatch()).toEqual(Array(29).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.element.getAttribute('data-controller').split(' ').filter((id: string) => id !== probe.id).join(' '));
@@ -87,7 +80,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.every((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id));
   })).toBe(true);
-  expect(await dispatch()).toEqual(Array(34).fill(1));
+  expect(await dispatch()).toEqual(Array(29).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.originalControllers);
@@ -97,7 +90,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.filter((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id)).map((probe: any) => ({ id: probe.id, event: probe.event, attached: probe.element.isConnected }));
   })).toEqual([]);
-  expect(await dispatch()).toEqual(Array(34).fill(2));
+  expect(await dispatch()).toEqual(Array(29).fill(2));
 });
 
 test('generated result and match-explain controls route through declared actions', async ({ page }) => {

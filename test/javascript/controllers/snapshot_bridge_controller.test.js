@@ -76,23 +76,15 @@ describe("SnapshotBridgeController", () => {
     vi.restoreAllMocks()
   })
 
-  it("clears comparisons and completes through the event callback", async () => {
-    const done = vi.fn()
-
-    controller.clear({ detail: { done } })
-    await vi.waitFor(() => expect(window.quepidStore.diff.disable).toHaveBeenCalled())
+  it("clears comparisons and resolves once diffs refresh", async () => {
+    await controller.clear()
 
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce()
-    expect(done).toHaveBeenCalledWith(null)
   })
 
   it("applies selections while keeping refresh and scoring in the adapter", async () => {
-    const done = vi.fn()
-
-    controller.apply({ detail: { selections: ["7"], snapshotsUrl: "api/cases/1/snapshots", done } })
-    await vi.waitFor(() => expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce())
-    await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
+    await controller.apply({ selections: ["7"], snapshotsUrl: "api/cases/1/snapshots" })
 
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
     expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
@@ -104,11 +96,7 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("deletes snapshots and refreshes comparisons inside the adapter", async () => {
-    const done = vi.fn()
-
-    controller.delete({ detail: { snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots", done } })
-    await vi.waitFor(() => expect(services.queriesSvc.refreshAllDiffs).toHaveBeenCalledOnce())
-    await vi.waitFor(() => expect(done).toHaveBeenCalledWith(null))
+    await controller.delete({ snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots" })
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
     expect(window.quepidSearch.snapshotRegistry["7"]).toBeUndefined()
@@ -117,11 +105,18 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("returns the current selections", () => {
-    const done = vi.fn()
+    expect(controller.currentSelections()).toEqual(["7"])
+  })
 
-    controller.selectionRequest({ detail: { done } })
+  it.each(["apply", "delete"])("rejects %s without a snapshots URL", async (command) => {
+    await expect(controller[command]({ selections: ["7"], snapshotId: "7" })).rejects.toThrow("Snapshot comparison services are not available")
+    expect(services.queriesSvc.refreshAllDiffs).not.toHaveBeenCalled()
+  })
 
-    expect(done).toHaveBeenCalledWith(["7"])
+  it("rejects a failed refresh so the caller can report it", async () => {
+    services.queriesSvc.refreshAllDiffs.mockRejectedValue(new Error("refresh failed"))
+
+    await expect(controller.clear()).rejects.toThrow("refresh failed")
   })
 
   it("uses the snapshot-scoped cache for static engines", async () => {
@@ -178,7 +173,6 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("creates a snapshot from the live query collection", async () => {
-    const done = vi.fn()
     window.quepidSearch.caseRuntime = {
       snapshots: {
         capability: {
@@ -204,9 +198,7 @@ describe("SnapshotBridgeController", () => {
       json: vi.fn(async () => null).mockResolvedValue({ id: 9 })
     })
 
-    await controller.create({
-      detail: { caseId: 1, name: "new snapshot", recordDocumentFields: true, done }
-    })
+    await controller.create({ caseId: 1, name: "new snapshot", recordDocumentFields: true })
 
     expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots", expect.objectContaining({
       method: "POST",
@@ -214,6 +206,17 @@ describe("SnapshotBridgeController", () => {
       body: expect.stringContaining('"name":"new snapshot"')
     }))
     expect(services.queriesSvc.queryArray).toHaveBeenCalledOnce()
-    expect(done).toHaveBeenCalledWith(null)
+  })
+
+  it("refuses to snapshot a different case", async () => {
+    window.quepidSearch.caseRuntime = {
+      snapshots: {
+        capability: { navigation: { caseNo: () => 1 } },
+        docCache: services.docCache
+      }
+    }
+
+    await expect(controller.create({ caseId: 2, name: "other", recordDocumentFields: false })).rejects.toThrow("case mismatch")
+    expect(api.apiFetch).not.toHaveBeenCalled()
   })
 })

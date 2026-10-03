@@ -1,6 +1,5 @@
-<%# Core case toolbar — take snapshot. Collects name/options then dispatches
-    `take-snapshot:create` to the Stimulus snapshot bridge for the live query
-    payload. %>
+<%# Core case toolbar — take snapshot. Collects name/options then asks the
+    `snapshot-bridge` outlet (on <body>) to build the live query payload. %>
 <% modal_footer = capture do %>
   <button type="button" class="btn btn-primary"
           data-take-snapshot-core-target="submitButton"
@@ -49,7 +48,8 @@
                                  data: {
                                    controller: "take-snapshot-core",
                                    take_snapshot_core_engine_labels_value: SearchEngine::LABELS,
-                                   action: "show.bs.modal->take-snapshot-core#open"
+                                   action: "show.bs.modal->take-snapshot-core#open",
+                                   take_snapshot_core_snapshot_bridge_outlet: "body"
                                  },
                                  title_data: { take_snapshot_core_target: "title" },
                                  footer: modal_footer,

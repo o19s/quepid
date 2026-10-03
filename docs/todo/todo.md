@@ -91,7 +91,10 @@ runtime graph, so they have no unit coverage (StrykerJS: the file scores ~17%,
 almost all of it wiring that is covered elsewhere):
 
 - `createDocList` — builds the user-facing "ID field missing" / "ID shared with
-  another doc" errors and the placeholder ids for those docs.
+  another doc" errors and the placeholder ids for those docs. It interpolates
+  user-set `fieldSpec.id` into error HTML, relying on the result renderer
+  to sanitize it. Return structured error data or escape the field ID at the
+  source so safety does not depend on a distant rendering step.
 - `documentUrlFor` (inside `publishQueryDocuments`) — injects
   `basicAuthCredential` into document links and prefixes the proxy URL when
   `proxyRequests` is on.
@@ -104,6 +107,155 @@ arguments (`normalDocsSvc.createNormalDoc`, `proxyUrlFor`, `showOnlyRated`), hav
 the owner call it, and add a Vitest spec. Re-run
 `yarn test:mutation --mutate "app/javascript/utils/live_query_read_models.js"`
 to confirm the new tests kill its mutants.
+
+---
+
+## [MIGRATION-FOLLOWUP] JavaScript defects and cleanup
+
+These items were rechecked against the current source when consolidating the
+sampled JavaScript review. They are source findings, not live browser
+reproductions. The marker denotes related frontend cleanup; it does not establish
+that a defect was introduced by AngularJS removal. P2 items are concrete defects
+or near-term cleanup; P3 items are opportunistic.
+
+### [MIGRATION-FOLLOWUP] P2 — Team-member autocomplete responses race
+
+`app/javascript/controllers/team_member_autocomplete_controller.js` debounces
+input but does not cancel in-flight requests. A slow response for an older query
+can replace newer suggestions, including after input falls below the minimum
+length. Abort the previous request on new input and on disconnect, or reject
+stale responses by request identity. Ensure an aborted request cannot hide the
+new request's loading state or suggestions.
+
+### [MIGRATION-FOLLOWUP] P2 — Pane polling survives disconnect
+
+`app/javascript/controllers/pane_controller.js#refreshElements` retries every
+200ms while the container has zero width. `disconnect` releases dragging but
+does not cancel that timer; a hidden, detached pane can poll indefinitely and
+reattach its mouseup listener. Track and clear the retry on disconnect, or use a
+lifecycle-managed observer. Cover disconnect while hidden.
+
+### [MIGRATION-FOLLOWUP] P3 — Wizard readiness and tour timers survive disconnect
+
+`app/javascript/controllers/wizard_controller.js#loadWizard` polls for
+capabilities up to 100 times at 100ms intervals. The readiness retry and the
+1500ms tour-start timeout have no disconnect cleanup. Prefer the existing
+`core-bootstrap:ready` event or a ready promise for capability initialization,
+and cancel outstanding tour/readiness work when the controller disconnects.
+
+### [MIGRATION-FOLLOWUP] P2 — Mapper wizard assumes editors initialize in 500ms
+
+`app/javascript/controllers/mapper_wizard_controller.js#connect` schedules
+`captureEditors` after a fixed 500ms delay; later actions recapture editors in
+case they were not ready. Replace the sleep with an editor-ready event or
+promise and prevent initialization work after disconnect.
+
+### [MIGRATION-FOLLOWUP] P2 — Export snapshot-list failures are invisible
+
+`app/javascript/controllers/export_case_core_controller.js#_loadSnapshots` now
+uses `getJson`, but its catch returns silently for `HttpError`; other failures
+are only logged. Failed loading leaves empty snapshot selects with no visible
+explanation. Show an error/status and preserve the current-case guard so a
+stale request cannot report an error in another case's modal.
+
+### [MIGRATION-FOLLOWUP] P3 — Live-query listeners have no teardown
+
+The `case-book:associated` document listener inside
+`app/javascript/utils/live_query_runtime_owner.js` is installed on each factory
+call without removal. Its case reload promise also has no rejection handler.
+`app/javascript/utils/live_query_events.js#connect` installs five listeners
+without a disconnect method or duplicate-connect guard. Add explicit lifecycle
+teardown/idempotent connection and handle the reload rejection. Test repeated
+connect/disconnect and failed reloads.
+
+### [MIGRATION-FOLLOWUP] P3 — Activity URLs assume an existing query string
+
+`app/javascript/controllers/user_activity_controller.js#fetchData` appends
+`&start=...&end=...` to `urlValue`, which fails for a URL without `?`. Use URL
+search parameters with an explicit base for relative URLs. The catch also
+returns an empty array for every failure; distinguish failed loading from a
+successful response with no activity.
+
+### [MIGRATION-FOLLOWUP] P2 — Consolidate the HTML sanitizers
+
+`sanitizeHtml` in `app/javascript/controllers/search_result_controller.js` and
+`sanitizeDocumentHtml` in `app/javascript/utils/detailed_document_modal.js`
+duplicate DOM walking, attribute stripping, and link-protocol filtering with
+different allow-lists. `search_results_controller.js` also imports the sanitizer
+from another controller. Move sanitizing into a shared utility with explicit
+per-surface policies, or use DOMPurify with separate configurations. Preserve
+both surfaces' allowed markup and test unsafe attributes/protocols.
+
+### [MIGRATION-FOLLOWUP] P2 — Finish shared JSON helper adoption in runtimes
+
+The controller examples from the old review (`user_activity` and export
+snapshot loading) already use `getJson`. Remaining manual JSON request handling
+exists in `app/javascript/utils/case_runtime.js`, `settings_runtime.js`,
+`user_runtime.js`, `book_sync.js`, and `snapshot_import.js`. Use `api/json.js`
+where the response is JSON, preserving injected request seams, error contracts,
+and partial-import behavior. Keep blob/download and other non-JSON requests on
+`apiFetch`.
+
+### [MIGRATION-FOLLOWUP] P3 — Reuse CSRF token lookup for destructive forms
+
+`app/javascript/utils/destructive_form.js` reads the CSRF meta tag itself.
+Import `getCsrfToken` from `api/fetch.js` so token lookup has one implementation.
+
+### [MIGRATION-FOLLOWUP] P3 — Simplify repeated modal and case-identity plumbing
+
+Several core modal subclasses still specialize submit/busy handling despite
+`core_modal_controller_base.js` providing shared helpers. Consolidate only
+identical behavior when touching those controllers; keep specialized state and
+intentionally different redirect delays. Repeated numeric case-ID comparisons
+in controllers and `live_query_events.js` are also candidates for a small shared
+predicate. Leave the deferred `setProgress` copies noted above alone.
+
+### [MIGRATION-FOLLOWUP] P2 — Reduce live-query owner indirection incrementally
+
+`app/javascript/utils/live_query_runtime_owner.js` still builds a nested
+`liveQueryServices` graph of forwarding wrappers, with closures depending on
+later-initialized runtime objects. It retains `promiseApi`/`defer`, an empty
+`onDirty`, and hard-coded `isSortingEnabled: false`. Simplify wrappers and
+obsolete compatibility seams behind existing tests; preserve method binding.
+Start with the read-model extraction already listed above, rather than a
+large runtime rewrite.
+
+### [MIGRATION-FOLLOWUP] P3 — Document shared event names and payloads
+
+Custom event producers and consumers use bare string names with mixed prefixes
+across controllers and runtimes. Centralize names and payload JSDoc where this
+improves producer/consumer consistency. Coordinate with the deferred outlet
+work in `docs/stimulus_turbo_retrofit.md`; preserve public event contracts and
+Stimulus `data-action` emitters rather than renaming events wholesale.
+
+### [MIGRATION-FOLLOWUP] P3 — Move static generated UI structure into ERB
+
+`app/javascript/controllers/queries_list_controller.js`,
+`search_results_controller.js`, and `annotations_controller.js` still build
+substantial static structure through `innerHTML`. Render static shells or
+`<template>` elements in ERB and keep client-side repeated data/state in JS.
+Preserve escaping and per-surface behavior; do not move browser-computed search
+results or scores to the server.
+
+### [MIGRATION-FOLLOWUP] P3 — Audit remaining frontend globals
+
+`window.Stimulus` (`controllers/application.js`), `window.CodeMirror`
+(`modules/editor.js`), and `window.quepidWizardContracts` (`core_stimulus.js`)
+remain global compatibility seams. Identify consumers before replacing them
+with imports or explicit dependencies; retain any supported external contract.
+
+### [MIGRATION-FOLLOWUP] P3 — Replace native invite alerts
+
+`app/javascript/controllers/invite_controller.js` uses native `alert` for a
+missing invitation link and clipboard failure. Use the application's status or
+flash UI so failures are consistent with other copy controls.
+
+### [MIGRATION-FOLLOWUP] P3 — Simplify query-parameter warnings
+
+`app/javascript/utils/tune_relevance.js#queryParamsWarning` creates a new
+`RegExp` for each fixed typo on every call and returns HTML. Precompile the
+patterns or use equivalent string matching, and return structured warning data
+so rendering owns markup. Preserve the existing typo matching and escaping.
 
 ---
 

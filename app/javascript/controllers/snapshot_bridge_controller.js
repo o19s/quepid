@@ -16,6 +16,10 @@ import coreFlash from "utils/core_flash"
  * Stimulus-owned. The live Query model and snapshot scoring remain in the
  * live-query runtime, so this controller is the explicit boundary between
  * those two representations.
+ *
+ * `diff-core` and `take-snapshot-core` reach it as the `snapshot-bridge`
+ * outlet (it sits on <body>). Its commands return promises that reject on
+ * failure.
  */
 export default class extends Controller {
   connect() {
@@ -97,84 +101,46 @@ export default class extends Controller {
     }
   }
 
-  async create(event) {
-    const detail = event.detail || {}
+  async create({ caseId, name, recordDocumentFields }) {
     const services = await getSnapshotCapabilities()
-    const caseNo = Number(detail.caseId)
+    if (Number(caseId) !== Number(services.capability.navigation.caseNo())) throw new Error("case mismatch")
 
-    if (caseNo !== Number(services.capability.navigation.caseNo())) {
-      detail.done?.("case mismatch")
-      return
-    }
-
-    try {
-      const payload = buildSnapshotPayload(
-        detail.name,
-        detail.recordDocumentFields,
-        getCoreCapabilities().queryCapabilities.getQueryArray()
-      )
-      const snapshot = await postJson(`api/cases/${caseNo}/snapshots`, payload)
-      await this.registerSnapshots([snapshot])
-      coreFlash.show("success", "Snapshot created successfully.")
-      detail.done?.(null)
-    } catch (error) {
-      detail.done?.(error?.message || error)
-    }
+    const payload = buildSnapshotPayload(
+      name,
+      recordDocumentFields,
+      getCoreCapabilities().queryCapabilities.getQueryArray()
+    )
+    const snapshot = await postJson(`api/cases/${caseId}/snapshots`, payload)
+    await this.registerSnapshots([snapshot])
+    coreFlash.show("success", "Snapshot created successfully.")
   }
 
-  selectionRequest(event) {
-    event.detail?.done?.(this.diffStore().selections())
+  currentSelections() {
+    return this.diffStore().selections()
   }
 
-  async apply(event) {
-    const detail = event.detail || {}
-    const selections = detail.selections || []
+  async apply({ selections = [], snapshotsUrl }) {
+    if (!snapshotsUrl) throw new Error("Snapshot comparison services are not available")
 
-    if (!detail.snapshotsUrl) {
-      detail.done?.("Snapshot comparison services are not available")
-      return
-    }
-
-    try {
-      const [...payloads] = await Promise.all([
-        ...selections.map((snapshotId) => fetchSnapshot(`${detail.snapshotsUrl}/${encodeURIComponent(snapshotId)}`))
-      ])
-      await this.registerSnapshots(payloads)
-      this.diffStore().enable(selections)
-      await this.refreshAllDiffs()
-      detail.done?.(null)
-    } catch (error) {
-      detail.done?.(error)
-    }
+    const payloads = await Promise.all(
+      selections.map((snapshotId) => fetchSnapshot(`${snapshotsUrl}/${encodeURIComponent(snapshotId)}`))
+    )
+    await this.registerSnapshots(payloads)
+    this.diffStore().enable(selections)
+    await this.refreshAllDiffs()
   }
 
-  async clear(event) {
-    const detail = event.detail || {}
-    try {
-      this.diffStore().disable()
-      await this.refreshAllDiffs()
-      detail.done?.(null)
-    } catch (error) {
-      detail.done?.(error)
-    }
+  async clear() {
+    this.diffStore().disable()
+    await this.refreshAllDiffs()
   }
 
-  async delete(event) {
-    const detail = event.detail || {}
-    if (!detail.snapshotsUrl) {
-      detail.done?.("Snapshot comparison services are not available")
-      return
-    }
+  async delete({ snapshotId, snapshotsUrl }) {
+    if (!snapshotsUrl) throw new Error("Snapshot comparison services are not available")
 
-    try {
-      await deleteSnapshot(detail.snapshotsUrl, detail.snapshotId)
-      const registry = this.snapshotRegistry()
-      delete registry[String(detail.snapshotId)]
-      this.diffStore().disable()
-      await this.refreshAllDiffs()
-      detail.done?.(null)
-    } catch (error) {
-      detail.done?.(error)
-    }
+    await deleteSnapshot(snapshotsUrl, snapshotId)
+    delete this.snapshotRegistry()[String(snapshotId)]
+    this.diffStore().disable()
+    await this.refreshAllDiffs()
   }
 }

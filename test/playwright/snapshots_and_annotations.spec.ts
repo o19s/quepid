@@ -92,6 +92,12 @@ test.describe('snapshots', () => {
       await expect(page.locator('.diff-score').first()).toBeVisible({ timeout: 30_000 });
       await expect(page.locator('[data-controller="diff-case-scores"] .case-score').first()).toBeVisible({ timeout: 30_000 });
 
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal).toBeVisible();
+      await compareModal.getByRole('button', { name: 'Clear Comparison View', exact: true }).click();
+      await expect(compareModal).toBeHidden({ timeout: 30_000 });
+      await expect(page.locator('.diff-score')).toHaveCount(0, { timeout: 30_000 });
+
     } finally {
       // This case's dev DB row is shared across runs (there's no per-test
       // fixture reset) — clean up after ourselves so repeated runs don't pile

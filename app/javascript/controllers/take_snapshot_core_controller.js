@@ -3,8 +3,8 @@ import { searchEngineLabel, supportsLookupById } from "utils/search_engines"
 
 /**
  * Take-snapshot modal for the core case toolbar. Collects name + optional
- * document-fields checkbox, then dispatches `take-snapshot:create` so the
- * Stimulus snapshot bridge can build the payload from live query results.
+ * document-fields checkbox, then asks the `snapshot-bridge` outlet to build
+ * the payload from live query results and create the snapshot.
  */
 export default class extends CoreModalControllerBase {
   static targets = [
@@ -20,6 +20,8 @@ export default class extends CoreModalControllerBase {
     "progress",
     "cancelButton"
   ]
+
+  static outlets = ["snapshot-bridge"]
 
   static values = { engineLabels: Object }
 
@@ -48,7 +50,7 @@ export default class extends CoreModalControllerBase {
     this.setSubmitting(false)
   }
 
-  submit(event) {
+  async submit(event) {
     event?.preventDefault?.()
     if (!this.currentCaseId) return
 
@@ -65,32 +67,24 @@ export default class extends CoreModalControllerBase {
     this.clearAlert()
 
     const caseId = this.currentCaseId
+    let error = null
+    try {
+      await this.snapshotBridgeOutlet.create({ caseId: Number(caseId), name, recordDocumentFields })
+    } catch (failure) {
+      error = failure?.message || failure
+    }
 
-    document.dispatchEvent(
-      new CustomEvent("take-snapshot:create", {
-        detail: {
-          caseId: Number(caseId),
-          name,
-          recordDocumentFields,
-          done: (error) => {
-            if (String(this.currentCaseId) !== String(caseId)) return
+    if (String(this.currentCaseId) !== String(caseId)) return
 
-            this.setProgress(false)
-            if (error) {
-              this.showAlert(
-                this.actionErrorMessage(error),
-                "danger"
-              )
-              this.setSubmitting(false)
-              return
-            }
+    this.setProgress(false)
+    if (error) {
+      this.showAlert(this.actionErrorMessage(error), "danger")
+      this.setSubmitting(false)
+      return
+    }
 
-            this.hide()
-            this.setSubmitting(false)
-          }
-        }
-      })
-    )
+    this.hide()
+    this.setSubmitting(false)
   }
 
   showAlert(message, variant) {

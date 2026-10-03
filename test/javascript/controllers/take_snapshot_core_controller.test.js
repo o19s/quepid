@@ -9,6 +9,7 @@ vi.mock("utils/bs_modal", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(TakeSnapshotCoreController, {
+    outlets: { snapshotBridge: { create: vi.fn(async () => {}) } },
     targets: {
       title: document.createElement("h5"),
       alert: document.createElement("div"),
@@ -65,14 +66,10 @@ describe("TakeSnapshotCoreController", () => {
     expect(controller.lookupFieldsTarget.classList.contains("d-none")).toBe(true)
     expect(controller.noLookupFieldsTarget.classList.contains("d-none")).toBe(false)
 
-    const events = []
-    document.addEventListener("take-snapshot:create", (e) => events.push(e))
-
     controller.nameInputTarget.value = "My snap"
     controller.submit({ preventDefault() {} })
 
-    expect(events).toHaveLength(1)
-    expect(events[0].detail).toMatchObject({
+    expect(controller.snapshotBridgeOutlet.create).toHaveBeenCalledWith({
       caseId: 3,
       name: "My snap",
       recordDocumentFields: true
@@ -89,32 +86,47 @@ describe("TakeSnapshotCoreController", () => {
     controller.nameInputTarget.value = "Solr snap"
     controller.recordFieldsCheckboxTarget.checked = true
 
-    const events = []
-    document.addEventListener("take-snapshot:create", (e) => events.push(e))
     controller.submit({ preventDefault() {} })
 
-    expect(events[0].detail.recordDocumentFields).toBe(true)
+    expect(controller.snapshotBridgeOutlet.create.mock.calls[0][0].recordDocumentFields).toBe(true)
   })
 
-  it("disables Cancel while the snapshot request is in flight, re-enables on completion", () => {
+  it("disables Cancel while the snapshot request is in flight, re-enables on completion", async () => {
     const controller = buildModalController()
     const trigger = document.createElement("a")
     trigger.dataset.takeSnapshotCoreIdValue = "3"
     trigger.dataset.takeSnapshotCoreSearchEngineValue = "solr"
     controller.openFor(trigger)
 
-    let capturedDone
-    document.addEventListener("take-snapshot:create", (e) => {
-      capturedDone = e.detail.done
-    })
+    let finish
+    controller.snapshotBridgeOutlet.create.mockReturnValue(new Promise((resolve) => { finish = resolve }))
+    controller.hide = vi.fn()
 
     controller.nameInputTarget.value = "Solr snap"
-    controller.submit({ preventDefault() {} })
+    const submitting = controller.submit({ preventDefault() {} })
 
     expect(controller.cancelButtonTarget.disabled).toBe(true)
 
-    capturedDone(null)
+    finish()
+    await submitting
 
     expect(controller.cancelButtonTarget.disabled).toBe(false)
+    expect(controller.hide).toHaveBeenCalledOnce()
+  })
+
+  it("shows the bridge's error and stays open when creation fails", async () => {
+    const controller = buildModalController()
+    const trigger = document.createElement("a")
+    trigger.dataset.takeSnapshotCoreIdValue = "3"
+    trigger.dataset.takeSnapshotCoreSearchEngineValue = "solr"
+    controller.openFor(trigger)
+    controller.snapshotBridgeOutlet.create.mockRejectedValue(new Error("case mismatch"))
+    controller.hide = vi.fn()
+
+    await controller.submit({ preventDefault() {} })
+
+    expect(controller.alertTarget.textContent).toContain("An error (case mismatch) occurred")
+    expect(controller.hide).not.toHaveBeenCalled()
+    expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 })

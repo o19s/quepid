@@ -16,7 +16,7 @@
 <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
 </head>
 <body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
-      data-action="query-command:delete-completed@document->query-command-bridge#handleQueryRemovalCompleted query-command:move-completed@document->query-command-bridge#handleQueryRemovalCompleted diff:selection-request@document->snapshot-bridge#selectionRequest diff:apply@document->snapshot-bridge#apply diff:clear@document->snapshot-bridge#clear diff:delete@document->snapshot-bridge#delete take-snapshot:create@document->snapshot-bridge#create"
+      data-action="query-command:delete-completed@document->query-command-bridge#handleQueryRemovalCompleted query-command:move-completed@document->query-command-bridge#handleQueryRemovalCompleted"
       data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
       <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
       data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"

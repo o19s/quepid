@@ -110,6 +110,21 @@ bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 
 Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
 
+### Controller test fixtures
+
+Use `buildControllerFixture` from `test/javascript/support/controller_fixture.js`
+for specs with repeated target/value setup. Pass `targets: { title: element }`
+and `values: { url: "api/cases" }`; the builder supplies the singular target,
+plural targets, presence flags, and value properties. An array supplies repeated
+targets; `null` or an empty array represents an absent target. Use `element` for
+an existing root and `overrides` for explicit instance state or method fakes.
+Keep fixture-specific DOM construction and mutations in the spec.
+
+The builder uses the existing Stimulus stub and does not invoke lifecycle hooks,
+resolve ERB targets, or wire actions. Call lifecycle methods explicitly when
+needed; browser tests cover the markup wiring. Leave small fixtures alone when
+using the builder would add more ceremony than it removes.
+
 ### PR policy
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.

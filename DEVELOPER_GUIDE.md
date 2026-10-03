@@ -856,7 +856,7 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 
 - A Stimulus controller that listens on `document`, a store, or `window` adds the listener in `connect()` and removes it in `disconnect()` with the same function reference (keep it on `this`, e.g. `this.onScorePersisted`). Listeners on `this.element` follow the same pattern, so they do not leak when Turbo or a re-render replaces the element.
 - Runtime modules in `utils/` (not Stimulus controllers) add their listeners once when the case runtime is built and never remove them. They live as long as the page. Do not create these runtimes more than once per page load.
-- Fire-and-forget events must not assume a listener exists. Request/response events carry a `detail.done(result)` callback instead (`diff:*`, `take-snapshot:create`). `diff-core` times out, because a missing listener means `done` is never called; `take-snapshot-core` does not, so its progress state stays busy if `snapshot-bridge` is not connected.
+- Fire-and-forget events must not assume a listener exists. When a controller needs a known peer to do something and report back, use a Stimulus outlet that returns a promise instead of an event with a callback (see **Outlets** below).
 - Put an event on `document` only when the emitter and listener are not in the same DOM subtree. Otherwise dispatch on the element with `bubbles: true` and listen on the ancestor.
 - Stores (`stores/*.js`) are `EventTarget`s. Listen to them directly, not through `document`.
 
@@ -892,8 +892,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `case-score:persisted` | `qscore-case` | `qgraph` |
 | `annotations:changed` | `annotations` | `qgraph` |
 | `query-command:delete-completed`, `query-command:move-completed` | `query-delete`, `move-query-core` | `query-command-bridge`, `queries-list` |
-| `diff:selection-request`, `diff:apply`, `diff:clear`, `diff:delete` | `diff-core` (`detail.done`, 250 ms or 30 s timeout) | `snapshot-bridge` |
-| `take-snapshot:create` | `take-snapshot-core` | `snapshot-bridge` |
 | `flash:show`, `flash:hide` | `utils/flash.js` (`coreFlash`) | `flash` |
 | `toggleEast` | `case-toolbar` | `pane` |
 
@@ -910,6 +908,15 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `query-explain:before-open`, `query-explain:render-template` | `query-explain` | `queries-list` |
 | `query-explain:template-rendered` | `queries-list` | `query-explain` (one-shot, removed after the reply) |
 | `wizard:open` | `wizard-launcher` | `wizard` |
+
+**Outlets** (a controller calls a peer directly; selectors are document-wide, so a controller on `<body>` is reachable from any modal)
+
+| Caller | Outlet (selector) | Methods |
+| --- | --- | --- |
+| `diff-core` | `snapshot-bridge` (`body`) | `currentSelections()`, `apply({ selections, snapshotsUrl })`, `clear()`, `delete({ snapshotId, snapshotsUrl })` |
+| `take-snapshot-core` | `snapshot-bridge` (`body`) | `create({ caseId, name, recordDocumentFields })` |
+
+Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang.
 
 Stimulus `this.dispatch()` calls (`query-delete:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
 

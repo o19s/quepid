@@ -10,8 +10,18 @@ vi.mock("utils/status_message", () => ({
   showStatusMessage: vi.fn()
 }))
 
-function buildController() {
+function buildBridge() {
+  return {
+    currentSelections: vi.fn(() => []),
+    apply: vi.fn(async () => {}),
+    clear: vi.fn(async () => {}),
+    delete: vi.fn(async () => {})
+  }
+}
+
+function buildController(bridge = buildBridge()) {
   const controller = buildControllerFixture(DiffCoreController, {
+    outlets: { snapshotBridge: bridge },
     targets: {
       selections: document.createElement("div"),
       title: document.createElement("h5"),
@@ -74,7 +84,6 @@ describe("DiffCoreController", () => {
 
   it("keeps the yes/no delete-confirmation links from following their href", async () => {
     const controller = buildController()
-    controller.dispatchAndWait = vi.fn(() => Promise.resolve())
     controller.setBusy = vi.fn()
     controller.deleteId = "2"
     const cancel = { preventDefault: vi.fn() }
@@ -104,68 +113,48 @@ describe("DiffCoreController", () => {
     controller.renderSelections()
     expect(controller.warningTarget.textContent).toContain("same snapshot")
     expect(controller.warningTarget.classList.contains("d-none")).toBe(false)
-    const apply = vi.fn()
-    document.addEventListener("diff:apply", apply)
 
     await controller.update()
 
-    document.removeEventListener("diff:apply", apply)
     expect(controller.warningTarget.textContent).toContain("same snapshot")
-    expect(apply).not.toHaveBeenCalled()
+    expect(controller.snapshotBridgeOutlet.apply).not.toHaveBeenCalled()
   })
 
-  it("dispatches the selected snapshots to the diff bridge", async () => {
+  it("applies the selected snapshots through the bridge outlet and closes", async () => {
     const controller = buildController()
-    const events = []
-    const listener = (event) => {
-      events.push(event)
-      event.detail.done(null)
-    }
-    document.addEventListener("diff:apply", listener)
+    controller.snapshotsUrlValue = "api/cases/1/snapshots"
+    controller.closeModal = vi.fn()
 
     await controller.update()
 
-    document.removeEventListener("diff:apply", listener)
-    expect(events).toHaveLength(1)
-    expect(events[0].detail.selections).toEqual(["2"])
+    expect(controller.snapshotBridgeOutlet.apply).toHaveBeenCalledWith({ selections: ["2"], snapshotsUrl: "api/cases/1/snapshots" })
+    expect(controller.closeModal).toHaveBeenCalledOnce()
+    expect(controller.updateButtonTarget.disabled).toBe(false)
   })
-
-  function respondTo(eventName, error = null) {
-    const listener = (event) => event.detail.done(error)
-    document.addEventListener(eventName, listener)
-    return () => document.removeEventListener(eventName, listener)
-  }
 
   const alertMessages = () => showStatusMessage.mock.calls.map(([, options]) => options.message).filter(Boolean)
 
   it("opens with the bridge's current selections and loads snapshots shallowly", async () => {
-    const controller = buildController()
+    const bridge = buildBridge()
+    bridge.currentSelections.mockReturnValue([4])
+    const controller = buildController(bridge)
     controller.snapshotsUrlValue = "api/cases/1/snapshots"
     apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 4, name: "Release" }] }) })
-    const answer = (event) => event.detail.done([4])
-    document.addEventListener("diff:selection-request", answer)
 
     await controller.openFor(null)
 
-    document.removeEventListener("diff:selection-request", answer)
     expect(controller.selectionValues).toEqual(["4"])
     expect(apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots?shallow=true", { method: "GET", headers: { Accept: "application/json" } })
     expect(controller.selectionsTarget.querySelector("select").value).toBe("4")
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
-  it("starts with one blank row when the bridge doesn't answer", async () => {
-    vi.useFakeTimers()
-    try {
-      const controller = buildController()
-      const opening = controller.openFor(null)
-      await vi.advanceTimersByTimeAsync(250)
-      await opening
+  it("starts with one blank row when nothing is being compared", async () => {
+    const controller = buildController()
 
-      expect(controller.selectionValues).toEqual([""])
-    } finally {
-      vi.useRealTimers()
-    }
+    await controller.openFor(null)
+
+    expect(controller.selectionValues).toEqual([""])
   })
 
   it("shows an error and an empty list when snapshots can't be loaded", async () => {
@@ -232,31 +221,27 @@ describe("DiffCoreController", () => {
   it("clears the comparison when nothing is selected", async () => {
     const controller = buildController()
     controller.selectionValues = [""]
-    const stop = respondTo("diff:clear")
-    const apply = vi.fn()
-    document.addEventListener("diff:apply", apply)
+    controller.closeModal = vi.fn()
 
     await controller.update()
 
-    stop()
-    document.removeEventListener("diff:apply", apply)
-    expect(apply).not.toHaveBeenCalled()
+    expect(controller.snapshotBridgeOutlet.clear).toHaveBeenCalledOnce()
+    expect(controller.snapshotBridgeOutlet.apply).not.toHaveBeenCalled()
+    expect(controller.closeModal).toHaveBeenCalledOnce()
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
   it("asks to confirm a delete, then drops the deleted snapshot from the selection", async () => {
     const controller = buildController()
     controller.selectionValues = ["2", "3"]
-    const deleted = vi.fn((event) => event.detail.done(null))
-    document.addEventListener("diff:delete", deleted)
+    controller.snapshotsUrlValue = "api/cases/1/snapshots"
 
     await controller.deleteSelected(1)
     expect(controller.deleteId).toBe("3")
     expect(controller.deleteWarningTarget.classList.contains("d-none")).toBe(false)
     await controller.confirmDelete({ preventDefault: vi.fn() })
 
-    document.removeEventListener("diff:delete", deleted)
-    expect(deleted.mock.calls[0][0].detail.snapshotId).toBe("3")
+    expect(controller.snapshotBridgeOutlet.delete).toHaveBeenCalledWith({ snapshotId: "3", snapshotsUrl: "api/cases/1/snapshots" })
     expect(controller.selectionValues).toEqual(["2"])
     expect(controller.deleteId).toBeNull()
     expect(controller.deleteWarningTarget.classList.contains("d-none")).toBe(true)
@@ -264,47 +249,49 @@ describe("DiffCoreController", () => {
 
   it("leaves one blank row after deleting the only selected snapshot, and ignores empty rows", async () => {
     const controller = buildController()
-    const stop = respondTo("diff:delete")
     controller.deleteId = "2"
 
     await controller.confirmDelete({ preventDefault: vi.fn() })
     expect(controller.selectionValues).toEqual([""])
 
     await controller.deleteSelected(0)
-    stop()
     expect(controller.deleteId).toBeNull()
   })
 
   it.each([
-    ["diff:apply", (c) => c.update(), "Could not fetch one or more snapshots!"],
-    ["diff:delete", (c) => { c.deleteId = "2"; return c.confirmDelete({ preventDefault: vi.fn() }) }, "Could not delete snapshot."]
-  ])("reports a %s failure and keeps the modal state", async (eventName, act, message) => {
-    const controller = buildController()
-    const stop = respondTo(eventName, new Error("bridge failed"))
+    ["apply", (c) => c.update(), "Could not fetch one or more snapshots!"],
+    ["clear", (c) => c.clear(), "Could not fetch one or more snapshots!"],
+    ["delete", (c) => { c.deleteId = "2"; return c.confirmDelete({ preventDefault: vi.fn() }) }, "Could not delete snapshot."]
+  ])("reports a failed %s and keeps the modal state", async (command, act, message) => {
+    const bridge = buildBridge()
+    const failure = new Error("bridge failed")
+    bridge[command].mockRejectedValue(failure)
+    const controller = buildController(bridge)
+    controller.closeModal = vi.fn()
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {})
 
     await act(controller)
 
-    stop()
+    expect(logged).toHaveBeenCalledWith(failure)
     expect(alertMessages()).toContain(message)
     expect(controller.selectionValues).toEqual(["2"])
+    expect(controller.closeModal).not.toHaveBeenCalled()
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
-  it("gives up on the bridge after 30 seconds", async () => {
-    vi.useFakeTimers()
-    try {
-      const controller = buildController()
-      const applying = controller.update()
-      expect(controller.updateButtonTarget.disabled).toBe(true)
+  it("keeps the buttons disabled while the bridge is working", async () => {
+    let finish
+    const bridge = buildBridge()
+    bridge.apply.mockReturnValue(new Promise((resolve) => { finish = resolve }))
+    const controller = buildController(bridge)
+    controller.closeModal = vi.fn()
 
-      await vi.advanceTimersByTimeAsync(30000)
-      await applying
+    const applying = controller.update()
+    expect(controller.updateButtonTarget.disabled).toBe(true)
+    finish()
+    await applying
 
-      expect(alertMessages()).toContain("Could not fetch one or more snapshots!")
-      expect(controller.updateButtonTarget.disabled).toBe(false)
-    } finally {
-      vi.useRealTimers()
-    }
+    expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
   it("names snapshots by name, falling back to the id, with a short date when known", () => {

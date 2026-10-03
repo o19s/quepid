@@ -6,8 +6,8 @@ import { showStatusMessage } from "utils/status_message"
  * Core snapshot comparison picker.
  *
  * The picker and read renderer are Stimulus-owned. Snapshot fetching and the
- * live Query/searcher adapter remain behind the temporary document-event seam
- * until the broader live query-state migration is complete.
+ * live Query/searcher adapter stay behind the `snapshot-bridge` outlet until
+ * the broader live query-state migration is complete.
  */
 export default class extends CoreModalControllerBase {
   static targets = [
@@ -22,6 +22,8 @@ export default class extends CoreModalControllerBase {
     "updateButton",
     "clearButton"
   ]
+
+  static outlets = ["snapshot-bridge"]
 
   static values = {
     snapshotsUrl: String,
@@ -39,7 +41,7 @@ export default class extends CoreModalControllerBase {
     this.clearMessages()
     this.setBusy(false)
 
-    const current = await this.currentSelections()
+    const current = this.currentSelections()
     this.selectionValues = current.length > 0 ? [...current] : [""]
     await this.loadSnapshots()
   }
@@ -59,18 +61,9 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  async currentSelections() {
-    return new Promise((resolve) => {
-      let settled = false
-      const done = (selection) => {
-        if (settled) return
-        settled = true
-        resolve(Array.isArray(selection) ? selection.map(String) : [])
-      }
-
-      document.dispatchEvent(new CustomEvent("diff:selection-request", { detail: { done } }))
-      window.setTimeout(() => done([]), 250)
-    })
+  currentSelections() {
+    const selection = this.snapshotBridgeOutlet.currentSelections()
+    return Array.isArray(selection) ? selection.map(String) : []
   }
 
   addSelection() {
@@ -111,13 +104,16 @@ export default class extends CoreModalControllerBase {
       return
     }
 
-    this.setBusy(true)
-    await this.dispatchAndWait("diff:apply", { selections, snapshotsUrl: this.snapshotsUrlValue })
+    const applied = await this.callBridge(
+      () => this.snapshotBridgeOutlet.apply({ selections, snapshotsUrl: this.snapshotsUrlValue }),
+      "Could not fetch one or more snapshots!"
+    )
+    if (applied) this.closeModal()
   }
 
   async clear() {
-    this.setBusy(true)
-    await this.dispatchAndWait("diff:clear", {})
+    const cleared = await this.callBridge(() => this.snapshotBridgeOutlet.clear(), "Could not fetch one or more snapshots!")
+    if (cleared) this.closeModal()
   }
 
   async deleteSelected(index) {
@@ -137,8 +133,18 @@ export default class extends CoreModalControllerBase {
   async confirmDelete(event) {
     event?.preventDefault()
     if (!this.deleteId) return
-    this.setBusy(true)
-    await this.dispatchAndWait("diff:delete", { snapshotId: this.deleteId, snapshotsUrl: this.snapshotsUrlValue })
+
+    const snapshotId = this.deleteId
+    const deleted = await this.callBridge(
+      () => this.snapshotBridgeOutlet.delete({ snapshotId, snapshotsUrl: this.snapshotsUrlValue }),
+      "Could not delete snapshot."
+    )
+    if (!deleted) return
+
+    this.selectionValues = this.selectionValues.filter((id) => id !== String(snapshotId))
+    if (this.selectionValues.length === 0) this.selectionValues = [""]
+    this.deleteId = null
+    this.renderSelections()
   }
 
   validSelections() {
@@ -233,31 +239,18 @@ export default class extends CoreModalControllerBase {
     return `(${date.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" })}) ${name}`
   }
 
-  async dispatchAndWait(eventName, detail) {
-    return new Promise((resolve) => {
-      let settled = false
-      const done = (error) => {
-        if (settled) return
-        settled = true
-        window.clearTimeout(timeoutId)
-        this.setBusy(false)
-        if (error) this.showError(eventName === "diff:delete" ? "Could not delete snapshot." : "Could not fetch one or more snapshots!")
-        else {
-          if (eventName === "diff:delete") {
-            this.selectionValues = this.selectionValues.filter((id) => id !== String(detail.snapshotId))
-            if (this.selectionValues.length === 0) this.selectionValues = [""]
-            this.deleteId = null
-            this.renderSelections()
-          } else {
-            this.closeModal()
-          }
-        }
-        resolve()
-      }
-
-      const timeoutId = window.setTimeout(() => done("timeout"), 30000)
-      document.dispatchEvent(new CustomEvent(eventName, { detail: { ...detail, done } }))
-    })
+  async callBridge(request, errorMessage) {
+    this.setBusy(true)
+    try {
+      await request()
+      return true
+    } catch (error) {
+      console.error(error)
+      this.showError(errorMessage)
+      return false
+    } finally {
+      this.setBusy(false)
+    }
   }
 
   closeModal() {

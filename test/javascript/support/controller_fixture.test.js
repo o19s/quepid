@@ -36,6 +36,17 @@ describe("buildControllerFixture", () => {
     expect(controller.hasItemTarget).toBe(false)
   })
 
+  it("exposes outlets by camelCase name", () => {
+    const bridge = { apply: vi.fn() }
+    const controller = buildControllerFixture(ExampleController, { outlets: { snapshotBridge: bridge, pane: null } })
+
+    expect(controller.snapshotBridgeOutlet).toBe(bridge)
+    expect(controller.snapshotBridgeOutlets).toEqual([bridge])
+    expect(controller.hasSnapshotBridgeOutlet).toBe(true)
+    expect(controller.paneOutlets).toEqual([])
+    expect(controller.hasPaneOutlet).toBe(false)
+  })
+
   it("preserves explicit false/zero values and applies overrides last", () => {
     const element = document.createElement("form")
     const controller = buildControllerFixture(ExampleController, {
