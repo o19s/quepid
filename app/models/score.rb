@@ -18,11 +18,11 @@
 #
 # Indexes
 #
-#  index_case_scores_annotation_id  (annotation_id) UNIQUE
-#  index_case_scores_on_case_id     (case_id)
-#  index_case_scores_on_scorer_id   (scorer_id)
-#  index_case_scores_on_user_id     (user_id)
-#  support_last_score               (updated_at,created_at,id)
+#  index_case_scores_annotation_id       (annotation_id) UNIQUE
+#  index_case_scores_on_case_and_latest  (case_id,updated_at,created_at,id)
+#  index_case_scores_on_case_id          (case_id)
+#  index_case_scores_on_scorer_id        (scorer_id)
+#  index_case_scores_on_user_id          (user_id)
 #
 # Foreign Keys
 #
@@ -47,9 +47,20 @@ class Score < ApplicationRecord
 
   # Scopes
 
-  # We have an index on updated_at, created_at, id to support this lookup.
-  # Case 4848 is an example of a case that struggles with this.
-  # The where(annotation_id: nil) part of the clause kills our performance.
+  # Only the requested page's latest scores, without the potentially large query
+  # payload. The correlated lookup uses index_case_scores_on_case_and_latest.
+  def self.latest_summaries_for_cases case_ids
+    latest_ids = Case.where(id: case_ids).select(<<~SQL.squish)
+      (SELECT case_scores.id FROM case_scores
+       WHERE case_scores.case_id = cases.id
+       ORDER BY case_scores.updated_at DESC, case_scores.created_at DESC, case_scores.id DESC
+       LIMIT 1)
+    SQL
+
+    where(id: latest_ids).select(:id, :case_id, :score, :updated_at, :user_id).includes(:user)
+  end
+
+  # The case_id/updated_at/created_at/id index supports this lookup within a case.
   scope :last_one, -> {
     # where(annotation_id: nil)
     order(updated_at: :desc)
