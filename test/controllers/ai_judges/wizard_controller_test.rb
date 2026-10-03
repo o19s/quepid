@@ -70,6 +70,30 @@ module AiJudges
         assert_predicate body['explanation'], :present?
       end
 
+      test 'previews with the include images switch the form would save' do
+        image_parts = lambda do |include_images|
+          WebMock::RequestRegistry.instance.reset!
+          post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
+            system_prompt:  'Is this a cheese?',
+            llm_key:        OPENAI_VALID_KEY,
+            judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com',
+                              llm_model: 'gpt-4o', llm_include_images: include_images },
+            query_doc_pair: { query_text: 'cheese', doc_id: 'd1',
+                              document_fields: '{"title": "Cheddar", "thumb": "https://example.com/cheddar.jpg"}' },
+          }
+          assert_response :success
+
+          sent = nil
+          assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
+            sent = JSON.parse(req.body)
+          end
+          sent.dig('messages', 1, 'content').select { |part| 'image_url' == part['type'] }
+        end
+
+        assert_equal 1, image_parts.call('true').size
+        assert_empty image_parts.call('false')
+      end
+
       test 'augments the system prompt with the book scale when book_id is provided' do
         scoped_book = Book.create!(name: 'scaled book', owner: user, scale: [ 0, 1 ],
                                    scale_with_labels: { '0' => 'Not Relevant', '1' => 'Relevant' })
