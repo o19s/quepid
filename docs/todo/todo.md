@@ -574,19 +574,6 @@ Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query 
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
 
-### [PREEXISTING] One scorer implementation for browser and server
-
-Custom scorers run in two places:
-
-- The browser runs them through `app/javascript/utils/scorer_runtime.js`.
-- Server-side evaluation (`RunCaseEvaluationJob` → `FetchService#score_snapshot`) runs `lib/scorer_logic.js` through `JavascriptScorer`. Its header says it is "duplicated and tweaked" from `runCode()`.
-
-The server copy is missing `avgRating100`, `editDistanceFromBest`, `eachDocWithRatingEqualTo`, `recordDepthOfRanking`, `pass`, `fail`, `assert` and `assertOrScore`. A custom scorer that works in the case UI can fail when the same case is evaluated server-side.
-
-The helper gap dates to the server scorer’s introduction in `3bfa92d7` (January 2025), before AngularJS removal. The browser migration in `d7a7fcde` retained the separate server implementation.
-
-**Fix direction:** Build one framework-free scorer file that both the browser bundle and the server's V8 executor load, and test it once.
-
 ### [PREEXISTING] Elasticsearch/OpenSearch document IDs are not persisted
 
 **Location:** `app/services/fetch_service.rb:75-100,118-125`

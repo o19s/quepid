@@ -189,9 +189,9 @@ class FetchService
   def score_snapshot snapshot, try, user
     queries_detail = {}
 
-    snapshot.snapshot_queries.each do |snapshot_query|
-      javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+    javascript_scorer = JavascriptScorer.new
 
+    snapshot.snapshot_queries.each do |snapshot_query|
       # Prepare some items to score
       doc_ratings = {}
       snapshot_query.query.ratings.each do |rating|
@@ -200,16 +200,15 @@ class FetchService
 
       # Some Scorers will need access to the document data as well, so add that
       docs = snapshot_query.snapshot_docs.map do |snapshot_doc|
-        doc = { id: snapshot_doc.doc_id, rating: doc_ratings[snapshot_doc.doc_id] }
-        doc.merge(JSON.parse(snapshot_doc.fields)) if snapshot_doc.fields.present?
-        doc
+        fields = snapshot_doc.fields.present? ? JSON.parse(snapshot_doc.fields) : {}
+        fields.merge('id' => snapshot_doc.doc_id, 'rating' => doc_ratings[snapshot_doc.doc_id])
       end
 
       best_docs = snapshot_query.query.ratings.map do |rating|
         { id: rating.doc_id, rating: rating.rating }
       end
 
-      best_docs.sort_by! { |doc| doc[:rating] }.reverse
+      best_docs.sort_by! { |doc| -doc[:rating].to_f }
 
       # docs = [
       #  { id: 1, value: 10, rating: 3 },
@@ -221,7 +220,15 @@ class FetchService
         scorer = snapshot.scorer
         code = scorer.code
 
-        score = javascript_scorer.score(docs, best_docs, code)
+        score = javascript_scorer.score(
+          docs, best_docs, code,
+          scale: scorer.scale,
+          query: {
+            id:      snapshot_query.query_id,
+            total:   snapshot_query.number_of_results,
+            options: snapshot_query.query.options,
+          }
+        )
         # puts "the score is #{score}"
         # puts "nan?  #{score.nan?}" if score.is_a? Float
         if score.is_a?(Float) && score.nan?
@@ -247,20 +254,17 @@ class FetchService
         end
       rescue JavascriptScorer::ScoreError => e
         puts "Scoring failed: #{e.message}"
+        snapshot_query.update(score: nil)
       end
 
       queries_detail[snapshot_query.query_id] =
         { score: snapshot_query.score, text: snapshot_query.query.query_text }
     end
 
-    # Opportunity here to fix the averaging logic
-    # at the case level.
-    if queries_detail.any?
-      scores = queries_detail.values.map { |q| q[:score] }
-      average_score = scores.sum.to_f / scores.length
-    else
-      average_score = 0.0
-    end
+    # Unscored queries (scorer error, fail(), no results) are left out of the
+    # case average, as they are in the case UI.
+    scores = queries_detail.values.filter_map { |q| q[:score] }
+    average_score = scores.any? ? scores.sum.to_f / scores.length : 0.0
 
     score_data = {
       all_rated:  nil,

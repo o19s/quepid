@@ -1,97 +1,79 @@
 # frozen_string_literal: true
 
+# Runs a Scorer's JavaScript on the server with the same runtime the case UI
+# uses (app/javascript/utils/scorer_runtime.js), so a scorer gets the same
+# helpers (docAt, avgRating100, pass, assert, ...) in both places.
 class JavascriptScorer
   class ScoreError < StandardError; end
 
-  def initialize js_file_path
+  RUNTIME_PATH = Rails.root.join('app/javascript/utils/scorer_runtime.js')
+
+  # Adapts server-side plain hashes to the shapes the browser runtime expects:
+  # docs are wrappers with hasRating()/getRating() whose `.doc` holds the fields.
+  # MiniRacer drains the promise queue when an eval returns, so the result is
+  # read back with a second eval.
+  ADAPTER = <<~JS
+    var scoreResult = null;
+    function runScorer(input) {
+      scoreResult = null;
+      const scorer = createScorer({ code: input.code, scale: input.scale });
+      const docs = input.docs.map(function(doc) {
+        const rated = doc.rating !== undefined && doc.rating !== null;
+        return {
+          doc: doc,
+          hasRating: function() { return rated; },
+          getRating: function() { return rated ? doc.rating : null; }
+        };
+      });
+      scorer.score(input.query, input.total, docs, input.bestDocs, input.options).then(function(score) {
+        scoreResult = score === null ? { error: String(scorer.error) } : { score: score };
+      });
+    }
+  JS
+
+  def initialize
     @context = MiniRacer::Context.new
-
-    # Add Ruby methods to JavaScript context
-    attach_ruby_methods
-
-    # Add console.log support
-    @context.eval <<-JS
-      var console = {
-        log: function(msg) { puts(msg); }
-      };
-    JS
-
-    # Load your scoring JavaScript
-    @context.eval(File.read(js_file_path))
+    @context.attach('puts', ->(message) { puts message })
+    @context.eval('var console = { log: function(msg) { puts(msg); } };')
+    # The runtime is an ES module; MiniRacer evaluates classic scripts.
+    @context.eval(File.read(RUNTIME_PATH).gsub(/^export /, ''))
+    @context.eval(ADAPTER)
   end
 
-  # rubocop disable Metrics/MethodLength
-  # rubocop:disable Style/DocumentDynamicEvalDefinition
-  def score docs, best_docs, scorer_code
-    scorer_code << "\ngetScore()" # method that returns the score in eval context
-    @context.eval("docs = #{docs.to_json};")
-    @context.eval("bestDocs = #{best_docs.to_json};")
+  # docs      - ranked search results: hashes with :id, :rating and any doc fields.
+  # best_docs - every rated doc for the query, highest rating first: { id:, rating: }.
+  # scale     - the scorer's rating scale; its last value is the scorer's `max`.
+  # query     - optional :id, :total (numFound) and :options (qOption) of the query.
+  #
+  # Returns the numeric score, or nil when the scorer reported no score.
+  def score docs, best_docs, scorer_code, scale: nil, query: {}
+    input = {
+      code:     scorer_code,
+      scale:    scale.presence || [ 0, 1 ],
+      docs:     docs,
+      bestDocs: best_docs,
+      query:    { queryId: query[:id], ratedDocs: [] },
+      total:    query[:total] || docs.length,
+      options:  query[:options],
+    }
+    @context.call('runScorer', input.as_json)
+    result = @context.eval('scoreResult')
 
-    result = @context.eval(scorer_code)
-    # puts "the result is #{result}"
-    raise ScoreError, result['error'] if result.is_a?(Hash) && result['error']
+    raise ScoreError, 'Scorer finished without calling setScore, pass or fail' if result.nil?
+    raise ScoreError, result['error'] if result['error']
 
-    smart_round(result)
+    score = result['score']
+    # "zsr" (no results) and "--" (no ratings) are display markers, not scores.
+    score.is_a?(Numeric) ? smart_round(score) : nil
   rescue MiniRacer::Error => e
     raise ScoreError, "JavaScript execution error: #{e.message}"
   end
-
-  # rubocop enable Metrics/MethodLength
-  # rubocop:enable Style/DocumentDynamicEvalDefinition
-  # rubocop:disable Style/DocumentDynamicEvalDefinition
-  # demo method!
-  def score_items items, options = {}
-    # Convert Ruby objects and options to JavaScript
-    js_items = items.to_json
-    js_options = options.to_json
-
-    result = @context.eval(<<-JS)
-        try {
-          const items = #{js_items};
-          const options = #{js_options};
-          scoreItems(items, options);  // Your JavaScript scoring function
-        } catch (error) {
-          ({ error: error.message });
-        }
-    JS
-
-    raise ScoreError, result['error'] if result.is_a?(Hash) && result['error']
-
-    result
-  rescue MiniRacer::Error => e
-    raise ScoreError, "JavaScript execution error: #{e.message}"
-  end
-  # rubocop:enable Style/DocumentDynamicEvalDefinition
 
   private
 
-  def attach_ruby_methods
-    @context.attach('puts', ->(message) { puts message })
-
-    # Expose Ruby methods to JavaScript
-    @context.attach('rubyLog', ->(message) { puts(message) })
-
-    # Add more Ruby methods as needed
-    @context.attach('fetchData', ->(id) {
-      Data.find(id).to_json
-    })
-  end
-
-  def format_number number
-    format('%.2f', number.to_f).sub(/\.?0+$/, '')
-  end
-
   def smart_round number
     # If the number has 2 or more decimal places, round to 2
-    decimal_places = begin
-      number.to_s.split('.').last.length
-    rescue StandardError
-      0
-    end
-    if decimal_places >= 2
-      number.round(2)
-    else
-      number # Keep the number as is
-    end
+    decimal_places = number.to_s.split('.')[1].to_s.length
+    decimal_places >= 2 ? number.round(2) : number
   end
 end

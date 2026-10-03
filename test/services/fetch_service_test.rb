@@ -542,6 +542,32 @@ class FetchServiceTest < ActiveSupport::TestCase
       snapshot_query.reload
       assert_in_delta(0.5, snapshot_query.score)
     end
+
+    it 'passes doc fields and highest-first best docs to the scorer' do
+      snapshot_query.query.ratings.destroy_all
+      snapshot_query.query.ratings.create!(doc_id: 'low', rating: 1)
+      snapshot_query.query.ratings.create!(doc_id: 'high', rating: 3)
+      asnapshot.scorer.update!(code: <<~JS)
+        const top = topRatings(2);
+        setScore(docAt(0).title === 'title' && top[0] === 3 && top[1] === 1 ? 1 : 0);
+      JS
+
+      fetch_service = FetchService.new options
+      fetch_service.begin acase, atry
+      fetch_service.score_snapshot(asnapshot, atry, nil)
+
+      assert_in_delta(1.0, snapshot_query.reload.score)
+    end
+
+    it 'leaves unscored queries out of the case average' do
+      asnapshot.scorer.update!(code: 'fail()')
+
+      fetch_service = FetchService.new options
+      fetch_service.begin acase, atry
+      score_data = fetch_service.score_snapshot(asnapshot, atry, nil)
+
+      assert_in_delta(0.0, score_data[:score])
+    end
   end
 
   describe 'Engine-specific GET parameter handling' do

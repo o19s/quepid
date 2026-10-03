@@ -14,7 +14,7 @@ class JavascriptScorerTest < ActiveSupport::TestCase
   end
 
   let(:javascript_scorer) do
-    JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+    JavascriptScorer.new
   end
 
   describe 'p@10' do
@@ -211,6 +211,75 @@ class JavascriptScorerTest < ActiveSupport::TestCase
 
       score = javascript_scorer.score(docs, best_docs, scorer_code)
       assert_in_delta(1.67, score)
+    end
+  end
+
+  describe 'helpers shared with the case UI runtime' do
+    let(:docs) do
+      [
+        { id: 1, rating: 3, title: 'first' },
+        { id: 2, rating: 0, title: 'second' },
+        { id: 3, title: 'unrated' }
+      ]
+    end
+    let(:best_docs) do
+      [
+        { id: 1, rating: 3 },
+        { id: 4, rating: 2 },
+        { id: 2, rating: 0 }
+      ]
+    end
+
+    test 'runs the v1 scorer (avgRating100 and editDistanceFromBest)' do
+      score = javascript_scorer.score(docs, best_docs, File.read('db/scorers/v1.js'), scale: [ 0, 1, 2, 3 ])
+      assert_equal 48, score
+    end
+
+    test 'exposes max from the scorer scale to err@10' do
+      score = javascript_scorer.score(docs, best_docs, File.read('db/scorers/err@10.js'), scale: [ 0, 1, 2, 3 ])
+      assert_in_delta(0.88, score)
+    end
+
+    test 'pass scores 100' do
+      assert_equal 100, javascript_scorer.score(docs, best_docs, 'pass()')
+    end
+
+    test 'a failed assert raises a ScoreError' do
+      assert_raises(JavascriptScorer::ScoreError) do
+        javascript_scorer.score(docs, best_docs, 'assert(numReturned() > 5); setScore(1)')
+      end
+    end
+
+    test 'assertOrScore sets the fallback score' do
+      assert_equal 7, javascript_scorer.score(docs, best_docs, 'assertOrScore(false, 7)')
+    end
+
+    test 'docAt returns the document fields and unrated docs have no rating' do
+      code = 'setScore(docAt(2).title === "unrated" && !hasDocRating(2) && docRating(2) === null ? 1 : 0)'
+      assert_equal 1, javascript_scorer.score(docs, best_docs, code)
+    end
+
+    test 'numFound, qOption and eachDocWithRatingEqualTo use the query context' do
+      code = <<~JS
+        let zeros = 0;
+        eachDocWithRatingEqualTo(0, function() { zeros++ });
+        setScore(numFound() + qOption('bonus') + zeros);
+      JS
+      score = javascript_scorer.score(docs, best_docs, code, query: { total: 40, options: { bonus: 2 } })
+      assert_equal 43, score
+    end
+
+    test 'a scorer that never sets a score raises a ScoreError' do
+      assert_raises(JavascriptScorer::ScoreError) do
+        javascript_scorer.score(docs, best_docs, 'let x = 1')
+      end
+    end
+
+    test 'a JavaScript error raises a ScoreError' do
+      error = assert_raises(JavascriptScorer::ScoreError) do
+        javascript_scorer.score(docs, best_docs, 'notAHelper()')
+      end
+      assert_match(/notAHelper/, error.message)
     end
   end
 end
