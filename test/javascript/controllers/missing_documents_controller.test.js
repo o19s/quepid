@@ -190,4 +190,25 @@ describe("MissingDocumentsController", () => {
     expect(adapterMock.rate).toHaveBeenCalledWith("doc-1", 2)
     expect(adapterMock.rateAll).toHaveBeenCalledWith(null)
   })
+
+  it("re-renders only after the rating request has been applied", async () => {
+    const adapterMock = adapter({ docs: [{ id: "doc-1", title: "A document", subSnippets: () => ({}) }], numFound: 1 })
+    let resolveRating
+    adapterMock.rate = vi.fn(() => new Promise((resolve) => { resolveRating = resolve }))
+    const controller = buildController(adapterMock)
+    controller.render()
+    const renderSpy = vi.spyOn(controller, "render")
+
+    const rated = controller.rate({
+      type: "rating-popover:rate",
+      target: controller.resultsTarget.querySelector("search-result"),
+      detail: { source: "single-result", rating: "1" }
+    })
+    await Promise.resolve()
+    expect(renderSpy).not.toHaveBeenCalled()
+
+    resolveRating(true)
+    await rated
+    expect(renderSpy).toHaveBeenCalledTimes(1)
+  })
 })

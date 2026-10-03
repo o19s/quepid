@@ -430,22 +430,29 @@ export function createTargetedSearchAdapter({
     })
   }
 
+  // Both resolve once the ratings store has applied the change, so callers
+  // can re-render from the updated ratings rather than the pre-request state.
   adapter.rate = (docId, rating) => {
     const doc = adapter.docs.find((candidate) => String(candidate.id) === String(docId))
-    if (!doc) return false
-    if (rating == null) doc.resetRating()
-    else doc.rate(parseInt(rating, 10))
-    query.touchModifiedAt()
-    return true
+    if (!doc) return Promise.resolve(false)
+    const request = rating == null ? doc.resetRating() : doc.rate(parseInt(rating, 10))
+    return request.then(() => {
+      query.touchModifiedAt()
+      return true
+    })
   }
 
   adapter.rateAll = (rating) => {
-    if (adapter.docs.length === 0) return true
+    if (adapter.docs.length === 0) return Promise.resolve(true)
     const ids = adapter.docs.map((doc) => doc.id)
-    if (rating == null) adapter.docs[0].resetBulkRatings(ids)
-    else adapter.docs[0].rateBulk(ids, parseInt(rating, 10))
-    query.touchModifiedAt()
-    return true
+    const request =
+      rating == null
+        ? adapter.docs[0].resetBulkRatings(ids)
+        : adapter.docs[0].rateBulk(ids, parseInt(rating, 10))
+    return request.then(() => {
+      query.touchModifiedAt()
+      return true
+    })
   }
 
   return adapter

@@ -166,15 +166,18 @@ export default class extends Controller {
     this.render()
   }
 
-  rate(event) {
+  async rate(event) {
     const rating = event.type === "rating-popover:rate" ? parseInt(event.detail.rating, 10) : null
-    if (event.detail?.source === "single-result") {
-      const result = event.target.closest("search-result")
-      this.adapter.rate(result?.dataset.docId, rating)
-    } else {
-      this.adapter.rateAll(rating)
+    try {
+      if (event.detail?.source === "single-result") {
+        const result = event.target.closest("search-result")
+        await this.adapter.rate(result?.dataset.docId, rating)
+      } else {
+        await this.adapter.rateAll(rating)
+      }
+    } finally {
+      this.render()
     }
-    this.render()
   }
 
   render() {

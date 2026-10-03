@@ -41,7 +41,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
   2. For "Snapshot 1", pick a snapshot from the dropdown.
-  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum allowed.
+  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum allowed (5; the modal's "Select 1-3" copy is out of date, see `docs/todo/todo.md`).
   4. Click **Update Comparison Settings**.
   5. Confirm additional score badges (per query, and per case) appear reflecting each chosen snapshot.
   6. Click the "x" on a row to clear just that selection.

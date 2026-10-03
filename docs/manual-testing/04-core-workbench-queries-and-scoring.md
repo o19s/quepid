@@ -84,7 +84,7 @@ Before testing individual features, get oriented:
 ### 4.7 Case & query score badges
 
 - [ ] **Steps:**
-  1. On a brand-new case with no searches run, confirm the score badge shows `?`.
+  1. On a brand-new case, confirm the case score badge shows `?` or `--` before any query has been scored.
   2. Run searches / rate documents, confirm the case score badge and each query's score badge update with a sensible color (low score vs. high score should look visually distinct).
 - **Expected:** Badge color scale looks sane at both ends of the range; badges update live as ratings change.
 
@@ -250,9 +250,8 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   2. Read each row's header: score badge, result count text, unrated-frog badge.
   3. Hover the query text of a query with an Information Need.
   4. If you have a Querqy-enabled Solr, search a query that triggers a rewrite.
-- **Expected:** The score badge shows `?` while pending, `--` when nothing is rated, `zsr` for zero search results, and a red→green scaled 2-decimal number otherwise. Error rows are visibly styled distinct from empty-result rows. The unrated frog shows the count of unrated results and links to the Frog Report (6.9). Hovering query text shows "Info Need: ..." after ~1s. The Querqy icon ("Querqy Strikes Again!") appears only on rows where a rewrite fired.
+- **Expected:** The score badge shows `?` while pending and a red→green scaled 2-decimal number once scored. `--` (nothing rated) and `zsr` (zero search results) only appear when the scorer returns no score; scorers that compute a number, such as AP@10's 0/0, show `0.00` instead (per source comparison with pre-migration `main`, not a live replay). Error rows are visibly styled distinct from empty-result rows. The unrated frog shows the count of unrated results and links to the Frog Report (6.9). Hovering query text shows "Info Need: ..." after ~1s. The Querqy icon ("Querqy Strikes Again!") appears only on rows where a rewrite fired.
 - **Edge cases:**
-  - [ ] Double-click query text to rename it inline; confirm the new text persists and the query re-searches.
   - [ ] With snapshots being compared (5.3), confirm one extra diff score badge per enabled snapshot (max 5) on each row.
 
 ### 4.22 Bulk rating ("Score All") & result paging

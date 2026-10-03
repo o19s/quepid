@@ -191,40 +191,58 @@ describe("targeted search adapter", () => {
     expect(adapter.paging).toBe(false)
   })
 
-  it("rates every listed document in bulk, or clears them all", () => {
-    const first = { id: 1, rateBulk: vi.fn(), resetBulkRatings: vi.fn() }
+  it("rates every listed document in bulk, or clears them all", async () => {
+    const first = {
+      id: 1,
+      rateBulk: vi.fn(() => Promise.resolve()),
+      resetBulkRatings: vi.fn(() => Promise.resolve())
+    }
     const { adapter, config } = buildAdapter()
 
-    expect(adapter.rateAll("2")).toBe(true)
+    await expect(adapter.rateAll("2")).resolves.toBe(true)
     expect(config.query.touchModifiedAt).not.toHaveBeenCalled()
 
     adapter.docs = [first, { id: 2 }]
-    adapter.rateAll("2")
-    adapter.rateAll(null)
+    await adapter.rateAll("2")
+    await adapter.rateAll(null)
 
     expect(first.rateBulk).toHaveBeenCalledWith([1, 2], 2)
     expect(first.resetBulkRatings).toHaveBeenCalledWith([1, 2])
     expect(config.query.touchModifiedAt).toHaveBeenCalledTimes(2)
   })
 
-  it("clears a single rating, and ignores documents that aren't listed", () => {
-    const doc = { id: 7, rate: vi.fn(), resetRating: vi.fn() }
+  it("clears a single rating, and ignores documents that aren't listed", async () => {
+    const doc = { id: 7, rate: vi.fn(() => Promise.resolve()), resetRating: vi.fn(() => Promise.resolve()) }
     const { adapter, config } = buildAdapter()
     adapter.docs = [doc]
 
-    expect(adapter.rate("7", null)).toBe(true)
+    await expect(adapter.rate("7", null)).resolves.toBe(true)
     expect(doc.resetRating).toHaveBeenCalledOnce()
-    expect(adapter.rate("missing", 1)).toBe(false)
+    await expect(adapter.rate("missing", 1)).resolves.toBe(false)
     expect(config.query.touchModifiedAt).toHaveBeenCalledOnce()
   })
 
-  it("mutates live rateable documents through the adapter", () => {
-    const doc = { id: "doc1", rate: vi.fn(), resetRating: vi.fn() }
+  it("mutates live rateable documents through the adapter", async () => {
+    const doc = { id: "doc1", rate: vi.fn(() => Promise.resolve()), resetRating: vi.fn(() => Promise.resolve()) }
     const { adapter, config } = buildAdapter()
     adapter.docs = [doc]
 
-    expect(adapter.rate("doc1", "3")).toBe(true)
+    await expect(adapter.rate("doc1", "3")).resolves.toBe(true)
     expect(doc.rate).toHaveBeenCalledWith(3)
+    expect(config.query.touchModifiedAt).toHaveBeenCalledOnce()
+  })
+
+  it("touches the query only after the rating request resolves", async () => {
+    let resolveRating
+    const doc = { id: "doc1", rate: vi.fn(() => new Promise((resolve) => { resolveRating = resolve })) }
+    const { adapter, config } = buildAdapter()
+    adapter.docs = [doc]
+
+    const rated = adapter.rate("doc1", "1")
+    expect(config.query.touchModifiedAt).not.toHaveBeenCalled()
+
+    resolveRating()
+    await expect(rated).resolves.toBe(true)
     expect(config.query.touchModifiedAt).toHaveBeenCalledOnce()
   })
 })

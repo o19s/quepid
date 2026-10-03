@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-02
+**Last updated:** 2026-10-03
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -41,9 +41,11 @@ Found in the same before/after replay against `main` (`86e3de9f`):
 - The background-run button reads "Rerun My Searches in the Background!"; `main` says "Rerun My Searches Now in the Background!".
 - Missing Documents names the static engine "Static"; `main` says "Static File" (scenario 4.9).
 
-### [MIGRATION-FOLLOWUP] Move Query modal ignores Escape after a case is chosen
+### [MIGRATION-FOLLOWUP] Core modals ignore Escape after an in-modal control re-renders
 
 Picking a case calls `move_query_core_controller.js#renderCases`, which rebuilds the list buttons. The clicked button is replaced, so focus falls back to `<body>`. Bootstrap only handles Escape when focus is inside the modal, so Escape no longer closes it (the close button still works). Keep focus on the newly rendered active item. Found on 2026-10-02 while verifying scenario 4.4.
+
+The same focus loss happens after a failed **Move to …** (the footer button is disabled during the request) and after **Refresh ratings from book** in the Frog Report (scenarios 4.4, 6.9, 16.4). A freshly opened modal closes on Escape normally. Fix it once for core modals, for example by returning focus to the modal element when the focused control is disabled or removed, rather than per controller.
 
 ### [MIGRATION-FOLLOWUP] core_smoke E2E fails against current dev data
 
@@ -66,6 +68,10 @@ shared API and migration guidance.
 ### [PREEXISTING] P2 — Accessibility
 
 Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario.
+
+axe-core flags two unlabeled `<select>`s as critical (`select-name`): the API snapshot picker in the Export modal (`shared/_export_case_core_modal.html.erb`) and each snapshot picker in Compare Snapshots (`diff_core_controller.js` builds a `<label>` that isn't tied to its select). Both were unlabeled on `main` too. Associate the labels (`for`/`id` or `aria-label`). The same scan reports `heading-order` in the Export, Compare Snapshots and Judgements modals (scenario 16.4).
+
+The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` elements without `href`, so they can't be reached with the keyboard. Make them buttons. Not compared against `main`.
 
 ### [PREEXISTING] P2 — Try delete has no confirm dialog
 
@@ -526,6 +532,24 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 ### [PREEXISTING] New annotation shows its score unrounded
 
 Right after **Create** in Tune Relevance → Annotations, the new entry reads e.g. `Score: 0.08723905360685648`; after an edit (re-rendered from the server) the same annotation reads `0.0872391`. `annotations_controller.js` appends `annotation.score.score` raw, as the Angular template did. Format the score consistently (e.g. two decimals, like the case score badge).
+
+---
+
+### [PREEXISTING] Compare Snapshots copy says 1–3 but allows 5
+
+The modal says "Select 1-3 snapshots to compare", but `diff_core_controller.js` caps selections at `maxSnapshots` (default 5), as `main` did via `queryViewSvc.getMaxSnapshots()`. Make the copy read from the same limit.
+
+---
+
+### [PREEXISTING] Tune Relevance drawer can be dragged wider than the window
+
+Dragging the slider past the left edge of the window leaves the drawer wider than the viewport (main column about 230px, drawer about 1490px at a 1440px window), and resizing the window doesn't correct it. `pane_controller.js#moveEastTo` uses `event.clientX` unclamped, as `main`'s `paneSvc.js` did. Clamp the position to a minimum main-column width and a minimum drawer width.
+
+---
+
+### [PREEXISTING] Cloning a case doesn't keep manual query order
+
+Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item` re-sequences `arranged_at` on create, so the original order isn't copied. Copy `arranged_at` (or re-sequence in the original order) and cover it with a model test.
 
 ---
 
