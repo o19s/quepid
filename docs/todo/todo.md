@@ -160,12 +160,9 @@ stale request cannot report an error in another case's modal.
 
 ### [MIGRATION-FOLLOWUP] P3 — Live-query listeners have no teardown
 
-The `case-book:associated` document listener inside
-`app/javascript/utils/live_query_runtime_owner.js` is installed on each factory
-call without removal. Its case reload promise also has no rejection handler.
-`app/javascript/utils/live_query_events.js#connect` installs five listeners
+`app/javascript/utils/live_query_events.js#connect` installs six listeners
 without a disconnect method or duplicate-connect guard. Add explicit lifecycle
-teardown/idempotent connection and handle the reload rejection. Test repeated
+teardown/idempotent connection and handle reload rejections. Test repeated
 connect/disconnect and failed reloads.
 
 ### [MIGRATION-FOLLOWUP] P3 — Activity URLs assume an existing query string

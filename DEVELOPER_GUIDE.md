@@ -879,11 +879,10 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `quepid:case-header-stale` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
 | `quepid:case-team-changed` | `share-case-core` | none in the app (tested only) |
 | `case-settings:updated` | `utils/settings_runtime` | none in the app |
-| `case-book:associated` | no emitter in the app | `utils/live_query_runtime_owner` (page-lifetime) |
 | `pick-scorer:selected` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
 | `query-options:saved` | `query-options-core` | `utils/live_query_events` |
 | `judgements:queries-need-reload`, `imports:queries-need-reload` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (runtime checks `detail.caseId`) |
-| `judgements:book-settings-saved` | `judgements-core` | none in the app |
+| `judgements:book-settings-saved` | `judgements-core` | `utils/live_query_events` (reconfigures book sync), `core_runtime.js` (updates `caseState` book; page-lifetime) |
 | `ratings:changed` | `utils/live_query_runtime_owner` (fallback only when there is no scoring store) | `utils/live_query_events` |
 | `queries-state:changed` | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
 | `query-diffs:refreshed` | `utils/live_query_runtime_owner` | `qscore-case` |

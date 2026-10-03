@@ -1053,7 +1053,7 @@ State lives in plain-JS stores (`app/javascript/stores/`, reached through `getCo
 | `query-options:saved` | Query options saved | Live-query events runtime (set options, rescore) |
 | `pick-scorer:selected` | Scorer chosen in the modal | Live-query events runtime (set scorer, rescore) |
 | `judgements:queries-need-reload`, `imports:queries-need-reload` | Judgements or ratings imports finished | Live-query events runtime (reset, re-bootstrap, `searchAll`) |
-| `case-book:associated` | Case linked to a book | Live-query runtime (re-fetch case, reconfigure book sync) |
+| `judgements:book-settings-saved` | Book settings saved in the judgements modal | Live-query events runtime (reconfigure book sync); `core_runtime.js` (update `caseState` book) |
 | `query-diffs:refreshed` | Diff scoring recomputed | `qscore-case` |
 | `core-bootstrap:ready` / `core-bootstrap:failed` | Case bootstrap finished / failed | `case-toolbar` (ready); tests read `window.quepidCoreBootstrap` |
 | `quepid:case-selected` | Case selected | `core_runtime.js` (updates `caseState`) |
@@ -1367,7 +1367,7 @@ Comprehensive HTTP status code mapping (100+ codes mapped to human-readable name
 The query evaluation page integrates with the Book (judgment collection) system:
 
 ### Sync Flow (`createBookSyncRuntime().sync()` in `utils/book_sync.js`)
-1. On case load (and on `case-book:associated`), `GET api/cases/{caseNo}` supplies `book_id` and `auto_populate_book_pairs`; syncing only happens when `auto_populate_book_pairs` is true
+1. On case load, `GET api/cases/{caseNo}` supplies `book_id` and `auto_populate_book_pairs`; saving book settings in the judgements modal (`judgements:book-settings-saved`) updates them in place; syncing only happens when `auto_populate_book_pairs` is true
 2. Builds query-doc pairs from current query results, each containing:
    - `query_text`, `doc_id`, `position` (1-based counter)
    - `document_fields`: extracted title, thumb, image, and other field values

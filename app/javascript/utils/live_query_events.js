@@ -19,6 +19,7 @@ export function createLiveQueryEventsRuntime({
   setQueryOptions,
   setScorer,
   reloadQueries,
+  configureBook,
   schedule,
   scheduleApply
 }) {
@@ -60,6 +61,15 @@ export function createLiveQueryEventsRuntime({
     schedule(() => reloadQueries(detail.caseId))
   }
 
+  function bookSettingsSaved(event) {
+    const detail = event.detail || {}
+    if (Number(detail.caseId) !== Number(getCaseNo())) return
+    configureBook({
+      bookId: detail.bookId ?? null,
+      autoPopulate: detail.autoPopulateBookPairs === true
+    })
+  }
+
   function connect() {
     const ratingSource = scoringStore || eventTarget
     const ratingEvent = scoringStore ? "rating-changed" : "ratings:changed"
@@ -68,6 +78,7 @@ export function createLiveQueryEventsRuntime({
     eventTarget.addEventListener("pick-scorer:selected", scorerSelected)
     eventTarget.addEventListener("judgements:queries-need-reload", queriesNeedReload)
     eventTarget.addEventListener("imports:queries-need-reload", queriesNeedReload)
+    eventTarget.addEventListener("judgements:book-settings-saved", bookSettingsSaved)
   }
 
   return { connect }

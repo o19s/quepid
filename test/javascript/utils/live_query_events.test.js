@@ -13,6 +13,7 @@ describe("live query events runtime", () => {
     const scheduleApply = vi.fn(callback => callback())
     const setScorer = vi.fn().mockResolvedValue(undefined)
     const reloadQueries = vi.fn().mockResolvedValue(undefined)
+    const configureBook = vi.fn()
     const runtime = createLiveQueryEventsRuntime({
       eventTarget,
       scoringStore,
@@ -29,11 +30,12 @@ describe("live query events runtime", () => {
       },
       setScorer,
       reloadQueries,
+      configureBook,
       schedule,
       scheduleApply
     })
     runtime.connect()
-    return { eventTarget, scoringStore, query, scoreAll, schedule, scheduleApply, setScorer, reloadQueries, invalidateRatedDocs }
+    return { eventTarget, scoringStore, query, scoreAll, schedule, scheduleApply, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
   }
 
   it("invalidates and rescoring on rating changes", () => {
@@ -77,5 +79,29 @@ describe("live query events runtime", () => {
 
     expect(reloadQueries).toHaveBeenNthCalledWith(1, 7)
     expect(reloadQueries).toHaveBeenNthCalledWith(2, 7)
+  })
+
+  it("reconfigures book sync when the active case's book settings are saved", () => {
+    const { eventTarget, configureBook } = setup()
+
+    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+      detail: { caseId: 7, bookId: 4, bookName: "Catalog", autoPopulateBookPairs: true }
+    }))
+    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+      detail: { caseId: 7, bookId: null, autoPopulateBookPairs: false }
+    }))
+
+    expect(configureBook).toHaveBeenNthCalledWith(1, { bookId: 4, autoPopulate: true })
+    expect(configureBook).toHaveBeenNthCalledWith(2, { bookId: null, autoPopulate: false })
+  })
+
+  it("ignores book settings saved for another case", () => {
+    const { eventTarget, configureBook } = setup()
+
+    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+      detail: { caseId: 8, bookId: 4, autoPopulateBookPairs: true }
+    }))
+
+    expect(configureBook).not.toHaveBeenCalled()
   })
 })

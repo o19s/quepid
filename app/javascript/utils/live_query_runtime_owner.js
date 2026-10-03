@@ -346,15 +346,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   const runtimeFramework = liveQueryServices.framework
   const runtimeDomain = liveQueryServices.domain
 
-  document.addEventListener("case-book:associated", function () {
-    // Re-fetch case data to update cached sync properties
-    if (caseNo && caseNo !== -1) {
-      runtimeFramework.get("api/cases/" + caseNo).then(function (response) {
-        liveQueryServices.book.configure(caseNo, response)
-      })
-    }
-  })
-
   function reset() {
     liveQueryRegistry.clear({ resetStore: true })
     svc.showOnlyRated = false
@@ -544,6 +535,9 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       return search.queryCapabilities.bootstrapQueries(caseId).then(function () {
         return search.queryCommands.searchAll()
       })
+    },
+    configureBook: function ({ bookId, autoPopulate }) {
+      bookSyncRuntime.configure({ caseId: getCaseNo(), bookId, autoPopulate })
     },
     schedule: function (callback) {
       runtimeFramework.schedule(callback)
