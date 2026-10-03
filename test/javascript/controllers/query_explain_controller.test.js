@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryExplainController from "controllers/query_explain_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 const dynamicModal = { element: document.createElement("div"), dispose: vi.fn() }
 
@@ -36,12 +37,17 @@ function baseData(overrides = {}) {
   }
 }
 
-function buildController(element, data) {
-  const controller = Object.create(QueryExplainController.prototype)
-  controller.element = element
-  controller.dataValue = data
-  return controller
+function buildController(element, data, renderQueryTemplate = vi.fn()) {
+  const queriesList = { explainData: vi.fn(() => data), renderQueryTemplate }
+  return buildControllerFixture(QueryExplainController, {
+    element,
+    values: { queryId: 7 },
+    outlets: { queriesList }
+  })
 }
+
+// Lets the awaited outlet promise settle before asserting on the rendered pane.
+const flush = () => new Promise(resolve => setTimeout(resolve))
 
 function shownTab(el, tabId) {
   el.querySelector(`#${tabId}`).dispatchEvent(new Event("shown.bs.tab"))
@@ -64,6 +70,7 @@ describe("QueryExplainController", () => {
   afterEach(() => {
     element.remove()
     document.getElementById("query-explain-modal-template")?.remove()
+    vi.restoreAllMocks()
   })
 
   it("renders an Explain Query trigger button on connect", () => {
@@ -98,15 +105,13 @@ describe("QueryExplainController", () => {
     )
   })
 
-  it("refreshes its data synchronously before opening", () => {
-    const controller = buildController(element, baseData({ queryDetails: "stale" }))
+  it("reads its data from the queries-list outlet when opening", () => {
+    const controller = buildController(element, baseData({ queryDetails: "fresh" }))
     QueryExplainController.prototype.connect.call(controller)
-    element.addEventListener("query-explain:before-open", event => {
-      event.detail.data = baseData({ queryDetails: "fresh" })
-    })
 
     controller.requestOpen()
 
+    expect(controller.queriesListOutlet.explainData).toHaveBeenCalledWith(7)
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       dynamicModal.element.querySelector(".query-explain-params"),
       "fresh",
@@ -158,30 +163,27 @@ describe("QueryExplainController", () => {
     controller.requestOpen()
 
     const el = dynamicModal.element
-    const dispatchSpy = vi.spyOn(controller.element, "dispatchEvent")
     shownTab(el, "query-explain-tab-template")
 
     expect(el.querySelector(".query-explain-template").textContent).toContain("This is not a templated query.")
-    expect(dispatchSpy).not.toHaveBeenCalled()
+    expect(controller.queriesListOutlet.renderQueryTemplate).not.toHaveBeenCalled()
   })
 
-  it("requests the rendered template from the host when the tab is shown, and renders the response", () => {
-    const controller = buildController(element, baseData({ supportsTemplate: true }))
+  it("awaits the rendered template from the queries-list outlet when the tab is shown", async () => {
+    let resolveRender
+    const render = vi.fn(() => new Promise(resolve => { resolveRender = resolve }))
+    const controller = buildController(element, baseData({ supportsTemplate: true }), render)
     QueryExplainController.prototype.connect.call(controller)
     controller.requestOpen()
     const el = dynamicModal.element
 
-    let requestEvent = null
-    controller.element.addEventListener("query-explain:render-template", (event) => { requestEvent = event })
     shownTab(el, "query-explain-tab-template")
 
-    expect(requestEvent).not.toBeNull()
-    expect(requestEvent.bubbles).toBe(true)
+    expect(render).toHaveBeenCalledWith(7)
     expect(el.querySelector(".query-explain-template").textContent).toContain("Rendering query template")
 
-    controller.element.dispatchEvent(new CustomEvent("query-explain:template-rendered", {
-      detail: { isTemplatedQuery: true, renderedQueryTemplate: '{"template":"rendered"}' }
-    }))
+    resolveRender({ isTemplatedQuery: true, renderedQueryTemplate: '{"template":"rendered"}' })
+    await flush()
 
     expect(el.querySelector(".query-explain-template-json").textContent).toBe('{"template":"rendered"}')
 
@@ -189,30 +191,42 @@ describe("QueryExplainController", () => {
     expect(copyText).toHaveBeenCalledWith('{"template":"rendered"}')
   })
 
-  it("shows 'not a templated query' when the host reports the query isn't templated after all", () => {
-    const controller = buildController(element, baseData({ supportsTemplate: true }))
+  it("shows 'not a templated query' when the host reports the query isn't templated after all", async () => {
+    const render = vi.fn().mockResolvedValue({ isTemplatedQuery: false })
+    const controller = buildController(element, baseData({ supportsTemplate: true }), render)
     QueryExplainController.prototype.connect.call(controller)
     controller.requestOpen()
     const el = dynamicModal.element
     shownTab(el, "query-explain-tab-template")
-
-    controller.element.dispatchEvent(new CustomEvent("query-explain:template-rendered", {
-      detail: { isTemplatedQuery: false }
-    }))
+    await flush()
 
     expect(el.querySelector(".query-explain-template").textContent).toContain("This is not a templated query.")
   })
 
-  it("shows a warning when the host reports an error rendering the template", () => {
-    const controller = buildController(element, baseData({ supportsTemplate: true }))
+  it("shows a warning when rendering the template rejects", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const render = vi.fn().mockRejectedValue(new Error("engine down"))
+    const controller = buildController(element, baseData({ supportsTemplate: true }), render)
     QueryExplainController.prototype.connect.call(controller)
     controller.requestOpen()
     const el = dynamicModal.element
     shownTab(el, "query-explain-tab-template")
+    await flush()
 
-    controller.element.dispatchEvent(new CustomEvent("query-explain:template-rendered", {
-      detail: { isTemplatedQuery: true, error: true }
-    }))
+    expect(el.querySelector(".query-explain-template").textContent).toContain("Unable to render the query template.")
+  })
+
+  it("shows the same warning instead of hanging when there is no queries-list outlet", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const controller = buildController(element, baseData({ supportsTemplate: true }))
+    QueryExplainController.prototype.connect.call(controller)
+    controller.requestOpen()
+    const el = dynamicModal.element
+    Object.defineProperty(controller, "queriesListOutlet", {
+      get() { throw new Error("Missing outlet element \"queries-list\"") }
+    })
+    shownTab(el, "query-explain-tab-template")
+    await flush()
 
     expect(el.querySelector(".query-explain-template").textContent).toContain("Unable to render the query template.")
   })

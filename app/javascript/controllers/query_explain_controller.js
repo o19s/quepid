@@ -13,18 +13,18 @@ const TABS = [
  * "Explain Query" modal on the per-query toolbar (was the `query_explain`
  * former `$quepidModal` + `QueryExplainModalInstanceCtrl` component).
  *
- * Params/Parsing tabs are sync data computed by the query-list controller into
- * `data-query-explain-data-value` (same bridge pattern as match-explain).
+ * Params/Parsing tab data is read from the `queries-list` outlet when the modal
+ * opens, so it reflects the query's latest search.
  * The Query Template tab needs a live network call
  * (`query.searcher.renderTemplate()`, ES/OS-only) that still runs through the
- * live searcher, so it's requested via a bubbling `query-explain:render-template`
- * CustomEvent and delivered back via `query-explain:template-rendered`.
+ * live searcher, so it's awaited from `queriesListOutlet.renderQueryTemplate()`.
  * Re-requested every time the tab is shown, matching the
  * deleted template's `ng-click="ctrl.renderQueryTemplate()"` on the tab
  * button itself.
  */
 export default class extends Controller {
-  static values = { data: Object }
+  static outlets = ["queries-list"]
+  static values = { queryId: Number }
 
   connect() {
     const button = document.createElement("button")
@@ -36,15 +36,10 @@ export default class extends Controller {
   }
 
   requestOpen() {
-    const event = new CustomEvent("query-explain:before-open", {
-      bubbles: true,
-      detail: { data: this.dataValue }
-    })
-    this.element.dispatchEvent(event)
-    this.open(event.detail.data)
+    this.open(this.queriesListOutlet.explainData(this.queryIdValue))
   }
 
-  open(data = this.dataValue) {
+  open(data) {
     this.toggledPanel = "queryDetails"
 
     const modal = openDynamicModal({
@@ -97,15 +92,17 @@ export default class extends Controller {
     }
   }
 
-  requestTemplate(templatePane) {
+  async requestTemplate(templatePane) {
     templatePane.replaceChildren(Object.assign(document.createElement("p"), { textContent: "Rendering query template…" }))
 
-    const onResult = (event) => {
-      this.element.removeEventListener("query-explain:template-rendered", onResult)
-      this.renderTemplateResult(templatePane, event.detail)
+    let result
+    try {
+      result = await this.queriesListOutlet.renderQueryTemplate(this.queryIdValue)
+    } catch (error) {
+      console.error("query-explain: render template failed", error)
+      result = { error: true }
     }
-    this.element.addEventListener("query-explain:template-rendered", onResult)
-    this.element.dispatchEvent(new CustomEvent("query-explain:render-template", { bubbles: true }))
+    this.renderTemplateResult(templatePane, result)
   }
 
   renderTemplateResult(templatePane, detail) {

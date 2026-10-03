@@ -1,6 +1,7 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
+import { hideBsModal } from "utils/bs_modal"
 import MoveQueryCoreController from "controllers/move_query_core_controller"
 
 vi.mock("api/fetch", () => ({
@@ -8,7 +9,8 @@ vi.mock("api/fetch", () => ({
 }))
 
 vi.mock("utils/bs_modal", () => ({
-  getOrCreateBsModal: vi.fn(() => ({ hide: vi.fn() }))
+  getOrCreateBsModal: vi.fn(() => ({ hide: vi.fn() })),
+  hideBsModal: vi.fn()
 }))
 
 function buildController(overrides = {}) {
@@ -23,7 +25,11 @@ function buildController(overrides = {}) {
     },
     values: {
       casesUrl: "/api/cases"
-    }
+    },
+    outlets: {
+      queryCommandBridge: { queryRemoved: vi.fn() }
+    },
+    overrides: { dispatch: vi.fn() }
   })
   controller.cases = []
   Object.assign(controller, overrides)
@@ -92,7 +98,27 @@ describe("MoveQueryCoreController", () => {
       method: "PUT",
       body: JSON.stringify({ other_case_id: 8 })
     }))
+    const detail = { caseId: 4, queryId: 12, targetCaseId: 8 }
+    expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith(detail)
+    expect(controller.dispatch).toHaveBeenCalledWith("completed", { detail })
     expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Query moved successfully!")
+    expect(window.quepidDom.flash.show).not.toHaveBeenCalledWith("error", expect.anything())
+    expect(hideBsModal).toHaveBeenCalledOnce()
+  })
+
+  it("re-enables Move and skips reconciliation when the move fails", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    const controller = buildController()
+    await controller.openFor(trigger())
+    controller.selectCase({ params: { caseId: 8 } })
+    apiFetch.mockResolvedValue({ ok: false, status: 500, text: async () => "", json: async () => null })
+
+    await controller.submit({ preventDefault: vi.fn() })
+
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+    expect(controller.queryCommandBridgeOutlet.queryRemoved).not.toHaveBeenCalled()
+    expect(controller.dispatch).not.toHaveBeenCalled()
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to move query.")
   })
 
   it("reports missing query identity without submitting", async () => {

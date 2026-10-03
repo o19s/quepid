@@ -72,15 +72,15 @@ describe("CoreBootstrapController", () => {
     const failed = vi.fn()
     const ready = vi.fn()
     document.addEventListener("core-bootstrap:failed", failed)
-    document.addEventListener("core-bootstrap:ready", ready)
     const controller = Object.create(CoreBootstrapController.prototype)
     controller.caseNoValue = caseNo
     controller.tryNoValue = 1
     controller.communalScorersOnlyValue = "false"
     controller.queryListSortableValue = "true"
+    controller.caseToolbarOutlet = { showActions: ready }
+    controller.hasCaseToolbarOutlet = true
     await controller.bootstrap()
     document.removeEventListener("core-bootstrap:failed", failed)
-    document.removeEventListener("core-bootstrap:ready", ready)
     return { flash, failed, ready }
   }
 
@@ -103,7 +103,7 @@ describe("CoreBootstrapController", () => {
     const { flash, ready, failed } = await bootstrapCase()
     await Promise.resolve()
 
-    expect(ready.mock.calls[0][0].detail).toEqual({ caseNo: 2, tryNo: 1 })
+    expect(ready).toHaveBeenCalledOnce()
     expect(window.quepidCoreBootstrap).toEqual({ ready: true, caseNo: 2, tryNo: 1 })
     expect(failed).not.toHaveBeenCalled()
     expect(flash.hide).toHaveBeenCalledWith("search-error")

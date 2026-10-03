@@ -2,7 +2,7 @@
   class="results"
   id="query-container"
   data-controller="queries-list query-lifecycle"
-  data-action="add-query:submit->query-lifecycle#handleAddQueries query-row:toggle->queries-list#handleQueryToggle query-command:delete-completed@document->queries-list#handleQueryDeleteCompleted query-command:move-completed@document->queries-list#handleQueryMoveCompleted queries-state:changed@document->queries-list#refreshListState"
+  data-action="add-query:submit->query-lifecycle#handleAddQueries query-row:toggle->queries-list#handleQueryToggle query-delete:completed@document->queries-list#handleQueryDeleteCompleted move-query-core:completed@document->queries-list#handleQueryMoveCompleted queries-state:changed@document->queries-list#refreshListState"
   data-queries-list-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
   data-queries-list-position-url-value="api/cases/<%= kase.id %>/queries"
   data-query-lifecycle-case-id-value="<%= kase.id %>">

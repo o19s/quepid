@@ -440,13 +440,9 @@ export default class extends Controller {
     searchResults.innerHTML = searchResultsTemplate({
       caseId: query.caseNo,
       queryId: query.queryId,
-      queryExplainData: JSON.stringify(queryExplainData(query)),
       queryOptionsData: JSON.stringify(query.options || {})
     })
-    const searchResultsRoot = searchResults.firstElementChild
-    expanded.appendChild(searchResultsRoot)
-
-    this.bridgeQueryExplainTemplate(query.queryId, searchResultsRoot)
+    expanded.appendChild(searchResults.firstElementChild)
 
     const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
     const diffSnapshot = this.documentStore?.query(query.queryId)?.diffs
@@ -461,37 +457,25 @@ export default class extends Controller {
     })
   }
 
-  bridgeQueryExplainTemplate(queryId, searchResultsRoot) {
-    const explain = searchResultsRoot.querySelector('[data-controller="query-explain"]')
-    if (!explain) return
+  // `query-explain` outlet API: Params/Parsing data from the store, read when the modal opens.
+  explainData(queryId) {
+    return queryExplainData(this.store?.query?.(queryId) || {})
+  }
 
-    explain.addEventListener("query-explain:before-open", event => {
-      event.detail.data = queryExplainData(this.store?.query?.(queryId) || {})
-    })
+  // `query-explain` outlet API: renders the template through the live searcher; rejects on failure.
+  async renderQueryTemplate(queryId) {
+    const searcher = this.queryCapabilities?.getQuery?.(queryId)?.searcher
+    if (typeof searcher?.isTemplateCall !== "function") throw new Error(`No live searcher for query ${queryId}`)
 
-    explain.addEventListener("query-explain:render-template", event => {
-      event.stopPropagation()
-      const searcher = this.queryCapabilities?.getQuery?.(queryId)?.searcher
-      if (!searcher || typeof searcher.isTemplateCall !== "function") return
+    const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
+    // Only templated queries can be rendered; asking the engine to render anything else is a 400.
+    if (!isTemplatedQuery) return { isTemplatedQuery }
 
-      const isTemplatedQuery = searcher.isTemplateCall(searcher.args)
-      const dispatchResult = detail => explain.dispatchEvent(new CustomEvent("query-explain:template-rendered", { detail }))
-
-      // Only templated queries can be rendered; asking the engine to render anything else is a 400.
-      if (!isTemplatedQuery) {
-        dispatchResult({ isTemplatedQuery })
-        return
-      }
-
-      searcher.renderTemplate().then(() => {
-        dispatchResult({
-          isTemplatedQuery,
-          renderedQueryTemplate: JSON.stringify(searcher.renderedTemplateJson.template_output, null, 2)
-        })
-      }).catch(() => {
-        dispatchResult({ isTemplatedQuery, error: true })
-      })
-    })
+    await searcher.renderTemplate()
+    return {
+      isTemplatedQuery,
+      renderedQueryTemplate: JSON.stringify(searcher.renderedTemplateJson.template_output, null, 2)
+    }
   }
 
   forwardQueryToggle(event) {
@@ -513,8 +497,8 @@ export default class extends Controller {
     if (queryId === undefined || queryId === null) return
 
     // Stimulus owns the persisted mutation and the stores own the rendered
-    // collection. The live-query runtime drops its temporary query object from
-    // the same document event; the query list only updates its read models.
+    // collection. `query-delete` has already told the query-command bridge to
+    // drop the live query object; the query list only updates its read models.
     this.store?.remove?.(queryId)
     this.documentStore?.removeQuery?.(queryId)
     this.scheduleRender()

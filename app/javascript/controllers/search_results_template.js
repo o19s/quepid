@@ -6,11 +6,10 @@ import { escapeAttribute } from "utils/html"
  * Stimulus owns this shell, the document list, and all of the query actions.
  * Live search/scoring remains behind the query-state adapter.
  */
-export function searchResultsTemplate({ caseId, queryId, queryExplainData, queryOptionsData = "{}" }) {
+export function searchResultsTemplate({ caseId, queryId, queryOptionsData = "{}" }) {
   // Raw values in; every interpolation below is escaped here, once.
   caseId = escapeAttribute(caseId)
   queryId = escapeAttribute(queryId)
-  queryExplainData = escapeAttribute(queryExplainData)
   queryOptionsData = escapeAttribute(queryOptionsData)
   return `
     <div data-controller="search-results" data-action="rating-popover:rate->search-results#handleRating rating-popover:reset->search-results#handleRating query-row:toggle->search-results#handleQueryToggle search-result:show-document->search-results#handleShowDocument query-notes:close->search-results#closeNotes">
@@ -27,7 +26,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
             <button class="btn btn-outline-secondary btn-sm" data-action="click->search-results#toggleNotes">Toggle Notes</button>
           </div>
           <div class="btn-group me-2">
-            <div data-controller="query-explain" data-query-explain-data-value="${queryExplainData}"></div>
+            <div data-controller="query-explain" data-query-explain-query-id-value="${queryId}" data-query-explain-queries-list-outlet="#query-container"></div>
           </div>
           <div class="d-flex">
             <div class="btn-group me-2">
@@ -39,7 +38,7 @@ export function searchResultsTemplate({ caseId, queryId, queryExplainData, query
           </div>
           <div class="btn-group">
             <button class="btn btn-warning btn-sm" data-move-query-core-query-id-value="${queryId}" data-move-query-core-case-id-value="${caseId}" data-bs-toggle="modal" data-bs-target="#moveQueryModal">Move Query</button>
-            <button class="btn btn-danger btn-sm" data-controller="query-delete" data-query-delete-query-id-value="${queryId}" data-query-delete-delete-url-value="api/cases/${caseId}/queries/${queryId}" data-action="click->query-delete#remove">Delete Query</button>
+            <button class="btn btn-danger btn-sm" data-controller="query-delete" data-query-delete-query-command-bridge-outlet="body" data-query-delete-query-id-value="${queryId}" data-query-delete-delete-url-value="api/cases/${caseId}/queries/${queryId}" data-action="click->query-delete#remove">Delete Query</button>
           </div>
         </div>
 

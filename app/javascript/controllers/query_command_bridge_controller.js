@@ -26,10 +26,6 @@ export default class extends Controller {
     this.collectionStore?.removeEventListener("command", this.handleCollectionCommand)
   }
 
-  handleQueryRemovalCompleted(event) {
-    this.reconcileQueryRemoval(event.detail || {}, true)
-  }
-
   routeDocumentCommand({ command, queryId, docId, rating, ratedOnly }) {
     const queryCommands = getCoreCapabilities().queryCommands
     const handlers = {
@@ -52,11 +48,13 @@ export default class extends Controller {
     }
   }
 
-  reconcileQueryRemoval({ caseId, queryId }, rescore) {
+  // Outlet API for `query-delete` and `move-query-core`: drops the removed live
+  // Query object and rescores. A removal reported for another case is ignored.
+  queryRemoved({ caseId, queryId }) {
     if (queryId == null) return
 
     const capabilities = getCoreCapabilities().queryCapabilities
-    if (rescore && caseId != null && String(caseId) !== String(capabilities?.getCaseNo?.())) return
-    capabilities?.reconcileQueryRemoval?.(queryId, rescore)
+    if (caseId != null && String(caseId) !== String(capabilities?.getCaseNo?.())) return
+    capabilities?.reconcileQueryRemoval?.(queryId, true)
   }
 }

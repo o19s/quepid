@@ -17,7 +17,6 @@ test('core event actions deliver once and follow controller reconnects', async (
       { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleHeaderStale', event: 'quepid:case-header-stale' },
       { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleCaseRenamed', event: 'quepid:case-renamed' },
       { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleScorerSelected', event: 'pick-scorer:selected' },
-      { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleBootstrapReady', event: 'core-bootstrap:ready' },
       { selector: '[data-controller="qgraph"]', id: 'qgraph', method: 'handleScorePersisted', event: 'case-score:persisted' },
       { selector: '[data-controller="qgraph"]', id: 'qgraph', method: 'handleAnnotationsChanged', event: 'annotations:changed' },
       { selector: '[data-controller="add-query"]', id: 'add-query', method: 'refreshQueryState', event: 'queries-state:changed' },
@@ -30,11 +29,9 @@ test('core event actions deliver once and follow controller reconnects', async (
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleQueryToggle', event: 'query-row:toggle' },
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleShowDocument', event: 'search-result:show-document' },
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'closeNotes', event: 'query-notes:close' },
-      { selector: '[data-controller~="query-command-bridge"]', id: 'query-command-bridge', method: 'handleQueryRemovalCompleted', event: 'query-command:delete-completed' },
-      { selector: '[data-controller~="query-command-bridge"]', id: 'query-command-bridge', method: 'handleQueryRemovalCompleted', event: 'query-command:move-completed' },
       { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryToggle', event: 'query-row:toggle' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryDeleteCompleted', event: 'query-command:delete-completed' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryMoveCompleted', event: 'query-command:move-completed' },
+      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryDeleteCompleted', event: 'query-delete:completed' },
+      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryMoveCompleted', event: 'move-query-core:completed' },
       { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'refreshListState', event: 'queries-state:changed' },
       { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentShow', event: 'flash:show' },
       { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentHide', event: 'flash:hide' },
@@ -47,7 +44,7 @@ test('core event actions deliver once and follow controller reconnects', async (
       const previous = controller[probe.method];
       controller[probe.method] = (event: Event) => {
         if (event.type === probe.event) state.count += 1;
-        else if (['handleRating', 'handleQueryRemovalCompleted'].includes(probe.method)) previous.call(controller, event);
+        else if (probe.method === 'handleRating') previous.call(controller, event);
       };
       return state;
     });
@@ -67,7 +64,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     }
     return probes.map((probe: any) => probe.count);
   });
-  expect(await dispatch()).toEqual(Array(26).fill(1));
+  expect(await dispatch()).toEqual(Array(23).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.element.getAttribute('data-controller').split(' ').filter((id: string) => id !== probe.id).join(' '));
@@ -77,7 +74,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.every((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id));
   })).toBe(true);
-  expect(await dispatch()).toEqual(Array(26).fill(1));
+  expect(await dispatch()).toEqual(Array(23).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.originalControllers);
@@ -87,7 +84,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.filter((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id)).map((probe: any) => ({ id: probe.id, event: probe.event, attached: probe.element.isConnected }));
   })).toEqual([]);
-  expect(await dispatch()).toEqual(Array(26).fill(2));
+  expect(await dispatch()).toEqual(Array(23).fill(2));
 });
 
 test('generated result and match-explain controls route through declared actions', async ({ page }) => {

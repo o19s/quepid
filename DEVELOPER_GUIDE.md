@@ -873,7 +873,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 
 | Event | Emitter | Listeners |
 | --- | --- | --- |
-| `core-bootstrap:ready` | `core-bootstrap` | `case-toolbar` |
 | `core-bootstrap:failed` | `core-bootstrap` | none in the app (Playwright and tests read it) |
 | `quepid:case-selected` | `utils/case_runtime` | `core_runtime.js` (copies detail into `quepidSearch.caseState`; page-lifetime) |
 | `quepid:case-renamed` | `utils/case_runtime` | `case-toolbar` |
@@ -890,7 +889,8 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `query-diffs:refreshed` | `utils/live_query_runtime_owner` | `qscore-case` |
 | `case-score:persisted` | `qscore-case` | `qgraph` |
 | `annotations:changed` | `annotations` | `qgraph` |
-| `query-command:delete-completed`, `query-command:move-completed` | `query-delete`, `move-query-core` | `query-command-bridge`, `queries-list` |
+| `query-delete:completed` (Stimulus `dispatch` with `target: document`; a re-render can detach the button mid-request) | `query-delete` | `queries-list` |
+| `move-query-core:completed` (Stimulus `dispatch`; the modal is outside the list) | `move-query-core` | `queries-list` |
 | `flash:show`, `flash:hide` | `utils/flash.js` (`coreFlash`) | `flash` |
 
 **Element-scoped events** (dispatched on a controller's element, handled by an ancestor or a named sibling)
@@ -903,8 +903,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `query-notes:open` | `search-results` | `query-notes` |
 | `add-query:submit` | `add-query` | `query-lifecycle` (ancestor) |
 | `add-query:complete` | `query-lifecycle` | `add-query` |
-| `query-explain:before-open`, `query-explain:render-template` | `query-explain` | `queries-list` |
-| `query-explain:template-rendered` | `queries-list` | `query-explain` (one-shot, removed after the reply) |
 
 **Outlets** (a controller calls a peer directly; selectors are document-wide, so a controller on `<body>` is reachable from any modal)
 
@@ -915,10 +913,13 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `wizard-launcher` | `wizard` (`#wizardModal`) | `open()` |
 | `case-toolbar` | `pane` (`.pane_container`) | `toggle()` |
 | `judgements-core` | `share-case-core` (`#shareCaseModal`) | `openFromExternal(caseNo)` |
+| `query-explain` | `queries-list` (`#query-container`) | `explainData(queryId)`, `renderQueryTemplate(queryId)` |
+| `query-delete`, `move-query-core` | `query-command-bridge` (`body`) | `queryRemoved({ caseId, queryId })` |
+| `core-bootstrap` | `case-toolbar` (`#case-actions`) | `showActions()` |
 
-Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang. `wizard-launcher` is the exception: it checks `hasWizardOutlet`, because a page without the wizard modal simply has nothing to auto-open.
+Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang. `wizard-launcher` and `core-bootstrap` are the exceptions: they check `hasWizardOutlet` / `hasCaseToolbarOutlet`, because a page without the wizard modal has nothing to auto-open, and a toolbar that connects after bootstrap reads `window.quepidCoreBootstrap.ready` itself.
 
-Stimulus `this.dispatch()` calls (`query-delete:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
+Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
 
 **Adding or changing an event**
 

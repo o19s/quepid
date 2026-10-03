@@ -30,8 +30,7 @@ export default class extends Controller {
     if (window.quepidCoreBootstrap?.ready) this.showActions()
   }
 
-  handleBootstrapReady() { this.showActions() }
-
+  // Also the `core-bootstrap` outlet API, called once the case runtime is ready.
   showActions() {
     if (this.hasActionsTarget) this.actionsTarget.hidden = false
   }

@@ -7,11 +7,12 @@ import coreFlash from "utils/core_flash"
  * Move a query from the core case workspace to another case.
  *
  * The modal and case-list loading are Stimulus-owned. Stimulus owns the PUT;
- * the completion event lets the remaining live query object be reconciled
- * through the query-command bridge without issuing a second request.
+ * afterwards the query-command bridge outlet reconciles the live query object
+ * without a second request, and `queries-list` hears `move-query-core:completed`.
  */
 export default class extends CoreModalControllerBase {
   static targets = ["title", "loading", "empty", "caseList", "caseListLabel", "submitButton"]
+  static outlets = ["query-command-bridge"]
 
   static values = {
     casesUrl: String
@@ -68,20 +69,22 @@ export default class extends CoreModalControllerBase {
 
     try {
       await moveQuery(this.currentCaseId, this.queryId, this.selectedCase.case_id)
-      document.dispatchEvent(new CustomEvent("query-command:move-completed", {
-        detail: {
-          caseId: Number(this.currentCaseId),
-          queryId: Number(this.queryId),
-          targetCaseId: Number(this.selectedCase.case_id)
-        }
-      }))
-      coreFlash.show("success", "Query moved successfully!")
-      this.hide()
     } catch (error) {
       console.error("move-query-core: move failed", error)
       coreFlash.show("error", "Unable to move query.")
       this.submitButtonTarget.disabled = false
+      return
     }
+
+    const detail = {
+      caseId: Number(this.currentCaseId),
+      queryId: Number(this.queryId),
+      targetCaseId: Number(this.selectedCase.case_id)
+    }
+    this.queryCommandBridgeOutlet.queryRemoved(detail)
+    this.dispatch("completed", { detail })
+    coreFlash.show("success", "Query moved successfully!")
+    this.hide()
   }
 
   renderCases() {

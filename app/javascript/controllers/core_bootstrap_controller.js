@@ -5,6 +5,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
+  static outlets = ["case-toolbar"]
   static values = {
     caseNo: Number,
     tryNo: Number,
@@ -119,9 +120,10 @@ export default class extends Controller {
     }
   }
 
+  // The window flag covers a toolbar that connects after bootstrap finished.
   ready(detail) {
     window.quepidCoreBootstrap = { ready: true, ...detail }
-    document.dispatchEvent(new CustomEvent("core-bootstrap:ready", { detail }))
+    if (this.hasCaseToolbarOutlet) this.caseToolbarOutlet.showActions()
   }
 
   fail(error) {

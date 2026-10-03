@@ -81,15 +81,10 @@ describe("query_command_bridge_controller", () => {
   it("keeps live queries synchronized after Stimulus-owned mutations", () => {
     controller.connect()
 
-    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:delete-completed", {
-      detail: { queryId: 4 }
-    }))
-    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:move-completed", {
-      detail: { caseId: 7, queryId: 5 }
-    }))
-    controller.handleQueryRemovalCompleted(new CustomEvent("query-command:move-completed", {
-      detail: { caseId: 8, queryId: 6 }
-    }))
+    controller.queryRemoved({ queryId: 4 })
+    controller.queryRemoved({ caseId: 7, queryId: 5 })
+    controller.queryRemoved({ caseId: 8, queryId: 6 })
+    controller.queryRemoved({ caseId: 7 })
 
     expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, true)
     expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)

@@ -293,7 +293,7 @@ describe("queries_list_controller", () => {
     expect(controller.scheduleRender).toHaveBeenCalled()
   })
 
-  it("accepts the document-level delete completion event", () => {
+  it("accepts the document-level query-delete completion event", () => {
     const { controller } = controllerFor()
     const store = new QueryCollectionStore()
     const remove = vi.spyOn(store, "remove")
@@ -303,7 +303,7 @@ describe("queries_list_controller", () => {
     controller.scheduleRender = vi.fn()
     controller.connect()
 
-    controller.handleQueryDeleteCompleted(new CustomEvent("query-command:delete-completed", {
+    controller.handleQueryDeleteCompleted(new CustomEvent("query-delete:completed", {
       detail: { queryId: 7 }
     }))
 
@@ -311,6 +311,54 @@ describe("queries_list_controller", () => {
     expect(removeQuery).toHaveBeenCalledWith(7)
     controller.disconnect()
     delete window.quepidStore
+  })
+
+  it("serves query-explain the store's latest explain data", () => {
+    const { controller } = controllerFor()
+    controller.store = { query: vi.fn(id => (id === 3 ? { queryDetails: { q: "x" }, parsedQueryDetails: { b: 1, a: 2 } } : undefined)) }
+
+    const data = controller.explainData(3)
+
+    expect(controller.store.query).toHaveBeenCalledWith(3)
+    expect(data.queryDetails).toBe(JSON.stringify({ q: "x" }, null, 2))
+    expect(data.parsedQueryDetails).toBe(JSON.stringify({ a: 2, b: 1 }, null, 2))
+    expect(controller.explainData(99)).toMatchObject({ queryDetailsMessage: "No results yet." })
+  })
+
+  it("renders a templated query through the live searcher", async () => {
+    const { controller } = controllerFor()
+    const searcher = {
+      args: { id: "tmpl" },
+      isTemplateCall: vi.fn(() => true),
+      renderTemplate: vi.fn(async () => { searcher.renderedTemplateJson = { template_output: { query: 1 } } })
+    }
+    controller.queryCapabilities = { getQuery: vi.fn(() => ({ searcher })) }
+
+    await expect(controller.renderQueryTemplate(3)).resolves.toEqual({
+      isTemplatedQuery: true,
+      renderedQueryTemplate: JSON.stringify({ query: 1 }, null, 2)
+    })
+    expect(controller.queryCapabilities.getQuery).toHaveBeenCalledWith(3)
+    expect(searcher.isTemplateCall).toHaveBeenCalledWith({ id: "tmpl" })
+  })
+
+  it("does not ask the engine to render a non-templated query", async () => {
+    const { controller } = controllerFor()
+    const searcher = { isTemplateCall: () => false, renderTemplate: vi.fn() }
+    controller.queryCapabilities = { getQuery: () => ({ searcher }) }
+
+    await expect(controller.renderQueryTemplate(3)).resolves.toEqual({ isTemplatedQuery: false })
+    expect(searcher.renderTemplate).not.toHaveBeenCalled()
+  })
+
+  it("rejects template rendering when there is no live searcher or the engine fails", async () => {
+    const { controller } = controllerFor()
+    controller.queryCapabilities = { getQuery: () => undefined }
+    await expect(controller.renderQueryTemplate(3)).rejects.toThrow("No live searcher for query 3")
+
+    const searcher = { isTemplateCall: () => true, renderTemplate: vi.fn().mockRejectedValue(new Error("400")) }
+    controller.queryCapabilities = { getQuery: () => ({ searcher }) }
+    await expect(controller.renderQueryTemplate(3)).rejects.toThrow("400")
   })
 
   it("subscribes to the live collection store and flashes a sticky search-error on search-failed", () => {

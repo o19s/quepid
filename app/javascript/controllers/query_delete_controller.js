@@ -5,10 +5,13 @@ import coreFlash from "utils/core_flash"
 /**
  * Owns query-delete confirmation and persistence.
  *
- * The query-command bridge only reconciles the deleted live Query object;
- * persistence and rendered collection state stay Stimulus/store-owned.
+ * The query-command bridge outlet only reconciles the deleted live Query
+ * object; `queries-list` updates the stores from `query-delete:completed`.
+ * That goes on `document` because a list re-render during the request can
+ * detach this button, and an event from a detached element reaches nobody.
  */
 export default class extends Controller {
+  static outlets = ["query-command-bridge"]
   static values = { queryId: Number, deleteUrl: String }
 
   remove(event) {
@@ -29,15 +32,14 @@ export default class extends Controller {
 
     try {
       await requestJson(this.deleteUrlValue, { method: "DELETE" })
-
-      document.dispatchEvent(new CustomEvent("query-command:delete-completed", {
-        detail: { queryId: this.queryIdValue }
-      }))
-      this.dispatch("completed", { detail: { queryId: this.queryIdValue } })
     } catch (error) {
       console.error("query-delete: delete failed", error)
       this.element.disabled = false
       coreFlash.show("error", "Unable to delete query.")
+      return
     }
+
+    this.queryCommandBridgeOutlet.queryRemoved({ queryId: this.queryIdValue })
+    this.dispatch("completed", { target: document, detail: { queryId: this.queryIdValue } })
   }
 }
