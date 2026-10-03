@@ -172,9 +172,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-02T21:23:26Z
+        last_run: 2026-10-03T02:05:25Z
         result: pass
-        notes: "Covered live via Playwright MCP after DRY #13 (search engine catalog), on case 219 without finishing: the engine select shows the ERB-rendered built-ins (Static File label) followed by the Vespa preset once, and reopening the wizard does not duplicate it; the Static CSV label reads 'when Static File is selected'. Not covered live: Welcome-to-Finish flow, new-endpoint validation, tour edge cases."
+        notes: "Track C pair 2 (wizard-launcher calls the wizard outlet instead of wizard:open). branch-ui-diff old (HEAD 1db3cd0d) vs new (working tree), case 219 with ?showWizard=true: the wizard auto-opens on the Welcome step with a static backdrop and Escape does not close it, identical on both sides, with no console errors. Screenshots: .playwright-mcp/branch-ui-diff/track-c-pair2/. Earlier, after DRY #13 (search engine catalog), on case 219 without finishing: the engine select shows the ERB-rendered built-ins (Static File label) followed by the Vespa preset once, and reopening the wizard does not duplicate it; the Static CSV label reads 'when Static File is selected'. Not covered live: Welcome-to-Finish flow, new-endpoint validation, tour edge cases."
         paths: ["app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/quepid_search.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -350,10 +350,10 @@ parts:
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-03T02:05:25Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: the pane opens at 450px, drags to 647px without selecting text and closes, on both sides. Not covered live: odd-width edge cases. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
-        paths: ["app/javascript/controllers/pane_controller.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/index.html.erb"]
+        notes: "Track C pair 2 (case-toolbar calls the pane outlet instead of toggleEast). branch-ui-diff old (HEAD 1db3cd0d) vs new (working tree), case 219: the toolbar Tune Relevance link opens the east pane and closes it again, identical on both sides, with no console errors. Screenshots: .playwright-mcp/branch-ui-diff/track-c-pair2/. Earlier branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: the pane opens at 450px, drags to 647px without selecting text and closes, on both sides. Not covered live: odd-width edge cases. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        paths: ["app/javascript/controllers/pane_controller.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/index.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/views/core/_case_toolbar.html.erb"]
 
   "05":
     file: 05-core-workbench-history-snapshots-and-annotations.md
@@ -418,10 +418,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-10-02T20:38:36Z
+        last_run: 2026-10-03T02:05:25Z
         result: pass
-        notes: "Covered live via Playwright MCP for DRY #4: Share loaded OSC association and intercepted teams GET 503 error; Cancel closes both states. Modal before/after screenshots inspected in .playwright-mcp/dry4/ and match; background header/scroll varies. Not covered: actual share/unshare, team creation or external Judgements trigger."
-        paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
+        notes: "Track C pair 2 (judgements-core calls the share-case-core outlet instead of quepid:open-share-case-core). branch-ui-diff old (HEAD 1db3cd0d) vs new (working tree), case 219 with no teams: the Judgements 'share case' link hides Judgements and opens 'Share Case: E2E Static Fixture (10s of Queries)' with OSC listed and only one modal open, identical on both sides, with no console errors. Screenshots: .playwright-mcp/branch-ui-diff/track-c-pair2/. Earlier, for DRY #4: Share loaded OSC association and intercepted teams GET 503 error; Cancel closes both states. Not covered: actual share/unshare, team creation."
+        paths: ["app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/judgements_core_controller.js", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
         last_run: 2026-10-02T20:38:34Z

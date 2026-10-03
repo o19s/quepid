@@ -726,7 +726,7 @@ describe("WizardController", () => {
     })
   })
 
-  it("opens the modal statically (no backdrop dismiss, no escape) on wizard:open", () => {
+  it("opens the modal statically (no backdrop dismiss, no escape) when opened", () => {
     const controller = mount()
     controller.open()
     expect(getOrCreateBsModal).toHaveBeenCalledWith(controller.element, { backdrop: "static", keyboard: false })

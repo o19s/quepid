@@ -879,7 +879,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `quepid:case-renamed` | `utils/case_runtime` | `case-toolbar` |
 | `quepid:case-header-stale` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
 | `quepid:case-team-changed` | `share-case-core` | none in the app (tested only) |
-| `quepid:open-share-case-core` | `judgements-core` | `share-case-core` |
 | `case-settings:updated` | `utils/settings_runtime` | none in the app |
 | `case-book:associated` | no emitter in the app | `utils/live_query_runtime_owner` (page-lifetime) |
 | `pick-scorer:selected` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
@@ -893,7 +892,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `annotations:changed` | `annotations` | `qgraph` |
 | `query-command:delete-completed`, `query-command:move-completed` | `query-delete`, `move-query-core` | `query-command-bridge`, `queries-list` |
 | `flash:show`, `flash:hide` | `utils/flash.js` (`coreFlash`) | `flash` |
-| `toggleEast` | `case-toolbar` | `pane` |
 
 **Element-scoped events** (dispatched on a controller's element, handled by an ancestor or a named sibling)
 
@@ -907,7 +905,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `add-query:complete` | `query-lifecycle` | `add-query` |
 | `query-explain:before-open`, `query-explain:render-template` | `query-explain` | `queries-list` |
 | `query-explain:template-rendered` | `queries-list` | `query-explain` (one-shot, removed after the reply) |
-| `wizard:open` | `wizard-launcher` | `wizard` |
 
 **Outlets** (a controller calls a peer directly; selectors are document-wide, so a controller on `<body>` is reachable from any modal)
 
@@ -915,8 +912,11 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | --- | --- | --- |
 | `diff-core` | `snapshot-bridge` (`body`) | `currentSelections()`, `apply({ selections, snapshotsUrl })`, `clear()`, `delete({ snapshotId, snapshotsUrl })` |
 | `take-snapshot-core` | `snapshot-bridge` (`body`) | `create({ caseId, name, recordDocumentFields })` |
+| `wizard-launcher` | `wizard` (`#wizardModal`) | `open()` |
+| `case-toolbar` | `pane` (`.pane_container`) | `toggle()` |
+| `judgements-core` | `share-case-core` (`#shareCaseModal`) | `openFromExternal(caseNo)` |
 
-Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang.
+Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang. `wizard-launcher` is the exception: it checks `hasWizardOutlet`, because a page without the wizard modal simply has nothing to auto-open.
 
 Stimulus `this.dispatch()` calls (`query-delete:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
 

@@ -77,6 +77,21 @@ describe("JudgementsCoreController", () => {
     expect(controller.integrationTarget.classList.contains("d-none")).toBe(false)
   })
 
+  it("opens Share through the share-case-core outlet once the modal has hidden, once per hide", () => {
+    const shareCaseCore = { openFromExternal: vi.fn() }
+    const controller = buildModalController({ currentCaseId: "7", hide: vi.fn() })
+    controller.shareCaseCoreOutlet = shareCaseCore
+    const event = { preventDefault: vi.fn() }
+
+    controller.openShareCase(event)
+    controller.openShareCase(event)
+    expect(shareCaseCore.openFromExternal).not.toHaveBeenCalled()
+
+    controller.element.dispatchEvent(new Event("hidden.bs.modal"))
+    expect(shareCaseCore.openFromExternal).toHaveBeenCalledOnce()
+    expect(shareCaseCore.openFromExternal).toHaveBeenCalledWith(7)
+  })
+
   it("keeps View navigation independent of book selection", () => {
     const controller = buildModalController({ books: [{ id: 2, name: "Catalog" }] })
     controller._renderBooks()

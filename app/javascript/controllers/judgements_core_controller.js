@@ -43,6 +43,7 @@ export default class extends CoreModalControllerBase {
     "cancelButton"
   ]
 
+  static outlets = ["share-case-core"]
   static values = {
     caseUrlTemplate: String,
     teamBooksUrlTemplate: String,
@@ -113,18 +114,12 @@ export default class extends CoreModalControllerBase {
   openShareCase(event) {
     event?.preventDefault?.()
     const caseNo = this.currentCaseId
-    // No caseName in the detail: share-case-core reads the live name off the case header itself.
-    const openShare = () => {
-      document.dispatchEvent(
-        new CustomEvent("quepid:open-share-case-core", {
-          detail: { caseNo: Number(caseNo) }
-        })
-      )
-    }
+    // No case name: share-case-core reads the live name off the case header itself.
+    const openShare = () => this.shareCaseCoreOutlet.openFromExternal(Number(caseNo))
 
     // A second call before the modal finishes hiding must replace, not add
     // to, the pending listener — otherwise both fire on the one hide event
-    // and quepid:open-share-case-core double-dispatches.
+    // and the share modal opens twice.
     if (this._pendingOpenShare) {
       this.element.removeEventListener("hidden.bs.modal", this._pendingOpenShare)
     }

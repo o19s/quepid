@@ -1,25 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import WizardLauncherController from "controllers/wizard_launcher_controller"
-
-function buildController({ auto = false } = {}) {
-  const element = document.createElement("div")
-  const controller = Object.create(WizardLauncherController.prototype)
-  controller.element = element
-  controller.autoValue = auto
-  document.body.appendChild(element)
-  return controller
-}
+import { buildControllerFixture } from "../support/controller_fixture"
 
 describe("WizardLauncherController", () => {
-  let modal
+  let wizard
+
+  function buildController({ auto = false, withWizard = true } = {}) {
+    return buildControllerFixture(WizardLauncherController, {
+      values: { auto },
+      outlets: { wizard: withWizard ? wizard : null }
+    })
+  }
 
   beforeEach(() => {
-    document.body.innerHTML = ""
-    const wizardModal = document.createElement("div")
-    wizardModal.id = "wizardModal"
-    document.body.appendChild(wizardModal)
-    modal = document.createElement("div")
-    modal.id = "wizardModal"
+    wizard = { open: vi.fn() }
   })
 
   afterEach(() => {
@@ -39,10 +33,8 @@ describe("WizardLauncherController", () => {
   })
 
   function openedOn(controller) {
-    const opened = vi.fn()
-    document.getElementById("wizardModal").addEventListener("wizard:open", opened)
     controller.openAutomatically()
-    return opened.mock.calls.length > 0
+    return wizard.open.mock.calls.length > 0
   }
 
   function userWith({ completed = false, cases = 1, teams = 0 } = {}) {
@@ -76,10 +68,13 @@ describe("WizardLauncherController", () => {
   })
 
   it("does nothing when the page has no wizard modal", () => {
-    document.body.innerHTML = ""
     window.history.pushState({}, "", "/case/6/try/1")
+    const controller = buildController({ auto: true, withWizard: false })
+    controller.casesInvolvedWithCountValue = 1
+    controller.teamsInvolvedWithCountValue = 0
 
-    expect(() => userWith().openAutomatically()).not.toThrow()
+    expect(() => controller.openAutomatically()).not.toThrow()
+    expect(wizard.open).not.toHaveBeenCalled()
   })
 
   it("falls back to the default new-case path when no create URL is configured", () => {

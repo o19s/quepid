@@ -26,6 +26,7 @@
   class="row"
   data-controller="case-toolbar"
   data-action="quepid:case-renamed@document->case-toolbar#handleCaseRenamed pick-scorer:selected@document->case-toolbar#handleScorerSelected quepid:case-header-stale@document->case-toolbar#handleHeaderStale core-bootstrap:ready@document->case-toolbar#handleBootstrapReady"
+  data-case-toolbar-pane-outlet=".pane_container"
   data-case-toolbar-header-url-value="<%= case_header_path(kase, try_number: a_try&.try_number) %>"
 >
   <%#

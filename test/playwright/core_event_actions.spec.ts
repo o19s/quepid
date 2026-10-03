@@ -24,9 +24,6 @@ test('core event actions deliver once and follow controller reconnects', async (
       { selector: '[data-controller="add-query"]', id: 'add-query', method: 'complete', event: 'add-query:complete' },
       { selector: '[data-controller="qscore-case"]', id: 'qscore-case', method: 'handleDiffsRefreshed', event: 'query-diffs:refreshed' },
       { selector: '[data-controller="qscore-case"]', id: 'qscore-case', method: 'handleScorerSelected', event: 'pick-scorer:selected' },
-      { selector: '#shareCaseModal', id: 'share-case-core', method: 'openFromExternal', event: 'quepid:open-share-case-core' },
-      { selector: '#wizardModal', id: 'wizard', method: 'open', event: 'wizard:open' },
-      { selector: '[data-controller="pane"]', id: 'pane', method: 'toggle', event: 'toggleEast' },
       { selector: '[data-controller="pane"]', id: 'pane', method: 'resize', event: 'resize' },
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleRating', event: 'rating-popover:rate' },
       { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleRating', event: 'rating-popover:reset' },
@@ -62,7 +59,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     const dispatched = new Set<string>();
     for (const probe of probes) {
       const target = probe.event === 'resize' ? window :
-        ['add-query:complete', 'wizard:open', 'rating-popover:rate', 'rating-popover:reset', 'query-row:toggle', 'search-result:show-document', 'query-notes:close'].includes(probe.event) ? probe.element : document;
+        ['add-query:complete', 'rating-popover:rate', 'rating-popover:reset', 'query-row:toggle', 'search-result:show-document', 'query-notes:close'].includes(probe.event) ? probe.element : document;
       const key = target === document || target === window ? probe.event : `${probe.id}:${probe.event}`;
       if (dispatched.has(key)) continue;
       dispatched.add(key);
@@ -70,7 +67,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     }
     return probes.map((probe: any) => probe.count);
   });
-  expect(await dispatch()).toEqual(Array(29).fill(1));
+  expect(await dispatch()).toEqual(Array(26).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.element.getAttribute('data-controller').split(' ').filter((id: string) => id !== probe.id).join(' '));
@@ -80,7 +77,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.every((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id));
   })).toBe(true);
-  expect(await dispatch()).toEqual(Array(29).fill(1));
+  expect(await dispatch()).toEqual(Array(26).fill(1));
 
   await page.evaluate(() => {
     for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.originalControllers);
@@ -90,7 +87,7 @@ test('core event actions deliver once and follow controller reconnects', async (
     return (window as any).eventActionProbes.filter((probe: any) =>
       !app.getControllerForElementAndIdentifier(probe.element, probe.id)).map((probe: any) => ({ id: probe.id, event: probe.event, attached: probe.element.isConnected }));
   })).toEqual([]);
-  expect(await dispatch()).toEqual(Array(29).fill(2));
+  expect(await dispatch()).toEqual(Array(26).fill(2));
 });
 
 test('generated result and match-explain controls route through declared actions', async ({ page }) => {

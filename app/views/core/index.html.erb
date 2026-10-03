@@ -31,7 +31,7 @@
 
 <div>
       <div id="main" data-controller="tune-relevance" data-tune-relevance-engine-labels-value="<%= SearchEngine::LABELS.to_json %>">
-        <div class="pane_container" data-controller="pane" data-action="toggleEast@document->pane#toggle resize@window->pane#resize">
+        <div class="pane_container" data-controller="pane" data-action="resize@window->pane#resize">
           <div class="pane_main results-control" data-pane-target="main">
             <div id="case-header" class="row">
               <div class="col-sm-12">
@@ -81,6 +81,7 @@
             <div
               data-controller="wizard-launcher"
               data-wizard-launcher-auto-value="true"
+              data-wizard-launcher-wizard-outlet="#wizardModal"
               data-wizard-launcher-completed-case-wizard-value="<%= current_user.completed_case_wizard %>"
               data-wizard-launcher-cases-involved-with-count-value="<%= current_user.cases_involved_with.count %>"
               data-wizard-launcher-teams-involved-with-count-value="<%= current_user.teams.count %>"

@@ -72,12 +72,11 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  // Opened by another modal (judgements) rather than a toolbar link, so
+  // Called through the judgements-core outlet rather than a toolbar link, so
   // there is no real trigger. Hand Bootstrap a stand-in carrying the case id.
-  openFromExternal(event) {
-    const detail = event.detail || {}
+  openFromExternal(caseNo) {
     this.show({
-      dataset: { shareCaseCoreIdValue: String(detail.caseNo ?? "") }
+      dataset: { shareCaseCoreIdValue: String(caseNo ?? "") }
     })
   }
 

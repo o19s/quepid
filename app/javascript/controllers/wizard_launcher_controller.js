@@ -1,11 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
-import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
 
 /**
  * Opens the core wizard modal. Case creation itself remains a live-query service seam until the
  * case workspace state migration is complete; the wizard UI and lifecycle are Stimulus-owned.
  */
 export default class extends Controller {
+  static outlets = ["wizard"]
   static values = {
     auto: Boolean,
     completedCaseWizard: Boolean,
@@ -45,11 +45,9 @@ export default class extends Controller {
       return
     }
 
-    const modal = document.getElementById("wizardModal")
-    if (!modal) return
+    // A page without the wizard modal has nothing to open; this is not an error.
+    if (!this.hasWizardOutlet) return
 
-    modal.dispatchEvent(new CustomEvent("wizard:open", { bubbles: true }))
-    showBsModal(getOrCreateBsModal(modal, { backdrop: "static", keyboard: false }))
+    this.wizardOutlet.open()
   }
-
 }

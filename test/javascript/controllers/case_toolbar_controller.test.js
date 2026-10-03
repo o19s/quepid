@@ -1,18 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CaseToolbarController from "controllers/case_toolbar_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 /**
  * This controller bridges the server-rendered case header to the client case runtime.
  * It deliberately does not copy the case name onto the toolbar's modal triggers — those read it
  * live via `utils/case_header`.
  */
-function buildToolbar() {
+function buildToolbar(options = {}) {
   const element = document.createElement("div")
   document.body.appendChild(element)
-
-  const controller = Object.create(CaseToolbarController.prototype)
-  controller.element = element
-  return controller
+  return buildControllerFixture(CaseToolbarController, { element, ...options })
 }
 
 function buildFrame({ caseName = "New Name" } = {}) {
@@ -50,13 +48,16 @@ describe("CaseToolbarController", () => {
     vi.restoreAllMocks()
   })
 
-  it("toggles the Tune Relevance pane through the legacy pane event", () => {
+  it("toggles the Tune Relevance pane through the pane outlet", () => {
     const preventDefault = vi.fn()
+    const pane = { toggle: vi.fn() }
+    controller = buildToolbar({ outlets: { pane } })
 
-    CaseToolbarController.prototype.toggleTuneRelevance.call(controller, { preventDefault })
+    controller.toggleTuneRelevance({ preventDefault })
 
     expect(preventDefault).toHaveBeenCalled()
-    expect(dispatched[0].type).toBe("toggleEast")
+    expect(pane.toggle).toHaveBeenCalledOnce()
+    expect(dispatched).toEqual([])
   })
 
   /**

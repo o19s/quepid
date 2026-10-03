@@ -23,6 +23,7 @@ const CASE_NAME_SELECTOR = '[data-case-rename-target="caseDisplay"]'
 
 export default class extends Controller {
   static targets = ["actions"]
+  static outlets = ["pane"]
   static values = { headerUrl: String }
 
   connect() {
@@ -37,7 +38,7 @@ export default class extends Controller {
 
   toggleTuneRelevance(event) {
     event?.preventDefault()
-    document.dispatchEvent(new CustomEvent("toggleEast"))
+    this.paneOutlet.toggle()
   }
 
   /**

@@ -386,9 +386,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
       }
     }
 
-    ShareCaseCoreController.prototype.openFromExternal.call(controller, {
-      detail: { caseNo: 5 }
-    })
+    ShareCaseCoreController.prototype.openFromExternal.call(controller, 5)
     await opening
 
     expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(controller.element, undefined)
