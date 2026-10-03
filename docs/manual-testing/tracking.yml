@@ -149,10 +149,10 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-09-15T19:04:00Z
+        last_run: 2026-10-02T20:23:40Z
         result: pass
-        notes: "Re-verified via Playwright MCP. Partial-name filter ('Typeahead') correctly narrowed to the 3 Typeahead cases; exact-ID filter ('6789') matched the single case by ID; Team dropdown ('OSC') correctly narrowed to only that team's cases; Archived checkbox auto-submitted and toggled the list correctly (see 3.5 for the archive/unarchive round trip exercised in the same pass). No console errors. Filter-matches-nothing, pagination, and multi-account isolation not tested this pass."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb"]
+        notes: "Compared before/after screenshots using scripted Playwright (MCP unavailable) on local /cases as realisticActivity. All 10 visible rows retained identical text, including latest scores, run dates/users, and Never Run states. Filtering, pagination, and multi-account isolation were not re-tested in this pass. Captures: .playwright-mcp/cases-list-performance/."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/score.rb"]
       "3.2":
         title: "Create a new case (setup wizard)"
         last_run: 2026-09-15T16:32:00Z
