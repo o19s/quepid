@@ -17,8 +17,7 @@ export default class extends Controller {
     queryText: String,
     state: String,
     diff: Boolean,
-    toggled: Boolean,
-    sorting: Boolean
+    toggled: Boolean
   }
 
   connect() {
@@ -49,14 +48,8 @@ export default class extends Controller {
     this.render()
   }
 
-  sortingValueChanged() {
-    this.render()
-  }
-
   toggle(event) {
     event.preventDefault()
-    if (this.sortingValue) return
-
     this.dispatch("toggle", {
       detail: { queryId: this.queryIdValue }
     })
@@ -93,7 +86,6 @@ export default class extends Controller {
     if (this.hasToggleTarget) {
       this.toggleTarget.classList.toggle("bi-caret-up-fill", this.toggledValue)
       this.toggleTarget.classList.toggle("bi-caret-down-fill", !this.toggledValue)
-      this.toggleTarget.classList.toggle("d-none", this.sortingValue)
     }
   }
 }

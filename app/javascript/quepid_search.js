@@ -23,7 +23,6 @@ const quepidSearch = {
   // depend on the internal query-state implementation.
   queryCapabilities: {
     getListState: null,
-    isSortingEnabled: null,
     setDisplayOrder: null,
     getQuery: null,
     createQuery: null,

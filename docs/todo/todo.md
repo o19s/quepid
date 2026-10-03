@@ -91,31 +91,6 @@ Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
 replacement, prefer server-owned URLs passed through data attributes or form
 actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION-FOLLOWUP] P3 — Extract untestable read-model logic from `live_query_runtime_owner.js`
-
-Three pieces of real logic in `app/javascript/utils/live_query_runtime_owner.js`
-are closure-private and can only be reached by driving a full search through the
-runtime graph, so they have no unit coverage (StrykerJS: the file scores ~17%,
-almost all of it wiring that is covered elsewhere):
-
-- `createDocList` — builds the user-facing "ID field missing" / "ID shared with
-  another doc" errors and the placeholder ids for those docs. It interpolates
-  user-set `fieldSpec.id` into error HTML, relying on the result renderer
-  to sanitize it. Return structured error data or escape the field ID at the
-  source so safety does not depend on a distant rendering step.
-- `documentUrlFor` (inside `publishQueryDocuments`) — injects
-  `basicAuthCredential` into document links and prefixes the proxy URL when
-  `proxyRequests` is on.
-- `buildDiffReadModel` — snapshot-comparison columns: hides docs under
-  show-only-rated, computes `maxDocScore`, defaults name/score.
-
-**Fix direction:** Move them into a small pure module (e.g.
-`app/javascript/utils/live_query_read_models.js`) that takes its dependencies as
-arguments (`normalDocsSvc.createNormalDoc`, `proxyUrlFor`, `showOnlyRated`), have
-the owner call it, and add a Vitest spec. Re-run
-`yarn test:mutation --mutate "app/javascript/utils/live_query_read_models.js"`
-to confirm the new tests kill its mutants.
-
 ---
 
 ## [MIGRATION-FOLLOWUP] JavaScript defects and cleanup
@@ -219,11 +194,12 @@ predicate. Leave the deferred `setProgress` copies noted above alone.
 
 `app/javascript/utils/live_query_runtime_owner.js` still builds a nested
 `liveQueryServices` graph of forwarding wrappers, with closures depending on
-later-initialized runtime objects. It retains `promiseApi`/`defer`, an empty
-`onDirty`, and hard-coded `isSortingEnabled: false`. Simplify wrappers and
-obsolete compatibility seams behind existing tests; preserve method binding.
-Start with the read-model extraction already listed above, rather than a
-large runtime rewrite.
+later-initialized runtime objects. It also threads `promiseApi` (always the
+native `Promise`) through about ten runtimes. Simplify wrappers and obsolete
+compatibility seams behind existing tests; preserve method binding. Wrappers
+that defer a lookup of a later `const` (`liveQueryFactory`,
+`liveQueryCollectionRuntime`, …) must stay deferred. Work one cluster at a
+time rather than as a large runtime rewrite.
 
 ### [MIGRATION-FOLLOWUP] P3 — Document shared event names and payloads
 

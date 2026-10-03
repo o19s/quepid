@@ -25,6 +25,7 @@ import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
 import { createLiveQueryDiffRuntime } from "utils/live_query_diff"
 import { createLiveQueryStateRuntime } from "utils/live_query_state"
 import { createLiveQueryRegistry } from "utils/live_query_registry"
+import { buildDiffReadModel, createDocList, documentUrlFor } from "utils/live_query_read_models"
 import {
   invalidateRatedDocsCache,
   orderedQueries,
@@ -54,44 +55,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   const normalDocsSvc = splainerSearch.normalDocsSvc
   const esExplainExtractorSvc = splainerSearch.esExplainExtractorSvc
   const solrExplainExtractorSvc = splainerSearch.solrExplainExtractorSvc
-  const createDocList = (docs, fieldSpec, ratingsStore, explain) => {
-    const normalizedDocs = []
-    const ids = []
-    let error = ""
-
-    ;(docs || []).forEach((doc, index) => {
-      const altExplainJson = explain ? explain(doc) : undefined
-      const normalDoc = normalDocsSvc.createNormalDoc(fieldSpec, doc, altExplainJson)
-      const rateableDoc = ratingsStore.createRateableDoc(normalDoc)
-      if (normalDoc.id === undefined || normalDoc.id === "undefined") {
-        error =
-          `Your selected id field <strong>${fieldSpec.id}</strong> is missing on one or more results.` +
-          " Quepid requires a unique identifier for each document to work correctly. Open the " +
-          "<strong>Tune Relevance</strong> pane, and under <strong>Settings</strong> in the " +
-          "<strong>Displayed Fields</strong> field change " +
-          `<strong>id:${fieldSpec.id}</strong> to specify your unique ID field.`
-        rateableDoc.error = "ID Field Missing"
-        rateableDoc.id = `${rateableDoc.error}${index}`
-      } else if (ids.includes(normalDoc.id)) {
-        error =
-          `Your selected id field <strong>${fieldSpec.id}</strong> doesn't uniquely identify individual documents.` +
-          " Quepid requires a unique identifier for each document to work correctly. Open the " +
-          "<strong>Tune Relevance</strong> pane, and under <strong>Settings</strong> in the " +
-          "<strong>Displayed Fields</strong> field change " +
-          `<strong>id:${fieldSpec.id}</strong> to specify your unique ID field.`
-        rateableDoc.error = `ID <strong>${normalDoc.id}</strong> Shared With Another Doc`
-        rateableDoc.id = `${rateableDoc.error}${index}`
-      }
-      normalizedDocs.push(rateableDoc)
-      ids.push(normalDoc.id)
-    })
-
-    return {
-      list: () => normalizedDocs,
-      hasErrors: () => error.length > 0,
-      errorMsg: () => error
-    }
-  }
   const copySettings = (value) => {
     if (value === null || typeof value !== "object") return value
     if (Array.isArray(value)) return value.map(copySettings)
@@ -163,9 +126,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         }
       },
       documents: {
-        createDocList: function (docs, fieldSpec, ratingsStore, explain) {
-          return createDocList(docs, fieldSpec, ratingsStore, explain)
-        },
         normalizeEs: function (docs, spec) {
           return esExplainExtractorSvc.docsWithExplainOther(docs, spec)
         },
@@ -193,15 +153,20 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
             return currSettings.createFieldSpec()
           },
           buildRatingsFilter: buildRatedDocsFilter,
-          ratedDocIds: ratedDocIds,
-          onDirty: function () {}
+          ratedDocIds: ratedDocIds
         },
         documents: {
           getFieldSpec: function () {
             return currSettings.createFieldSpec()
           },
           createDocList: function (docs, fieldSpec, ratingsStore, explain) {
-            return runtimeDomain.documents.createDocList(docs, fieldSpec, ratingsStore, explain)
+            return createDocList({
+              docs,
+              fieldSpec,
+              ratingsStore,
+              explain,
+              createNormalDoc: runtimeDomain.documents.createNormalDoc
+            })
           },
           matchFeaturesExplain: matchFeaturesExplain
         },
@@ -686,58 +651,17 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       settings: applicableSettings,
       selectedTry: applicableSettings.selectedTry || {},
       ratingScale: ratingScale || {},
-      diffs: buildDiffReadModel(query),
+      diffs: buildDiffReadModel(query, { showOnlyRated: svc.showOnlyRated === true }),
       documentUrlFor: function (doc) {
-        if (!doc || !isFunction(doc._url)) return null
-
-        let linkUrl
-        try {
-          linkUrl = doc._url()
-        } catch {
-          return null
-        }
-        if (applicableSettings.basicAuthCredential) {
-          linkUrl = linkUrl.replace("://", "://" + applicableSettings.basicAuthCredential + "@")
-        }
-        if (applicableSettings.proxyRequests === true) {
-          linkUrl =
-            runtimeDomain.navigation.proxyUrlFor(applicableSettings.searchEndpointId) + linkUrl
-        }
-        return linkUrl
+        return documentUrlFor(doc, {
+          settings: applicableSettings,
+          proxyUrlFor: (searchEndpointId) => runtimeDomain.navigation.proxyUrlFor(searchEndpointId)
+        })
       }
     })
     queryDocumentsStore.replaceQuery(query.queryId, readModel)
     if (queryCollectionStore) {
       queryCollectionStore.upsert(query)
-    }
-  }
-
-  function buildDiffReadModel(query) {
-    if (!query || !query.diffs || !isFunction(query.diffs.getSearchers)) {
-      return null
-    }
-
-    const showOnlyRated = svc.showOnlyRated === true
-    return {
-      searchers: query.diffs.getSearchers().map(function (searcher, index) {
-        const score = searcher.diffScore || { score: "?", allRated: false }
-        const docs = query.diffs.docs(index, false) || []
-        const ratedDocs = query.diffs.docs(index, true) || []
-        const maxDocScore = docs.reduce(function (max, doc) {
-          return Math.max(max, isFunction(doc.score) ? doc.score() : 0)
-        }, 0)
-
-        return {
-          name: isFunction(searcher.name) ? searcher.name() : "Snapshot",
-          version: isFunction(searcher.version) ? searcher.version() : null,
-          inError: searcher.inError,
-          searchError: searcher.searchError,
-          score: score,
-          maxDocScore: maxDocScore,
-          docs: showOnlyRated ? [] : docs,
-          ratedDocs: ratedDocs
-        }
-      })
     }
   }
 
@@ -1031,9 +955,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         batchPosition: scoredQueryCount(),
         batchSize: queryCount()
       }
-    },
-    isSortingEnabled: function () {
-      return false
     },
     setDisplayOrder: applyDisplayOrder,
     getQuery: getLiveQuery,

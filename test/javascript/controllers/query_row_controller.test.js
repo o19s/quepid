@@ -45,7 +45,6 @@ describe("QueryRowController", () => {
     controller.stateValue = "searching"
     controller.diffValue = true
     controller.toggledValue = true
-    controller.sortingValue = false
   })
 
   it("renders read-only row values", () => {
@@ -64,7 +63,7 @@ describe("QueryRowController", () => {
     expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-up-fill")).toBe(true)
   })
 
-  it("dispatches a toggle intent for an unsorted row", () => {
+  it("dispatches a toggle intent", () => {
     controller.dispatch = (name, options) => {
       controller.dispatchName = name
       controller.dispatchOptions = options
@@ -76,15 +75,6 @@ describe("QueryRowController", () => {
     expect(controller.dispatchOptions.detail.queryId).toBe(42)
   })
 
-  it("does not dispatch a toggle intent while sorting", () => {
-    controller.sortingValue = true
-    controller.dispatch = () => {
-      throw new Error("sorting rows must not toggle")
-    }
-
-    controller.toggle({ preventDefault: () => {} })
-  })
-
   it("uses plural result copy and hides the Querqy marker when inactive", () => {
     controller.numFoundValue = 2
     controller.querqyTriggeredValue = false
@@ -93,7 +83,6 @@ describe("QueryRowController", () => {
     controller.stateValueChanged("error", "searching")
     controller.diffValue = false
     controller.toggledValue = false
-    controller.sortingValue = true
     controller.render()
 
     expect(controller.resultLabelTarget.textContent).toBe("Results")
@@ -102,7 +91,6 @@ describe("QueryRowController", () => {
     expect(controller.element.classList.contains("queryHeader_error")).toBe(true)
     expect(controller.element.querySelector('[data-query-row-target="header"]').classList.contains("diff-query-display")).toBe(false)
     expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("bi-caret-down-fill")).toBe(true)
-    expect(controller.element.querySelector('[data-query-row-target="toggle"]').classList.contains("d-none")).toBe(true)
   })
 
   it("renders image queries as thumbnails instead of text", () => {

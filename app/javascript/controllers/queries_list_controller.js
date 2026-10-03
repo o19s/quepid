@@ -387,7 +387,6 @@ export default class extends Controller {
     const querqyTriggered = querqyRuleTriggered(query.parsedQueryDetails)
     const hasDiffs = Boolean(query.diffs)
     const toggled = Boolean(expanded)
-    const sorting = Boolean(this.queryCapabilities?.isSortingEnabled?.())
 
     row.innerHTML = `
       <div
@@ -397,8 +396,7 @@ export default class extends Controller {
         data-query-row-num-found-value="${numFound}"
         data-query-row-querqy-triggered-value="${querqyTriggered}"
         data-query-row-diff-value="${hasDiffs}"
-        data-query-row-toggled-value="${toggled}"
-        data-query-row-sorting-value="${sorting}">
+        data-query-row-toggled-value="${toggled}">
         <div class="result-header" data-query-row-target="header">
           <div class="results-score qscore-query-badge" data-controller="qscore-query" data-qscore-query-query-id-value="${queryId}">
             <span class="scorable-score" data-qscore-query-target="value"></span>

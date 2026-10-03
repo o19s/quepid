@@ -312,28 +312,22 @@ The summary column shows a thumbnail column when `doc.hasThumb`, a full-image co
 
 ### Dual Execution Model
 
-Scorers run in **two environments** with known behavioral drift:
+Scorers run in **two environments** that share one runtime:
 
 | Environment | Engine | Trigger | Location |
 |-------------|--------|---------|----------|
 | **Client-side** | Browser `new Function`, scheduled with `queueMicrotask` | Rating change, search complete | [`scorer_runtime.js`](../../app/javascript/utils/scorer_runtime.js) → `runCode()` |
-| **Server-side** | MiniRacer V8 sandbox | Background evaluation, nightly runs | `lib/scorer_logic.js` |
+| **Server-side** | MiniRacer V8 sandbox | Background evaluation, nightly runs | [`javascript_scorer.rb`](../../lib/javascript_scorer.rb) loads the same `scorer_runtime.js` |
 
-### Key Differences Between Client and Server
+### Server-Side Differences
 
-| Feature | Client (`scorer_runtime.js`) | Server (`scorer_logic.js`) |
-|---------|---------------------------|--------------------------|
-| `docAt(posn)` | Returns `docs[posn].doc` (unwrapped) | Returns `docs[posn]` (raw) |
-| `docRating(posn)` | Calls `docs[posn].getRating()` method | Accesses `docs[posn]["rating"]` property |
-| `hasDocRating(posn)` | Uses `docs[posn].hasRating()` method | Uses `hasRating(doc)` → `doc.hasOwnProperty('rating')` |
-| `eachRatedDoc()`, `docExistsAt()`, `ratedDocAt()`, `ratedDocExistsAt()` | Available | Available |
-| `avgRating100()` | Available | **Not available** |
-| `editDistanceFromBest()` | Available | **Not available** |
-| `pass()` / `fail()` | Available | **Not available** |
-| `assert()` / `assertOrScore()` | Available | **Not available** |
-| `setScore()` | Resolves a native-promise deferred | Sets a `theScore` variable |
-| Loop prohibition | `hasLoop()` runs in `checkCode()` (scorer save/test), not on every run | Not enforced on server |
-| Score return | Via deferred promise resolution | Via `getScore()` after `eval()` |
+The server evaluates `scorer_runtime.js` itself, so every helper (`avgRating100`, `pass`, `assert`, `max`, ...) behaves the same in both places. `JavascriptScorer` adapts the stored snapshot to the runtime's inputs:
+
+- `docs` are snapshot docs wrapped with `hasRating()`/`getRating()`; `docAt()` returns the stored doc fields plus `id` and `rating`.
+- `bestDocs` are the query's ratings, highest first.
+- `numFound()` is the snapshot query's `number_of_results`; `qOption()` reads the query's options.
+- `ratedDocAt()`/`eachRatedDoc()` see no rated-doc lookup results, and `refreshRatedDocs()` does nothing.
+- A scorer that errors, fails, or never sets a score leaves the snapshot query unscored.
 
 ### Score Capping
 After scorer execution, the client-side score is adjusted:
@@ -1188,13 +1182,6 @@ Requests made through `apiFetch` ([`api/fetch.js`](../../app/javascript/api/fetc
 ---
 
 ## 18. Known Technical Debt
-
-### Scorer Dual-Execution Drift
-The client-side `scorer_runtime.js` and server-side `scorer_logic.js` have diverged:
-- 6+ functions exist only on client (`avgRating100`, `editDistanceFromBest`, `pass`, `fail`, `assert`, `assertOrScore`)
-- Document access differs (`docs[posn].doc` vs `docs[posn]`, `.getRating()` vs `["rating"]`)
-- Score resolution differs (deferred promise vs variable assignment)
-- Custom scorers authored in the browser may behave differently in server-side batch evaluation
 
 ### `new Function` for Scorer Execution
 Client-side scorers run via `new Function(...)` scheduled with `queueMicrotask`. This:
