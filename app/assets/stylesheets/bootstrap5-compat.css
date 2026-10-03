@@ -7,10 +7,7 @@
  * Parallel brand skin for the application bundle: bootstrap5-add.css.
  */
 
-/* BS3 gave <pre> a boxed look (gray background, border, padding); BS5's
- * Reboot only sets font styling and leaves the box treatment out entirely.
- * Restore it so debug/explain JSON blocks (Expand modal, import ratings,
- * etc.) read as a distinct code block instead of plain text. */
+/* BS3's boxed <pre> (BS5 has no box), so explain/debug JSON reads as code. */
 pre {
   padding: 9.5px;
   margin: 0 0 10px;
@@ -19,26 +16,15 @@ pre {
   border-radius: 4px;
 }
 
-/* Every other var this block used to pin (--bs-body-color, --bs-body-bg,
- * --bs-secondary-bg, --bs-emphasis-color, --bs-border-width, --bs-border-
- * color, --bs-border-color-translucent, --bs-box-shadow, --bs-primary-
- * text-emphasis, --bs-primary-bg-subtle) turned out to be verbatim restate-
- * ments of BS5's own defaults — no-ops, removed. Only these two actually
- * differ: BS5's rem-based radii (0.375rem / 0.5rem) compute smaller once
- * `html { font-size: 87.5% }` (core-additions.css) shrinks the em base,
- * so pin the px values Quepid actually wants. */
+/* BS5's rem-based radii would shrink with the 87.5% root font-size
+ * (core-additions.css), so pin them in px. */
 :root {
   --bs-border-radius: 4px;
   --bs-border-radius-lg: 8px;
   --q-query-error-icon-color: #fe5b00;
 
-  /* BS3's shared brand palette — one consistent blue for links/.btn-primary/
-   * selected list items, one green for "success" states. Referenced by
-   * component overrides below instead of repeating the hex literals at
-   * each call site (they used to be duplicated across .btn-primary,
-   * .list-group-item.active, .modal, and core-additions.css's
-   * .results-control for the blue; .list-group-item-success and
-   * .alert-success for the green). */
+  /* BS3's palette: one blue for links, .btn-primary and selected list
+   * items; one green for success states. */
   --q-brand-blue: #337ab7;
   --q-brand-blue-rgb: 51, 122, 183;
   --q-brand-blue-hover: #23527c;
@@ -47,19 +33,13 @@ pre {
   --q-success-text: #3c763d;
 }
 
-/* Our vendored BS5 build defines --bs-modal-box-shadow but never actually
- * applies it to .modal-content (upstream gap, not something we introduced) —
- * so modals render with zero shadow. BS3's modal shadow was
- * 0 5px 15px rgba(0,0,0,.5); restore it so dialogs read as "lifted" above
- * the backdrop instead of blending flat into it. */
+/* BS5 defines --bs-modal-box-shadow but never applies it, so modals have
+ * no shadow. Use BS3's. */
 .modal-content {
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
 }
 
-/* BS3 used one consistent blue (--q-brand-blue) for both links and
- * .btn-primary; BS5 defaults .btn-primary to a separate, brighter #0d6efd.
- * Restore BS3's shared blue so primary buttons (Set Options, wizard
- * Continue, etc.) match the link color used throughout the case view. */
+/* BS3's brand blue for .btn-primary, matching the links. */
 .btn-primary {
   --bs-btn-bg: var(--q-brand-blue);
   --bs-btn-border-color: var(--q-brand-blue);
@@ -71,29 +51,21 @@ pre {
   --bs-btn-disabled-border-color: var(--q-brand-blue);
 }
 
-/* BS3's `.list-group-item.active` (e.g. the Share Case modal's selected
- * team row) used the same shared blue as links/.btn-primary; BS5 defaults
- * it to the brighter #0d6efd. Restore BS3's blue for consistency. */
+/* BS3's brand blue for selected list items (e.g. Share Case's team row). */
 .list-group-item.active {
   --bs-list-group-active-bg: var(--q-brand-blue);
   --bs-list-group-active-border-color: var(--q-brand-blue);
 }
 
-/* BS3's `.list-group-item-success` (e.g. the Share Case modal's "Already
- * shared with" rows) was a vivid pale green (bg/text below, default gray
- * border). BS5's success-subtle tokens are far more desaturated/grayish
- * (bg #d1e7dd, text #0a3622) and add a matching green border where BS3 had
- * none. Restore BS3's look. */
+/* BS3's pale green with a gray border, instead of BS5's grayer green
+ * (e.g. Share Case's "Already shared with" rows). */
 .list-group-item-success {
   --bs-list-group-color: var(--q-success-text);
   --bs-list-group-bg: var(--q-success-bg);
   --bs-list-group-border-color: #ddd;
 }
 
-/* BS3's `.alert-success` (e.g. the "Case shared with team successfully."
- * flash) was the same vivid pale green as `.list-group-item-success`,
- * plus its own border shade. BS5's success-subtle tokens are the same
- * desaturated/grayish colors flagged above. Restore BS3's. */
+/* Same BS3 green for success alerts, with BS3's border shade. */
 .alert-success {
   --bs-alert-color: var(--q-success-text);
   --bs-alert-bg: var(--q-success-bg);
@@ -101,9 +73,7 @@ pre {
   --bs-alert-link-color: #2b542c;
 }
 
-/* BS3's .btn-success was a brighter, more saturated #5cb85c; BS5 defaults
- * to a darker, more muted #198754. Restore BS3's green for "acceptance"
- * actions like "Add query". */
+/* BS3's brighter #5cb85c for .btn-success (e.g. "Add query"). */
 .btn-success {
   --bs-btn-bg: #5cb85c;
   --bs-btn-border-color: #4cae4c;
@@ -126,28 +96,19 @@ a:not([href]):not([class]):hover {
   color: var(--bs-link-hover-color);
 }
 
-/* core-additions.css restores BS3's muted link blue scoped to
- * `.results-control`, but the dynamic modal helper appends its wrapper directly to
- * `<body>` (outside that scope) — so nav-tabs and other link-colored
- * elements inside modals (e.g. the Import modal's "Information Needs" /
- * "Snapshots" tabs) fell back to BS5's brighter default #0d6efd. Repeat the
- * same override here so modals match the rest of the app. */
+/* BS3's muted link blue instead of BS5's #0d6efd, for the case view and for
+ * modals (which are appended to <body>, outside `.results-control`). */
+.results-control,
 .modal {
   --bs-link-color: var(--q-brand-blue);
   --bs-link-color-rgb: var(--q-brand-blue-rgb);
   --bs-link-hover-color: var(--q-brand-blue-hover);
   --bs-link-hover-color-rgb: var(--q-brand-blue-hover-rgb);
+}
 
-  /* BS3's default (unsized) modal was 600px wide; BS5's is 500px. Every
-   * modal that doesn't opt into `size: 'sm'/'lg'/'xl'` (Clone Case, Import,
-   * Wizard, Diff/snapshot comparison, etc.) is narrower than it was under
-   * BS3 as a result — cramping the wizard's 3-column endpoint-picker row,
-   * the diff modal's per-snapshot dropdowns, Clone Case's two-column
-   * layout, and so on. `--bs-modal-width` is the single variable BS5's own
-   * `.modal-dialog` reads for the unsized case (`.modal-sm`/`.modal-lg`/
-   * `.modal-xl` each override it back to their own value), so overriding it
-   * once here fixes every default-sized modal at the source instead of
-   * patching each one via its own `windowClass`. */
+/* BS3's 600px default modal width instead of BS5's 500px. Only unsized
+ * modals use this; .modal-sm/-lg/-xl set their own width. */
+.modal {
   --bs-modal-width: 600px;
 }
 
@@ -159,10 +120,7 @@ a:not([href]):not([class]):hover {
  * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
  * from rendering as a sliver. Other px values restate BS5 defaults at
  * a 16px root for explicitness. */
-/* BS3's inline <code> was a pink "pill" (color #c7254e on a #f9f2f4
- * background, padded and rounded) — BS5 drops the background entirely and
- * uses a plain colored text color var. Restore the pill look for inline
- * format examples (Import modal's `query,docid,rating`, etc.). */
+/* BS3's pink "pill" for inline <code>; BS5 has no background. */
 code {
   padding: 2px 4px;
   color: #c7254e;
@@ -170,24 +128,15 @@ code {
   border-radius: 4px;
 }
 
-/* BS3's `.help-block` (the old class for form hint text, e.g. the Import
- * modal's per-format descriptions) was `display: block; margin-top: 5px;
- * margin-bottom: 10px;`. BS5's `.form-text` only sets `margin-top: 0.25rem`
- * with no bottom margin, so hint paragraphs now sit flush against whatever
- * follows them instead of having breathing room on both sides. */
+/* BS3's .help-block margins for form hint text; BS5's .form-text has no
+ * bottom margin. */
 .form-text {
   margin-top: 5px;
   margin-bottom: 10px;
 }
 
-/* BS3's base `label` was `display: inline-block; margin-bottom: 5px;
- * font-weight: bold;` — BS5 keeps the `inline-block` but drops both the
- * margin and the bold weight (its replacement, `.form-label`, isn't used
- * by the core templates' bare labels, e.g. Clone Case's "New case
- * name" / "Select try"). BS3 explicitly reset both back to normal for
- * checkbox/radio labels via `.checkbox label, .radio label { margin-
- * bottom: 0; font-weight: 400; }` — BS5's equivalent is `.form-check-
- * label`, restored to match. */
+/* BS3's bold, spaced bare labels (e.g. Clone Case), with checkbox/radio
+ * labels reset to normal as BS3 did. */
 label {
   margin-bottom: 5px;
   font-weight: bold;
@@ -227,8 +176,7 @@ label {
   --bs-popover-inner-border-radius: 7px;
   max-height: 600px;
   padding: 0;
-  /* BS5's .popover doesn't ship a box-shadow at all; BS3's did, giving the
-   * popover a "lifted" look instead of blending flat into the page. */
+  /* BS3's popover shadow; BS5 has none. */
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -271,21 +219,13 @@ header.navbar-secondary .dropdown-toggle::after,
   display: none;
 }
 
-/* The "View all cases/books" + "Create a case/book" buttons in the header's
- * .actions dropdown items are stacked full-width (w-100) with no gap of
- * their own — BS3's .dropdown-menu .actions .btn-block gave them margin
- * that the w-100 migration didn't replace. */
+/* Gap between the stacked header dropdown buttons, as BS3's .btn-block had. */
 .dropdown-menu .actions .btn + .btn {
   margin-top: 10px;
 }
 
-/* BS5's `.modal-lg` only widens to 800px starting at a 992px viewport,
- * below which every `size: 'lg'` modal (Import, Export, Frog Report, Query
- * Explain, Targeted Search, Judgements, etc.) silently falls back to the
- * 500px default instead of 800px, reading as unexpectedly narrow at a
- * fairly common window width. Widen the breakpoint down to BS3's generic
- * `.modal-dialog` width (600px, from 768px), which is what `.modal-lg`
- * inherited on any viewport below BS3's own 900px/992px `.modal-lg` tier. */
+/* BS5 only widens .modal-lg to 800px from a 992px viewport; below that,
+ * large modals drop to the default width. Start at 768px instead. */
 @media (min-width: 768px) {
   .modal-lg {
     max-width: 800px;
@@ -385,20 +325,9 @@ header .dropdown-toggle .bi {
  * .dev-header, .dev-section, history list, etc.) live in core-additions.css.
  */
 
-/* Dev panel tabs (devQueryParams.html). `data-bs-theme="dark"` on
- * #dev-settings alone doesn't reproduce BS3's actual look here: BS5's
- * dark-mode nav-link color resolves to its bright link blue (#6ea8fe) for
- * inactive tabs and near-black (#212529) for the active tab's background,
- * neither of which BS3 ever used. BS3's own tab bar (`.tabBoxSelected`)
- * was a muted #999 gray, #666 active background/white text, and much
- * tighter 5px/10px padding — five tabs ("Query" / "Tuning Knobs" /
- * "Settings" / "History" / "Annotations") don't fit on one line at the
- * sidebar's width without it, wrapping to a second row. Restore explicit
- * colors + density rather than relying on the dark theme's defaults. */
-/* BS3's `.nav-tabs` also carried `margin-bottom: 20px`, separating the tab
- * bar from whatever content sits below it (e.g. the History tab's links
- * and instructions). BS5's `.nav-tabs` has no margin at all, so content
- * now sits flush against the tab bar's bottom border. */
+/* Dev panel tabs: BS3's gray colors, tight padding and 20px bottom margin.
+ * BS5's dark-theme defaults use a bright blue and near-black, and their
+ * looser padding wraps the five tabs onto a second row. */
 #dev-settings .nav-tabs {
 	margin-bottom: 20px;
 }
@@ -420,14 +349,9 @@ header .dropdown-toggle .bi {
 	border-bottom-right-radius: 3px;
 }
 
-/* BS3's .form-control was always a plain white box with dark text,
- * regardless of surrounding theme. BS5's .form-control/.form-select are
- * color-mode aware, so under #dev-settings' data-bs-theme="dark" the
- * Query Sandbox textarea and Search Endpoint <select> would otherwise
- * pick up a dark background instead — restore BS3's plain white look.
- * Scoped to actual form fields, not `.btn.form-control` (e.g. "Rerun My
- * Searches!"), which also carries `.form-control` for its full-width
- * sizing and must keep its `.btn-primary` blue. */
+/* Keep BS3's white form fields inside the dark dev panel. Scoped to real
+ * fields, not `.btn.form-control` ("Rerun My Searches!"), which must stay
+ * blue. */
 #dev-settings textarea.form-control,
 #dev-settings input.form-control,
 #dev-settings select.form-select {
@@ -455,11 +379,7 @@ header .dropdown-toggle .bi {
 	overflow-y: auto;
 }
 
-/* Query Sandbox heading row. BS3's `<h4 class="pull-left">Query Sandbox:</h4>`
- * had a 10px margin-bottom by default, giving it breathing room above the
- * textarea below. The BS5 migration wrapped it in a `.d-flex` row (to align
- * it with the help icon) and zeroed both children's margins with `mb-0`,
- * losing that gap — the heading now sits flush against the textarea. */
+/* Gap under the Query Sandbox heading row, which BS3's <h4> margin gave. */
 #dev-settings .query-sandbox .d-flex {
   margin-bottom: 10px;
 }
@@ -539,12 +459,8 @@ header .dropdown-toggle .bi {
 	color: #FFF;
 }
 
-/* BS5's .btn-outline-secondary/.btn-warning/.btn-danger hardcode their own
- * colors as component-level custom properties (not derived from a shared
- * theme variable), so they can't be steered by overriding a single var —
- * each needs its own override. Restore BS3's .btn-default (white bg, light
- * #ccc border) and the softer BS3 warning/danger shades for the query
- * detail toolbar ("Toggle Notes", "Move Query", "Delete Query", etc.). */
+/* BS3's .btn-default and softer warning/danger shades for the query
+ * toolbar. BS5 hardcodes each button's colors, so each needs its own rule. */
 .sub-results .btn-outline-secondary {
 	--bs-btn-color: #333;
 	--bs-btn-bg: #fff;
@@ -595,11 +511,8 @@ header .dropdown-toggle .bi {
 	position: relative;
 }
 
-/* BS5's .row > * sets width:100% so each child fills its own line, since
- * Bootstrap expects .row children to be .col-* grid columns. This footer
- * row's children (toggle icon, "peek at next page" link, "Browse on Solr"
- * button, depth-of-rating note) aren't grid columns, so they should sit
- * inline and wrap naturally like they did under BS3. */
+/* BS5's `.row > * { width: 100% }` would stack this footer's children,
+ * which aren't grid columns. Let them sit inline as under BS3. */
 .results-pane-footer > * {
 	width: auto;
 }

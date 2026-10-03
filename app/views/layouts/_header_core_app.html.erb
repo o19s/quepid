@@ -1,6 +1,6 @@
 <header id="header" class="navbar navbar-secondary navbar-expand-lg navbar-dark">
   <div class="container-fluid container-home">
-    <%= link_to root_path, class: "navbar-brand", target: "_self" do %>
+    <%= link_to root_path, class: "navbar-brand" do %>
       Quepid
       <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
     <% end %>
@@ -37,7 +37,7 @@
             </turbo-frame>
 
             <li class="actions">
-              <a href="cases" class="btn btn-outline-secondary w-100" target="_self">
+              <a href="<%= cases_path %>" class="btn btn-outline-secondary w-100">
                 View all cases
                 <small class="text-muted">
                   (<%= current_user.cases_involved_with.not_archived.count %> active)
@@ -75,32 +75,26 @@
             </turbo-frame>
 
             <li class="actions">
-              <a href="books" class="btn btn-outline-secondary w-100" target="_self">
+              <a href="<%= books_path %>" class="btn btn-outline-secondary w-100">
                 View all books
                 <small class="text-muted">
                   (<%= current_user.books_involved_with.count %> active)
                 </small>
               </a>
 
-              <% if kase.present? %>
-                <%= link_to new_book_path(scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id), class: "btn btn-success w-100", target: "_self" do %>
-                  <i class="bi bi-plus-lg"></i>
-                  Create a book
-                <% end %>
-              <% else %>
-                <%= link_to new_book_path, class: "btn btn-success w-100", target: "_self" do %>
-                  <i class="bi bi-plus-lg"></i>
-                  Create a book
-                <% end %>
+              <% new_book_params = kase.present? ? { scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id } : {} %>
+              <%= link_to new_book_path(new_book_params), class: "btn btn-success w-100" do %>
+                <i class="bi bi-plus-lg"></i>
+                Create a book
               <% end %>
             </li>
           </ul>
         </li>
         <!-- End book selector -->
 
-        <li class="nav-item"><a class="nav-link" href="teams" target="_self">Teams</a></li>
-        <li class="nav-item"><a class="nav-link" href="scorers" target="_self">Scorers</a></li>
-        <li class="nav-item"><a class="nav-link" href="notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
+        <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
+        <li class="nav-item"><%= link_to "Scorers", scorers_path, class: "nav-link" %></li>
+        <li class="nav-item"><a class="nav-link" href="<%= root_path %>notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
       </ul>
 
       <ul class="navbar-nav">

@@ -22,13 +22,6 @@
 	 overflow: scroll;
 }
 
-/* BS3's default modal width was 600px; BS5's default is 500px, with no
-   built-in size between default and .modal-lg (800px). Restore the BS3
-   width for the "Select Scorer" modal, which used the plain default size. */
- .pick-scorer-modal .modal-dialog {
-	 max-width: 600px;
-}
-
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
    tags) sit directly under the close button rather than beside it in a
    flex row. At the shared 600px modal width, longer headings like "What
@@ -38,10 +31,8 @@
 	 max-width: 700px;
 }
 
-/* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
-   uses looser padding, a lighter border, no border-collapsing margin, and
-   the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
-   for the scorer/custom-scorer lists in this modal. */
+/* BS3 heading size and list-group padding/borders for the scorer lists.
+   The .active blue comes from the global rule in bootstrap5-compat.css. */
  .pick-scorer-modal h4 {
 	 font-size: 18px;
 	 color: #333;
@@ -53,18 +44,9 @@
 	 border-color: #ddd;
 }
 
-/* .list-group-item.active's brand-blue color already comes from the
- * global rule in bootstrap5-compat.css (--bs-list-group-active-bg/
- * -border-color: var(--q-brand-blue)) — no need to repeat the hex here. */
-
-/* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
-   .row still applies its negative gutter margin, and .row > * still applies
-   the compensating gutter padding to any direct child that doesn't cancel it
-   itself. .list-group cancels it (padding-left: 0 in its own component
-   style), so the list box ends up flush with .row's pulled-out edge while
-   the <h4> siblings (no such override) stay indented by the gutter, throwing
-   the headings and list boxes out of alignment. Zeroing both here keeps
-   every direct child flush with the modal's own padding. */
+/* This modal uses .row as a wrapper, not a grid. BS5's gutter margin and
+   padding would indent the <h4>s but not the .list-groups (which cancel
+   it), misaligning them. Zero both so every child sits on the modal padding. */
  .pick-scorer-modal .row {
 	 margin-left: 0;
 	 margin-right: 0;
