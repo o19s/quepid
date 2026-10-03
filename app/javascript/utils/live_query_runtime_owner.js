@@ -833,20 +833,20 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     publishQueryListState()
   }
 
-  function hasUnscoredQueries() {
-    return unscoredQueryCount() > 0
+  // Progress for the "Updating Queries" banner. A query whose search failed is
+  // never scored, so it counts as settled once it has an error; otherwise the
+  // banner would stall until a later search succeeds. Starting a search clears
+  // both `hasBeenScored` and `errorText`, so a rerun counts as pending again.
+  function isQuerySettled(query) {
+    return query.hasBeenScored || Boolean(query.errorText)
   }
 
-  function unscoredQueryCount() {
-    return Object.values(getLiveQueries()).filter((q) => {
-      return !q.hasBeenScored
-    }).length
+  function hasPendingQueries() {
+    return Object.values(getLiveQueries()).some((q) => !isQuerySettled(q))
   }
 
-  function scoredQueryCount() {
-    return Object.values(getLiveQueries()).filter((q) => {
-      return q.hasBeenScored
-    }).length
+  function settledQueryCount() {
+    return Object.values(getLiveQueries()).filter(isQuerySettled).length
   }
 
   function queryCount() {
@@ -951,8 +951,8 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
           ? !trySupportsRatedDocsLookup(selectedTry)
           : false,
         isBootstrapping: svc.isBootstrapping === true,
-        searching: hasUnscoredQueries(),
-        batchPosition: scoredQueryCount(),
+        searching: hasPendingQueries(),
+        batchPosition: settledQueryCount(),
         batchSize: queryCount()
       }
     },

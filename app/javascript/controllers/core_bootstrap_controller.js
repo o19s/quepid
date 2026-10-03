@@ -3,6 +3,7 @@ import { getBootstrapCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
+import { flashErrorMessage } from "utils/error_message"
 
 export default class extends Controller {
   static outlets = ["case-toolbar"]
@@ -97,7 +98,7 @@ export default class extends Controller {
           () => coreFlash.show("success", "All queries finished successfully!"),
           error => {
             coreFlash.show("error", "Some queries failed to resolve!")
-            coreFlash.show("error", error, "search-error")
+            coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")
           }
         )
       })

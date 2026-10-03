@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryDocumentsRuntime } from "utils/live_query_documents"
+import { SearchError } from "utils/search_error"
 
 describe("live query documents runtime", () => {
   function buildRuntime(publish = vi.fn()) {
@@ -78,5 +79,19 @@ describe("live query documents runtime", () => {
 
     expect(liveQuery.errorText).toBe("search failed")
     expect(publish).toHaveBeenCalledOnce()
+  })
+
+  it("stores a translated search error as escaped markup with its links", () => {
+    const { runtime } = buildRuntime()
+    const liveQuery = query()
+
+    runtime.setError(liveQuery, new SearchError([
+      { text: "<i>bad</i> " },
+      { text: "inspect", href: "http://solr.test/" }
+    ]))
+
+    expect(liveQuery.errorText).toBe(
+      '&lt;i&gt;bad&lt;/i&gt; <a href="http://solr.test/" target="_blank" rel="noopener noreferrer">inspect</a>'
+    )
   })
 })

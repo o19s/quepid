@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { errorMessage } from "utils/error_message"
+import { errorMessage, flashErrorMessage } from "utils/error_message"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { persistQueries, persistQuery } from "utils/query_lifecycle"
 import coreFlash from "utils/core_flash"
@@ -47,7 +47,7 @@ export default class extends Controller {
           // Unlike the generic fallbacks below, preserve the raw rejection text
           // here rather than a fixed message — this channel is meant to show
           // search-engine detail, not just "something went wrong."
-        coreFlash.show("error", errorMessage(result.searchError, String(result.searchError)), "search-error")
+          coreFlash.show("error", flashErrorMessage(result.searchError, String(result.searchError)), "search-error")
         }
       } else {
         coreFlash.show("success", queryTexts.length === 1

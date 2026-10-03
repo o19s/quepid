@@ -108,7 +108,9 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   1. Expand a query, expand a document's detailed explain/score-breakdown area.
   2. Click **Debug**.
   3. In "Debug Explain for {doc title} (id:{doc id})", expand/collapse nodes in the JSON tree.
-- **Expected:** The tree accurately reflects the raw explain payload returned by the search engine for that specific document.
+- **Expected:** The tree opens fully expanded and accurately reflects the raw explain payload returned by the search engine for that specific document.
+- **Edge cases:**
+  - [ ] Click a hot-match bar under **Matches** on the result row (not the popover): the same Debug Explain modal opens for that doc. This is intentional. Pre-deangularization `main` declared the bar click (`ng-click="showDetailed()"` in `views/stackedChart.html`, opening this same `detailedExplain.html` view), but it never fired in practice; the Stimulus port makes it work. The "no per-term score breakdown for doc" row is not clickable.
 
 ### 6.9 Frog Report
 

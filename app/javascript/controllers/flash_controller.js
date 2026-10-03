@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { renderTextWithLinks } from "utils/html"
 
 /**
  * Renders one flash box on the core case page. Core controllers (still on
@@ -40,7 +41,9 @@ export default class extends Controller {
     }
 
     clearTimeout(this.timer)
-    if (html) {
+    if (Array.isArray(message.parts)) {
+      this.messageTarget.replaceChildren(renderTextWithLinks(message.parts))
+    } else if (html) {
       this.messageTarget.innerHTML = message
     } else {
       this.messageTarget.textContent = message

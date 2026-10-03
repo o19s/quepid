@@ -242,6 +242,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   - [ ] Filter text plus a non-default sort plus page 2 — confirm the page clamps back to a valid page when the filtered set shrinks below it.
   - [ ] "Show only rated" on Solr and ES/OS cases — each should filter via the engine (results contain exactly the rated doc IDs); confirm no error on an engine that can't look up by id.
   - [ ] While a rescore runs, confirm the "Updating Queries" progress banner appears and clears when done.
+  - [ ] With a query whose search fails (e.g. a broken endpoint URL), confirm the banner still reaches N / N and clears instead of stalling.
 
 ### 4.21 Query row states & score badge values
 
@@ -275,7 +276,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   2. Confirm the layout: rating badge left, content center, explain chart right (only when full explain is available).
   3. Click a result title to open the Detailed Document modal (6.11).
   4. Click the **Matches** link on a result (Solr/ES with explain).
-- **Expected:** Highlight snippets keep `<strong>` emphasis; HTML from documents is sanitized (no script execution); URL values are clickable links opening in a new tab; object/array values render as an expandable JSON tree; images honor the field-spec prefix; `.mp3/.wav/.ogg` render `<audio controls>`, `.mp4/.webm` render `<video controls>`; translations show a Google Translate link. The Matches popover titled "Relevancy Score: N" shows up to 3 score-contribution bars with "Show N More"/"Show Less", plus **Debug** and **Expand** buttons; Debug opens the raw explain JSON modal (6.8).
+- **Expected:** Highlight snippets keep `<strong>` emphasis; HTML from documents is sanitized (no script execution); URL values are clickable links opening in a new tab; object/array values render as an expandable JSON tree; images honor the field-spec prefix; `.mp3/.wav/.ogg` render `<audio controls>`, `.mp4/.webm` render `<video controls>`; translations show a Google Translate link. The Matches popover titled "Relevancy Score: N" shows up to 3 score-contribution bars with "Show N More"/"Show Less", plus **Debug** and **Expand** buttons; Debug opens the raw explain JSON modal (6.8). Clicking a hot-match bar on the result row also opens that modal (intentional; see 6.8).
 - **Edge cases:**
   - [ ] A doc whose fields contain injected markup (`<img onerror=...>`) — confirm nothing executes.
   - [ ] "No Match" shows for a doc with no matching terms; "no per-term score breakdown" when explain has no children.

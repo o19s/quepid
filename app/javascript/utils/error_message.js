@@ -11,3 +11,12 @@ export function errorMessage(error, fallback) {
   }
   return fallback
 }
+
+/**
+ * Like `errorMessage`, but keeps a translated search error's `{ text, href? }`
+ * parts (see `utils/search_error`) so the flash can render its links.
+ */
+export function flashErrorMessage(error, fallback) {
+  if (Array.isArray(error?.parts)) return error
+  return errorMessage(error, fallback)
+}

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
 import * as queryLifecycle from "utils/query_lifecycle"
+import { SearchError } from "utils/search_error"
 
 vi.mock("utils/query_lifecycle", () => ({ persistQuery: vi.fn(), persistQueries: vi.fn() }))
 
@@ -53,6 +54,20 @@ describe("query_lifecycle_controller", () => {
 
     expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(1, "error", "Your new query had an error!")
     expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(2, "error", "timeout", "search-error")
+  })
+
+  it("passes a translated search error through intact so the flash can render its links", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ query: {} })
+    const persistQuery = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const searchError = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
+    const commitQueries = vi.fn().mockResolvedValue({ searchError })
+    const { controller } = controllerFor({ prepareQueries, persistQuery, commitQueries })
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars"] }
+    }))
+
+    expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(2, "error", searchError, "search-error")
   })
 
   it("reports a bulk search error without duplicating the collection store's own flash", async () => {

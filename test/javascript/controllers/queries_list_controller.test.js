@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 import { QueryCollectionStore } from "stores/query_collection_store"
 import { QueryDocumentsStore } from "stores/query_documents_store"
+import { SearchError } from "utils/search_error"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -408,6 +409,17 @@ describe("queries_list_controller", () => {
     expect(window.quepidDom.flash.show).not.toHaveBeenCalled()
 
     delete window.quepidStore
+    delete window.quepidDom
+  })
+
+  it("passes a translated search error through intact so the flash can render its links", () => {
+    const { controller } = controllerFor()
+    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    const error = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
+
+    controller.handleSearchFailed({ detail: { error } })
+
+    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", error, "search-error")
     delete window.quepidDom
   })
 

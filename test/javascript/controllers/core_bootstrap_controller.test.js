@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
 import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
+import { SearchError } from "utils/search_error"
 
 describe("CoreBootstrapController", () => {
   beforeEach(() => {
@@ -119,6 +120,16 @@ describe("CoreBootstrapController", () => {
 
     expect(flash.show).toHaveBeenCalledWith("error", "Some queries failed to resolve!")
     expect(flash.show).toHaveBeenCalledWith("error", "engine down", "search-error")
+  })
+
+  it("passes a translated search error through intact so the flash can render its links", async () => {
+    const error = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
+    window.quepidSearch.queryCommands.searchAll.mockRejectedValue(error)
+
+    const { flash } = await bootstrapCase()
+    await new Promise((resolve) => setTimeout(resolve))
+
+    expect(flash.show).toHaveBeenCalledWith("error", error, "search-error")
   })
 
   it("tells a user with no cases how to create one", async () => {

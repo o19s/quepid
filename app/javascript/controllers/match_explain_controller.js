@@ -217,7 +217,7 @@ export default class extends Controller {
     })
     modal.element.querySelector("[data-modal-target='title']").textContent = data.docTitle
     modal.element.querySelector("[data-modal-target='docId']").textContent = data.docId
-    renderJsonExplorer(modal.element.querySelector("[data-modal-target='json']"), data.explainRawStr, { collapsed: true })
+    renderJsonExplorer(modal.element.querySelector("[data-modal-target='json']"), data.explainRawStr, { collapsed: false })
   }
 
   openExpandModal(data) {

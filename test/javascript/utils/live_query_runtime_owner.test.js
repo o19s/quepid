@@ -87,6 +87,18 @@ describe("createLiveQueryRuntimeOwner", () => {
     })
   })
 
+  it("counts a query whose search failed as settled so the progress banner can clear", () => {
+    const search = buildOwner({ store: buildStores() })
+    search.queryCapabilities.registerQuery(1, { queryId: 1, hasBeenScored: true })
+    search.queryCapabilities.registerQuery(2, { queryId: 2, hasBeenScored: false, errorText: "engine down" })
+
+    expect(search.queryCapabilities.getListState()).toMatchObject({
+      searching: false,
+      batchPosition: 2,
+      batchSize: 2
+    })
+  })
+
   it("blocks adding queries for a static engine", () => {
     const search = buildOwner({ store: buildStores(), selectedTry: { searchEngine: "static" } })
 

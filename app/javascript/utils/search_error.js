@@ -1,3 +1,5 @@
+import { renderTextWithLinks } from "utils/html"
+
 const codes = {
   100: "Continue",
   101: "Switching Protocols",
@@ -67,38 +69,71 @@ export function formatCode(code) {
   return undefined
 }
 
-export function parseResponseObject(response, inspectUrl, searchEngine) {
-  if (searchEngine === "solr") {
-    return `One or more of your Solr queries failed to return results, please access your Solr instance directly to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more <a href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff" target="_blank" rel="noopener noreferrer">on the troubleshooting Solr wiki page</a>.`.replace(
-      "your Solr instance directly",
-      `<a href="${inspectUrl}" target="_blank" rel="noopener noreferrer">Solr instance directly</a>`
-    )
+/**
+ * A translated search failure. `parts` is a list of `{ text, href? }` segments
+ * so the troubleshooting links stay clickable without treating server/user
+ * text as markup; `message` is the same content as plain text.
+ */
+export class SearchError extends Error {
+  constructor(parts) {
+    super(parts.map((part) => part.text).join(""))
+    this.name = "SearchError"
+    this.parts = parts
   }
 
-  if (response instanceof Error) return `Search API mapper error: ${response.message}`
+  // Escaped markup with safe links, for `query.errorText` (rendered through
+  // `sanitizeSnippetHtml`).
+  toHtml() {
+    const container = document.createElement("div")
+    container.append(renderTextWithLinks(this.parts))
+    return container.innerHTML
+  }
+}
 
-  let error = "An unexpected error was returned: "
+export function parseResponseObject(response, inspectUrl, searchEngine) {
+  if (searchEngine === "solr") {
+    return new SearchError([
+      { text: "One or more of your Solr queries failed to return results, please access " },
+      { text: "Solr instance directly", href: inspectUrl },
+      {
+        text: " to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more "
+      },
+      {
+        text: "on the troubleshooting Solr wiki page",
+        href: "https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff"
+      },
+      { text: "." }
+    ])
+  }
+
+  if (response instanceof Error) {
+    return new SearchError([{ text: `Search API mapper error: ${response.message}` }])
+  }
+
   if (response.status === -1) {
-    error += "You may have a typo in your URL"
-    error +=
-      ' (<a href="https://github.com/o19s/quepid/wiki" target="_blank" rel="noopener noreferrer">Quepid Wiki</a> for more help).'
-    error += " If that is not the case, make sure that CORS is enabled in your config."
-  } else {
-    error += formatCode(response.status)
-    if (Object.prototype.hasOwnProperty.call(response, "statusText"))
-      error += ` - ${response.statusText}`
-    if (Object.prototype.hasOwnProperty.call(response, "reason")) error += ` - ${response.reason}`
-
-    if (response.data) {
-      if (response.data.error && typeof response.data.error === "object") {
-        error += `: ${JSON.stringify(response.data.error)}`
-      } else if (response.data.error) {
-        error += `: ${response.data.error}`
-      } else if (response.data.message) {
-        error += `: ${response.data.message}`
+    return new SearchError([
+      { text: "An unexpected error was returned: You may have a typo in your URL (" },
+      { text: "Quepid Wiki", href: "https://github.com/o19s/quepid/wiki" },
+      {
+        text: " for more help). If that is not the case, make sure that CORS is enabled in your config."
       }
+    ])
+  }
+
+  let error = `An unexpected error was returned: ${formatCode(response.status)}`
+  if (Object.prototype.hasOwnProperty.call(response, "statusText"))
+    error += ` - ${response.statusText}`
+  if (Object.prototype.hasOwnProperty.call(response, "reason")) error += ` - ${response.reason}`
+
+  if (response.data) {
+    if (response.data.error && typeof response.data.error === "object") {
+      error += `: ${JSON.stringify(response.data.error)}`
+    } else if (response.data.error) {
+      error += `: ${response.data.error}`
+    } else if (response.data.message) {
+      error += `: ${response.data.message}`
     }
   }
 
-  return error
+  return new SearchError([{ text: error }])
 }

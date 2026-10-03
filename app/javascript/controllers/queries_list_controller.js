@@ -3,7 +3,7 @@ import Sortable from "sortablejs"
 import { postJson } from "api/json"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
-import { errorMessage } from "utils/error_message"
+import { flashErrorMessage } from "utils/error_message"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { searchResultsTemplate } from "controllers/search_results_template"
@@ -507,8 +507,8 @@ export default class extends Controller {
   // (e.g. re-search after an import/judgements reload, or a settings change) —
   // the collection store now reports every generation-tracked failure here.
   handleSearchFailed(event) {
-    const message = errorMessage(event.detail?.error, "Search failed. Some queries may not have updated.")
-      coreFlash.show("error", message, "search-error")
+    const message = flashErrorMessage(event.detail?.error, "Search failed. Some queries may not have updated.")
+    coreFlash.show("error", message, "search-error")
   }
 
   handleSearchSettled() {

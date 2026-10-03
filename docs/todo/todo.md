@@ -9,47 +9,50 @@ introduced by or is required to complete AngularJS removal, `[MIGRATION-FOLLOWUP
 means it is related cleanup but not necessarily a migration regression, and
 `[PREEXISTING]` means it predates the AngularJS removal. Use these markers when
 choosing migration work; do not treat pre-existing defects as migration regressions.
+The pre-migration baseline is `be9b319a` (`main` before the Bootstrap 3→5 and
+AngularJS-removal work began). Later `main` commits already include migration
+changes, so don't use them to decide provenance.
+
+Ratings appear as `P2 I3 C1` beside each item. These are initial estimates
+based on the described scope; revise them when implementation reveals more.
+
+| Rating | 0 | 1 | 2 | 3 |
+| --- | --- | --- | --- | --- |
+| **P — Priority** (lower is more urgent) | Critical | High | Normal | Opportunistic |
+| **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
+| **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
+
+Impact measures expected reduction in code and maintenance complexity, not
+user benefit or security importance; an urgent bug can be `P0 I0`. Complexity
+includes verification effort and regression risk, not just lines changed.
+Choose by priority first, then favor higher impact and lower complexity within
+a priority tier. For example, `P2 I3 C1` offers more simplification for less risk
+than `P2 I1 C3`. Group ratings summarize scope; nested items have their own estimates.
 
 Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [MIGRATION] P2 — Search failure flashes expose link markup
+### [MIGRATION] P2 I0 C2 — Tune Relevance drawer closes after Rerun My Searches!
 
-A controlled failed search shows literal `<a href="...">` markup in the error flash instead of clickable endpoint/troubleshooting links (manual scenario 4.21; `.playwright-mcp/due-sweep/query-error.png`). The search-error translator returns markup, while `flash_controller.js` renders messages as text unless explicitly opted into HTML.
+Before the migration (`be9b319a`), saving from the drawer kept it open on the new try: `mainCtrl.js` persisted `$rootScope.devSettings` for exactly this case. This branch navigates to `case/:id/try/:n` and the drawer is closed afterward. Calling `save()` directly shows the same result, so this predates the Stimulus action routing. Decide whether to restore the original behavior; recheck scenario 4.10.
 
-Baseline source at pre-deangularization `main` commit `5f53d8f8c470d3471055510c1f41d490302ea75b` uses `ng-bind-html="flash.message"` in `app/assets/templates/views/common/search_flash.html` and builds these links in `searchErrorTranslatorSvc.js`. This establishes a migration difference by source inspection, not a live historical replay.
+### [MIGRATION] P3 I0 C1 — Minor Tune Relevance and Missing Documents differences
 
-Render the troubleshooting links safely, preferably as structured message/link data. Preserve escaping for endpoint URLs and server/user text; do not enable unrestricted HTML for all flash messages. Recheck the failed-search flow and ordinary plain-text errors.
+Found in a before/after replay against a September `main` (`86e3de9f`) and confirmed in the pre-migration source (`be9b319a`, `devQueryParams.html`, `queryParamsHistory.html`, `searchEngineName.js`):
+- The Settings tab opens with every section expanded; the original starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed (scenario 4.12).
+- The background-run button reads "Rerun My Searches in the Background!"; the original says "Rerun My Searches Now in the Background!".
+- Missing Documents names the static engine "Static"; the original says "Static File" (scenario 4.9).
+- History tab rows show the try's query params in bold italic with "..." on its own line; the original shows them plain and truncated inline (scenario 4.13).
+- At a 900px-tall viewport, **Rerun My Searches!** sits below the fold of the scrollable drawer; the original keeps it outside the scrolling area at the drawer's bottom (scenario 4.11).
 
-### [MIGRATION] P2 — Debug Explain opens with its tree collapsed
+### [MIGRATION] P2 I1 C2 — Core modals ignore Escape after an in-modal control re-renders
 
-On pre-deangularization `main` (`86e3de9f`), Debug Explain (Matches popover → **Debug**) opens with the explain tree fully expanded: `components/debug_matches/_modal.html` passes `collapsed="false"` to `json-explorer`. The Stimulus port shows only `+ details: [...]` until the user expands it, because `match_explain_controller.js#openDebugModal` passes `{ collapsed: true }` (introduced in `0be2aefb`). Confirmed with a live before/after replay (`.playwright-mcp/branch-ui-diff/6.8-debug-modal-{before,after}.png`). Pass `collapsed: false` and recheck manual scenario 6.8.
-
-### [MIGRATION-FOLLOWUP] P3 — Clicking a hot-match bar now opens Debug Explain
-
-On `main`, each hot-match bar under **Matches** declares `ng-click="showDetailed()"` (`views/stackedChart.html`), but in a live replay clicking a bar opened nothing; `showDetailed` lives on the search-result scope rather than the chart's. The Stimulus port opens Debug Explain on bar click. Decide whether to keep that new affordance or drop it for parity, and document the decision in scenario 6.8 or 4.23.
-
-### [MIGRATION] P2 — Tune Relevance drawer closes after Rerun My Searches!
-
-On `main`, saving from the drawer keeps it open on the new try. This branch navigates to `case/:id/try/:n` and the drawer is closed afterward. Calling `save()` directly shows the same result, so this predates the Stimulus action routing. Decide whether to restore main's behavior; recheck scenario 4.10.
-
-### [MIGRATION] P3 — Minor Tune Relevance and Missing Documents differences
-
-Found in the same before/after replay against `main` (`86e3de9f`):
-- The Settings tab opens with every section expanded; `main` starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed (scenario 4.12).
-- The background-run button reads "Rerun My Searches in the Background!"; `main` says "Rerun My Searches Now in the Background!".
-- Missing Documents names the static engine "Static"; `main` says "Static File" (scenario 4.9).
-- History tab rows show the try's query params in bold italic with "..." on its own line; `main` shows them plain and truncated inline (scenario 4.13).
-- At a 900px-tall viewport, **Rerun My Searches!** sits below the fold of the scrollable drawer; `main` keeps it pinned at the drawer's bottom (scenario 4.11).
-
-### [MIGRATION-FOLLOWUP] P2 — Core modals ignore Escape after an in-modal control re-renders
-
-Picking a case calls `move_query_core_controller.js#renderCases`, which rebuilds the list buttons. The clicked button is replaced, so focus falls back to `<body>`. Bootstrap only handles Escape when focus is inside the modal, so Escape no longer closes it (the close button still works). Keep focus on the newly rendered active item. Found on 2026-10-02 while verifying scenario 4.4.
+Picking a case calls `move_query_core_controller.js#renderCases`, which rebuilds the list buttons. The clicked button is replaced, so focus falls back to `<body>`. Bootstrap only handles Escape when focus is inside the modal, so Escape no longer closes it (the close button still works). Keep focus on the newly rendered active item. Found on 2026-10-02 while verifying scenario 4.4. This is a regression: the Angular modals (angular-ui-bootstrap 2.5) listened for Escape on the document, so focus location did not matter.
 
 The same focus loss happens after a failed **Move to …** (the footer button is disabled during the request) and after **Refresh ratings from book** in the Frog Report (scenarios 4.4, 6.9, 16.4). A freshly opened modal closes on Escape normally. Fix it once for core modals, for example by returning focus to the modal element when the focused control is disabled or removed, rather than per controller.
 
-### [MIGRATION-FOLLOWUP] P2 — core_smoke E2E fails against current dev data
+### [MIGRATION-FOLLOWUP] P2 I0 C2 — core_smoke E2E fails against current dev data
 
 Five `test/playwright/core_smoke.spec.ts` tests fail identically on `HEAD` (`71ff9ad1`) and with the 2026-10-02 fixes applied:
 - Screenshot diffs: open case, explain modal, query results render, and leave a judgement (about 4–5% of pixels).
@@ -57,17 +60,17 @@ Five `test/playwright/core_smoke.spec.ts` tests fail identically on `HEAD` (`71f
 
 The fixture case 219 has drifted: it now has 21 queries and a "Try 31 - Try 2" header. Reseed or restore the fixture before treating these as regressions. Don't regenerate the baselines against the drifted data.
 
-### [PREEXISTING] P0 — Scorer sandboxing
+### [PREEXISTING] P0 I1 C3 — Scorer sandboxing
 
 Client scorer code still executes through `new Function()`; evaluate a Web
 Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
 
-### [PREEXISTING] P1 — Scorer contract drift
+### [PREEXISTING] P1 I3 C3 — Scorer contract drift
 
 `app/javascript/utils/scorer_runtime.js` and `scorer_catalog.js` need a canonical
 shared API and migration guidance.
 
-### [PREEXISTING] P2 — Accessibility
+### [PREEXISTING] P2 I0 C2 — Accessibility
 
 Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario.
 
@@ -75,21 +78,17 @@ axe-core flags two unlabeled `<select>`s as critical (`select-name`): the API sn
 
 The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` elements without `href`, so they can't be reached with the keyboard. Make them buttons. Not compared against `main`.
 
-### [PREEXISTING] P2 — Try delete has no confirm dialog
+### [PREEXISTING] P2 I0 C1 — Try delete has no confirm dialog
 
 `deleteTry()` in `tune_relevance_controller.js` has the null and active-try guards, but one click on Delete still removes the try permanently. Add a confirm step.
 
-### [MIGRATION-FOLLOWUP] P3 — Workbench clips at phone width
+### [MIGRATION-FOLLOWUP] P3 I0 C2 — Workbench clips at phone width
 
 At 375px the core workbench clips on the right with no scroll: the toolbar's Compare snapshots / Import / Share case links, each query row's result count and expand chevron, and the end of the case title are cut off. 768px is fine. Phone width isn't an official target and this wasn't compared against `main`; let the toolbar and query-row header wrap.
 
-### [PREEXISTING] P2 — Explain Query Copy gives no feedback
+### [PREEXISTING] P2 I0 C1 — Explain Query Copy gives no feedback
 
 `query_explain_controller.js` swallows `copyText()` rejections (`.catch(() => {})`) and shows no success state. Surface failure and a "Copied!" state.
-
-Leave the two `setProgress(visible)` copies alone for now. For URL placeholder
-replacement, prefer server-owned URLs passed through data attributes or form
-actions over a generic client-side `fillUrlTemplate` helper.
 
 ---
 
@@ -97,66 +96,72 @@ actions over a generic client-side `fillUrlTemplate` helper.
 
 These items were rechecked against the current source when consolidating the
 sampled JavaScript review. They are source findings, not live browser
-reproductions. The marker denotes related frontend cleanup; it does not establish
-that a defect was introduced by AngularJS removal. P2 items are concrete defects
-or near-term cleanup; P3 items are opportunistic.
+reproductions. Each item's marker was checked against the pre-migration source
+(`be9b319a`). P2 items are concrete defects or near-term cleanup; P3 items are
+opportunistic.
 
-### [MIGRATION-FOLLOWUP] P2 — Team-member autocomplete responses race
+### [PREEXISTING] P2 I1 C2 — Team-member autocomplete responses race
 
 `app/javascript/controllers/team_member_autocomplete_controller.js` debounces
 input but does not cancel in-flight requests. A slow response for an older query
 can replace newer suggestions, including after input falls below the minimum
 length. Abort the previous request on new input and on disconnect, or reject
 stale responses by request identity. Ensure an aborted request cannot hide the
-new request's loading state or suggestions.
+new request's loading state or suggestions. The controller predates the
+migration and never aborted requests.
 
-### [MIGRATION-FOLLOWUP] P2 — Pane polling survives disconnect
+### [MIGRATION] P2 I1 C1 — Pane polling survives disconnect
 
 `app/javascript/controllers/pane_controller.js#refreshElements` retries every
 200ms while the container has zero width. `disconnect` releases dragging but
 does not cancel that timer; a hidden, detached pane can poll indefinitely and
 reattach its mouseup listener. Track and clear the retry on disconnect, or use a
-lifecycle-managed observer. Cover disconnect while hidden.
+lifecycle-managed observer. Cover disconnect while hidden. Angular's
+`paneSvc.refreshElements` had no zero-width retry; the polling came with the port.
 
-### [MIGRATION-FOLLOWUP] P3 — Wizard readiness and tour timers survive disconnect
+### [MIGRATION-FOLLOWUP] P3 I2 C2 — Wizard readiness and tour timers survive disconnect
 
 `app/javascript/controllers/wizard_controller.js#loadWizard` polls for
 capabilities up to 100 times at 100ms intervals. The readiness retry and the
 1500ms tour-start timeout have no disconnect cleanup. Prefer the existing
 `core-bootstrap:ready` event or a ready promise for capability initialization,
 and cancel outstanding tour/readiness work when the controller disconnects.
+Mixed provenance: the uncancelled 1500ms tour `$timeout` existed in
+`wizardCtrl.js`; the readiness polling is new.
 
-### [MIGRATION-FOLLOWUP] P2 — Mapper wizard assumes editors initialize in 500ms
+### [PREEXISTING] P2 I1 C2 — Mapper wizard assumes editors initialize in 500ms
 
 `app/javascript/controllers/mapper_wizard_controller.js#connect` schedules
 `captureEditors` after a fixed 500ms delay; later actions recapture editors in
 case they were not ready. Replace the sleep with an editor-ready event or
-promise and prevent initialization work after disconnect.
+promise and prevent initialization work after disconnect. The fixed delay
+predates the migration.
 
-### [MIGRATION-FOLLOWUP] P2 — Export snapshot-list failures are invisible
+### [PREEXISTING] P2 I0 C1 — Export snapshot-list failures are invisible
 
 `app/javascript/controllers/export_case_core_controller.js#_loadSnapshots` now
 uses `getJson`, but its catch returns silently for `HttpError`; other failures
 are only logged. Failed loading leaves empty snapshot selects with no visible
 explanation. Show an error/status and preserve the current-case guard so a
-stale request cannot report an error in another case's modal.
+stale request cannot report an error in another case's modal. The Angular
+export modal also ignored `querySnapshotSvc.bootstrap` failures.
 
-### [MIGRATION-FOLLOWUP] P3 — Live-query listeners have no teardown
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Live-query listeners have no teardown
 
 `app/javascript/utils/live_query_events.js#connect` installs six listeners
 without a disconnect method or duplicate-connect guard. Add explicit lifecycle
 teardown/idempotent connection and handle reload rejections. Test repeated
 connect/disconnect and failed reloads.
 
-### [MIGRATION-FOLLOWUP] P3 — Activity URLs assume an existing query string
+### [PREEXISTING] P3 I1 C1 — Activity URLs assume an existing query string
 
 `app/javascript/controllers/user_activity_controller.js#fetchData` appends
 `&start=...&end=...` to `urlValue`, which fails for a URL without `?`. Use URL
 search parameters with an explicit base for relative URLs. The catch also
 returns an empty array for every failure; distinguish failed loading from a
-successful response with no activity.
+successful response with no activity. Both behaviors predate the migration.
 
-### [MIGRATION-FOLLOWUP] P2 — Finish shared JSON helper adoption in runtimes
+### [MIGRATION-FOLLOWUP] P2 I2 C2 — Finish shared JSON helper adoption in runtimes
 
 The controller examples from the old review (`user_activity` and export
 snapshot loading) already use `getJson`. Remaining manual JSON request handling
@@ -166,21 +171,23 @@ where the response is JSON, preserving injected request seams, error contracts,
 and partial-import behavior. Keep blob/download and other non-JSON requests on
 `apiFetch`.
 
-### [MIGRATION-FOLLOWUP] P3 — Reuse CSRF token lookup for destructive forms
+### [MIGRATION-FOLLOWUP] P3 I1 C0 — Reuse CSRF token lookup for destructive forms
 
 `app/javascript/utils/destructive_form.js` reads the CSRF meta tag itself.
 Import `getCsrfToken` from `api/fetch.js` so token lookup has one implementation.
 
-### [MIGRATION-FOLLOWUP] P3 — Simplify repeated modal and case-identity plumbing
+### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal and case-identity plumbing
 
 Several core modal subclasses still specialize submit/busy handling despite
 `core_modal_controller_base.js` providing shared helpers. Consolidate only
 identical behavior when touching those controllers; keep specialized state and
 intentionally different redirect delays. Repeated numeric case-ID comparisons
 in controllers and `live_query_events.js` are also candidates for a small shared
-predicate. Leave the deferred `setProgress` copies noted above alone.
+predicate. Leave the two `setProgress(visible)` copies alone for now. For URL
+placeholder replacement, prefer server-owned URLs passed through data
+attributes or form actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION-FOLLOWUP] P2 — Reduce live-query owner indirection incrementally
+### [MIGRATION-FOLLOWUP] P2 I3 C3 — Reduce live-query owner indirection incrementally
 
 `app/javascript/utils/live_query_runtime_owner.js` still builds a nested
 `liveQueryServices` graph of forwarding wrappers, with closures depending on
@@ -191,15 +198,22 @@ that defer a lookup of a later `const` (`liveQueryFactory`,
 `liveQueryCollectionRuntime`, …) must stay deferred. Work one cluster at a
 time rather than as a large runtime rewrite.
 
-### [MIGRATION-FOLLOWUP] P3 — Document shared event names and payloads
+The broader problem is concept count: the runtime spans about 18 modules
+(`live_query_*`, `query_runtime`, `query_service`, `query_model`, `query_state`,
+`query_lifecycle`), several of which only pass through to others, left over
+from migration staging. Collapse pass-through modules as each cluster is
+simplified.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Document shared event names and payloads
 
 Custom event producers and consumers use bare string names with mixed prefixes
 across controllers and runtimes. Centralize names and payload JSDoc where this
-improves producer/consumer consistency. Coordinate with the deferred outlet
-work in `docs/stimulus_turbo_retrofit.md`; preserve public event contracts and
-Stimulus `data-action` emitters rather than renaming events wholesale.
+improves producer/consumer consistency. Follow the outlet-vs-event rule in
+`docs/archived/stimulus_turbo_retrofit_completed.md#controller-coupling`;
+preserve public event contracts and Stimulus `data-action` emitters rather than
+renaming events wholesale.
 
-### [MIGRATION-FOLLOWUP] P3 — Move static generated UI structure into ERB
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Move static generated UI structure into ERB
 
 `app/javascript/controllers/queries_list_controller.js`,
 `search_results_controller.js`, and `annotations_controller.js` still build
@@ -208,30 +222,149 @@ substantial static structure through `innerHTML`. Render static shells or
 Preserve escaping and per-surface behavior; do not move browser-computed search
 results or scores to the server.
 
-### [MIGRATION-FOLLOWUP] P3 — Audit remaining frontend globals
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Audit remaining frontend globals
 
 `window.Stimulus` (`controllers/application.js`) and `window.CodeMirror`
-(`modules/editor.js`) remain global integration seams. Identify consumers before replacing them
+(`modules/editor.js`) remain global integration seams; both predate the migration. Identify consumers before replacing them
 with imports or explicit dependencies; retain any supported external contract.
 
-### [MIGRATION-FOLLOWUP] P3 — Replace native invite alerts
+Angular-era globals remain too: `core_vendor.js` puts `Tether` and `Shepherd` on
+`window` because `tour.js` expects bare globals, and `bootstrap_globals.js` and
+`vega_globals.js` load UMD builds for the same reason. `tether-shepherd` is a
+dated dependency; swapping the tour library is its own decision, after which
+converting `tour.js` to imports is cheap.
+
+### [PREEXISTING] P3 I0 C1 — Replace native invite alerts
 
 `app/javascript/controllers/invite_controller.js` uses native `alert` for a
 missing invitation link and clipboard failure. Use the application's status or
-flash UI so failures are consistent with other copy controls.
+flash UI so failures are consistent with other copy controls. The alerts
+predate the migration.
 
-### [MIGRATION-FOLLOWUP] P3 — Simplify query-parameter warnings
+### [PREEXISTING] P3 I1 C2 — Simplify query-parameter warnings
 
 `app/javascript/utils/tune_relevance.js#queryParamsWarning` creates a new
 `RegExp` for each fixed typo on every call and returns HTML. Precompile the
 patterns or use equivalent string matching, and return structured warning data
 so rendering owns markup. Preserve the existing typo matching and escaping.
+Angular's `queryParams.js` already did both.
+
+---
+
+## [MIGRATION-FOLLOWUP] Angular remnants, Stimulus/Turbo retrofit, and frontend DRY
+
+No Angular code is left (no `ng-*`, `$scope`, or Angular packages outside
+comments); what remains is mostly structure. Audited 2026-10-03 on
+`angular-phase-10`. Completed retrofit work and standing guidance (constraints,
+outlet-vs-event rule, pitfalls, what stays manual by design) are in
+`docs/archived/stimulus_turbo_retrofit_completed.md`.
+
+### [MIGRATION] P2 I3 C3 — Merge the case page into the main app
+
+The case page (`/case/:id`) is still its own app: its own layout
+(`layouts/core.html.erb`), header and footer (`layouts/_header_core_app.html.erb`,
+`_footer_core_app.html.erb`), esbuild IIFE bundles (`core_case.js`,
+`core_vendor.js`; every other page uses the importmap), and CSS layer
+(`core-additions.css` ~660 lines, `bootstrap5-compat.css` ~640 lines). Steps:
+
+1. Merge `_header_core_app.html.erb` into `_header.html.erb`, rendering the
+   case-specific parts (case name, try, score) only on a case. Same for the footer.
+2. Render the case page in `application.html.erb`, linking the `core` CSS
+   bundle there instead of `application`. Move `core_case.js` onto the importmap
+   at the same time; that needs pins for `sortablejs` and `splainer-search/wired.js`
+   (the package ships only an IIFE `dist`).
+3. Rename the `_core` twins (11 `controllers/*_core_controller.js`, 10
+   `shared/_*_core_modal.html.erb`). Only `share_case` has a non-core
+   counterpart; for the rest the suffix just means "lives on the case page".
+   Don't rename before steps 1–2; it's churn on its own.
+
+Keep `<base href>` in both layouts: `core_capabilities_runtime.js`,
+`detailed_document_modal.js` and `search_result_controller.js` rely on
+`document.baseURI` for sub-path deployments.
+
+**Bootstrap 3 look (decided 2026-10-03): keep it, scoped to the case page.**
+`html { font-size: 87.5% }`, the BS3 brand blue `#337ab7` (`--q-brand-blue`),
+the BS3 `<pre>` box and modal shadow, and ~50 "BS3" comments in
+`bootstrap5-compat.css`, `core-additions.css` and `misc.css` are a design choice.
+`build_css.js` builds `core.css` as a complete bundle that only the case page
+links. Do not prefix the compat selectors unless the shared header must look
+identical everywhere: many rules are global (`html`, `:root`, `a`, `.modal`,
+`.tooltip`, `.popover`), modals and popovers attach to `<body>`, and the root
+font size cannot be scoped below `<html>`.
+
+### [MIGRATION] P2 I2 C3 — Replace the `quepid_search.js` service locator
+
+`app/javascript/quepid_search.js` is a shared module-level object standing in
+for Angular's dependency injection: its `queryCapabilities` slots start `null`
+and are filled at startup by the runtime owner. Shared case state stays in sync
+through page-wide events such as `quepid:case-selected` and
+`judgements:book-settings-saved` in `core_runtime.js`. Independent of the layout
+merge; pairs naturally with the live-query owner simplification above.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Convert markup-owning `utils/` DOM helpers to controllers (retrofit Track E)
+
+`dynamic_modal.js`, `detailed_document_modal.js`, `destructive_form.js` and
+`status_message.js` own markup and events but are not Stimulus controllers.
+Convert them into controllers or controller mixins. Leave thin Bootstrap
+wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
+
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked)
+
+`pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
+(snapshot selects), and possibly `judgements_core` and `export_case_core`
+build lists from JSON in JS. They could become partials loaded through lazy
+`<turbo-frame src=...>`, like `dropdown/cases_core.html.erb`, and modal form
+posts could be answered with Turbo Streams. **Blocked:** parallel HTML
+endpoints for the case page are not wanted for now. If that changes, pilot
+`pick_scorer_core` and prove selection works inside a lazy frame first.
+
+### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
+
+The 2026-10-02 sweep left these unverified in the browser: confirming Delete
+Query in the accumulated review (Track C batch 3 verified real Delete/Move
+separately); actual imports, export downloads, and scorer/book saves; and a
+templated Elasticsearch/OpenSearch query's rendered-template success path (no
+suitable dev case; unit tests only). Track D's no-endpoint subset was compared
+on 4.11, 4.13, 7.7 and 7.9; scenarios sharing only a touched file were not
+rerun: 4.10, 4.12, 4.14, 4.24, 5.4, 11.2, 17.1, 17.2, 17.9.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Move remaining hand-written modals onto `_modal_shell`
+
+`core/_try_details_modal.html.erb`, `core/_tune_relevance.html.erb` and
+`shared/_query_options_core_modal.html.erb` hand-write
+`.modal > .modal-dialog > .modal-content`. The shell needs a configurable
+dismiss-button label ("Dismiss" vs "Cancel") and title heading tag. The
+judgements form, query-doc-pairs index and unleash modals on non-core pages are
+also candidates. Convert each when next edited.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace test-override shims with `vi.mock`
+
+`utils/core_store_access.js`, `core_capability_access.js`, `core_flash.js` (a
+`Proxy`) and `core_test_overrides.js` exist so specs can inject fakes into
+production modules; `vi.mock` already does this in 34 specs. About 60 source
+lines plus 21 importers. Small payoff across many files; fold into spec work
+when it falls out naturally.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs
+
+`test/javascript/support/controller_fixture.js` (see
+`docs/js_tooling.md#controller-test-fixtures`) is used by 17 controller specs.
+Adopt it in smaller specs when touched. Separately, mounting real Stimulus
+against real markup would catch ERB target/action drift the fixture can't;
+use it for new specs and convert old ones when touched, not big-bang.
+
+### [PREEXISTING] P3 I0 C2 — Identify API endpoints only the Angular client used
+
+Git history didn't recover the old client's URLs (it built them by string
+concatenation). The API is also public (scripts, notebooks), so an endpoint the
+UI no longer calls is not necessarily dead. Only worth doing alongside an API
+review.
 
 ---
 
 ## [PREEXISTING] P0 — Product bugs
 
-### [PREEXISTING] P0 — Deleting the latest try bricks the case (backend)
+### [PREEXISTING] P0 I1 C2 — Deleting the latest try bricks the case (backend)
 
 **Observed:** `DELETE /api/cases/:id/tries/:n` on the live try returns 204, but `cases.last_try_number` still points at the deleted try. Reload → banner *"Cannot read properties of null (reading 'tryNo')"*; case unusable until DB repair.
 
@@ -243,7 +376,7 @@ so rendering owns markup. Preserve the existing typo matching and escaping.
 
 ---
 
-### [PREEXISTING] P0 — Try delete orphans scores
+### [PREEXISTING] P0 I1 C3 — Try delete orphans scores
 
 **Observed:** Scores keep a stale `try_id` after the try is deleted. (The `PUT /api/cases/:id/scores` 500 on an orphaned `last_score` is fixed — `same_score_source?` now treats a nil try as a different source.)
 
@@ -255,7 +388,7 @@ so rendering owns markup. Preserve the existing typo matching and escaping.
 
 ## [PREEXISTING] P0 — Security
 
-### [PREEXISTING] P0 — Public cases and snapshots allow unauthenticated mutation
+### [PREEXISTING] P0 I1 C2 — Public cases and snapshots allow unauthenticated mutation
 
 **Location:** `app/controllers/api/v1/cases_controller.rb:10-16`, `app/controllers/api/v1/snapshots_controller.rb:13-20`
 
@@ -265,7 +398,7 @@ so rendering owns markup. Preserve the existing typo matching and escaping.
 
 ---
 
-### [PREEXISTING] P0 — User API IDOR and cross-account write path
+### [PREEXISTING] P0 I1 C2 — User API IDOR and cross-account write path
 
 **Location:** `app/controllers/api/v1/users_controller.rb:24-48`, `test/controllers/api/v1/users_controller_test.rb:30-39`
 
@@ -277,7 +410,7 @@ so rendering owns markup. Preserve the existing typo matching and escaping.
 
 ## [PREEXISTING] P1 — Product bugs
 
-### [PREEXISTING] P1 — Uploading the judgements export imports nothing and reports success
+### [PREEXISTING] P1 I1 C2 — Uploading the judgements export imports nothing and reports success
 
 **Location:** `app/services/book_importer.rb:66`, `app/views/api/v1/judgements/index.json.jbuilder`, `app/views/books/import/edit.html.erb:71`
 
@@ -289,7 +422,7 @@ The Import Judgements panel tells users verbatim: *"The format for importing Jud
 
 ---
 
-### [PREEXISTING] P1 — Wizard TLS reload exposes basic-auth credentials
+### [PREEXISTING] P1 I1 C3 — Wizard TLS reload exposes basic-auth credentials
 
 **Location:** `app/javascript/controllers/wizard_controller.js`, `renderTls`
 
@@ -304,7 +437,7 @@ short-lived opaque token, and never put the credential itself in a URL.
 
 ---
 
-### [PREEXISTING] P1 — Wizard TLS reload loses endpoint-specific settings
+### [PREEXISTING] P1 I1 C3 — Wizard TLS reload loses endpoint-specific settings
 
 **Location:** `app/javascript/controllers/wizard_controller.js`, `applyReloadParams`
 
@@ -320,7 +453,7 @@ user-entered settings.
 
 ---
 
-### [PREEXISTING] P1 — Account deletion fails for users who sent invitations, after deleting their cases
+### [PREEXISTING] P1 I1 C3 — Account deletion fails for users who sent invitations, after deleting their cases
 
 **Observed:** Deleting an account (Profile → Danger Zone) whose user has invited anyone (a pending invitee row with `invited_by_id` pointing at them) returns a 500: `ActiveRecord::InvalidForeignKey` on `fk_rails_ae14a5013f` (`users.invited_by_id → users.id`). The account survives, but its unshared cases are already gone — `AccountsController#destroy` calls `c.really_destroy` for each team-less case *before* `@user.destroy`, outside a transaction.
 
@@ -332,7 +465,7 @@ user-entered settings.
 
 ## [PREEXISTING] P1 — Security
 
-### [PREEXISTING] P1 — Outbound HTTPS certificate verification is disabled globally
+### [PREEXISTING] P1 I0 C2 — Outbound HTTPS certificate verification is disabled globally
 
 **Location:** `app/services/http_client_service.rb:91-101`
 
@@ -342,7 +475,7 @@ user-entered settings.
 
 ---
 
-### [PREEXISTING] P1 — Proxy SSRF controls are incomplete
+### [PREEXISTING] P1 I1 C3 — Proxy SSRF controls are incomplete
 
 **Location:** `app/controllers/proxy_controller.rb:105-120`, `app/services/http_client_service.rb:91-99`
 
@@ -352,7 +485,7 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ---
 
-### [PREEXISTING] P1 — Secrets exposed through API serializers and admin views
+### [PREEXISTING] P1 I1 C3 — Secrets exposed through API serializers and admin views
 
 **Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`, `app/views/admin/users/index.json.jbuilder:7-9`, `app/views/admin/users/show.html.erb:88-92`
 
@@ -362,7 +495,7 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ---
 
-### [PREEXISTING] P1 — Static Active Record encryption keys committed as production fallbacks
+### [PREEXISTING] P1 I0 C3 — Static Active Record encryption keys committed as production fallbacks
 
 **Location:** `config/application.rb:55-61`
 
@@ -372,7 +505,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P1 — Proxy CSRF bypass and permissive CORS / Action Cable origins
+### [PREEXISTING] P1 I1 C3 — Proxy CSRF bypass and permissive CORS / Action Cable origins
 
 **Location:** `app/controllers/proxy_controller.rb:5-8`, `config/initializers/cors.rb:6-17`, `config/environments/production.rb:41-50`
 
@@ -384,7 +517,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P1 — Job progress broadcasts go to one global, unauthenticated stream
+### [PREEXISTING] P1 I2 C3 — Job progress broadcasts go to one global, unauthenticated stream
 
 **Location:** `app/jobs/run_case_evaluation_job.rb`, `run_judge_judy_job.rb`, `export_book_job.rb`, `populate_book_job.rb`, `app/services/book_importer.rb`, `app/channels/application_cable/connection.rb`
 
@@ -396,7 +529,7 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 ## [PREEXISTING] P2 — Security
 
-### [PREEXISTING] P2 — Password reset enumerates accounts
+### [PREEXISTING] P2 I0 C0 — Password reset enumerates accounts
 
 **Observed:** Unknown email → "email was not found"; known email → neutral "you will receive…" message.
 
@@ -404,7 +537,7 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 **Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
 
-### [PREEXISTING] P2 — No minimum password length
+### [PREEXISTING] P2 I0 C2 — No minimum password length
 
 **Observed:** Resetting a password through the reset link with `abc` succeeds and the user can then log in with it. Manual test 1.4's short-password edge case expects a validation error.
 
@@ -416,7 +549,7 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 ## [PREEXISTING] P2 — Product bugs
 
-### [PREEXISTING] P2 — Judgement rating not validated against book's scale (outside AI judging)
+### [PREEXISTING] P2 I2 C3 — Judgement rating not validated against book's scale (outside AI judging)
 
 **Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
 
@@ -432,7 +565,7 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 ---
 
-### [PREEXISTING] P2 — `BooksController#combine` collapses anonymous judgements into one averaged row
+### [PREEXISTING] P2 I1 C3 — `BooksController#combine` collapses anonymous judgements into one averaged row
 
 **Location:** `app/controllers/books_controller.rb:275` — `combine`
 
@@ -446,7 +579,7 @@ The merge loop upserts each source judgement with `query_doc_pair.judgements.fin
 
 ---
 
-### [PREEXISTING] P2 — Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
+### [PREEXISTING] P2 I1 C3 — Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
 
 **Location:** `app/services/book_importer.rb` — `import_judgement`
 
@@ -458,7 +591,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 — `Api::V1::JudgementsController#create` keys its lookup off `:user` but assigns `:user_id`
+### [PREEXISTING] P2 I1 C2 — `Api::V1::JudgementsController#create` keys its lookup off `:user` but assigns `:user_id`
 
 **Location:** `app/controllers/api/v1/judgements_controller.rb:80`
 
@@ -470,7 +603,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 — Snapshot CSV `Snapshot Time` parses two-digit years as year 00YY
+### [PREEXISTING] P2 I1 C2 — Snapshot CSV `Snapshot Time` parses two-digit years as year 00YY
 
 **Observed:** Importing a snapshot CSV (cases list → Import Snapshots from CSV) with `Snapshot Time` `10/01/26 18:05` stored `created_at` as `0010-01-26 18:05`, shown as `(1/26/10)` in Compare Snapshots. The modal's own sample format (`10/10/18 18:05`) has the same problem.
 
@@ -480,7 +613,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 — New-team form shows no validation errors
+### [PREEXISTING] P2 I0 C1 — New-team form shows no validation errors
 
 **Observed:** Submitting `/teams/new` with a blank name, or a name another team already uses, re-renders the form with no message. (Rename on the team page does show "Name can't be blank".)
 
@@ -490,7 +623,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 — Floating labels break when a field has a validation error
+### [PREEXISTING] P2 I1 C2 — Floating labels break when a field has a validation error
 
 **Observed:** On the Profile form, saving a duplicate email shows "Email has already been taken" but the floating "Email" label drops below the input and overlaps the Gravatar help text. The profile header card also shows the rejected email as if it were saved.
 
@@ -500,37 +633,37 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 — Ratings page heading says "Scores for Case"
+### [PREEXISTING] P2 I0 C0 — Ratings page heading says "Scores for Case"
 
 `app/views/ratings/index.html.erb` uses `page_header "Scores for #{case_title @case}"` — copy-pasted from the scores page. Should read "Ratings for …".
 
 ---
 
-### [PREEXISTING] P2 — New annotation shows its score unrounded
+### [PREEXISTING] P2 I1 C1 — New annotation shows its score unrounded
 
 Right after **Create** in Tune Relevance → Annotations, the new entry reads e.g. `Score: 0.08723905360685648`; after an edit (re-rendered from the server) the same annotation reads `0.0872391`. `annotations_controller.js` appends `annotation.score.score` raw, as the Angular template did. Format the score consistently (e.g. two decimals, like the case score badge).
 
 ---
 
-### [PREEXISTING] P2 — Compare Snapshots copy says 1–3 but allows 5
+### [PREEXISTING] P2 I1 C1 — Compare Snapshots copy says 1–3 but allows 5
 
 The modal says "Select 1-3 snapshots to compare", but `diff_core_controller.js` caps selections at `maxSnapshots` (default 5), as `main` did via `queryViewSvc.getMaxSnapshots()`. Make the copy read from the same limit.
 
 ---
 
-### [PREEXISTING] P2 — Tune Relevance drawer can be dragged wider than the window
+### [PREEXISTING] P2 I0 C2 — Tune Relevance drawer can be dragged wider than the window
 
 Dragging the slider past the left edge of the window leaves the drawer wider than the viewport (main column about 230px, drawer about 1490px at a 1440px window), and resizing the window doesn't correct it. `pane_controller.js#moveEastTo` uses `event.clientX` unclamped, as `main`'s `paneSvc.js` did. Clamp the position to a minimum main-column width and a minimum drawer width.
 
 ---
 
-### [PREEXISTING] P2 — Cloning a case doesn't keep manual query order
+### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
 Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item` re-sequences `arranged_at` on create, so the original order isn't copied. Copy `arranged_at` (or re-sequence in the original order) and cover it with a model test.
 
 ---
 
-### [PREEXISTING] P2 — Snapshot CSV import gives no success confirmation
+### [PREEXISTING] P2 I0 C2 — Snapshot CSV import gives no success confirmation
 
 **Observed:** On the cases list, a successful Import Snapshots from CSV just closes the modal; no flash says what was created. (The in-case Import modal's Snapshots tab does flash "Snapshots imported successfully!".) The failure message for a nonexistent `Case ID` is also generic: "1 snapshot(s) failed to import. Some may have been imported successfully." without saying the case wasn't found.
 
@@ -540,7 +673,7 @@ Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query 
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
 
-### [PREEXISTING] P1 — Elasticsearch/OpenSearch document IDs are not persisted
+### [PREEXISTING] P1 I1 C2 — Elasticsearch/OpenSearch document IDs are not persisted
 
 **Location:** `app/services/fetch_service.rb:75-100,118-125`
 
@@ -553,7 +686,7 @@ breaking later judgement, snapshot comparison, and document identity behavior.
 Solr and Search API results, then add an extractor-to-`SnapshotDoc` regression
 test for both Elasticsearch and OpenSearch.
 
-### [PREEXISTING] P1 — Search-endpoint updates accept unauthorized team IDs
+### [PREEXISTING] P1 I1 C2 — Search-endpoint updates accept unauthorized team IDs
 
 **Location:** `app/controllers/search_endpoints_controller.rb:59-74`
 
@@ -565,7 +698,7 @@ the foreign team.
 **Fix direction:** Resolve submitted IDs through `current_user.teams.where(id:
 ...)`, reject or report unauthorized IDs, and add a negative controller test.
 
-### [PREEXISTING] P1 — Mapper wizard function extraction is not lexical-aware
+### [PREEXISTING] P1 I1 C3 — Mapper wizard function extraction is not lexical-aware
 
 **Location:** `app/services/mapper_wizard_service.rb:265-296`
 
@@ -577,7 +710,7 @@ those can be truncated before it is saved.
 V8/parser path, and add regression cases for braces in strings, comments, and
 regular expressions.
 
-### [PREEXISTING] P1 — Safe LLM judgement handling misses malformed success bodies
+### [PREEXISTING] P1 I1 C2 — Safe LLM judgement handling misses malformed success bodies
 
 **Location:** `app/services/llm_service.rb:32-40,209-220`
 
@@ -590,7 +723,7 @@ escape the safe-judgement path and leave the job unhandled.
 with the same recorded explanation as other safe-judgement failures, and add
 tests for malformed JSON and missing provider content.
 
-### [PREEXISTING] P1 — Whitespace-prefixed JSON takes the bare-query path
+### [PREEXISTING] P1 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
 
 **Location:** `app/models/try.rb:207-218`
 
@@ -603,7 +736,7 @@ the original payload), and add tests for leading/trailing whitespace.
 
 ## [PREEXISTING] P2 — Error handling consistency
 
-### [PREEXISTING] P2 — Missing team resources redirect instead of using the app-wide 404
+### [PREEXISTING] P2 I1 C2 — Missing team resources redirect instead of using the app-wide 404
 
 `TeamsController` has a controller-wide `rescue_from ActiveRecord::RecordNotFound`
 that redirects to the teams page with a flash. This differs from the default
@@ -615,7 +748,7 @@ redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
 ## [PREEXISTING] P3 — Security & consistency
 
-### [PREEXISTING] P3 — Public tries visualization also answers on the numeric case ID
+### [PREEXISTING] P3 I0 C2 — Public tries visualization also answers on the numeric case ID
 
 **Observed:** While a case is public, `/analytics/tries_visualization/<numeric id>` loads for anonymous users, not just the `public_id` URL the clipboard link hands out. Making the case private again revokes both.
 
@@ -623,7 +756,7 @@ redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
 ---
 
-### [PREEXISTING] P3 — Proxy `proxy_debug` boolean parsing
+### [PREEXISTING] P3 I1 C0 — Proxy `proxy_debug` boolean parsing
 
 **Location:** `app/controllers/proxy_controller.rb:26`
 
@@ -631,7 +764,7 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 ---
 
-### [PREEXISTING] P3 — Proxy URL parsing bug
+### [PREEXISTING] P3 I2 C2 — Proxy URL parsing bug
 
 **Location:** `app/controllers/proxy_controller.rb:75-80` (`extract_extra_url_params`)
 
@@ -650,7 +783,7 @@ this is a refactoring part of this item, not a separate bug.
 
 ## [PREEXISTING] P3 — Code quality
 
-### [PREEXISTING] P3 — Unsafe integer coercion in snapshot search
+### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
 
 **Location:** `app/controllers/api/v1/snapshots/search_controller.rb:45-46`
 
@@ -658,7 +791,7 @@ this is a refactoring part of this item, not a separate bug.
 
 ---
 
-### [PREEXISTING] P3 — Predicate method naming
+### [PREEXISTING] P3 I0 C1 — Predicate method naming
 
 **Location:** `app/models/selection_strategy.rb`
 
@@ -668,7 +801,7 @@ Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pai
 
 ---
 
-### [PREEXISTING] P3 — BookImporter: unsaved records aren't reported back to the user
+### [PREEXISTING] P3 I1 C3 — BookImporter: unsaved records aren't reported back to the user
 
 **Location:** `app/services/book_importer.rb` — `import_query_doc_pairs`, `import_all_judgements`, `import_judgement`, `upsert_nested_query_doc_pair`
 
@@ -676,7 +809,7 @@ None of these check the return value of `qdp.save` / `judgement.save`. If a row 
 
 ---
 
-### [PREEXISTING] P3 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
+### [PREEXISTING] P3 I1 C2 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
 
 **Location:** `app/services/book_importer.rb` — `find_judgement_user`, `validate`, `emails_of_judges`
 
@@ -693,7 +826,7 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 
 ## [PREEXISTING] P2 — Background jobs
 
-### [PREEXISTING] P2 — Import/populate jobs leave state and idempotency to best effort
+### [PREEXISTING] P2 I2 C3 — Import/populate jobs leave state and idempotency to best effort
 
 **Location:** `app/jobs/import_book_job.rb:7-21` (and similar populate jobs)
 
@@ -705,19 +838,107 @@ Jobs set status strings before working and clear them only on success, so a fail
 
 ## [PREEXISTING] P2 — Performance
 
-### [PREEXISTING] P2 — Potential N+1 queries
+### [PREEXISTING] P2 I0 C2 — Potential N+1 queries
 
 1. **`app/controllers/cases_controller.rb:32`** — `includes(:owner, :teams, scores: :user).distinct`; scores accessed later may still N+1.
 2. **`app/controllers/teams_controller.rb:248`** — `includes(:owner, :teams)`; missing `scores` if the view touches them.
-3. **`app/controllers/api/v1/cases_controller.rb:192`** — watch for extra associations in serializers beyond `preload(:tries, :teams, :cases_teams)`.
 
 Bullet is enabled in dev/test — fix as surfaced; review views for missing eager loads.
 
-### [PREEXISTING] P2 — API serializer query amplification
+### [PREEXISTING] P2 I1 C2 — API serializer query amplification
 
-`app/views/api/v1/users/_user.json.jbuilder:12-13` runs three relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings.
+`app/views/api/v1/users/_user.json.jbuilder:12-13` runs three relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings; `app/controllers/api/v1/cases_controller.rb:192` preloads only `tries`, `teams` and `cases_teams`.
 
 **Fix direction:** Endpoint-specific query objects, or preload/count exactly what each serializer needs. Add query-count tests for representative index responses, not just response-shape tests.
+
+---
+
+## [PREEXISTING] Backend duplication
+
+The same feature is built several times, and most copies have already drifted
+apart, so behavior depends on which path ran. Where copies differ, decide which
+behavior is correct before consolidating and call it out in the PR. One pattern
+per PR; keep this out of in-flight feature branches.
+
+### [PREEXISTING] P2 I2 C2 — One trigger for judgement ↔ rating sync
+
+`UpdateCaseRatingsJob` is enqueued by hand 5 times in `JudgementsController` and
+3 times in `BulkJudgeController`. `Api::V1::JudgementsController` create, update
+and destroy never enqueue it, so API judgement writes never sync to case
+ratings. `BookImporter` and `RunJudgeJudyJob` take other routes (the latter runs
+a whole-book `UpdateCaseJob`). In the other direction, `JudgementFromRatingJob`
+runs for single and bulk rating saves but not for `RatingsImporter`.
+
+**Fix direction:** an `after_commit` on `Judgement` (and possibly `Rating`), or
+route every write through one `Judgements::Recorder`. Decide which bulk paths
+(import, AI judging) should batch instead of syncing per row. Related: "find or
+create the book's query-doc pair by query text and doc id" is written five
+times (`PopulateBookJob`, `JudgementFromRatingJob`, `BooksController`,
+`Api::V1::QueryDocPairsController`, `BookImporter`); it belongs on `Book`.
+
+### [PREEXISTING] P2 I2 C1 — Shared CSV export helper; two exports allow formula injection
+
+`make_csv_safe` is copied into `Api::V1::Export::RatingsController` and
+`Api::V1::JudgementsController`; JS has a stricter `csvField` in
+`utils/case_csv.js`. `api/v1/export/queries/information_needs/show.csv.erb` and
+`admin/users/index.csv.erb` don't neutralize spreadsheet formulas at all.
+
+**Fix direction:** one Ruby `CsvExport` helper (formula neutralizing plus
+`CSV.generate_line`) used by every `.csv.erb`. Case export is also split: the
+general, detailed and snapshot CSVs are built in the browser, basic and
+information-need on the server; moving them is a separate decision.
+
+### [PREEXISTING] P2 I3 C2 — Team sharing service
+
+Share/unshare is written per entity: web `TeamsController#share_case`,
+`#unshare_case`, `#share_book`, `#unshare_book`, `#share_search_endpoint`,
+`#unshare_search_endpoint`, `ScorersController#share`/`#unshare`; API
+`Api::V1::TeamCasesController`, `TeamScorersController`, and book sharing in
+`Api::V1::BooksController#create`. The copies disagree: API case sharing also
+shares the case's search endpoint (web doesn't); book sharing records no
+analytics event; scorer actions use `find_by` with a combined "Team or scorer
+not found" message while the others 404.
+
+**Fix direction:** one `TeamSharing` service with per-entity config (access
+scope, display name, side effects, analytics event).
+
+### [PREEXISTING] P3 I2 C2 — Deferred job payload and progress broadcaster
+
+The pickle-request-to-storage → job-unpickles-and-purges hand-off is written
+three times (`Books::ImportController` → `ImportBookJob`,
+`Api::V1::Books::PopulateController` → `PopulateBookJob`,
+`Api::V1::SnapshotsController` → `PopulateSnapshotJob`), along with copied
+`track_book_*_queued` helpers; a `DeferredPayload` concern (`stash!`,
+`load_and_purge!`) covers both halves. `broadcast_render_to(:notifications, …)`
+is called by hand in 6 files, and the per-1% progress loop is written twice
+(`BookImporter`, `PopulateBookJob`, both rendering `books/blah`); a
+`ProgressBroadcaster` would own throttling and target (coordinate with the
+per-record stream fix under P1 Security). `Books::ExportController#update` and
+`Api::V1::Export::BooksController#update` are flagged as duplicates and already
+differ: only the web one deletes the old export file before queueing.
+
+### [PREEXISTING] P3 I1 C2 — `Archivable` model concern
+
+`Case` and `SearchEndpoint` define `mark_archived`/`mark_archived!`; `Book`
+defines `archive!` but `BooksController` calls `update(archived: true)`
+directly. `not_archived` includes `nil` on `Case` but not on `SearchEndpoint`.
+Case archive/unarchive actions are copied between `CasesController` and
+`TeamsController`. One concern with `archive!`, `unarchive!`, `archived`,
+`not_archived` fixes naming and scope semantics. While there: the
+`if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(…)` guard is
+repeated 8 times; the tracker is always loaded, so it can go.
+
+### [PREEXISTING] P3 I2 C1 — Index-page text search scope
+
+About 17 index actions (cases, books, teams, scorers, search endpoints, ratings,
+judgements, query-doc pairs, bulk judge, admin users and announcements)
+hand-write `where('LOWER(col) LIKE ?', "%#{q.downcase}%")`. None escape `%` or
+`_`; `sanitize_sql_like` isn't used anywhere. A `search_by(:name, ...)` scope in
+a concern removes the repetition and fixes escaping once.
+
+Not worth acting on: search-response parsing exists in Ruby
+(`FetchService#extract_docs_*`) and JS (splainer-search) because evaluations run
+server-side; keep them in step rather than merging.
 
 ---
 
@@ -725,19 +946,19 @@ Bullet is enabled in dev/test — fix as surfaced; review views for missing eage
 
 Inline `rubocop:disable` only on this branch (no config-level excludes). Search codebase for `rubocop:disable` for the full list.
 
-### [PREEXISTING] P3 — Metrics/ParameterLists
+### [PREEXISTING] P3 I1 C2 — Metrics/ParameterLists
 
-- `[PREEXISTING]` P3 — `Case#clone_case` — `app/models/case.rb:130`
-- `[PREEXISTING]` P3 — `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
+- `[PREEXISTING]` P3 I1 C2 — `Case#clone_case` — `app/models/case.rb:130`
+- `[PREEXISTING]` P3 I1 C2 — `HttpClientService#initialize` — `app/services/http_client_service.rb:32`
 
-### [PREEXISTING] P3 — Complex methods (Metrics/*)
+### [PREEXISTING] P3 I2 C3 — Complex methods (Metrics/*)
 
 Candidates for extraction into smaller methods or services:
 
-- `[PREEXISTING]` P3 — `FetchService` — `app/services/fetch_service.rb`
-- `[PREEXISTING]` P3 — `Api::V1::Import::RatingsController#create`
-- `[PREEXISTING]` P3 — `Api::V1::Export::RatingsController`
-- `[PREEXISTING]` P3 — `Api::V1::Snapshots::SearchController`
-- `[PREEXISTING]` P3 — `BookImporter` / `RatingsImporter`
-- `[PREEXISTING]` P3 — `MapperWizardsController`
-- `[PREEXISTING]` P3 — `TeamsController` / `BooksController` / `HomeController`
+- `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
+- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Import::RatingsController#create`
+- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Export::RatingsController`
+- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Snapshots::SearchController`
+- `[PREEXISTING]` P3 I3 C3 — `BookImporter` / `RatingsImporter`
+- `[PREEXISTING]` P3 I2 C3 — `MapperWizardsController`
+- `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `BooksController` / `HomeController`

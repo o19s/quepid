@@ -228,6 +228,7 @@ describe("MatchExplainController", () => {
 
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer.mock.calls[0][1]).toBe(data.explainRawStr)
+    expect(renderJsonExplorer.mock.calls[0][2]).toEqual({ collapsed: false })
   })
 
   it("Expand opens a full-screen-modal with the same explanation text", () => {

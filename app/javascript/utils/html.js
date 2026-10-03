@@ -72,6 +72,28 @@ export function sanitizeSnippetHtml(value) {
   return sanitizeHtml(value, SNIPPET_POLICY)
 }
 
+/**
+ * Builds plain text plus links from `{ text, href? }` segments. Text is never
+ * parsed as markup; a segment whose href is not http(s) renders as plain text.
+ *
+ * @param {Array<{ text: string, href?: string }>} parts
+ * @returns {DocumentFragment}
+ */
+export function renderTextWithLinks(parts) {
+  const fragment = document.createDocumentFragment()
+  parts.forEach(({ text, href }) => {
+    if (!href) {
+      fragment.append(String(text ?? ""))
+      return
+    }
+    const link = document.createElement("a")
+    link.textContent = String(text ?? "")
+    setSafeLink(link, href)
+    fragment.append(link.hasAttribute("href") ? link : link.textContent)
+  })
+  return fragment
+}
+
 function setSafeLink(element, href) {
   try {
     const url = new URL(href, document.baseURI)

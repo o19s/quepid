@@ -99,6 +99,43 @@ describe("FlashController", () => {
     expect(controller.messageTarget.querySelector("code").textContent).toBe("https")
   })
 
+  it("renders structured parts as text plus safe links, never parsing the text as markup", () => {
+    const controller = buildController({ channel: "search-error" })
+    disconnect = connect(controller)
+
+    show(controller, {
+      type: "error",
+      message: {
+        parts: [
+          { text: "Check <b>your</b> " },
+          { text: "endpoint", href: "http://solr.test/select?q=<x>" },
+          { text: " or " },
+          { text: "this", href: "javascript:alert(1)" }
+        ]
+      },
+      target: "search-error"
+    })
+
+    const links = controller.messageTarget.querySelectorAll("a")
+    expect(controller.messageTarget.textContent).toBe("Check <b>your</b> endpoint or this")
+    expect(controller.messageTarget.querySelector("b")).toBeNull()
+    expect(links).toHaveLength(1)
+    expect(links[0].textContent).toBe("endpoint")
+    expect(links[0].getAttribute("href")).toBe("http://solr.test/select?q=%3Cx%3E")
+    expect(links[0].getAttribute("target")).toBe("_blank")
+    expect(links[0].getAttribute("rel")).toBe("noopener noreferrer")
+  })
+
+  it("keeps plain string messages as text", () => {
+    const controller = buildController({ channel: "search-error" })
+    disconnect = connect(controller)
+
+    show(controller, { type: "error", message: "bad <a href=\"x\">link</a>", target: "search-error" })
+
+    expect(controller.messageTarget.querySelector("a")).toBeNull()
+    expect(controller.messageTarget.textContent).toBe("bad <a href=\"x\">link</a>")
+  })
+
   it("hides on a flash:hide event for its channel", () => {
     const controller = buildController()
     disconnect = connect(controller)

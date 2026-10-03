@@ -19,7 +19,8 @@ export function createLiveQueryDocumentsRuntime({
   }
 
   function setError(query, errorText) {
-    query.errorText = errorText
+    // A translated search error (utils/search_error) keeps its links as safe markup.
+    query.errorText = typeof errorText?.toHtml === "function" ? errorText.toHtml() : errorText
     publish(query)
   }
 

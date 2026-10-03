@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { errorMessage } from "utils/error_message"
+import { errorMessage, flashErrorMessage } from "utils/error_message"
+import { SearchError } from "utils/search_error"
 
 describe("errorMessage", () => {
   it("returns a plain string error as-is", () => {
@@ -30,5 +31,18 @@ describe("errorMessage", () => {
     expect(errorMessage("", "fallback")).toBe("fallback")
     expect(errorMessage(null, "fallback")).toBe("fallback")
     expect(errorMessage({}, "fallback")).toBe("fallback")
+  })
+})
+
+describe("flashErrorMessage", () => {
+  it("keeps a structured search error so the flash can render its links", () => {
+    const error = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
+
+    expect(flashErrorMessage(error, "fallback")).toBe(error)
+  })
+
+  it("falls back to errorMessage for other errors", () => {
+    expect(flashErrorMessage(new Error("boom"), "fallback")).toBe("boom")
+    expect(flashErrorMessage(null, "fallback")).toBe("fallback")
   })
 })
