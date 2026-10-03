@@ -124,8 +124,8 @@
                                       unsupported: (!images_supported).to_s, wanted: wants_images.to_s } %>
                       </div>
                       <div class="form-text">
-                        Attach the document's <code>image</code>, or the case's <code>thumb</code>, to the
-                        request as an image URL. Turn off for text-only models.
+                        Attach the document's image, or its thumbnail if available, to the request as an
+                        image URL. Turn off for text-only models.
                       </div>
                       <div class="form-text text-warning-emphasis" data-ai-judge-wizard-target="includeImagesNotice"
                            <%= 'style=display:none;'.html_safe if images_supported %>>
