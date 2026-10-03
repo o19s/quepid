@@ -62,6 +62,9 @@
 
       <!-- Test Query (used for both GET query params and POST body) -->
       <% existing_test_query = @wizard_state.try(:test_query).presence || @search_endpoint.test_query %>
+      <% post_test_query = @search_endpoint.api_method == 'POST' %>
+      <% post_placeholder = '{"query": "test", "size": 10}' %>
+      <% get_placeholder = 'q=shirts&rows=10' %>
       <div class="row g-3 mt-2">
         <div class="col-12">
           <label for="testQuery" class="form-label">Test Query</label>
@@ -69,14 +72,16 @@
                     id="testQuery"
                     rows="4"
                     data-mapper-wizard-target="testQuery"
-                    placeholder="<%= @search_endpoint.api_method == 'POST' ? '{"query": "test", "size": 10}' : 'q=shirts&rows=10' %>"><%= existing_test_query %></textarea>
-          <div class="form-text" data-mapper-wizard-target="testQueryHint">
-            <% if @search_endpoint.api_method == 'POST' %>
-              Enter JSON body for POST request. Saved with endpoint for easy iteration.
-            <% else %>
-              Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
-            <% end %>
-          </div>
+                    placeholder="<%= post_test_query ? post_placeholder : get_placeholder %>"><%= existing_test_query %></textarea>
+          <%# One hint per HTTP method; the controller shows the one matching the method select and copies its placeholder onto the textarea. %>
+          <%= tag.div class: 'form-text', hidden: !post_test_query,
+                      data: { mapper_wizard_target: 'testQueryHint', http_method: 'POST', placeholder: post_placeholder } do %>
+            Enter JSON body for POST request. Saved with endpoint for easy iteration.
+          <% end %>
+          <%= tag.div class: 'form-text', hidden: post_test_query,
+                      data: { mapper_wizard_target: 'testQueryHint', http_method: 'GET', placeholder: get_placeholder } do %>
+            Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
+          <% end %>
         </div>
       </div>
 

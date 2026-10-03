@@ -514,21 +514,28 @@ describe("MapperWizardController helpers", () => {
     expect(container.style.display).toBe("none")
   })
 
-  it("explains the test query format for the chosen HTTP method", () => {
+  it("shows the server-rendered test query hint for the chosen HTTP method", () => {
+    const hint = (httpMethod, placeholder) => {
+      const element = document.createElement("div")
+      element.dataset.httpMethod = httpMethod
+      element.dataset.placeholder = placeholder
+      return element
+    }
+    const postHint = hint("POST", '{"query": "test", "size": 10}')
+    const getHint = hint("GET", "q=shirts&rows=10")
     const controller = realHelpers({
-      hasTestQueryHintTarget: true,
-      testQueryHintTarget: document.createElement("small"),
+      testQueryHintTargets: [postHint, getHint],
       testQueryTarget: {}
     })
 
     controller.httpMethodTarget.value = "POST"
     controller.updateTestQueryHint()
-    expect(controller.testQueryHintTarget.textContent).toContain("JSON body for POST")
+    expect([postHint.hidden, getHint.hidden]).toEqual([false, true])
     expect(controller.testQueryTarget.placeholder).toBe('{"query": "test", "size": 10}')
 
     controller.httpMethodTarget.value = "GET"
     controller.updateTestQueryHint()
-    expect(controller.testQueryHintTarget.textContent).toContain("query params")
+    expect([postHint.hidden, getHint.hidden]).toEqual([true, false])
     expect(controller.testQueryTarget.placeholder).toBe("q=shirts&rows=10")
   })
 

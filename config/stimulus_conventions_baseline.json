@@ -34,7 +34,7 @@
     "innerHTML": 3
   },
   "app/javascript/controllers/mapper_wizard_controller.js": {
-    "innerHTML": 10
+    "innerHTML": 4
   },
   "app/javascript/controllers/pane_controller.js": {
     "documentListener": 3
@@ -78,6 +78,6 @@
     "innerHTML": 2
   },
   "app/javascript/controllers/tune_relevance_controller.js": {
-    "innerHTML": 3
+    "innerHTML": 1
   }
 }

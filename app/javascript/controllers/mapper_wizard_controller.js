@@ -1,5 +1,4 @@
 import { Controller } from "@hotwired/stimulus"
-import { escapeHtml } from "utils/html"
 import { HttpError } from "api/http_error"
 import { postJson } from "api/json"
 import { showStatusMessage } from "utils/status_message"
@@ -86,24 +85,17 @@ export default class extends Controller {
     }
   }
 
-  // Update the test query hint text and placeholder based on HTTP method
+  // Show the ERB-rendered hint for the chosen HTTP method and use its placeholder
   updateTestQueryHint() {
-    if (!this.hasHttpMethodTarget || !this.hasTestQueryHintTarget) return
+    if (!this.hasHttpMethodTarget) return
 
-    const method = this.httpMethodTarget.value
-    const isPost = method === 'POST'
+    const method = this.httpMethodTarget.value === "POST" ? "POST" : "GET"
 
-    if (isPost) {
-      this.testQueryHintTarget.innerHTML = 'Enter JSON body for POST request. Saved with endpoint for easy iteration.'
-      if (this.hasTestQueryTarget) {
-        this.testQueryTarget.placeholder = '{"query": "test", "size": 10}'
-      }
-    } else {
-      this.testQueryHintTarget.innerHTML = 'Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.'
-      if (this.hasTestQueryTarget) {
-        this.testQueryTarget.placeholder = 'q=shirts&rows=10'
-      }
-    }
+    this.testQueryHintTargets.forEach((hint) => {
+      const active = hint.dataset.httpMethod === method
+      hint.hidden = !active
+      if (active && this.hasTestQueryTarget) this.testQueryTarget.placeholder = hint.dataset.placeholder
+    })
   }
 
   // Step 1: Fetch HTML
@@ -274,18 +266,19 @@ export default class extends Controller {
       })
 
       if (data.success) {
-        const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${escapeHtml(resultStr)}</pre>`
+        const result = this.resultPre(JSON.stringify(data.result, null, 2), "text-success")
+        result.style.whiteSpace = "pre-wrap"
+        resultTarget.replaceChildren(result)
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
-        resultTarget.innerHTML = `<pre class="text-danger mb-0">${escapeHtml(data.error)}</pre>`
+        resultTarget.replaceChildren(this.resultPre(data.error, "text-danger"))
         this.showStatus(`${mapperType} test failed`, "error")
       }
 
       // Display console logs if any were captured
       this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
-      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${escapeHtml(error.message)}</pre>`
+      resultTarget.replaceChildren(this.resultPre(`Error: ${error.message ?? ""}`, "text-danger"))
     } finally {
       this.setButtonLoading(button, false)
     }
@@ -300,17 +293,26 @@ export default class extends Controller {
 
     logsContainerTarget.style.display = "block"
 
-    const logHtml = logs.map(log => {
+    logsTarget.replaceChildren(...logs.map(log => {
       const levelClass = log.level === 'error' ? 'text-danger' :
                          log.level === 'warn' ? 'text-warning' :
                          log.level === 'info' ? 'text-info' : 'text-light'
       const levelIcon = log.level === 'error' ? '[ERROR]' :
                         log.level === 'warn' ? '[WARN]' :
                         log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${escapeHtml(levelIcon)} ${escapeHtml(log.message)}</div>`
-    }).join('')
+      const line = document.createElement("div")
+      line.className = levelClass
+      line.textContent = `${levelIcon} ${log.message ?? ""}`
+      return line
+    }))
+  }
 
-    logsTarget.innerHTML = logHtml
+  // A mapper test result; text is set as text, never parsed as markup
+  resultPre(text, colorClass) {
+    const pre = document.createElement("pre")
+    pre.className = `${colorClass} mb-0`
+    pre.textContent = String(text ?? "")
+    return pre
   }
 
   // Refine numberOfResultsMapper with AI

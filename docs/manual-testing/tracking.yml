@@ -272,9 +272,9 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-10-03T12:54:30Z
+        last_run: 2026-10-03T17:47:02Z
         result: pass
-        notes: "Covered live: the empty state explains the ##titleBoost## convention; adding ##boost## creates a numeric knob (default 10); setting 5 and rerunning sends magicBoost=5."
+        notes: "Covered live (branch-ui-diff vs main f77c17d4, case 8) after Track D moved the knob row into an ERB <template>: typing &boost=##boost## in the Query tab (not saved) adds a 'boost:' numeric knob that accepts 7, same as main. Branch-wide, not from this change: main pins Rerun My Searches! at the drawer bottom; the branch puts it below the fold of the scrollable drawer at 900px. Not covered live: rerunning with the knob. Re-run on the branch only, after removing the write-only pollHandle field: same result."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
@@ -284,9 +284,9 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-03T12:58:30Z
+        last_run: 2026-10-03T17:47:02Z
         result: pass
-        notes: "Covered live: History tab links go to tries_visualization/584, cases/584/scores and cases/584/ratings, and the try list shows all four tries. Scores page: headers, Delete disabled until a box is checked, Check All unchecks on partial selection, the confirm ('Are you sure you want to delete this scores?') cancels cleanly, and accepting deletes one row (4 to 3) with a flash. Ratings page: headers, placeholder, filter by doc id (1 row), query (10) and rating."
+        notes: "Covered live (branch-ui-diff vs main f77c17d4, case 8, 5 tries) after Track D moved the history row into an ERB <template>: five rows with URL-bucket classes, hover shows '...', which opens the Try 4 details modal without navigating. The template clone's DOM is identical to the previous innerHTML row. Branch-wide, not from this change: rows show the query in bold italic with '...' on its own line; main shows it plain and truncated inline. Not covered live this pass: the History links, Scores/Ratings pages. Re-run on the branch only, after removing the write-only pollHandle field: same result."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -500,9 +500,9 @@ parts:
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
-        last_run: 2026-10-02T16:57:59Z
+        last_run: 2026-10-03T17:38:52Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs main 86e3de9f): fetched https://example.com/ (577 characters); the HTML preview's Expand and Collapse toggle the expanded class and button label as on main (writes bracketed by DB snapshot/restore). Not covered live: edge cases."
+        notes: "Covered live (branch-ui-diff vs main f77c17d4, endpoint 5; writes bracketed by DB snapshot/restore) after Track D moved both test-query hints into ERB: switching POST/GET shows the matching hint and placeholder, identical to main; Fetch returned 20,511 characters. Not covered live: edge cases."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
@@ -512,9 +512,9 @@ parts:
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
-        last_run: 2026-10-03T13:33:30Z
+        last_run: 2026-10-03T17:40:14Z
         result: pass
-        notes: "Covered live on existing Search API endpoint 5: both editors prefill from stored mapper code; Test before fetching says 'No HTML content.'; Fetch returned 20,511 characters; numberOfResultsMapper Test returns 1000 and docsMapper returns the docs array; typed broken code gives 'docsMapper test failed' and 'JavaScript error: ... SyntaxError'; Refine with AI asks for feedback, then 'Please enter your OpenAI API key'. Nothing saved. Not covered live: Refine/Generate with a real key."
+        notes: "Covered live (branch-ui-diff vs main f77c17d4, endpoint 5; writes bracketed by DB snapshot/restore) after Track D built test results and console logs with textContent: numberOfResultsMapper returns 1000, the docsMapper result renders, injected console.log('<b>probe</b>')/console.warn show as escaped [LOG]/[WARN] lines, and a syntax error renders the red JavaScript error. Result and log markup matched main exactly. Not covered live: Refine/Generate with a real key."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"

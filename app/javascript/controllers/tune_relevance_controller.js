@@ -9,9 +9,9 @@ const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
 export default class extends Controller {
   static targets = [
-    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
+    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
     "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsReloadLink", "tlsProtocol",
-    "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
+    "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
   static values = { engineLabels: Object }
@@ -19,7 +19,6 @@ export default class extends Controller {
   connect() {
     this.tab = "developer"
     this.editor = null
-    this.pollHandle = null
     this.loadCapabilities()
   }
 
@@ -128,17 +127,14 @@ export default class extends Controller {
   }
 
   refreshCuratorVars() {
-    if (!this.hasCuratorVarsTarget) return
+    if (!this.hasCuratorVarsTarget || !this.hasCuratorVarTemplateTarget) return
     this.settings?.selectedTry?.updateVars?.()
     const vars = this.settings?.selectedTry?.curatorVars || []
     this.curatorVarsTarget.replaceChildren(...curatorVariableEntries(vars).map(({ item, index }) => {
-      const row = document.createElement("div")
-      row.className = "slider-wrap"
-      row.innerHTML = "<label class=\"mb-0\"></label><input type=\"number\" class=\"slider-val form-control form-control-sm\" min=\"0\" max=\"10000000000\">"
+      const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
       row.querySelector("label").textContent = `${item.name}:`
       const input = row.querySelector("input")
       input.value = item.value ?? ""
-      input.dataset.action = "input->tune-relevance#updateCuratorVariable"
       input.dataset.tuneRelevanceIndexParam = String(index)
       return row
     }))
@@ -251,23 +247,19 @@ export default class extends Controller {
   }
 
   refreshHistory() {
-    if (!this.hasHistoryListTarget) return
+    if (!this.hasHistoryListTarget || !this.hasHistoryItemTemplateTarget) return
     const tries = (this.settings?.tries || []).filter(item => !item.deleted)
     const urls = [...new Set(tries.map(item => item.searchUrl))]
     this.historyListTarget.replaceChildren(...tries.map(item => {
-      const row = document.createElement("li")
-      row.className = `try-history-item bucket-${urlBucket(item.searchUrl, urls)}`
+      const row = this.historyItemTemplateTarget.content.firstElementChild.cloneNode(true)
+      row.classList.add(`bucket-${urlBucket(item.searchUrl, urls)}`)
       row.title = item.searchUrl || ""
       row.dataset.tryNo = item.tryNo
-      row.innerHTML = "<button type=\"button\" class=\"btn btn-circle try-details\" data-try-details>...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span>"
       row.querySelector("[data-try-name]").textContent = item.formattedName ? item.formattedName() : item.name
       row.querySelector("[data-try-query]").textContent = (item.queryParams || "").slice(0, 200)
       row.querySelector("[data-try-endpoint]").textContent = `using ${item.endpointName || ""}`
-      row.dataset.action = "click->tune-relevance#navigateToTry"
       row.dataset.tuneRelevanceTryNoParam = String(item.tryNo)
-      const details = row.querySelector("[data-try-details]")
-      details.dataset.action = "click->tune-relevance#openTryDetails"
-      details.dataset.tuneRelevanceTryNoParam = String(item.tryNo)
+      row.querySelector("[data-try-details]").dataset.tuneRelevanceTryNoParam = String(item.tryNo)
       return row
     }))
   }

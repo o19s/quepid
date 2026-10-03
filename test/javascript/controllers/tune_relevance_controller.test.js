@@ -58,6 +58,15 @@ function makeCapability(settingsOverrides = {}) {
   return { capability, settings }
 }
 
+// Copied from the <template> rows in app/views/core/_tune_relevance.html.erb. Specs using
+// these cannot detect drift in the ERB's data-action wiring; that is covered by manual scenarios
+// 4.11 and 4.13.
+function template(html) {
+  const node = document.createElement("template")
+  node.innerHTML = html
+  return node
+}
+
 function mount(settingsOverrides) {
   const element = document.createElement("div")
   element.innerHTML = `
@@ -91,6 +100,8 @@ function mount(settingsOverrides) {
   target("historyList", document.createElement("ul"))
   target("queryWarning", document.createElement("div"))
   target("curatorVars", document.createElement("div"))
+  target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="number" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
+  target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
   target("tlsWarning", document.createElement("div"))
   target("tlsReloadLink", document.createElement("a"))
   target("tlsProtocol", document.createElement("span"))
@@ -238,7 +249,6 @@ describe("TuneRelevanceController", () => {
       const { controller, settings } = mount({ selectedTry: makeTry({ curatorVars: variables }) })
       controller.refreshCuratorVars()
       const input = controller.curatorVarsTarget.querySelector("input")
-      expect(input.dataset.action).toBe("input->tune-relevance#updateCuratorVariable")
       expect(input.dataset.tuneRelevanceIndexParam).toBe("1")
       input.value = "8"
       controller.updateCuratorVariable({ currentTarget: input, params: { index: 1 } })
@@ -434,7 +444,6 @@ describe("TuneRelevanceController", () => {
 
       const rows = controller.historyListTarget.querySelectorAll("li")
       expect(rows).toHaveLength(2)
-      expect(rows[1].dataset.action).toBe("click->tune-relevance#navigateToTry")
       expect(rows[1].dataset.tuneRelevanceTryNoParam).toBe("2")
       controller.navigateToTry({ params: { tryNo: 2 } })
       expect(capability.navigation.goToTry).toHaveBeenCalledWith(2)
@@ -445,7 +454,6 @@ describe("TuneRelevanceController", () => {
       controller.refreshHistory()
 
       const details = controller.historyListTarget.querySelector("[data-try-details]")
-      expect(details.dataset.action).toBe("click->tune-relevance#openTryDetails")
       expect(details.dataset.tuneRelevanceTryNoParam).toBe("1")
       const stopPropagation = vi.fn()
       controller.openTryDetails({ params: { tryNo: 1 }, stopPropagation })

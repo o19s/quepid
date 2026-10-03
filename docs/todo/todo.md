@@ -40,6 +40,8 @@ Found in the same before/after replay against `main` (`86e3de9f`):
 - The Settings tab opens with every section expanded; `main` starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed (scenario 4.12).
 - The background-run button reads "Rerun My Searches in the Background!"; `main` says "Rerun My Searches Now in the Background!".
 - Missing Documents names the static engine "Static"; `main` says "Static File" (scenario 4.9).
+- History tab rows show the try's query params in bold italic with "..." on its own line; `main` shows them plain and truncated inline (scenario 4.13).
+- At a 900px-tall viewport, **Rerun My Searches!** sits below the fold of the scrollable drawer; `main` keeps it pinned at the drawer's bottom (scenario 4.11).
 
 ### [MIGRATION-FOLLOWUP] Core modals ignore Escape after an in-modal control re-renders
 
@@ -414,6 +416,16 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 **Fix direction:** Restrict CORS to configured origins with credentials off unless needed; derive Action Cable allowed origins from the deployment host list; give the proxy a CSRF token or a deliberately token-authenticated route.
 
 **Also open:** no rate limiting on proxy fetch (production concern when `proxy_requests: true`).
+
+---
+
+### [PREEXISTING] Job progress broadcasts go to one global, unauthenticated stream
+
+**Location:** `app/jobs/run_case_evaluation_job.rb`, `run_judge_judy_job.rb`, `export_book_job.rb`, `populate_book_job.rb`, `app/services/book_importer.rb`, `app/channels/application_cable/connection.rb`
+
+Every job broadcasts to the single `:notifications` stream, which the home, books and websocket-tester pages subscribe to. Every subscriber therefore receives every user's job progress, including case query text from `admin/run_case/_notification`, whether or not the page shows it. `ApplicationCable::Connection` identifies no user, and the signed stream name is the same for everyone, so a subscriber does not need to be signed in.
+
+**Fix direction:** Broadcast to per-record streams (`[acase, :notifications]`, `[book, :notifications]`) and subscribe only on pages for that record. Authenticate the Cable connection from the session.
 
 ---
 
