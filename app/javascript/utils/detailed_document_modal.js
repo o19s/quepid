@@ -1,5 +1,6 @@
 import { openDynamicModal } from "utils/dynamic_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
+import { sanitizeHtml } from "utils/html"
 
 const DOCUMENT_HTML_TAGS = new Set([
   "A",
@@ -36,44 +37,18 @@ const DOCUMENT_HTML_TAGS = new Set([
 
 const DOCUMENT_DANGEROUS_TAGS = new Set(["IFRAME", "OBJECT", "SCRIPT", "STYLE", "TEMPLATE"])
 
+const DOCUMENT_POLICY = {
+  allowedTags: DOCUMENT_HTML_TAGS,
+  droppedTags: DOCUMENT_DANGEROUS_TAGS,
+  unknownTags: "unwrap"
+}
+
 /**
  * Preserve safe document markup while dropping response-controlled
  * attributes and executable/embed content.
  */
 export function sanitizeDocumentHtml(value) {
-  const template = document.createElement("template")
-  template.innerHTML = String(value ?? "")
-
-  Array.from(template.content.querySelectorAll("*"))
-    .reverse()
-    .forEach((element) => {
-      if (DOCUMENT_DANGEROUS_TAGS.has(element.tagName)) {
-        element.remove()
-        return
-      }
-
-      if (!DOCUMENT_HTML_TAGS.has(element.tagName)) {
-        element.replaceWith(...Array.from(element.childNodes))
-        return
-      }
-
-      const href = element.tagName === "A" ? element.getAttribute("href") : null
-      Array.from(element.attributes).forEach((attribute) => element.removeAttribute(attribute.name))
-      if (element.tagName === "A" && href) {
-        try {
-          const url = new URL(href, document.baseURI)
-          if (url.protocol === "http:" || url.protocol === "https:") {
-            element.setAttribute("href", url.href)
-            element.setAttribute("target", "_blank")
-            element.setAttribute("rel", "noopener noreferrer")
-          }
-        } catch (_error) {
-          // Drop malformed links while preserving their visible text.
-        }
-      }
-    })
-
-  return template.innerHTML
+  return sanitizeHtml(value, DOCUMENT_POLICY)
 }
 
 /**

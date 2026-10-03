@@ -244,7 +244,7 @@ class BookImporterTest < ActiveSupport::TestCase
     end
 
     # assign_attributes happily overwrites created_at/updated_at, and Rails only backfills them
-    # when blank - without the denylist entry, a crafted file could forge a row's history.
+    # when blank - if they were assignable, a crafted file could forge a row's history.
     test 'ignores created_at and updated_at on a nested judgement and query_doc_pair' do
       forged = 3.years.ago
 
@@ -263,6 +263,26 @@ class BookImporterTest < ActiveSupport::TestCase
       qdp = book.query_doc_pairs.find_by(doc_id: '123')
       assert_operator qdp.created_at, :>, 1.minute.ago
       assert_operator qdp.judgements.first.created_at, :>, 1.minute.ago
+    end
+
+    # The judgements export emits `judgement_id`, and other producers may add keys; anything that
+    # isn't an importable attribute is dropped instead of raising UnknownAttributeError.
+    test 'ignores keys that are not importable attributes' do
+      data[:query_doc_pairs] = [
+        {
+          query_text: 'dog', doc_id: '123', not_a_column: 'x',
+          judgements: [
+            { rating: 2.0, user_email: user.email, judgement_id: 42, not_a_column: 'x' }
+          ]
+        }
+      ]
+
+      importer = BookImporter.new book, user, data
+      importer.import
+
+      qdp = book.query_doc_pairs.find_by(doc_id: '123')
+      assert_not_nil qdp
+      assert_in_delta 2.0, qdp.judgements.first.rating
     end
 
     test 'prefers scorer scale information over top level scale when both are given' do

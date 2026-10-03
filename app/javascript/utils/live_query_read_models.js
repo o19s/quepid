@@ -14,7 +14,7 @@ function idFieldHelp(fieldSpecId) {
 /**
  * Normalizes raw search docs into rateable docs. Docs with a missing or duplicate id get a
  * placeholder id and a per-doc error, and the list reports a case-level error message.
- * Both messages are HTML (rendered through sanitizeHtml); the user-set id field and the
+ * Both messages are HTML (rendered through sanitizeSnippetHtml); the user-set id field and the
  * engine-supplied doc id are escaped here so safety does not depend on the renderer.
  */
 export function createDocList({ docs, fieldSpec, ratingsStore, explain, createNormalDoc }) {

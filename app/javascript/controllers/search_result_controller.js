@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { sanitizeSnippetHtml } from "utils/html"
 import { ratingBackgroundColor } from "utils/scoring"
 
 /**
@@ -204,7 +205,7 @@ export default class extends Controller {
   }
 
   appendSanitized(element, value, prefix = "") {
-    element.innerHTML = `${prefix}${sanitizeHtml(String(value ?? ""))}`
+    element.innerHTML = `${prefix}${sanitizeSnippetHtml(value)}`
   }
 }
 
@@ -229,39 +230,4 @@ export function createRatingControl(rating, scale) {
 
 function ratingColor(rating, scale) {
   return ratingBackgroundColor({ rating, scale })["background-color"]
-}
-
-// Search snippets contain harmless markup such as <strong>, but their values
-// originate in search-engine responses. Keep the old ngSanitize boundary in
-// the snapshot renderer instead of assigning response HTML directly.
-export function sanitizeHtml(value) {
-  const template = document.createElement("template")
-  template.innerHTML = value
-  const allowedTags = new Set(["A", "B", "BR", "EM", "I", "MARK", "STRONG"])
-  const walker = document.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT)
-  const elements = []
-  while (walker.nextNode()) elements.push(walker.currentNode)
-
-  elements.forEach(element => {
-    if (!allowedTags.has(element.tagName)) {
-      element.replaceWith(document.createTextNode(element.textContent || ""))
-      return
-    }
-    const href = element.tagName === "A" ? element.getAttribute("href") : null
-    Array.from(element.attributes).forEach(attribute => element.removeAttribute(attribute.name))
-    if (element.tagName === "A" && href) {
-      try {
-        const url = new URL(href, document.baseURI)
-        if (url.protocol === "http:" || url.protocol === "https:") {
-          element.setAttribute("href", url.href)
-          element.setAttribute("target", "_blank")
-          element.setAttribute("rel", "noopener noreferrer")
-        }
-      } catch (_error) {
-        // Drop malformed links while preserving their visible text.
-      }
-    }
-  })
-
-  return template.innerHTML
 }

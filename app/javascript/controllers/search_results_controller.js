@@ -2,7 +2,8 @@ import { Controller } from "@hotwired/stimulus"
 import { getCoreStores } from "utils/core_store_access"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
-import { createRatingControl, sanitizeHtml } from "controllers/search_result_controller"
+import { createRatingControl } from "controllers/search_result_controller"
+import { sanitizeSnippetHtml } from "utils/html"
 import { engineDisplayName } from "utils/browse_query"
 
 /**
@@ -85,7 +86,7 @@ export default class extends Controller {
     const hasError = Boolean(snapshot?.errorText)
 
     if (this.hasErrorTarget) {
-      this.errorTarget.innerHTML = sanitizeHtml(snapshot?.errorText || "")
+      this.errorTarget.innerHTML = sanitizeSnippetHtml(snapshot?.errorText)
       this.errorTarget.classList.toggle("d-none", !hasError)
     }
     if (this.hasFooterTarget) this.footerTarget.classList.toggle("d-none", !resultsVisible)

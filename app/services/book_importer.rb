@@ -5,22 +5,15 @@ require 'progress_indicator'
 class BookImporter
   # include ProgressIndicator
 
-  # The uploaded file says which judge and which query/doc pair a judgement belongs to. It does
-  # not get to *change* them: we look these keys up, then drop them, so a handcrafted file can't
-  # attach its judgement to someone else's pair or overwrite one that already exists. Timestamps
-  # are excluded too - assign_attributes happily overwrites created_at/updated_at, and Rails only
-  # backfills them when blank, so a crafted file could otherwise forge a judgement's history.
-  UNASSIGNABLE_JUDGEMENT_KEYS = [
-    :user_email, :email, :user_id, :id, :judgement_id, :query_doc_pair, :query_doc_pair_id,
-    :created_at, :updated_at
-  ].freeze
+  # The only attributes an uploaded file may set. Everything else is either looked up and
+  # handled explicitly (which judge, which pair, which book) or ignored: a handcrafted file
+  # can't attach its judgement to someone else's pair, move a pair - and every judgement on
+  # it - into a book the uploader doesn't own, or forge created_at/updated_at. Keys an export
+  # emits that aren't attributes (e.g. `judgement_id`) are dropped rather than raising.
+  ASSIGNABLE_JUDGEMENT_KEYS = [ :rating, :unrateable, :judge_later, :explanation ].freeze
 
-  # Same idea, one level up: a pair says which book it's in. Without this, a crafted `book_id`
-  # (or `id`) on a pair would move it - and every judgement on it - into a book the uploader
-  # doesn't own. See docs/todo/todo.md for why this is a stopgap, not the real fix. Timestamps
-  # are excluded for the same forgery reason as UNASSIGNABLE_JUDGEMENT_KEYS above.
-  UNASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
-    :id, :book_id, :judgements, :query_doc_pair_id, :created_at, :updated_at
+  ASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
+    :query_text, :doc_id, :position, :document_fields, :information_need, :notes, :options
   ].freeze
 
   # Books must have a name, but an import file does not have to supply one.
@@ -129,7 +122,7 @@ class BookImporter
 
     query_doc_pairs.each do |query_doc_pair|
       qdp = find_or_initialize_query_doc_pair(query_doc_pair)
-      qdp.assign_attributes(query_doc_pair.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+      qdp.assign_attributes(query_doc_pair.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
       qdp.save
 
       counter -= 1
@@ -172,7 +165,7 @@ class BookImporter
 
   def upsert_nested_query_doc_pair attrs
     qdp = find_or_initialize_query_doc_pair(attrs)
-    qdp.assign_attributes(attrs.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+    qdp.assign_attributes(attrs.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
     qdp.save
     qdp
   end
@@ -203,7 +196,7 @@ class BookImporter
     # always building instead: importing the same file twice creates duplicates, and once a pair
     # has 3+ judgements its rating is calculated differently. See docs/todo/todo.md.
     judgement = user ? query_doc_pair.judgements.find_or_initialize_by(user: user) : query_doc_pair.judgements.build
-    judgement.assign_attributes(attrs.except(*UNASSIGNABLE_JUDGEMENT_KEYS))
+    judgement.assign_attributes(attrs.slice(*ASSIGNABLE_JUDGEMENT_KEYS))
     judgement.save
   end
 

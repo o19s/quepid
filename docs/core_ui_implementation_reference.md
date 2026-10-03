@@ -126,7 +126,7 @@ Saving builds the request body in `payloadFor()` (`settings_runtime.js`): `{ try
 
 ### Doc-list ID validation (`createDocList`)
 
-`createDocList` in `live_query_runtime_owner.js`: missing ID → fake id + `ID Field Missing`. Duplicate ID → fake id + `ID "…" Shared With Another Doc`. User-facing HTML error via `hasErrors()` / `errorMsg()`.
+`createDocList` in `live_query_read_models.js`: missing ID → fake id + `ID Field Missing`. Duplicate ID → fake id + `ID "…" Shared With Another Doc`. User-facing HTML error via `hasErrors()` / `errorMsg()`.
 
 ### Settings JSON validation (`tune-relevance` controller, "Rerun My Searches!")
 
