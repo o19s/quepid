@@ -27,6 +27,7 @@ function buildController() {
 describe("PaneController", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
+    window.sessionStorage.clear()
   })
 
   it("starts collapsed and opens the east pane when toggled", () => {
@@ -64,5 +65,42 @@ describe("PaneController", () => {
     controller.disconnect()
     document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300 }))
     expect(main.style.width).toBe("550px")
+  })
+
+  it("reopens at the kept width after navigating to another try, then forgets it", () => {
+    const first = buildController()
+    first.controller.connect()
+    first.controller.toggle()
+    first.controller.eastPaneWidth = 600
+    first.controller.keepOpenAcrossNavigation({ tab: "history" })
+
+    document.body.innerHTML = ""
+    const next = buildController()
+    next.controller.connect()
+
+    expect(next.controller.handoff.tab).toBe("history")
+    expect(next.east.style.display).toBe("block")
+    expect(next.main.style.width).toBe("400px")
+
+    document.body.innerHTML = ""
+    const reloaded = buildController()
+    reloaded.controller.connect()
+    expect(reloaded.east.style.display).toBe("none")
+  })
+
+  it("keeps nothing when the pane is collapsed", () => {
+    const { controller } = buildController()
+    controller.connect()
+    controller.keepOpenAcrossNavigation()
+    expect(window.sessionStorage.length).toBe(0)
+  })
+
+  it("caps a kept width wider than the container", () => {
+    window.sessionStorage.setItem("quepid.paneEast.keepOpen", JSON.stringify({ width: 1500 }))
+    const { controller, main, east } = buildController()
+    controller.connect()
+
+    expect(main.style.width).toBe("0px")
+    expect(east.style.width).toBe("1000px")
   })
 })

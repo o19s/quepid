@@ -15,6 +15,7 @@ export default class extends Controller {
   ]
 
   static values = { engineLabels: Object }
+  static outlets = ["pane"]
 
   connect() {
     this.tab = "developer"
@@ -60,6 +61,8 @@ export default class extends Controller {
       return
     }
     this.settingsRetry = null
+    const keptTab = this.hasPaneOutlet ? this.paneOutlet.handoff?.tab : null
+    if (keptTab && this.panelTargets.some(panel => panel.dataset.tunePanel === keptTab)) this.tab = keptTab
     this.searchEndpoints = []
     this.mountEditor()
     this.refresh()
@@ -265,6 +268,7 @@ export default class extends Controller {
   }
 
   navigateToTry(event) {
+    this.keepDrawerOpen()
     this.capability.navigation.goToTry(event.params.tryNo)
   }
 
@@ -308,6 +312,14 @@ export default class extends Controller {
       this.settings.selectedTry.queryParams = formatted
     }
     this.capability.settings.save(this.settings)
+  }
+
+  // Saving and History both load the new try as a full page, which would otherwise collapse the
+  // drawer and reset it to the Query tab; the Angular workbench kept both so tuning could
+  // continue (scenario 4.10). A save reaches here via `case-settings:updated`, which the settings
+  // runtime fires only once the new try exists, right before it navigates.
+  keepDrawerOpen() {
+    if (this.hasPaneOutlet) this.paneOutlet.keepOpenAcrossNavigation({ tab: this.tab })
   }
 
   updateNightly() {

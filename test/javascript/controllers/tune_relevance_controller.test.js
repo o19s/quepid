@@ -203,6 +203,28 @@ describe("TuneRelevanceController", () => {
       expect(refresh).toHaveBeenCalledTimes(1)
       expect(capability.endpoints.fetchForCase).toHaveBeenCalledWith(5)
     })
+
+    it("reopens on the tab the drawer was handed off with", () => {
+      const { controller } = mount()
+      vi.spyOn(controller, "refresh").mockImplementation(() => {})
+      controller.hasPaneOutlet = true
+      controller.paneOutlet = { handoff: { tab: "history", width: 450 } }
+
+      controller.load()
+
+      expect(controller.tab).toBe("history")
+    })
+
+    it("ignores a handed-off tab that does not exist", () => {
+      const { controller } = mount()
+      vi.spyOn(controller, "refresh").mockImplementation(() => {})
+      controller.hasPaneOutlet = true
+      controller.paneOutlet = { handoff: { tab: "bogus" } }
+
+      controller.load()
+
+      expect(controller.tab).toBe("developer")
+    })
   })
 
   describe("tabs", () => {
@@ -260,6 +282,17 @@ describe("TuneRelevanceController", () => {
   })
 
   describe("save", () => {
+    it("keeps the drawer open on the drawer's current tab once the save is under way", () => {
+      const { controller } = mount()
+      controller.hasPaneOutlet = true
+      controller.paneOutlet = { keepOpenAcrossNavigation: vi.fn() }
+      controller.showTab("curator")
+
+      controller.keepDrawerOpen()
+
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "curator" })
+    })
+
     it("rejects an out-of-range number of results without saving", () => {
       const { controller, capability } = mount()
       controller.numberOfRowsTarget.value = "101"
@@ -445,7 +478,11 @@ describe("TuneRelevanceController", () => {
       const rows = controller.historyListTarget.querySelectorAll("li")
       expect(rows).toHaveLength(2)
       expect(rows[1].dataset.tuneRelevanceTryNoParam).toBe("2")
+      controller.hasPaneOutlet = true
+      controller.paneOutlet = { keepOpenAcrossNavigation: vi.fn() }
+      controller.showTab("history")
       controller.navigateToTry({ params: { tryNo: 2 } })
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "history" })
       expect(capability.navigation.goToTry).toHaveBeenCalledWith(2)
     })
 

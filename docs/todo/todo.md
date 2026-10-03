@@ -33,10 +33,6 @@ Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [MIGRATION] P2 I0 C2 — Tune Relevance drawer closes after Rerun My Searches!
-
-Before the migration (`be9b319a`), saving from the drawer kept it open on the new try: `mainCtrl.js` persisted `$rootScope.devSettings` for exactly this case. This branch navigates to `case/:id/try/:n` and the drawer is closed afterward. Calling `save()` directly shows the same result, so this predates the Stimulus action routing. Decide whether to restore the original behavior; recheck scenario 4.10.
-
 ### [MIGRATION] P3 I0 C1 — Minor Tune Relevance and Missing Documents differences
 
 Found in a before/after replay against a September `main` (`86e3de9f`) and confirmed in the pre-migration source (`be9b319a`, `devQueryParams.html`, `queryParamsHistory.html`, `searchEngineName.js`):
