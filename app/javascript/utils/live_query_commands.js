@@ -1,51 +1,34 @@
 import { isSameId } from "utils/record_identity"
 
 /**
- * Command orchestration for live Query objects.
- *
- * The runtime owns lookup, scheduling, and command sequencing. The case
- * service injects the execution and document/rating adapters used by the
- * query runtime.
+ * Command orchestration for live Query objects: lookup, scheduling, and
+ * command sequencing. `runtimeFor(query)` supplies the query's search runtime.
  */
 export function createLiveQueryCommandsRuntime({
   getQuery,
   getShowOnlyRated,
-  queryRuntime,
-  documentRuntime,
-  schedule,
-  reject = (message) => Promise.reject(message)
+  runtimeFor,
+  schedule
 }) {
-  function findQuery(queryId) {
-    return getQuery(queryId)
-  }
-
-  function searchQuery(queryId) {
-    const query = findQuery(queryId)
-    if (!query) return reject(`Query not found: ${queryId}`)
-    documentRuntime.reset(query)
-    documentRuntime.publish(query)
-    return queryRuntime.create(query).search()
-  }
-
   function refreshRatedDocs(queryId, pageSize) {
-    const query = findQuery(queryId)
-    if (!query) return reject(`Query not found: ${queryId}`)
-    return queryRuntime.create(query).refreshRatedDocs(pageSize)
+    const query = getQuery(queryId)
+    if (!query) return Promise.reject(`Query not found: ${queryId}`)
+    return runtimeFor(query).refreshRatedDocs(pageSize)
   }
 
   function paginateQuery(queryId, ratedOnly) {
-    const query = findQuery(queryId)
+    const query = getQuery(queryId)
     if (!query) return false
 
     schedule(() => {
-      const runtime = queryRuntime.create(query)
+      const runtime = runtimeFor(query)
       return ratedOnly ? runtime.ratedPaginate() : runtime.paginate()
     })
     return true
   }
 
   function rateDocument(queryId, docId, rating) {
-    const query = findQuery(queryId)
+    const query = getQuery(queryId)
     if (!query) return false
 
     const docs = (query.docs || []).concat(query.ratedDocs || [])
@@ -63,7 +46,7 @@ export function createLiveQueryCommandsRuntime({
   }
 
   function rateAll(queryId, rating) {
-    const query = findQuery(queryId)
+    const query = getQuery(queryId)
     if (!query) return false
 
     const docs = getShowOnlyRated() ? query.ratedDocs : query.docs
@@ -84,5 +67,5 @@ export function createLiveQueryCommandsRuntime({
     return true
   }
 
-  return { searchQuery, refreshRatedDocs, paginateQuery, rateDocument, rateAll }
+  return { refreshRatedDocs, paginateQuery, rateDocument, rateAll }
 }

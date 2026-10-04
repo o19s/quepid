@@ -1,4 +1,4 @@
-<%# Rendered outside .pane_east: its position: fixed creates a stacking context that would
+<%# Rendered outside .pane_east: the pane is its own stacking context (panes.css), which would
     trap the modal beneath Bootstrap's body-level backdrop. It stays inside the tune-relevance
     controller's scope (#main), so its targets and actions still resolve. %>
 <div class="modal fade" id="tuneTryDetailsModal" tabindex="-1" aria-labelledby="tuneTryDetailsLabel" aria-hidden="true" data-tune-relevance-target="tryModal">

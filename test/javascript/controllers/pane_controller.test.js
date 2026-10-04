@@ -67,6 +67,19 @@ describe("PaneController", () => {
     expect(main.style.width).toBe("550px")
   })
 
+  it("places the slider relative to the container when it is scrolled sideways", () => {
+    const { controller, element, main, slider, east } = buildController()
+    element.getBoundingClientRect = () => ({ left: -150 })
+    controller.connect()
+    controller.toggle()
+    controller.grabSlider()
+    document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300 }))
+    expect(slider.style.left).toBe("450px")
+    expect(east.style.left).toBe("456px")
+    expect(main.style.width).toBe("450px")
+    controller.disconnect()
+  })
+
   it("stops retrying a hidden pane's layout once disconnected", () => {
     vi.useFakeTimers()
     try {

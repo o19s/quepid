@@ -8,6 +8,7 @@ const TABS = [
   { key: "parsedQueryDetails", tabId: "query-explain-tab-parsing", paneId: "query-explain-pane-parsing" },
   { key: "renderedQueryTemplate", tabId: "query-explain-tab-template", paneId: "query-explain-pane-template" }
 ]
+const COPY_FEEDBACK_MS = 2000
 
 /**
  * "Explain Query" modal on the per-query toolbar.
@@ -62,12 +63,26 @@ export default class extends Controller {
     paramsMessage.classList.toggle("p-3", hasMessage)
     renderJsonExplorer(el.querySelector(".query-explain-parsing"), data.parsedQueryDetails, { collapsed: false })
 
-    this.copyText = { queryDetails: data.queryDetails, parsedQueryDetails: data.parsedQueryDetails, renderedQueryTemplate: null }
+    this.copyValues = { queryDetails: data.queryDetails, parsedQueryDetails: data.parsedQueryDetails, renderedQueryTemplate: null }
 
     el.querySelectorAll(".query-explain-copy").forEach((button) => {
+      const label = [...button.childNodes].map((node) => node.cloneNode(true))
+      let resetTimer = null
+      const showFeedback = (iconClass, text) => {
+        const icon = document.createElement("i")
+        icon.className = `bi ${iconClass}`
+        button.replaceChildren(icon, ` ${text}`)
+        clearTimeout(resetTimer)
+        resetTimer = setTimeout(() => button.replaceChildren(...label), COPY_FEEDBACK_MS)
+      }
+
       button.addEventListener("click", () => {
-        const text = this.copyText[button.dataset.tab]
-        if (text) copyText(text).catch(() => {})
+        const text = this.copyValues[button.dataset.tab]
+        if (!text) return
+        copyText(text).then(
+          () => showFeedback("bi-check-lg", "Copied!"),
+          () => showFeedback("bi-exclamation-triangle", "Copy failed")
+        )
       })
     })
 
@@ -118,7 +133,7 @@ export default class extends Controller {
       return
     }
 
-    this.copyText.renderedQueryTemplate = detail.renderedQueryTemplate
+    this.copyValues.renderedQueryTemplate = detail.renderedQueryTemplate
     const message = document.createElement("p")
     message.textContent = "This is what the populated query template looks like"
     const value = document.createElement("pre")

@@ -5,21 +5,19 @@ import {
   supportsRatedDocsLookup,
   supportsSearchApiRatedDocsLookup
 } from "utils/rated_docs"
-import { createQueryDiff } from "utils/diff_results"
 import { RatingsStore } from "utils/ratings_store"
 import { createSnapshotSearcherFromRegistry } from "utils/snapshot_searcher"
 import { parseResponseObject } from "utils/search_error"
 import { createCaseScoringRuntime, scoreQuery } from "utils/query_scoring"
-import { createTargetedSearchAdapter } from "utils/query_runtime"
+import { createQueryRuntime, createTargetedSearchAdapter } from "utils/query_runtime"
+import { createQueryModel } from "utils/query_model"
 import { createBookSyncRuntime } from "utils/book_sync"
 import { buildQueryDocumentsState } from "utils/query_documents"
 import { createLiveQueryCollectionRuntime } from "utils/live_query_collection"
-import { createLiveQueryModelRuntime } from "utils/live_query_model"
 import { createLiveQueryDocumentsRuntime } from "utils/live_query_documents"
 import { createLiveQueryFactory } from "utils/live_query_factory"
 import { createLiveQueryCommandsRuntime } from "utils/live_query_commands"
 import { createLiveQueryEventsRuntime } from "utils/live_query_events"
-import { createLiveQueryExecutionRuntime } from "utils/live_query_execution"
 import { createLiveQueryLifecycleRuntime } from "utils/live_query_lifecycle"
 import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
 import { createLiveQueryDiffRuntime } from "utils/live_query_diff"
@@ -45,35 +43,31 @@ import {
   settingsWithTryOverrides
 } from "utils/query_service"
 
-/* jslint latedef:false */
+function copySettings(value) {
+  if (value === null || typeof value !== "object") return value
+  if (Array.isArray(value)) return value.map(copySettings)
+  return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, copySettings(entry)]))
+}
 
 /**
- * Creates the live-query runtime from explicit domain and state dependencies.
- * The outer bootstrap boundary supplies the search, scoring, settings, and
- * transport services.
+ * Creates the live-query runtime and installs its capabilities on `search`.
+ * The bootstrap boundary supplies the framework (scheduling, logging), the case
+ * domain (settings, scorer, navigation), splainer-search, and the stores.
+ *
+ * Runtimes are built in dependency order. Closures that reach a runtime built
+ * further down (`liveQueryStateRuntime`, `liveQueryCommandsRuntime`) only run
+ * after construction finishes.
  */
 export function createLiveQueryRuntimeOwner({ framework, domain, search, store }) {
-  const splainerSearch = search.splainerSearch || {}
-  const searchSvc = splainerSearch.searchSvc
-  const normalDocsSvc = splainerSearch.normalDocsSvc
-  const esExplainExtractorSvc = splainerSearch.esExplainExtractorSvc
-  const solrExplainExtractorSvc = splainerSearch.solrExplainExtractorSvc
-  const copySettings = (value) => {
-    if (value === null || typeof value !== "object") return value
-    if (Array.isArray(value)) return value.map(copySettings)
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, copySettings(entry)])
-    )
-  }
-  const forEachValue = (items, callback) => Object.values(items || {}).forEach(callback)
-  const isFunction = (value) => typeof value === "function"
-  const svc = {
-    error: false,
-    displayOrder: [],
-    linkUrl: ""
-  }
+  const { searchSvc, normalDocsSvc, esExplainExtractorSvc, solrExplainExtractorSvc } =
+    search.splainerSearch || {}
+  const logger = framework.logger
+
   let caseNo = -1
   let currSettings = {}
+  let showOnlyRated = false
+  let isBootstrapping = false
+  let displayOrder = []
 
   // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
   // exact same code (editing a mapper - or switching to a different mapper-based try -
@@ -86,254 +80,55 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   const queryCollectionStore = store && store.queries
   const queryDocumentsStore = store && store.documents
   const diffStateStore = store && store.diff
-  const liveQueryRegistry = createLiveQueryRegistry({
-    store: queryCollectionStore
-  })
-  function getAllDiffSettings() {
-    return diffStateStore ? diffStateStore.selections() : []
+  const liveQueryRegistry = createLiveQueryRegistry({ store: queryCollectionStore })
+  const bookSyncRuntime = createBookSyncRuntime({ logger })
+
+  const getCaseNo = () => caseNo
+  const getShowOnlyRated = () => showOnlyRated
+  const getLiveQueries = () => liveQueryRegistry.all()
+  const getLiveQuery = (queryId) => liveQueryRegistry.get(queryId)
+  const getFieldSpec = () => currSettings.createFieldSpec()
+  const getDiffSettings = () => (diffStateStore ? diffStateStore.selections() : [])
+  const createNormalDoc = (spec, doc, explain) => normalDocsSvc.createNormalDoc(spec, doc, explain)
+  const createRateableDoc = (query, doc) => query.ratingsStore.createRateableDoc(doc)
+
+  function createDocListFor(docs, fieldSpec, ratingsStore, explain) {
+    return createDocList({ docs, fieldSpec, ratingsStore, explain, createNormalDoc })
   }
 
-  // The collection store owns membership and display order. Keep the
-  // live-object map as the execution index only; every runtime
-  // that needs the collection receives the store-ordered live objects.
-  function getLiveQueries() {
-    return liveQueryRegistry.all()
+  function normalizeDocuments(query, searcher, fieldSpec) {
+    return normalizeSearchResults({
+      searcher,
+      fieldSpec,
+      extractors: {
+        es: (docs, spec) => esExplainExtractorSvc.docsWithExplainOther(docs, spec),
+        solr: (docs, spec, othersExplained) =>
+          solrExplainExtractorSvc.docsWithExplainOther(docs, spec, othersExplained)
+      },
+      createNormalDoc,
+      createRateableDoc: (doc) => createRateableDoc(query, doc)
+    })
   }
 
-  function clearQueryCollection() {
-    liveQueryRegistry.clear({ resetStore: true })
-  }
-
-  function registerQueryInCollection(queryId, query) {
-    liveQueryRegistry.register(queryId, query)
-  }
-
-  const bookSyncRuntime = createBookSyncRuntime({
-    logger: framework.logger
-  })
-
-  const liveQueryServices = {
-    domain: {
-      ...domain,
-      search: {
-        isEsOrOsEngine: isEsLikeEngine,
-        create: function (fieldList, searchUrl, args, queryText, options, searchEngine) {
-          return searchSvc.createSearcher(
-            fieldList,
-            searchUrl,
-            args,
-            queryText,
-            options,
-            searchEngine
-          )
-        }
-      },
-      documents: {
-        normalizeEs: function (docs, spec) {
-          return esExplainExtractorSvc.docsWithExplainOther(docs, spec)
-        },
-        normalizeSolr: function (docs, spec, othersExplained) {
-          return solrExplainExtractorSvc.docsWithExplainOther(docs, spec, othersExplained)
-        },
-        createNormalDoc: function (spec, doc, explain) {
-          return normalDocsSvc.createNormalDoc(spec, doc, explain)
-        },
-        explainDoc: function (doc) {
-          return normalDocsSvc.explainDoc(doc)
-        }
-      }
-    },
-    framework,
-    runtime: {
-      factoryOptions: {
-        model: {
-          getDefaultScorer: function () {
-            return liveQueryServices.scoring.getDefault()
-          },
-          scoreQuery: scoreQuery,
-          getFieldSpec: function () {
-            return currSettings.createFieldSpec()
-          },
-          buildRatingsFilter: buildRatedDocsFilter,
-          ratedDocIds: ratedDocIds
-        },
-        documents: {
-          getFieldSpec: function () {
-            return currSettings.createFieldSpec()
-          },
-          createDocList: function (docs, fieldSpec, ratingsStore, explain) {
-            return createDocList({
-              docs,
-              fieldSpec,
-              ratingsStore,
-              explain,
-              createNormalDoc: runtimeDomain.documents.createNormalDoc
-            })
-          },
-          matchFeaturesExplain: matchFeaturesExplain
-        },
-        factory: {
-          getCaseNo: getCaseNo,
-          getShowOnlyRated: function () {
-            return svc.showOnlyRated
-          },
-          RatingsStore: RatingsStore,
-          onRatingChanged: function (changedQueryId) {
-            liveQueryServices.ratings.changed(changedQueryId)
-          },
-          getQueryState: function (query) {
-            return queryLifecycleState({
-              errorText: query.errorText,
-              resultsReturned: query.resultsReturned,
-              docCount: query.docs.length
-            })
-          }
-        },
-        publish: publishQueryDocuments
-      },
-      executionOptions: {
-        settings: {
-          get: function () {
-            return currSettings
-          },
-          copy: function (settings) {
-            return copySettings(settings)
-          }
-        },
-        searchers: {
-          create: function (query, options) {
-            return liveQueryServices.search.create(currSettings, query, options)
-          },
-          createRated: function (settings, query) {
-            return liveQueryServices.search.create(settings, query, { filterToRated: true })
-          },
-          searchApiRatedDocs: function (settings, query, ratedIDs) {
-            return searchApiRatedDocs(settings, query, ratedIDs)
-          },
-          supportsRated: function (aTry) {
-            return trySupportsSearchApiRatedDocsLookup(aTry)
-          },
-          createSnapshot: function (snapshotId, query) {
-            return liveQueryServices.search.createSnapshot(snapshotId, query, currSettings)
-          }
-        },
-        documents: {
-          normalize: function (query, searcher, fieldSpec) {
-            return normalizeSearchResults({
-              searcher: searcher,
-              fieldSpec: fieldSpec,
-              extractors: {
-                es: function (docs, spec) {
-                  return runtimeDomain.documents.normalizeEs(docs, spec)
-                },
-                solr: function (docs, spec, othersExplained) {
-                  return runtimeDomain.documents.normalizeSolr(docs, spec, othersExplained)
-                }
-              },
-              createNormalDoc: function (spec, doc, explain) {
-                return runtimeDomain.documents.createNormalDoc(spec, doc, explain)
-              },
-              createRateableDoc: function (doc) {
-                return query.ratingsStore.createRateableDoc(doc)
-              }
-            })
-          },
-          createRateable: function (query, doc) {
-            return query.ratingsStore.createRateableDoc(doc)
-          }
-        },
-        errors: {
-          parse: function (response, linkUrl) {
-            return parseResponseObject(response, linkUrl, currSettings.searchEngine)
-          }
-        },
-        publish: publishQueryDocuments,
-        logger: framework.logger
-      }
-    },
-    scoring: {
-      getDefault: function () {
-        return runtimeDomain.scorer.getDefault()
-      },
-      select: function (scorerData) {
-        return runtimeDomain.scorer.select(scorerData)
-      },
-      bootstrap: function (newCaseNo) {
-        return runtimeDomain.scorer.bootstrap(newCaseNo)
-      },
-      run: function (scorables) {
-        return scoreAll(scorables)
-      }
-    },
-    book: {
-      configure: function (nextCaseNo, caseData) {
-        bookSyncRuntime.configure({
-          caseId: nextCaseNo,
-          bookId: caseData.book_id,
-          autoPopulate: caseData.auto_populate_book_pairs
-        })
-      },
-      reset: function () {
-        bookSyncRuntime.reset()
-      },
-      sync: function (queries) {
-        return bookSyncRuntime.sync(queries)
-      }
-    },
-    search: {
-      create: function (settings, query, options) {
-        return createSearcherFromSettings(settings, query, options)
-      },
-      createSnapshot: function (snapshotId, query, settings) {
-        return createSearcherFromSnapshot(snapshotId, query, settings)
-      }
-    },
-    ratings: {
-      changed: function (changedQueryId) {
-        if (store && store.scoring) {
-          store.scoring.markRatingChanged(changedQueryId)
-        } else {
-          document.dispatchEvent(
-            new CustomEvent("ratings:changed", {
-              detail: { queryId: changedQueryId }
-            })
-          )
-        }
-      }
+  function markRatingChanged(queryId) {
+    if (store && store.scoring) {
+      store.scoring.markRatingChanged(queryId)
+    } else {
+      document.dispatchEvent(new CustomEvent("ratings:changed", { detail: { queryId } }))
     }
-  }
-  const runtimeFramework = liveQueryServices.framework
-  const runtimeDomain = liveQueryServices.domain
-
-  function reset() {
-    liveQueryRegistry.clear({ resetStore: true })
-    svc.showOnlyRated = false
-    svc.isBootstrapping = false
-    if (queryDocumentsStore) {
-      queryDocumentsStore.reset()
-    }
-    liveQueryServices.book.reset()
-    publishQueryListState()
   }
 
   // Explicit adapter for the Stimulus query list. The runtime retains the live
-  // Query objects, but the list no longer discovers them through an
+  // Query objects, but the list no longer discovers them through a
   // compiled controller scope.
   function publishQueryListState() {
     document.dispatchEvent(new CustomEvent("queries-state:changed"))
   }
 
-  // Case-level scoring orchestration lives in the query
-  // runtime. The service graph remains the adapter for the live Query objects
-  // and the latestScoreInfo shape during the store transition.
   const caseScoringRuntime = createCaseScoringRuntime({
-    getScorables: function () {
-      return getLiveQueries()
-    },
+    getScorables: getLiveQueries,
     logger: console,
     onComplete: function (scoreInfo, metadata) {
-      svc.latestScoreInfo = scoreInfo
-
       // The score store replaces its complete query-score map. Partial
       // scoring (for example diff-only scoring) must not erase live
       // query badges from the store.
@@ -344,285 +139,221 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       publishQueryListState()
     }
   })
+  const scoreAll = (scorables) => caseScoringRuntime.scoreAll(scorables)
+
+  const liveQueryDocumentsRuntime = createLiveQueryDocumentsRuntime({
+    getFieldSpec,
+    createDocList: createDocListFor,
+    matchFeaturesExplain,
+    publish: publishQueryDocuments
+  })
+
+  // A query's search runtime, bound to that query and the current settings.
+  function runtimeFor(query) {
+    return createQueryRuntime({
+      query,
+      getSettings: () => currSettings,
+      copySettings,
+      createSearcher: (options) => createSearcherFromSettings(currSettings, query, options),
+      createRatedSearcher: (settings) =>
+        createSearcherFromSettings(settings, query, { filterToRated: true }),
+      searchApiRatedDocs,
+      supportsSearchApiRatedDocsLookup,
+      normalizeDocuments: (searcher, fieldSpec) => normalizeDocuments(query, searcher, fieldSpec),
+      createDocList: createDocListFor,
+      createRateableDoc: (doc) => createRateableDoc(query, doc),
+      matchFeaturesExplain,
+      setDocs: (docs, numFound) => liveQueryDocumentsRuntime.setDocs(query, docs, numFound),
+      onError: (message) => liveQueryDocumentsRuntime.setError(query, message),
+      parseError: (response, linkUrl) =>
+        parseResponseObject(response, linkUrl, currSettings.searchEngine),
+      publish: publishQueryDocuments,
+      logger
+    })
+  }
+
+  const liveQueryFactory = createLiveQueryFactory({
+    getCaseNo,
+    getShowOnlyRated,
+    RatingsStore,
+    onRatingChanged: markRatingChanged,
+    getQueryState: (query) =>
+      queryLifecycleState({
+        errorText: query.errorText,
+        resultsReturned: query.resultsReturned,
+        docCount: query.docs.length
+      }),
+    createModel: ({ query, ratingsStore, getQueryState }) =>
+      createQueryModel({
+        query,
+        ratingsStore,
+        getDefaultScorer: () => domain.scorer.getDefault(),
+        scoreQuery,
+        getFieldSpec,
+        getQueryState,
+        buildRatingsFilter: buildRatedDocsFilter,
+        ratedDocIds,
+        publish: publishQueryDocuments
+      })
+  })
+
+  const liveQueryDiffRuntime = createLiveQueryDiffRuntime({
+    getQueries: getLiveQueries,
+    getDiffSettings,
+    getSettings: () => domain.settings.editable(),
+    createSearcherFromSnapshot,
+    publish: publishQueryDocuments,
+    notify: (detail) => document.dispatchEvent(new CustomEvent("query-diffs:refreshed", { detail }))
+  })
 
   const liveQueryCollectionRuntime = createLiveQueryCollectionRuntime({
-    fetchQueries: fetchQueries,
-    createQuery: function (queryData) {
-      return liveQueryFactory.create(queryData)
-    },
-    createDiff: function (query) {
-      createQueryDiff({
-        query: query,
-        diffSettings: getAllDiffSettings(),
-        settings: runtimeDomain.settings.editable(),
-        createSearcherFromSnapshot: createSearcherFromSnapshot
-      })
-    },
-    clearQueries: function () {
-      liveQueryRegistry.clear()
-    },
-    registerQuery: function (queryId, query) {
-      liveQueryRegistry.register(queryId, query, { publish: false })
-    },
-    applyDisplayOrder: function (displayOrder) {
-      applyDisplayOrder(displayOrder)
-    },
-    replaceStore: function (collectionCaseId, data) {
+    fetchQueries,
+    createQuery: (queryData) => liveQueryFactory.create(queryData),
+    createDiff: (query) => liveQueryDiffRuntime.create(query),
+    clearQueries: () => liveQueryRegistry.clear(),
+    registerQuery: (queryId, query) =>
+      liveQueryRegistry.register(queryId, query, { publish: false }),
+    applyDisplayOrder,
+    replaceStore: (collectionCaseId, data) => {
       if (queryCollectionStore) queryCollectionStore.replaceFromResponse(collectionCaseId, data)
     },
-    beginStoreBootstrap: function (caseId) {
+    beginStoreBootstrap: (caseId) => {
       if (queryCollectionStore) queryCollectionStore.beginBootstrap(caseId)
     },
-    markStoreError: function (response) {
+    markStoreError: (response) => {
       if (queryCollectionStore) queryCollectionStore.markError(response)
     },
-    setBootstrapping: function (value) {
-      svc.isBootstrapping = value
+    setBootstrapping: (value) => {
+      isBootstrapping = value
     },
     publishState: publishQueryListState,
-    logger: runtimeFramework.logger
-  })
-
-  const { factoryOptions, executionOptions } = liveQueryServices.runtime
-  const liveQueryModelRuntime = createLiveQueryModelRuntime({
-    ...factoryOptions.model,
-    publish: factoryOptions.publish
-  })
-  const liveQueryDocumentsRuntime = createLiveQueryDocumentsRuntime({
-    ...factoryOptions.documents,
-    publish: factoryOptions.publish
-  })
-  const liveQueryRuntime = createLiveQueryExecutionRuntime({
-    ...executionOptions,
-    errors: {
-      ...executionOptions.errors,
-      onError: liveQueryDocumentsRuntime.setError
-    },
-    documents: {
-      ...executionOptions.documents,
-      createList: factoryOptions.documents.createDocList,
-      setDocs: liveQueryDocumentsRuntime.setDocs,
-      onError: liveQueryDocumentsRuntime.setError,
-      matchFeaturesExplain: factoryOptions.documents.matchFeaturesExplain
-    }
-  })
-  const liveQueryFactory = createLiveQueryFactory({
-    ...factoryOptions.factory,
-    createModel: (options) => liveQueryModelRuntime.create(options),
-    publish: factoryOptions.publish
+    logger
   })
 
   const liveQueryTransportRuntime = createLiveQueryTransportRuntime({
-    queryRuntime: liveQueryRuntime,
-    getQueries: function () {
-      return getLiveQueries()
-    },
-    getRequestsPerMinute: function () {
-      return currSettings.selectedTry.requestsPerMinute
-    },
-    resetQuery: function (query) {
+    runtimeFor,
+    getQueries: getLiveQueries,
+    getRequestsPerMinute: () => currSettings.selectedTry.requestsPerMinute,
+    resetQuery: (query) => {
       liveQueryDocumentsRuntime.reset(query)
       liveQueryDocumentsRuntime.publish(query)
     },
-    scoreAll: function () {
-      return liveQueryServices.scoring.run()
-    },
-    syncToBook: function () {
-      return liveQueryServices.book.sync(queryArray())
-    },
-    onSearchStarted: function () {
-      return queryCollectionStore ? queryCollectionStore.beginSearch() : null
-    },
-    onSearchCompleted: function (generation) {
+    scoreAll: () => scoreAll(),
+    syncToBook: () => bookSyncRuntime.sync(queryArray()),
+    onSearchStarted: () => (queryCollectionStore ? queryCollectionStore.beginSearch() : null),
+    onSearchCompleted: (generation) => {
       if (queryCollectionStore) queryCollectionStore.finishSearch(generation)
     },
-    onSearchFailed: function (error, generation) {
+    onSearchFailed: (error, generation) => {
       if (queryCollectionStore) queryCollectionStore.failSearch(error, generation)
     },
-    logger: runtimeFramework.logger
+    logger
   })
 
   const liveQueryCommandsRuntime = createLiveQueryCommandsRuntime({
     getQuery: getLiveQuery,
-    getShowOnlyRated: function () {
-      return svc.showOnlyRated
-    },
-    queryRuntime: liveQueryRuntime,
-    documentRuntime: liveQueryDocumentsRuntime,
-    schedule: function (callback) {
-      runtimeFramework.schedule(callback)
-    },
-    reject: function (message) {
-      return Promise.reject(message)
-    }
+    getShowOnlyRated,
+    runtimeFor,
+    schedule: framework.schedule
   })
-
-  const liveQueryEventsRuntime = createLiveQueryEventsRuntime({
-    scoringStore: store && store.scoring,
-    getCaseNo: getCaseNo,
-    getQuery: getLiveQuery,
-    getQueries: function () {
-      return getLiveQueries()
-    },
-    ratingChangedQueryId: ratingChangedQueryId,
-    invalidateRatedDocs: function (query) {
-      invalidateRatedDocsCache(query)
-    },
-    publishQuery: publishQueryDocuments,
-    scoreAll: function () {
-      return liveQueryServices.scoring.run()
-    },
-    updateScores: function () {
-      return search.queryCapabilities.updateScores()
-    },
-    setQueryOptions: function (query, options) {
-      query.options = options
-      query.setDirty()
-    },
-    setScorer: function (scorerData) {
-      return liveQueryServices.scoring.select(scorerData)
-    },
-    reloadQueries: function (caseId) {
-      search.queryCapabilities.resetQueryState()
-      return search.queryCapabilities.bootstrapQueries(caseId).then(function () {
-        return search.queryCommands.searchAll()
-      })
-    },
-    configureBook: function ({ bookId, autoPopulate }) {
-      bookSyncRuntime.configure({ caseId: getCaseNo(), bookId, autoPopulate })
-    },
-    schedule: function (callback) {
-      runtimeFramework.schedule(callback)
-    },
-    onError: function (message, error) {
-      console.error(`live-query-events: ${message}`, error)
-      coreFlash.show("error", `${message}: ${errorMessage(error, "unexpected error")}`)
-    }
-  })
-  liveQueryEventsRuntime.connect()
 
   const liveQueryLifecycleRuntime = createLiveQueryLifecycleRuntime({
-    createQuery: function (queryText) {
-      return createQuery(queryText)
-    },
-    reset: function () {
-      reset()
-    },
-    bootstrapQueries: function (caseId) {
-      return liveQueryCollectionRuntime.bootstrapQueries(caseId)
-    },
-    searchAll: function () {
-      return searchAll()
-    },
-    clearQueries: function () {
-      clearQueryCollection()
-    },
-    addQueriesFromResponse: function (data, caseId) {
-      liveQueryCollectionRuntime.addQueriesFromResponse(data, caseId)
-    },
-    getCaseNo: getCaseNo,
-    applyDisplayOrder: function (displayOrder) {
-      applyDisplayOrder(displayOrder)
-    },
-    setQueryId: function (query, queryId) {
-      query.ratingsStore.setQueryId(queryId)
-    },
-    registerQuery: function (queryId, query) {
-      registerQueryInCollection(queryId, query)
-    },
-    removeQuery: function (queryId) {
-      return liveQueryRegistry.remove(queryId)
-    },
-    searchAndScore: function (query) {
-      return searchAndScore(query)
-    },
-    updateScores: function () {
-      search.queryCapabilities.updateScores()
-    },
-    logger: runtimeFramework.logger
-  })
-
-  const liveQueryDiffRuntime = createLiveQueryDiffRuntime({
-    getQueries: function () {
-      return getLiveQueries()
-    },
-    getDiffSettings: getAllDiffSettings,
-    getSettings: function () {
-      return runtimeDomain.settings.editable()
-    },
-    createSearcherFromSnapshot: createSearcherFromSnapshot,
-    publish: publishQueryDocuments,
-    notify: function (detail) {
-      document.dispatchEvent(
-        new CustomEvent("query-diffs:refreshed", {
-          detail: detail
-        })
-      )
-    }
+    createQuery,
+    reset,
+    bootstrapQueries: liveQueryCollectionRuntime.bootstrapQueries,
+    searchAll,
+    clearQueries: () => liveQueryRegistry.clear({ resetStore: true }),
+    addQueriesFromResponse: liveQueryCollectionRuntime.addQueriesFromResponse,
+    getCaseNo,
+    applyDisplayOrder,
+    setQueryId: (query, queryId) => query.ratingsStore.setQueryId(queryId),
+    registerQuery: liveQueryRegistry.register,
+    removeQuery: liveQueryRegistry.remove,
+    searchAndScore: liveQueryTransportRuntime.searchAndScore,
+    updateScores,
+    logger
   })
 
   const liveQueryStateRuntime = createLiveQueryStateRuntime({
-    getQueries: function () {
-      return getLiveQueries()
-    },
-    scoreAll: function (scorables) {
-      return scorables === undefined
-        ? liveQueryServices.scoring.run()
-        : liveQueryServices.scoring.run(scorables)
-    },
-    applySettings: function (newSettings) {
+    getQueries: getLiveQueries,
+    scoreAll,
+    applySettings: (newSettings) => {
       currSettings = newSettings
     },
-    setLifecycleCaseId: function (newCaseNo) {
-      search.queryLifecycle.caseId = newCaseNo
-    },
     getCurrentCaseNo: getCaseNo,
-    setCurrentCaseNo: function (newCaseNo) {
+    setCurrentCaseNo: (newCaseNo) => {
       caseNo = newCaseNo
     },
-    bootstrapScorer: function (newCaseNo) {
-      liveQueryServices.scoring.bootstrap(newCaseNo)
-    },
-    bootstrapQueries: function (newCaseNo) {
+    bootstrapScorer: (newCaseNo) => domain.scorer.bootstrap(newCaseNo),
+    bootstrapQueries: (newCaseNo) => {
       // A failure reaches the caller through searchablePromise(), which
       // changeSettings() returns; this copy is only silenced so it isn't
       // reported as an unhandled rejection.
       liveQueryCollectionRuntime.bootstrapQueries(newCaseNo).catch(() => {})
     },
-    configureBook: function (newCaseNo) {
-      getJson("api/cases/" + newCaseNo).then(function (data) {
-        liveQueryServices.book.configure(newCaseNo, data)
+    configureBook: (newCaseNo) => {
+      getJson("api/cases/" + newCaseNo).then((data) => {
+        bookSyncRuntime.configure({
+          caseId: newCaseNo,
+          bookId: data.book_id,
+          autoPopulate: data.auto_populate_book_pairs
+        })
       })
     },
-    refreshQueryDiff: function (query) {
-      query.diff.fetch()
-    },
+    refreshQueryDiff: (query) => query.diff.fetch(),
     queryReady: {
-      resolve: function () {
-        liveQueryCollectionRuntime.resolveSearchPromise()
-      },
-      promise: function () {
-        return liveQueryCollectionRuntime.searchablePromise()
-      }
+      resolve: liveQueryCollectionRuntime.resolveSearchPromise,
+      promise: liveQueryCollectionRuntime.searchablePromise
     }
   })
 
-  // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
-  // these stay as the public names that deferred result controls and docFinder.js call.
-  function trySupportsSearchApiRatedDocsLookup(aTry) {
-    return supportsSearchApiRatedDocsLookup(aTry)
-  }
+  createLiveQueryEventsRuntime({
+    scoringStore: store && store.scoring,
+    getCaseNo,
+    getQuery: getLiveQuery,
+    getQueries: getLiveQueries,
+    ratingChangedQueryId,
+    invalidateRatedDocs: invalidateRatedDocsCache,
+    publishQuery: publishQueryDocuments,
+    scoreAll: () => scoreAll(),
+    updateScores,
+    setQueryOptions: (query, options) => {
+      query.options = options
+      query.setDirty()
+    },
+    setScorer: (scorerData) => domain.scorer.select(scorerData),
+    reloadQueries: (caseId) => {
+      reset()
+      return liveQueryCollectionRuntime.bootstrapQueries(caseId).then(searchAll)
+    },
+    configureBook: ({ bookId, autoPopulate }) => {
+      bookSyncRuntime.configure({ caseId: getCaseNo(), bookId, autoPopulate })
+    },
+    schedule: framework.schedule,
+    onError: (message, error) => {
+      console.error(`live-query-events: ${message}`, error)
+      coreFlash.show("error", `${message}: ${errorMessage(error, "unexpected error")}`)
+    }
+  }).connect()
 
-  function trySupportsRatedDocsLookup(aTry) {
-    return supportsRatedDocsLookup(aTry)
+  function reset() {
+    liveQueryRegistry.clear({ resetStore: true })
+    showOnlyRated = false
+    isBootstrapping = false
+    if (queryDocumentsStore) {
+      queryDocumentsStore.reset()
+    }
+    bookSyncRuntime.reset()
+    publishQueryListState()
   }
 
   // Rating scale for a query's rating controls: the query's own scale, else its scorer's colors.
   function resolveQueryRatingScale(query) {
     let ratingScale = query.ratings && query.ratings.scale
     if (!ratingScale) {
-      const effectiveScorer = isFunction(query.effectiveScorer) ? query.effectiveScorer() : null
-      if (effectiveScorer && isFunction(effectiveScorer.getColors)) {
+      const effectiveScorer =
+        typeof query.effectiveScorer === "function" ? query.effectiveScorer() : null
+      if (effectiveScorer && typeof effectiveScorer.getColors === "function") {
         ratingScale = effectiveScorer.getColors()
       }
     }
@@ -637,17 +368,17 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     }
 
     const ratingScale = resolveQueryRatingScale(query)
-    const applicableSettings = runtimeDomain.settings.applicable() || {}
+    const applicableSettings = domain.settings.applicable() || {}
     const readModel = buildQueryDocumentsState({
       query: query,
       settings: applicableSettings,
       selectedTry: applicableSettings.selectedTry || {},
       ratingScale: ratingScale || {},
-      diffs: buildDiffReadModel(query, { showOnlyRated: svc.showOnlyRated === true }),
+      diffs: buildDiffReadModel(query, { showOnlyRated }),
       documentUrlFor: function (doc) {
         return documentUrlFor(doc, {
           settings: applicableSettings,
-          proxyUrlFor: (searchEndpointId) => runtimeDomain.navigation.proxyUrlFor(searchEndpointId)
+          proxyUrlFor: (searchEndpointId) => domain.navigation.proxyUrlFor(searchEndpointId)
         })
       }
     })
@@ -657,14 +388,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     }
   }
 
-  // Explicit command adapter for the Stimulus results renderer. The live
-  // Query objects remain here until search and scoring migrate, but the
-  // renderer does not need to discover them through a controller scope.
-  function getLiveQuery(queryId) {
-    return liveQueryRegistry.get(queryId)
-  }
-
-  // Explicit command adapters for the Stimulus expanded-results renderer.
+  // Explicit command adapter for the Stimulus expanded-results renderer.
   // Query objects remain owned by the runtime, but the renderer does not discover
   // them through a compiled controller.
   function toggleQuery(queryId) {
@@ -683,8 +407,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     }
     return true
   }
-  svc.showOnlyRated = false
-  svc.isBootstrapping = false
 
   /**
    * mapper_code (a try's JS source defining numberOfResultsMapper/docsMapper/
@@ -716,11 +438,11 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       options,
       proxyUrl:
         settings?.proxyRequests === true
-          ? runtimeDomain.navigation.proxyUrlFor(settings.searchEndpointId)
+          ? domain.navigation.proxyUrlFor(settings.searchEndpointId)
           : undefined,
-      isEsOrOs: runtimeDomain.search.isEsOrOsEngine(settings?.searchEngine),
+      isEsOrOs: isEsLikeEngine(settings?.searchEngine),
       evaluateMapper: evaluateMapperFunctions,
-      createSearcher: runtimeDomain.search.create
+      createSearcher: (...args) => searchSvc.createSearcher(...args)
     })
   }
 
@@ -730,34 +452,10 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       snapshots: search.snapshotRegistry,
       query: query,
       settings: settings,
-      createRateableDoc: function (doc) {
-        return query.ratingsStore.createRateableDoc(doc)
-      },
-      explainDoc: runtimeDomain.documents.explainDoc,
-      log: runtimeFramework.logger.error
+      createRateableDoc: (doc) => createRateableDoc(query, doc),
+      explainDoc: (doc) => normalDocsSvc.explainDoc(doc),
+      log: logger.error
     })
-  }
-
-  /**
-   * filterToRatings() below has no generic "just these doc IDs" query syntax for a
-   * searchapi engine (unlike Solr's {!terms f=id} or ES's terms query) - every mapper-based
-   * engine's query language is different, so that's left to the mapper itself. If
-   * mapperCode defines a ratedDocsQueryParamsMapper(ratedIds, idField) function (see
-   * db/mapper_based_search_engines/vespa.js for an example), this returns the query_params
-   * string it builds (evaluated via the same cache as createSearcherFromSettings - see
-   * evaluateMapperFunctions above). idField is the case's own id field (fieldSpec.id, i.e.
-   * whatever follows "id:" in the try's field_spec) - passed through rather than left for
-   * the mapper to hardcode, since it's schema-specific and user-editable per case. Returns
-   * null if the mapper doesn't define one - callers should treat that the same as
-   * MapperBasedSearchEngine#supports_rated_docs_lookup being false.
-   */
-  function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField) {
-    return buildSearchApiRatedDocsQueryParamsFor(
-      mapperCode,
-      ratedIds,
-      idField,
-      evaluateMapperFunctions
-    )
   }
 
   /**
@@ -765,23 +463,31 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
    * engine - used by both docFinder.js's "Already Rated Documents" section and
    * the query runtime (Query's "Show only rated" toggle), which otherwise
    * duplicated this same build-query-params -> previewArgs -> search -> normalize sequence.
-   * Callers are expected to have already checked trySupportsSearchApiRatedDocsLookup(); this
+   *
+   * There is no generic "just these doc IDs" query syntax for a searchapi engine (unlike
+   * Solr's {!terms f=id} or ES's terms query), so the try's mapper_code builds it: if it
+   * defines ratedDocsQueryParamsMapper(ratedIds, idField) (see
+   * db/mapper_based_search_engines/vespa.js), that returns the query_params string. idField
+   * is the case's own id field (fieldSpec.id), passed through since it's schema-specific and
+   * user-editable per case.
+   *
+   * Callers are expected to have already checked supportsSearchApiRatedDocsLookup(); this
    * resolves to null when the mapper doesn't build a query (or previewArgs can't resolve it),
    * which callers should treat as "can't show rated docs, disable/message accordingly."
    */
   function searchApiRatedDocs(settings, query, ratedIds) {
-    const idField = settings.createFieldSpec().id
-    const ratedQueryParams = buildSearchApiRatedDocsQueryParams(
+    const ratedQueryParams = buildSearchApiRatedDocsQueryParamsFor(
       settings.selectedTry.mapperCode,
       ratedIds,
-      idField
+      settings.createFieldSpec().id,
+      evaluateMapperFunctions
     )
 
     if (!ratedQueryParams) {
       return Promise.resolve(null)
     }
 
-    return runtimeDomain.settings
+    return domain.settings
       .previewArgs(settings.selectedTry.tryNo, ratedQueryParams)
       .then(function (resolvedArgs) {
         if (resolvedArgs === null) {
@@ -797,25 +503,21 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         const searcher = createSearcherFromSettings(tempSettings, query, { forceApiMethod: "POST" })
 
         return searcher.search().then(function () {
-          const normed = liveQueryServices.runtime.executionOptions.documents.normalize(
-            query,
-            searcher,
-            settings.createFieldSpec()
-          )
+          const normed = normalizeDocuments(query, searcher, settings.createFieldSpec())
           return { searcher: searcher, docs: normed }
         })
       })
   }
 
   function toggleShowOnlyRated() {
-    svc.showOnlyRated = !svc.showOnlyRated
+    showOnlyRated = !showOnlyRated
 
     if (queryDocumentsStore) {
-      queryDocumentsStore.setShowOnlyRated(svc.showOnlyRated)
+      queryDocumentsStore.setShowOnlyRated(showOnlyRated)
     }
 
-    if (svc.showOnlyRated) {
-      forEachValue(getLiveQueries(), function (query) {
+    if (showOnlyRated) {
+      Object.values(getLiveQueries()).forEach(function (query) {
         if (!query.ratingsReady) {
           search.queryCapabilities.refreshRatedDocs(query.queryId)
         }
@@ -847,14 +549,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     return Object.keys(getLiveQueries()).length
   }
 
-  function bootstrapQueries(caseNo) {
-    return liveQueryCollectionRuntime.bootstrapQueries(caseNo)
-  }
-
-  function searchAndScore(query) {
-    return liveQueryTransportRuntime.searchAndScore(query)
-  }
-
   function searchAll() {
     const searchAllPromise = liveQueryTransportRuntime.searchAll()
     searchAllPromise.catch(() => {})
@@ -862,11 +556,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   }
 
   function createQuery(queryText) {
-    const queryJson = {
-      query_text: queryText,
-      queryId: -1
-    }
-    const newQuery = liveQueryFactory.create(queryJson)
+    const newQuery = liveQueryFactory.create({ query_text: queryText, queryId: -1 })
     liveQueryDiffRuntime.create(newQuery)
     return newQuery
   }
@@ -880,45 +570,17 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       // consumers still rely on this field being refreshed on each read.
       return orderedQueries(queryCollectionStore.orderedQueryIds(), getLiveQueries())
     }
-    return orderedQueries(svc.displayOrder, getLiveQueries())
+    return orderedQueries(displayOrder, getLiveQueries())
   }
 
   // Temporary adapter for the Stimulus reorder controller. The controller
   // owns the PUT; the runtime keeps the live display order in sync until the
   // query store becomes authoritative.
-  function applyDisplayOrder(displayOrder) {
-    svc.displayOrder = displayOrder
+  function applyDisplayOrder(nextDisplayOrder) {
+    displayOrder = nextDisplayOrder
     if (queryCollectionStore) {
-      queryCollectionStore.setDisplayOrder(displayOrder)
+      queryCollectionStore.setDisplayOrder(nextDisplayOrder)
     }
-  }
-
-  /*
-   * This method prepares the scores table that the qgraph/qscore-case/qscore-query components need.
-   *
-   */
-  function scoreAll(scorables) {
-    return scorables === undefined
-      ? caseScoringRuntime.scoreAll()
-      : caseScoringRuntime.scoreAll(scorables)
-  }
-
-  // Refresh diff objects for all queries after state changes. The live diff
-  // runtime remains service-backed, but its public adapter is the explicit
-  // capability below rather than an internal service namespace.
-  function refreshAllDiffs() {
-    return liveQueryDiffRuntime.refreshAll()
-  }
-
-  // Controllers use this adapter instead of resolving the service graph from
-  // the injector. Keep the scheduling boundary here with
-  // the live Query implementation until diff refresh uses the runtime graph directly.
-  function refreshAllDiffsCapability() {
-    return new Promise(function (resolve, reject) {
-      runtimeFramework.schedule(function () {
-        refreshAllDiffs().then(resolve, reject)
-      })
-    })
   }
 
   function updateScores() {
@@ -927,21 +589,21 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
 
   Object.assign(search.queryCapabilities, {
     getListState: function () {
-      const selectedTry = runtimeDomain.settings.applicable() || {}
+      const selectedTry = domain.settings.applicable() || {}
       return {
         canAddQueries: selectedTry.searchEngine !== "static",
         addQueryMessage:
           selectedTry.searchEngine === "static"
             ? "Adding queries is not supported"
             : "Add a query to this case",
-        showOnlyRated: svc.showOnlyRated === true,
+        showOnlyRated,
         // Match the query-list controller's showOnlyRatedUnsupported state: while the case is
         // still loading, no selected try means the capability is unknown,
         // not unsupported.
-        showOnlyRatedUnsupported: runtimeDomain.settings.isTrySelected()
-          ? !trySupportsRatedDocsLookup(selectedTry)
+        showOnlyRatedUnsupported: domain.settings.isTrySelected()
+          ? !supportsRatedDocsLookup(selectedTry)
           : false,
-        isBootstrapping: svc.isBootstrapping === true,
+        isBootstrapping,
         searching: hasPendingQueries(),
         batchPosition: settledQueryCount(),
         batchSize: queryCount()
@@ -949,54 +611,40 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     },
     setDisplayOrder: applyDisplayOrder,
     getQuery: getLiveQuery,
-    createQuery: createQuery,
-    registerQuery: registerQueryInCollection,
     getQueries: getLiveQueries,
-    getCaseNo: getCaseNo,
+    getCaseNo,
     resetQueryState: reset,
-    bootstrapQueries: bootstrapQueries,
-    resetSearchPromise: function () {
-      liveQueryCollectionRuntime.resetSearchPromise()
-    },
+    resetSearchPromise: liveQueryCollectionRuntime.resetSearchPromise,
     getQueryArray: queryArray,
-    changeSettings: function (newCaseNo, newSettings) {
-      return liveQueryStateRuntime.changeSettings(newCaseNo, newSettings)
-    },
-    resetQuery: function (queryId) {
-      const query = getLiveQuery(queryId)
-      if (!query) return false
-      liveQueryDocumentsRuntime.reset(query)
-      publishQueryDocuments(query)
-      return true
-    },
-    searchQuery: function (queryId) {
-      return liveQueryCommandsRuntime.searchQuery(queryId)
-    },
-    refreshRatedDocs: function (queryId, pageSize) {
-      return liveQueryCommandsRuntime.refreshRatedDocs(queryId, pageSize)
-    },
+    changeSettings: liveQueryStateRuntime.changeSettings,
+    refreshRatedDocs: liveQueryCommandsRuntime.refreshRatedDocs,
     reconcileQueryRemoval: function (queryId, rescore) {
       if (queryId === undefined || queryId === null) return false
       return liveQueryLifecycleRuntime.reconcileQueryRemoval(queryId, rescore)
     },
-    refreshAllDiffs: refreshAllDiffsCapability,
-    scoreAll: scoreAll,
-    updateScores: updateScores
+    // Scheduled so a diff refresh never runs inside the caller's own update.
+    refreshAllDiffs: function () {
+      return new Promise(function (resolve, reject) {
+        framework.schedule(function () {
+          liveQueryDiffRuntime.refreshAll().then(resolve, reject)
+        })
+      })
+    }
   })
   Object.assign(search.queryCommands, {
     rateDocument: liveQueryCommandsRuntime.rateDocument,
     rateAll: liveQueryCommandsRuntime.rateAll,
-    toggleQuery: toggleQuery,
+    toggleQuery,
     paginateQuery: liveQueryCommandsRuntime.paginateQuery,
-    toggleShowOnlyRated: toggleShowOnlyRated,
-    searchAll: searchAll,
+    toggleShowOnlyRated,
+    searchAll,
     collapseAll: function () {
       if (queryDocumentsStore) queryDocumentsStore.collapseAll()
     }
   })
   Object.assign(search.queryLifecycle, {
     prepareQueries: liveQueryLifecycleRuntime.prepareQueries,
-    commitQueries: liveQueryLifecycleRuntime.commitQueries.bind(liveQueryLifecycleRuntime),
+    commitQueries: liveQueryLifecycleRuntime.commitQueries,
     commitPersistedQueries: liveQueryLifecycleRuntime.commitPersistedQueries,
     refreshQueries: liveQueryLifecycleRuntime.refreshQueries
   })
@@ -1004,7 +652,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     const query = getLiveQuery(queryId)
     if (!query) return null
 
-    const settings = runtimeDomain.settings.editable()
+    const settings = domain.settings.editable()
     return createTargetedSearchAdapter({
       query: query,
       queryId: queryId,
@@ -1012,20 +660,15 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       selectedTry: settings.selectedTry,
       supportedEngines: ["solr", "es", "os", "searchapi"],
       previewArgs: function (tryNo, queryParams) {
-        return runtimeDomain.settings.previewArgs(tryNo, queryParams)
+        return domain.settings.previewArgs(tryNo, queryParams)
       },
       settingsWithTryOverrides: settingsWithTryOverrides,
       createSearcherFromSettings: createSearcherFromSettings,
-      normalizeDocExplains: liveQueryServices.runtime.executionOptions.documents.normalize,
+      normalizeDocExplains: normalizeDocuments,
       searchApiRatedDocs: searchApiRatedDocs,
-      supportsRatedDocsLookup: trySupportsRatedDocsLookup,
+      supportsRatedDocsLookup: supportsRatedDocsLookup,
       ratingScale: resolveQueryRatingScale(query)
     })
-  }
-
-  /*jslint latedef:false*/
-  function getCaseNo() {
-    return caseNo
   }
 
   return search

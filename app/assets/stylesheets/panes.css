@@ -1,31 +1,37 @@
+/* Sized by the core layout's flex column (core-additions.css), so the panes end
+ * at the viewport's bottom edge whatever the header's height. Each pane is its
+ * own stacking context, so z-indexes inside one never compete with the other. */
 .pane_container {
 	 position: relative;
 	 overflow: hidden;
 }
  .pane_main {
-	 display: block;
-	 float: left;
-	 height: calc(100% - 60px);
+	 bottom: 0;
+	 isolation: isolate;
 	 left: 0;
 	 overflow-y: auto;
-	 position: fixed;
+	 position: absolute;
+	 top: 0;
 	 width: 100%;
 }
  .pane_east {
 	 background: #333;
+	 bottom: 0;
 	 display: none;
-	 height: calc(100% - 60px);
+	 isolation: isolate;
 	 min-width: 300px;
 	 overflow-y: auto;
-	 position: fixed;
+	 position: absolute;
+	 top: 0;
 }
  .east-slider {
 	 background: none repeat scroll 0% 0% #ddd;
 	 border: 0px solid #bbb;
+	 bottom: 0;
 	 cursor: col-resize;
 	 display: none;
-	 height: 100%;
-	 position: fixed;
+	 position: absolute;
+	 top: 0;
 	 width: 6px;
 	 z-index: 99;
 }

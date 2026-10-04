@@ -34,8 +34,12 @@ hr {
 	Base Styles
 */
 
+/* A column: the header keeps its natural height (it grows when the navbar
+ * wraps) and #main-content's workbench panes (panes.css) fill the rest. */
 body {
   background: url('blue_bg.jpg') top center repeat;
+  display: flex;
+  flex-direction: column;
 }
 
 a, button, .button {
@@ -46,6 +50,20 @@ a, button, .button {
 	padding: 0;
 	position: relative;
 	min-width: 750px;
+}
+
+/* Below #main's min-width the workbench scrolls sideways on its own, so the
+ * header keeps the window's width and the page never gets a second scrollbar. */
+#main-content {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-x: auto;
+}
+
+.case-workbench,
+#main,
+.pane_container {
+	height: 100%;
 }
 
 /*

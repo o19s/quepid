@@ -15,7 +15,6 @@ export function createQueryRuntime({
   searchApiRatedDocs,
   supportsSearchApiRatedDocsLookup,
   ratedDocIds = (ratings) => Object.keys(ratings || {}),
-  createSnapshotSearcher,
   normalizeDocuments,
   createDocList,
   createRateableDoc = (doc) => doc,
@@ -37,47 +36,6 @@ export function createQueryRuntime({
         parseError,
         logDebug: (...args) => logger.debug(...args)
       })
-    },
-
-    searchFromSnapshot(snapshotId) {
-      try {
-        query.hasBeenScored = false
-        query.searcher = createSnapshotSearcher(snapshotId)
-
-        if (!query.searcher) {
-          const message = `Snapshot not found: ${snapshotId}`
-          onError(message)
-          return Promise.reject(message)
-        }
-
-        return query.searcher.search().then(
-          () => {
-            query.linkUrl = query.searcher.linkUrl
-
-            if (query.searcher.inError) {
-              const message = query.searcher.searchError || "Error loading snapshot results"
-              setDocs([], 0)
-              onError(message)
-              return Promise.reject(message)
-            }
-
-            const error = setDocs(query.searcher.docs, query.searcher.numFound)
-            if (error) {
-              onError(error)
-              return Promise.reject(error)
-            }
-
-            return undefined
-          },
-          () => {
-            const message = `Failed to load snapshot: ${snapshotId}`
-            onError(message)
-            return Promise.reject(message)
-          }
-        )
-      } catch (error) {
-        return Promise.reject(error)
-      }
     },
 
     refreshRatedDocs(pageSize) {

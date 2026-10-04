@@ -20,6 +20,24 @@ export function createLiveQueryLifecycleRuntime({
   updateScores,
   logger = console
 }) {
+  function commitSingleQuery(query, persisted) {
+    if (persisted.status !== 204) {
+      applyDisplayOrder(persisted.data.display_order)
+      query.queryId = persisted.data.query.query_id
+      setQueryId(query, query.queryId)
+      registerQuery(query.queryId, query)
+    }
+
+    return searchAndScore(query).then(
+      () => {
+        logger.info("rescoring queries after adding query")
+        updateScores()
+        return {}
+      },
+      (searchError) => ({ searchError })
+    )
+  }
+
   return {
     prepareQueries(queryTexts) {
       if (queryTexts.length === 1) {
@@ -36,31 +54,13 @@ export function createLiveQueryLifecycleRuntime({
 
     commitQueries(prepared, persisted) {
       if (prepared.query) {
-        return this.commitSingleQuery(prepared.query, persisted)
+        return commitSingleQuery(prepared.query, persisted)
       }
 
       clearQueries()
       addQueriesFromResponse(persisted.data, getCaseNo())
       return searchAll().then(
         () => ({}),
-        (searchError) => ({ searchError })
-      )
-    },
-
-    commitSingleQuery(query, persisted) {
-      if (persisted.status !== 204) {
-        applyDisplayOrder(persisted.data.display_order)
-        query.queryId = persisted.data.query.query_id
-        setQueryId(query, query.queryId)
-        registerQuery(query.queryId, query)
-      }
-
-      return searchAndScore(query).then(
-        () => {
-          logger.info("rescoring queries after adding query")
-          updateScores()
-          return {}
-        },
         (searchError) => ({ searchError })
       )
     },

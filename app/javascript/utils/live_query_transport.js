@@ -8,7 +8,7 @@ import { createSearchAllRuntime } from "utils/query_runtime"
  * search execution on the same seam during the store transition.
  */
 export function createLiveQueryTransportRuntime({
-  queryRuntime,
+  runtimeFor,
   getQueries,
   getRequestsPerMinute,
   resetQuery = () => {},
@@ -21,8 +21,7 @@ export function createLiveQueryTransportRuntime({
 }) {
   function searchAndScore(query) {
     resetQuery(query)
-    return queryRuntime
-      .create(query)
+    return runtimeFor(query)
       .search()
       .then(() => query.score())
       .then(() => syncToBook())
@@ -33,7 +32,7 @@ export function createLiveQueryTransportRuntime({
       queries: getQueries(),
       search: (query) => {
         resetQuery(query)
-        return queryRuntime.create(query).search()
+        return runtimeFor(query).search()
       },
       score: (query) => query.score(),
       requestsPerMinute: getRequestsPerMinute(),

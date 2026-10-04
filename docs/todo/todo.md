@@ -38,10 +38,6 @@ Line numbers may drift — re-check cited files before fixing.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [MIGRATION] P3 I1 C2 — Workbench panes assume a 60px header
-
-`panes.css` sizes `.pane_main` and `.pane_east` as `calc(100% - 60px)`, but the BS5 core header is about 74px tall. Both panes extend about 14px past the viewport. The Tune Relevance drawer still fits **Rerun My Searches!** only because its 15px bottom padding absorbs the overflow, so a taller header pushes the button below the fold again. Size the panes from the header's actual height, for example with a flex column layout, instead of a hard-coded offset. Check the main pane's scrolling and the drawer before and after.
-
 ### [PREEXISTING] P0 I1 C3 — Scorer sandboxing - LATER
 
 Client scorer code still executes through `new Function()`; evaluate a Web
@@ -57,10 +53,6 @@ axe-core flags two unlabeled `<select>`s as critical (`select-name`): the API sn
 
 The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` elements without `href`, so they can't be reached with the keyboard. Make them buttons. Not compared against `main`.
 
-### [PREEXISTING] P2 I0 C1 — Explain Query Copy gives no feedback
-
-`query_explain_controller.js` swallows `copyText()` rejections (`.catch(() => {})`) and shows no success state. Surface failure and a "Copied!" state.
-
 ---
 
 ## [MIGRATION-FOLLOWUP] JavaScript defects and cleanup
@@ -70,21 +62,21 @@ sampled JavaScript review. They are source findings, not live browser
 reproductions. Each item's marker was checked against the pre-migration source
 (`be9b319a`).
 
-### [MIGRATION-FOLLOWUP] P2 I3 C3 — Reduce live-query owner indirection incrementally
+### [MIGRATION-FOLLOWUP] P2 I2 C2 — Collapse the remaining live-query pass-through modules
 
-`app/javascript/utils/live_query_runtime_owner.js` still builds a nested
-`liveQueryServices` graph of about a hundred forwarding wrappers, with closures
-depending on later-initialized runtime objects. The `promiseApi` seam is gone;
-simplify the remaining wrappers and obsolete compatibility seams behind
-existing tests, preserving method binding. Wrappers that defer a lookup of a
-later `const` (`liveQueryFactory`, `liveQueryCollectionRuntime`, …) must stay
-deferred. Work one cluster at a time rather than as a large runtime rewrite.
-
-The broader problem is concept count: the runtime spans more than 20 modules
-(`live_query_*`, `query_runtime`, `query_service`, `query_model`, `query_state`,
-`query_lifecycle`), several of which only pass through to others, left over
-from migration staging. Collapse pass-through modules as each cluster is
-simplified.
+`live_query_runtime_owner.js` no longer has the nested `liveQueryServices`
+graph; it wires the runtimes in dependency order and builds each query's
+runtime and model directly. The runtime still spans 17 modules (`live_query_*`,
+`query_runtime`, `query_service`, `query_model`, `query_state`,
+`query_lifecycle`). The thinnest that remain: `live_query_registry` (a wrapper
+over the query collection store), `live_query_transport` (a wrapper over
+`createSearchAllRuntime`), `live_query_diff` and `live_query_state`, and the
+`query_runtime`/`query_service` split, where `query_runtime` mostly forwards to
+`query_service`'s search and pagination helpers. Fold these into their callers
+or each other in large slices, keeping `live_query_runtime_owner.test.js`'s
+end-to-end add-query test green. `toggleShowOnlyRated` still calls
+`search.queryCapabilities.refreshRatedDocs` through the locator so the owner
+test can stub it.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal plumbing
 
@@ -210,6 +202,15 @@ inject fakes into production modules. Replace those injection seams with
 store/capability accessors as production boundaries unless their consumers are
 also deliberately redesigned. The flash `Proxy` exists solely for overrides
 and can become a plain object once its specs mock the module.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — The core_smoke rating test hangs when the first result is unrated
+
+`core_smoke.spec.ts` "rating updates the query score, case score, and rating
+badge" resets the first result's rating, then waits for the result list to
+rebuild (`watchResultsRebuilds`). On static case 219 that result has no
+rating, so the reset changes nothing, the list never rebuilds, and the test
+hits its 30s timeout. Resolve the settle promise after a quiet period even when
+no mutation arrives, or skip the reset when the result is unrated.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs
 

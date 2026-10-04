@@ -9,7 +9,6 @@ export function createLiveQueryStateRuntime({
   getQueries,
   scoreAll,
   applySettings,
-  setLifecycleCaseId,
   getCurrentCaseNo,
   setCurrentCaseNo,
   bootstrapScorer,
@@ -24,16 +23,8 @@ export function createLiveQueryStateRuntime({
       return Promise.resolve(scoreAll())
     },
 
-    scoreAllDiffs() {
-      const diffs = Object.values(getQueries())
-        .filter((query) => query.diff !== null)
-        .map((query) => query.diff)
-      return scoreAll(diffs)
-    },
-
     changeSettings(newCaseNo, newSettings) {
       applySettings(newSettings)
-      setLifecycleCaseId(newCaseNo)
 
       if (!isSameId(getCurrentCaseNo(), newCaseNo)) {
         bootstrapScorer(newCaseNo)

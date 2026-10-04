@@ -100,7 +100,7 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   3. **Parsing** tab — view how the engine parsed the query.
   4. **Query Template** tab — click it; if the query is templated, confirm the populated template renders; otherwise confirm "This is not a templated query." shows.
   5. Use the **Copy** icon to copy the active tab's content, then paste it somewhere to confirm it copied correctly.
-- **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open).
+- **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open). After **Copy**, the button reads "Copied!" for about two seconds and then returns to "Copy"; if the browser refuses the clipboard write, it reads "Copy failed" instead.
 
 ### 6.8 Explain a single document (Debug Explain)
 

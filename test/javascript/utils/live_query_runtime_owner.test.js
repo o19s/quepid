@@ -3,11 +3,17 @@ import quepidSearch from "quepid_search"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { QueryCollectionStore } from "stores/query_collection_store"
 
-function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelected = true } = {}) {
+function buildOwner({
+  store,
+  selectedTry = { searchEngine: "solr" },
+  isTrySelected = true,
+  searcher,
+  scorer = { getColors: () => [] }
+} = {}) {
   window.quepidSearch = quepidSearch
   quepidSearch.splainerSearch = {
-    searchSvc: { createSearcher: vi.fn() },
-    normalDocsSvc: { createNormalDoc: vi.fn(), explainDoc: vi.fn() },
+    searchSvc: { createSearcher: vi.fn(() => searcher) },
+    normalDocsSvc: { createNormalDoc: vi.fn((_spec, doc) => ({ ...doc })), explainDoc: vi.fn() },
     esExplainExtractorSvc: { docsWithExplainOther: vi.fn() },
     solrExplainExtractorSvc: { docsWithExplainOther: vi.fn() }
   }
@@ -29,7 +35,7 @@ function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelect
         previewArgs: vi.fn()
       },
       scorer: {
-        getDefault: vi.fn(() => ({ getColors: () => [] })),
+        getDefault: vi.fn(() => scorer),
         select: vi.fn(),
         bootstrap: vi.fn()
       },
@@ -70,9 +76,10 @@ describe("createLiveQueryRuntimeOwner", () => {
   })
 
   it("reports search progress from how many registered queries have been scored", () => {
-    const search = buildOwner({ store: buildStores() })
-    search.queryCapabilities.registerQuery(1, { queryId: 1, hasBeenScored: true })
-    search.queryCapabilities.registerQuery(2, { queryId: 2, hasBeenScored: false })
+    const stores = buildStores()
+    const search = buildOwner({ store: stores })
+    stores.queries.upsert({ queryId: 1, hasBeenScored: true })
+    stores.queries.upsert({ queryId: 2, hasBeenScored: false })
 
     expect(search.queryCapabilities.getListState()).toMatchObject({
       searching: true,
@@ -86,9 +93,10 @@ describe("createLiveQueryRuntimeOwner", () => {
   })
 
   it("counts a query whose search failed as settled so the progress banner can clear", () => {
-    const search = buildOwner({ store: buildStores() })
-    search.queryCapabilities.registerQuery(1, { queryId: 1, hasBeenScored: true })
-    search.queryCapabilities.registerQuery(2, { queryId: 2, hasBeenScored: false, errorText: "engine down" })
+    const stores = buildStores()
+    const search = buildOwner({ store: stores })
+    stores.queries.upsert({ queryId: 1, hasBeenScored: true })
+    stores.queries.upsert({ queryId: 2, hasBeenScored: false, errorText: "engine down" })
 
     expect(search.queryCapabilities.getListState()).toMatchObject({
       searching: false,
@@ -121,8 +129,8 @@ describe("createLiveQueryRuntimeOwner", () => {
     const refreshRatedDocs = vi.spyOn(search.queryCapabilities, "refreshRatedDocs").mockReturnValue(undefined)
     const stateChanged = vi.fn()
     document.addEventListener("queries-state:changed", stateChanged)
-    search.queryCapabilities.registerQuery(1, { queryId: 1, ratingsReady: true })
-    search.queryCapabilities.registerQuery(2, { queryId: 2, ratingsReady: false })
+    stores.queries.upsert({ queryId: 1, ratingsReady: true })
+    stores.queries.upsert({ queryId: 2, ratingsReady: false })
 
     search.queryCommands.toggleShowOnlyRated()
 
@@ -142,7 +150,7 @@ describe("createLiveQueryRuntimeOwner", () => {
   it("toggles a query's expanded state in both stores, and ignores unknown queries", () => {
     const stores = buildStores()
     const search = buildOwner({ store: stores })
-    search.queryCapabilities.registerQuery(1, { queryId: 1 })
+    stores.queries.upsert({ queryId: 1 })
 
     expect(search.queryCommands.toggleQuery(99)).toBe(false)
     expect(search.queryCommands.toggleQuery(1)).toBe(true)
@@ -151,5 +159,43 @@ describe("createLiveQueryRuntimeOwner", () => {
 
     search.queryCommands.toggleQuery(1)
     expect(stores.queries.query(1).expanded).toBe(false)
+  })
+
+  it("runs an added query through search, documents, and scoring", async () => {
+    const stores = buildStores()
+    stores.scoring = { setLatestScoreInfo: vi.fn(), markRatingChanged: vi.fn(), addEventListener: vi.fn() }
+    const searcher = {
+      type: "solr",
+      docs: [{ id: "d1" }, { id: "d2" }],
+      numFound: 2,
+      linkUrl: "http://solr/select?q=star",
+      search: vi.fn(() => Promise.resolve())
+    }
+    const scorer = { score: vi.fn(() => 0.5), maxScore: () => 1, getColors: () => ({}) }
+    const search = buildOwner({ store: stores, searcher, scorer })
+    const settings = {
+      searchEngine: "solr",
+      selectedTry: { searchUrl: "http://solr/select", args: { q: ["#$query##"] }, requestsPerMinute: 0 },
+      createFieldSpec: () => ({ id: "id" })
+    }
+    await search.queryCapabilities.changeSettings(-1, settings)
+
+    const prepared = search.queryLifecycle.prepareQueries(["star wars"])
+    await expect(search.queryLifecycle.commitQueries(prepared, {
+      status: 201,
+      data: { display_order: [5], query: { query_id: 5 } }
+    })).resolves.toEqual({})
+
+    const query = search.queryCapabilities.getQuery(5)
+    expect(query.queryText).toBe("star wars")
+    expect(quepidSearch.splainerSearch.searchSvc.createSearcher).toHaveBeenCalledWith(
+      { id: "id" }, "http://solr/select", expect.anything(), "star wars", expect.anything(), "solr"
+    )
+    expect(query.linkUrl).toBe("http://solr/select?q=star")
+    expect(query.docs.map((doc) => doc.id)).toEqual(["d1", "d2"])
+    expect(query.hasBeenScored).toBe(true)
+    expect(query.lastScore).toBe(0.5)
+    expect(stores.documents.replaceQuery).toHaveBeenCalledWith(5, expect.any(Object))
+    expect(stores.scoring.setLatestScoreInfo).toHaveBeenCalled()
   })
 })

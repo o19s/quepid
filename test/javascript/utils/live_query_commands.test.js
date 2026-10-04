@@ -20,31 +20,17 @@ describe("live query commands runtime", () => {
       paginate: vi.fn().mockResolvedValue(undefined),
       ratedPaginate: vi.fn().mockResolvedValue(undefined)
     }
-    const queryRuntime = { create: vi.fn().mockReturnValue(execution) }
-    const documentRuntime = { reset: vi.fn(), publish: vi.fn() }
     const schedule = vi.fn(callback => callback())
     const getQuery = vi.fn().mockImplementation(queryId => queryId === 1 ? query : null)
     const getShowOnlyRated = vi.fn().mockReturnValue(false)
     const runtime = createLiveQueryCommandsRuntime({
       getQuery,
       getShowOnlyRated,
-      queryRuntime,
-      documentRuntime,
-      schedule,
-      reject: message => Promise.reject(message)
+      runtimeFor: vi.fn().mockReturnValue(execution),
+      schedule
     })
-    return { runtime, query, execution, queryRuntime, documentRuntime, schedule, getShowOnlyRated }
+    return { runtime, query, execution, schedule, getShowOnlyRated }
   }
-
-  it("resets, publishes, and searches a live query", async () => {
-    const { runtime, query, execution, documentRuntime } = setup()
-
-    await runtime.searchQuery(1)
-
-    expect(documentRuntime.reset).toHaveBeenCalledWith(query)
-    expect(documentRuntime.publish).toHaveBeenCalledWith(query)
-    expect(execution.search).toHaveBeenCalledOnce()
-  })
 
   it("refreshes rated documents through the execution runtime", async () => {
     const { runtime, execution } = setup()
@@ -52,6 +38,12 @@ describe("live query commands runtime", () => {
     await runtime.refreshRatedDocs(1, 25)
 
     expect(execution.refreshRatedDocs).toHaveBeenCalledWith(25)
+  })
+
+  it("rejects a rated-docs refresh for an unknown query", async () => {
+    const { runtime } = setup()
+
+    await expect(runtime.refreshRatedDocs(9)).rejects.toBe("Query not found: 9")
   })
 
   it("schedules normal and rated pagination", () => {

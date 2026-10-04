@@ -19,7 +19,6 @@ function buildRuntime(overrides = {}) {
     createRatedSearcher: vi.fn(() => ({ search: vi.fn(() => Promise.resolve()), linkUrl: "rated" })),
     searchApiRatedDocs: vi.fn(),
     supportsSearchApiRatedDocsLookup: vi.fn(() => true),
-    createSnapshotSearcher: vi.fn(),
     normalizeDocuments: vi.fn(() => [{ id: "rated-2" }]),
     createDocList: vi.fn(() => ({ list: () => [{ id: "doc-2" }] })),
     createRateableDoc: vi.fn((doc) => ({ ...doc, rateable: true })),
@@ -246,73 +245,5 @@ describe("query runtime", () => {
 
     await runtime.refreshRatedDocs()
     expect(createRatedSearcher).toHaveBeenCalledTimes(2)
-  })
-
-  it("loads snapshot results into the query", async () => {
-    const searcher = { search: vi.fn(() => Promise.resolve()), docs: [{ id: "s1" }], numFound: 9, linkUrl: "snap-url" }
-    const setDocs = vi.fn(() => undefined)
-    const { query, runtime } = buildRuntime({
-      query: { hasBeenScored: true },
-      createSnapshotSearcher: vi.fn(() => searcher),
-      setDocs
-    })
-
-    await expect(runtime.searchFromSnapshot(42)).resolves.toBeUndefined()
-
-    expect(query.hasBeenScored).toBe(false)
-    expect(query.linkUrl).toBe("snap-url")
-    expect(setDocs).toHaveBeenCalledWith([{ id: "s1" }], 9)
-  })
-
-  it.each([
-    ["the snapshot searcher is in error", { inError: true, searchError: "bad snapshot" }, () => undefined, "bad snapshot"],
-    ["the snapshot searcher errors without a message", { inError: true }, () => undefined, "Error loading snapshot results"],
-    ["setDocs reports an error", {}, () => "scoring broke", "scoring broke"]
-  ])("rejects and reports when %s", async (_label, searcherState, setDocsResult, message) => {
-    const onError = vi.fn()
-    const searcher = { search: () => Promise.resolve(), docs: [{ id: "s1" }], numFound: 1, ...searcherState }
-    const { runtime } = buildRuntime({
-      createSnapshotSearcher: () => searcher,
-      setDocs: vi.fn(setDocsResult),
-      onError
-    })
-
-    await expect(runtime.searchFromSnapshot(42)).rejects.toBe(message)
-    expect(onError).toHaveBeenCalledWith(message)
-  })
-
-  it("reports a failed snapshot search with the snapshot id", async () => {
-    const onError = vi.fn()
-    const { runtime } = buildRuntime({
-      createSnapshotSearcher: () => ({ search: () => Promise.reject(new Error("404")) }),
-      onError
-    })
-
-    await expect(runtime.searchFromSnapshot(42)).rejects.toBe("Failed to load snapshot: 42")
-    expect(onError).toHaveBeenCalledWith("Failed to load snapshot: 42")
-  })
-
-  it("reports missing snapshots through the injected error boundary", async () => {
-    const onError = vi.fn()
-    const { runtime } = buildRuntime({ createSnapshotSearcher: vi.fn(() => null), onError })
-
-    await expect(runtime.searchFromSnapshot(42)).rejects.toBe("Snapshot not found: 42")
-    expect(onError).toHaveBeenCalledWith("Snapshot not found: 42")
-  })
-
-  it("converts synchronous snapshot construction failures into rejections", async () => {
-    const error = new Error("malformed snapshot")
-    const { runtime } = buildRuntime({ createSnapshotSearcher: vi.fn(() => { throw error }) })
-
-    await expect(runtime.searchFromSnapshot(42)).rejects.toBe(error)
-  })
-
-  it("converts synchronous snapshot search failures into rejections", async () => {
-    const error = new Error("snapshot search failed")
-    const { runtime } = buildRuntime({
-      createSnapshotSearcher: vi.fn(() => ({ search: vi.fn(() => { throw error }) }))
-    })
-
-    await expect(runtime.searchFromSnapshot(42)).rejects.toBe(error)
   })
 })

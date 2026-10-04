@@ -2,13 +2,10 @@ import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
 
 function runtimeFor(overrides = {}) {
-  const queryRuntime = {
-    create: vi.fn(query => ({
-      search: vi.fn(() => Promise.resolve(query))
-    }))
-  }
   return createLiveQueryTransportRuntime({
-    queryRuntime,
+    runtimeFor: vi.fn(query => ({
+      search: vi.fn(() => Promise.resolve(query))
+    })),
     getQueries: () => ({}),
     getRequestsPerMinute: () => 0,
     scoreAll: vi.fn(() => Promise.resolve({ score: 1 })),

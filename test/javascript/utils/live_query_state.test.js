@@ -7,7 +7,6 @@ function runtimeFor(overrides = {}) {
     getQueries: vi.fn(() => ({})),
     scoreAll: vi.fn(() => Promise.resolve()),
     applySettings: vi.fn(),
-    setLifecycleCaseId: vi.fn(),
     getCurrentCaseNo: vi.fn(() => 1),
     setCurrentCaseNo: vi.fn(),
     bootstrapScorer: vi.fn(),
@@ -29,20 +28,6 @@ describe("createLiveQueryStateRuntime", () => {
 
     expect(query.setDirty).toHaveBeenCalled()
     expect(scoreAll).toHaveBeenCalledWith()
-  })
-
-  it("scores only live query diffs", async () => {
-    const firstDiff = { score: vi.fn() }
-    const secondQuery = { diff: null }
-    const scoreAll = vi.fn(() => Promise.resolve())
-    const runtime = runtimeFor({
-      getQueries: vi.fn(() => ({ 1: { diff: firstDiff }, 2: secondQuery })),
-      scoreAll
-    })
-
-    await runtime.scoreAllDiffs()
-
-    expect(scoreAll).toHaveBeenCalledWith([firstDiff])
   })
 
   it("refreshes same-case diffs and bootstraps a new case", async () => {

@@ -63,7 +63,7 @@ describe("QueryExplainController", () => {
     dynamicModal.element = document.createElement("div")
     const template = document.createElement("template")
     template.id = "query-explain-modal-template"
-    template.innerHTML = `<div class="query-explain-params"></div><div class="query-explain-parsing"></div><div class="query-explain-template"><p data-modal-target="templateMessage"></p><pre data-modal-target="templateValue"></pre></div><p data-modal-target="paramsMessage"><i data-modal-target="paramsWarningIcon"></i><span data-modal-target="paramsMessageText"></span></p><button id="query-explain-tab-params"></button><button id="query-explain-tab-parsing"></button><button id="query-explain-tab-template"></button><button class="query-explain-copy" data-tab="queryDetails"></button><button class="query-explain-copy d-none" data-tab="parsedQueryDetails"></button><button class="query-explain-copy d-none" data-tab="renderedQueryTemplate"></button>`
+    template.innerHTML = `<div class="query-explain-params"></div><div class="query-explain-parsing"></div><div class="query-explain-template"><p data-modal-target="templateMessage"></p><pre data-modal-target="templateValue"></pre></div><p data-modal-target="paramsMessage"><i data-modal-target="paramsWarningIcon"></i><span data-modal-target="paramsMessageText"></span></p><button id="query-explain-tab-params"></button><button id="query-explain-tab-parsing"></button><button id="query-explain-tab-template"></button><button class="query-explain-copy" data-tab="queryDetails"><i class="bi bi-copy"></i> Copy</button><button class="query-explain-copy d-none" data-tab="parsedQueryDetails"></button><button class="query-explain-copy d-none" data-tab="renderedQueryTemplate"></button>`
     document.body.appendChild(template)
   })
 
@@ -155,6 +155,39 @@ describe("QueryExplainController", () => {
     const el = dynamicModal.element
     el.querySelector('.query-explain-copy[data-tab="queryDetails"]').click()
     expect(copyText).toHaveBeenCalledWith(data.queryDetails)
+  })
+
+  it("shows Copied! after a successful copy, then restores the label", async () => {
+    vi.useFakeTimers()
+    try {
+      const controller = buildController(element, baseData())
+      QueryExplainController.prototype.connect.call(controller)
+      controller.requestOpen()
+      const button = dynamicModal.element.querySelector('.query-explain-copy[data-tab="queryDetails"]')
+
+      button.click()
+      await vi.advanceTimersByTimeAsync(0)
+      expect(button.textContent.trim()).toBe("Copied!")
+      expect(button.querySelector("i").className).toBe("bi bi-check-lg")
+
+      await vi.advanceTimersByTimeAsync(2000)
+      expect(button.innerHTML).toBe('<i class="bi bi-copy"></i> Copy')
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("shows Copy failed when the clipboard rejects", async () => {
+    copyText.mockRejectedValueOnce(new Error("denied"))
+    const controller = buildController(element, baseData())
+    QueryExplainController.prototype.connect.call(controller)
+    controller.requestOpen()
+    const button = dynamicModal.element.querySelector('.query-explain-copy[data-tab="queryDetails"]')
+
+    button.click()
+    await flush()
+
+    expect(button.textContent.trim()).toBe("Copy failed")
   })
 
   it("shows 'not a templated query' and never asks for a render when the searcher has no isTemplateCall", () => {

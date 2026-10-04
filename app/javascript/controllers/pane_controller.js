@@ -101,8 +101,9 @@ export default class extends Controller {
     this.onDrag = null
   }
 
+  // Measured from the container, which a narrow window scrolls sideways.
   drag(event) {
-    this.moveEastTo(event.clientX)
+    this.moveEastTo(event.clientX - this.container.getBoundingClientRect().left)
     this.eastPaneWidth = this.east.offsetWidth
   }
 
