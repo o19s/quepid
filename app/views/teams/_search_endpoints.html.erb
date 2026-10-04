@@ -7,16 +7,7 @@
       </small>
     </h5>
     <div class="mb-3">
-      <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
-        <div class="col-auto" style="flex:1">
-          <div class="input-group">
-            <%= text_field_tag :search_endpoints_q, @search_endpoints_q, class: 'form-control', placeholder: 'Filter search endpoints by name or URL' %>
-            <button class="btn btn-outline-secondary" type="submit" title="Search search endpoints">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <span class="visually-hidden">Search search endpoints</span>
-            </button>
-          </div>
-        </div>
+      <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :search_endpoints_q, search_value: @search_endpoints_q, placeholder: "Filter search endpoints by name or URL", small: false, search_label: "Search search endpoints" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
           <%= check_box_tag :search_endpoints_archived, '1', @search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
           <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>

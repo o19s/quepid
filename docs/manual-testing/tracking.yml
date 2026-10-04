@@ -166,10 +166,10 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-10-03T13:23:30Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Covered live: /cases headers ID..Owner, 25 per page with pager; filter by partial name (3 Typeahead cases) and by exact id 477; a no-match filter renders an empty table without the 'Create your first case' message; Team=OSC narrows (team_id=1); Archived checkbox auto-submits to the archived list. Not covered live: zero-cases message, second-account isolation, filters persisting across pages."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: case search no-match submission, Archived auto-submit (value 1), and Team=OSC; selected filters and empty table retained. Inspected matching viewport before/after pairs. Deferred: pagination interactions, first-case state, and second-account isolation."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "3.2":
         title: "Create a new case (setup wizard)"
         last_run: 2026-10-04T16:26:50Z
@@ -199,7 +199,7 @@ parts:
         last_run: 2026-10-04T16:22:30Z
         result: pass
         notes: "Covered live on /cases: with Archived checked, scratch case 330 shows a green 'Unarchive case' icon; 'Unarchive ...?' Confirm flashes 'Case ... unarchived.' (archived=false); archiving scratch case 328 from its row ('Archive ...?' Confirm) flashes 'Case ... archived.' and removes it from the active list (archived=true, owner 3). Not covered live: archiving a team-only case to observe ownership transfer, stale-id 'Case not found.'"
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "3.6":
         title: "Share a case from the list"
         last_run: 2026-10-04T16:18:10Z
@@ -457,17 +457,17 @@ parts:
         last_run: 2026-10-03T13:24:30Z
         result: pass
         notes: "Covered live: the Archived filter shows the green Unarchive icon; its confirm modal ('Unarchive {name}?') unarchives with 'Case ... unarchived.' and the case returns to the active list."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
 
   "07":
     file: 07-search-endpoints-and-mapper-wizard.md
     scenarios:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
-        last_run: 2026-10-03T13:31:30Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Covered live: columns Name, Search Engine (icon), Endpoint Url, Share; text filter (3 for 'tmdb'), a no-match filter is empty without the empty-state message; Mine (owned=true), Archived, Team=OSC and Mine+Team combine. Not covered live: other-user isolation, zero-endpoints message."
-        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: Mine auto-submit, Team=OSC, and no-match search submission; checkbox/team state survives. Inspected matching viewport before/after pair. Deferred: archived endpoint submission, pagination interactions, and second-account isolation."
+        paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
         last_run: 2026-10-02T21:23:26Z
@@ -497,7 +497,7 @@ parts:
         last_run: 2026-10-04T16:19:00Z
         result: pass
         notes: "Covered live on /search_endpoints (TMDB Solr): modal shows 'Already shared with: OSC'; Unshare flashes 'TMDB Solr unshared from OSC.'; Share with team flashes 'TMDB Solr shared with OSC.'; direct POSTs: repeat share -> 'is already shared with OSC.', repeat unshare -> 'is not shared with OSC.'; left shared as before. A nonexistent id gives 'Search endpoint not found.'; no endpoint owned by another user exists here, so the 'You do not have access' wording was not exercised."
-        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
+        paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
         last_run: 2026-10-04T18:54:30Z
@@ -534,10 +534,10 @@ parts:
     scenarios:
       "8.1":
         title: "Scorers list"
-        last_run: 2026-10-01T03:12:00Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Covered live via Playwright MCP: Scorers page rendered communal/custom counts, default scorer selector, filter controls, and all seven communal scorer rows. Not covered live: custom scorer creation or non-admin visibility."
-        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: Custom type selection survives no-match and Clone search submissions; search input remains type=search. Inspected matching viewport before/after pair. Deferred: combined type toggling, pagination interactions, and broader responsive sweep."
+        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/index.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb"]
       "8.2":
         title: "Set your default scorer"
         last_run: 2026-09-15T16:59:00Z
@@ -573,7 +573,7 @@ parts:
         last_run: 2026-10-04T22:30:34Z
         result: pass
         notes: "Sampled via Playwright MCP: custom scorer Clone of P@10 shares with OSC, repeated share (forced form submission) shows already-shared alert, and UI unshare removes membership with correct flash. Before/after success/error screenshots inspected. Original membership restored. Inaccessible/missing/communal records and repeated unshare deferred in browser; controller/service tests cover authorization and idempotence."
-        paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/controllers/scorers_controller.rb", "app/services/team_sharing.rb"]
+        paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/controllers/scorers_controller.rb", "app/services/team_sharing.rb", "app/views/shared/_index_filters.html.erb"]
       "8.8":
         title: "Confirm the seeded communal scorers"
         last_run: 2026-10-01T03:12:00Z
@@ -586,10 +586,10 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-10-01T20:53:59Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Covered live: created a team (creator added as member), rename flashes \"Team renamed.\", same-name rename is harmless, blank rename shows \"Name can't be blank\", filter and My Teams work. Observed (in docs/todo/todo.md): blank or duplicate name on create re-renders with no error message."
-        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: My Teams auto-submits; all four team resource search forms submit and preserve every other query and archived filter. Inspected matching list and team resource viewport before/after pairs. Deferred: team creation/rename, archive toggles on the team forms, pagination, and broader responsive sweep."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb"]
       "9.2":
         title: "Add a team member (existing user)"
         last_run: 2026-09-25T16:08:46Z
@@ -613,23 +613,23 @@ parts:
         last_run: 2026-10-04T16:19:55Z
         result: pass
         notes: "Covered live from both entry points: index pages (cases 3.6, search endpoints 7.6, scorers 8.7) and the OSC team page, whose Share icons for cases, books and endpoints open the same modal ('Select a team...', 'Already shared with: OSC', + Create a team -> /teams/new, Share/Unshare); unsharing case 598 from the team page flashes '... unshared from OSC.' and removes its row there. Scorers do have Unshare in their modal. Not covered live: book share/unshare round-trip, scorer rows on the team page (none currently shared)."
-        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb"]
+        paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
         last_run: 2026-10-03T13:35:30Z
         result: pass
         notes: "Covered live on /teams/1: a case shared with OSC archives from the Cases sub-table via a confirm modal ('Case ... archived.'); the Archived toggle (cases_archived=1) shows Unarchive, which restores it; Search Endpoints rows have an Archive control and Custom Scorers have none. Not covered live: executing an endpoint archive, ownership transfer."
-        paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/teams_controller.rb", "app/views/teams/_cases.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb"]
 
   "10":
     file: 10-books-management.md
     scenarios:
       "10.1":
         title: "Books list"
-        last_run: 2026-10-01T20:55:38Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Covered live: columns, text search by book and team name, team filter combined with text, archived view and back link; an account with no books sees the empty-state copy."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: archived books retain archived=true after no-match search submission; selected OSC team and archived heading render correctly. Inspected matching viewport before/after pair. Deferred: active-book search, team auto-submit, pagination, and first-book state."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "10.2":
         title: "Create a new book"
         last_run: 2026-10-04T20:29:00Z
@@ -738,10 +738,10 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.6":
         title: "Judgements list (audit view)"
-        last_run: 2026-10-01T03:12:00Z
+        last_run: 2026-10-04T23:21:51Z
         result: pass
-        notes: "Re-verified via Playwright MCP on Book Of Ratings: checked the Unrateable filter — showed exactly this pass's 'I Can't Tell' judgement (11.4); unchecked it and checked Later instead — showed exactly this pass's Judge Later judgement (11.3). Both filters round-tripped their query params correctly (?unrateable=true, ?judge_later=true)."
-        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
+        notes: "Sampled via Playwright MCP: compact audit view renders; judge selection and Unrateable auto-submit retain compact and filtered marker. Inspected matching viewport before/after pair. Deferred: Later submission, full view, pagination, and editing judgements."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
         last_run: 2026-10-01T02:00:44Z
@@ -947,7 +947,7 @@ parts:
         last_run: 2026-10-03T19:44:40Z
         result: pass
         notes: "Covered live at 768x900: /cases, the case page and the workbench with an expanded query keep body scrollWidth equal to clientWidth; both headers' hamburger menus show the dropdowns, User Manual, Wiki and the avatar; Export, Import, Share, Compare snapshots, Judgements and Explain Query modals fit the width with footer buttons in view; the wizard Endpoint step fits. Not covered live: 375px width."
-        paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/assets/stylesheets/application.css", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb"]
+        paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/assets/stylesheets/application.css", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "16.3":
         title: "Case header typography"
         last_run: 2026-10-04T16:28:50Z
@@ -995,7 +995,7 @@ parts:
         last_run: 2026-10-04T18:58:05Z
         result: pass
         notes: "Covered live on endpoint 22 (MCP17 throttle, used by case 470): 99999999999 -> 'Requests per minute must be less than or equal to 100000'; 60 saves and the show page reads 'Requests Per Minute: 60'; case 470's six proxy fetches then go out ~1.17-1.29s apart and the progress banner clears; 0 fires them together (0ms gaps). Restored to 0. Not covered live: background-run pacing."
-        paths: ["test/models/search_endpoint_test.rb", "app/models/search_endpoint.rb", "app/services/fetch_service.rb", "app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/", "app/models/concerns/text_search.rb"]
+        paths: ["test/models/search_endpoint_test.rb", "app/models/search_endpoint.rb", "app/services/fetch_service.rb", "app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "17.4":
         title: "Execute a documented API request"
         last_run: 2026-10-04T15:22:06Z
@@ -1025,13 +1025,13 @@ parts:
         last_run: 2026-10-04T19:00:20Z
         result: pass
         notes: "Covered live on book 10 with two browser contexts: realisticactivity and oscmember each get a pair on the judging screen with the same 'Irrelevant'/'Relevant' scale; oscmember's Judge Later stores judge_later=true with no rating, realisticactivity's I Can't Tell (Record Explanation modal) stores unrateable=true with the explanation and no rating, each attributed to its own user; Judgement Stats lists OSC AI Judge, Osc Team Member and User With Realistic Activity on separate rows with per-user unrateable/later counts. Not covered live: both raters on the same pair, differing information needs."
-        paths: ["app/controllers/judgements_controller.rb", "app/controllers/books_controller.rb", "app/views/judgements/", "app/views/books/judgement_stats.html.erb", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/controllers/bulk_judgement_controller.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/judgements_controller.rb", "app/controllers/books_controller.rb", "app/views/judgements/", "app/views/books/judgement_stats.html.erb", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/controllers/bulk_judgement_controller.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "17.9":
         title: "Search-engine provider compatibility smoke test"
         last_run: 2026-10-04T18:57:20Z
         result: pass
         notes: "Covered live this pass: Solr (statedecoded case 598, tmdb case 586/600) searched, expanded and rated; Elasticsearch (tmdb via proxy, case 470) searched, expanded and fields inspected; the Mapper Wizard fetched the TMDB Solr endpoint as a Search API source (7.7). Not covered live: rating on ES this pass, OpenSearch, Vectara, Elastic Cloud and credentialed Search API (no credentials here)."
-        paths: ["app/models/search_endpoint.rb", "app/controllers/search_endpoints_controller.rb", "app/services/fetch_service.rb", "app/services/mapper_wizard_service.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/search_endpoints/", "app/views/mapper_wizards/", "app/models/concerns/text_search.rb"]
+        paths: ["app/models/search_endpoint.rb", "app/controllers/search_endpoints_controller.rb", "app/services/fetch_service.rb", "app/services/mapper_wizard_service.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/search_endpoints/", "app/views/mapper_wizards/", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb"]
       "17.10":
         title: "Deployment configuration smoke test"
         last_run: 2026-10-04T15:17:00Z

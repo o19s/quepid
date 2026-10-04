@@ -2,16 +2,7 @@
   <div class="card-body">
     <h5 class="card-title">Books</h5>
     <div class="mb-3">
-      <%= form_with url: team_path(@team), method: :get, local: true, html: { class: 'row g-2 align-items-center' } do %>
-        <div class="col-auto" style="flex:1">
-          <div class="input-group">
-            <%= text_field_tag :books_q, @books_q, class: 'form-control', placeholder: 'Filter books by name' %>
-            <button class="btn btn-outline-secondary" type="submit" title="Search books">
-              <i class="bi bi-search" aria-hidden="true"></i>
-              <span class="visually-hidden">Search books</span>
-            </button>
-          </div>
-        </div>
+      <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :books_q, search_value: @books_q, placeholder: "Filter books by name", small: false, search_label: "Search books" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
           <%= check_box_tag :books_archived, '1', @books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', onchange: 'this.form.submit()' %>
           <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>

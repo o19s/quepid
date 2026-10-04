@@ -43,14 +43,7 @@
           </div>
 
           <div class="col-md-5 d-flex flex-wrap align-items-center gap-2">
-            <%= form_with url: scorers_path, method: :get, local: true, html: { class: 'd-flex align-items-center' } do %>
-              <div class="input-group">
-                <%= search_field_tag :q, @q.presence || params[:q], class: 'form-control form-control-sm', placeholder: 'Filter scorers' %>
-                <button class="btn btn-sm btn-outline-secondary" type="submit" title="Search">
-                  <i class="bi bi-search" aria-hidden="true"></i>
-                  <span class="visually-hidden">Search</span>
-                </button>
-              </div>
+            <%= render layout: "shared/index_filters", locals: { url: scorers_path, variant: :inline, search_type: :search, search_value: @q.presence || params[:q], placeholder: "Filter scorers", search_label: "Search" } do %>
               <div class="btn-group ms-2" role="group" aria-label="Scorer type filter">
                 <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', onchange: 'this.form.submit()' %>
                 <%= label_tag 'scorer-type-communal', 'Communal', class: 'btn btn-outline-secondary btn-sm' %>

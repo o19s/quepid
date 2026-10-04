@@ -1,0 +1,75 @@
+<%# Index controls are locals; team/inline forms yield their surface-specific controls. %>
+<% variant = local_assigns.fetch(:variant, :index) %>
+<% small = local_assigns.fetch(:small, true) %>
+<% search_name = local_assigns.fetch(:search_name, :q) %>
+<% search_value = local_assigns.fetch(:search_value) { params[search_name] } %>
+<% search_label = local_assigns[:search_label] %>
+<% search = capture do %>
+  <%= tag.div class: "input-group", style: ("max-width: #{local_assigns.fetch(:search_width, 280)}px;" if variant == :index) do %>
+    <%= text_field_tag search_name, search_value, type: local_assigns.fetch(:search_type, :text),
+        class: "form-control#{' form-control-sm' if small}", placeholder: placeholder %>
+    <%= button_tag type: 'submit', name: (variant == :index ? 'button' : nil), class: "btn#{' btn-sm' if small} btn-outline-secondary", title: search_label do %>
+      <%= tag.i class: "bi #{local_assigns.fetch(:search_icon, variant == :index ? 'bi-search-heart' : 'bi-search')}", aria: { hidden: (true if search_label) } %>
+      <% if search_label %>
+        <span class="visually-hidden"><%= search_label %></span>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
+<% controls = capture do %>
+  <% local_assigns.fetch(:hidden_fields, {}).each do |name, value| %>
+    <%= hidden_field_tag name, value %>
+  <% end %>
+  <% if variant == :index %>
+    <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
+      <%= search %>
+      <% if local_assigns[:judge_options] %>
+        <%= select_tag :user_id, options_for_select([['All Judges', '']] + judge_options, params[:user_id]),
+            class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', onchange: 'this.form.submit()' %>
+      <% end %>
+      <% if local_assigns.fetch(:checkboxes, []).any? %>
+        <div class="d-flex align-items-center gap-3">
+          <% checkboxes.each do |checkbox| %>
+            <div class="form-check form-check-inline mb-0">
+              <%= check_box_tag checkbox.fetch(:name), checkbox.fetch(:value), checkbox.fetch(:checked),
+                  class: 'form-check-input', onchange: 'this.form.submit()' %>
+              <%= label_tag checkbox.fetch(:name), checkbox.fetch(:label), class: 'form-check-label' %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <% if local_assigns[:team_options] %>
+        <% team_select = capture do %>
+          <%= select_tag :team_id, options_for_select([['All', '']] + team_options, params[:team_id]),
+              class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', onchange: 'this.form.submit()' %>
+        <% end %>
+        <% if local_assigns[:team_label] %>
+          <div class="col-auto d-flex align-items-center">
+            <label for="team_id" class="me-2 mb-0">Team:</label>
+            <%= team_select %>
+          </div>
+        <% else %>
+          <%= team_select %>
+        <% end %>
+      <% end %>
+    </div>
+  <% else %>
+    <% if variant == :team %>
+      <div class="col-auto" style="flex:1">
+        <%= search %>
+      </div>
+    <% else %>
+      <%= search %>
+    <% end %>
+    <%= yield %>
+  <% end %>
+<% end %>
+<% if variant == :index %>
+  <%= form_tag url, method: :get do %>
+    <%= controls %>
+  <% end %>
+<% else %>
+  <%= form_with url: url, method: :get, local: true, html: { class: variant == :team ? 'row g-2 align-items-center' : 'd-flex align-items-center' } do %>
+    <%= controls %>
+  <% end %>
+<% end %>
