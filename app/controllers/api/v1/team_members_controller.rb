@@ -22,10 +22,7 @@ module Api
           return
         end
 
-        @team.members << @member unless @team.members.exists?(@member.id)
-
-        if @team.save
-          Analytics::Tracker.track_member_added_to_team_event current_user, @team, @member
+        if TeamMembership.new(current_user, @team).add_and_save(@member)
           respond_with @member
         else
           render json: @member.errors, status: :bad_request
@@ -51,15 +48,11 @@ module Api
           return
         end
 
-        @member = User.invite!({ email: params[:id], password: '' }, current_user) do |u|
-          u.skip_invitation = !email_notifications_enabled?
-        end
+        membership = TeamMembership.new(current_user, @team)
+        @member = membership.invite(params[:id])
 
-        @team.members << @member unless @team.members.exists?(@member.id)
-
-        if @team.save
-          Analytics::Tracker.track_member_added_to_team_event current_user, @team, @member
-          @message = @member.skip_invitation.present? ? "Please share the invite link with #{@member.email} directly so they can join." : "Invitation email was sent to #{@member.email}"
+        if membership.add_and_save(@member)
+          @message = membership.invitation_message(@member)
           respond_with @member
         else
           render json: @member.errors, status: :bad_request
@@ -69,10 +62,11 @@ module Api
       # @summary Remove user from team
       # @parameter id(query) [!Integer] The id of the user to be removed from the team.
       def destroy
-        member = @team.members.where('LOWER(users.email) = ? OR users.id = ?',
-                                     params[:id].to_s.strip.downcase, params[:id].to_i)
+        members = @team.members.where('LOWER(users.email) = ? OR users.id = ?',
+                                      params[:id].to_s.strip.downcase, params[:id].to_i)
 
-        @team.members.delete(member) if member
+        membership = TeamMembership.new(current_user, @team)
+        members.each { |member| membership.remove(member, track: false) }
 
         head :no_content
       end

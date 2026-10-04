@@ -198,19 +198,17 @@ class TeamsController < ApplicationController
   end
 
   # Looks up an existing user by email and adds to the team if found.
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable-next Metrics/AbcSize
   def add_member
     email = params[:email].to_s.strip.downcase
     user = User.by_email(email).first
+    membership = TeamMembership.new(current_user, @team)
 
     if user
-      if @team.members.exists?(user.id)
-        flash[:alert] = "#{user.fullname} is already a member of this team."
-      else
-        @team.members << user
+      if membership.add(user)
         flash[:notice] = "#{user.fullname} added to the team."
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, user)
+      else
+        flash[:alert] = "#{user.fullname} is already a member of this team."
       end
       redirect_to team_path(@team) and return
     end
@@ -223,17 +221,10 @@ class TeamsController < ApplicationController
 
     # Create an invited user (Devise Invitable) and add to team
     begin
-      member = User.invite!({ email: email, password: '' }, current_user) do |u|
-        # If email delivery isn't configured, mark skip_invitation so no email attempt is made
-        u.skip_invitation = Rails.application.config.action_mailer.delivery_method.blank?
-      end
+      member = membership.invite(email)
 
-      @team.members << member unless @team.members.exists?(member.id)
-
-      if @team.save
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member)
-        message = member.skip_invitation.present? ? "Please share the invite link with #{member.email} directly so they can join." : "Invitation email was sent to #{member.email}"
-        flash[:notice] = message
+      if membership.add_and_save(member)
+        flash[:notice] = membership.invitation_message(member)
       else
         flash[:alert] = member.errors.full_messages.to_sentence
       end
@@ -244,8 +235,6 @@ class TeamsController < ApplicationController
       redirect_to team_path(@team)
     end
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
   # Rename the team (server-side form).
   def rename
@@ -261,11 +250,8 @@ class TeamsController < ApplicationController
   def remove_member
     member = User.find(params.expect(:member_id))
 
-    if @team.members.exists?(member.id)
-      @team.members.delete(member)
+    if TeamMembership.new(current_user, @team).remove(member)
       flash[:notice] = "#{member.fullname} removed from the team."
-      Analytics::Tracker.track_member_removed_from_team_event(current_user, @team, member)
-
     else
       flash[:alert] = "#{member.fullname} is not a member of this team."
     end

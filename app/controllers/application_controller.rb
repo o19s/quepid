@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
   include Authentication::CurrentUserManager
   include Authentication::CurrentCaseManager
   include Authentication::CurrentBookManager
+  include ControllerConfiguration
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
@@ -39,16 +40,9 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def render_not_found_json exception
-    resource_name = exception.model.presence || 'Resource'
-    render json: { message: "#{resource_name.underscore.humanize} not found!" }, status: :not_found
-  end
+  private :signup_enabled?
 
   def deserialize_bool_param param
     ActiveRecord::Type::Boolean.new.deserialize(param) || false
-  end
-
-  def signup_enabled?
-    Rails.application.config.signup_enabled
   end
 end

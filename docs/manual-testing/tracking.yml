@@ -592,22 +592,22 @@ parts:
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb"]
       "9.2":
         title: "Add a team member (existing user)"
-        last_run: 2026-09-25T16:08:46Z
+        last_run: 2026-10-04T23:44:08Z
         result: pass
-        notes: "Re-verified via Playwright MCP: typed the seed oscMember's email, selected the autocomplete suggestion, clicked Add user — flash 'Osc Team Member added to the team.', member appeared in the Members list. Did not re-test the already-a-member or cross-domain-suppression edge cases this pass."
-        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        notes: "Playwright MCP: added OSC member to a temporary team using autocomplete, then submitted the same email again; success notice, duplicate alert and count 2 verified. Inspected add/duplicate before-after viewport pairs. Deferred: autocomplete keyboard/edge cases. Temporary team cleaned up."
+        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.3":
         title: "Invite a new (non-existing) user"
-        last_run: 2026-09-25T16:09:01Z
+        last_run: 2026-10-04T23:44:08Z
         result: pass
-        notes: "Re-verified via Playwright MCP: typed a non-existing email, clicked Add user — flash 'Invitation email was sent to ...', INVITED badge appeared with an Invite link. Did not re-verify the acceptance half or mailer content this pass (see 1.5 and the prior pass)."
-        paths: ["app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        notes: "Playwright MCP: invited a new example.com user to a temporary team; email-sent notice, INVITED badge and invite-link control verified. Inspected before-after viewport pair. Deferred: browser acceptance and mailer content; acceptance covered by Rails integration test. Temporary invitee/team cleaned up."
+        paths: ["app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.4":
         title: "Remove a team member"
-        last_run: 2026-09-25T16:08:46Z
+        last_run: 2026-10-04T23:44:08Z
         result: pass
-        notes: "Re-verified via Playwright MCP: clicked Remove member on the just-added oscMember — confirm dialog read 'Remove Osc Team Member from this team?', confirming removed them (flash 'Osc Team Member removed from the team.', Members count dropped 2→1)."
-        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
+        notes: "Playwright MCP: removed the added OSC member from a temporary team through the confirmation modal; success notice and count 2 to 1 verified. Inspected confirmation and removed before-after viewport pairs. Temporary team cleaned up."
+        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
         last_run: 2026-10-04T16:19:55Z

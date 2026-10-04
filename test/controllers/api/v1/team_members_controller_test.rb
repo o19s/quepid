@@ -56,6 +56,7 @@ module Api
           post :create, params: { team_id: other_team.id }
 
           assert_response :not_found
+          assert_equal({ 'message' => 'Team not found!' }, response.parsed_body)
         end
 
         test 'allows member to add new members' do
@@ -78,6 +79,20 @@ module Api
       end
 
       describe 'Invites a new user to join Quepid and a team' do
+        test 'does not invite or add a member when signups are disabled' do
+          previous_signup_enabled = Rails.application.config.signup_enabled
+          Rails.application.config.signup_enabled = false
+
+          assert_no_difference [ 'User.count', 'team.members.count' ] do
+            post :invite, params: { team_id: team.id, id: 'disabled-signup@example.com' }
+          end
+
+          assert_response :not_found
+          assert_equal({ 'error' => 'Signups are disabled!' }, response.parsed_body)
+        ensure
+          Rails.application.config.signup_enabled = previous_signup_enabled
+        end
+
         test 'invites a new member successfully using the email' do
           assert_difference 'team.members.count' do
             invitee_email = 'newperson@example.com'

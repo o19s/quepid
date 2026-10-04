@@ -12,12 +12,12 @@ module Api
     include Authentication::CurrentBookManager
     include NotificationsManager
     include ApiKeyAuthenticatable
+    include ControllerConfiguration
 
     respond_to :json
 
     rescue_from ActiveRecord::RecordNotFound do |exception|
-      resource_name = exception.model.presence || 'Resource'
-      render json: { message: "#{resource_name.underscore.humanize} not found!" }, status: :not_found
+      render_not_found_json(exception)
     end
     protect_from_forgery with: :null_session
 
@@ -38,10 +38,6 @@ module Api
     # Use to test that exception are rendered properly.
     def test_exception
       raise 'boom'
-    end
-
-    def signup_enabled?
-      Rails.application.config.signup_enabled
     end
 
     protected
