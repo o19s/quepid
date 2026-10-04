@@ -1,6 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, putJson } from "api/json"
-import { HttpError } from "api/http_error"
+import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
 /**
@@ -99,9 +99,7 @@ export default class extends CoreModalControllerBase {
       this.hide()
     } catch (error) {
       console.error("pick-scorer-core: save failed", error)
-      const message = error instanceof HttpError
-        ? error.data?.error || error.data?.message || "Unable to save scorer."
-        : error.message || "Unable to save scorer."
+      const message = serverMessage(error, "Unable to save scorer.")
       this.showAlert(message, "danger")
       this.setSubmitting(false)
     }

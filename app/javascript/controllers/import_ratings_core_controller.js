@@ -1,3 +1,4 @@
+import { serverMessage } from "utils/error_message"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
@@ -74,7 +75,7 @@ export default class extends CoreModalControllerBase {
     // Choosing a file selects its import type, even if reading it fails, so the error shows.
     this.selectedType = type
     try {
-      const content = await this.readFile(file)
+      const content = await file.text()
       this.files[type] = file
       this.contents[type] = content
       this.errors[type] = this.validate(type, content)
@@ -145,7 +146,7 @@ export default class extends CoreModalControllerBase {
       return await postJson(url, body)
     } catch (error) {
       if (error instanceof HttpError) {
-        error.message = error.data?.message || error.data?.error || error.statusText || "Import failed."
+        error.message = error.data?.message || serverMessage(error, error.statusText || "Import failed.")
       }
       throw error
     }
@@ -206,5 +207,4 @@ export default class extends CoreModalControllerBase {
     this.refreshUi()
   }
   setError(target, message) { if (!target) return; target.textContent = message; target.classList.toggle("d-none", !message) }
-  readFile(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsText(file) }) }
 }

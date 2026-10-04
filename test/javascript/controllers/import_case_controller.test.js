@@ -21,7 +21,6 @@ function buildController() {
   controller.showAlert = vi.fn()
   controller.hideAlert = vi.fn()
   controller.setLoading = vi.fn()
-  controller.readFileAsText = vi.fn()
   return controller
 }
 
@@ -48,7 +47,7 @@ describe("ImportCaseController submit redirect", () => {
     const controller = buildController()
     const file = new File(['{"case_name":"test"}'], "case.json", { type: "application/json" })
     controller.fileInputTarget.files = [file]
-    controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue('{"case_name":"test"}')
 
     apiFetch.mockResolvedValue({
       async text() {
@@ -79,7 +78,7 @@ describe("ImportCaseController submit redirect", () => {
     controller.fileInputTarget.files = [
       new File(['{"case_name":"test"}'], "case.json", { type: "application/json" }),
     ]
-    controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue('{"case_name":"test"}')
 
     apiFetch.mockResolvedValue({
       async text() {
@@ -130,7 +129,7 @@ describe("ImportCaseController validation and errors", () => {
     expect(controller.showAlert).toHaveBeenCalledWith("Please select a file to import.", "warning")
 
     controller.fileInputTarget.files = [jsonFile()]
-    controller.readFileAsText.mockResolvedValue("{not json")
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue("{not json")
     await controller.submit({ preventDefault: vi.fn() })
 
     expect(controller.showAlert).toHaveBeenLastCalledWith("Invalid JSON file. Please check the file format.", "danger")
@@ -141,7 +140,7 @@ describe("ImportCaseController validation and errors", () => {
   it("posts the case wrapped in a case key", async () => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
-    controller.readFileAsText.mockResolvedValue('{"case_name":"test"}')
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue('{"case_name":"test"}')
     apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
 
     await controller.submit({ preventDefault: vi.fn() })
@@ -160,7 +159,7 @@ describe("ImportCaseController validation and errors", () => {
   ])("reports %s when the import is rejected", async (_label, body, message) => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
-    controller.readFileAsText.mockResolvedValue("{}")
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue("{}")
     apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve(body) })
 
     await controller.submit({ preventDefault: vi.fn() })
@@ -172,7 +171,7 @@ describe("ImportCaseController validation and errors", () => {
   it("reports a network failure and stops loading", async () => {
     const controller = buildController()
     controller.fileInputTarget.files = [jsonFile()]
-    controller.readFileAsText.mockResolvedValue("{}")
+    controller.fileInputTarget.files[0].text = vi.fn().mockResolvedValue("{}")
     apiFetch.mockRejectedValue(new Error("offline"))
     vi.spyOn(console, "error").mockImplementation(() => {})
 
@@ -200,10 +199,6 @@ describe("ImportCaseController validation and errors", () => {
     expect(controller.spinnerTarget.classList.contains("d-none")).toBe(true)
   })
 
-  it("reads the selected file as text", async () => {
-    const controller = Object.create(ImportCaseController.prototype)
 
-    await expect(controller.readFileAsText(new File(['{"a":1}'], "a.json"))).resolves.toBe('{"a":1}')
-  })
 })
 

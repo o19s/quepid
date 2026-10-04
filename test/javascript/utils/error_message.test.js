@@ -1,5 +1,6 @@
+import { HttpError } from "api/http_error"
 import { describe, expect, it } from "vitest"
-import { errorMessage, flashErrorMessage } from "utils/error_message"
+import { errorMessage, flashErrorMessage, serverMessage } from "utils/error_message"
 import { SearchError } from "utils/search_error"
 
 describe("errorMessage", () => {
@@ -44,5 +45,23 @@ describe("flashErrorMessage", () => {
   it("falls back to errorMessage for other errors", () => {
     expect(flashErrorMessage(new Error("boom"), "fallback")).toBe("boom")
     expect(flashErrorMessage(null, "fallback")).toBe("fallback")
+  })
+})
+
+describe("serverMessage", () => {
+  it("uses server errors and messages before the contextual fallback", () => {
+    expect(serverMessage(new HttpError({ status: 422, data: { error: "Invalid", message: "Other" } }), "fallback")).toBe("Invalid")
+    expect(serverMessage(new HttpError({ status: 422, data: { message: "Invalid" } }), "fallback")).toBe("Invalid")
+  })
+
+  it("keeps a contextual fallback for HTTP responses without a usable message", () => {
+    for (const data of [null, {}, { error: ["Invalid"] }]) {
+      expect(serverMessage(new HttpError({ status: 500, data }), "Try again")).toBe("Try again")
+    }
+  })
+
+  it("preserves ordinary errors and tolerates missing errors", () => {
+    expect(serverMessage(new Error("offline"), "fallback")).toBe("offline")
+    expect(serverMessage(null, "fallback")).toBe("fallback")
   })
 })

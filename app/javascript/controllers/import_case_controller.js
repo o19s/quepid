@@ -1,9 +1,8 @@
-import { Controller } from "@hotwired/stimulus"
+import ImportFormControllerBase from "controllers/import_form_controller_base"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { showStatusMessage } from "utils/status_message"
 
-export default class extends Controller {
+export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
 
   connect() {
@@ -39,7 +38,7 @@ export default class extends Controller {
 
     try {
       // Read the file content
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       let caseData
       
       try {
@@ -75,31 +74,4 @@ export default class extends Controller {
     }
   }
 
-  readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = (e) => reject(e)
-      reader.readAsText(file)
-    })
-  }
-
-  setLoading(isLoading) {
-    this.submitButtonTarget.disabled = isLoading
-    if (isLoading) {
-      this.submitTextTarget.textContent = 'Importing...'
-      this.spinnerTarget.classList.remove('d-none')
-    } else {
-      this.submitTextTarget.textContent = 'Import'
-      this.spinnerTarget.classList.add('d-none')
-    }
-  }
-
-  showAlert(message, type) {
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
-  }
-
-  hideAlert() {
-    this.alertTarget.classList.add('d-none')
-  }
 }

@@ -1,6 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, postJson } from "api/json"
-import { HttpError } from "api/http_error"
+import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { caseNameFromHeader } from "utils/case_header"
 import { isSameId } from "utils/record_identity"
@@ -140,9 +140,7 @@ export default class extends CoreModalControllerBase {
       }, REDIRECT_DELAY_MS)
     } catch (error) {
       console.error("clone-case-core: clone failed", error)
-      const message = error instanceof HttpError
-        ? error.data?.error || error.data?.message || "Unable to clone your case, please try again."
-        : error.message || "Unable to clone your case, please try again."
+      const message = serverMessage(error, "Unable to clone your case, please try again.")
       this.showAlert(message, "danger")
       this.setSubmitting(false)
     }

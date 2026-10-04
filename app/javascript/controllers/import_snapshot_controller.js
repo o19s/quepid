@@ -1,11 +1,10 @@
-import { Controller } from "@hotwired/stimulus"
+import ImportFormControllerBase from "controllers/import_form_controller_base"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { showStatusMessage } from "utils/status_message"
 import { parseCsv } from "utils/csv"
 import { buildSnapshotImportGroups } from "utils/snapshot_import"
 
-export default class extends Controller {
+export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
   static values = { importsUrlTemplate: String }
 
@@ -31,7 +30,7 @@ export default class extends Controller {
 
     try {
       // Read and validate the file
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       const validation = this.validateCSV(fileContent)
       
       if (!validation.valid) {
@@ -93,7 +92,7 @@ export default class extends Controller {
 
     try {
       // Read the file content
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       
       // The file may have changed since it was selected, so re-check it here.
       const validation = this.validateCSV(fileContent)
@@ -162,34 +161,6 @@ export default class extends Controller {
       }
       throw error
     }
-  }
-
-  readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = (e) => reject(e)
-      reader.readAsText(file)
-    })
-  }
-
-  setLoading(isLoading) {
-    this.submitButtonTarget.disabled = isLoading
-    if (isLoading) {
-      this.submitTextTarget.textContent = 'Importing...'
-      this.spinnerTarget.classList.remove('d-none')
-    } else {
-      this.submitTextTarget.textContent = 'Import'
-      this.spinnerTarget.classList.add('d-none')
-    }
-  }
-
-  showAlert(message, type) {
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
-  }
-
-  hideAlert() {
-    this.alertTarget.classList.add('d-none')
   }
 
   showPreview(content) {

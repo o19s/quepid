@@ -307,7 +307,7 @@ describe("ImportRatingsCoreController", () => {
 
   it("shows a read failure even when no import type was chosen first", async () => {
     const instance = modalController()
-    instance.readFile = vi.fn().mockRejectedValue(new Error("unreadable"))
+    vi.spyOn(File.prototype, "text").mockRejectedValueOnce(new Error("unreadable"))
 
     await chooseFile(instance, "csv", RATINGS_CSV)
 

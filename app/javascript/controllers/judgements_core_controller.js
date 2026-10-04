@@ -1,3 +1,4 @@
+import { serverMessage } from "utils/error_message"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, putJson } from "api/json"
 import { HttpError } from "api/http_error"
@@ -449,7 +450,7 @@ export default class extends CoreModalControllerBase {
     } catch (error) {
       if (!isSameId(this.currentCaseId, caseId)) return
       if (error instanceof HttpError) {
-        error.message = error.data?.statusText || error.data?.error || error.data?.message || `Refresh failed (${error.status})`
+        error.message = error.data?.statusText || serverMessage(error, `Refresh failed (${error.status})`)
       }
       throw error
     }

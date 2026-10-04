@@ -162,9 +162,10 @@ describe("ImportSnapshotController file selection", () => {
 
   it("reports a file that can't be read, and resets when the selection is cleared", async () => {
     const controller = uiController()
-    controller.readFileAsText = vi.fn(() => Promise.reject(new Error("io")))
+    const file = csvFile("x")
+    file.text = vi.fn().mockRejectedValue(new Error("io"))
 
-    await controller.fileSelected({ target: { files: [csvFile("x")] } })
+    await controller.fileSelected({ target: { files: [file] } })
     expect(controller.alertTarget.textContent).toBe("Error reading file. Please try again.")
 
     controller.submitButtonTarget.disabled = false
