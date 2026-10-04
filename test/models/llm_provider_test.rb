@@ -72,9 +72,16 @@ class LlmProviderTest < ActiveSupport::TestCase
     preset = LlmProvider.presets.fetch('openai')
 
     assert_equal [ :llm_service_url, :llm_api_version, :llm_model, :help, :read_only,
-                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_scale ],
+                   :system_prompt, :prompt_label, :prompt_hint, :scale_as_criteria, :needs_scale,
+                   :label, :supports_images ],
                  preset.keys
     assert_equal 'https://api.openai.com', preset[:llm_service_url]
+  end
+
+  test 'only providers whose API takes an image URL support images' do
+    assert_equal %w[ollama typesafe_jev], LlmProvider.all.reject(&:supports_images?).map(&:key).sort
+    assert LlmProvider.presets.dig('openai', :supports_images)
+    assert_not LlmProvider.presets.dig('ollama', :supports_images)
   end
 
   test 'presets serialize to JSON the form can inline' do

@@ -105,6 +105,80 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'attaching a document image' do
+    def pair_with fields
+      QueryDocPair.new(query_text: 'Han', doc_id: 'han', document_fields: fields)
+    end
+
+    def image_parts fields
+      openai.user_prompt(pair_with(fields)).select { |part| 'image_url' == part[:type] }
+    end
+
+    def image_urls parts
+      parts.map { |part| part.dig(:image_url, :url) }
+    end
+
+    test 'a case thumb is attached when there is no image' do
+      parts = image_parts('title' => 'Han', 'thumb' => 'https://example.com/thumb.jpg')
+
+      assert_equal [ { type: 'image_url', image_url: { url: 'https://example.com/thumb.jpg' } } ], parts
+    end
+
+    test 'an image wins over a thumb' do
+      parts = image_parts('image' => 'https://example.com/image.png', 'thumb' => 'https://example.com/thumb.jpg')
+
+      assert_equal [ 'https://example.com/image.png' ], image_urls(parts)
+    end
+
+    test 'a thumb stands in for an image that is not a usable URL' do
+      parts = image_parts('image' => '/relative/image.png', 'thumb' => 'https://example.com/thumb.jpg')
+
+      assert_equal [ 'https://example.com/thumb.jpg' ], image_urls(parts)
+    end
+
+    test 'a relative path is not attached, since the provider could not fetch it' do
+      assert_empty image_parts('thumb' => '/t/p/w500/abc.jpg')
+      assert_empty image_parts('image' => '  ')
+      assert_empty image_parts('title' => 'Han')
+    end
+
+    test 'a judge switched to text only attaches no image' do
+      text_only = LlmJudgeAdapters.for('a-key', { llm_model: 'gpt-4o', llm_include_images: 'false' })
+      prompt = text_only.user_prompt(pair_with('image' => 'https://example.com/image.png',
+                                               'thumb' => 'https://example.com/thumb.jpg'))
+
+      assert_equal [ 'text' ], prompt.pluck(:type)
+    end
+
+    test 'a judge saved before the switch existed still sends images' do
+      [ nil, '', 'true', true ].each do |setting|
+        adapter = LlmJudgeAdapters.for('a-key', { llm_model: 'gpt-4o', llm_include_images: setting })
+        prompt = adapter.user_prompt(pair_with('thumb' => 'https://example.com/thumb.jpg'))
+
+        assert_equal %w[text image_url], prompt.pluck(:type), "llm_include_images: #{setting.inspect}"
+      end
+    end
+
+    test 'a provider that cannot take an image URL never gets one, whatever the judge says' do
+      [ nil, 'true' ].each do |setting|
+        ollama = LlmJudgeAdapters.for('', { llm_provider: 'ollama', llm_model: 'qwen3:0.6b',
+                                            llm_include_images: setting })
+        prompt = ollama.user_prompt(pair_with('thumb' => 'https://example.com/thumb.jpg'))
+
+        assert_equal [ 'text' ], prompt.pluck(:type), "llm_include_images: #{setting.inspect}"
+      end
+    end
+
+    test 'Anthropic gets a case thumb as a URL image source' do
+      anthropic = LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-4-5-20250514' })
+      pair = pair_with('title' => 'Han', 'thumb' => 'https://example.com/thumb.jpg')
+
+      content = anthropic.request_envelope(pair, system_prompt: 'Judge it.')[:body][:messages][0][:content]
+
+      assert_equal({ type: 'image', source: { type: 'url', url: 'https://example.com/thumb.jpg' } }, content[1])
+    end
+  end
+
   # The properties that let a request built now be sent later by something else
   # -- the batch API this seam is shaped for. See ADR 0001 §3.
   describe 'the batch readiness contract' do

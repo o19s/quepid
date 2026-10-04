@@ -16,6 +16,13 @@ function parseJsonOrNull(text) {
   }
 }
 
+// A switch disabled because the provider cannot use it still reports the judge's own
+// choice (data-wanted) rather than its forced-off state, so the setting survives.
+function checkboxValue(field) {
+  if (field.dataset.unsupported === "true") return String(field.dataset.wanted !== "false")
+  return String(field.checked)
+}
+
 function showPanel(element, html) {
   if (!element) return
 
@@ -72,7 +79,11 @@ export default class extends Controller {
     "ratingInfo",
     "loadingSpinner",
     "runPromptButton",
-    "needsScaleNotice"
+    "needsScaleNotice",
+    "includeImages",
+    "includeImagesHidden",
+    "includeImagesNotice",
+    "includeImagesNoticeProvider"
   ]
 
   static values = {
@@ -135,6 +146,7 @@ export default class extends Controller {
     this.jsonFieldTargets.forEach((field) => { field.disabled = true })
     this.structuredFieldTargets.forEach((field) => { field.disabled = false })
     this.showProviderOptionFields(this.hasLlmProviderTarget ? this.llmProviderTarget.value : "")
+    if (this.hasLlmProviderTarget) this.applyImageSupport(this.presetsValue[this.llmProviderTarget.value])
   }
 
   showJsonTab() {
@@ -172,7 +184,15 @@ export default class extends Controller {
 
     Object.entries(judgeOptions).forEach(([key, value]) => {
       const field = this.element.querySelector(`#judge_options_${key}`)
-      if (field) field.value = value === null || value === undefined ? "" : value
+      if (!field) return
+
+      if (field.type === "checkbox") {
+        const on = String(value) !== "false"
+        field.dataset.wanted = String(on)
+        if (field.dataset.unsupported !== "true") field.checked = on
+      } else {
+        field.value = value === null || value === undefined ? "" : value
+      }
     })
 
     if (this.hasLlmProviderTarget && judgeOptions.llm_provider) {
@@ -202,6 +222,32 @@ export default class extends Controller {
     this.showProviderOptionFields(provider)
     this.showCriteria(preset)
     this.updateRunAvailability(preset)
+    this.applyImageSupport(preset)
+  }
+
+  // A provider that cannot take an image URL shows the switch disabled and off, and
+  // says why. The judge's own choice is kept in data-wanted -- and posted by the
+  // hidden field -- so moving back to a provider that can restores it.
+  applyImageSupport(preset) {
+    if (!this.hasIncludeImagesTarget) return
+
+    const field = this.includeImagesTarget
+    const supported = preset?.supports_images !== false
+
+    if (field.dataset.unsupported !== "true") field.dataset.wanted = String(field.checked)
+    field.checked = supported && field.dataset.wanted !== "false"
+    field.disabled = !supported
+    field.dataset.unsupported = String(!supported)
+
+    if (this.hasIncludeImagesHiddenTarget) {
+      this.includeImagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
+    }
+    if (this.hasIncludeImagesNoticeProviderTarget) {
+      this.includeImagesNoticeProviderTarget.textContent = preset?.label || ""
+    }
+    if (this.hasIncludeImagesNoticeTarget) {
+      this.includeImagesNoticeTarget.style.display = supported ? "none" : ""
+    }
   }
 
   // A provider that needs a scale (currently: one sent the scale as its criteria,
@@ -320,7 +366,7 @@ export default class extends Controller {
       const optionRow = field.closest(".provider-option-field")
       if (optionRow && optionRow.style.display === "none") return
 
-      collected[field.id.replace("judge_options_", "")] = field.value
+      collected[field.id.replace("judge_options_", "")] = field.type === "checkbox" ? checkboxValue(field) : field.value
     })
 
     return collected

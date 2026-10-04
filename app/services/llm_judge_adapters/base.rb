@@ -81,13 +81,8 @@ module LlmJudgeAdapters
         { type: 'text', text: text_prompt }
       ]
 
-      # Only a field literally named `image` is attached as an image; a document
-      # whose image lives under a different key (e.g. a `thumb:` mapping) is not
-      # detected and is sent as plain text instead.
-      if '' != document_fields['image'].to_s.strip
-        image_url = document_fields['image']
-        prompt << { type: 'image_url', image_url: { url: image_url } }
-      end
+      image_url = image_url_for(document_fields) if include_images?
+      prompt << { type: 'image_url', image_url: { url: image_url } } if image_url
 
       prompt
     end
@@ -97,6 +92,32 @@ module LlmJudgeAdapters
     end
 
     private
+
+    # Per-judge switch (judge_options[:llm_include_images]) for models that take
+    # text only. Judges saved before the switch existed have no value, and keep
+    # sending images as they always did -- unless their provider cannot take an
+    # image URL at all, which no setting overrides. A judge with no provider is
+    # OpenAI shaped (see LlmJudgeAdapters::DEFAULT_ADAPTER), so it can.
+    def include_images?
+      provider = LlmProvider.find(options[:llm_provider])
+      return false if provider && !provider.supports_images?
+
+      value = options[:llm_include_images]
+      return true if value.nil? || '' == value
+
+      ActiveModel::Type::Boolean.new.cast(value)
+    end
+
+    # A case's `image:` / `thumb:` field-spec mappings are stored under those fixed
+    # keys with the case's prefix already applied (bookSvc.updateQueryDocPairs);
+    # `image` wins when both are set. The provider fetches the URL itself, so only
+    # an absolute http(s) URL is attached -- a relative path (a thumb mapped with
+    # no prefix) would fail the whole request instead of just going unseen.
+    def image_url_for document_fields
+      [ document_fields['image'], document_fields['thumb'] ]
+        .map { |value| value.to_s.strip }
+        .find { |value| value.match?(%r{\Ahttps?://}i) }
+    end
 
     # Appends an explicit reminder of the real rating scale to the judge's
     # system prompt. Without this, a judge's prompt (e.g. the default, which is
