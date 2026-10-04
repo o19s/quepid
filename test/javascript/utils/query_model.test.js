@@ -59,6 +59,16 @@ describe("query model", () => {
     expect(publish).toHaveBeenCalledWith(query)
   })
 
+  it("publishes a rating's modified time so the Modified sort sees it", () => {
+    const query = buildQuery()
+    const { model, publish } = buildModel(query)
+
+    model.touchModifiedAt()
+
+    expect(query.modifiedAt).toEqual(expect.any(String))
+    expect(publish).toHaveBeenCalledWith(query)
+  })
+
   it("resolves the current default scorer when scoring", async () => {
     const query = buildQuery()
     const { model, scoreQuery, setDefaultScorer } = buildModel(query)

@@ -234,6 +234,7 @@ export class QueryCollectionStore extends EventTarget {
       queryText: query.queryText ?? query.query_text ?? "",
       informationNeed: query.informationNeed ?? query.information_need ?? "",
       modified: query.modified ?? query.updated_at ?? null,
+      modifiedAt: query.modifiedAt ?? query.modified_at ?? null,
       created: query.created ?? query.created_at ?? null,
       numFound: query.numFound ?? query.num_found,
       ratedDocsFound: query.ratedDocsFound ?? query.rated_docs_found,

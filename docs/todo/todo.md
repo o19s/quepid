@@ -2,7 +2,7 @@
 
 **Last updated:** 2026-10-04
 
-Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
+Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
 Every actionable item carries a provenance marker: `[MIGRATION]` means it was
 introduced by or is required to complete AngularJS removal, `[MIGRATION-FOLLOWUP]`
@@ -29,7 +29,12 @@ Choose by priority first, then favor higher impact and lower complexity within
 a priority tier. For example, `P2 I3 C1` offers more simplification for less risk
 than `P2 I1 C3`. Group ratings summarize scope; nested items have their own estimates.
 
-Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and re-checked against the tree in Aug 2026. Line numbers may drift — re-check cited files before fixing.
+Source audit: 2026-10-04 against `9a9a7974` and the working tree. This audit
+checked implementations and existing tests/verification records; it did not
+rerun browser flows or tests. Historical observations below are retained only
+where the current source still supports the unresolved issue. Browser coverage
+and actual verification timestamps live in `docs/manual-testing/tracking.yml`.
+Line numbers may drift — re-check cited files before fixing.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
@@ -37,12 +42,14 @@ Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and
 
 `panes.css` sizes `.pane_main` and `.pane_east` as `calc(100% - 60px)`, but the BS5 core header is about 74px tall. Both panes extend about 14px past the viewport. The Tune Relevance drawer still fits **Rerun My Searches!** only because its 15px bottom padding absorbs the overflow, so a taller header pushes the button below the fold again. Size the panes from the header's actual height, for example with a flex column layout, instead of a hard-coded offset. Check the main pane's scrolling and the drawer before and after.
 
-### [PREEXISTING] P0 I1 C3 — Scorer sandboxing
+### [PREEXISTING] P0 I1 C3 — Scorer sandboxing - LATER
 
 Client scorer code still executes through `new Function()`; evaluate a Web
-Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
+Worker or equivalent browser isolation. The batch path already uses the shared
+scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
+aligned when adding isolation.
 
-### [PREEXISTING] P2 I0 C2 — Accessibility
+### [PREEXISTING] P2 I0 C2 — Accessibility - LATER
 
 Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario.
 
@@ -73,7 +80,7 @@ existing tests, preserving method binding. Wrappers that defer a lookup of a
 later `const` (`liveQueryFactory`, `liveQueryCollectionRuntime`, …) must stay
 deferred. Work one cluster at a time rather than as a large runtime rewrite.
 
-The broader problem is concept count: the runtime spans about 18 modules
+The broader problem is concept count: the runtime spans more than 20 modules
 (`live_query_*`, `query_runtime`, `query_service`, `query_model`, `query_state`,
 `query_lifecycle`), several of which only pass through to others, left over
 from migration staging. Collapse pass-through modules as each cluster is
@@ -113,14 +120,15 @@ outlet-vs-event rule, pitfalls, what stays manual by design) are in
 
 The case page (`/case/:id`) is still its own app: its own layout
 (`layouts/core.html.erb`), header and footer (`layouts/_header_core_app.html.erb`,
-`_footer_core_app.html.erb`), esbuild IIFE bundles (`core_case.js`,
-`core_vendor.js`; every other page uses the importmap), and CSS layer
-(`core-additions.css` ~660 lines, `bootstrap5-compat.css` ~640 lines). Steps:
+`_footer_core_app.html.erb`), esbuild IIFE bundles (`core_case.js`, built from `core_stimulus.js`, and
+`core_vendor.js`, alongside importmap-loaded Bootstrap and Vega; other pages
+use the importmap for their application controllers), and CSS layer
+(`core-additions.css` ~635 lines, `bootstrap5-compat.css` ~552 lines). Steps:
 
 1. Merge `_header_core_app.html.erb` into `_header.html.erb`, rendering the
    case-specific parts (case name, try, score) only on a case. Same for the footer.
 2. Render the case page in `application.html.erb`, linking the `core` CSS
-   bundle there instead of `application`. Move `core_case.js` onto the importmap
+   bundle there instead of `application`. Move the `core_stimulus.js` entry onto the importmap
    at the same time; that needs pins for `sortablejs` and `splainer-search/wired.js`
    (the package ships only an IIFE `dist`).
 3. Rename the `_core` twins (11 `controllers/*_core_controller.js`, 10
@@ -128,13 +136,12 @@ The case page (`/case/:id`) is still its own app: its own layout
    counterpart; for the rest the suffix just means "lives on the case page".
    Don't rename before steps 1–2; it's churn on its own.
 
-Keep `<base href>` in both layouts: `core_capabilities_runtime.js`,
-`detailed_document_modal.js` and `search_result_controller.js` rely on
-`document.baseURI` for sub-path deployments.
+Preserve the `<base href>` rendered by `layouts/_head_common.html.erb`: relative
+URLs and `utils/html.js` URL validation rely on it for sub-path deployments.
 
 **Bootstrap 3 look (decided 2026-10-03): keep it, scoped to the case page.**
 `html { font-size: 87.5% }`, the BS3 brand blue `#337ab7` (`--q-brand-blue`),
-the BS3 `<pre>` box and modal shadow, and ~50 "BS3" comments in
+the BS3 `<pre>` box and modal shadow, and compatibility rules in
 `bootstrap5-compat.css`, `core-additions.css` and `misc.css` are a design choice.
 `build_css.js` builds `core.css` as a complete bundle that only the case page
 links. Do not prefix the compat selectors unless the shared header must look
@@ -151,11 +158,13 @@ through page-wide events such as `quepid:case-selected` and
 `judgements:book-settings-saved` in `core_runtime.js`. Independent of the layout
 merge; pairs naturally with the live-query owner simplification above.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Convert markup-owning `utils/` DOM helpers to controllers (retrofit Track E)
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Move remaining `utils/` DOM lifecycles into controllers (retrofit Track E)
 
 `dynamic_modal.js`, `detailed_document_modal.js`, `destructive_form.js` and
-`status_message.js` own markup and events but are not Stimulus controllers.
-Convert them into controllers or controller mixins. Leave thin Bootstrap
+`status_message.js` still manage DOM state or events outside Stimulus. Static
+modal shells already live in `shared/_dynamic_modal_templates.html.erb`; preserve
+that Rails-owned markup and consider moving the remaining lifecycle/behavior
+into controllers or controller mixins. Leave thin Bootstrap
 wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked)
@@ -175,13 +184,13 @@ inside a lazy frame first.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
 
-The 2026-10-02 sweep left these unverified in the browser: confirming Delete
-Query in the accumulated review (Track C batch 3 verified real Delete/Move
-separately); actual imports, export downloads, and scorer/book saves; and a
-templated Elasticsearch/OpenSearch query's rendered-template success path (no
-suitable dev case; unit tests only). Track D's no-endpoint subset was compared
-on 4.11, 4.13, 7.7 and 7.9; scenarios sharing only a touched file were not
-rerun: 4.10, 4.12, 4.14, 4.24, 5.4, 11.2, 17.1, 17.2, 17.9.
+The remaining gaps include custom scorer creation (8.3), book creation (10.2),
+and a templated Elasticsearch/OpenSearch query's rendered-template success
+path (no suitable dev case; unit tests only). Track D's no-endpoint subset had
+before/after comparisons on 4.11, 4.13, 7.7 and 7.9; those comparisons do not
+establish complete coverage of every flow sharing the touched files. Use the
+individual tracker notes to choose the next sample, including deferred
+permission, background-job and settings-save branches.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Move remaining hand-written modals onto `_modal_shell`
 
@@ -194,25 +203,27 @@ also candidates. Convert each when next edited.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace test-override shims with `vi.mock`
 
-`utils/core_store_access.js`, `core_capability_access.js`, `core_flash.js` (a
-`Proxy`) and `core_test_overrides.js` exist so specs can inject fakes into
-production modules; `vi.mock` already does this in 34 specs. About 60 source
-lines plus 21 importers. Small payoff across many files; fold into spec work
-when it falls out naturally.
+`core_test_overrides.js` and the test-override branches in
+`core_store_access.js`, `core_capability_access.js` and `core_flash.js` let specs
+inject fakes into production modules. Replace those injection seams with
+`vi.mock` when touching the specs; many specs already use it. Keep the named
+store/capability accessors as production boundaries unless their consumers are
+also deliberately redesigned. The flash `Proxy` exists solely for overrides
+and can become a plain object once its specs mock the module.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs
 
 `test/javascript/support/controller_fixture.js` (see
-`docs/js_tooling.md#controller-test-fixtures`) is used by 17 controller specs.
+`docs/js_tooling.md#controller-test-fixtures`) is used by 20 controller specs.
 Adopt it in smaller specs when touched. Separately, mounting real Stimulus
 against real markup would catch ERB target/action drift the fixture can't;
 use it for new specs and convert old ones when touched, not big-bang.
 
 ### [PREEXISTING] P3 I0 C2 — Identify API endpoints only the Angular client used
 
-Git history didn't recover the old client's URLs (it built them by string
-concatenation). The API is also public (scripts, notebooks), so an endpoint the
-UI no longer calls is not necessarily dead. Only worth doing alongside an API
+Compare historical Angular consumers with current routes and callers. The API
+is also public (scripts, notebooks), so an endpoint the UI no longer calls is
+not necessarily dead. Only worth doing alongside an API
 review.
 
 ---
@@ -247,7 +258,7 @@ review.
 
 **Location:** `app/controllers/api/v1/cases_controller.rb:10-16`, `app/controllers/api/v1/snapshots_controller.rb:13-20`
 
-`Api::V1::CasesController#authenticate_api!` calls `set_case` and returns success whenever the case is public, regardless of action. That inherited callback covers `show`, `update`, and `destroy`, so a public case can be modified or deleted without an API key. `SnapshotsController` has the same bypass for listing, creation, and deletion.
+`Api::V1::CasesController#authenticate_api!` calls `set_case` for `show`, `update`, and `destroy`, then bypasses authentication whenever the case is public. The bypass therefore covers mutations as well as reads, so a public case can be modified or deleted without an API key. `SnapshotsController` has the same bypass for listing, creation, and deletion.
 
 **Fix direction:** "Public" grants read access only; mutation requires an authenticated user plus an ownership/permission check. Split authentication into separate read and write policies instead of overriding the shared callback by action name. Add negative tests first: anonymous `PUT/PATCH/DELETE` against public cases and snapshots.
 
@@ -404,6 +415,26 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 ## [PREEXISTING] P2 — Product bugs
 
+### [PREEXISTING] P2 I0 C1 — TREC export with a snapshot 500s on any unrated snapshot doc
+
+**Location:** `app/views/api/v1/export/ratings/show_trec_snapshot.txt.erb:3`
+
+**Observed:** Export → TREC with a snapshot picked in the Basic/TREC dropdown calls `/api/export/ratings/:case_id.txt?file_format=trec_snapshot&snapshot_id=…`, which fails with `NoMethodError (undefined method 'rating' for nil)` whenever a snapshot doc has no rating. The modal then flashes "Export failed. Please try again." Reproduced 2026-10-04 on a clone of case 6 (snapshot 98); the template is identical at the `be9b319a` baseline. Plain TREC (no snapshot) works.
+
+**Fix direction:** Skip unrated docs (or write an explicit unrated value) instead of dereferencing a nil `Rating`, and add a controller test with an unrated snapshot doc.
+
+---
+
+### [PREEXISTING] P3 I0 C1 — Book Import tab reports "Invalid JSON" when no file is chosen
+
+**Location:** `app/controllers/books/import_controller.rb` (`load_import_params`)
+
+**Observed:** On an existing book's Import tab, submitting **Import Query Doc Pairs** with no file shows "Invalid JSON file: Unable to process the provided data structure. undefined method '[]' for nil" instead of "You must select the file to be imported first." That form has no other `book[...]` field, so `params[:book]` is nil and `params[:book][:import_file]` raises into the generic `StandardError` rescue. The judgements form and new-book import carry `book[force_create_users]`, so they show the right message. Reproduced 2026-10-04 on book 33; the same lookup exists at `be9b319a`.
+
+**Fix direction:** Read the file with `params.dig(:book, :import_file)` and add a controller test that submits the pairs form without a file.
+
+---
+
 ### [PREEXISTING] P2 I2 C3 — Judgement rating not validated against book's scale (outside AI judging)
 
 **Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
@@ -416,7 +447,7 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 
 `BookImporter`/`RatingsImporter` are fine: `RatingsImporter` writes the unrelated `Rating` model, and `BookImporter#import_judgement` already silently no-ops on failed saves.
 
-**Fix direction:** Add an `inclusion` validation on `Judgement` scoped to `query_doc_pair.book.scale`, conditioned `unless: -> { query_doc_pair&.book&.support_implicit_judgements? }` (safe-navigate — `query_doc_pair` is a required `belongs_to` but its own presence validation runs independently, so a blank `query_doc_pair` must not blow up this lambda with a `NoMethodError`) so the two legitimate continuous-rating paths above stay unaffected. Change `JudgementFromRatingJob` to `save` + handle a validation failure instead of `save!` (a case rating can legitimately be off-scale for an explicit-only book). Retire the job-local check in `run_judge_judy_job.rb` in favor of the model validation (catch the failure, call `mark_unrateable`).
+**Fix direction:** Add an `inclusion` validation on `Judgement` for required ratings (preserve `rating_not_required?` for unrateable/judge-later rows), scoped to `query_doc_pair.book.scale`, conditioned `unless: -> { query_doc_pair&.book&.support_implicit_judgements? }` (safe-navigate — `query_doc_pair` is a required `belongs_to` but its own presence validation runs independently, so a blank `query_doc_pair` must not blow up this lambda with a `NoMethodError`) so the two legitimate continuous-rating paths above stay unaffected. Change `JudgementFromRatingJob` to `save` + handle a validation failure instead of `save!` (a case rating can legitimately be off-scale for an explicit-only book). Retire the job-local check in `run_judge_judy_job.rb` in favor of the model validation (catch the failure, call `mark_unrateable`).
 
 ---
 
@@ -430,7 +461,7 @@ The merge loop upserts each source judgement with `query_doc_pair.judgements.fin
 
 **Cause:** Same root cause as the import bug fixed in `BookImporter#import_judgement` on 2026-09-10 — `find_or_initialize_by(user: nil)` treats "no judge" as an identity.
 
-**Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `j.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under [Judgement rating not validated against book's scale](#judgement-rating-not-validated-against-books-scale-outside-ai-judging) for a different reason.
+**Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `j.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under the judgement-scale validation item above for a different reason.
 
 ---
 
@@ -442,7 +473,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 **Reached by** the ordinary export → re-import path, since `_judgements.json.jbuilder` emits `user_email` only `if judgement.user`, so exported anonymous rows come back identity-less; also by a Mission Control retry of a failed `ImportBookJob` (no `retry_on`, and `book.import_file.purge` runs *after* `service.import`), and plausibly by a double-submitted import form.
 
-**Fix direction:** Needs a product call, same as the `combine` entry below. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
+**Fix direction:** Needs a product call, same as the `combine` entry above. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
 
 ---
 
@@ -452,7 +483,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 `find_or_create_by(query_doc_pair_id: ..., user_id: judgement_params[:user])` looks up on `:user`, while eight lines later the judge is assigned from `judgement_params[:user_id]`. The lookup therefore runs with `user_id: nil`, which can match an existing *anonymous* judgement on that pair and then re-attribute it to the posting user: a silent overwrite of someone else's rating instead of a new row.
 
-**Status:** Confirmed by reading `extract_judgement_params` — `:user` is **not** in its permit list (`:rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation`), so `judgement_params[:user]` is always nil and the lookup key is *always* `nil`, not just when a caller omits it. Consequences in order: the endpoint never attributes a judgement to anyone unless the caller passes `user_id`; when a caller does pass it, the request adopts and re-attributes an existing anonymous row; two API clients judging the same pair fight over one row. Deferrable because nothing in Quepid's own frontend calls it (grepped `app/javascript`, `app/assets/javascripts`) — this is external API surface only. Note the existing controller test asserts only a `judgements.count` delta, so it passes either way. Same bug family as the `BookImporter` nil-user work of 2026-09-10.
+**Status:** Confirmed by reading `extract_judgement_params` — `:user` is **not** in its permit list (`:rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation`), so `judgement_params[:user]` is always nil and the lookup key is *always* `nil`, not just when a caller omits it. Consequences in order: the endpoint never attributes a judgement to anyone unless the caller passes `user_id`; when a caller does pass it, the request adopts and re-attributes an existing anonymous row; two API clients judging the same pair fight over one row. Deferrable because nothing in Quepid's own frontend calls it (checked current `app/javascript` callers) — this is external API surface only. Note the existing controller test asserts only a `judgements.count` delta, so it passes either way. Same bug family as the `BookImporter` nil-user work of 2026-09-10.
 
 **Fix direction:** Decide which key is canonical, use it in both places, and guard the lookup so a nil judge cannot adopt an existing anonymous row.
 
@@ -514,15 +545,17 @@ Dragging the slider past the left edge of the window leaves the drawer wider tha
 
 ### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
-Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item` re-sequences `arranged_at` on create, so the original order isn't copied. Copy `arranged_at` (or re-sequence in the original order) and cover it with a model test.
+Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item#prepend_node_to_list` overwrites the copied arrangement on create and prepends each clone, so iterating the original order can reverse it. The deterministic ordering on `Case#queries` does not fix that callback. Re-sequence the clones in the original order after creation (or explicitly avoid prepending during cloning) and cover it with a model test.
 
 ---
 
-### [PREEXISTING] P2 I0 C2 — Snapshot CSV import gives no success confirmation
+### [PREEXISTING] P2 I0 C1 — Snapshot CSV import hides per-snapshot failure reasons
 
-**Observed:** On the cases list, a successful Import Snapshots from CSV just closes the modal; no flash says what was created. (The in-case Import modal's Snapshots tab does flash "Snapshots imported successfully!".) The failure message for a nonexistent `Case ID` is also generic: "1 snapshot(s) failed to import. Some may have been imported successfully." without saying the case wasn't found.
-
-**Fix direction:** Flash the number of snapshots created and name the case(s); surface the per-snapshot reason (e.g. "Case 999999 not found") in the failure alert.
+`import_snapshot_controller.js#importSnapshots` logs individual API errors to
+the console, then throws only "1 snapshot(s) failed to import. Some may have
+been imported successfully." An unknown case therefore produces a generic
+alert even when the API explains "Case not found!". Surface the case ID,
+snapshot name and API reason in the alert, and distinguish partial success.
 
 ---
 
@@ -623,7 +656,7 @@ Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low r
 
 **Location:** `app/controllers/proxy_controller.rb:75-80` (`extract_extra_url_params`)
 
-Manual `split('?')` / `split('=')` only captures the first embedded query param for proxied GET requests (e.g. loses `rows` from `?q=test&rows=10`). The shared HTTP client already reapplies the embedded URL query for POST requests, so this item does not include a separate POST-loss defect.
+Manual `split('?')` / `split('=')` corrupts the first embedded value for proxied GET requests. For `?q=test&rows=10`, it produces `q=test&rows`, overwriting the correctly parsed `q` from `HttpClientService`; the client still preserves `rows=10`. Encoded values can likewise be overwritten with their raw encoding. The shared HTTP client already parses the embedded URL query for GET and POST, so removing the controller's redundant parsing may be sufficient.
 
 Fix the overlapping URL parsing call sites together. Add multi-parameter and
 encoded-value tests (code review 2026-09-29 recommends
@@ -632,7 +665,10 @@ encoded-value tests (code review 2026-09-29 recommends
 `application_helper.rb` (`get_protocol_from_url`) should use the same helper;
 this is a refactoring part of this item, not a separate bug.
 
-**Recommendation:** Cherry-pick `UrlParserService` from `origin/deangularjs-experimental` (commit `db1c4e50`) as its own small PR rather than reimplementing from scratch. That branch is a 1092-file, big-bang AngularJS→Rails rewrite that changed core architecture (server-side search execution, two-tier scoring, dropped/relocated features) — almost certainly why it was never merged, since it conflicts with this project's incremental per-surface migration strategy (see `angular-case-migration` skill). But `UrlParserService` itself is small, self-contained, and clean: wraps `Addressable::URI` (already a `Gemfile` dependency — no new gem needed), has 9 focused unit tests, and its `query_values` method fixes exactly this bug. Note that branch's `ProxyController` still had the CSRF-skip issue above — that fix wasn't part of the same effort and needs doing separately regardless.
+If consolidating the other parsing call sites, inspect `UrlParserService` in
+`origin/deangularjs-experimental` (`db1c4e50`) as a reference. Prefer the existing
+`HttpClientService` parsing for proxy requests; a new service is not required
+just to remove the corrupting override.
 
 ---
 
@@ -650,7 +686,7 @@ this is a refactoring part of this item, not a separate bug.
 
 **Location:** `app/models/selection_strategy.rb`
 
-Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` (style-only; project convention — see `credentials?` vs `has_credentials?` in CLAUDE.md, already followed by `HttpClientService#credentials?`).
+Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` (style-only; project convention — see `credentials?` vs `has_credentials?` in AGENTS.md, already followed by `HttpClientService#credentials?`).
 
 **Also found:** `every_query_doc_pair_has_three_judgements?` (same file, line 56) has the same `has_` prefix. Different grammatical shape though — it's "has N of a noun" (a count check), not "has verbed" (where the participle alone already reads as a fine predicate, as in `judged`). Dropping `has_` here reads badly (`every_query_doc_pair_three_judgements?`); it would need a rephrase (e.g. `every_query_doc_pair_judged_three_times?`) rather than a straight deletion. Worth a call when touching this file rather than bundling blindly with the first rename.
 
@@ -693,16 +729,23 @@ Jobs set status strings before working and clear them only on success, so a fail
 
 ## [PREEXISTING] P2 — Performance
 
-### [PREEXISTING] P2 I0 C2 — Potential N+1 queries
+### [PREEXISTING] P2 I1 C2 — Case-list latest-score queries bypass eager loading
 
-1. **`app/controllers/cases_controller.rb:32`** — `includes(:owner, :teams, scores: :user).distinct`; scores accessed later may still N+1.
-2. **`app/controllers/teams_controller.rb:248`** — `includes(:owner, :teams)`; missing `scores` if the view touches them.
+`CasesController#index` includes `scores: :user`, but `Case#last_score` calls
+`scores.last_one`, whose ordering/limit scope issues a separate lookup per case.
+`cases/index.html.erb` also reads that score's user. The team case list in
+`teams/_cases.html.erb` uses the same method, while `TeamsController#show`
+preloads only owner and teams.
 
-Bullet is enabled in dev/test — fix as surfaced; review views for missing eager loads.
+Measure both list endpoints with query-count tests, then load only the latest
+score and its user per case. Avoid loading every historical score merely to
+render one badge; Bullet is available in development/test.
 
 ### [PREEXISTING] P2 I1 C2 — API serializer query amplification
 
-`app/views/api/v1/users/_user.json.jbuilder:12-13` runs three relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings; `app/controllers/api/v1/cases_controller.rb:192` preloads only `tries`, `teams` and `cases_teams`.
+`app/views/api/v1/users/_user.json.jbuilder:12-13` runs two relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings; `app/controllers/api/v1/cases_controller.rb:192` includes `owner` and `book` and preloads `tries`, `teams` and `cases_teams`,
+but does not preload the score paths. `queries_count` already uses a selected
+count when available; preserve that optimization.
 
 **Fix direction:** Endpoint-specific query objects, or preload/count exactly what each serializer needs. Add query-count tests for representative index responses, not just response-shape tests.
 
@@ -799,7 +842,8 @@ server-side; keep them in step rather than merging.
 
 ## [PREEXISTING] RuboCop deferrals
 
-Inline `rubocop:disable` only on this branch (no config-level excludes). Search codebase for `rubocop:disable` for the full list.
+These candidates still carry inline Metrics suppressions. Search the codebase
+for `rubocop:disable` and check `.rubocop.yml` for the full current lint scope.
 
 ### [PREEXISTING] P3 I1 C2 — Metrics/ParameterLists
 
@@ -814,6 +858,6 @@ Candidates for extraction into smaller methods or services:
 - `[PREEXISTING]` P3 I2 C2 — `Api::V1::Import::RatingsController#create`
 - `[PREEXISTING]` P3 I2 C2 — `Api::V1::Export::RatingsController`
 - `[PREEXISTING]` P3 I2 C2 — `Api::V1::Snapshots::SearchController`
-- `[PREEXISTING]` P3 I3 C3 — `BookImporter` / `RatingsImporter`
+- `[PREEXISTING]` P3 I3 C3 — `RatingsImporter`
 - `[PREEXISTING]` P3 I2 C3 — `MapperWizardsController`
 - `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `BooksController` / `HomeController`

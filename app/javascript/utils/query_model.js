@@ -24,6 +24,7 @@ export function createQueryModel({
 
     touchModifiedAt() {
       query.modifiedAt = new Date().toISOString()
+      publish(query)
     },
 
     persisted() {

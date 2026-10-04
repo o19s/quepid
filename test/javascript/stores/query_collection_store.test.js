@@ -112,6 +112,14 @@ describe("QueryCollectionStore", () => {
     expect(store.query(4).state).not.toBeInstanceOf(Function)
   })
 
+  it("publishes the modified time the Modified sort orders by", () => {
+    store.upsert({ queryId: 4, queryText: "live", modifiedAt: "2026-10-04T15:33:47.000Z" })
+    store.upsert({ queryId: 5, query_text: "api", modified_at: "2026-10-04T15:31:33.000Z" })
+
+    expect(store.query(4).modifiedAt).toBe("2026-10-04T15:33:47.000Z")
+    expect(store.query(5).modifiedAt).toBe("2026-10-04T15:31:33.000Z")
+  })
+
   it("preserves an early expansion toggle when the query is bootstrapped", () => {
     store.setExpanded(4, true)
     store.replace({ caseId: 7, displayOrder: [4], queries: [{ queryId: 4, queryText: "early" }] })
