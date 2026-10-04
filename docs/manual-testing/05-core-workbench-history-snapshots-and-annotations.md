@@ -41,7 +41,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
   2. For "Snapshot 1", pick a snapshot from the dropdown.
-  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum allowed (5; the modal's "Select 1-3" copy is out of date, see `docs/todo/todo.md`).
+  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum shown in the modal (currently 5). At the limit, Add Snapshot disappears.
   4. Click **Update Comparison Settings**.
   5. Confirm additional score badges (per query, and per case) appear reflecting each chosen snapshot.
   6. Click the "x" on a row to clear just that selection.
@@ -58,7 +58,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
 - [ ] **Steps:**
   1. Open Tune Relevance → **Annotations** tab.
   2. Type a note (e.g., "disabled synonyms, see what happens") in the message box, click **Create**.
-  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp, the current try's score, and your message.
+  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp, the current try's score formatted to two decimals, and your message. The score formatting stays consistent after reload or edit.
   4. Open the per-annotation dropdown menu (list icon), click **Edit**, change the message, click **Update** (or Cancel).
   5. Delete an annotation via the same dropdown.
 - **Expected:** Annotations record a point-in-time note tied to the current score; edits/deletes reflect immediately in the list and on the score graph (5.5).

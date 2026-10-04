@@ -85,7 +85,6 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       @query_doc_pair = @judgement.query_doc_pair
@@ -98,7 +97,6 @@ class JudgementsController < ApplicationController
     @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     redirect_to book_judge_path(@book)
   end
 
@@ -106,7 +104,6 @@ class JudgementsController < ApplicationController
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_judge_later!
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     redirect_to book_judge_path(@book)
   end
 
@@ -115,7 +112,6 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
-      UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
       redirect_to book_judge_path(@book)
     else
       render action: :edit
@@ -124,7 +120,6 @@ class JudgementsController < ApplicationController
 
   def destroy
     @judgement.destroy
-    UpdateCaseRatingsJob.perform_later @judgement.query_doc_pair
     redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
   end
 
@@ -166,12 +161,9 @@ class JudgementsController < ApplicationController
 
     # Apply generic LIKE search for remaining text
     if remaining_text.present?
-      q = "%#{remaining_text.to_s.downcase}%"
-      query = query.where(
-        'query_doc_pair_id = ? OR LOWER(doc_id) LIKE ? OR LOWER(query_text) LIKE ? OR ' \
-        'LOWER(information_need) LIKE ? OR LOWER(judgements.explanation) LIKE ?',
-        remaining_text.to_i, q, q, q, q
-      )
+      query = query.search_by(remaining_text, 'query_doc_pairs.doc_id', 'query_doc_pairs.query_text',
+                              'query_doc_pairs.information_need', 'judgements.explanation')
+        .or(query.where(query_doc_pair_id: remaining_text.to_i))
     end
 
     query

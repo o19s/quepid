@@ -37,6 +37,21 @@
 require 'scale_serializer'
 
 class Book < ApplicationRecord
+  def find_or_initialize_query_doc_pair query_text:, doc_id:
+    query_doc_pairs.find_or_initialize_by(query_text: query_text, doc_id: doc_id)
+  end
+
+  def find_or_create_query_doc_pair query_text:, doc_id:
+    pair = find_or_initialize_query_doc_pair(query_text: query_text, doc_id: doc_id)
+    pair.save if pair.new_record?
+    pair
+  end
+
+  def queue_job operation
+    update!("#{operation}_job" => "queued at #{Time.zone.now}")
+    yield
+  end
+
   # Default scoring guidelines templates
   FOUR_POINT_GUIDELINES = <<~MARKDOWN
     **0 - Poor:** *Terrible results!* Clearly not desired. These are negative examples.

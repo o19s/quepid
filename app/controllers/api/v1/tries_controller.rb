@@ -92,12 +92,26 @@ module Api
       end
 
       def destroy
-        @try.destroy
+        @case.transaction do
+          # Lock without reloading: Case initialization can assign an unsaved default scorer.
+          Case.where(id: @case.id).lock.pick(:id)
+          if @case.tries.one?
+            render json: { error: 'Cannot delete the only try in a case.' }, status: :bad_request
+            return
+          end
+
+          @try.destroy!
+          @case.update! last_try_number: @case.tries.maximum(:try_number)
+        end
 
         head :no_content
       end
 
       private
+
+      def public_case_read_access?
+        'preview_args' == action_name || super
+      end
 
       # Controller-internal: renders :bad_request on save failure. Callers should
       # check Rails' `performed?` after invoking and return early if true.

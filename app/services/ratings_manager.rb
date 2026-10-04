@@ -103,8 +103,8 @@ class RatingsManager
   end
 
   def broadcast_case_specific_notification acase, query_doc_pair, query_doc_pair_count, counter
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      acase,
       target:  "notifications-case-#{acase.id}",
       partial: 'admin/run_case/notification_case_sync',
       locals:  { acase: acase, query_doc_pair: query_doc_pair, query_doc_pair_count: query_doc_pair_count, counter: counter }

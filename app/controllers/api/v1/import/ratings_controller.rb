@@ -67,7 +67,7 @@ module Api
             show_progress:  false,
           }
 
-          service = RatingsImporter.new @case, ratings, options
+          service = RatingsImporter.new @case, ratings, options.merge(user: current_user)
 
           begin
             service.import

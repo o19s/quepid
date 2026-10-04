@@ -15,6 +15,10 @@ class RunJudgeJudyJob < ApplicationJob
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs
+    JudgementSync.batch { judge_pairs(book, judge, number_of_pairs) }
+  end
+
+  def judge_pairs book, judge, number_of_pairs
     counter = 0
     llm_service = LlmService.new judge.llm_key, judge.judge_options
     loop do
@@ -51,14 +55,13 @@ class RunJudgeJudyJob < ApplicationJob
       end
     end
     broadcast_complete(book, judge)
-    UpdateCaseJob.perform_later book
   end
 
   private
 
   def broadcast_update book, counter, query_doc_pair, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/blah',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
@@ -66,8 +69,8 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   def broadcast_update_kraken_mode book, counter, query_doc_pair, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/update_kraken_mode',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
@@ -75,8 +78,8 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   def broadcast_complete book, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/complete',
       locals:  { book: book, judge: judge }

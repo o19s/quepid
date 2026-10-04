@@ -112,11 +112,7 @@ module Api
       private
 
       def make_csv_safe str
-        if %w[- = + @].include?(str[0])
-          " #{str}"
-        else
-          str
-        end
+        CsvExport.field(str)
       end
 
       def extract_judgement_params

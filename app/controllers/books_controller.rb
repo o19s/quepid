@@ -33,13 +33,12 @@ class BooksController < ApplicationController
     query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
     if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
 
       # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
       # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
       # so match on ids first - same pattern as ForUserScope and CasesController#index.
       matching_ids = Book.left_joins(:teams)
-        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
+        .search_by(params[:q], 'books.name', 'teams.name')
         .reselect(:id).distinct
       query = query.where(id: matching_ids)
     end
@@ -266,8 +265,8 @@ class BooksController < ApplicationController
 
     books.each do |book_to_merge|
       book_to_merge.query_doc_pairs.each do |qdp|
-        query_doc_pair = @book.query_doc_pairs.find_or_create_by query_text: qdp.query_text,
-                                                                 doc_id:     qdp.doc_id
+        query_doc_pair = @book.find_or_create_query_doc_pair query_text: qdp.query_text,
+                                                             doc_id:     qdp.doc_id
 
         # copy over the document fields if our source is newer than our target.
         # if qdp.updated_at > query_doc_pair.updated_at or query_doc_pair.document_fields.blank?

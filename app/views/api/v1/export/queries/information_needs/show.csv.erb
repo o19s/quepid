@@ -1,5 +1,5 @@
 query,information_need
 <%
 @case.queries.each do |query|
-%><%= ::CSV.generate_line([query.query_text, query.information_need]).html_safe %><%
+%><%= CsvExport.line([query.query_text, query.information_need]).html_safe %><%
 end %>

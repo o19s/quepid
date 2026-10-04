@@ -17,18 +17,19 @@ module Authentication
     # Fetches case that a user can view and query.
     # This includes a case owned by the user, shared with an team owned by
     # the user, or shared with a team shared with the user.   Or even a
-    # public case!
+    # public case, but only for reads: "public" never grants write access.
     def set_case
       case_id = params[:case_id]
       is_encrypted_case_id = !Float(case_id, exception: false)
 
       @case = if is_encrypted_case_id
-                Case.public_cases.find_by(id: decrypt_case_id(case_id))
+                Case.public_cases.find_by(id: decrypt_case_id(case_id)) if public_case_read_access?
               elsif current_user
                 current_user.cases_involved_with.where(id: case_id).first
               end
 
-      @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
+      # We didn't find a match, so let's see if it's a public case
+      @case = Case.public_cases.find_by(id: case_id) if @case.nil? && public_case_read_access?
 
       return if @case
 
@@ -53,6 +54,10 @@ module Authentication
                 []
               end
       cases
+    end
+
+    def public_case_read_access?
+      request.get? || request.head?
     end
 
     def decrypt_case_id encrypted_value

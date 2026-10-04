@@ -40,9 +40,8 @@ class TeamsController < ApplicationController
     if team.cases.exists?(kase.id)
       flash[:alert] = "#{kase.case_name} is already shared with #{team.name}."
     else
-      team.cases << kase
+      TeamSharing.new(current_user, team).share(kase)
       flash[:notice] = "#{kase.case_name} shared with #{team.name}."
-      Analytics::Tracker.track_case_shared_event(current_user, kase, team) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_shared_event)
     end
 
     redirect_back_or_to(teams_path, status: :see_other)
@@ -59,7 +58,7 @@ class TeamsController < ApplicationController
     end
 
     if team.cases.exists?(kase.id)
-      team.cases.delete(kase)
+      TeamSharing.new(current_user, team).unshare(kase)
       flash[:notice] = "#{kase.case_name} unshared from #{team.name}."
     else
       flash[:alert] = "#{kase.case_name} is not shared with #{team.name}."
@@ -82,7 +81,7 @@ class TeamsController < ApplicationController
     if team.books.exists?(book.id)
       flash[:alert] = "#{book.name} is already shared with #{team.name}."
     else
-      team.books << book
+      TeamSharing.new(current_user, team).share(book)
       flash[:notice] = "#{book.name} shared with #{team.name}."
     end
 
@@ -100,7 +99,7 @@ class TeamsController < ApplicationController
     end
 
     if team.books.exists?(book.id)
-      team.books.delete(book)
+      TeamSharing.new(current_user, team).unshare(book)
       flash[:notice] = "#{book.name} unshared from #{team.name}."
     else
       flash[:alert] = "#{book.name} is not shared with #{team.name}."
@@ -123,7 +122,7 @@ class TeamsController < ApplicationController
     if team.search_endpoints.exists?(search_endpoint.id)
       flash[:alert] = "#{search_endpoint.fullname} is already shared with #{team.name}."
     else
-      team.search_endpoints << search_endpoint
+      TeamSharing.new(current_user, team).share(search_endpoint)
       flash[:notice] = "#{search_endpoint.fullname} shared with #{team.name}."
     end
 
@@ -141,7 +140,7 @@ class TeamsController < ApplicationController
     end
 
     if team.search_endpoints.exists?(search_endpoint.id)
-      team.search_endpoints.delete(search_endpoint)
+      TeamSharing.new(current_user, team).unshare(search_endpoint)
       flash[:notice] = "#{search_endpoint.fullname} unshared from #{team.name}."
     else
       flash[:alert] = "#{search_endpoint.fullname} is not shared with #{team.name}."
@@ -220,13 +219,12 @@ class TeamsController < ApplicationController
 
     query = query.joins(:members).where(users: { id: current_user.id }).distinct if params[:member].present?
 
-    query = query.where('LOWER(teams.name) LIKE ?', "%#{params[:q].to_s.downcase}%") if params[:q].present?
+    query = query.search_by(params[:q], :name) if params[:q].present?
 
     @pagy, @teams = pagy(query.order(:name))
   end
 
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def show
     @cases_q = params[:cases_q].to_s.strip
     @cases_archived = deserialize_bool_param(params[:cases_archived])
@@ -240,10 +238,7 @@ class TeamsController < ApplicationController
 
     # Cases filtering
     cases_query = @team.cases
-    if @cases_q.present?
-      cases_query = cases_query.where('LOWER(case_name) LIKE ? OR id = ?',
-                                      "%#{@cases_q.to_s.downcase}%", @cases_q.to_i)
-    end
+    cases_query = cases_query.search_by(@cases_q, :case_name).or(cases_query.where(id: @cases_q.to_i)) if @cases_q.present?
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
     @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
 
@@ -254,14 +249,14 @@ class TeamsController < ApplicationController
     books_query = @team.books
     books_query = @books_archived ? books_query.archived : books_query.active
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
-    books_query = books_query.where('LOWER(name) LIKE ?', "%#{@books_q.to_s.downcase}%") if @books_q.present?
+    books_query = books_query.search_by(@books_q, :name) if @books_q.present?
 
     @pagy_books, @books = pagy(books_query.order(:id))
 
     # Scorers filtering
     @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
-    scorers_query = scorers_query.where('LOWER(name) LIKE ?', "%#{@scorers_q.to_s.downcase}%") if @scorers_q.present?
+    scorers_query = scorers_query.search_by(@scorers_q, :name) if @scorers_q.present?
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
 
     # Search Endpoints filtering
@@ -270,17 +265,11 @@ class TeamsController < ApplicationController
 
     search_endpoints_query = @team.search_endpoints.includes(:teams)
     search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
-    if @search_endpoints_q.present?
-      search_endpoints_q = "%#{@search_endpoints_q.to_s.downcase}%"
-      search_endpoints_query = search_endpoints_query.where('LOWER(name) LIKE ? OR LOWER(endpoint_url) LIKE ?',
-                                                            search_endpoints_q,
-                                                            search_endpoints_q)
-    end
+    search_endpoints_query = search_endpoints_query.search_by(@search_endpoints_q, :name, :endpoint_url) if @search_endpoints_q.present?
     @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:enable Metrics/AbcSize
   def new
     @team = Team.new
   end

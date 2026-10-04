@@ -18,10 +18,7 @@ class SearchEndpointsController < ApplicationController
     # for_user matches on ids and does not join teams, so filter by team with its own subquery.
     query = query.where(id: SearchEndpoint.joins(:teams).where(teams: { id: params[:team_id] }).select(:id)) if params[:team_id].present?
 
-    if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(search_endpoints.name) LIKE ? OR LOWER(endpoint_url) LIKE ?', q, q)
-    end
+    query = query.search_by(params[:q], :name, :endpoint_url) if params[:q].present?
 
     @pagy, @search_endpoints = pagy(query)
   end

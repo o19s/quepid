@@ -104,7 +104,7 @@ export default class extends Controller {
   // Measured from the container, which a narrow window scrolls sideways.
   drag(event) {
     this.moveEastTo(event.clientX - this.container.getBoundingClientRect().left)
-    this.eastPaneWidth = this.east.offsetWidth
+    this.eastPaneWidth = this.container.offsetWidth - parseFloat(this.main.style.width)
   }
 
   resize() {
@@ -121,10 +121,17 @@ export default class extends Controller {
   moveEastTo(x) {
     if (!this.container || !this.east || !this.main || !this.slider) return
 
+    const width = this.container.offsetWidth
+    if (this.toggled) {
+      const minimumMain = Math.max(Math.min(230, width / 2), width - window.innerWidth)
+      const minimumEast = Math.min(250, width / 2)
+      x = Math.max(minimumMain, Math.min(x, width - minimumEast))
+      this.eastPaneWidth = width - x
+    }
     this.slider.style.left = `${x}px`
     this.east.style.left = `${6 + x}px`
     this.main.style.width = `${x}px`
-    this.east.style.width = `${this.container.offsetWidth - x}px`
+    this.east.style.width = `${Math.max(0, this.container.offsetWidth - x - 6)}px`
   }
 }
 

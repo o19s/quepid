@@ -133,6 +133,37 @@ module Api
       end
 
       describe 'Previews args without persisting' do
+        test 'non-members can preview public tries by numeric or encrypted case id' do
+          kase = cases(:random_case)
+          kase.mark_public!
+          the_try = tries(:try_with_curator_vars)
+          original_params = the_try.query_params
+          [ kase.id, kase.public_id ].each do |case_id|
+            post :preview_args, params: { case_id: case_id, try_number: the_try.try_number, query_params: 'q=governor' }
+            assert_response :ok
+            assert_equal({ 'q' => [ 'governor' ] }, response.parsed_body['args'])
+          end
+          assert_equal original_params, the_try.reload.query_params
+        end
+
+        test 'non-members cannot preview private tries' do
+          post :preview_args, params: {
+            case_id: cases(:random_case).id, try_number: tries(:try_with_curator_vars).try_number, query_params: 'q=governor'
+          }
+          assert_response :not_found
+        end
+
+        test 'public preview access does not allow try mutation' do
+          kase = cases(:random_case)
+          kase.mark_public!
+          the_try = tries(:try_with_curator_vars)
+          put :update, params: { case_id: kase.id, try_number: the_try.try_number, try: { name: 'Hijacked' } }
+          assert_response :not_found
+          delete :destroy, params: { case_id: kase.id, try_number: the_try.try_number }
+          assert_response :not_found
+          assert Try.exists?(the_try.id)
+        end
+
         let(:case_with_two_tries)             { cases(:case_with_two_tries) }
         let(:first_for_case_with_two_tries)   { tries(:first_for_case_with_two_tries) }
 

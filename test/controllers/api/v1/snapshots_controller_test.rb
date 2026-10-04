@@ -358,6 +358,61 @@ module Api
           assert_not_nil data['snapshots'][0]['scorer']
         end
       end
+
+      describe 'Snapshots of a public case' do
+        let(:public_case) { cases(:public_case) }
+        let(:snapshot)    { public_case.snapshots.create!(name: 'Public Snapshot') }
+
+        describe 'when not logged in' do
+          before do
+            @controller = Api::V1::SnapshotsController.new
+          end
+
+          test 'can list snapshots' do
+            get :index, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot create a snapshot' do
+            assert_no_difference 'Snapshot.count' do
+              post :create, params: { case_id: public_case.id, snapshot: { name: 'Injected' } }
+            end
+            assert_response :unauthorized
+          end
+
+          test 'cannot delete a snapshot' do
+            delete :destroy, params: { case_id: public_case.id, id: snapshot.id }
+            assert_response :unauthorized
+
+            assert Snapshot.exists?(snapshot.id)
+          end
+        end
+
+        describe 'when logged in as a user not involved with the case' do
+          before do
+            login_user users(:doug)
+          end
+
+          test 'can list snapshots' do
+            get :index, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot create a snapshot' do
+            assert_no_difference 'Snapshot.count' do
+              post :create, params: { case_id: public_case.id, snapshot: { name: 'Injected' } }
+            end
+            assert_response :not_found
+          end
+
+          test 'cannot delete a snapshot' do
+            delete :destroy, params: { case_id: public_case.id, id: snapshot.id }
+            assert_response :not_found
+
+            assert Snapshot.exists?(snapshot.id)
+          end
+        end
+      end
     end
   end
 end

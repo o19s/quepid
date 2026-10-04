@@ -62,18 +62,6 @@ sampled JavaScript review. They are source findings, not live browser
 reproductions. Each item's marker was checked against the pre-migration source
 (`be9b319a`).
 
-### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal plumbing
-
-Several core modal subclasses still specialize submit/busy handling despite
-`core_modal_controller_base.js` providing shared helpers (`setSubmitting`
-overrides in `clone_case_core`, `pick_scorer_core`, `share_case_core`; `setBusy`
-in `diff_core`, `import_ratings_core`, `judgements_core`; `setLoading` in
-`move_query_core`). Consolidate only identical behavior when touching those
-controllers; keep specialized state and intentionally different redirect
-delays. Leave the two `setProgress(visible)` copies alone for now. For URL
-placeholder replacement, prefer server-owned URLs passed through data
-attributes or form actions over a generic client-side `fillUrlTemplate` helper.
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals
 
 `core_vendor.js` puts `Tether` and `Shepherd` on `window` because `tour.js`
@@ -217,14 +205,6 @@ review.
 
 ### [PREEXISTING] P0 I1 C2 — Deleting the latest try bricks the case (backend)
 
-**Observed:** `DELETE /api/cases/:id/tries/:n` on the live try returns 204, but `cases.last_try_number` still points at the deleted try. Reload → banner *"Cannot read properties of null (reading 'tryNo')"*; case unusable until DB repair.
-
-**Cause:** `Api::V1::TriesController#destroy` destroys the try but never recomputes `last_try_number` (create increments it). Deleting the latest try (including via API) can brick on reload.
-
-**Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null), or forbid deleting the current try. Add a test that deletes the latest try, reloads the case, and verifies the next core bootstrap and score update both succeed.
-
-**Frontend/UX:** the Tune Relevance try-delete action now asks for confirmation, but it still refuses only the *selected* try, not the latest one, so the backend fix above is still needed.
-
 ---
 
 ### [PREEXISTING] P0 I1 C3 — Try delete orphans scores
@@ -240,12 +220,6 @@ review.
 ## [PREEXISTING] P0 — Security
 
 ### [PREEXISTING] P0 I1 C2 — Public cases and snapshots allow unauthenticated mutation
-
-**Location:** `app/controllers/api/v1/cases_controller.rb:10-16`, `app/controllers/api/v1/snapshots_controller.rb:13-20`
-
-`Api::V1::CasesController#authenticate_api!` calls `set_case` for `show`, `update`, and `destroy`, then bypasses authentication whenever the case is public. The bypass therefore covers mutations as well as reads, so a public case can be modified or deleted without an API key. `SnapshotsController` has the same bypass for listing, creation, and deletion.
-
-**Fix direction:** "Public" grants read access only; mutation requires an authenticated user plus an ownership/permission check. Split authentication into separate read and write policies instead of overriding the shared callback by action name. Add negative tests first: anonymous `PUT/PATCH/DELETE` against public cases and snapshots.
 
 ---
 
@@ -368,13 +342,9 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P1 I2 C3 — Job progress broadcasts go to one global, unauthenticated stream
+### [PREEXISTING] P1 I2 C3 — Authenticate the Cable connection for job progress
 
-**Location:** `app/jobs/run_case_evaluation_job.rb`, `run_judge_judy_job.rb`, `export_book_job.rb`, `populate_book_job.rb`, `app/services/book_importer.rb`, `app/channels/application_cable/connection.rb`
-
-Every job broadcasts to the single `:notifications` stream, which the home, books and websocket-tester pages subscribe to. Every subscriber therefore receives every user's job progress, including case query text from `admin/run_case/_notification`, whether or not the page shows it. `ApplicationCable::Connection` identifies no user, and the signed stream name is the same for everyone, so a subscriber does not need to be signed in.
-
-**Fix direction:** Broadcast to per-record streams (`[acase, :notifications]`, `[book, :notifications]`) and subscribe only on pages for that record. Authenticate the Cable connection from the session.
+**Remaining:** `ApplicationCable::Connection` still needs session authentication. Signed stream isolation does not revoke an already copied subscription token when its holder logs out.
 
 ---
 
@@ -504,40 +474,6 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 I1 C2 — Floating labels break when a field has a validation error
-
-**Observed:** On the Profile form, saving a duplicate email shows "Email has already been taken" but the floating "Email" label drops below the input and overlaps the Gravatar help text. The profile header card also shows the rejected email as if it were saved.
-
-**Cause:** Rails' default `field_error_proc` wraps the errored input in `div.field_with_errors`, which breaks Bootstrap's `.form-floating > .form-control ~ label` sibling selector. The header reads `current_user.email` from the unsaved, invalid model.
-
-**Fix direction:** Set a `field_error_proc` that adds `is-invalid` to the input instead of wrapping it, and render the profile header from the persisted user (`current_user.reload` or an `*_was` value) when the update fails.
-
----
-
-### [PREEXISTING] P2 I0 C0 — Ratings page heading says "Scores for Case"
-
-`app/views/ratings/index.html.erb` uses `page_header "Scores for #{case_title @case}"` — copy-pasted from the scores page. Should read "Ratings for …".
-
----
-
-### [PREEXISTING] P2 I1 C1 — New annotation shows its score unrounded
-
-Right after **Create** in Tune Relevance → Annotations, the new entry reads e.g. `Score: 0.08723905360685648`; after an edit (re-rendered from the server) the same annotation reads `0.0872391`. `annotations_controller.js` appends `annotation.score.score` raw, as the Angular template did. Format the score consistently (e.g. two decimals, like the case score badge).
-
----
-
-### [PREEXISTING] P2 I1 C1 — Compare Snapshots copy says 1–3 but allows 5
-
-The modal says "Select 1-3 snapshots to compare", but `diff_core_controller.js` caps selections at `maxSnapshots` (default 5), as `main` did via `queryViewSvc.getMaxSnapshots()`. Make the copy read from the same limit.
-
----
-
-### [PREEXISTING] P2 I0 C2 — Tune Relevance drawer can be dragged wider than the window
-
-Dragging the slider past the left edge of the window leaves the drawer wider than the viewport (main column about 230px, drawer about 1490px at a 1440px window), and resizing the window doesn't correct it. `pane_controller.js#moveEastTo` uses `event.clientX` unclamped, as `main`'s `paneSvc.js` did. Clamp the position to a minimum main-column width and a minimum drawer width.
-
----
-
 ### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
 Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item#prepend_node_to_list` overwrites the copied arrangement on create and prepends each clone, so iterating the original order can reverse it. The deterministic ordering on `Case#queries` does not fix that callback. Re-sequence the clones in the original order after creation (or explicitly avoid prepending during cloning) and cover it with a model test.
@@ -639,34 +575,6 @@ redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
 ---
 
-### [PREEXISTING] P3 I1 C0 — Proxy `proxy_debug` boolean parsing
-
-**Location:** `app/controllers/proxy_controller.rb:26`
-
-Uses `'true' == params[:proxy_debug]` instead of `deserialize_bool_param`. Low real-world impact.
-
----
-
-### [PREEXISTING] P3 I2 C2 — Proxy URL parsing bug
-
-**Location:** `app/controllers/proxy_controller.rb:75-80` (`extract_extra_url_params`)
-
-Manual `split('?')` / `split('=')` corrupts the first embedded value for proxied GET requests. For `?q=test&rows=10`, it produces `q=test&rows`, overwriting the correctly parsed `q` from `HttpClientService`; the client still preserves `rows=10`. Encoded values can likewise be overwritten with their raw encoding. The shared HTTP client already parses the embedded URL query for GET and POST, so removing the controller's redundant parsing may be sufficient.
-
-Fix the overlapping URL parsing call sites together. Add multi-parameter and
-encoded-value tests (code review 2026-09-29 recommends
-`Addressable::URI#query_values`). The duplicate parsing in
-`api/v1/search_endpoints/validations_controller.rb` and
-`application_helper.rb` (`get_protocol_from_url`) should use the same helper;
-this is a refactoring part of this item, not a separate bug.
-
-If consolidating the other parsing call sites, inspect `UrlParserService` in
-`origin/deangularjs-experimental` (`db1c4e50`) as a reference. Prefer the existing
-`HttpClientService` parsing for proxy requests; a new service is not required
-just to remove the corrupting override.
-
----
-
 ## [PREEXISTING] P3 — Code quality
 
 ### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
@@ -753,63 +661,6 @@ apart, so behavior depends on which path ran. Where copies differ, decide which
 behavior is correct before consolidating and call it out in the PR. One pattern
 per PR; keep this out of in-flight feature branches.
 
-### [PREEXISTING] P2 I2 C2 — One trigger for judgement ↔ rating sync
-
-`UpdateCaseRatingsJob` is enqueued by hand 5 times in `JudgementsController` and
-3 times in `BulkJudgeController`. `Api::V1::JudgementsController` create, update
-and destroy never enqueue it, so API judgement writes never sync to case
-ratings. `BookImporter` and `RunJudgeJudyJob` take other routes (the latter runs
-a whole-book `UpdateCaseJob`). In the other direction, `JudgementFromRatingJob`
-runs for single and bulk rating saves but not for `RatingsImporter`.
-
-**Fix direction:** an `after_commit` on `Judgement` (and possibly `Rating`), or
-route every write through one `Judgements::Recorder`. Decide which bulk paths
-(import, AI judging) should batch instead of syncing per row. Related: "find or
-create the book's query-doc pair by query text and doc id" is written five
-times (`PopulateBookJob`, `JudgementFromRatingJob`, `BooksController`,
-`Api::V1::QueryDocPairsController`, `BookImporter`); it belongs on `Book`.
-
-### [PREEXISTING] P2 I2 C1 — Shared CSV export helper; two exports allow formula injection
-
-`make_csv_safe` is copied into `Api::V1::Export::RatingsController` and
-`Api::V1::JudgementsController`; JS has a stricter `csvField` in
-`utils/case_csv.js`. `api/v1/export/queries/information_needs/show.csv.erb` and
-`admin/users/index.csv.erb` don't neutralize spreadsheet formulas at all.
-
-**Fix direction:** one Ruby `CsvExport` helper (formula neutralizing plus
-`CSV.generate_line`) used by every `.csv.erb`. Case export is also split: the
-general, detailed and snapshot CSVs are built in the browser, basic and
-information-need on the server; moving them is a separate decision.
-
-### [PREEXISTING] P2 I3 C2 — Team sharing service
-
-Share/unshare is written per entity: web `TeamsController#share_case`,
-`#unshare_case`, `#share_book`, `#unshare_book`, `#share_search_endpoint`,
-`#unshare_search_endpoint`, `ScorersController#share`/`#unshare`; API
-`Api::V1::TeamCasesController`, `TeamScorersController`, and book sharing in
-`Api::V1::BooksController#create`. The copies disagree: API case sharing also
-shares the case's search endpoint (web doesn't); book sharing records no
-analytics event; scorer actions use `find_by` with a combined "Team or scorer
-not found" message while the others 404.
-
-**Fix direction:** one `TeamSharing` service with per-entity config (access
-scope, display name, side effects, analytics event).
-
-### [PREEXISTING] P3 I2 C2 — Deferred job payload and progress broadcaster
-
-The pickle-request-to-storage → job-unpickles-and-purges hand-off is written
-three times (`Books::ImportController` → `ImportBookJob`,
-`Api::V1::Books::PopulateController` → `PopulateBookJob`,
-`Api::V1::SnapshotsController` → `PopulateSnapshotJob`), along with copied
-`track_book_*_queued` helpers; a `DeferredPayload` concern (`stash!`,
-`load_and_purge!`) covers both halves. `broadcast_render_to(:notifications, …)`
-is called by hand in 6 files, and the per-1% progress loop is written twice
-(`BookImporter`, `PopulateBookJob`, both rendering `books/blah`); a
-`ProgressBroadcaster` would own throttling and target (coordinate with the
-per-record stream fix under P1 Security). `Books::ExportController#update` and
-`Api::V1::Export::BooksController#update` are flagged as duplicates and already
-differ: only the web one deletes the old export file before queueing.
-
 ### [PREEXISTING] P3 I1 C2 — `Archivable` model concern
 
 `Case` and `SearchEndpoint` define `mark_archived`/`mark_archived!`; `Book`
@@ -820,14 +671,6 @@ Case archive/unarchive actions are copied between `CasesController` and
 `not_archived` fixes naming and scope semantics. While there: the
 `if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(…)` guard is
 repeated 8 times; the tracker is always loaded, so it can go.
-
-### [PREEXISTING] P3 I2 C1 — Index-page text search scope
-
-About 17 index actions (cases, books, teams, scorers, search endpoints, ratings,
-judgements, query-doc pairs, bulk judge, admin users and announcements)
-hand-write `where('LOWER(col) LIKE ?', "%#{q.downcase}%")`. None escape `%` or
-`_`; `sanitize_sql_like` isn't used anywhere. A `search_by(:name, ...)` scope in
-a concern removes the repetition and fixes escaping once.
 
 Not worth acting on: search-response parsing exists in Ruby
 (`FetchService#extract_docs_*`) and JS (splainer-search) because evaluations run

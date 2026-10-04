@@ -34,6 +34,12 @@ module Api
             render status: :bad_request
           end
         end
+
+        private
+
+        def public_case_read_access?
+          'create' == action_name || super
+        end
       end
     end
   end

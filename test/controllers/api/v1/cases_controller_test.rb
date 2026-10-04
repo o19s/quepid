@@ -689,6 +689,75 @@ module Api
           assert_equal one.scorer, scorer
         end
       end
+
+      describe 'Changing a public case' do
+        let(:public_case) { cases(:public_case) }
+
+        describe 'when not logged in' do
+          before do
+            @controller = Api::V1::CasesController.new
+          end
+
+          test 'can read the case' do
+            get :show, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot update the case' do
+            patch :update, params: { case_id: public_case.id, case: { case_name: 'Hijacked' } }
+            assert_response :unauthorized
+
+            assert_equal 'Public Book', public_case.reload.case_name
+          end
+
+          test 'cannot delete the case' do
+            delete :destroy, params: { case_id: public_case.id }
+            assert_response :unauthorized
+
+            assert Case.exists?(public_case.id)
+          end
+
+          test 'cannot run an evaluation' do
+            post :run_evaluation, params: { case_id: public_case.id }
+            assert_response :unauthorized
+          end
+        end
+
+        describe 'when logged in as a user not involved with the case' do
+          test 'can read the case' do
+            get :show, params: { case_id: public_case.id }
+            assert_response :ok
+          end
+
+          test 'cannot update the case' do
+            patch :update, params: { case_id: public_case.id, case: { case_name: 'Hijacked' } }
+            assert_response :not_found
+
+            assert_equal 'Public Book', public_case.reload.case_name
+          end
+
+          test 'cannot archive the case' do
+            patch :update, params: { case_id: public_case.id, case: { archived: true } }
+            assert_response :not_found
+
+            public_case.reload
+            assert_not public_case.archived
+            assert_equal users(:random), public_case.owner
+          end
+
+          test 'cannot delete the case' do
+            delete :destroy, params: { case_id: public_case.id }
+            assert_response :not_found
+
+            assert Case.exists?(public_case.id)
+          end
+
+          test 'cannot run an evaluation' do
+            post :run_evaluation, params: { case_id: public_case.id }
+            assert_response :not_found
+          end
+        end
+      end
     end
   end
 end

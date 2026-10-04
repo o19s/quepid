@@ -40,6 +40,12 @@ function buildController() {
 }
 
 describe("AnnotationsController", () => {
+  it("formats new and reloaded annotation scores consistently", () => {
+    const controller = buildController()
+    const item = controller.renderAnnotation(controller.normalize({ score: { score: 0.08723905360685648 } }))
+    expect(item.querySelector('[data-slot="score"]').textContent).toContain("0.09")
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     document.body.innerHTML = ""

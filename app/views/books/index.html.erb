@@ -1,4 +1,4 @@
-<%= turbo_stream_from(:notifications) %>
+<%= turbo_stream_from(current_user, :notifications) %>
 
 <% title = capture do %>
   <i class="bi bi-book"></i> Books <%= "(Archived)" if params[:archived] == 'true' %>

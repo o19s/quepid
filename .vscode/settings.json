@@ -1,0 +1,5 @@
+{
+  "rubocop.mode": "onlyRunGlobally",
+  "rubocop.commandPath": "bundle",
+  "rubocop.commandArgs": ["exec", "rubocop"]
+}

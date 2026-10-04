@@ -35,6 +35,32 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'embedded query parameters are decoded once and outer parameters override them' do
+    stub = stub_request(:get, 'https://example.com/search')
+      .with(query: { 'q' => 'a=b & café', 'rows' => '10' })
+      .to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+    get proxy_fetch_path, params: { url: 'https://example.com/search?q=a%3Db%20%26%20caf%C3%A9&rows=5', rows: 10 }
+    assert_response :ok
+    assert_requested stub
+  end
+
+  test 'proxy debug accepts standard boolean values' do
+    stub_request(:get, 'https://example.com/search').to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
+    original = HttpClientService.method(:new)
+    test_instance = self
+    %w[1 true 0 false].each do |value|
+      constructor = lambda do |url, **options|
+        test_instance.assert_equal ActiveRecord::Type::Boolean.new.deserialize(value), options[:debug]
+        original.call(url, **options, debug: false)
+      end
+      HttpClientService.define_singleton_method(:new, &constructor)
+      get proxy_fetch_path, params: { url: 'https://example.com/search', proxy_debug: value }
+      assert_response :ok
+    end
+  ensure
+    HttpClientService.define_singleton_method(:new, &original) if original
+  end
+
   test 'should require a url query parameter' do
     get proxy_fetch_path
     assert_response :bad_request
@@ -65,6 +91,7 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
   end
 
   test 'should be able to handle a get with a ?q= and no value' do
+    stub_request(:get, 'http://solr.quepidapp.com:8983/solr/statedecoded/select').with(query: { 'q' => '', 'fl' => 'id,text', 'rows' => '10', 'start' => '0' }).to_return(body: '{}', headers: { 'Content-Type' => 'application/json' })
     get proxy_fetch_url params: {
       url: 'http://solr.quepidapp.com:8983/solr/statedecoded/select?q=', fl: 'id,text', rows: 10, start: 0
     }

@@ -26,37 +26,36 @@ module Api
         # @response_example Currently running (202) [{"message": "Currently exporting book as file.  Status is running" }]
         # @response_example Export completed (200) [{"download_file_url": "/rails/active_storage/blobs/proxy/eyJfcmFpbHMiOnsiZGF0YSI6MywicHVyIjoiYmxvYl9pZCJ9fQ/book_export_1.json.zip" }]
         #
-        # > Note: This is a async process, so first you get a `message`, then you get the `download_file_url`.
-        def update
-          # WARNING books/export_controller.rb and
-          # api/v1/export/books_controller.rb ARE DUPLICATED
-          message = nil
-
+        # > Note: PUT/PATCH starts an export. Poll the same URL with GET for status and the completed download_file_url.
+        def show
           if @book.export_job
-            message = "Currently exporting book as file.  Status is #{@book.export_job}."
-          else
-            track_book_export_queued do
-              ExportBookJob.perform_later(@book)
-            end
-            message = 'Starting export of book as file.'
-          end
-
-          if @book.export_file.attached?
+            render json: { message: "Currently exporting book as file.  Status is #{@book.export_job}." }, status: :ok
+          elsif @book.export_file.attached?
             blob = @book.export_file.blob
             url = Rails.application.routes.url_helpers.rails_blob_url(blob, only_path: true)
             render json: { download_file_url: url }
           else
-            render json: { message: message }, status: :ok
+            render json: { message: 'No completed export. Send an update request to start one.' }, status: :ok
           end
         end
 
-        private
-
-        def track_book_export_queued
-          @book.update(export_job: "queued at #{Time.zone.now}")
-
-          # Yield to the block to perform the job
-          yield if block_given?
+        # Update requests start a fresh export; GET requests poll its status.
+        def update
+          started = false
+          @book.with_lock do
+            unless @book.export_job
+              started = true
+              old_blob = @book.export_file.blob if @book.export_file.attached?
+              @book.export_file.detach
+              @book.queue_job(:export) { ExportBookJob.perform_later(@book) }
+              ActiveRecord.after_all_transactions_commit { old_blob.purge_later } if old_blob
+            end
+          end
+          if started
+            render json: { message: 'Starting export of book as file.' }, status: :ok
+          else
+            show
+          end
         end
       end
     end

@@ -17,10 +17,7 @@ class CasesController < ApplicationController
     query = query.joins(:teams).where(teams: { id: @filter_team_id }) if @filter_team_id.present?
 
     # Apply search filter
-    if @filter_q.present?
-      query = query.where('LOWER(case_name) LIKE ? OR cases.id = ?',
-                          "%#{@filter_q.to_s.downcase}%", @filter_q.to_i)
-    end
+    query = query.search_by(@filter_q, :case_name).or(query.where(id: @filter_q.to_i)) if @filter_q.present?
 
     # Apply archived filter
     query = query.where(archived: @archived)

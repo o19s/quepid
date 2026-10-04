@@ -3,6 +3,7 @@ import { deleteJson, getJson, postJson, putJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { showFlash } from "utils/flash"
 import { getCoreStores } from "utils/core_store_access"
+import { formatScore } from "utils/scoring"
 import { isSameId } from "utils/record_identity"
 
 export default class extends Controller {
@@ -189,7 +190,8 @@ export default class extends Controller {
     })
 
     slot("try").append(annotation.score.try_number ?? annotation.score.try_id ?? "")
-    slot("score").append(annotation.score.score ?? "")
+    const score = annotation.score.score
+    slot("score").append(score == null ? "" : formatScore(score))
     slot("message").textContent = annotation.message || ""
     return item
   }

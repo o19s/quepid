@@ -42,7 +42,7 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
 - **Expected:** Account is created and you're logged in (or redirected per app config).
 - **Edge cases:**
   - [ ] Sign up with an email that's already registered — should show an error, not silently succeed.
-  - [ ] Submit with Password and Confirm Password not matching — should show a validation error.
+  - [ ] Submit with Password and Confirm Password not matching — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Submit with the terms checkbox unchecked when required — should block submission.
   - [ ] If signups are disabled in this environment, confirm the sign-up panel doesn't render at all.
 
@@ -82,8 +82,8 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
 - **Edge cases:**
   - [ ] Request a reset for an email that doesn't exist — should behave the same as a valid request (no confirmation/denial of account existence).
   - [ ] Try to reuse an already-used or expired reset link — should be rejected.
-  - [ ] Submit mismatched new password / confirmation — should show a validation error.
-  - [ ] Submit a password shorter than the minimum length — should show a validation error.
+  - [ ] Submit mismatched new password / confirmation — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
+  - [ ] Submit a password shorter than the minimum length — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
 
 ### 1.5 Invitations (accepting one)
 
@@ -98,7 +98,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - **Expected:** You're logged in as a new user who is now a member of the inviting team.
 - **Edge cases:**
   - [ ] Try to reuse the same invitation link a second time after accepting — should be rejected.
-  - [ ] Submit mismatched passwords — should show a validation error.
+  - [ ] Submit mismatched passwords — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Confirm that before accepting, the invited user shows an `INVITED` badge on the team page and doesn't show up in Admin > Users > Pulse activity data (Part 14).
 
 ### 1.6 Profile page
@@ -110,7 +110,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   4. Reload the page and confirm the changes persisted.
 - **Expected:** Profile updates save and display correctly.
 - **Edge cases:**
-  - [ ] Change your email to one already used by another account — should show a validation error.
+  - [ ] Change your email to one already used by another account — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Clear the Name field entirely — check what displays elsewhere (should fall back to showing the email as display name).
 
 ### 1.7 Change password from Profile
@@ -122,7 +122,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - **Expected:** Password changes; you can log in with the new password afterward.
 - **Edge cases:**
   - [ ] Enter an incorrect Old Password — should show "The original password is incorrect." and not change anything.
-  - [ ] Enter mismatched New Password / Confirm New Password — should show a validation error.
+  - [ ] Enter mismatched New Password / Confirm New Password — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
 
 ### 1.8 API Keys (Personal Access Tokens)
 

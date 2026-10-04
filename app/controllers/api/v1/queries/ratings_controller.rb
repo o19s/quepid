@@ -11,7 +11,7 @@ module Api
 
           if @rating.update rating_params
             Analytics::Tracker.track_rating_created_event current_user, @rating
-            JudgementFromRatingJob.perform_later current_user, @rating
+            JudgementSync.from_ratings current_user, [ @rating ]
             respond_with @rating
           else
             render json: @rating.errors, status: :bad_request

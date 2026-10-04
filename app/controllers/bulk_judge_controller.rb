@@ -23,7 +23,7 @@ class BulkJudgeController < ApplicationController
     query = @book.query_doc_pairs.includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
-    query = query.where('LOWER(query_text) LIKE ?', "%#{@query_text.to_s.downcase}%") if @query_text.present?
+    query = query.search_by(@query_text, :query_text) if @query_text.present?
 
     # Filter by rank depth if specified
     query = query.where(position: ..@rank_depth) if @rank_depth.present?
@@ -86,10 +86,7 @@ class BulkJudgeController < ApplicationController
 
     # Handle reset - destroy the judgement entirely
     if deserialize_bool_param(params[:reset])
-      if judgement.persisted?
-        judgement.destroy
-        UpdateCaseRatingsJob.perform_later query_doc_pair
-      end
+      judgement.destroy if judgement.persisted?
       render json: { status: 'success' }
     else
       # Update rating if provided
@@ -103,7 +100,6 @@ class BulkJudgeController < ApplicationController
       judgement.explanation = params[:explanation] if params.key?(:explanation)
 
       if judgement.save
-        UpdateCaseRatingsJob.perform_later query_doc_pair
         render json: { status: 'success', judgement_id: judgement.id }
       else
         render json: { status: 'error', errors: judgement.errors.full_messages }, status: :unprocessable_content
@@ -118,7 +114,6 @@ class BulkJudgeController < ApplicationController
     )
 
     if judgement&.destroy
-      UpdateCaseRatingsJob.perform_later judgement.query_doc_pair
       render json: { status: 'success' }
     else
       render json: { status: 'error', message: 'Judgement not found or could not be deleted' }, status: :not_found

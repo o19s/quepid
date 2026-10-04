@@ -10,6 +10,7 @@ class RunCaseEvaluationJob < ApplicationJob
   limits_concurrency to: 2, key: self.class.name, duration: 12.hours
 
   def perform acase, atry, user: nil
+    @case = acase
     @fetch_service = initialize_fetch_service
     @fetch_service.begin(acase, atry)
 
@@ -100,8 +101,8 @@ class RunCaseEvaluationJob < ApplicationJob
   end
 
   def broadcast_general_notification query, query_count, counter
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      @case,
       target:  'notifications',
       partial: 'admin/run_case/notification',
       locals:  { query: query, query_count: query_count, counter: counter }
@@ -109,8 +110,8 @@ class RunCaseEvaluationJob < ApplicationJob
   end
 
   def broadcast_case_specific_notification acase, query, query_count, counter
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      @case,
       target:  "notifications-case-#{acase.id}",
       partial: 'admin/run_case/notification_case',
       locals:  { acase: acase, query: query, query_count: query_count, counter: counter }

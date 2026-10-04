@@ -117,7 +117,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   1. Click the wrench icon ("Tune Relevance") to open the east drawer.
   2. On the **Query** tab, edit the raw query template in the CodeMirror editor (Solr parameters or JSON for ES/OS/Vectara/Algolia/SearchAPI). Switch to Tuning Knobs and back; confirm the edits remain.
   3. Click **Rerun My Searches!**.
-- **Expected:** All queries re-run against the edited template and rescore.
+- **Expected:** All queries re-run against the edited template and rescore. Dragging the drawer beyond either edge keeps a usable main column and drawer; resizing reclamps its width, including below the workbench minimum width.
 - **Edge cases:**
   - [ ] On a `static` engine case, confirm the tab shows "With a Static search endpoint there are no query settings to play with" instead of an editor.
   - [ ] If a TLS/protocol mismatch is detected (HTTP vs HTTPS), confirm the button instead reads "Reload Quepid in {protocol}" and behaves accordingly.
@@ -156,7 +156,7 @@ Covered in depth in Part 5 (Tries / History). Quick smoke test here:
 - [ ] **Steps:**
   1. Switch to **History**, confirm links "Visualize your tries", "Check Scores", "Check Ratings" are present and navigate correctly.
   2. Confirm the try list below renders, with tries color-coded by search URL. Each row shows the try name, the query params in plain text truncated inline with "...", and "using {endpoint}".
-- **Expected:** "Check Scores" goes to `/cases/:id/scores` — a table of all scores with Scorer/Try Number/Score/Day columns, filterable by scorer, with a bulk **Delete** action (checkboxes + a confirm dialog) and a link to "Understand Score Duplication" (Part 13). "Check Ratings" goes to `/cases/:id/ratings` — a searchable (`query, doc id, or rating`) table of every rating with Rating ID/Query/Doc ID/Rating/User/Created/Updated columns.
+- **Expected:** "Check Scores" goes to `/cases/:id/scores` — a table of all scores with Scorer/Try Number/Score/Day columns, filterable by scorer, with a bulk **Delete** action (checkboxes + a confirm dialog) and a link to "Understand Score Duplication" (Part 13). "Check Ratings" goes to `/cases/:id/ratings` — a page headed "Ratings for Case …" with a searchable (`query, doc id, or rating`) table of every rating with Rating ID/Query/Doc ID/Rating/User/Created/Updated columns.
 - **Edge cases:**
   - [ ] On the Scores page, select several scores via checkboxes, confirm **Delete** is disabled until at least one is checked, then confirm deletion requires a confirm dialog and actually removes just those score rows (not the whole case).
   - [ ] On the Scores page, use "Check All" then uncheck one — confirm "Check All" itself becomes unchecked (partial-selection state).
@@ -205,6 +205,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404 rather than a client-side application shell.
 - **Expected:** All four load the workbench (or a real 404) via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
 - **Edge cases:**
+  - [ ] On a disposable case with two tries, delete the latest try through `DELETE /api/cases/:id/tries/:n`, then reload `/case/:id`. Confirm the remaining try boots and rerunning searches saves a score. Deleting the only remaining try must return 400 and leave the case usable.
   - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
   - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.
 

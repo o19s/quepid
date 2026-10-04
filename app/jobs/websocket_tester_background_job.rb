@@ -3,10 +3,10 @@
 class WebsocketTesterBackgroundJob < ApplicationJob
   queue_as :bulk_processing
 
-  def perform
+  def perform user
     30.downto(0) do |counter|
       Turbo::StreamsChannel.broadcast_render_to(
-        :notifications,
+        user, :notifications,
         target:  'notifications',
         partial: 'admin/websocket_tester/notification',
         locals:  { counter: counter }

@@ -18,10 +18,9 @@ module Api
           return
         end
 
-        @team.scorers << @scorer unless @team.scorers.exists?(@scorer.id)
+        TeamSharing.new(current_user, @team).share(@scorer)
 
         if @team.save
-          Analytics::Tracker.track_scorer_shared_event current_user, @scorer, @team
           respond_with @scorer
         else
           render json: @scorer.errors, status: :bad_request
@@ -29,8 +28,8 @@ module Api
       end
 
       def destroy
-        scorer = @team.scorers.where(id: params[:id]).all
-        @team.scorers.delete(scorer) if scorer
+        scorer = @team.scorers.find_by(id: params[:id])
+        TeamSharing.new(current_user, @team).unshare(scorer) if scorer
 
         head :no_content
       end

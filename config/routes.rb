@@ -328,7 +328,7 @@ Rails.application.routes.draw do
 
       # Exports
       namespace :export do
-        resources :books, only: [ :update ], param: :book_id
+        resources :books, only: [ :show, :update ], param: :book_id
         resources :cases, only: [ :show ], param: :case_id # should be post (:update)
         resources :ratings, only: [ :show ], param: :case_id # should be post (:update)
         namespace :queries do

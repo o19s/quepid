@@ -56,8 +56,12 @@ class BookImporter
   # Returns true on success, so Api::V1::Import::BooksController#create's `if book_importer.import`
   # check doesn't depend on which of the branches below happened to run last (some callers - e.g.
   # a payload with only query_doc_pairs and no all_judgements - would otherwise see a falsy nil).
-  # rubocop:disable-next Naming/PredicateMethod
   def import
+    JudgementSync.batch { import_data }
+  end
+
+  # rubocop:disable-next Naming/PredicateMethod -- Imports data and persists it.
+  def import_data
     params_to_use = @data_to_process
 
     apply_top_level_attributes(params_to_use)
@@ -118,7 +122,7 @@ class BookImporter
   def import_query_doc_pairs query_doc_pairs
     total = query_doc_pairs.size
     counter = total
-    last_percent = 0
+    progress = ProgressBroadcaster.new(@book, total)
 
     query_doc_pairs.each do |query_doc_pair|
       qdp = find_or_initialize_query_doc_pair(query_doc_pair)
@@ -126,27 +130,12 @@ class BookImporter
       qdp.save
 
       counter -= 1
-      last_percent = broadcast_progress(total, counter, last_percent, qdp)
+      progress.advance(counter, qdp)
 
       next unless query_doc_pair[:judgements]
 
       query_doc_pair[:judgements].each { |judgement| import_judgement(qdp, judgement) }
     end
-  end
-
-  # Emits a notifications broadcast every percent of `total` crossed, from 0 to 100,
-  # and returns the (possibly updated) last_percent for the caller to carry forward.
-  def broadcast_progress total, counter, last_percent, qdp
-    percent = (((total - counter).to_f / total) * 100).truncate
-    return last_percent unless percent > last_percent
-
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
-      target:  'notifications',
-      partial: 'books/blah',
-      locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
-    )
-    percent
   end
 
   def import_all_judgements judgements
@@ -185,7 +174,7 @@ class BookImporter
     # No id given, or it doesn't belong to this book (e.g. a stale/foreign id) - fall back to
     # matching by query_text/doc_id rather than forcing that id onto a new record, which would
     # collide with an unrelated row's primary key.
-    @book.query_doc_pairs.find_or_initialize_by(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+    @book.find_or_initialize_query_doc_pair(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
   end
 
   def import_judgement query_doc_pair, attrs

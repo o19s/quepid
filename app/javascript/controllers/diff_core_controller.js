@@ -12,6 +12,7 @@ import { isSameId } from "utils/record_identity"
 export default class extends CoreModalControllerBase {
   static targets = [
     "title",
+    "limit",
     "alert",
     "selections",
     "addButton",
@@ -38,6 +39,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async openFor() {
+    if (this.hasLimitTarget) this.limitTarget.textContent = String(this.maxSnapshotsValue)
     this.clearMessages()
     this.setBusy(false)
 

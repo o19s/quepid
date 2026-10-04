@@ -28,11 +28,11 @@ module Api
       # @request_body_example basic book [Reference:#/components/examples/BasicBook]
       def create
         @book = Book.new(book_params)
-        if params[:book][:team_id]
-          team = Team.find_by(id: params[:book][:team_id])
-          @book.teams << team
-        end
+        team_id = params.dig(:book, :team_id)
+        team = current_user.teams.find(team_id) if team_id
+        @book.owner ||= current_user
         if @book.save
+          TeamSharing.new(current_user, team).share(@book) if team
           respond_with @book
         else
           render json: @book.errors, status: :bad_request

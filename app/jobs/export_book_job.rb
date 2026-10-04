@@ -8,8 +8,8 @@ class ExportBookJob < ApplicationJob
 
   def perform book
     book.update(export_job: "export started at #{Time.zone.now}")
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/notification',
       locals:  { book: book, message: "Starting to export book #{book.name}", progress: 33 }
@@ -20,8 +20,8 @@ class ExportBookJob < ApplicationJob
 
     compressed_data = create_zip_from_json(json_data, "book_export_#{book.id}.json")
 
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/notification',
       locals:  { book: book, message: "JSON exported for  #{book.name}, starting to create file", progress: 66 }
@@ -31,8 +31,8 @@ class ExportBookJob < ApplicationJob
                             content_type: 'application/zip')
     book.update(export_job: nil)
 
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/notification',
       locals:  { book:     book,

@@ -57,6 +57,18 @@ class ProfilesControllerTest < ActionController::TestCase
         end
       end
 
+      test 'invalid profile inputs keep floating labels and persisted header values' do
+        original_email = user.email
+        patch :update, params: { user: { email: users(:doug).email } }
+        assert_response :unprocessable_content
+        assert_select '.form-floating > input.is-invalid[aria-invalid="true"] ~ label'
+        assert_select '.field_with_errors', count: 0
+        assert_select '.card-body p', text: original_email
+        assert_select 'input[name="user[email]"]' do |inputs|
+          assert_equal users(:doug).email, inputs.first['value']
+        end
+      end
+
       test 'a validation failure re-renders show with only the profile section showing its errors' do
         patch :update, params: { user: { email: 'not-an-email' } }
 

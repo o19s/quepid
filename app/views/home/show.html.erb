@@ -1,7 +1,7 @@
 <!--
 Inspired by https://dev.to/themesberg/tutorial-how-to-build-a-simple-admin-dashboard-interface-using-bootstrap-5-2734
 -->
-<%= turbo_stream_from(:notifications) %>
+<%= turbo_stream_from(current_user, :notifications) %>
 
 <div class="toast-container top-0 end-0 p-3">
   <%= render partial: "consent_toast" %>

@@ -23,7 +23,7 @@ class ProxyController < ApplicationController
   #
   def fetch
     url_param = proxy_url_params
-    proxy_debug = 'true' == params[:proxy_debug]
+    proxy_debug = deserialize_bool_param(params[:proxy_debug])
 
     headers = build_forwarded_headers
     headers['Content-Type'] = 'application/json'
@@ -33,7 +33,7 @@ class ProxyController < ApplicationController
     client = HttpClientService.new(url_param, headers: headers, credentials: credentials, debug: proxy_debug)
 
     response = if request.get?
-                 perform_get_request(client, url_param)
+                 perform_get_request(client)
                elsif request.post?
                  perform_post_request(client)
                end
@@ -49,17 +49,14 @@ class ProxyController < ApplicationController
 
   private
 
-  def perform_get_request client, url_param
+  def perform_get_request client
     excluded_keys = [ :url, :action, :controller, :proxy_debug, :search_endpoint_id ]
     query_params = request.query_parameters.except(*excluded_keys)
     body_params = request.request_parameters.except(*query_params.keys)
 
-    # Handle extra query param embedded in the URL (e.g., url=http://example.com/search?q=test&rows=10)
-    extra_params = extract_extra_url_params(url_param)
-
     body = body_params.present? ? body_params.first.first : nil
 
-    client.get(params: query_params.merge(extra_params), body: body)
+    client.get(params: query_params, body: body)
   end
 
   def perform_post_request client
@@ -70,14 +67,6 @@ class ProxyController < ApplicationController
     body = body_params.present? ? request.raw_post : nil
 
     client.post(params: query_params, body: body)
-  end
-
-  def extract_extra_url_params url_param
-    return {} unless url_param.include?('?')
-
-    # Handle URLs like http://myserver.com/search?q=tiger or http://myserver.com/search?q=tiger?
-    extra_query_param = url_param.split('?', 2).last.split('=')
-    { extra_query_param.first => extra_query_param.second }
   end
 
   def build_forwarded_headers

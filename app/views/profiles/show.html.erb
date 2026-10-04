@@ -4,6 +4,7 @@
   # three forms below act on the same current_user, so unscoped error_messages renders would
   # otherwise show one form's errors under all three headings at once.
   active_error_section = local_assigns.fetch(:active_error_section, nil)
+  profile_user = active_error_section ? User.find(current_user.id) : current_user
 %>
 <section styled="background-color: #9de2ff;">
   <div class="container py-5 h-100">
@@ -13,12 +14,12 @@
           <div class="card-body p-4">
             <div class="d-flex text-black">
               <div class="flex-shrink-0">
-                <%= image_tag current_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid rounded', style:"width: 180px;", title: 'Avatar image' %>
+                <%= image_tag profile_user.avatar_url(:big), id: 'user-avatar', class:'img-fluid rounded', style:"width: 180px;", title: 'Avatar image' %>
               </div>
               <div class="flex-grow-1 ms-3">
-                <h5 class="mb-1"><%= current_user.display_name %></h5>
+                <h5 class="mb-1"><%= profile_user.display_name %></h5>
                 <p class="mb-2 pb-1" style="color: #2b2a2a;">
-                  <%= current_user.email %>
+                  <%= profile_user.email %>
                 </p>
                 <div
                   class="d-flex justify-content-start rounded-3 p-2 mb-2"
@@ -28,30 +29,30 @@
                     <p class="small text-muted mb-1">
                       Cases
                     </p>
-                    <p class="mb-0"><%= current_user.cases.count %></p>
+                    <p class="mb-0"><%= profile_user.cases.count %></p>
                   </div>
                   <div class="px-3">
                     <p class="small text-muted mb-1">
                       Teams
                     </p>
-                    <p class="mb-0"><%= current_user.teams.count %></p>
+                    <p class="mb-0"><%= profile_user.teams.count %></p>
                   </div>
                   <div>
                     <p class="small text-muted mb-1">
                       Queries
                     </p>
-                    <p class="mb-0"><%= current_user.queries.count %></p>
+                    <p class="mb-0"><%= profile_user.queries.count %></p>
                   </div>
                   <div class="px-3">
                     <p class="small text-muted mb-1">
                       Ratings
                     </p>
-                    <p class="mb-0"><%= current_user.judgements.count %></p>
+                    <p class="mb-0"><%= profile_user.judgements.count %></p>
                   </div>
                 </div>
                 <div class="d-flex pt-1">
                   <p class="small text-muted">
-                    Member since <%= time_ago_in_words current_user.created_at %> ago
+                    Member since <%= time_ago_in_words profile_user.created_at %> ago
                   </p>
                   <!--
                   <button type="button" class="btn btn-outline-primary me-1 flex-grow-1">

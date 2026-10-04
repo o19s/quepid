@@ -6,9 +6,9 @@ module Api
     class CasesController < Api::ApiController
       before_action :set_case, only: [ :show, :update, :destroy, :run_evaluation ]
 
-      # Special handling for cases that are "public"
+      # A public case can be read without logging in; changing it still requires a user.
       def authenticate_api!
-        if [ :show, :update, :destroy ].include?(action_name.to_sym)
+        if :show == action_name.to_sym
           set_case
           return true if @case&.public?
         end

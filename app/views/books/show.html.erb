@@ -1,4 +1,4 @@
-<%= turbo_stream_from(:notifications) %>
+<%= turbo_stream_from(current_user, :notifications) %>
 
 <%= turbo_frame_tag "modal" %>
 

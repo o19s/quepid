@@ -30,6 +30,22 @@ describe("PaneController", () => {
     window.sessionStorage.clear()
   })
 
+  it("clamps dragging to both edges and reclamps on resize", () => {
+    const { controller, element, main, east } = buildController()
+    controller.connect()
+    controller.toggle()
+    controller.drag({ clientX: -300 })
+    expect(main.style.width).toBe("230px")
+    expect(east.style.width).toBe("764px")
+    controller.drag({ clientX: 2000 })
+    expect(main.style.width).toBe("750px")
+    Object.defineProperty(element, "offsetWidth", { configurable: true, value: 400 })
+    controller.resize()
+    expect(main.style.width).toBe("200px")
+    expect(east.style.width).toBe("194px")
+    controller.disconnect()
+  })
+
   it("starts collapsed and opens the east pane when toggled", () => {
     const { controller, main, slider, east } = buildController()
     controller.connect()
@@ -43,7 +59,7 @@ describe("PaneController", () => {
     expect(east.style.display).toBe("block")
     expect(slider.style.display).toBe("block")
     expect(main.style.width).toBe("550px")
-    expect(east.style.width).toBe("450px")
+    expect(east.style.width).toBe("444px")
   })
 
   it("uses declared pane targets rather than similarly classed descendants", () => {
@@ -154,7 +170,7 @@ describe("PaneController", () => {
     const { controller, main, east } = buildController()
     controller.connect()
 
-    expect(main.style.width).toBe("0px")
-    expect(east.style.width).toBe("1000px")
+    expect(main.style.width).toBe("230px")
+    expect(east.style.width).toBe("764px")
   })
 })

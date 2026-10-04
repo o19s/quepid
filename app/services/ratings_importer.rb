@@ -15,6 +15,7 @@ class RatingsImporter
       logger:         Rails.logger,
       show_progress:  false,
       drop_header:    false,
+      user:           acase.owner,
     }
 
     @options  = default_options.merge(opts.deep_symbolize_keys)
@@ -159,6 +160,11 @@ class RatingsImporter
         end
       )
     end
+
+    imported = (ratings_to_update + ratings_to_import).filter_map do |rating|
+      rating.query.ratings.find_by(doc_id: rating.doc_id)
+    end
+    JudgementSync.from_ratings(@options[:user], imported)
 
     return unless @options[:clear_existing]
 

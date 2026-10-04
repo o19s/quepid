@@ -12,11 +12,8 @@ class QueryDocPairsController < ApplicationController
     query = @book.query_doc_pairs
 
     if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-      query = query.where(
-        'LOWER(query_text) LIKE ? OR query_doc_pairs.id = ? OR LOWER(doc_id) LIKE ? OR LOWER(document_fields) LIKE ?',
-        q, params[:q].to_i, q, q
-      )
+      query = query.search_by(params[:q], :query_text, :doc_id, :document_fields)
+        .or(query.where(id: params[:q].to_i))
     end
 
     # Eager load judgements count to avoid N+1 queries when showing the count
