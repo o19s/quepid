@@ -719,7 +719,7 @@ All search engine responses are normalized to a common format via `normalDocsSvc
 ### Search Execution Pattern
 
 ```javascript
-// utils/live_query_transport.js → createSearchAllRuntime() in utils/query_runtime.js — Two-Phase Architecture
+// searchAll() in utils/live_query_runtime_owner.js → runSearchAll() in utils/query_service.js — Two-Phase Architecture
 searchAll():
   // Phase 1: Build lazy search functions (NOT promises)
   promises = queries.map(q => () => q.search().then(() => scorePromises.push(q.score())))

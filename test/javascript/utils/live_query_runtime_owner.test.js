@@ -8,7 +8,8 @@ function buildOwner({
   selectedTry = { searchEngine: "solr" },
   isTrySelected = true,
   searcher,
-  scorer = { getColors: () => [] }
+  scorer = { getColors: () => [] },
+  bootstrapScorer = vi.fn()
 } = {}) {
   window.quepidSearch = quepidSearch
   quepidSearch.splainerSearch = {
@@ -37,7 +38,7 @@ function buildOwner({
       scorer: {
         getDefault: vi.fn(() => scorer),
         select: vi.fn(),
-        bootstrap: vi.fn()
+        bootstrap: bootstrapScorer
       },
       navigation: { proxyUrlFor: vi.fn() }
     }
@@ -45,6 +46,13 @@ function buildOwner({
 
   return window.quepidSearch
 }
+
+const jsonResponse = (data) => ({
+  ok: true,
+  status: 200,
+  json: async () => data,
+  text: async () => JSON.stringify(data)
+})
 
 function buildStores() {
   return {
@@ -61,6 +69,7 @@ function buildStores() {
 
 describe("createLiveQueryRuntimeOwner", () => {
   afterEach(() => {
+    vi.unstubAllGlobals()
     delete window.quepidStore
     delete quepidSearch.splainerSearch
     window.quepidSearch = quepidSearch
@@ -161,7 +170,7 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(stores.queries.query(1).expanded).toBe(false)
   })
 
-  it("runs an added query through search, documents, and scoring", async () => {
+  async function addQuery() {
     const stores = buildStores()
     stores.scoring = { setLatestScoreInfo: vi.fn(), markRatingChanged: vi.fn(), addEventListener: vi.fn() }
     const searcher = {
@@ -181,11 +190,20 @@ describe("createLiveQueryRuntimeOwner", () => {
     await search.queryCapabilities.changeSettings(-1, settings)
 
     const prepared = search.queryLifecycle.prepareQueries(["star wars"])
-    await expect(search.queryLifecycle.commitQueries(prepared, {
+    const committed = await search.queryLifecycle.commitQueries(prepared, {
       status: 201,
       data: { display_order: [5], query: { query_id: 5 } }
-    })).resolves.toEqual({})
+    })
+    // The commit fires its case-wide rescore without awaiting it.
+    await vi.waitFor(() => expect(stores.scoring.setLatestScoreInfo).toHaveBeenCalled())
 
+    return { stores, searcher, search, settings, committed }
+  }
+
+  it("runs an added query through search, documents, and scoring", async () => {
+    const { stores, search, committed } = await addQuery()
+
+    expect(committed).toEqual({})
     const query = search.queryCapabilities.getQuery(5)
     expect(query.queryText).toBe("star wars")
     expect(quepidSearch.splainerSearch.searchSvc.createSearcher).toHaveBeenCalledWith(
@@ -196,6 +214,76 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(query.hasBeenScored).toBe(true)
     expect(query.lastScore).toBe(0.5)
     expect(stores.documents.replaceQuery).toHaveBeenCalledWith(5, expect.any(Object))
-    expect(stores.scoring.setLatestScoreInfo).toHaveBeenCalled()
+  })
+
+  it("reruns every registered query and completes the collection store's search", async () => {
+    const { stores, searcher, search } = await addQuery()
+    searcher.search.mockClear()
+    stores.scoring.setLatestScoreInfo.mockClear()
+    const searchStarted = vi.fn()
+    stores.queries.addEventListener("search-started", searchStarted)
+
+    await search.queryCommands.searchAll()
+
+    expect(searchStarted).toHaveBeenCalledOnce()
+    expect(searcher.search).toHaveBeenCalled()
+    expect(search.queryCapabilities.getQuery(5).hasBeenScored).toBe(true)
+    expect(stores.queries.searchStatus).toBe("ready")
+    expect(stores.scoring.setLatestScoreInfo).toHaveBeenCalledOnce()
+  })
+
+  it("refreshes every query's diff, republishes it, and reports success", async () => {
+    const { stores, search } = await addQuery()
+    stores.documents.replaceQuery.mockClear()
+    const refreshed = vi.fn()
+    document.addEventListener("query-diffs:refreshed", refreshed)
+
+    await search.queryCapabilities.refreshAllDiffs()
+
+    expect(search.queryCapabilities.getQuery(5).diff).toBeNull()
+    expect(stores.documents.replaceQuery).toHaveBeenCalledTimes(2)
+    expect(refreshed.mock.calls[0][0].detail).toEqual({ success: true })
+    document.removeEventListener("query-diffs:refreshed", refreshed)
+  })
+
+  it("refetches existing diffs when settings change within the same case", async () => {
+    const { search, settings } = await addQuery()
+    const query = search.queryCapabilities.getQuery(5)
+    query.diff = { fetch: vi.fn() }
+
+    await search.queryCapabilities.changeSettings(-1, settings)
+
+    expect(query.diff.fetch).toHaveBeenCalledOnce()
+  })
+
+  it("bootstraps a newly selected case, and a reset returns the store to idle", async () => {
+    const stores = buildStores()
+    const fetch = vi.fn((url) => Promise.resolve(jsonResponse(
+      String(url).includes("/queries")
+        ? { display_order: [7], queries: [{ query_id: 7, query_text: "dune" }] }
+        : { book_id: null, auto_populate_book_pairs: false }
+    )))
+    vi.stubGlobal("fetch", fetch)
+    const bootstrapScorer = vi.fn()
+    const search = buildOwner({ store: stores, bootstrapScorer })
+
+    await search.queryCapabilities.changeSettings(2, {
+      searchEngine: "solr",
+      selectedTry: { requestsPerMinute: 0 },
+      createFieldSpec: () => ({ id: "id" })
+    })
+
+    expect(bootstrapScorer).toHaveBeenCalledWith(2)
+    expect(search.queryCapabilities.getCaseNo()).toBe(2)
+    expect(search.queryCapabilities.getQuery(7).queryText).toBe("dune")
+    expect(stores.queries.status).toBe("ready")
+    expect(fetch.mock.calls.map(([url]) => String(url))).toContainEqual(
+      expect.stringMatching(/api\/cases\/2$/)
+    )
+
+    search.queryCapabilities.resetQueryState()
+
+    expect(stores.queries.status).toBe("idle")
+    expect(search.queryCapabilities.getQuery(7)).toBeNull()
   })
 })

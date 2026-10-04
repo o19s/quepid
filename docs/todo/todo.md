@@ -62,22 +62,6 @@ sampled JavaScript review. They are source findings, not live browser
 reproductions. Each item's marker was checked against the pre-migration source
 (`be9b319a`).
 
-### [MIGRATION-FOLLOWUP] P2 I2 C2 — Collapse the remaining live-query pass-through modules
-
-`live_query_runtime_owner.js` no longer has the nested `liveQueryServices`
-graph; it wires the runtimes in dependency order and builds each query's
-runtime and model directly. The runtime still spans 17 modules (`live_query_*`,
-`query_runtime`, `query_service`, `query_model`, `query_state`,
-`query_lifecycle`). The thinnest that remain: `live_query_registry` (a wrapper
-over the query collection store), `live_query_transport` (a wrapper over
-`createSearchAllRuntime`), `live_query_diff` and `live_query_state`, and the
-`query_runtime`/`query_service` split, where `query_runtime` mostly forwards to
-`query_service`'s search and pagination helpers. Fold these into their callers
-or each other in large slices, keeping `live_query_runtime_owner.test.js`'s
-end-to-end add-query test green. `toggleShowOnlyRated` still calls
-`search.queryCapabilities.refreshRatedDocs` through the locator so the owner
-test can stub it.
-
 ### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal plumbing
 
 Several core modal subclasses still specialize submit/busy handling despite
@@ -423,6 +407,16 @@ Every job broadcasts to the single `:notifications` stream, which the home, book
 **Observed:** Export → TREC with a snapshot picked in the Basic/TREC dropdown calls `/api/export/ratings/:case_id.txt?file_format=trec_snapshot&snapshot_id=…`, which fails with `NoMethodError (undefined method 'rating' for nil)` whenever a snapshot doc has no rating. The modal then flashes "Export failed. Please try again." Reproduced 2026-10-04 on a clone of case 6 (snapshot 98); the template is identical at the `be9b319a` baseline. Plain TREC (no snapshot) works.
 
 **Fix direction:** Skip unrated docs (or write an explicit unrated value) instead of dereferencing a nil `Rating`, and add a controller test with an unrated snapshot doc.
+
+---
+
+### [PREEXISTING] P3 I0 C1 — A newly added query jumps from the bottom to the top on reload
+
+**Location:** `app/controllers/api/v1/queries_controller.rb` (`create`)
+
+**Observed:** Adding a query shows it at the bottom of a Manual-sorted list, but after a reload (or anything that re-bootstraps the case, such as Rerun My Searches! creating a new try) it is at the top. The `create` response's `display_order` lists the new id last, while `index` lists it first. The `Case#queries` scope orders `arranged_at IS NULL DESC`, so a new, unarranged query sorts first in the database, and `create` builds `display_order` from the association it just built on, which appears to put the in-memory record last. Reproduced 2026-10-04 on case 598. The controller is unchanged from `main`, and the `be9b319a` Angular client also applied the `create` response's `display_order`, so this predates the migration (source evidence only, not replayed).
+
+**Fix direction:** Reload the association (`@case.queries.reload`) before building `display_order` in `create`, and add a controller test that `create` and `index` return the same order.
 
 ---
 

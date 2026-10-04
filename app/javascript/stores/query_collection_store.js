@@ -188,6 +188,11 @@ export class QueryCollectionStore extends EventTarget {
     return this._liveQueries.get(String(queryId)) ?? null
   }
 
+  // The live Query objects keyed by id. Use orderedQueryIds() for display order.
+  liveQueries() {
+    return Object.fromEntries(this._liveQueries)
+  }
+
   clearLiveQueries() {
     this._liveQueries.clear()
   }

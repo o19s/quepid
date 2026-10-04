@@ -10,6 +10,7 @@ import { createSnapshotSearcherFromRegistry } from "utils/snapshot_searcher"
 import { parseResponseObject } from "utils/search_error"
 import { createCaseScoringRuntime, scoreQuery } from "utils/query_scoring"
 import { createQueryRuntime, createTargetedSearchAdapter } from "utils/query_runtime"
+import { createQueryDiff } from "utils/diff_results"
 import { createQueryModel } from "utils/query_model"
 import { createBookSyncRuntime } from "utils/book_sync"
 import { buildQueryDocumentsState } from "utils/query_documents"
@@ -19,10 +20,6 @@ import { createLiveQueryFactory } from "utils/live_query_factory"
 import { createLiveQueryCommandsRuntime } from "utils/live_query_commands"
 import { createLiveQueryEventsRuntime } from "utils/live_query_events"
 import { createLiveQueryLifecycleRuntime } from "utils/live_query_lifecycle"
-import { createLiveQueryTransportRuntime } from "utils/live_query_transport"
-import { createLiveQueryDiffRuntime } from "utils/live_query_diff"
-import { createLiveQueryStateRuntime } from "utils/live_query_state"
-import { createLiveQueryRegistry } from "utils/live_query_registry"
 import { buildDiffReadModel, createDocList, documentUrlFor } from "utils/live_query_read_models"
 import {
   invalidateRatedDocsCache,
@@ -34,12 +31,14 @@ import { fetchQueries } from "utils/query_lifecycle"
 import { getJson } from "api/json"
 import coreFlash from "utils/core_flash"
 import { errorMessage } from "utils/error_message"
+import { isSameId } from "utils/record_identity"
 import {
   buildSearchApiRatedDocsQueryParams as buildSearchApiRatedDocsQueryParamsFor,
   createSearcherFromSettings as createSearcherFor,
   evaluateMapperFunctions as evaluateMapperFunctionsFor,
   matchFeaturesExplain,
   normalizeSearchResults,
+  runSearchAll,
   settingsWithTryOverrides
 } from "utils/query_service"
 
@@ -55,8 +54,8 @@ function copySettings(value) {
  * domain (settings, scorer, navigation), splainer-search, and the stores.
  *
  * Runtimes are built in dependency order. Closures that reach a runtime built
- * further down (`liveQueryStateRuntime`, `liveQueryCommandsRuntime`) only run
- * after construction finishes.
+ * further down (`liveQueryCommandsRuntime`) only run after construction
+ * finishes.
  */
 export function createLiveQueryRuntimeOwner({ framework, domain, search, store }) {
   const { searchSvc, normalDocsSvc, esExplainExtractorSvc, solrExplainExtractorSvc } =
@@ -74,23 +73,37 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   // naturally busts the cache via a different key). See evaluateMapperFunctions() below.
   const mapperFunctionsCache = {}
 
-  // The store owns the query collection snapshot and display order while the
-  // live query graph keeps the query objects needed for search, ratings,
-  // documents, and scoring.
+  // The collection store owns the live Query objects, their snapshots, and
+  // display order.
   const queryCollectionStore = store && store.queries
   const queryDocumentsStore = store && store.documents
   const diffStateStore = store && store.diff
-  const liveQueryRegistry = createLiveQueryRegistry({ store: queryCollectionStore })
   const bookSyncRuntime = createBookSyncRuntime({ logger })
 
   const getCaseNo = () => caseNo
   const getShowOnlyRated = () => showOnlyRated
-  const getLiveQueries = () => liveQueryRegistry.all()
-  const getLiveQuery = (queryId) => liveQueryRegistry.get(queryId)
+  const getLiveQueries = () => queryCollectionStore.liveQueries()
+  const getLiveQuery = (queryId) => queryCollectionStore.liveQuery(queryId)
   const getFieldSpec = () => currSettings.createFieldSpec()
   const getDiffSettings = () => (diffStateStore ? diffStateStore.selections() : [])
   const createNormalDoc = (spec, doc, explain) => normalDocsSvc.createNormalDoc(spec, doc, explain)
   const createRateableDoc = (query, doc) => query.ratingsStore.createRateableDoc(doc)
+
+  function clearLiveQueries({ resetStore = false } = {}) {
+    queryCollectionStore.clearLiveQueries()
+    if (resetStore) queryCollectionStore.reset()
+  }
+
+  function registerQuery(queryId, query, { publish = true } = {}) {
+    queryCollectionStore.upsert(query, { publish })
+    return query
+  }
+
+  function removeQuery(queryId) {
+    if (!getLiveQuery(queryId)) return false
+    queryCollectionStore.remove(queryId)
+    return true
+  }
 
   function createDocListFor(docs, fieldSpec, ratingsStore, explain) {
     return createDocList({ docs, fieldSpec, ratingsStore, explain, createNormalDoc })
@@ -197,56 +210,21 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       })
   })
 
-  const liveQueryDiffRuntime = createLiveQueryDiffRuntime({
-    getQueries: getLiveQueries,
-    getDiffSettings,
-    getSettings: () => domain.settings.editable(),
-    createSearcherFromSnapshot,
-    publish: publishQueryDocuments,
-    notify: (detail) => document.dispatchEvent(new CustomEvent("query-diffs:refreshed", { detail }))
-  })
-
   const liveQueryCollectionRuntime = createLiveQueryCollectionRuntime({
     fetchQueries,
     createQuery: (queryData) => liveQueryFactory.create(queryData),
-    createDiff: (query) => liveQueryDiffRuntime.create(query),
-    clearQueries: () => liveQueryRegistry.clear(),
-    registerQuery: (queryId, query) =>
-      liveQueryRegistry.register(queryId, query, { publish: false }),
+    createDiff,
+    clearQueries: () => clearLiveQueries(),
+    registerQuery: (queryId, query) => registerQuery(queryId, query, { publish: false }),
     applyDisplayOrder,
-    replaceStore: (collectionCaseId, data) => {
-      if (queryCollectionStore) queryCollectionStore.replaceFromResponse(collectionCaseId, data)
-    },
-    beginStoreBootstrap: (caseId) => {
-      if (queryCollectionStore) queryCollectionStore.beginBootstrap(caseId)
-    },
-    markStoreError: (response) => {
-      if (queryCollectionStore) queryCollectionStore.markError(response)
-    },
+    replaceStore: (collectionCaseId, data) =>
+      queryCollectionStore.replaceFromResponse(collectionCaseId, data),
+    beginStoreBootstrap: (caseId) => queryCollectionStore.beginBootstrap(caseId),
+    markStoreError: (response) => queryCollectionStore.markError(response),
     setBootstrapping: (value) => {
       isBootstrapping = value
     },
     publishState: publishQueryListState,
-    logger
-  })
-
-  const liveQueryTransportRuntime = createLiveQueryTransportRuntime({
-    runtimeFor,
-    getQueries: getLiveQueries,
-    getRequestsPerMinute: () => currSettings.selectedTry.requestsPerMinute,
-    resetQuery: (query) => {
-      liveQueryDocumentsRuntime.reset(query)
-      liveQueryDocumentsRuntime.publish(query)
-    },
-    scoreAll: () => scoreAll(),
-    syncToBook: () => bookSyncRuntime.sync(queryArray()),
-    onSearchStarted: () => (queryCollectionStore ? queryCollectionStore.beginSearch() : null),
-    onSearchCompleted: (generation) => {
-      if (queryCollectionStore) queryCollectionStore.finishSearch(generation)
-    },
-    onSearchFailed: (error, generation) => {
-      if (queryCollectionStore) queryCollectionStore.failSearch(error, generation)
-    },
     logger
   })
 
@@ -262,49 +240,16 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     reset,
     bootstrapQueries: liveQueryCollectionRuntime.bootstrapQueries,
     searchAll,
-    clearQueries: () => liveQueryRegistry.clear({ resetStore: true }),
+    clearQueries: () => clearLiveQueries({ resetStore: true }),
     addQueriesFromResponse: liveQueryCollectionRuntime.addQueriesFromResponse,
     getCaseNo,
     applyDisplayOrder,
     setQueryId: (query, queryId) => query.ratingsStore.setQueryId(queryId),
-    registerQuery: liveQueryRegistry.register,
-    removeQuery: liveQueryRegistry.remove,
-    searchAndScore: liveQueryTransportRuntime.searchAndScore,
+    registerQuery,
+    removeQuery,
+    searchAndScore,
     updateScores,
     logger
-  })
-
-  const liveQueryStateRuntime = createLiveQueryStateRuntime({
-    getQueries: getLiveQueries,
-    scoreAll,
-    applySettings: (newSettings) => {
-      currSettings = newSettings
-    },
-    getCurrentCaseNo: getCaseNo,
-    setCurrentCaseNo: (newCaseNo) => {
-      caseNo = newCaseNo
-    },
-    bootstrapScorer: (newCaseNo) => domain.scorer.bootstrap(newCaseNo),
-    bootstrapQueries: (newCaseNo) => {
-      // A failure reaches the caller through searchablePromise(), which
-      // changeSettings() returns; this copy is only silenced so it isn't
-      // reported as an unhandled rejection.
-      liveQueryCollectionRuntime.bootstrapQueries(newCaseNo).catch(() => {})
-    },
-    configureBook: (newCaseNo) => {
-      getJson("api/cases/" + newCaseNo).then((data) => {
-        bookSyncRuntime.configure({
-          caseId: newCaseNo,
-          bookId: data.book_id,
-          autoPopulate: data.auto_populate_book_pairs
-        })
-      })
-    },
-    refreshQueryDiff: (query) => query.diff.fetch(),
-    queryReady: {
-      resolve: liveQueryCollectionRuntime.resolveSearchPromise,
-      promise: liveQueryCollectionRuntime.searchablePromise
-    }
   })
 
   createLiveQueryEventsRuntime({
@@ -337,7 +282,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   }).connect()
 
   function reset() {
-    liveQueryRegistry.clear({ resetStore: true })
+    clearLiveQueries({ resetStore: true })
     showOnlyRated = false
     isBootstrapping = false
     if (queryDocumentsStore) {
@@ -383,9 +328,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       }
     })
     queryDocumentsStore.replaceQuery(query.queryId, readModel)
-    if (queryCollectionStore) {
-      queryCollectionStore.upsert(query)
-    }
+    queryCollectionStore.upsert(query)
   }
 
   // Explicit command adapter for the Stimulus expanded-results renderer.
@@ -395,11 +338,9 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     const query = getLiveQuery(queryId)
     if (!query) return false
 
-    const currentQuery = queryCollectionStore && queryCollectionStore.query(queryId)
+    const currentQuery = queryCollectionStore.query(queryId)
     const expanded = !(currentQuery && currentQuery.expanded === true)
-    if (queryCollectionStore) {
-      queryCollectionStore.setExpanded(queryId, expanded)
-    }
+    queryCollectionStore.setExpanded(queryId, expanded)
     if (queryDocumentsStore) {
       queryDocumentsStore.updateQueryState(queryId, {
         expanded: expanded
@@ -543,28 +484,86 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   }
 
   function queryCount() {
-    if (queryCollectionStore && queryCollectionStore.status !== "idle") {
+    if (queryCollectionStore.status !== "idle") {
       return queryCollectionStore.size
     }
     return Object.keys(getLiveQueries()).length
   }
 
+  // Clears the query's previous results before a fresh search.
+  function resetQuery(query) {
+    liveQueryDocumentsRuntime.reset(query)
+    liveQueryDocumentsRuntime.publish(query)
+  }
+
+  function searchAndScore(query) {
+    resetQuery(query)
+    return runtimeFor(query)
+      .search()
+      .then(() => query.score())
+      .then(() => bookSyncRuntime.sync(queryArray()))
+  }
+
   function searchAll() {
-    const searchAllPromise = liveQueryTransportRuntime.searchAll()
+    const searchAllPromise = runSearchAll({
+      queries: getLiveQueries(),
+      search: (query) => {
+        resetQuery(query)
+        return runtimeFor(query).search()
+      },
+      score: (query) => query.score(),
+      requestsPerMinute: currSettings.selectedTry.requestsPerMinute,
+      scoreAll: () => scoreAll(),
+      syncToBook: () => bookSyncRuntime.sync(queryArray()),
+      onSearchStarted: () => queryCollectionStore.beginSearch(),
+      onSearchCompleted: (generation) => queryCollectionStore.finishSearch(generation),
+      onSearchFailed: (error, generation) => queryCollectionStore.failSearch(error, generation),
+      logger
+    })
     searchAllPromise.catch(() => {})
     return searchAllPromise
   }
 
+  function createDiff(query) {
+    return createQueryDiff({
+      query,
+      diffSettings: getDiffSettings(),
+      settings: domain.settings.editable(),
+      createSearcherFromSnapshot
+    })
+  }
+
+  function refreshAllDiffs() {
+    const notify = (detail) =>
+      document.dispatchEvent(new CustomEvent("query-diffs:refreshed", { detail }))
+    const refreshes = Object.values(getLiveQueries()).map((query) => {
+      const refresh = createDiff(query)
+      publishQueryDocuments(query)
+      return refresh
+    })
+
+    return Promise.all(refreshes).then(
+      () => {
+        Object.values(getLiveQueries()).forEach((query) => publishQueryDocuments(query))
+        notify({ success: true })
+      },
+      (error) => {
+        notify({ success: false })
+        return Promise.reject(error)
+      }
+    )
+  }
+
   function createQuery(queryText) {
     const newQuery = liveQueryFactory.create({ query_text: queryText, queryId: -1 })
-    liveQueryDiffRuntime.create(newQuery)
+    createDiff(newQuery)
     return newQuery
   }
 
   // get the full list of queries sorted by create/manual order
   // only call this when our version() changes
   function queryArray() {
-    if (queryCollectionStore && queryCollectionStore.status === "ready") {
+    if (queryCollectionStore.status === "ready") {
       // Keep the existing defaultCaseOrder contract while taking the order
       // itself from the store. The existing orderBy contract and any other
       // consumers still rely on this field being refreshed on each read.
@@ -578,13 +577,43 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   // query store becomes authoritative.
   function applyDisplayOrder(nextDisplayOrder) {
     displayOrder = nextDisplayOrder
-    if (queryCollectionStore) {
-      queryCollectionStore.setDisplayOrder(nextDisplayOrder)
-    }
+    queryCollectionStore.setDisplayOrder(nextDisplayOrder)
   }
 
   function updateScores() {
-    return liveQueryStateRuntime.updateScores()
+    Object.values(getLiveQueries()).forEach((query) => query.setDirty())
+    return Promise.resolve(scoreAll())
+  }
+
+  function configureBook(newCaseNo) {
+    getJson("api/cases/" + newCaseNo).then((data) => {
+      bookSyncRuntime.configure({
+        caseId: newCaseNo,
+        bookId: data.book_id,
+        autoPopulate: data.auto_populate_book_pairs
+      })
+    })
+  }
+
+  function changeSettings(newCaseNo, newSettings) {
+    currSettings = newSettings
+
+    if (!isSameId(caseNo, newCaseNo)) {
+      domain.scorer.bootstrap(newCaseNo)
+      // A failure reaches the caller through searchablePromise(), returned
+      // below; this copy is only silenced so it isn't reported as an
+      // unhandled rejection.
+      liveQueryCollectionRuntime.bootstrapQueries(newCaseNo).catch(() => {})
+      configureBook(newCaseNo)
+    } else {
+      Object.values(getLiveQueries()).forEach((query) => {
+        if (query.diff !== null) query.diff.fetch()
+      })
+      liveQueryCollectionRuntime.resolveSearchPromise()
+    }
+
+    caseNo = newCaseNo
+    return liveQueryCollectionRuntime.searchablePromise()
   }
 
   Object.assign(search.queryCapabilities, {
@@ -616,7 +645,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     resetQueryState: reset,
     resetSearchPromise: liveQueryCollectionRuntime.resetSearchPromise,
     getQueryArray: queryArray,
-    changeSettings: liveQueryStateRuntime.changeSettings,
+    changeSettings,
     refreshRatedDocs: liveQueryCommandsRuntime.refreshRatedDocs,
     reconcileQueryRemoval: function (queryId, rescore) {
       if (queryId === undefined || queryId === null) return false
@@ -626,7 +655,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     refreshAllDiffs: function () {
       return new Promise(function (resolve, reject) {
         framework.schedule(function () {
-          liveQueryDiffRuntime.refreshAll().then(resolve, reject)
+          refreshAllDiffs().then(resolve, reject)
         })
       })
     }

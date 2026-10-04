@@ -299,24 +299,23 @@ test.describe('core layout golden paths', () => {
     // identity and rating captured from the live case state before any mutation.
     let restoreState: { queryId: number; docId: string; rating: number | null } | undefined;
 
-    // Starts watching the expanded result lists. The returned function resolves
-    // once at least one list has been rebuilt and none has changed for quietMs.
-    async function watchResultsRebuilds(page: Page, quietMs = 500): Promise<() => Promise<void>> {
-      await page.evaluate((quiet) => {
-        (window as unknown as { __resultsSettled?: Promise<void> }).__resultsSettled = new Promise<void>((resolve) => {
-          let timer: ReturnType<typeof setTimeout> | undefined;
-          const observer = new MutationObserver(() => {
-            clearTimeout(timer);
-            timer = setTimeout(() => {
-              observer.disconnect();
-              resolve();
-            }, quiet);
-          });
-          document.querySelectorAll('[data-search-results-target="results"]')
-            .forEach((list) => observer.observe(list, { childList: true }));
-        });
-      }, quietMs);
-      return () => page.evaluate(() => (window as unknown as { __resultsSettled: Promise<void> }).__resultsSettled);
+    // Resolves once nothing inside the expanded result lists has changed for
+    // quietMs, including when nothing changes at all.
+    async function waitForResultsToSettle(page: Page, quietMs = 500): Promise<void> {
+      await page.evaluate((quiet) => new Promise<void>((resolve) => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const restart = () => {
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            observer.disconnect();
+            resolve();
+          }, quiet);
+        };
+        const observer = new MutationObserver(restart);
+        document.querySelectorAll('[data-search-results-target="results"]')
+          .forEach((list) => observer.observe(list, { childList: true, subtree: true }));
+        restart();
+      }), quietMs);
     }
 
     test.afterEach(async ({ page }) => {
@@ -367,13 +366,16 @@ test.describe('core layout golden paths', () => {
       const visiblePopover = () => page.locator('.popover:visible').last();
       await expect(visiblePopover()).toBeVisible();
       // One rating publishes several store changes (the rating itself, then
-      // async scoring and the case summary), and each one rebuilds every
-      // result row. A popover opened on a row that is about to be replaced
-      // disappears mid-click, so wait until the list stops rebuilding.
-      const resultsSettled = await watchResultsRebuilds(page);
+      // async scoring and the case summary), and each one re-renders the
+      // affected rows' rating controls. A popover opened on a control that is
+      // about to be replaced disappears mid-click, so wait until the lists
+      // stop changing.
+      const resetSaved = page.waitForResponse((response) =>
+        response.url().includes('/ratings') && response.request().method() === 'DELETE');
       await visiblePopover().locator('.reset').click();
       await expect(page.locator('.popover:visible')).toHaveCount(0);
-      await resultsSettled();
+      await resetSaved;
+      await waitForResultsToSettle(page);
 
       const scoreBeforeRating = await queryScore.textContent();
       const caseScoreBeforeRating = await caseScore.textContent();

@@ -1,4 +1,3 @@
-import { paginateQuery, runSearchAll, searchQuery } from "utils/query_service"
 import { isEsLikeEngine } from "utils/search_engines"
 import { isSameId } from "utils/record_identity"
 
@@ -27,15 +26,62 @@ export function createQueryRuntime({
 }) {
   const runtime = {
     search() {
-      return searchQuery({
-        query,
-        createSearcher: () => createSearcher(),
-        createRatedSearcher: () => createSearcher({ filterToRated: true }),
-        setDocs,
-        onError,
-        parseError,
-        logDebug: (...args) => logger.debug(...args)
-      })
+      const rejectPromise = (reason) => {
+        const rejected = Promise.reject(reason)
+        rejected.catch(() => undefined)
+        return rejected
+      }
+
+      query.hasBeenScored = false
+      query.searcher = createSearcher()
+
+      if (!query.searcher) {
+        const message =
+          "No Search Endpoint configured. Please select a search endpoint in Settings."
+        onError(message)
+        return rejectPromise(message)
+      }
+
+      query.ratedSearcher = createSearcher({ filterToRated: true })
+      let searchError
+
+      return query.searcher
+        .search()
+        .then(
+          () => undefined,
+          (response) => {
+            query.linkUrl = query.searcher.linkUrl || query.searcher.url
+            setDocs([], 0)
+            const message = parseError(response, query.linkUrl)
+            onError(message)
+            searchError = message
+            return response
+          }
+        )
+        .catch((response) => {
+          logger.debug("Failed to load search results")
+          return response
+        })
+        .then(() => {
+          query.linkUrl = query.searcher.linkUrl || query.searcher.url
+
+          if (query.searcher.inError) {
+            setDocs([], 0)
+            const message = "Please click browse to see the error"
+            onError(message)
+            return rejectPromise(searchError || message)
+          }
+
+          const error = setDocs(query.searcher.docs, query.searcher.numFound)
+          if (error) {
+            onError(error)
+            return rejectPromise(error)
+          }
+
+          query.othersExplained = query.searcher.othersExplained
+          if (searchError) return rejectPromise(searchError)
+          return undefined
+        })
     },
 
     refreshRatedDocs(pageSize) {
@@ -118,25 +164,32 @@ export function createQueryRuntime({
     paginate() {
       if (query.searcher === null) return undefined
 
-      return paginateQuery({
-        searcher: query.searcher,
-        pager: (searcher) => {
-          query.searcher = searcher.pager()
-          return query.searcher
-        },
-        search: (searcher) => searcher.search(),
-        appendDocs: (searcher) => {
-          const docList = createDocList(
-            searcher.docs,
-            getSettings().createFieldSpec(),
-            query.ratingsStore,
-            matchFeaturesExplain
-          )
-          query.docs = query.docs.concat(docList.list())
-          publish(query)
-        },
-        logDebug: (...args) => logger.debug(...args)
-      })
+      const searcher = query.searcher.pager()
+      query.searcher = searcher
+      if (searcher === null) return undefined
+
+      return searcher
+        .search()
+        .then(
+          () => {
+            const docList = createDocList(
+              searcher.docs,
+              getSettings().createFieldSpec(),
+              query.ratingsStore,
+              matchFeaturesExplain
+            )
+            query.docs = query.docs.concat(docList.list())
+            publish(query)
+          },
+          (response) => {
+            logger.debug("Failed to load search: ", response)
+            return response
+          }
+        )
+        .catch((response) => {
+          logger.debug("Failed to load search")
+          return response
+        })
     },
 
     ratedPaginate() {
@@ -154,42 +207,6 @@ export function createQueryRuntime({
   }
 
   return runtime
-}
-
-/**
- * Orchestration for the case-wide search lifecycle.
- * Query objects and scoring remain injected so this preserves the current
- * browser-to-engine and client-side scoring behavior while removing the queue
- * policy from the live query runtime.
- */
-export function createSearchAllRuntime({
-  queries,
-  search,
-  score,
-  requestsPerMinute,
-  scoreAll,
-  syncToBook,
-  onSearchStarted,
-  onSearchCompleted,
-  onSearchFailed,
-  logger = console
-}) {
-  return {
-    run() {
-      return runSearchAll({
-        queries,
-        search,
-        score,
-        requestsPerMinute,
-        scoreAll,
-        syncToBook,
-        onSearchStarted,
-        onSearchCompleted,
-        onSearchFailed,
-        logger
-      })
-    }
-  }
 }
 
 export function createTargetedSearchAdapter({

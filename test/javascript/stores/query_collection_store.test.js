@@ -240,6 +240,27 @@ describe("QueryCollectionStore", () => {
     expect(changed.mock.calls.at(-1)[0].detail).toEqual(store.snapshot())
   })
 
+  it("keeps live queries across a bootstrap replace, dropping ones the response omits", () => {
+    const first = { queryId: 1, queryText: "live" }
+    const second = { queryId: 2 }
+    store.upsert(first, { publish: false })
+    store.upsert(second, { publish: false })
+
+    expect(store.liveQueries()).toEqual({ 1: first, 2: second })
+
+    store.replaceFromResponse(7, {
+      display_order: [1],
+      queries: [{ query_id: 1, query_text: "snapshot" }]
+    })
+
+    expect(store.liveQueries()).toEqual({ 1: first })
+    expect(store.query(1).queryText).toBe("snapshot")
+
+    store.clearLiveQueries()
+    expect(store.liveQueries()).toEqual({})
+    expect(store.query(1)).not.toBeNull()
+  })
+
   it("does not publish an upsert made with publish: false, or one without a query id", () => {
     const changed = vi.fn()
     store.addEventListener("change", changed)

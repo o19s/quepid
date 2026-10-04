@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { createQueryRuntime, createSearchAllRuntime } from "utils/query_runtime"
+import { createQueryRuntime } from "utils/query_runtime"
 
 function buildRuntime(overrides = {}) {
   const { query: queryOverrides = {}, ...runtimeOverrides } = overrides
@@ -36,34 +36,6 @@ function buildRuntime(overrides = {}) {
 }
 
 describe("query runtime", () => {
-  it("orchestrates the complete search lifecycle through injected callbacks", async () => {
-    const callbacks = {
-      search: vi.fn(() => Promise.resolve()),
-      score: vi.fn(() => Promise.resolve()),
-      scoreAll: vi.fn(() => Promise.resolve()),
-      syncToBook: vi.fn(),
-      onSearchStarted: vi.fn(),
-      onSearchCompleted: vi.fn(),
-      onSearchFailed: vi.fn(),
-      logger: { debug: vi.fn() }
-    }
-    const runtime = createSearchAllRuntime({
-      queries: { first: { id: "first" } },
-      requestsPerMinute: 0,
-      ...callbacks
-    })
-
-    await runtime.run()
-
-    expect(callbacks.onSearchStarted).toHaveBeenCalled()
-    expect(callbacks.search).toHaveBeenCalledWith({ id: "first" })
-    expect(callbacks.score).toHaveBeenCalledWith({ id: "first" })
-    expect(callbacks.scoreAll).toHaveBeenCalled()
-    expect(callbacks.syncToBook).toHaveBeenCalled()
-    expect(callbacks.onSearchCompleted).toHaveBeenCalled()
-    expect(callbacks.onSearchFailed).not.toHaveBeenCalled()
-  })
-
   it("delegates live search while keeping searcher construction injected", async () => {
     const searcher = { search: vi.fn(() => Promise.resolve()), docs: [], numFound: 0 }
     const createSearcher = vi.fn(() => searcher)
@@ -76,6 +48,59 @@ describe("query runtime", () => {
     expect(createSearcher).toHaveBeenNthCalledWith(2, { filterToRated: true })
     expect(query.searcher).toBe(searcher)
     expect(setDocs).toHaveBeenCalledWith([], 0)
+  })
+
+  it("tells the user to pick a search endpoint when no searcher can be built", async () => {
+    const onError = vi.fn()
+    const createSearcher = vi.fn(() => null)
+    const { query, runtime } = buildRuntime({ query: { hasBeenScored: true }, createSearcher, onError })
+    const message = "No Search Endpoint configured. Please select a search endpoint in Settings."
+
+    await expect(runtime.search()).rejects.toBe(message)
+
+    expect(onError).toHaveBeenCalledWith(message)
+    expect(query.hasBeenScored).toBe(false)
+    expect(createSearcher).toHaveBeenCalledOnce()
+  })
+
+  it("rejects with the translated error when the search request fails", async () => {
+    const searcher = { search: vi.fn().mockRejectedValue({ status: 502 }) }
+    const setDocs = vi.fn(() => undefined)
+    const onError = vi.fn()
+    const { runtime } = buildRuntime({
+      createSearcher: () => searcher,
+      setDocs,
+      onError,
+      parseError: () => "translated error"
+    })
+
+    await expect(runtime.search()).rejects.toBe("translated error")
+    expect(setDocs).toHaveBeenCalledWith([], 0)
+    expect(onError).toHaveBeenCalledWith("translated error")
+  })
+
+  it("rejects when the searcher reports an error state", async () => {
+    const searcher = { inError: true, search: vi.fn().mockResolvedValue(undefined) }
+    const setDocs = vi.fn(() => undefined)
+    const onError = vi.fn()
+    const { runtime } = buildRuntime({ createSearcher: () => searcher, setDocs, onError })
+
+    await expect(runtime.search()).rejects.toBe("Please click browse to see the error")
+    expect(setDocs).toHaveBeenCalledWith([], 0)
+    expect(onError).toHaveBeenCalledWith("Please click browse to see the error")
+  })
+
+  it("rejects with the error setDocs reports", async () => {
+    const searcher = { search: vi.fn(() => Promise.resolve()), docs: [], numFound: 0 }
+    const onError = vi.fn()
+    const { runtime } = buildRuntime({
+      createSearcher: () => searcher,
+      setDocs: () => "too many docs",
+      onError
+    })
+
+    await expect(runtime.search()).rejects.toBe("too many docs")
+    expect(onError).toHaveBeenCalledWith("too many docs")
   })
 
   it("appends normalized documents when paging", async () => {
