@@ -86,9 +86,7 @@ export function createLiveQueryEventsRuntime({
   function connect() {
     if (connected) return
     connected = true
-    const ratingSource = scoringStore || eventTarget
-    const ratingEvent = scoringStore ? "rating-changed" : "ratings:changed"
-    ratingSource.addEventListener(ratingEvent, ratingChanged)
+    scoringStore.addEventListener("rating-changed", ratingChanged)
     eventTarget.addEventListener("query-options:saved", optionsSaved)
     eventTarget.addEventListener("pick-scorer:selected", scorerSelected)
     eventTarget.addEventListener("judgements:queries-need-reload", queriesNeedReload)

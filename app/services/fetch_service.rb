@@ -106,31 +106,6 @@ class FetchService
     docs
   end
 
-  def setup_docs_for_query query, docs
-    results = []
-
-    return results if docs.blank?
-    return results if query.blank?
-
-    docs = normalize_docs_array docs
-    docs = docs.sort { |d1, d2| d1[:position].to_i <=> d2[:position].to_i }
-
-    docs.each_with_index do |doc, index|
-      doc[:explain] = doc[:explain].to_json if doc[:explain].is_a?(Hash)
-
-      doc_params = {
-        doc_id:     doc[:id],
-        explain:    doc[:explain],
-        position:   doc[:position] || (index + 1),
-        rated_only: doc[:rated_only] || false,
-        fields:     doc[:fields].presence&.to_json,
-      }
-      results << query.snapshot_docs.build(doc_params)
-    end
-
-    results
-  end
-
   # This maybe should be split out into a snapshot_query and a snapshot_docs?
   def store_query_results query, docs, response_status, response_body, error: nil
     snapshot_query = @snapshot.snapshot_queries.create(
@@ -424,20 +399,6 @@ class FetchService
   end
 
   private
-
-  # Not sure we need this!
-  def normalize_docs_array docs
-    return [] if docs.blank?
-
-    result = docs.map do |each|
-      each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
-      each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
-
-      each.presence&.symbolize_keys!
-    end.compact
-
-    result
-  end
 
   def create_error_response message
     Faraday::Response.new(

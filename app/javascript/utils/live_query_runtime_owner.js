@@ -124,11 +124,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   }
 
   function markRatingChanged(queryId) {
-    if (store && store.scoring) {
-      store.scoring.markRatingChanged(queryId)
-    } else {
-      document.dispatchEvent(new CustomEvent("ratings:changed", { detail: { queryId } }))
-    }
+    store.scoring.markRatingChanged(queryId)
   }
 
   // Explicit adapter for the Stimulus query list. The runtime retains the live
@@ -253,7 +249,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   })
 
   createLiveQueryEventsRuntime({
-    scoringStore: store && store.scoring,
+    scoringStore: store.scoring,
     getCaseNo,
     getQuery: getLiveQuery,
     getQueries: getLiveQueries,
@@ -267,10 +263,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       query.setDirty()
     },
     setScorer: (scorerData) => domain.scorer.select(scorerData),
-    reloadQueries: (caseId) => {
-      reset()
-      return liveQueryCollectionRuntime.bootstrapQueries(caseId).then(searchAll)
-    },
+    reloadQueries: liveQueryLifecycleRuntime.refreshQueries,
     configureBook: ({ bookId, autoPopulate }) => {
       bookSyncRuntime.configure({ caseId: getCaseNo(), bookId, autoPopulate })
     },

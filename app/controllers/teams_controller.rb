@@ -26,127 +26,40 @@ class TeamsController < ApplicationController
     redirect_to team_path(@team)
   end
 
-  # Share a case with a team (similar to scorer sharing pattern)
   def share_case
     team = current_user.teams.find(params.expect(:team_id))
-    kase = Case.find(params.expect(:case_id))
-
-    # Check if user has access to this case
-    unless current_user.cases_involved_with.exists?(id: kase.id)
-      flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.cases.exists?(kase.id)
-      flash[:alert] = "#{kase.case_name} is already shared with #{team.name}."
-    else
-      TeamSharing.new(current_user, team).share(kase)
-      flash[:notice] = "#{kase.case_name} shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Case.find(params.expect(:case_id))
+    share_with_team(record, record.case_name, team)
   end
 
   def unshare_case
     team = current_user.teams.find(params.expect(:team_id))
-    kase = Case.find(params.expect(:case_id))
-
-    # Check if user has access to this case
-    unless current_user.cases_involved_with.exists?(id: kase.id)
-      flash[:alert] = 'You do not have access to that case.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.cases.exists?(kase.id)
-      TeamSharing.new(current_user, team).unshare(kase)
-      flash[:notice] = "#{kase.case_name} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{kase.case_name} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Case.find(params.expect(:case_id))
+    unshare_with_team(record, record.case_name, team)
   end
 
-  # Share a book with a team (similar to case sharing pattern)
   def share_book
     team = current_user.teams.find(params.expect(:team_id))
-    book = Book.find(params.expect(:book_id))
-
-    # Check if user has access to this book (owner or team member with access)
-    unless current_user.books_involved_with.exists?(id: book.id)
-      flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.books.exists?(book.id)
-      flash[:alert] = "#{book.name} is already shared with #{team.name}."
-    else
-      TeamSharing.new(current_user, team).share(book)
-      flash[:notice] = "#{book.name} shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Book.find(params.expect(:book_id))
+    share_with_team(record, record.name, team)
   end
 
   def unshare_book
     team = current_user.teams.find(params.expect(:team_id))
-    book = Book.find(params.expect(:book_id))
-
-    # Check if user has access to this book
-    unless current_user.books_involved_with.exists?(id: book.id)
-      flash[:alert] = 'You do not have access to that book.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.books.exists?(book.id)
-      TeamSharing.new(current_user, team).unshare(book)
-      flash[:notice] = "#{book.name} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{book.name} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = Book.find(params.expect(:book_id))
+    unshare_with_team(record, record.name, team)
   end
 
-  # Share a search endpoint with a team (similar to case/book sharing pattern)
   def share_search_endpoint
     team = current_user.teams.find(params.expect(:team_id))
-    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
-
-    # Check if user has access to this search endpoint
-    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
-      flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.search_endpoints.exists?(search_endpoint.id)
-      flash[:alert] = "#{search_endpoint.fullname} is already shared with #{team.name}."
-    else
-      TeamSharing.new(current_user, team).share(search_endpoint)
-      flash[:notice] = "#{search_endpoint.fullname} shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = SearchEndpoint.find(params.expect(:search_endpoint_id))
+    share_with_team(record, record.fullname, team)
   end
 
   def unshare_search_endpoint
     team = current_user.teams.find(params.expect(:team_id))
-    search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
-
-    # Check if user has access to this search endpoint
-    unless current_user.search_endpoints_involved_with.exists?(id: search_endpoint.id)
-      flash[:alert] = 'You do not have access to that search endpoint.'
-      redirect_back_or_to(teams_path) and return
-    end
-
-    if team.search_endpoints.exists?(search_endpoint.id)
-      TeamSharing.new(current_user, team).unshare(search_endpoint)
-      flash[:notice] = "#{search_endpoint.fullname} unshared from #{team.name}."
-    else
-      flash[:alert] = "#{search_endpoint.fullname} is not shared with #{team.name}."
-    end
-
-    redirect_back_or_to(teams_path, status: :see_other)
+    record = SearchEndpoint.find(params.expect(:search_endpoint_id))
+    unshare_with_team(record, record.fullname, team)
   end
 
   # Archive a search endpoint
@@ -463,6 +376,33 @@ class TeamsController < ApplicationController
   # rubocop:enable Metrics/MethodLength
 
   private
+
+  def share_with_team record, name, team
+    if TeamSharing.new(current_user, team).share(record)
+      flash[:notice] = "#{name} shared with #{team.name}."
+    else
+      flash[:alert] = "#{name} is already shared with #{team.name}."
+    end
+    redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::AccessDenied
+    sharing_access_denied(record)
+  end
+
+  def unshare_with_team record, name, team
+    if TeamSharing.new(current_user, team).unshare(record)
+      flash[:notice] = "#{name} unshared from #{team.name}."
+    else
+      flash[:alert] = "#{name} is not shared with #{team.name}."
+    end
+    redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::AccessDenied
+    sharing_access_denied(record)
+  end
+
+  def sharing_access_denied record
+    flash[:alert] = "You do not have access to that #{record.class.model_name.human.downcase}."
+    redirect_back_or_to(teams_path)
+  end
 
   def set_team
     @team = current_user.teams.find(params.expect(:id))

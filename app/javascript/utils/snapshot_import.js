@@ -1,42 +1,43 @@
 import { postJson } from "api/json"
 
-export function buildSnapshotImportGroups(rows, targetCaseId) {
-  const cases = {}
+export function buildSnapshotImportGroups(rows, targetCaseId, { includeFields = true } = {}) {
+  const cases = Object.create(null)
 
-  rows
-    .map((row) => ({ ...row, "Case ID": targetCaseId }))
-    .forEach((doc) => {
-      const caseId = doc["Case ID"]
-      cases[caseId] ||= { snapshots: {} }
+  rows.forEach((doc) => {
+    const caseId = targetCaseId ?? doc["Case ID"]
+    cases[caseId] ||= { snapshots: Object.create(null) }
 
-      const snapshotName = doc["Snapshot Name"]
-      cases[caseId].snapshots[snapshotName] ||= {
-        queries: {},
-        created_at: doc["Snapshot Time"],
-        name: snapshotName
-      }
+    const snapshotName = doc["Snapshot Name"]
+    cases[caseId].snapshots[snapshotName] ||= {
+      queries: Object.create(null),
+      created_at: doc["Snapshot Time"],
+      name: snapshotName
+    }
 
-      const snapshot = cases[caseId].snapshots[snapshotName]
-      const queryText = doc["Query Text"]
-      snapshot.queries[queryText] ||= { docs: [] }
-      snapshot.queries[queryText].docs.push({
-        id: doc["Doc ID"],
-        position: doc["Doc Position"],
-        fields: Object.fromEntries(
-          Object.entries(doc).filter(
-            ([key]) =>
-              ![
-                "Doc ID",
-                "Doc Position",
-                "Snapshot Name",
-                "Snapshot Time",
-                "Case ID",
-                "Query Text"
-              ].includes(key)
-          )
+    const snapshot = cases[caseId].snapshots[snapshotName]
+    const queryText = doc["Query Text"]
+    snapshot.queries[queryText] ||= { docs: [] }
+    const document = {
+      id: doc["Doc ID"],
+      position: doc["Doc Position"]
+    }
+    if (includeFields) {
+      document.fields = Object.fromEntries(
+        Object.entries(doc).filter(
+          ([key]) =>
+            ![
+              "Doc ID",
+              "Doc Position",
+              "Snapshot Name",
+              "Snapshot Time",
+              "Case ID",
+              "Query Text"
+            ].includes(key)
         )
-      })
-    })
+      )
+    }
+    snapshot.queries[queryText].docs.push(document)
+  })
 
   return cases
 }

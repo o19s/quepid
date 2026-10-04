@@ -38,6 +38,12 @@ export function createLiveQueryLifecycleRuntime({
     )
   }
 
+  function commitPersistedQueries(persisted) {
+    clearQueries()
+    addQueriesFromResponse(persisted.data, getCaseNo())
+    return {}
+  }
+
   return {
     prepareQueries(queryTexts) {
       if (queryTexts.length === 1) {
@@ -57,19 +63,14 @@ export function createLiveQueryLifecycleRuntime({
         return commitSingleQuery(prepared.query, persisted)
       }
 
-      clearQueries()
-      addQueriesFromResponse(persisted.data, getCaseNo())
+      commitPersistedQueries(persisted)
       return searchAll().then(
         () => ({}),
         (searchError) => ({ searchError })
       )
     },
 
-    commitPersistedQueries(persisted) {
-      clearQueries()
-      addQueriesFromResponse(persisted.data, getCaseNo())
-      return {}
-    },
+    commitPersistedQueries,
 
     reconcileQueryRemoval(queryId, rescore = false) {
       if (!removeQuery(queryId)) return false

@@ -249,7 +249,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       fetch_service.begin(acase, atry)
 
       docs = [
-        { id: 'doc1', explain: '1' },
+        { id: 'doc1', explain: { match: true, value: 1.5 } },
         { id: 'doc2', explain: '2' }
       ]
 
@@ -261,6 +261,7 @@ class FetchServiceTest < ActiveSupport::TestCase
         snapshot_query.reload # reload in order to check the underlying data
         assert_equal docs.size, snapshot_query.snapshot_docs.size
         assert_equal response_status, snapshot_query.response_status
+        assert_equal({ 'match' => true, 'value' => 1.5 }, JSON.parse(snapshot_query.snapshot_docs.find_by!(doc_id: 'doc1').explain))
       end
     end
 
@@ -427,40 +428,6 @@ class FetchServiceTest < ActiveSupport::TestCase
       doc = docs.first
       assert_equal '10139', doc[:id]
       assert_nil doc[:explain]
-    end
-
-    it 'converts docs to SnapshotDocs for SnapshotQuery' do
-      fetch_service = FetchService.new options
-
-      snapshot_query.snapshot_docs.destroy_all
-
-      docs = []
-      docs << {
-        id:      '123',
-        explain: { match: true, value: 13.647848 },
-        fields:  { version: 1234, title: [ 'milk' ] },
-      }
-      docs << {
-        id:      'abc',
-        explain: nil,
-        fields:  { version: 5678, title: [ 'eggs' ] },
-      }
-
-      results = fetch_service.setup_docs_for_query snapshot_query, docs
-      assert_equal 2, results.count
-
-      SnapshotDoc.insert_all(
-        results.map do |doc|
-          doc.attributes.except('id')
-        end
-      )
-
-      snapshot_query.reload
-      assert_equal 2, snapshot_query.snapshot_docs.count
-
-      snapshot_doc = snapshot_query.snapshot_docs.first
-
-      assert_nothing_raised { JSON.parse(snapshot_doc.explain) }
     end
 
     it 'lets you extract from raw elasticsearch dump' do

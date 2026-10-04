@@ -45,7 +45,10 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
 - **Expected:** The CSV imports on file selection; a snapshot-backed search URL is generated, the queries from the CSV are pre-filled on the Queries step, and the finished case shows the static queries with results in CSV order.
 - **Edge cases:**
   - [ ] CSV missing one of the required headers — clear validation error, cannot continue.
-  - [ ] Header names with stray leading/trailing whitespace — flagged rather than silently mis-parsed.
+  - [ ] Header names and values with leading/trailing whitespace — trimmed before validation and import.
+  - [ ] Blank lines between records or at the end — ignored; nonempty malformed rows still rejected.
+  - [ ] Rows with too few/many columns or unclosed quoted fields — CSV format error; no import request is sent.
+  - [ ] Quoted commas, escaped quotes, and line breaks — preserved as field content.
   - [ ] Non-CSV file chosen — rejected with a message.
   - [ ] Confirm Add Query is disabled on the resulting case (4.2 edge case) and the Query tab shows the static-engine message (4.10).
 

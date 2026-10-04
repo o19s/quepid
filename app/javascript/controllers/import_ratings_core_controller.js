@@ -4,6 +4,7 @@ import { HttpError } from "api/http_error"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
 import { parseCsv } from "utils/csv"
+import { buildSnapshotImportGroups } from "utils/snapshot_import"
 
 const REQUIRED_HEADERS = {
   csv: ["query", "docid", "rating"],
@@ -133,18 +134,8 @@ export default class extends CoreModalControllerBase {
 
   async importSnapshots() {
     const { rows } = this.parseCsv(this.contents.snapshots)
-    const snapshots = new Map()
-    rows.forEach((row) => {
-      const key = row["Snapshot Name"]
-      if (!snapshots.has(key)) snapshots.set(key, { name: key, created_at: row["Snapshot Time"], queries: {} })
-      const snapshot = snapshots.get(key)
-      snapshot.queries[row["Query Text"]] ||= { docs: [] }
-      const reserved = REQUIRED_HEADERS.snapshots
-      const fields = Object.fromEntries(Object.entries(row).filter(([name]) => !reserved.includes(name)))
-      snapshot.queries[row["Query Text"]].docs.push({ id: row["Doc ID"], position: row["Doc Position"], fields })
-    })
-
-    for (const snapshot of snapshots.values()) {
+    const groups = buildSnapshotImportGroups(rows, this.caseIdValue)
+    for (const snapshot of Object.values(groups[this.caseIdValue]?.snapshots || {})) {
       await this.post(this.snapshotsUrlValue, { snapshots: [snapshot] })
     }
   }

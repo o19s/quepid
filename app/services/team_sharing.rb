@@ -3,6 +3,8 @@
 # Controllers own lookup errors, flash messages and response formats. This service
 # owns authorization, idempotent membership changes and sharing side effects.
 class TeamSharing
+  class AccessDenied < ActiveRecord::RecordNotFound; end
+
   ASSOCIATIONS = { 'Case' => :cases, 'Book' => :books, 'Scorer' => :scorers, 'SearchEndpoint' => :search_endpoints }.freeze
 
   def initialize user, team
@@ -39,7 +41,7 @@ class TeamSharing
   def authorized_association record
     name = ASSOCIATIONS.fetch(record.class.name)
     scope = @user.public_send("#{name}_involved_with")
-    raise ActiveRecord::RecordNotFound unless scope.exists?(record.id)
+    raise AccessDenied.new(nil, record.class.name) unless scope.exists?(record.id)
 
     @team.public_send(name)
   end

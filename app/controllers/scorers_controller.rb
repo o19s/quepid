@@ -5,6 +5,7 @@ class ScorersController < ApplicationController
 
   before_action :set_scorer, only: [ :edit, :update, :destroy ]
   before_action :set_source_scorer, only: [ :clone ]
+  before_action :set_sharing_resources, only: [ :share, :unshare ]
 
   # Show the scorers page (server-side rendering)
   def index
@@ -96,61 +97,27 @@ class ScorersController < ApplicationController
   end
 
   def share
-    team = current_user.teams.find_by(id: params[:team_id])
-    scorer = Scorer.find_by(id: params[:scorer_id])
-
-    unless team && scorer
-      flash[:alert] = 'Team or scorer not found.'
-      redirect_to scorers_path and return
-    end
-
-    unless Scorer.for_user(current_user).exists?(id: scorer.id)
-      flash[:alert] = 'You do not have access to that scorer.'
-      redirect_to scorers_path and return
-    end
-
-    if scorer.communal?
-      flash[:alert] = 'Communal scorers are already available to everyone.'
-      redirect_to scorers_path and return
-    end
-
-    if team.scorers.exists?(scorer.id)
-      flash[:alert] = "#{scorer.name} is already shared with #{team.name}."
+    if TeamSharing.new(current_user, @sharing_team).share(@sharing_scorer)
+      flash[:notice] = "#{@sharing_scorer.name} shared with #{@sharing_team.name}."
     else
-      TeamSharing.new(current_user, team).share(scorer)
-      flash[:notice] = "#{scorer.name} shared with #{team.name}."
+      flash[:alert] = "#{@sharing_scorer.name} is already shared with #{@sharing_team.name}."
     end
-
     redirect_to scorers_path, status: :see_other
+  rescue TeamSharing::AccessDenied
+    flash[:alert] = 'You do not have access to that scorer.'
+    redirect_to scorers_path
   end
 
   def unshare
-    team = current_user.teams.find_by(id: params[:team_id])
-    scorer = Scorer.find_by(id: params[:scorer_id])
-
-    unless team && scorer
-      flash[:alert] = 'Team or scorer not found.'
-      redirect_to scorers_path and return
-    end
-
-    unless Scorer.for_user(current_user).exists?(id: scorer.id)
-      flash[:alert] = 'You do not have access to that scorer.'
-      redirect_to scorers_path and return
-    end
-
-    if scorer.communal?
-      flash[:alert] = 'Communal scorers are already available to everyone.'
-      redirect_to scorers_path and return
-    end
-
-    if team.scorers.exists?(scorer.id)
-      TeamSharing.new(current_user, team).unshare(scorer)
-      flash[:notice] = "#{scorer.name} unshared from #{team.name}."
+    if TeamSharing.new(current_user, @sharing_team).unshare(@sharing_scorer)
+      flash[:notice] = "#{@sharing_scorer.name} unshared from #{@sharing_team.name}."
     else
-      flash[:alert] = "#{scorer.name} is not shared with #{team.name}."
+      flash[:alert] = "#{@sharing_scorer.name} is not shared with #{@sharing_team.name}."
     end
-
     redirect_to scorers_path, status: :see_other
+  rescue TeamSharing::AccessDenied
+    flash[:alert] = 'You do not have access to that scorer.'
+    redirect_to scorers_path
   end
 
   def update
@@ -177,6 +144,17 @@ class ScorersController < ApplicationController
   end
 
   private
+
+  def set_sharing_resources
+    @sharing_team = current_user.teams.find_by(id: params[:team_id])
+    @sharing_scorer = Scorer.find_by(id: params[:scorer_id])
+
+    if !@sharing_team || !@sharing_scorer
+      redirect_to scorers_path, alert: 'Team or scorer not found.'
+    elsif @sharing_scorer.communal?
+      redirect_to scorers_path, alert: 'Communal scorers are already available to everyone.'
+    end
+  end
 
   def set_scorer
     @scorer = if current_user.administrator?

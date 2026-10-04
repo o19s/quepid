@@ -46,6 +46,12 @@ describe("live query events runtime", () => {
     expect(scoreAll).toHaveBeenCalledOnce()
   })
 
+  it("uses only the scoring store event, with no document fallback", () => {
+    const { eventTarget, scoreAll } = setup()
+    eventTarget.dispatchEvent(new CustomEvent("ratings:changed", { detail: { queryId: 1 } }))
+    expect(scoreAll).not.toHaveBeenCalled()
+  })
+
   it("applies query options only for the active case", () => {
     const { eventTarget, query } = setup()
 

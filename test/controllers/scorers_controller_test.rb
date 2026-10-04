@@ -388,6 +388,15 @@ class ScorersControllerTest < ActionController::TestCase
       assert_equal "#{shared_scorer.name} is not shared with Team for case shared with owner.", flash[:alert]
     end
 
+    test 'rejects an inaccessible scorer without changing membership' do
+      inaccessible = scorers(:valid)
+      post :unshare, params: { team_id: team.id, scorer_id: inaccessible.id }
+
+      assert_redirected_to scorers_path
+      assert_equal 'You do not have access to that scorer.', flash[:alert]
+      assert_includes team.reload.scorers, shared_scorer
+    end
+
     test 'rejects a communal scorer' do
       post :unshare, params: { team_id: team.id, scorer_id: communal_scorer.id }
 

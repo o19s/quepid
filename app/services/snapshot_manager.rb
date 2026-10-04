@@ -183,7 +183,7 @@ class SnapshotManager
     docs.each_with_index do |doc, index|
       doc_params = {
         doc_id:     doc[:id],
-        explain:    doc[:explain],
+        explain:    doc[:explain].is_a?(Hash) ? doc[:explain].to_json : doc[:explain],
         position:   doc[:position] || (index + 1),
         rated_only: doc[:rated_only] || false,
         fields:     doc[:fields].presence&.to_json,

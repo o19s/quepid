@@ -33,7 +33,9 @@ class TeamSharingTest < ActiveSupport::TestCase
   test 'inaccessible teams and records cannot be shared' do
     assert_raises(ActiveRecord::RecordNotFound) { TeamSharing.new(users(:joey), teams(:valid)) }
     service = TeamSharing.new(users(:joey), teams(:case_finder_shared_team))
-    assert_raises(ActiveRecord::RecordNotFound) { service.share(cases(:random_case)) }
+    error = assert_raises(TeamSharing::AccessDenied) { service.share(cases(:random_case)) }
+    assert_equal 'Case', error.model
+    assert_raises(TeamSharing::AccessDenied) { service.unshare(cases(:random_case)) }
   end
 
   test 'book sharing emits its historical event only when membership changes' do

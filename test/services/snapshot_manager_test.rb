@@ -81,6 +81,32 @@ class SnapshotManagerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'normalizes snapshot documents and serializes structured explanations once' do
+    snapshot_query = snapshot.snapshot_queries.create!(query: first_query)
+    explanation = { match: true, value: 13.647848 }
+    docs = [
+      ActionController::Parameters.new(id: 'hash', explain: explanation, position: 2, fields: { title: [ 'milk' ] }),
+      { id: 'json', explain: explanation.to_json, position: 1 }.with_indifferent_access,
+      { id: 'nil', explain: nil, rated_only: true },
+      nil
+    ]
+
+    results = service.setup_docs_for_query(snapshot_query, docs)
+    SnapshotDoc.insert_all(results.map { |doc| doc.attributes.except('id') })
+    persisted = snapshot_query.reload.snapshot_docs.index_by(&:doc_id)
+
+    assert_equal 3, persisted.size
+    assert_equal explanation.stringify_keys, JSON.parse(persisted['hash'].explain)
+    assert_equal explanation.to_json, persisted['json'].explain
+    assert_nil persisted['nil'].explain
+    assert_equal({ 'title' => [ 'milk' ] }, JSON.parse(persisted['hash'].fields))
+    assert_equal 2, persisted['hash'].position
+    assert_equal 1, persisted['json'].position
+    assert persisted['nil'].rated_only
+    assert_empty service.setup_docs_for_query(snapshot_query, [])
+    assert_empty service.setup_docs_for_query(nil, docs)
+  end
+
   describe 'Import queries' do
     test 'creates queries if they do not already exist' do
       data = {

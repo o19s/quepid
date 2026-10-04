@@ -570,12 +570,26 @@ describe("WizardController", () => {
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
     })
 
+    it("rejects malformed rows before posting an import", async () => {
+      const controller = mount()
+      await controller.importStatic(csvFile(`${HEADER}\nq,d`))
+      expect(controller.staticAlert).toMatch(/CSV format error: line 2: expected 4 columns but found 2/)
+      expect(importSnapshotsToCase).not.toHaveBeenCalled()
+    })
+
+    it("rejects unclosed quoted fields before posting an import", async () => {
+      const controller = mount()
+      await controller.importStatic(csvFile(`${HEADER}\nq,d,1,"unfinished`))
+      expect(controller.staticAlert).toMatch(/unclosed quote/)
+      expect(importSnapshotsToCase).not.toHaveBeenCalled()
+    })
+
     it("imports rows as a snapshot, switches to static, and collects unique queries", async () => {
       importSnapshotsToCase.mockResolvedValue([{ id: 11 }])
       const controller = mount()
       controller.snapshotSearchUrlTemplateValue = "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
 
-      await controller.importStatic(csvFile(`${HEADER}\nstar wars,d1,1,A\nstar wars,d2,2,B\nalien,d3,1,C\n,,,`))
+      await controller.importStatic(csvFile(`${HEADER}\nstar wars,d1,1,A\n\n   \nstar wars,d2,2,B\nalien,d3,1,C\n,,,\n\n`))
 
       expect(importSnapshotsToCase).toHaveBeenCalledWith(
         [

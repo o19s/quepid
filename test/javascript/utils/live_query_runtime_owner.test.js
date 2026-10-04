@@ -21,7 +21,7 @@ function buildOwner({
 
   createLiveQueryRuntimeOwner({
     search: quepidSearch,
-    store,
+    store: { scoring: new EventTarget(), ...store },
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
       get: vi.fn(() => Promise.resolve({ data: {} })),

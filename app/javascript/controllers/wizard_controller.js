@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { parseCsv } from "utils/csv"
 import { persistQueries } from "utils/query_lifecycle"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { getQuepidRootUrl } from "utils/quepid_root"
@@ -12,7 +13,6 @@ import {
   formatValidationError,
   formatWizardSaveError,
   invalidProxyApiMethod,
-  parseCsvRows,
   parseCustomHeaders,
   validateStaticHeaders
 } from "utils/wizard_contracts"
@@ -280,16 +280,17 @@ export default class extends Controller {
     const file = event.target.files?.[0]
     if (!file) return
     const content = await file.text()
-    const rows = parseCsvRows(content)
-    const headers = rows[0] || []
+    const { rows, headers, errors } = parseCsv(content)
     const headerResult = validateStaticHeaders(headers.join(","))
     if (!headerResult.valid) {
       this.staticAlert = headerResult.errors.join(" ")
       return this.render()
     }
-    this.staticRows = rows.slice(1).filter((values) => values.some(Boolean)).map((values) => {
-      return Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]))
-    })
+    if (errors.length) {
+      this.staticAlert = `CSV format error: ${errors.join(" ")}`
+      return this.render()
+    }
+    this.staticRows = rows.filter((row) => Object.values(row).some(Boolean))
     this.settings.searchEngine = "static"
     this.settings.searchEnginePreset = "static"
     this.staticAlert = "Importing static data…"

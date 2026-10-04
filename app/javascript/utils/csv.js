@@ -23,7 +23,9 @@ export function parseCsv(content) {
   let rowStartLine = 1
 
   const pushRow = () => {
-    if (row.some(Boolean) || row.length) parsedRows.push({ values: row, line: rowStartLine })
+    // Ignore blank lines before checking column counts; delimiter-only rows
+    // still carry columns and must retain their validation behavior.
+    if (row.some(Boolean) || row.length > 1) parsedRows.push({ values: row, line: rowStartLine })
     row = []
     value = ""
     rowStartLine = line + 1

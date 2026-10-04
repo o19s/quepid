@@ -3,6 +3,7 @@ import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
 import { parseCsv } from "utils/csv"
+import { buildSnapshotImportGroups } from "utils/snapshot_import"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
@@ -125,38 +126,7 @@ export default class extends Controller {
   }
 
   async importSnapshots(docs) {
-    // Group by case ID and snapshot name
-    const cases = {}
-
-    docs.forEach(doc => {
-      const caseId = doc['Case ID']
-      if (!cases[caseId]) {
-        cases[caseId] = { snapshots: {} }
-      }
-
-      const snapshotName = doc['Snapshot Name']
-      if (!cases[caseId].snapshots[snapshotName]) {
-        cases[caseId].snapshots[snapshotName] = {
-          queries: {},
-          created_at: doc['Snapshot Time'],
-          name: snapshotName
-        }
-      }
-
-      const snapshot = cases[caseId].snapshots[snapshotName]
-      const queryText = doc['Query Text']
-      
-      if (!snapshot.queries[queryText]) {
-        snapshot.queries[queryText] = { docs: [] }
-      }
-
-      const docPayload = {
-        id: doc['Doc ID'],
-        position: doc['Doc Position']
-      }
-
-      snapshot.queries[queryText].docs.push(docPayload)
-    })
+    const cases = buildSnapshotImportGroups(docs, undefined, { includeFields: false })
 
     // Convert to API format and send requests sequentially: snapshots for the same
     // case commonly share query text, and sending them concurrently races the
@@ -165,19 +135,9 @@ export default class extends Controller {
 
     for (const [caseId, caseData] of Object.entries(cases)) {
       for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
-        const snapshotPayload = {
-          name: snapshot.name,
-          created_at: snapshot.created_at,
-          queries: Object.fromEntries(
-            Object.entries(snapshot.queries).map(([queryText, queryData]) => [
-              queryText,
-              { docs: queryData.docs }
-            ])
-          )
-        }
 
         try {
-          await this.sendSnapshotToAPI(caseId, snapshotPayload)
+          await this.sendSnapshotToAPI(caseId, snapshot)
         } catch (error) {
           console.error(`Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`, error)
           failureCount += 1

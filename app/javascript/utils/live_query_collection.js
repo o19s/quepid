@@ -66,48 +66,41 @@ export function createLiveQueryCollectionRuntime({
     const requestDeferred = createSearchPromise()
     searchableDeferred = requestDeferred
 
+    function rejectStaleRequest() {
+      if (requestGeneration === generation) return false
+      requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
+      return true
+    }
+
+    function settle(callback) {
+      if (rejectStaleRequest()) return
+      setBootstrapping(false)
+      publishState()
+      callback()
+    }
+
     fetchQueries(caseId)
       .then(
         (data) => {
-          if (requestGeneration !== generation) {
-            requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
-            return data
-          }
-
+          if (rejectStaleRequest()) return
           clearQueries()
           addQueriesFromResponse(data, caseId)
-          setBootstrapping(false)
-          publishState()
-          requestDeferred.resolve()
-          return data
+          settle(() => requestDeferred.resolve())
         },
-        (response) => {
-          if (requestGeneration !== generation) {
-            requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
-            return response
-          }
-
-          logger.debug?.("Failed to bootstrap queries: ", response)
-          setBootstrapping(false)
-          publishState()
-          markStoreError(response)
-          requestDeferred.reject(response)
-          return response
-        }
+        (response) =>
+          settle(() => {
+            logger.debug?.("Failed to bootstrap queries: ", response)
+            markStoreError(response)
+            requestDeferred.reject(response)
+          })
       )
-      .catch((response) => {
-        if (requestGeneration !== generation) {
-          requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
-          return response
-        }
-        logger.debug?.("Failed to bootstrap queries")
-        setBootstrapping(false)
-        publishState()
-        // A handler above threw before settling; reject so callers waiting on
-        // the bootstrap (and the searchable promise) don't hang forever.
-        requestDeferred.reject(response)
-        return response
-      })
+      .catch((response) =>
+        settle(() => {
+          logger.debug?.("Failed to bootstrap queries")
+          // A response handler threw; settle both bootstrap and searchable callers.
+          requestDeferred.reject(response)
+        })
+      )
 
     return requestDeferred.promise
   }

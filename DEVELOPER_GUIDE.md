@@ -902,7 +902,6 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `query-options:saved` | `{ queryId, options }` (no `caseId`: listeners treat it as the current case) | `query-options-core` | `utils/live_query_events` |
 | `judgements:queries-need-reload`, `imports:queries-need-reload` | `{ caseId }` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (reloads only for the current case) |
 | `judgements:book-settings-saved` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `judgements-core` | `utils/live_query_events` (reconfigures book sync), `core_runtime.js` (updates `caseState` book; page-lifetime) |
-| `ratings:changed` | `{ queryId }` | `utils/live_query_runtime_owner` (fallback only when there is no scoring store) | `utils/live_query_events` |
 | `queries-state:changed` | none | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
 | `query-diffs:refreshed` | `{ success }` | `utils/live_query_runtime_owner` | `qscore-case` |
 | `case-score:persisted` | `{ caseId }` | `qscore-case` | `qgraph` |

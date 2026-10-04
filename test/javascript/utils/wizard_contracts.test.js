@@ -6,7 +6,6 @@ import {
   formatWizardSaveError,
   invalidProxyApiMethod,
   parseCustomHeaders,
-  parseCsvRows,
   validateStaticHeaders
 } from "utils/wizard_contracts"
 
@@ -27,13 +26,6 @@ describe("wizard contracts", () => {
     expect(validateStaticHeaders("Query Text,Doc ID,Doc Position,title").valid).toBe(true)
     expect(validateStaticHeaders("Query Text,Doc ID").valid).toBe(false)
     expect(validateStaticHeaders("Query Text,Doc ID,Doc Position,field name").valid).toBe(false)
-  })
-
-  it("parses quoted CSV fields without shifting columns", () => {
-    expect(parseCsvRows('Query Text,Doc ID,Doc Position,title\n"star, wars",movie-1,1,"The, Movie"')).toEqual([
-      ["Query Text", "Doc ID", "Doc Position", "title"],
-      ["star, wars", "movie-1", "1", "The, Movie"]
-    ])
   })
 
   it("builds the legacy field-spec shape", () => {

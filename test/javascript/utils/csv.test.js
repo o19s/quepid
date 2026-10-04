@@ -44,6 +44,13 @@ describe("parseCsv", () => {
     expect(parseCsv(content).errors).toEqual(["line 4: expected 2 columns but found 1."])
   })
 
+  it.each(["\n", "\r\n", "\r"])("ignores blank lines while keeping error line numbers with %j", (eol) => {
+    const content = ["a,b", "1,2", "", "   ", "3,4", "", "bad", "", ""].join(eol)
+    const { rows, errors } = parseCsv(content)
+    expect(rows).toEqual([{ a: "1", b: "2" }, { a: "3", b: "4" }, { a: "bad", b: "" }])
+    expect(errors).toEqual(["line 7: expected 2 columns but found 1."])
+  })
+
   it("reports an unclosed quote", () => {
     expect(parseCsv('a,b\n"open,1\n').errors).toContain("line 2: unclosed quote.")
   })
