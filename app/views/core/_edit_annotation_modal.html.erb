@@ -1,0 +1,14 @@
+<% modal_body = capture do %>
+  <form id="edit-annotation-form">
+    <label for="edit-annotation-message">New Message:</label>
+    <textarea id="edit-annotation-message" class="form-control" rows="3" data-annotations-target="editMessage"></textarea>
+  </form>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="submit" form="edit-annotation-form" class="btn btn-primary" data-annotations-target="editSave">Update</button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "editAnnotationModal", title: "Edit Annotation",
+                                 data: { annotations_target: "editModal" }, cancel_first: true,
+                                 body: modal_body, footer: modal_footer %>

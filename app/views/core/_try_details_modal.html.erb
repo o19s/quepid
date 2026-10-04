@@ -1,44 +1,40 @@
 <%# Rendered outside .pane_east: the pane is its own stacking context (panes.css), which would
     trap the modal beneath Bootstrap's body-level backdrop. It stays inside the tune-relevance
     controller's scope (#main), so its targets and actions still resolve. %>
-<div class="modal fade" id="tuneTryDetailsModal" tabindex="-1" aria-labelledby="tuneTryDetailsLabel" aria-hidden="true" data-tune-relevance-target="tryModal">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title" id="tuneTryDetailsLabel" data-tune-relevance-target="tryTitle"></h4>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Dismiss"></button>
-      </div>
-      <div class="modal-body">
-        <form class="try-rename-form flex-wrap align-items-center gap-2 mb-3" data-tune-relevance-target="tryRenameForm" data-action="submit->tune-relevance#submitRename" hidden>
-          <label for="tune-try-name">Name:</label>
-          <input id="tune-try-name" type="text" class="form-control w-auto flex-grow-1" data-tune-relevance-target="tryNameInput">
-          <button type="submit" class="btn btn-sm btn-primary">Rename</button>
-        </form>
-        <div class="row">
-          <div class="col-sm-3">Arguments</div>
-          <div class="col-sm-9"><pre><code data-tune-relevance-target="tryQueryParams"></code></pre></div>
-        </div>
-        <div class="row">
-          <div class="col-sm-3">Search Endpoint</div>
-          <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer">Browse Search Endpoint</a></div>
-        </div>
-        <div class="row">
-          <div class="col-sm-3">Displayed Fields</div>
-          <div class="col-sm-9"><span data-tune-relevance-target="tryFieldSpec"></span></div>
-        </div>
-        <div class="row pt-3"><h4>Variables</h4></div>
-        <div class="row">
-          <div class="col-sm-3 text-end">#$query##</div>
-          <div class="col-sm-9">The user's query being searched</div>
-        </div>
-        <div data-tune-relevance-target="tryVariables"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-outline-secondary" data-tune-relevance-target="tryRenameAction" data-action="tune-relevance#toggleRename">Rename</button>
-        <button type="button" class="btn btn-outline-secondary" data-action="tune-relevance#duplicateTry">Duplicate</button>
-        <button type="button" class="btn btn-danger" data-tune-relevance-target="tryDelete" data-action="tune-relevance#deleteTry">Delete</button>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Dismiss</button>
-      </div>
-    </div>
+<% modal_body = capture do %>
+  <form class="try-rename-form flex-wrap align-items-center gap-2 mb-3" data-tune-relevance-target="tryRenameForm" data-action="submit->tune-relevance#submitRename" hidden>
+    <label for="tune-try-name">Name:</label>
+    <input id="tune-try-name" type="text" class="form-control w-auto flex-grow-1" data-tune-relevance-target="tryNameInput">
+    <button type="submit" class="btn btn-sm btn-primary">Rename</button>
+  </form>
+  <div class="row">
+    <div class="col-sm-3">Arguments</div>
+    <div class="col-sm-9"><pre><code data-tune-relevance-target="tryQueryParams"></code></pre></div>
   </div>
-</div>
+  <div class="row">
+    <div class="col-sm-3">Search Endpoint</div>
+    <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer">Browse Search Endpoint</a></div>
+  </div>
+  <div class="row">
+    <div class="col-sm-3">Displayed Fields</div>
+    <div class="col-sm-9"><span data-tune-relevance-target="tryFieldSpec"></span></div>
+  </div>
+  <div class="row pt-3"><h4>Variables</h4></div>
+  <div class="row">
+    <div class="col-sm-3 text-end">#$query##</div>
+    <div class="col-sm-9">The user's query being searched</div>
+  </div>
+  <div data-tune-relevance-target="tryVariables"></div>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-outline-secondary" data-tune-relevance-target="tryRenameAction" data-action="tune-relevance#toggleRename">Rename</button>
+  <button type="button" class="btn btn-outline-secondary" data-action="tune-relevance#duplicateTry">Duplicate</button>
+  <button type="button" class="btn btn-danger" data-tune-relevance-target="tryDelete" data-action="tune-relevance#deleteTry">Delete</button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "tuneTryDetailsModal", title: "",
+                                 title_tag: :h4, title_data: { tune_relevance_target: "tryTitle" },
+                                 data: { tune_relevance_target: "tryModal" },
+                                 close_label: "Dismiss", cancel_label: "Dismiss", cancel_class: "btn-outline-secondary",
+                                 body: modal_body, footer: modal_footer %>

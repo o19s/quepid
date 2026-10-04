@@ -1,26 +1,23 @@
-<div class="modal fade" id="queryOptionsModal" tabindex="-1" aria-labelledby="queryOptionsModalLabel" aria-hidden="true" data-controller="query-options-core" data-action="show.bs.modal->query-options-core#open"
-     data-query-options-core-save-url-template-value="<%= api_case_query_options_path(@case, '__QUERY_ID__') %>">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 class="modal-title" id="queryOptionsModalLabel" data-query-options-core-target="title">Query Options</h3>
-        <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
+<% modal_body = capture do %>
+  <p>Provide a JSON object specifying query specific options</p>
+  <label for="query-options-editor">
+    This key =&gt; value object will be available in the scorer so you can use it to access query specifics.
+    You can access the values using the <code>qOption('key')</code> method in Scorers or
+    <code>#$qOption.key##</code> in Query Sandbox.
+  </label>
+  <textarea id="query-options-editor" class="d-none" data-query-options-core-target="editor"></textarea>
+<% end %>
 
-      <div class="modal-body">
-        <p>Provide a JSON object specifying query specific options</p>
-        <label for="query-options-editor">
-          This key =&gt; value object will be available in the scorer so you can use it to access query specifics.
-          You can access the values using the <code>qOption('key')</code> method in Scorers or
-          <code>#$qOption.key##</code> in Query Sandbox.
-        </label>
-        <textarea id="query-options-editor" class="d-none" data-query-options-core-target="editor"></textarea>
-      </div>
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary" data-query-options-core-target="saveButton" data-action="click->query-options-core#save">Set Options</button>
+<% end %>
 
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-query-options-core-target="saveButton" data-action="click->query-options-core#save">Set Options</button>
-        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
+<%= render "shared/modal_shell", id: "queryOptionsModal", title: "Query Options",
+                                 title_tag: :h3, title_data: { query_options_core_target: "title" },
+                                 close_class: "btn-core-close", cancel_class: "btn-outline-secondary",
+                                 data: {
+                                   controller: "query-options-core",
+                                   action: "show.bs.modal->query-options-core#open",
+                                   query_options_core_save_url_template_value: api_case_query_options_path(@case, '__QUERY_ID__'),
+                                 },
+                                 body: modal_body, footer: modal_footer %>

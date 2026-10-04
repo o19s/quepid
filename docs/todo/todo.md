@@ -143,7 +143,7 @@ that Rails-owned markup and consider moving the remaining lifecycle/behavior
 into controllers or controller mixins. Leave thin Bootstrap
 wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked)
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
 
 `pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
 (snapshot selects), and possibly `judgements_core` and `export_case_core`
@@ -160,22 +160,22 @@ inside a lazy frame first.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
 
-The remaining gaps include custom scorer creation (8.3), book creation (10.2),
-and a templated Elasticsearch/OpenSearch query's rendered-template success
-path (no suitable dev case; unit tests only). Track D's no-endpoint subset had
-before/after comparisons on 4.11, 4.13, 7.7 and 7.9; those comparisons do not
-establish complete coverage of every flow sharing the touched files. Use the
-individual tracker notes to choose the next sample, including deferred
-permission, background-job and settings-save branches.
+Custom scorer creation (8.3), book creation (10.2) and the non-admin scorer
+edit branch (8.4) are now verified live. The templated ES query branches were
+sampled on the ES demo cluster, which has a stored `tmdb-title-search-template`.
+To reproduce, give a try on an ES case the query params
+`{"id": "tmdb-title-search-template", "params": {"search_query": "#$query##"}}`.
+Search goes through `/_search/template` and Explain Query → Query Template
+renders the `/_render/template` output. A forced render failure shows "Unable
+to render the query template.", and a plain query shows "This is not a
+templated query." A background rerun of that try (4.12) queued
+`RunCaseEvaluationJob`, which completed its fetch snapshot. Creating a book from
+an unshared case's Judgements modal (6.6) saved the case-sync toggles. 4.12, 6.6
+and 6.7 are still due for their other branches and were not re-stamped.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C1 — Move remaining hand-written modals onto `_modal_shell`
-
-`core/_try_details_modal.html.erb`, `core/_tune_relevance.html.erb` and
-`shared/_query_options_core_modal.html.erb` hand-write
-`.modal > .modal-dialog > .modal-content`. The shell needs a configurable
-dismiss-button label ("Dismiss" vs "Cancel") and title heading tag. The
-judgements form, query-doc-pairs index and unleash modals on non-core pages are
-also candidates. Convert each when next edited.
+Still unsampled: 6.6's sync toggles on an already-linked book and the 50+ query
+background redirect; 10.3's AI judge, upload and multi-team permission
+branches; 17.2/17.3 job pacing and concurrency; 4.16's blank save.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace test-override shims with `vi.mock`
 

@@ -291,26 +291,18 @@
 
 <% end %>
 
-<!-- Modal -->
-<div class="modal fade" id="explanationModal" tabindex="-1" aria-labelledby="explanationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-right">
-    <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair), data: { turbo: false }) do |f| %>
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="explanationModalLabel">Record Explanation</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
-        <p>
-          <%= f.text_area :explanation, size: '44x2' %>
-        </p>
-      </div>
-      <div class="modal-footer">
-        <%= f.submit "Skip Judging",class: 'btn btn-primary' %>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-      </div>
-     </div>
-     <% end %>
-  </div>
-</div>
+<% modal_footer = nil %>
+<% modal_body = capture do %>
+  <%= form_for(judgement, url: book_query_doc_pair_unrateable_path(@book, query_doc_pair),
+               html: { id: "explanation-form" }, data: { turbo: false }) do |f| %>
+    <p>It is helpful (though optional) if you can record what makes this query/doc pair difficult to judge.</p>
+    <p><%= f.text_area :explanation, size: '44x2' %></p>
+    <% modal_footer = capture do %>
+      <%= f.submit "Skip Judging", class: 'btn btn-primary', form: "explanation-form" %>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= render "shared/modal_shell", id: "explanationModal", title: "Record Explanation",
+                                 title_tag: :h1, title_class: "fs-5", dialog_class: "modal-dialog-right",
+                                 body: modal_body, footer: modal_footer %>

@@ -236,10 +236,10 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/quepid_search.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-04T15:31:05Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live on case 598: modal opens with {}; invalid JSON flashes 'Please provide a valid JSON object.' and stays open; a forced 500 flashes 'Unable to save query options.' and stays open; valid JSON saves ('Query options saved successfully.'), closes, and triggers a rescore (PUT options, PUT scores, GET scores/all)."
-        paths: ["app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
+        notes: "Covered live via MCP on case 219: Query Options opens with the editor and closes with Cancel; before/after modal layout inspected. Automated E2E also passed invalid JSON and a routed successful save. Not covered live: real options persistence, failed-save response and rescore."
+        paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "4.6":
         title: "Rate a document"
         last_run: 2026-10-04T20:15:00Z
@@ -284,16 +284,16 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-04T15:47:10Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live on case 598: History tab links Visualize your tries / Check Scores / Check Ratings resolve (via <base href=/>) to /analytics/tries_visualization/598, /cases/598/scores, /cases/598/ratings; try rows show 'Try 3 q=#$query##...bq=...^##dueBoost##... using Solr ...'. Scores page: Scorer/Try Number/Score/Day columns, scorer filter, Delete disabled until a box is checked, Check All unchecks on a partial selection, deleting one score confirms ('Are you sure you want to delete this scores?') and removes just that row (3 to 2), case intact. Ratings page: documented columns; filter matches doc id (l_15671 -> 1 row) and query (meetings -> 3); a rating value '1' also substring-matches doc ids."
-        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
+        notes: "Covered live via MCP on case 219: History opens try details, Rename reveals the form, and Dismiss closes the modal; both modal states match inspected before/after screenshots. Automated E2E passed action routing. Not covered live: persisted rename, duplicate, delete or history navigation."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
-        last_run: 2026-10-04T16:08:50Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live via the Annotations tab (see 5.4): create, edit with Cancel and Update, delete."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb"]
+        notes: "Covered live via MCP on case 219: edit an annotation supplied by a routed GET, inspect its message and Cancel; before/after modal layouts inspected. Automated E2E separately passed real annotation creation, editing and deletion. Not covered live: MCP persistence and failed-save response."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
         last_run: 2026-10-04T20:15:00Z
@@ -360,10 +360,10 @@ parts:
     scenarios:
       "5.1":
         title: "Try history (History tab)"
-        last_run: 2026-10-01T01:27:11Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live on case 468 (3 tries): the History tab lists every try (named try shows its name), and clicking the oldest try did a full navigation to /case/468/try/1 with that try's settings. Rerun in 4.10/4.11 created new tries rather than mutating old ones. Not covered: the '...' per-try details, round trip back to the newest try, color-coding by endpoint URL."
-        paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
+        notes: "Covered live via MCP on case 219: History try details and rename-form toggle, followed by Dismiss; inspected both before/after states. Not covered live: switching tries or persisting rename, duplicate and delete."
+        paths: ["app/models/try.rb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
         last_run: 2026-10-04T15:55:30Z
@@ -378,10 +378,10 @@ parts:
         paths: ["app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/quepid_search.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/core.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "5.4":
         title: "Annotations"
-        last_run: 2026-10-04T16:08:50Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live on case 598: Create adds 'due pass: bq knob at 3' at the top with '1 second ago - by ...', 'Try No: 3 Score: 0.2455...' (unrounded, same as main's annotation.html) and the message; Edit opens an 'Edit Annotation' modal, Cancel restores the original, Update saves the new message; Delete (no confirmation, as documented) removes it and its graph marker immediately. Not covered live: the disabled Create on a never-scored case."
-        paths: ["app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts"]
+        notes: "Covered live via MCP on case 219: open and cancel the annotation editor using a routed annotation GET; inspected before/after modal layouts. Automated E2E separately passed real create/edit/delete. Not covered live: MCP persistence, error response and graph updates."
+        paths: ["app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         last_run: 2026-10-04T16:08:50Z
@@ -546,15 +546,15 @@ parts:
         paths: ["app/controllers/scorers_controller.rb"]
       "8.3":
         title: "Create a custom scorer"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-04T20:26:00Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: /scorers/new presets; Graded plus Show scale labels and a custom 0,1,2,5 scale produce the same label inputs on both sides. Not covered live: Save, validation errors. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
+        notes: "Covered live (container Playwright, headless): a custom 0,1,2,5 scale with labels Bad/Meh/Good/Perfect and typed CodeMirror code saves with 'Scorer created.' and survives reload; the DB row is communal false, owned by the admin creator. 11 values gives 'Scale must be limited to at most 10 values'; a,b,c gives 'Scale is invalid (only integers allowed)'; '0, 1, 2' saves as [0, 1, 2]; a blank name auto-assigns 'Scorer 10'. Test scorers deleted through the Edit page. Not covered live: form tampering to force communal true. Screenshots: .playwright-mcp/retrofit-gaps/."
         paths: ["app/validators/scale_validator.rb", "app/controllers/scorers_controller.rb", "app/models/scorer.rb", "app/views/scorers/new.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js"]
       "8.4":
         title: "Edit a scorer"
-        last_run: 2026-10-02T15:02:15Z
+        last_run: 2026-10-04T20:27:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: Edited custom scorer name, code, binary scale and label; all survived reload. Not covered live: Communal scorer mutation and non-admin authorization branches."
+        notes: "Covered live: as non-admin quepid+oscmember, /scorers/1/edit (communal) and /scorers/21/edit (another user's private scorer) both return 404; set_scorer scopes non-admins to non-communal scorers they can see, which the scenario allows. Not covered live this pass: editing a custom scorer (last driven 2026-10-02) and admin communal mutation."
         paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js"]
       "8.5":
         title: "Clone a scorer"
@@ -632,10 +632,10 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb"]
       "10.2":
         title: "Create a new book"
-        last_run: 2026-10-02T18:25:26Z
+        last_run: 2026-10-04T20:29:00Z
         result: pass
-        notes: "branch-ui-diff sweep vs main f77c17d4 (merge-base), DB snapshot/restore around writes: Covered live: /books/new is pixel-identical; the scale select swaps the four-point and binary guideline defaults and keeps custom text on both sides. Both list a blank extra scale option. Not covered live: Create Book. Screenshots: .playwright-mcp/branch-ui-diff/retrofit/."
-        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js"]
+        notes: "Covered live: from case 477's Judgements modal (unshared case shows the share-first notice plus + Create a book), /books/new?origin_case_id=477&scorer_id=5 prefills the name and shows Case Integration; created with OSC, an edited guideline and Book-to-Case auto-populate off, redirecting to the Overview with 'Book was successfully created.'; the case was linked with the chosen toggles. Blank name is blocked by the browser, then the server returns 'Name can't be blank'; no scale gives 'Scorer must be selected'; no team saves. Test books deleted. FOUND (pre-existing, already fixed on origin/main): the Rating Scale is not preselected from scorer_id because new sets the exact scorer id (5) while the dropdown lists one representative per scale (4); same code at merge-base f77c17d4, and origin/main resolves it via matching_scorer_id_for_book. Not covered live: the zero-teams alert."
+        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js"]
       "10.3":
         title: "Edit book settings"
         last_run: 2026-10-02T15:02:15Z
@@ -726,10 +726,10 @@ parts:
         paths: ["app/controllers/judgements_controller.rb"]
       "11.4":
         title: "I Can't Tell (mark unrateable)"
-        last_run: 2026-09-25T15:58:58Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Re-verified via Playwright MCP: clicked 'I Can't Tell' — 'Record Explanation' modal appeared, typed an explanation, clicked Skip Judging — advanced to the next pair; confirmed the judgement appears under the Judgements list's 'Unrateable' filter (11.6) with the correct query/doc/rater shown."
-        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb"]
+        notes: "Covered live via MCP on book 1: I Can't Tell opens Record Explanation and Cancel closes it; before/after layouts inspected. Automated E2E separately passed Skip Judging and cleaned up the judgement. Not covered live: MCP submission or blank explanation."
+        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb", "app/views/shared/_modal_shell.html.erb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
         last_run: 2026-10-01T03:12:00Z
@@ -756,10 +756,10 @@ parts:
         paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb"]
       "11.9":
         title: "Query/Doc Pairs management"
-        last_run: 2026-09-25T15:58:46Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "CONFIRMED FIX via Playwright MCP (commit 52a45e6d 'Fix query_doc_pairs create/update to redirect to the pair, not the index'): created a new pair on Book Of Ratings ('manual test query' / 'manual-test-doc-1') — after Create, landed on /books/1/query_doc_pairs/3101 (the pair's own show page), not the index. Edited it and clicked Update — again landed on the pair's show page. Deleted it via the Edit page's Delete button (native confirm() dialog, accepted), redirected to the book Overview page. No console errors."
-        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb", "test/controllers/query_doc_pairs_controller_test.rb", "app/views/query_doc_pairs/index.html.erb", "app/views/query_doc_pairs/new.html.erb", "app/views/query_doc_pairs/edit.html.erb", "app/views/query_doc_pairs/show.html.erb", "app/views/query_doc_pairs/_form.html.erb", "app/views/query_doc_pairs/_document_fields.html.erb"]
+        notes: "Covered live via MCP on book 1: Document Fields opens from the query/doc-pairs list, displays query/doc identifiers and JSON fields, then closes; before/after layouts inspected. Not covered live: pair CRUD, filtering and empty/long field values."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb", "test/controllers/query_doc_pairs_controller_test.rb", "app/views/query_doc_pairs/index.html.erb", "app/views/query_doc_pairs/new.html.erb", "app/views/query_doc_pairs/edit.html.erb", "app/views/query_doc_pairs/show.html.erb", "app/views/query_doc_pairs/_form.html.erb", "app/views/query_doc_pairs/_document_fields.html.erb", "app/views/shared/_modal_shell.html.erb"]
 
   "12":
     file: 12-ai-judges.md
@@ -790,10 +790,10 @@ parts:
         paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-10-04T18:53:40Z
+        last_run: 2026-10-04T20:32:13Z
         result: pass
-        notes: "Covered live on book 10 against the local Ollama judge: Judgement Stats lists 'OSC AI Judge' with Refine Prompt / Prepare to Judge! (enabled); the Judge Documents modal defaults to 10 pairs, checking Judge All Pairs relabels the submit to 'Unleash the Kraken!!' and unchecking restores 'Judge Documents'; a bounded run of 2 redirects to /books/10 with 'AI Judge OSC AI Judge will start evaluating query/doc pairs.' and creates exactly 2 AI-judge judgements within ~15s — one marked unrateable (the model returned no usable rating) while the run continued and rated the other 0, covering the unrateable edge case. Not covered live: the Kraken run itself (book has ~180 unjudged pairs), live progress notifications, zero-unjudged-pairs run, per-pair cap."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb"]
+        notes: "Covered live via MCP on book 1 judgement stats: force-open the first AI judge modal with Bootstrap, check Judge All Pairs changes the submit label to Unleash the Kraken!!, then Close; both before/after layouts inspected. Not covered live: normal launch-button eligibility, job submission, progress or completion."
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb"]
 
   "13":
     file: 13-analytics.md
