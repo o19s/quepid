@@ -18,7 +18,6 @@ function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelect
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
       get: vi.fn(() => Promise.resolve({ data: {} })),
-      promiseApi: Promise,
       schedule: callback => callback(),
       logger: { error: vi.fn(), warn: vi.fn(), info: vi.fn() }
     },

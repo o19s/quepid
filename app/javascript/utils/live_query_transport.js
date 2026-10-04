@@ -17,7 +17,6 @@ export function createLiveQueryTransportRuntime({
   onSearchStarted,
   onSearchCompleted,
   onSearchFailed,
-  promiseApi = Promise,
   logger = console
 }) {
   function searchAndScore(query) {
@@ -43,7 +42,6 @@ export function createLiveQueryTransportRuntime({
       onSearchStarted,
       onSearchCompleted,
       onSearchFailed,
-      promiseApi,
       logger
     }).run()
   }

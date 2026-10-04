@@ -12,8 +12,7 @@ export function createLiveQueryDiffRuntime({
   getSettings,
   createSearcherFromSnapshot,
   publish,
-  notify,
-  promiseApi = Promise
+  notify
 }) {
   const create = (query) =>
     createDiff({
@@ -33,14 +32,14 @@ export function createLiveQueryDiffRuntime({
         publish(query)
       })
 
-      return promiseApi.all(refreshes).then(
+      return Promise.all(refreshes).then(
         () => {
           Object.values(getQueries()).forEach((query) => publish(query))
           notify({ success: true })
         },
         (error) => {
           notify({ success: false })
-          return promiseApi.reject(error)
+          return Promise.reject(error)
         }
       )
     }

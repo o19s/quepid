@@ -1,10 +1,9 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { deleteJson, postJson, putJson } from "api/json"
 import { extractCuratorVars } from "utils/curator_vars"
 
 const clone = (value) => JSON.parse(JSON.stringify(value))
 
-function createTry(data, { request, caseNo, createFieldSpec }) {
+function createTry(data, { caseNo, createFieldSpec }) {
   const source = { ...data }
   if (source.query_params === null)
     source.query_params = source.search_engine === "solr" ? "" : "{}"
@@ -68,15 +67,7 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
   }
   currentTry.createFieldSpec = () => createFieldSpec(currentTry.fieldSpec)
   currentTry.rename = async (name) => {
-    await requestJson(
-      `api/cases/${caseNo()}/tries/${currentTry.tryNo}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name })
-      },
-      request
-    )
+    await putJson(`api/cases/${caseNo()}/tries/${currentTry.tryNo}`, { name })
     currentTry.name = name
   }
   currentTry.updateVars()
@@ -84,7 +75,6 @@ function createTry(data, { request, caseNo, createFieldSpec }) {
 }
 
 export function createSettingsRuntime({
-  request = apiFetch,
   caseNo = () => null,
   tryNo = () => null,
   navigate = () => {},
@@ -110,7 +100,7 @@ export function createSettingsRuntime({
     current.numTries = () => activeTries().length
     current.lastTry = () => activeTries().at(-1) || null
     current.addTry = (data) => {
-      const item = createTry(data, { request, caseNo, createFieldSpec })
+      const item = createTry(data, { caseNo, createFieldSpec })
       current.tries.push(item)
       return item
     }
@@ -118,26 +108,14 @@ export function createSettingsRuntime({
       if (current.numTries() <= 1) return
       const item = getTry(number)
       if (!item) return
-      await requestJson(
-        `api/cases/${caseNo()}/tries/${number}`,
-        {
-          method: "DELETE"
-        },
-        request
-      )
+      await deleteJson(`api/cases/${caseNo()}/tries/${number}`)
       item.deleted = true
       settingsId++
       if (current.selectedTry?.tryNo === number) navigate({ tryNo: current.lastTry().tryNo })
     }
     current.duplicateTry = async (number) => {
-      const data = await requestJson(
-        `api/clone/cases/${caseNo()}/tries/${number}`,
-        {
-          method: "POST"
-        },
-        request
-      )
-      const item = createTry(data, { request, caseNo, createFieldSpec })
+      const data = await postJson(`api/clone/cases/${caseNo()}/tries/${number}`)
+      const item = createTry(data, { caseNo, createFieldSpec })
       current.tries.unshift(item)
       settingsId++
       return item
@@ -223,18 +201,10 @@ export function createSettingsRuntime({
     settingsId: () => (state ? state.settingsId : -1),
     save: async (settings) => {
       if (settings.inError) return
-      const data = await requestJson(
-        `api/cases/${caseNo()}/tries`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...payloadFor(settings),
-            parent_try_number: settings.selectedTry.tryNo
-          })
-        },
-        request
-      )
+      const data = await postJson(`api/cases/${caseNo()}/tries`, {
+        ...payloadFor(settings),
+        parent_try_number: settings.selectedTry.tryNo
+      })
       const item = state.addTry(data)
       state.selectTry(item.tryNo)
       document.dispatchEvent(
@@ -248,15 +218,7 @@ export function createSettingsRuntime({
       settings.selectedTry.apiMethod = settings.apiMethod
       settings.selectedTry.queryParams = settings.queryParams
       const payload = payloadFor(settings)
-      await requestJson(
-        `api/cases/${caseNo()}/tries/${tryNo()}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        },
-        request
-      )
+      await putJson(`api/cases/${caseNo()}/tries/${tryNo()}`, payload)
       document.dispatchEvent(
         new CustomEvent("case-settings:updated", {
           detail: { caseNo: caseNo(), lastTry: settings.selectedTry }
@@ -268,15 +230,9 @@ export function createSettingsRuntime({
     renameTry: (number, name) => state?.renameTry(number, name),
     deleteTry: (number) => state?.deleteTry(number),
     previewArgs: async (number, queryParams) => {
-      const data = await requestJson(
-        `api/cases/${caseNo()}/tries/${number}/preview_args`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query_params: queryParams })
-        },
-        request
-      )
+      const data = await postJson(`api/cases/${caseNo()}/tries/${number}/preview_args`, {
+        query_params: queryParams
+      })
       return data.args
     },
     reset: () => {

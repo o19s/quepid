@@ -18,6 +18,8 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     expected_root = root_url.chomp('/')
     assert_select 'body[data-quepid-root-url=?]', expected_root
     assert_select '[data-controller="import-case"]#importCaseModal'
+    assert_select '#importSnapshotModal[data-import-snapshot-imports-url-template-value=?]',
+                  '/api/cases/__CASE_ID__/snapshots/imports'
   end
 
   test 'destroy permanently deletes a case the user owns and redirects to the cases listing' do

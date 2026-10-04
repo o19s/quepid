@@ -1,7 +1,8 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { postJson } from "api/json"
+import { putJson } from "api/json"
 import { fromTextArea } from "modules/editor"
 import coreFlash from "utils/core_flash"
+import { getCoreCapabilities } from "utils/core_capability_access"
 
 /**
  * Core per-query options editor. The live Query object remains runtime-owned,
@@ -10,6 +11,7 @@ import coreFlash from "utils/core_flash"
  */
 export default class extends CoreModalControllerBase {
   static targets = ["title", "editor", "saveButton"]
+  static values = { saveUrlTemplate: String }
 
   connect() {
     if (!this.hasEditorTarget) return
@@ -17,25 +19,16 @@ export default class extends CoreModalControllerBase {
     this.editor = fromTextArea(this.editorTarget, { mode: "json", height: 400 })
   }
 
+  // Opened from a query row's "Set Options" button; the row carries the query id, and the
+  // options are read from the live query so they are current, not as of the row's render.
   openFor(button) {
-    this.queryId = button?.dataset?.queryOptionsCoreQueryIdValue || ""
-    this.saveUrl = button?.dataset?.queryOptionsCoreSaveUrlValue || ""
+    this.queryId = button?.closest("[data-query-id]")?.dataset.queryId || ""
+    this.saveUrl = this.queryId ? this.saveUrlTemplateValue.replaceAll("__QUERY_ID__", this.queryId) : ""
+    const options = getCoreCapabilities().queryCapabilities?.getQuery?.(this.queryId)?.options
 
-    if (this.editor) {
-      this.editor.setValue(this.formatOptions(button?.dataset?.queryOptionsCoreOptionsValue))
-    }
+    if (this.editor) this.editor.setValue(JSON.stringify(options || {}, null, 2))
     if (this.hasTitleTarget) this.titleTarget.textContent = "Query Options"
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
-  }
-
-  formatOptions(rawOptions) {
-    if (!rawOptions) return "{}"
-
-    try {
-      return JSON.stringify(JSON.parse(rawOptions), null, 2)
-    } catch {
-      return rawOptions
-    }
   }
 
   async save(event) {
@@ -54,7 +47,7 @@ export default class extends CoreModalControllerBase {
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
 
     try {
-      await postJson(this.saveUrl, { query: { options } }, { method: "PUT" })
+      await putJson(this.saveUrl, { query: { options } })
 
       document.dispatchEvent(new CustomEvent("query-options:saved", {
         detail: { queryId: this.queryId, options }

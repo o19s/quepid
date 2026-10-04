@@ -2,11 +2,11 @@ import { Controller } from "@hotwired/stimulus"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
-import { getQuepidRootUrl } from "utils/quepid_root"
 import { parseCsv } from "utils/csv"
 
 export default class extends Controller {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
+  static values = { importsUrlTemplate: String }
 
   connect() {
     console.log("Import snapshot controller connected")
@@ -191,9 +191,8 @@ export default class extends Controller {
   }
 
   async sendSnapshotToAPI(caseId, snapshotData) {
-    // Case IDs come from the uploaded CSV, not the page, so there's no
-    // server-rendered URL to pass in - fall back to the root URL.
-    const url = `${getQuepidRootUrl()}/api/cases/${caseId}/snapshots/imports`
+    // Case IDs come from the uploaded CSV, so the server passes a URL template.
+    const url = this.importsUrlTemplateValue.replaceAll("__CASE_ID__", String(caseId))
 
     try {
       return await postJson(url, { snapshots: [snapshotData] })

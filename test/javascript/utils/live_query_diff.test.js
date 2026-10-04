@@ -10,7 +10,6 @@ function runtimeFor(overrides = {}) {
     createSearcherFromSnapshot: vi.fn(),
     publish: vi.fn(),
     notify: vi.fn(),
-    promiseApi: Promise,
     ...overrides
   })
 }

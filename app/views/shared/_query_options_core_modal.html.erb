@@ -1,4 +1,5 @@
-<div class="modal fade" id="queryOptionsModal" tabindex="-1" aria-labelledby="queryOptionsModalLabel" aria-hidden="true" data-controller="query-options-core" data-action="show.bs.modal->query-options-core#open">
+<div class="modal fade" id="queryOptionsModal" tabindex="-1" aria-labelledby="queryOptionsModalLabel" aria-hidden="true" data-controller="query-options-core" data-action="show.bs.modal->query-options-core#open"
+     data-query-options-core-save-url-template-value="<%= api_case_query_options_path(@case, '__QUERY_ID__') %>">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">

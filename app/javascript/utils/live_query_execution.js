@@ -15,7 +15,6 @@ export function createLiveQueryExecutionRuntime(options) {
     documents,
     errors,
     publish,
-    promiseApi,
     logger
   } = options
 
@@ -35,7 +34,6 @@ export function createLiveQueryExecutionRuntime(options) {
     onError: errors.onError,
     parseError: errors.parse,
     publish,
-    promiseApi,
     logger
   })
 }

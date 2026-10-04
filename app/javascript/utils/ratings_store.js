@@ -1,17 +1,15 @@
+import { deleteJson, postJson, putJson } from "api/json"
+
 /**
- * Ratings state and transport adapter.
- *
- * The legacy ratings service used to own both the ratings dictionary and the
- * HTTP calls that mutate it. This class keeps the same public contract while
- * receiving transport and change notification as dependencies, so query
- * scoring can use it without coupling to the case workspace UI.
+ * A query's ratings and the API calls that change them. Change notification
+ * is a dependency, so query scoring can use it without coupling to the case
+ * workspace UI.
  */
 export class RatingsStore {
-  constructor({ caseNo, queryId, ratingsDict = {}, request, onChanged = () => {} }) {
+  constructor({ caseNo, queryId, ratingsDict = {}, onChanged = () => {} }) {
     this.caseNo = caseNo
     this.queryId = queryId
     this.ratingsDict = ratingsDict
-    this.request = request
     this.onChanged = onChanged
     this.changeVersion = 0
   }
@@ -21,22 +19,14 @@ export class RatingsStore {
   }
 
   rateDocument(docId, rating) {
-    return this.request({
-      method: "PUT",
-      url: this.basePath("ratings"),
-      data: { rating: { doc_id: docId, rating } }
-    }).then(() => {
+    return putJson(this.basePath("ratings"), { rating: { doc_id: docId, rating } }).then(() => {
       this.ratingsDict[docId] = rating
       this.markDirty()
     })
   }
 
   rateBulkDocuments(docIds, rating) {
-    return this.request({
-      method: "PUT",
-      url: this.basePath("bulk/ratings"),
-      data: { doc_ids: docIds, rating }
-    }).then(() => {
+    return putJson(this.basePath("bulk/ratings"), { doc_ids: docIds, rating }).then(() => {
       docIds.forEach((docId) => {
         this.ratingsDict[docId] = rating
       })
@@ -45,23 +35,14 @@ export class RatingsStore {
   }
 
   resetRating(docId) {
-    return this.request({
-      method: "DELETE",
-      url: this.basePath("ratings"),
-      data: JSON.stringify({ rating: { doc_id: docId } }),
-      headers: { "Content-Type": "application/json;charset=UTF-8" }
-    }).then(() => {
+    return deleteJson(this.basePath("ratings"), { rating: { doc_id: docId } }).then(() => {
       delete this.ratingsDict[docId]
       this.markDirty()
     })
   }
 
   resetBulkRatings(docIds) {
-    return this.request({
-      method: "POST",
-      url: this.basePath("bulk/ratings/delete"),
-      data: { doc_ids: docIds }
-    }).then(() => {
+    return postJson(this.basePath("bulk/ratings/delete"), { doc_ids: docIds }).then(() => {
       docIds.forEach((docId) => {
         delete this.ratingsDict[docId]
       })

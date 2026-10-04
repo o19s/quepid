@@ -2,6 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { getJson } from "api/json"
 import { graphData, graphSpec } from "utils/qgraph"
 import { getCoreStores } from "utils/core_store_access"
+import { isSameId } from "utils/record_identity"
 
 export default class extends Controller {
   static targets = ["container"]
@@ -34,11 +35,11 @@ export default class extends Controller {
   }
 
   handleScorePersisted(event) {
-    if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadScores()
+    if (isSameId(event.detail?.caseId, this.caseIdValue)) this.loadScores()
   }
 
   handleAnnotationsChanged(event) {
-    if (String(event.detail?.caseId) === String(this.caseIdValue)) this.loadAnnotations()
+    if (isSameId(event.detail?.caseId, this.caseIdValue)) this.loadAnnotations()
   }
 
   async load() {

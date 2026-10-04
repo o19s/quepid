@@ -1,13 +1,15 @@
 import { Controller } from "@hotwired/stimulus"
-import { getJson, postJson, requestJson } from "api/json"
+import { deleteJson, getJson, postJson, putJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { showFlash } from "utils/flash"
 import { getCoreStores } from "utils/core_store_access"
+import { isSameId } from "utils/record_identity"
 
 export default class extends Controller {
-  static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave"]
+  static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave", "itemTemplate"]
   static values = {
-    urlTemplate: String,
+    url: String,
+    annotationUrlTemplate: String,
     caseId: Number,
     tryId: Number
   }
@@ -28,7 +30,7 @@ export default class extends Controller {
 
   async load() {
     try {
-      const data = await getJson(this.annotationUrl())
+      const data = await getJson(this.urlValue)
       this.annotations = (data.annotations || []).map((annotation) => this.normalize(annotation))
       this.render()
     } catch {
@@ -50,7 +52,7 @@ export default class extends Controller {
 
     this.createButtonTarget.disabled = true
     try {
-      const data = await postJson(this.annotationUrl(), { annotation: { message }, score })
+      const data = await postJson(this.urlValue, { annotation: { message }, score })
 
       this.annotations.unshift(this.normalize(data))
       this.messageTarget.value = ""
@@ -95,7 +97,7 @@ export default class extends Controller {
     const editSave = this.editSaveElement || this.editSaveTarget
     editSave.disabled = true
     try {
-      const data = await postJson(`${this.annotationUrl()}/${annotation.id}`, { annotation: { message: editMessage.value } }, { method: "PUT" })
+      const data = await putJson(this.annotationUrl(annotation.id), { annotation: { message: editMessage.value } })
 
       const updated = this.normalize(data)
       this.annotations = this.annotations.map((item) => item.id === updated.id ? updated : item)
@@ -116,7 +118,7 @@ export default class extends Controller {
     if (!annotation) return
 
     try {
-      await requestJson(`${this.annotationUrl()}/${annotation.id}`, { method: "DELETE" })
+      await deleteJson(this.annotationUrl(annotation.id))
 
       this.annotations = this.annotations.filter((item) => item.id !== annotation.id)
       this.render()
@@ -127,8 +129,8 @@ export default class extends Controller {
     }
   }
 
-  annotationUrl() {
-    return this.urlTemplateValue.replace("__CASE_ID__", this.caseIdValue)
+  annotationUrl(annotationId) {
+    return this.annotationUrlTemplateValue.replaceAll("__ANNOTATION_ID__", String(annotationId))
   }
 
   scorePayload() {
@@ -154,7 +156,7 @@ export default class extends Controller {
   }
 
   findAnnotation(id) {
-    return this.annotations.find((annotation) => String(annotation.id) === String(id))
+    return this.annotations.find((annotation) => isSameId(annotation.id, id))
   }
 
   normalize(annotation) {
@@ -174,45 +176,21 @@ export default class extends Controller {
   }
 
   renderAnnotation(annotation) {
-    const item = document.createElement("li")
-    item.className = "annotation"
+    const item = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
+    const slot = name => item.querySelector(`[data-slot="${name}"]`)
+    slot("edit").dataset.annotationId = String(annotation.id)
+    slot("delete").dataset.annotationId = String(annotation.id)
+    slot("time").textContent = `${this.timeAgo(annotation.createdAt)} - `
 
-    const menu = document.createElement("div")
-    menu.className = "dropdown float-end"
-    menu.innerHTML = `<a href="#" role="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list"></i></a>
-      <ul class="dropdown-menu"><li><a href="#" class="dropdown-item" data-action="click->annotations#openEdit" data-annotation-id="${annotation.id}"><i class="bi bi-pencil-fill"></i> Edit</a></li>
-      <li><a href="#" class="dropdown-item text-danger" data-action="click->annotations#delete" data-annotation-id="${annotation.id}"><i class="bi bi-trash-fill"></i> Delete</a></li></ul>`
-    item.appendChild(menu)
+    const sources = { user: annotation.user?.name, source: annotation.source }
+    Object.entries(sources).forEach(([name, value]) => {
+      if (value) slot(name).textContent = `by ${value}`
+      else slot(name).remove()
+    })
 
-    const time = document.createElement("em")
-    time.className = "annotations-time"
-    time.textContent = `${this.timeAgo(annotation.createdAt)} - `
-    item.appendChild(time)
-
-    if (annotation.user?.name) {
-      const source = document.createElement("span")
-      source.className = "annotation-source"
-      source.textContent = `by ${annotation.user.name}`
-      item.appendChild(source)
-    }
-
-    if (annotation.source) {
-      const source = document.createElement("span")
-      source.className = "annotation-source"
-      source.textContent = `by ${annotation.source}`
-      item.appendChild(source)
-    }
-
-    const score = document.createElement("div")
-    score.innerHTML = `<span class="annotation-try">Try No: </span><i class="bi bi-circle-fill"></i><span class="annotation-score"> Score: </span>`
-    score.querySelector(".annotation-try").append(annotation.score.try_number ?? annotation.score.try_id ?? "")
-    score.querySelector(".annotation-score").append(annotation.score.score ?? "")
-    item.appendChild(score)
-
-    const message = document.createElement("div")
-    message.className = "annotation-message"
-    message.textContent = annotation.message || ""
-    item.appendChild(message)
+    slot("try").append(annotation.score.try_number ?? annotation.score.try_id ?? "")
+    slot("score").append(annotation.score.score ?? "")
+    slot("message").textContent = annotation.message || ""
     return item
   }
 

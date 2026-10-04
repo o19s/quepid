@@ -1,13 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import Sortable from "sortablejs"
-import { postJson } from "api/json"
+import { putJson } from "api/json"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
 import { matchesQueryFilter, queryResultCount, querqyRuleTriggered } from "utils/query_state"
 import { flashErrorMessage } from "utils/error_message"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
-import { searchResultsTemplate } from "controllers/search_results_template"
 import coreFlash from "utils/core_flash"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. The collection
@@ -15,14 +15,16 @@ import coreFlash from "utils/core_flash"
  * behind narrow adapters for persistence, sorting, and query-template rendering.
  */
 export default class extends Controller {
-  static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize"]
+  static targets = ["ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink", "sortIcon", "manualHelp", "list", "pagination", "count", "bootstrapFeedback", "searchFeedback", "batchPosition", "batchSize", "rowTemplate", "searchResultsTemplate", "paginationTemplate", "diffScoreTemplate"]
   static values = {
     showOnlyRated: Boolean,
     showOnlyRatedUnsupported: Boolean,
     sortName: String,
     reverse: Boolean,
     queryListSortable: Boolean,
-    positionUrl: String
+    positionUrlTemplate: String,
+    queryUrlTemplate: String,
+    notesUrlTemplate: String
   }
 
   connect() {
@@ -144,9 +146,7 @@ export default class extends Controller {
   dragStart() {
     hideTooltipsWithin(this.listTarget)
     this.listTarget.classList.add("dragging")
-    this.draggedQueryIds = [...this.listTarget.children].map(item =>
-      item.querySelector("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue
-    )
+    this.draggedQueryIds = [...this.listTarget.children].map(item => item.dataset.queryId)
     this.dispatch("drag-start")
   }
 
@@ -160,17 +160,17 @@ export default class extends Controller {
 
     const queryId = this.draggedQueryIds?.[oldIndex]
     const previousQueryId = this.draggedQueryIds?.[newIndex]
-    if (!queryId || !previousQueryId || !this.positionUrlValue) {
+    if (!queryId || !previousQueryId || !this.positionUrlTemplateValue) {
       this.clearDraggingState()
       return
     }
 
     const currentReverse = this.activeReverse()
     const reverse = newIndex < oldIndex ? !currentReverse : currentReverse
-    const url = `${this.positionUrlValue}/${queryId}/position`
+    const url = this.queryUrl(this.positionUrlTemplateValue, queryId)
 
     try {
-      const data = await postJson(url, { after: previousQueryId, reverse }, { method: "PUT" })
+      const data = await putJson(url, { after: previousQueryId, reverse })
       if (this.queryCapabilities?.setDisplayOrder) {
         this.queryCapabilities.setDisplayOrder(data.display_order)
       } else {
@@ -194,9 +194,7 @@ export default class extends Controller {
     if (!this.draggedQueryIds) return
     const items = [...this.listTarget.children]
     this.draggedQueryIds.forEach(queryId => {
-      const item = items.find(candidate =>
-        candidate.querySelector("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue === queryId
-      )
+      const item = items.find(candidate => candidate.dataset.queryId === queryId)
       if (item) this.listTarget.appendChild(item)
     })
   }
@@ -314,17 +312,26 @@ export default class extends Controller {
     const start = (this.currentPage - 1) * this.pageSize
     const visibleQueries = queries.slice(start, start + this.pageSize)
 
-    this.listTarget.replaceChildren()
-
+    // Rows are keyed by query id and reused, so a store change updates them in place instead of
+    // reconnecting every nested controller (and losing, e.g., a half-typed note).
+    const existing = new Map([...this.listTarget.children].map(row => [row.dataset.queryId, row]))
     visibleQueries.forEach((query, index) => {
-      const row = document.createElement("li")
+      const queryId = String(query.queryId)
       const expanded = this.queryExpanded(query)
+      let row = existing.get(queryId)
+      if (row) {
+        existing.delete(queryId)
+      } else {
+        row = document.createElement("li")
+        row.dataset.queryId = queryId
+        this.renderQueryShell(row, query)
+      }
       row.className = expanded ? "unsortable" : ""
-      row.dataset.queryId = String(query.queryId)
-      this.renderQueryShell(row, query, start + index + 1, expanded)
-      this.renderSearchResults(row, query)
-      this.listTarget.appendChild(row)
+      this.updateQueryRow(row, query, start + index + 1, expanded)
+      const current = this.listTarget.children[index]
+      if (current !== row) this.listTarget.insertBefore(row, current || null)
     })
+    existing.forEach(row => row.remove())
 
     if (this.hasCountTarget) this.countTarget.textContent = String(totalQueries.length)
     this.renderPagination(pageCount, queries.length)
@@ -381,79 +388,76 @@ export default class extends Controller {
     return ""
   }
 
-  renderQueryShell(row, query, rank, expanded = this.queryExpanded(query)) {
-    const queryId = String(query.queryId)
-    const numFound = Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0)
-    const querqyTriggered = querqyRuleTriggered(query.parsedQueryDetails)
-    const hasDiffs = Boolean(query.diffs)
-    const toggled = Boolean(expanded)
-
-    row.innerHTML = `
-      <div
-        data-controller="query-row"
-        data-query-row-query-id-value="${queryId}"
-        data-query-row-rank-value="${rank}"
-        data-query-row-num-found-value="${numFound}"
-        data-query-row-querqy-triggered-value="${querqyTriggered}"
-        data-query-row-diff-value="${hasDiffs}"
-        data-query-row-toggled-value="${toggled}">
-        <div class="result-header" data-query-row-target="header">
-          <div class="results-score qscore-query-badge" data-controller="qscore-query" data-qscore-query-query-id-value="${queryId}">
-            <span class="scorable-score" data-qscore-query-target="value"></span>
-          </div>
-          <div data-query-row-target="diffScores"></div>
-          <h2 class="results-title" data-action="click->query-row#toggle">
-            <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
-              <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image" alt="">
-              <span data-query-row-target="text">&nbsp;</span>
-            </span>
-          </h2>
-          <span class="float-end total-results">
-            <span data-query-row-target="resultCount" data-controller="count-up" data-count-up-number-value="${numFound}"></span>
-            <small class="text-muted" data-query-row-target="resultLabel"></small>
-          </span>
-          <i class="error-warning bi bi-exclamation-triangle-fill ms-2" role="img" aria-label="Query failed" title="Query failed"></i>
-          <span class="float-end d-none" style="margin-right: 20px;" title="Hop to it!  There are unrated results!" data-controller="query-unrated-badge" data-query-unrated-badge-query-id-value="${queryId}">
-            <div class="icon-container"><i class="frog-icon">🐸</i><div class="notification-bubble" data-query-unrated-badge-target="count"></div></div>
-          </span>
-          <span class="float-end d-none" style="margin-right: 20px;" title="Querqy Strikes Again!" data-query-row-target="querqy"><i class="querqy-icon"></i></span>
-          <i class="toggleSign bi" data-query-row-target="toggle" data-action="click->query-row#toggle"></i>
-        </div>
-        <div data-query-row-target="expanded"></div>
-      </div>
-    `
-
-    // User-controlled values are assigned as data attributes, never interpolated into markup.
-    const rowElement = row.querySelector('[data-controller="query-row"]')
-    rowElement.dataset.queryRowQueryTextValue = query.queryText || ""
-    rowElement.dataset.queryRowInformationNeedValue = query.informationNeed || ""
-    rowElement.dataset.queryRowStateValue = query.state || ""
-    rowElement.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue =
-      `Info Need: ${query.informationNeed || ""}`
+  queryUrl(template, queryId) {
+    return template.replaceAll("__QUERY_ID__", String(queryId))
   }
 
-  renderSearchResults(row, query) {
-    const rowController = row.querySelector('[data-controller="query-row"]')
-    const expanded = rowController.querySelector('[data-query-row-target="expanded"]')
-    const searchResults = document.createElement("div")
-    searchResults.innerHTML = searchResultsTemplate({
-      caseId: query.caseNo,
-      queryId: query.queryId,
-      queryOptionsData: JSON.stringify(query.options || {})
-    })
-    expanded.appendChild(searchResults.firstElementChild)
+  // A new row: the row and expanded-query shells from the ERB templates, wired to this query.
+  renderQueryShell(row, query) {
+    const queryId = String(query.queryId)
+    const fragment = this.rowTemplateTarget.content.cloneNode(true)
+    const slot = name => fragment.querySelector(`[data-slot="${name}"]`)
 
-    const diffScores = rowController.querySelector('[data-query-row-target="diffScores"]')
-    const diffSnapshot = this.documentStore?.query(query.queryId)?.diffs
-    diffSnapshot?.searchers?.forEach((searcher, index) => {
-      const badge = document.createElement("div")
-      badge.className = "results-score diff-score qscore-query-badge"
-      badge.dataset.controller = "diff-score"
+    slot("row").dataset.queryRowQueryIdValue = queryId
+    slot("score").dataset.qscoreQueryQueryIdValue = queryId
+    slot("unratedBadge").dataset.queryUnratedBadgeQueryIdValue = queryId
+    slot("row").querySelector('[data-query-row-target="expanded"]').appendChild(this.buildSearchResults(query))
+    row.replaceChildren(fragment)
+  }
+
+  // Every render: the row's changeable values. Unchanged values are left alone so their
+  // controllers' value callbacks only run for real changes.
+  updateQueryRow(row, query, rank, expanded) {
+    const numFound = String(Number(queryResultCount(query, this.currentShowOnlyRated ?? this.showOnlyRatedValue) || 0))
+    const slot = name => row.querySelector(`[data-slot="${name}"]`)
+    assignChanged(slot("row").dataset, {
+      queryRowRankValue: String(rank),
+      queryRowNumFoundValue: numFound,
+      queryRowQuerqyTriggeredValue: String(querqyRuleTriggered(query.parsedQueryDetails)),
+      queryRowDiffValue: String(Boolean(query.diffs)),
+      queryRowToggledValue: String(Boolean(expanded)),
+      // User-controlled values are assigned as data attributes, never interpolated into markup.
+      queryRowQueryTextValue: query.queryText || "",
+      queryRowInformationNeedValue: query.informationNeed || "",
+      queryRowStateValue: query.state || ""
+    })
+    assignChanged(slot("resultCount").dataset, { countUpNumberValue: numFound })
+    assignChanged(slot("label").dataset, { bsTooltipTitleValue: `Info Need: ${query.informationNeed || ""}` })
+    this.renderDiffScores(slot("diffScores"), query)
+  }
+
+  renderDiffScores(container, query) {
+    const searchers = this.documentStore?.query(query.queryId)?.diffs?.searchers || []
+    if (container.children.length === searchers.length) return
+
+    container.replaceChildren(...searchers.map((_searcher, index) => {
+      const badge = this.diffScoreTemplateTarget.content.firstElementChild.cloneNode(true)
       badge.dataset.diffScoreQueryIdValue = String(query.queryId)
       badge.dataset.diffScoreIndexValue = String(index)
-      badge.innerHTML = '<span class="scorable-score" data-diff-score-target="value"></span>'
-      diffScores.appendChild(badge)
+      return badge
+    }))
+  }
+
+  // The expanded-query shell, wired to this query's id and server-provided API URLs.
+  buildSearchResults(query) {
+    const fragment = this.searchResultsTemplateTarget.content.cloneNode(true)
+    const queryId = String(query.queryId)
+    const slot = name => fragment.querySelector(`[data-slot="${name}"]`)
+
+    slot("explain").dataset.queryExplainQueryIdValue = queryId
+    slot("missingDocuments").dataset.missingDocumentsQueryIdValue = queryId
+    Object.assign(slot("delete").dataset, {
+      queryDeleteQueryIdValue: queryId,
+      queryDeleteDeleteUrlValue: this.queryUrl(this.queryUrlTemplateValue, queryId)
     })
+    slot("notes").dataset.queryNotesUrlValue = this.queryUrl(this.notesUrlTemplateValue, queryId)
+    for (const [field, prefix] of [["informationNeed", "information"], ["notes", "notes"]]) {
+      const id = `${prefix}-${queryId}`
+      slot(`${field}Field`).id = id
+      slot(`${field}Label`).htmlFor = id
+    }
+
+    return fragment.firstElementChild
   }
 
   // `query-explain` outlet API: Params/Parsing data from the store, read when the modal opens.
@@ -517,7 +521,7 @@ export default class extends Controller {
 
   handleQueryMoveCompleted(event) {
     const detail = event.detail || {}
-    if (String(detail.caseId) !== String(this.store?.caseId) || detail.queryId == null) return
+    if (!isSameId(detail.caseId, this.store?.caseId) || detail.queryId == null) return
 
     this.store?.remove?.(detail.queryId)
     this.documentStore?.removeQuery?.(detail.queryId)
@@ -529,20 +533,20 @@ export default class extends Controller {
     this.paginationTarget.replaceChildren()
     if (pageCount <= 1) return
 
-    const nav = document.createElement("nav")
-    nav.setAttribute("aria-label", "Query pages")
-    nav.innerHTML = `
-      <div class="d-flex align-items-center gap-2">
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="previous" data-action="click->queries-list#changePage" data-queries-list-direction-param="previous">Previous</button>
-        <span>Page ${this.currentPage} of ${pageCount} (${totalCount} queries)</span>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-page="next" data-action="click->queries-list#changePage" data-queries-list-direction-param="next">Next</button>
-      </div>
-    `
-    nav.querySelector('[data-page="previous"]').disabled = this.currentPage === 1
-    nav.querySelector('[data-page="next"]').disabled = this.currentPage === pageCount
+    const nav = this.paginationTemplateTarget.content.cloneNode(true).firstElementChild
+    nav.querySelector('[data-slot="summary"]').textContent =
+      `Page ${this.currentPage} of ${pageCount} (${totalCount} queries)`
+    nav.querySelector('[data-slot="previous"]').disabled = this.currentPage === 1
+    nav.querySelector('[data-slot="next"]').disabled = this.currentPage === pageCount
     this.paginationTarget.appendChild(nav)
   }
 
+}
+
+function assignChanged(dataset, values) {
+  Object.entries(values).forEach(([key, value]) => {
+    if (dataset[key] !== value) dataset[key] = value
+  })
 }
 
 function queryExplainData(query) {

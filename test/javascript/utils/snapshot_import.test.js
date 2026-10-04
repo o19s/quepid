@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { buildSnapshotImportGroups, importSnapshotsToCase } from "utils/snapshot_import"
 
 describe("snapshot import runtime", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   const rows = [{
     "Case ID": "ignored",
     "Snapshot Name": "Weekly",
@@ -25,7 +29,8 @@ describe("snapshot import runtime", () => {
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 9 }] }) })
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 10 }] }) })
 
-    const imported = await importSnapshotsToCase(rows, 7, "", fetcher)
+    vi.stubGlobal("fetch", fetcher)
+    const imported = await importSnapshotsToCase(rows, 7, "")
 
     expect(imported).toEqual([{ id: 9 }])
     expect(fetcher).toHaveBeenCalledWith("/api/cases/7/snapshots/imports", expect.objectContaining({ method: "POST" }))

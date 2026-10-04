@@ -15,8 +15,14 @@ describe("tune relevance utilities", () => {
   })
 
   it("reports common Solr parameter typos", () => {
-    expect(queryParamsWarning("deftype=edismax")).toContain("defType")
-    expect(queryParamsWarning("q=law")).toBe("")
+    expect(queryParamsWarning("deftype=edismax")).toEqual({ typo: "deftype", correction: "defType" })
+    expect(queryParamsWarning("q=law&timeallowed=5&omitheader=true")).toEqual({
+      typo: "omitheader",
+      correction: "omitHeader"
+    })
+    expect(queryParamsWarning("defType=edismax")).toBeNull()
+    expect(queryParamsWarning("q=law")).toBeNull()
+    expect(queryParamsWarning(undefined)).toBeNull()
   })
 
   it("formats valid JSON and rejects invalid JSON", () => {

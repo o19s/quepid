@@ -1,10 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
-import { postJson } from "api/json"
+import { putJson } from "api/json"
 import { formatScore, scoreToColor } from "utils/scoring"
 import { buildCaseDiffScores } from "utils/diff_scores"
 import { diffStateStore } from "stores/diff_state_store"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Store-driven implementation for the core case score component's primary
@@ -75,7 +76,7 @@ export default class extends Controller {
 
   handleScorerSelected(event) {
     const detail = event.detail || {}
-    if (Number(detail.caseId) !== this.caseIdValue || !detail.scorer) return
+    if (!isSameId(detail.caseId, this.caseIdValue) || !detail.scorer) return
 
     this.scoreLabelValue = detail.scorer.name
     this.renderLabel()
@@ -123,7 +124,7 @@ export default class extends Controller {
       )
     }
 
-    return postJson(this.scoreUrlValue, { case_score: scoreData }, { method: "PUT" }).then(() => {
+    return putJson(this.scoreUrlValue, { case_score: scoreData }).then(() => {
       document.dispatchEvent(new CustomEvent("case-score:persisted", {
         detail: { caseId: this.caseIdValue }
       }))

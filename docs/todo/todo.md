@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-03
+**Last updated:** 2026-10-04
 
 Outstanding bugs, hardening, and cleanup on `main` only. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -61,106 +61,17 @@ The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` e
 These items were rechecked against the current source when consolidating the
 sampled JavaScript review. They are source findings, not live browser
 reproductions. Each item's marker was checked against the pre-migration source
-(`be9b319a`). P2 items are concrete defects or near-term cleanup; P3 items are
-opportunistic.
-
-### [PREEXISTING] P2 I1 C2 — Team-member autocomplete responses race
-
-`app/javascript/controllers/team_member_autocomplete_controller.js` debounces
-input but does not cancel in-flight requests. A slow response for an older query
-can replace newer suggestions, including after input falls below the minimum
-length. Abort the previous request on new input and on disconnect, or reject
-stale responses by request identity. Ensure an aborted request cannot hide the
-new request's loading state or suggestions. The controller predates the
-migration and never aborted requests.
-
-### [MIGRATION] P2 I1 C1 — Pane polling survives disconnect
-
-`app/javascript/controllers/pane_controller.js#refreshElements` retries every
-200ms while the container has zero width. `disconnect` releases dragging but
-does not cancel that timer; a hidden, detached pane can poll indefinitely and
-reattach its mouseup listener. Track and clear the retry on disconnect, or use a
-lifecycle-managed observer. Cover disconnect while hidden. Angular's
-`paneSvc.refreshElements` had no zero-width retry; the polling came with the port.
-
-### [MIGRATION-FOLLOWUP] P3 I2 C2 — Wizard readiness and tour timers survive disconnect
-
-`app/javascript/controllers/wizard_controller.js#loadWizard` polls for
-capabilities up to 100 times at 100ms intervals. The readiness retry and the
-1500ms tour-start timeout have no disconnect cleanup. Prefer the existing
-`core-bootstrap:ready` event or a ready promise for capability initialization,
-and cancel outstanding tour/readiness work when the controller disconnects.
-Mixed provenance: the uncancelled 1500ms tour `$timeout` existed in
-`wizardCtrl.js`; the readiness polling is new.
-
-### [PREEXISTING] P2 I1 C2 — Mapper wizard assumes editors initialize in 500ms
-
-`app/javascript/controllers/mapper_wizard_controller.js#connect` schedules
-`captureEditors` after a fixed 500ms delay; later actions recapture editors in
-case they were not ready. Replace the sleep with an editor-ready event or
-promise and prevent initialization work after disconnect. The fixed delay
-predates the migration.
-
-### [PREEXISTING] P2 I0 C1 — Export snapshot-list failures are invisible
-
-`app/javascript/controllers/export_case_core_controller.js#_loadSnapshots` now
-uses `getJson`, but its catch returns silently for `HttpError`; other failures
-are only logged. Failed loading leaves empty snapshot selects with no visible
-explanation. Show an error/status and preserve the current-case guard so a
-stale request cannot report an error in another case's modal. The Angular
-export modal also ignored `querySnapshotSvc.bootstrap` failures.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Live-query listeners have no teardown
-
-`app/javascript/utils/live_query_events.js#connect` installs six listeners
-without a disconnect method or duplicate-connect guard. Add explicit lifecycle
-teardown/idempotent connection and handle reload rejections. Test repeated
-connect/disconnect and failed reloads.
-
-### [PREEXISTING] P3 I1 C1 — Activity URLs assume an existing query string
-
-`app/javascript/controllers/user_activity_controller.js#fetchData` appends
-`&start=...&end=...` to `urlValue`, which fails for a URL without `?`. Use URL
-search parameters with an explicit base for relative URLs. The catch also
-returns an empty array for every failure; distinguish failed loading from a
-successful response with no activity. Both behaviors predate the migration.
-
-### [MIGRATION-FOLLOWUP] P2 I2 C2 — Finish shared JSON helper adoption in runtimes
-
-The controller examples from the old review (`user_activity` and export
-snapshot loading) already use `getJson`. Remaining manual JSON request handling
-exists in `app/javascript/utils/case_runtime.js`, `settings_runtime.js`,
-`user_runtime.js`, `book_sync.js`, and `snapshot_import.js`. Use `api/json.js`
-where the response is JSON, preserving injected request seams, error contracts,
-and partial-import behavior. Keep blob/download and other non-JSON requests on
-`apiFetch`.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C0 — Reuse CSRF token lookup for destructive forms
-
-`app/javascript/utils/destructive_form.js` reads the CSRF meta tag itself.
-Import `getCsrfToken` from `api/fetch.js` so token lookup has one implementation.
-
-### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal and case-identity plumbing
-
-Several core modal subclasses still specialize submit/busy handling despite
-`core_modal_controller_base.js` providing shared helpers. Consolidate only
-identical behavior when touching those controllers; keep specialized state and
-intentionally different redirect delays. Repeated numeric case-ID comparisons
-in controllers and `live_query_events.js` are also candidates for a small shared
-predicate. Leave the two `setProgress(visible)` copies alone for now. For URL
-placeholder replacement, prefer server-owned URLs passed through data
-attributes or form actions over a generic client-side `fillUrlTemplate` helper.
+(`be9b319a`).
 
 ### [MIGRATION-FOLLOWUP] P2 I3 C3 — Reduce live-query owner indirection incrementally
 
 `app/javascript/utils/live_query_runtime_owner.js` still builds a nested
-`liveQueryServices` graph of forwarding wrappers, with closures depending on
-later-initialized runtime objects. It also threads `promiseApi` (always the
-native `Promise`) through about ten runtimes. Simplify wrappers and obsolete
-compatibility seams behind existing tests; preserve method binding. Wrappers
-that defer a lookup of a later `const` (`liveQueryFactory`,
-`liveQueryCollectionRuntime`, …) must stay deferred. Work one cluster at a
-time rather than as a large runtime rewrite.
+`liveQueryServices` graph of about a hundred forwarding wrappers, with closures
+depending on later-initialized runtime objects. The `promiseApi` seam is gone;
+simplify the remaining wrappers and obsolete compatibility seams behind
+existing tests, preserving method binding. Wrappers that defer a lookup of a
+later `const` (`liveQueryFactory`, `liveQueryCollectionRuntime`, …) must stay
+deferred. Work one cluster at a time rather than as a large runtime rewrite.
 
 The broader problem is concept count: the runtime spans about 18 modules
 (`live_query_*`, `query_runtime`, `query_service`, `query_model`, `query_state`,
@@ -168,50 +79,25 @@ The broader problem is concept count: the runtime spans about 18 modules
 from migration staging. Collapse pass-through modules as each cluster is
 simplified.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Document shared event names and payloads
+### [MIGRATION-FOLLOWUP] P3 I2 C2 — Simplify repeated modal plumbing
 
-Custom event producers and consumers use bare string names with mixed prefixes
-across controllers and runtimes. Centralize names and payload JSDoc where this
-improves producer/consumer consistency. Follow the outlet-vs-event rule in
-`docs/archived/stimulus_turbo_retrofit_completed.md#controller-coupling`;
-preserve public event contracts and Stimulus `data-action` emitters rather than
-renaming events wholesale.
+Several core modal subclasses still specialize submit/busy handling despite
+`core_modal_controller_base.js` providing shared helpers (`setSubmitting`
+overrides in `clone_case_core`, `pick_scorer_core`, `share_case_core`; `setBusy`
+in `diff_core`, `import_ratings_core`, `judgements_core`; `setLoading` in
+`move_query_core`). Consolidate only identical behavior when touching those
+controllers; keep specialized state and intentionally different redirect
+delays. Leave the two `setProgress(visible)` copies alone for now. For URL
+placeholder replacement, prefer server-owned URLs passed through data
+attributes or form actions over a generic client-side `fillUrlTemplate` helper.
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Move static generated UI structure into ERB
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals
 
-`app/javascript/controllers/queries_list_controller.js`,
-`search_results_controller.js`, and `annotations_controller.js` still build
-substantial static structure through `innerHTML`. Render static shells or
-`<template>` elements in ERB and keep client-side repeated data/state in JS.
-Preserve escaping and per-surface behavior; do not move browser-computed search
-results or scores to the server.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Audit remaining frontend globals
-
-`window.Stimulus` (`controllers/application.js`) and `window.CodeMirror`
-(`modules/editor.js`) remain global integration seams; both predate the migration. Identify consumers before replacing them
-with imports or explicit dependencies; retain any supported external contract.
-
-Angular-era globals remain too: `core_vendor.js` puts `Tether` and `Shepherd` on
-`window` because `tour.js` expects bare globals, and `bootstrap_globals.js` and
-`vega_globals.js` load UMD builds for the same reason. `tether-shepherd` is a
-dated dependency; swapping the tour library is its own decision, after which
-converting `tour.js` to imports is cheap.
-
-### [PREEXISTING] P3 I0 C1 — Replace native invite alerts
-
-`app/javascript/controllers/invite_controller.js` uses native `alert` for a
-missing invitation link and clipboard failure. Use the application's status or
-flash UI so failures are consistent with other copy controls. The alerts
-predate the migration.
-
-### [PREEXISTING] P3 I1 C2 — Simplify query-parameter warnings
-
-`app/javascript/utils/tune_relevance.js#queryParamsWarning` creates a new
-`RegExp` for each fixed typo on every call and returns HTML. Precompile the
-patterns or use equivalent string matching, and return structured warning data
-so rendering owns markup. Preserve the existing typo matching and escaping.
-Angular's `queryParams.js` already did both.
+`core_vendor.js` puts `Tether` and `Shepherd` on `window` because `tour.js`
+expects bare globals. `tether-shepherd` is a dated dependency; choosing a
+replacement tour library is its own decision, after which converting `tour.js`
+to imports is cheap. `bootstrap_globals.js` and `vega_globals.js` load UMD
+builds for their own data-API/consumer reasons; revisit them separately.
 
 ---
 
@@ -278,9 +164,14 @@ wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 (snapshot selects), and possibly `judgements_core` and `export_case_core`
 build lists from JSON in JS. They could become partials loaded through lazy
 `<turbo-frame src=...>`, like `dropdown/cases_core.html.erb`, and modal form
-posts could be answered with Turbo Streams. **Blocked:** parallel HTML
+posts could be answered with Turbo Streams. The annotations list
+(`annotations_controller.js`) is the cleanest candidate: it is entirely
+server-owned, so a lazy frame plus Turbo Stream answers to create, edit and
+delete would remove its client-side rendering (it would still dispatch
+`annotations:changed` for `qgraph`). **Blocked:** parallel HTML
 endpoints for the case page are not wanted for now. If that changes, pilot
-`pick_scorer_core` and prove selection works inside a lazy frame first.
+`pick_scorer_core` or annotations and prove selection and the edit modal work
+inside a lazy frame first.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
 

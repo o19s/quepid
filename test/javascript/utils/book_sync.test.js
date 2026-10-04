@@ -1,7 +1,11 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { buildQueryDocPairsPayload, createBookSyncRuntime, populateBook } from "utils/book_sync"
 
 describe("buildQueryDocPairsPayload", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("maps query documents and preserves mapped fields", () => {
     const doc = {
       id: "doc-1",
@@ -36,7 +40,8 @@ describe("buildQueryDocPairsPayload", () => {
 
   it("populates a book through the API", async () => {
     const fetcher = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 204, json: vi.fn(async () => null) })
-    await populateBook({ bookId: 7, caseId: 42, queries: [{ queryText: "search", docs: [] }], fetcher })
+    vi.stubGlobal("fetch", fetcher)
+    await populateBook({ bookId: 7, caseId: 42, queries: [{ queryText: "search", docs: [] }] })
 
     expect(fetcher).toHaveBeenCalledWith("api/books/7/populate", expect.objectContaining({ method: "PUT" }))
     expect(JSON.parse(fetcher.mock.calls[0][1].body)).toEqual({ case_id: 42, query_doc_pairs: [] })
@@ -68,7 +73,8 @@ describe("buildQueryDocPairsPayload", () => {
 
   it("only syncs when the case has a book with auto-populate on", async () => {
     const fetcher = vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null,  ok: true, status: 204 }))
-    const runtime = createBookSyncRuntime({ fetcher })
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime()
     const query = { queryText: "search", docs: [{ id: "doc-1" }] }
 
     await runtime.sync([query])
@@ -82,7 +88,8 @@ describe("buildQueryDocPairsPayload", () => {
 
   it("sends only unsynced documents, in batches of 100 queries", async () => {
     const fetcher = vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null,  ok: true, status: 204 }))
-    const runtime = createBookSyncRuntime({ fetcher })
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime()
     runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
     const queries = Array.from({ length: 250 }, (_, i) => ({ queryText: `q${i}`, docs: [{ id: "d" }] }))
 
@@ -98,7 +105,8 @@ describe("buildQueryDocPairsPayload", () => {
 
   it("forgets synced pairs on reset or when the case's book changes, but not on a same-book reconfigure", async () => {
     const fetcher = vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null,  ok: true, status: 204 }))
-    const runtime = createBookSyncRuntime({ fetcher })
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime()
     const query = { queryText: "search", docs: [{ id: "doc-1" }] }
     runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
     await runtime.sync([query])
@@ -139,7 +147,8 @@ describe("buildQueryDocPairsPayload", () => {
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: async () => ({ error: "failed" }) })
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 204, json: vi.fn(async () => null) })
     const logger = { error: vi.fn() }
-    const runtime = createBookSyncRuntime({ fetcher, logger })
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime({ logger })
     const query = { queryText: "search", docs: [{ id: "doc-1", title: "Document" }] }
     runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
 

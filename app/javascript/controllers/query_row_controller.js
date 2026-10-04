@@ -28,6 +28,10 @@ export default class extends Controller {
     this.render()
   }
 
+  rankValueChanged() {
+    this.render()
+  }
+
   numFoundValueChanged() {
     this.render()
   }

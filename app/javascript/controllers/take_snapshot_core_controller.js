@@ -1,5 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { searchEngineLabel, supportsLookupById } from "utils/search_engines"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Take-snapshot modal for the core case toolbar. Collects name + optional
@@ -74,7 +75,7 @@ export default class extends CoreModalControllerBase {
       error = failure?.message || failure
     }
 
-    if (String(this.currentCaseId) !== String(caseId)) return
+    if (!isSameId(this.currentCaseId, caseId)) return
 
     this.setProgress(false)
     if (error) {

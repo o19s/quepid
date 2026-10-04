@@ -67,6 +67,47 @@ describe("PaneController", () => {
     expect(main.style.width).toBe("550px")
   })
 
+  it("stops retrying a hidden pane's layout once disconnected", () => {
+    vi.useFakeTimers()
+    try {
+      const { controller, element, main } = buildController()
+      Object.defineProperty(element, "offsetWidth", { configurable: true, value: 0 })
+      const addListener = vi.spyOn(document, "addEventListener")
+      controller.connect()
+      vi.advanceTimersByTime(400)
+      expect(vi.getTimerCount()).toBe(1)
+
+      controller.disconnect()
+      addListener.mockClear()
+      Object.defineProperty(element, "offsetWidth", { configurable: true, value: 1000 })
+      vi.advanceTimersByTime(1000)
+
+      expect(vi.getTimerCount()).toBe(0)
+      expect(addListener).not.toHaveBeenCalledWith("mouseup", expect.anything())
+      expect(main.style.width).toBe("")
+    } finally {
+      vi.useRealTimers()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it("lays out a hidden pane once it becomes visible", () => {
+    vi.useFakeTimers()
+    try {
+      const { controller, element, main } = buildController()
+      Object.defineProperty(element, "offsetWidth", { configurable: true, value: 0 })
+      controller.connect()
+      Object.defineProperty(element, "offsetWidth", { configurable: true, value: 1000 })
+      vi.advanceTimersByTime(200)
+
+      expect(main.style.width).toBe("1000px")
+      expect(vi.getTimerCount()).toBe(0)
+      controller.disconnect()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("reopens at the kept width after navigating to another try, then forgets it", () => {
     const first = buildController()
     first.controller.connect()

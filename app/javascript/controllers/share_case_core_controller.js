@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getJson, postJson, requestJson } from "api/json"
+import { deleteJson, getJson, postJson } from "api/json"
 import {
   deactivateListItem,
   parseTeamsJson,
@@ -7,6 +7,7 @@ import {
   unsharedTeams
 } from "utils/share_case_teams"
 import { caseNameFromHeader } from "utils/case_header"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
@@ -154,7 +155,7 @@ export default class extends CoreModalControllerBase {
       deactivateListItem(this.shareableListTarget, this.selectedShareTeamId)
     }
 
-    if (String(this.selectedShareTeamId) === String(team.id)) {
+    if (isSameId(this.selectedShareTeamId, team.id)) {
       this.clearShareSelection()
     } else {
       this.clearSharedSelection()
@@ -180,12 +181,12 @@ export default class extends CoreModalControllerBase {
   }
 
   selectShareTeam(event) {
-    const team = this.shareableTeams.find(team => String(team.id) === String(event.params.teamId))
+    const team = this.shareableTeams.find(team => isSameId(team.id, event.params.teamId))
     if (team) this.toggleShareSelect(event, team)
   }
 
   selectSharedTeam(event) {
-    const team = this.renderedSharedTeams.find(team => String(team.id) === String(event.params.teamId))
+    const team = this.renderedSharedTeams.find(team => isSameId(team.id, event.params.teamId))
     if (team) this.toggleCoreSharedSelect(event, team)
   }
 
@@ -209,7 +210,7 @@ export default class extends CoreModalControllerBase {
       deactivateListItem(this.sharedListTarget, this.selectedSharedTeamId)
     }
 
-    if (String(this.selectedSharedTeamId) === String(team.id)) {
+    if (isSameId(this.selectedSharedTeamId, team.id)) {
       this.clearSharedSelection()
     } else {
       this.clearShareSelection()
@@ -253,17 +254,17 @@ export default class extends CoreModalControllerBase {
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must
       // not clobber the now-current case's share UI.
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       const teams = Array.isArray(data.teams) ? data.teams : []
       const { allTeams, sharedTeams } = partitionTeams(teams, caseId)
       this.applyTeamLists(allTeams, sharedTeams)
     } catch (error) {
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
       this.resetTeamListsForError()
     } finally {
-      if (caseId === this.currentCaseId) this.setLoading(false)
+      if (isSameId(caseId, this.currentCaseId)) this.setLoading(false)
     }
   }
 
@@ -302,7 +303,7 @@ export default class extends CoreModalControllerBase {
       const url = this.teamCasesUrlTemplateValue.replaceAll("__TEAM_ID__", teamId)
       await postJson(url, { id: Number(caseId) })
 
-      const team = this.allTeams.find((t) => String(t.id) === String(teamId)) || {
+      const team = this.allTeams.find((t) => isSameId(t.id, teamId)) || {
         id: Number(teamId),
         name: this.selectedShareTeamName || `Team ${teamId}`
       }
@@ -337,15 +338,15 @@ export default class extends CoreModalControllerBase {
       const url = this.teamCaseUrlTemplateValue
         .replaceAll("__TEAM_ID__", teamId)
         .replaceAll("__CASE_ID__", caseId)
-      await requestJson(url, { method: "DELETE" })
+      await deleteJson(url)
 
       const team =
-        this.sharedTeams.find((t) => String(t.id) === String(teamId)) || {
+        this.sharedTeams.find((t) => isSameId(t.id, teamId)) || {
           id: Number(teamId),
           name: this.selectedSharedTeamName || `Team ${teamId}`
         }
       this.sharedTeams = this.sharedTeams.filter(
-        (t) => String(t.id) !== String(teamId)
+        (t) => !isSameId(t.id, teamId)
       )
       this.clearSharedSelection()
       this.applyTeamLists(this.allTeams, this.sharedTeams)

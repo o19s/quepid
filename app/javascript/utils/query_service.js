@@ -247,11 +247,10 @@ export function searchQuery({
   setDocs,
   onError,
   parseError,
-  logDebug,
-  promiseApi = Promise
+  logDebug
 }) {
   const rejectPromise = (reason) => {
-    const rejected = promiseApi.reject(reason)
+    const rejected = Promise.reject(reason)
     rejected.catch(() => undefined)
     return rejected
   }
@@ -286,7 +285,7 @@ export function searchQuery({
       return response
     })
 
-  return promiseApi.all([searchPromise]).then(() => {
+  return Promise.all([searchPromise]).then(() => {
     query.linkUrl = query.searcher.linkUrl || query.searcher.url
 
     if (query.searcher.inError) {
@@ -381,7 +380,6 @@ export function runSearchAll({
   onSearchStarted,
   onSearchCompleted,
   onSearchFailed,
-  promiseApi = Promise,
   logger = console
 }) {
   const searchPromises = []
@@ -393,7 +391,7 @@ export function runSearchAll({
       failureReported = true
       onSearchFailed?.(error, generation)
     }
-    return promiseApi.reject(error)
+    return Promise.reject(error)
   }
 
   const searchQueue = Object.values(queries).map((query) => () => {
@@ -410,7 +408,7 @@ export function runSearchAll({
   }
 
   return pAll(searchQueue, requestsPerMinute)
-    .then(() => promiseApi.all(searchPromises), rejectAfterFailure)
+    .then(() => Promise.all(searchPromises), rejectAfterFailure)
     .then(() => scoreAll(), rejectAfterFailure)
     .then((scoreInfo) => {
       try {

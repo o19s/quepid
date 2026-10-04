@@ -73,7 +73,6 @@ describe("FrogReportController", () => {
     resetCoreStoresForTest()
     resetCoreFlashForTest()
     vi.restoreAllMocks()
-    delete document.body.dataset.frogReportRefreshUrlTemplate
   })
 
   it("buckets queries by missing ratings for the chart, labelling the extremes", () => {
@@ -128,12 +127,12 @@ describe("FrogReportController", () => {
   })
 
   it("refreshes ratings from the book in the foreground for a small case, then reloads queries", async () => {
-    document.body.dataset.frogReportRefreshUrlTemplate = "books/__BOOK_ID__/cases/__CASE_ID__/refresh?background=__BACKGROUND__"
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
     const refreshQueries = vi.fn(() => Promise.resolve())
     const flash = { show: vi.fn() }
     setCoreFlashForTest(flash)
     const controller = buildController({ queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
+    controller.refreshUrlTemplateValue = "books/__BOOK_ID__/cases/9/refresh?background=__BACKGROUND__"
 
     await controller.refresh()
 
@@ -145,13 +144,13 @@ describe("FrogReportController", () => {
   })
 
   it("refreshes a case with 50+ queries in the background and returns to the home page", async () => {
-    document.body.dataset.frogReportRefreshUrlTemplate = "refresh?background=__BACKGROUND__"
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
     const assign = vi.spyOn(window.location, "assign").mockImplementation(() => {})
     const refreshQueries = vi.fn()
     setCoreFlashForTest({ show: vi.fn() })
     const queries = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [i + 1, {}]))
     const controller = buildController({ queries, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
+    controller.refreshUrlTemplateValue = "refresh?background=__BACKGROUND__"
 
     await controller.refresh()
 
@@ -161,9 +160,9 @@ describe("FrogReportController", () => {
   })
 
   it("shows the error and re-enables refresh when the request fails", async () => {
-    document.body.dataset.frogReportRefreshUrlTemplate = "refresh"
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 500, statusText: "Server Error" }))))
     const controller = buildController({ caseState: { bookId: 3, caseNo: 9 } })
+    controller.refreshUrlTemplateValue = "refresh"
 
     await controller.refresh()
 

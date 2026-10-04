@@ -24,11 +24,13 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.cancelRefreshRetry()
     this.releaseSlider()
     document.removeEventListener("mouseup", this.onMouseUp)
   }
 
   refreshElements() {
+    this.cancelRefreshRetry()
     this.container = this.element
     this.east = this.hasEastTarget ? this.eastTarget : null
     this.main = this.hasMainTarget ? this.mainTarget : null
@@ -39,12 +41,19 @@ export default class extends Controller {
     this.slider.onmousedown = this.grabSlider.bind(this)
     document.addEventListener("mouseup", this.onMouseUp)
 
+    // A hidden container has no width to lay out against yet; retry until it is shown.
     if (this.container.offsetWidth === 0) {
-      window.setTimeout(() => this.refreshElements(), 200)
+      this.refreshRetry = window.setTimeout(() => this.refreshElements(), 200)
       return
     }
 
     this.setupPane()
+  }
+
+  cancelRefreshRetry() {
+    if (!this.refreshRetry) return
+    window.clearTimeout(this.refreshRetry)
+    this.refreshRetry = null
   }
 
   toggle() {

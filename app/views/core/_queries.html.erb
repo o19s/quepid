@@ -4,7 +4,9 @@
   data-controller="queries-list query-lifecycle"
   data-action="add-query:submit->query-lifecycle#handleAddQueries query-row:toggle->queries-list#handleQueryToggle query-delete:completed@document->queries-list#handleQueryDeleteCompleted move-query-core:completed@document->queries-list#handleQueryMoveCompleted queries-state:changed@document->queries-list#refreshListState"
   data-queries-list-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
-  data-queries-list-position-url-value="api/cases/<%= kase.id %>/queries"
+  data-queries-list-position-url-template-value="<%= api_case_query_position_path(kase, '__QUERY_ID__') %>"
+  data-queries-list-query-url-template-value="<%= api_case_query_path(kase, '__QUERY_ID__') %>"
+  data-queries-list-notes-url-template-value="<%= api_case_query_notes_path(kase, '__QUERY_ID__') %>"
   data-query-lifecycle-case-id-value="<%= kase.id %>">
   <div class="row">
     <div class="col-sm-12 mb-3">
@@ -61,7 +63,8 @@
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
         <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id="queries-filter" /></div>
         <div class="pe-3">
-          <button type="button" class="btn btn-link p-0 frog-report-trigger" data-controller="frog-report" data-action="click->frog-report#open">
+          <button type="button" class="btn btn-link p-0 frog-report-trigger" data-controller="frog-report" data-action="click->frog-report#open"
+                  data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">
             <span class="frog-icon" aria-hidden="true">🐸</span><span>Report</span>
           </button>
         </div>
@@ -73,4 +76,5 @@
     </div>
   </div>
   <div class="row"><div class="col-md-11"><div data-queries-list-target="pagination"></div></div></div>
+  <%= render 'core/query_list_templates' %>
 </div>

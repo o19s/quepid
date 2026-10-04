@@ -24,7 +24,8 @@ function buildController(overrides = {}) {
       submitButton: document.createElement("button")
     },
     values: {
-      casesUrl: "/api/cases"
+      casesUrl: "/api/cases",
+      caseId: "4"
     },
     outlets: {
       queryCommandBridge: { queryRemoved: vi.fn() }
@@ -36,10 +37,12 @@ function buildController(overrides = {}) {
   return controller
 }
 
-function trigger({ queryId = "12", caseId = "4" } = {}) {
+// The "Move Query" button inside a query row; the row carries the query id.
+function trigger({ queryId = "12" } = {}) {
+  const row = document.createElement("li")
+  row.dataset.queryId = queryId
   const button = document.createElement("button")
-  button.dataset.moveQueryCoreQueryIdValue = queryId
-  button.dataset.moveQueryCoreCaseIdValue = caseId
+  row.appendChild(button)
   return button
 }
 

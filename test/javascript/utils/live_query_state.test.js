@@ -15,7 +15,6 @@ function runtimeFor(overrides = {}) {
     configureBook: vi.fn(),
     refreshQueryDiff: vi.fn(),
     queryReady: ready,
-    promiseApi: Promise,
     ...overrides
   })
 }

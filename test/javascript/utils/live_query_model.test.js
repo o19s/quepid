@@ -8,7 +8,6 @@ describe("live query model runtime", () => {
       createModel,
       getDefaultScorer: vi.fn(),
       scoreQuery: vi.fn(),
-      promiseApi: { defer: vi.fn() },
       getFieldSpec: vi.fn(),
       getQueryState: vi.fn(),
       buildRatingsFilter: vi.fn(),
@@ -26,7 +25,6 @@ describe("live query model runtime", () => {
       ratingsStore,
       getDefaultScorer: adapters.getDefaultScorer,
       scoreQuery: adapters.scoreQuery,
-      promiseApi: adapters.promiseApi,
       getFieldSpec: adapters.getFieldSpec,
       getQueryState: expect.any(Function),
       buildRatingsFilter: adapters.buildRatingsFilter,
@@ -41,7 +39,6 @@ describe("live query model runtime", () => {
     const runtime = createLiveQueryModelRuntime({
       getDefaultScorer: () => ({ name: "default" }),
       scoreQuery: vi.fn(),
-      promiseApi: { defer: vi.fn() },
       getFieldSpec: () => ({ id: "id" }),
       getQueryState: () => ({ state: "loaded" }),
       buildRatingsFilter: vi.fn(),

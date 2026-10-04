@@ -23,7 +23,6 @@ function buildModel(query) {
     ratingsStore,
     getDefaultScorer: () => defaultScorer,
     scoreQuery,
-    promiseApi: Promise,
     getFieldSpec: () => ({ id: "id" }),
     getQueryState: () => ({ state: "loaded" }),
     buildRatingsFilter: filter => filter,

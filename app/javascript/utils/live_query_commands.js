@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 /**
  * Command orchestration for live Query objects.
  *
@@ -47,7 +49,7 @@ export function createLiveQueryCommandsRuntime({
     if (!query) return false
 
     const docs = (query.docs || []).concat(query.ratedDocs || [])
-    const doc = docs.find((candidate) => String(candidate.id) === String(docId))
+    const doc = docs.find((candidate) => isSameId(candidate.id, docId))
     if (!doc) return false
 
     schedule(() => {

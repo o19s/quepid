@@ -37,6 +37,33 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal current_try, assigns(:try)
     end
 
+    test 'renders the client-side templates and server-owned URL templates the case page needs' do
+      kase = cases(:one)
+
+      get :index, params: { id: kase.id, try_number: tries(:one).try_number }
+
+      assert_response :success
+      %w[rowTemplate searchResultsTemplate paginationTemplate diffScoreTemplate].each do |name|
+        assert_select "#query-container template[data-queries-list-target='#{name}']", 1
+      end
+      assert_select "template[data-annotations-target='itemTemplate']", 1
+      assert_select '#query-container[data-queries-list-query-url-template-value=?]',
+                    "/api/cases/#{kase.id}/queries/__QUERY_ID__"
+      assert_select '#query-container[data-queries-list-notes-url-template-value=?]',
+                    "/api/cases/#{kase.id}/queries/__QUERY_ID__/notes"
+      assert_select '#query-container[data-queries-list-position-url-template-value=?]',
+                    "/api/cases/#{kase.id}/queries/__QUERY_ID__/position"
+      assert_select '#queryOptionsModal[data-query-options-core-save-url-template-value=?]',
+                    "/api/cases/#{kase.id}/queries/__QUERY_ID__/options"
+      assert_select '#moveQueryModal[data-move-query-core-case-id-value=?]', kase.id.to_s
+      assert_select '[data-annotations-url-value=?]', "/api/cases/#{kase.id}/annotations"
+      assert_select '[data-frog-report-refresh-url-template-value*=?]', "/cases/#{kase.id}/"
+      assert_select 'template#search-result-template', 1
+      assert_select 'body[data-snapshot-bridge-snapshots-url-value=?]', "/api/cases/#{kase.id}/snapshots"
+      assert_select '#wizardModal[data-wizard-snapshot-search-url-template-value=?]',
+                    "http://test.host/api/cases/#{kase.id}/snapshots/__SNAPSHOT_ID__/search"
+    end
+
     test 'renames a case and updates its search endpoint settings' do
       kase = cases(:one)
       current_try = tries(:one)

@@ -8,7 +8,6 @@ import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
-import { requestJsonResponse } from "api/json"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
 const mapperSearchRuntime = createMapperSearchRuntime()
@@ -28,27 +27,8 @@ const userRuntime = createUserRuntime()
 
 export function createNativeFramework({ schedule } = {}) {
   const nativeSchedule = schedule || ((callback) => Promise.resolve().then(callback))
-  const request = async (options = {}) => {
-    const method = options.method || "GET"
-    const url = new URL(options.url, document.baseURI || window.location.href)
-    Object.entries(options.params || {}).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) url.searchParams.set(key, value)
-    })
-
-    const headers = { ...(options.headers || {}) }
-    const init = { method, headers }
-    if (options.data !== undefined) {
-      headers["Content-Type"] ||= "application/json"
-      init.body = typeof options.data === "string" ? options.data : JSON.stringify(options.data)
-    }
-
-    return requestJsonResponse(url.toString(), init)
-  }
 
   return {
-    request,
-    get: (url) => request({ method: "GET", url }),
-    promiseApi: Promise,
     schedule: nativeSchedule,
     logger: console
   }
@@ -99,8 +79,6 @@ async function loadCapability(name) {
   const scorerCatalog =
     name === "bootstrap"
       ? createScorerCatalog({
-          request: nativeFramework.request,
-          promiseApi: nativeFramework.promiseApi,
           scorerOptions: {
             schedule: (callback) => nativeFramework.schedule(callback),
             refreshRatedDocs: (queryId, count) =>

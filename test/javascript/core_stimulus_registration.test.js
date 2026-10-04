@@ -24,8 +24,7 @@ describe("core Stimulus registration", () => {
   it("registers every controller referenced by the core surface", () => {
     const coreSources = [
       ...sourceFiles(path.join(repoRoot, "app/views/core")),
-      path.join(repoRoot, "app/views/layouts/core.html.erb"),
-      path.join(repoRoot, "app/javascript/controllers/search_results_template.js")
+      path.join(repoRoot, "app/views/layouts/core.html.erb")
     ].map(filePath => readFileSync(filePath, "utf8"))
 
     const used = new Set(coreSources.flatMap(source => [...controllerNamesUsedBy(source)]))

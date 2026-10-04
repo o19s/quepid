@@ -7,6 +7,7 @@ import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDown
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
 import { getCoreStores } from "utils/core_store_access"
+import { isSameId } from "utils/record_identity"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const SNAPSHOT_ID_PLACEHOLDER = "__SNAPSHOT_ID__"
@@ -40,6 +41,7 @@ export default class extends CoreModalControllerBase {
     "apiSnapshotSelect",
     "apiSnapshotLink",
     "apiSnapshotWrapper",
+    "snapshotsError",
     "caseLink",
     "queriesLink",
     "annotationsLink",
@@ -161,12 +163,13 @@ export default class extends CoreModalControllerBase {
     selects.forEach((select) => {
       if (select) select.innerHTML = '<option value=""></option>'
     })
+    this.toggleVisible("snapshotsError", false)
     if (!this.hasSnapshotsIndexUrlTemplateValue || !this.currentCaseId) return
 
     const caseId = this.currentCaseId
     try {
       const data = await getJson(this._url(this.snapshotsIndexUrlTemplateValue))
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
 
       const snapshots = Array.isArray(data.snapshots) ? data.snapshots : []
       selects.forEach((select) => {
@@ -179,8 +182,9 @@ export default class extends CoreModalControllerBase {
         })
       })
     } catch (error) {
-      if (caseId !== this.currentCaseId || error instanceof HttpError) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       console.error("export-case-core: load snapshots failed", error)
+      this.toggleVisible("snapshotsError", true)
     }
   }
 

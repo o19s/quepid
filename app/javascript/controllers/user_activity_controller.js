@@ -21,6 +21,10 @@ export default class UserActivityController extends Controller {
     const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1)
 
     const data = await this.fetchData(startDate, tomorrow)
+    if (data === null) {
+      this.showLoadError()
+      return
+    }
     const filledData = this.fillDateRange(startDate, tomorrow, data)
 
     try {
@@ -131,13 +135,25 @@ export default class UserActivityController extends Controller {
     }
   }
 
-  async fetchData(startDate, endDate) {
-    const start = this.formatDate(startDate)
-    const end = this.formatDate(endDate)
-    const url = `${this.urlValue}&start=${start}&end=${end}`
+  // An empty calendar means "no activity", so a failed load says so instead.
+  showLoadError() {
+    const message = document.createElement('p')
+    message.className = 'text-danger'
+    message.textContent = 'Could not load activity data.'
+    this.element.replaceChildren(message)
+  }
 
+  activityUrl(startDate, endDate) {
+    const url = new URL(this.urlValue, document.baseURI)
+    url.searchParams.set('start', this.formatDate(startDate))
+    url.searchParams.set('end', this.formatDate(endDate))
+    return url.toString()
+  }
+
+  // Resolves to null when loading fails, and [] when there is simply no activity.
+  async fetchData(startDate, endDate) {
     try {
-      const rawData = await getJson(url)
+      const rawData = await getJson(this.activityUrl(startDate, endDate))
 
       // Transform the data from timestamp: count to array of {date, value}
       // The backend returns Unix timestamps in seconds
@@ -153,7 +169,7 @@ export default class UserActivityController extends Controller {
       })
     } catch (error) {
       console.error('Error fetching activity data:', error)
-      return []
+      return null
     }
   }
 

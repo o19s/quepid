@@ -2,6 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { copyText } from "utils/clipboard"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import SearchResultsController from "controllers/search_results_controller"
+import { loadViewTemplate } from "../support/view_template"
+
+const TEMPLATES = "app/views/core/_query_list_templates.html.erb"
 
 vi.mock("utils/detailed_document_modal", () => ({
   openDetailedDocumentModal: vi.fn()
@@ -12,20 +15,9 @@ vi.mock("utils/clipboard", () => ({
 }))
 
 function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", queryState = "loaded", numFound = 1, ratedDocsFound = 1, depthOfRating = null, diffError = false } = {}) {
-  const element = document.createElement("div")
-  element.innerHTML = `
-    <div data-search-results-target="content">
-      <div data-search-results-target="scoreAll"></div>
-      <div data-search-results-target="error"></div>
-      <div data-search-results-target="footer">
-        <button data-search-results-target="nextPage"></button>
-        <div data-search-results-target="depthNote"><span data-search-results-target="depthValue"></span></div>
-        <div data-search-results-target="ratedNote"></div>
-      </div>
-      <div data-search-results-target="results"></div>
-      <div data-search-results-target="diffResults"></div>
-    </div>
-  `
+  // The shipped expanded-query shell, plus the per-document template the results clone.
+  document.body.innerHTML = loadViewTemplate(TEMPLATES)
+  const element = document.body.querySelector('[data-queries-list-target="searchResultsTemplate"]').content.firstElementChild.cloneNode(true)
   const controller = Object.create(SearchResultsController.prototype)
   controller.element = element
   controller.contentTarget = element.querySelector('[data-search-results-target="content"]')
@@ -179,6 +171,70 @@ describe("SearchResultsController", () => {
     expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
       .getAttribute("data-rating-popover-scale-value"))
       .toBe(JSON.stringify({ 2: { color: "rgb(1, 2, 3)" } }))
+  })
+
+  it("leaves the Score All control alone until the query rating or scale changes", () => {
+    const { controller, snapshot } = controllerFor()
+    controller.render()
+    const control = controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
+
+    controller.render()
+    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).toBe(control)
+
+    snapshot.queryRating = 3
+    controller.render()
+    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).not.toBe(control)
+    expect(controller.scoreAllTarget.querySelector(".btn").textContent).toContain("3")
+  })
+
+  describe("keyed result rows", () => {
+    const results = controller => [...controller.resultsTarget.children]
+
+    it("reuses each document's result and only bumps the version of the ones that changed", () => {
+      const { controller, snapshot } = controllerFor()
+      snapshot.docs = [{ id: "a", rating: null }, { id: "b", rating: null }]
+      controller.render()
+      const [a, b] = results(controller)
+      const aVersion = a.dataset.searchResultVersionValue
+      const bVersion = b.dataset.searchResultVersionValue
+
+      snapshot.docs = [{ id: "a", rating: 1 }, { id: "b", rating: null }]
+      controller.render()
+
+      expect(results(controller)).toEqual([a, b])
+      expect(a.__searchResultDocument).toEqual({ id: "a", rating: 1 })
+      expect(a.dataset.rating).toBe("1")
+      expect(Number(a.dataset.searchResultVersionValue)).toBe(Number(aVersion) + 1)
+      expect(b.dataset.searchResultVersionValue).toBe(bVersion)
+      // The fingerprint (the whole document) stays off the DOM; the attribute is a small counter.
+      expect(a.dataset.searchResultVersionValue.length).toBeLessThan(5)
+    })
+
+    it("follows the new order, updates ranks, and drops documents that left", () => {
+      const { controller, snapshot } = controllerFor()
+      snapshot.docs = [{ id: "a" }, { id: "b" }, { id: "c" }]
+      controller.render()
+      const [a, , c] = results(controller)
+
+      snapshot.docs = [{ id: "c" }, { id: "a" }]
+      controller.render()
+
+      expect(results(controller)).toEqual([c, a])
+      expect(c.getAttribute("rank")).toBe("1")
+      expect(a.getAttribute("rank")).toBe("2")
+    })
+
+    it("rebuilds when document ids repeat, since they can't be keyed", () => {
+      const { controller, snapshot } = controllerFor()
+      snapshot.docs = [{ id: "dup" }, { id: "dup" }]
+      controller.render()
+      const first = results(controller)
+
+      controller.render()
+
+      expect(results(controller)).toHaveLength(2)
+      expect(results(controller)[0]).not.toBe(first[0])
+    })
   })
 
   it("renders errors, pagination, and rated/depth notices from store state", () => {

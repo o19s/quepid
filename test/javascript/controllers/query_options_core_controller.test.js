@@ -10,6 +10,8 @@ vi.mock("modules/editor", () => ({
     setValue: vi.fn()
   }))
 }))
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn(() => ({ queryCapabilities: { getQuery: liveQuery } })) }))
+const liveQuery = vi.fn()
 vi.mock("utils/bs_modal", () => ({
   getOrCreateBsModal: vi.fn(() => ({ hide: vi.fn() })),
   hideBsModal: vi.fn((modal) => modal?.hide()),
@@ -74,21 +76,23 @@ describe("QueryOptionsCoreController", () => {
     expect(instance.saveButtonTarget.disabled).toBe(false)
   })
 
-  it("loads the clicked query and its options pretty-printed when the modal opens", async () => {
+  it("loads the clicked row's query and its current options when the modal opens", async () => {
     const { showBsModal } = await import("utils/bs_modal")
     const instance = controller()
+    instance.saveUrlTemplateValue = "/api/cases/1/queries/__QUERY_ID__/options"
     instance.hasTitleTarget = true
     instance.titleTarget = { textContent: "" }
     instance.saveButtonTarget.disabled = true
-    const button = document.createElement("button")
-    button.dataset.queryOptionsCoreQueryIdValue = "7"
-    button.dataset.queryOptionsCoreSaveUrlValue = "api/cases/1/queries/7/options"
-    button.dataset.queryOptionsCoreOptionsValue = '{"boost":2}'
+    liveQuery.mockReturnValue({ options: { boost: 2 } })
+    const row = document.createElement("li")
+    row.dataset.queryId = "7"
+    const button = row.appendChild(document.createElement("button"))
 
     instance.openFor(button)
 
+    expect(liveQuery).toHaveBeenCalledWith("7")
     expect(instance.queryId).toBe("7")
-    expect(instance.saveUrl).toBe("api/cases/1/queries/7/options")
+    expect(instance.saveUrl).toBe("/api/cases/1/queries/7/options")
     expect(instance.editor.setValue).toHaveBeenCalledWith('{\n  "boost": 2\n}')
     expect(instance.titleTarget.textContent).toBe("Query Options")
     expect(instance.saveButtonTarget.disabled).toBe(false)
@@ -96,12 +100,15 @@ describe("QueryOptionsCoreController", () => {
     expect(showBsModal).not.toHaveBeenCalled()
   })
 
-  it("shows empty options as {} and leaves unparseable stored options as-is", () => {
+  it("shows {} for a query without options, and saves nowhere without a row", () => {
     const instance = controller()
+    instance.saveUrlTemplateValue = "/api/cases/1/queries/__QUERY_ID__/options"
+    liveQuery.mockReturnValue(undefined)
 
-    expect(instance.formatOptions(undefined)).toBe("{}")
-    expect(instance.formatOptions("")).toBe("{}")
-    expect(instance.formatOptions("{not json")).toBe("{not json")
+    instance.openFor(document.createElement("button"))
+
+    expect(instance.editor.setValue).toHaveBeenCalledWith("{}")
+    expect(instance.saveUrl).toBe("")
   })
 
   it("does not save without an editor or a save URL", async () => {

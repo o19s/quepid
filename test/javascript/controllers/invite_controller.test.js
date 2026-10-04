@@ -48,26 +48,51 @@ describe("InviteController", () => {
     expect(button.innerHTML).toBe("📋")
   })
 
-  it("alerts when no invite link is available", () => {
+  it("shows on the button, not an alert, when no invite link is available", () => {
+    vi.useFakeTimers()
     const controller = buildController("")
     const button = document.createElement("button")
+    button.innerHTML = "📋"
 
     controller.copy(clickEvent(button))
 
     expect(copyText).not.toHaveBeenCalled()
-    expect(alertMock).toHaveBeenCalledWith("No invite link available")
+    expect(alertMock).not.toHaveBeenCalled()
+    expect(button.textContent).toBe("No invite link")
+    vi.advanceTimersByTime(1500)
+    expect(button.innerHTML).toBe("📋")
   })
 
-  it("alerts when copy fails", async () => {
+  it("shows on the button, not an alert, when copy fails", async () => {
+    vi.useFakeTimers()
     vi.mocked(copyText).mockRejectedValue(new Error("nope"))
     const button = document.createElement("button")
     button.innerHTML = "📋"
     const controller = buildController()
 
     controller.copy(clickEvent(button))
-    await Promise.resolve()
+    await vi.advanceTimersByTimeAsync(0)
 
-    expect(alertMock).toHaveBeenCalledWith("Copy failed")
+    expect(alertMock).not.toHaveBeenCalled()
+    expect(button.textContent).toBe("Copy failed")
+    vi.advanceTimersByTime(1500)
+    expect(button.innerHTML).toBe("📋")
+  })
+
+  it("restores the original label after repeated clicks", async () => {
+    vi.useFakeTimers()
+    vi.mocked(copyText).mockResolvedValue()
+    const button = document.createElement("button")
+    button.innerHTML = "📋"
+    const controller = buildController()
+
+    controller.copy(clickEvent(button))
+    await vi.advanceTimersByTimeAsync(500)
+    controller.copy(clickEvent(button))
+    await vi.advanceTimersByTimeAsync(0)
+    expect(button.textContent).toBe("Copied")
+
+    vi.advanceTimersByTime(1500)
     expect(button.innerHTML).toBe("📋")
   })
 })

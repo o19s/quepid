@@ -1,4 +1,5 @@
-const SOLR_PARAM_TYPOS = {
+// Wrongly-cased Solr params, matched case-sensitively anywhere in the text.
+const SOLR_PARAM_TYPOS = Object.entries({
   deftype: "defType",
   echoparams: "echoParams",
   explainother: "explainOther",
@@ -6,7 +7,7 @@ const SOLR_PARAM_TYPOS = {
   omitheader: "omitHeader",
   segmentterminateearly: "segmentTerminateEarly",
   timeallowed: "timeAllowed"
-}
+})
 
 export function queryParamsMode(value) {
   try {
@@ -17,16 +18,15 @@ export function queryParamsMode(value) {
   }
 }
 
+/**
+ * The first known Solr parameter typo in the query params, or null.
+ * @param {string} [value]
+ * @returns {{ typo: string, correction: string } | null}
+ */
 export function queryParamsWarning(value) {
   const text = value || ""
-
-  for (const [typo, correction] of Object.entries(SOLR_PARAM_TYPOS)) {
-    if (new RegExp(typo).test(text)) {
-      return `Your query params contain <code>${typo}</code>, you probably meant <code>${correction}</code>.`
-    }
-  }
-
-  return ""
+  const match = SOLR_PARAM_TYPOS.find(([typo]) => text.includes(typo))
+  return match ? { typo: match[0], correction: match[1] } : null
 }
 
 export function formatJson(value) {

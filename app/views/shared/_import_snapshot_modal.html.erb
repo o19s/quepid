@@ -55,6 +55,9 @@ Legacy Search,10/15/18 18:05,2098,star trek,10592,5
 
 <%= render "shared/modal_shell", id: "importSnapshotModal", title: "Import Snapshot",
                                  dialog_class: "modal-xl",
-                                 data: { controller: "import-snapshot" },
+                                 data: {
+                                   controller: "import-snapshot",
+                                   import_snapshot_imports_url_template_value: api_case_snapshots_imports_path(case_id: "__CASE_ID__")
+                                 },
                                  footer: modal_footer,
                                  body: modal_body %>

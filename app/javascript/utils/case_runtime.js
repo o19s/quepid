@@ -1,5 +1,5 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { deleteJson, getJson, postJson, putJson } from "api/json"
+import { isSameId } from "utils/record_identity"
 
 const parseCase = (data) => ({
   caseNo: data.case_id,
@@ -29,14 +29,12 @@ const formatDate = (date) => {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
-const jsonHeaders = { "Content-Type": "application/json" }
-
-export function createCaseRuntime({ request = apiFetch, now = () => new Date() } = {}) {
+export function createCaseRuntime({ now = () => new Date() } = {}) {
   let selectedCase = null
 
   return {
     async load(caseNo) {
-      const data = await requestJson(`api/cases/${caseNo}`, {}, request)
+      const data = await getJson(`api/cases/${caseNo}`)
       return parseCase(data)
     },
     selected: () => selectedCase,
@@ -57,27 +55,12 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
       return selectedCase
     },
     async delete(value) {
-      await requestJson(
-        `api/cases/${value.caseNo}`,
-        {
-          method: "DELETE",
-          headers: jsonHeaders
-        },
-        request
-      )
-      if (selectedCase?.caseNo === value.caseNo) selectedCase = null
+      await deleteJson(`api/cases/${value.caseNo}`)
+      if (isSameId(selectedCase?.caseNo, value.caseNo)) selectedCase = null
     },
     async rename(value, name) {
       if (!name || name.length === 0) return
-      await requestJson(
-        `api/cases/${value.caseNo}`,
-        {
-          method: "PUT",
-          headers: jsonHeaders,
-          body: JSON.stringify({ case_name: name })
-        },
-        request
-      )
+      await putJson(`api/cases/${value.caseNo}`, { case_name: name })
       value.caseName = name
       document.dispatchEvent(
         new CustomEvent("quepid:case-renamed", {
@@ -86,15 +69,7 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
       )
     },
     async updateNightly(value) {
-      await requestJson(
-        `api/cases/${value.caseNo}`,
-        {
-          method: "PUT",
-          headers: jsonHeaders,
-          body: JSON.stringify({ nightly: value.nightly })
-        },
-        request
-      )
+      await putJson(`api/cases/${value.caseNo}`, { nightly: value.nightly })
       document.dispatchEvent(
         new CustomEvent("quepid:case-header-stale", {
           detail: { caseNo: value.caseNo, reason: "nightly" }
@@ -103,25 +78,10 @@ export function createCaseRuntime({ request = apiFetch, now = () => new Date() }
     },
     runEvaluation: (caseNo, tryNo) => {
       const params = tryNo ? `?try_number=${encodeURIComponent(tryNo)}` : ""
-      return requestJson(
-        `api/cases/${caseNo}/run_evaluation${params}`,
-        {
-          method: "POST",
-          headers: jsonHeaders
-        },
-        request
-      )
+      return postJson(`api/cases/${caseNo}/run_evaluation${params}`)
     },
     trackLastViewedAt: (caseNo) =>
-      requestJson(
-        `api/cases/${caseNo}/metadata`,
-        {
-          method: "PUT",
-          headers: jsonHeaders,
-          body: JSON.stringify({ metadata: { last_viewed_at: formatDate(now()) } })
-        },
-        request
-      ),
+      putJson(`api/cases/${caseNo}/metadata`, { metadata: { last_viewed_at: formatDate(now()) } }),
     reset: () => {
       selectedCase = null
     }

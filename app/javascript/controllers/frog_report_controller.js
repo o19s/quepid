@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { postJson } from "api/json"
+import { putJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { getCoreStores } from "utils/core_store_access"
@@ -29,7 +29,7 @@ export default class extends Controller {
     "chart", "refreshButton", "refreshIcon", "bookName", "error"
   ]
 
-  static values = { modalRoot: Boolean }
+  static values = { modalRoot: Boolean, refreshUrlTemplate: String }
 
   open(event) {
     event.preventDefault()
@@ -43,6 +43,7 @@ export default class extends Controller {
     const content = modal.element.querySelector(".modal-content")
     content.dataset.controller = "frog-report"
     content.dataset.frogReportModalRootValue = "true"
+    content.dataset.frogReportRefreshUrlTemplateValue = this.refreshUrlTemplateValue
     content.frogReportModal = modal
   }
 
@@ -146,13 +147,11 @@ export default class extends Controller {
     this.refreshIconTarget.classList.add("spintime")
     this.errorTarget.classList.add("d-none")
     const background = Object.keys(this.store.snapshot().queries || {}).length >= 50
-    const template = document.body.dataset.frogReportRefreshUrlTemplate
-    const url = template
-      .replace("__BOOK_ID__", state.bookId)
-      .replace("__CASE_ID__", state.caseNo)
-      .replace("__BACKGROUND__", background ? "true" : "false")
+    const url = this.refreshUrlTemplateValue
+      .replaceAll("__BOOK_ID__", state.bookId)
+      .replaceAll("__BACKGROUND__", background ? "true" : "false")
     try {
-      await postJson(url, {}, { method: "PUT" })
+      await putJson(url, {})
       if (!background) {
         const refreshQueries = getCoreCapabilities().queryLifecycle?.refreshQueries
         if (typeof refreshQueries !== "function") {

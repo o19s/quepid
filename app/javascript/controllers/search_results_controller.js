@@ -5,6 +5,7 @@ import { copyText } from "utils/clipboard"
 import { createRatingControl } from "controllers/search_result_controller"
 import { sanitizeSnippetHtml } from "utils/html"
 import { engineDisplayName } from "utils/browse_query"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Renders an expanded query from the plain document read model. The live-query runtime still
@@ -36,7 +37,7 @@ export default class extends Controller {
   }
 
   renderFromStore(detail) {
-    if (!detail || detail.queryId == null || String(detail.queryId) === String(this.queryId)) this.render()
+    if (!detail || detail.queryId == null || isSameId(detail.queryId, this.queryId)) this.render()
   }
 
   render() {
@@ -68,7 +69,7 @@ export default class extends Controller {
   }
 
   get queryId() {
-    return this.element.closest("[data-query-row-query-id-value]")?.dataset.queryRowQueryIdValue || this.element.dataset.queryId
+    return this.element.closest("[data-query-id]")?.dataset.queryId
   }
 
   visibleDocuments(snapshot) {
@@ -157,9 +158,8 @@ export default class extends Controller {
     this.store.updateQueryState(this.queryId, { notes: Boolean(open) })
   }
 
-  // The query list rebuilds every row on a store change, so the notes panel that is open after a
-  // toggle is a different element from the one that was clicked. Ask each panel instance to load
-  // its own saved values the first time it renders open, once its query-notes controller is connected.
+  // Ask the notes panel to load its saved values the first time it renders open, once its
+  // query-notes controller is connected. A panel that stays open keeps the user's edits.
   renderNotes(snapshot) {
     if (!this.hasNotesBoxTarget) return
 
@@ -179,14 +179,29 @@ export default class extends Controller {
     })
   }
 
+  // Results are keyed by document id and reused, so a rating or other store change only
+  // re-renders the documents that actually changed (keeping an open popover or explain elsewhere).
   renderDocuments(docs, snapshot) {
-    const fragment = document.createDocumentFragment()
+    const ids = docs.map(doc => String(doc.id))
+    if (new Set(ids).size !== ids.length) {
+      // Duplicate ids (documents that can't be uniquely identified) can't be keyed.
+      this.resultsTarget.replaceChildren(...docs.map((doc, index) => this.buildSearchResult(doc, snapshot, index + 1)))
+      return
+    }
 
+    const existing = new Map([...this.resultsTarget.children].map(result => [result.dataset.docId, result]))
     docs.forEach((doc, index) => {
-      fragment.appendChild(this.buildSearchResult(doc, snapshot, index + 1))
+      let result = existing.get(ids[index])
+      if (result) {
+        existing.delete(ids[index])
+        this.assignSearchResult(result, doc, snapshot, index + 1)
+      } else {
+        result = this.buildSearchResult(doc, snapshot, index + 1)
+      }
+      const current = this.resultsTarget.children[index]
+      if (current !== result) this.resultsTarget.insertBefore(result, current || null)
     })
-
-    this.resultsTarget.replaceChildren(fragment)
+    existing.forEach(result => result.remove())
   }
 
   renderDiffResults(snapshot) {
@@ -277,16 +292,28 @@ export default class extends Controller {
     result.className = "search-result"
     result.setAttribute("data-controller", "search-result")
     result.setAttribute("data-search-result-explain-view-value", "full")
+    const content = document.createElement("div")
+    content.dataset.searchResultTarget = "content"
+    result.appendChild(content)
+    this.assignSearchResult(result, doc, snapshot, rank, maxDocScore)
+    return result
+  }
+
+  // Hands a result its document and query, and bumps its version value when anything its
+  // rendering depends on changed; the search-result controller re-renders on a new version.
+  // The fingerprint stays in a property: it holds the whole document, too big for an attribute.
+  assignSearchResult(result, doc, snapshot, rank, maxDocScore) {
+    const query = maxDocScore === undefined ? snapshot : { ...snapshot, maxDocScore }
     result.setAttribute("rank", String(rank))
     result.dataset.queryId = String(snapshot.queryId)
     result.dataset.docId = String(doc.id)
     result.dataset.rating = doc.rating == null ? "" : String(doc.rating)
     result.__searchResultDocument = doc
-    result.__searchResultQuery = maxDocScore === undefined
-      ? snapshot
-      : { ...snapshot, maxDocScore }
-    result.innerHTML = '<div data-search-result-target="content"></div>'
-    return result
+    result.__searchResultQuery = query
+    const fingerprint = JSON.stringify([doc, rank, query.ratingScale, query.depthOfRating, query.maxDocScore])
+    if (result.__searchResultFingerprint === fingerprint) return
+    result.__searchResultFingerprint = fingerprint
+    result.dataset.searchResultVersionValue = String(Number(result.dataset.searchResultVersionValue || 0) + 1)
   }
 
   resultDifferenceClass(currentDoc, diffDoc) {
@@ -315,18 +342,13 @@ export default class extends Controller {
   renderScoreAll(snapshot) {
     if (!this.hasScoreAllTarget) return
 
-    this.scoreAllTarget.replaceChildren()
-    const container = document.createElement("div")
-    container.className = "col-ratings query-rating"
-    container.innerHTML = `
-      <strong>Score All</strong>
-      <div class="ratings"><div class="single-rating" data-controller="rating-popover"></div></div>
-    `
-
+    // The "Score All" shell is static ERB; only its rating control is rebuilt, and only on change.
+    const slot = this.scoreAllTarget.querySelector('[data-slot="scoreAllRating"]')
     const rating = snapshot.queryRating ?? "--"
-    const popover = container.querySelector('[data-controller="rating-popover"]')
-    popover.replaceWith(createRatingControl(rating, snapshot.ratingScale || {}))
-    this.scoreAllTarget.appendChild(container)
+    const version = JSON.stringify([rating, snapshot.ratingScale || {}])
+    if (slot.dataset.version === version) return
+    slot.dataset.version = version
+    slot.replaceChildren(createRatingControl(rating, snapshot.ratingScale || {}))
   }
 
   handleQueryToggle(event) {
@@ -348,7 +370,7 @@ export default class extends Controller {
       ...(snapshot?.docs || []),
       ...(snapshot?.ratedDocs || []),
       ...diffDocuments
-    ].find(item => String(item.id) === String(docId))
+    ].find(item => isSameId(item.id, docId))
     if (!snapshotDoc) return
     openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl })
   }

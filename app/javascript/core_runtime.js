@@ -1,6 +1,7 @@
 import quepidSearch from "quepid_search"
 import quepidStore from "quepid_store"
 import { createSplainerSearchRuntime } from "utils/splainer_search_runtime"
+import { isSameId } from "utils/record_identity"
 
 const splainerSearch = createSplainerSearchRuntime()
 
@@ -13,7 +14,7 @@ document.addEventListener("quepid:case-selected", (event) => {
 
 document.addEventListener("judgements:book-settings-saved", (event) => {
   const detail = event.detail || {}
-  if (Number(detail.caseId) !== Number(quepidSearch.caseState.caseNo)) return
+  if (!isSameId(detail.caseId, quepidSearch.caseState.caseNo)) return
   quepidSearch.caseState.bookId = detail.bookId ?? null
   quepidSearch.caseState.bookName = detail.bookName ?? null
 })

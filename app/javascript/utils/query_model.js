@@ -7,7 +7,6 @@ export function createQueryModel({
   ratingsStore,
   getDefaultScorer,
   scoreQuery,
-  promiseApi = Promise,
   getFieldSpec,
   getQueryState,
   buildRatingsFilter,
@@ -41,14 +40,13 @@ export function createQueryModel({
         docs: otherDocs,
         ratingsStore,
         scorer: this.effectiveScorer(),
-        promiseApi,
         depthOfRating: query.depthOfRating
       })
     },
 
     score() {
       if (query.lastScoreVersion === this.version()) {
-        return promiseApi.resolve(query.currentScore)
+        return Promise.resolve(query.currentScore)
       }
 
       return this.scoreOthers(query.docs).then((score) => {

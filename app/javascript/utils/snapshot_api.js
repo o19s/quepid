@@ -1,10 +1,9 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { deleteJson, getJson } from "api/json"
 
-export function fetchSnapshot(url, fetcher = apiFetch) {
-  return requestJson(`${url}?shallow=true`, {}, fetcher)
+export function fetchSnapshot(url) {
+  return getJson(`${url}?shallow=true`)
 }
 
-export function deleteSnapshot(url, snapshotId, fetcher = apiFetch) {
-  return requestJson(`${url}/${encodeURIComponent(snapshotId)}`, { method: "DELETE" }, fetcher)
+export function deleteSnapshot(url, snapshotId) {
+  return deleteJson(`${url}/${encodeURIComponent(snapshotId)}`)
 }

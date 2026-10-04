@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { createSettingsRuntime } from "utils/settings_runtime"
 
 const response = (data = {}, status = 200) => ({
@@ -26,6 +26,10 @@ const tryData = (tryNumber = 1) => ({
 })
 
 describe("settings runtime", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("maps tries, selects the active try, and tracks curator variables", () => {
     const runtime = createSettingsRuntime({ createFieldSpec: value => ({ value }) })
     runtime.setCaseTries([tryData(1), tryData(2)])
@@ -44,7 +48,8 @@ describe("settings runtime", () => {
   it("updates settings through the API and publishes the changed try", async () => {
     const request = vi.fn().mockResolvedValue(response())
     const navigate = vi.fn()
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9, tryNo: () => 1, navigate })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, tryNo: () => 1, navigate })
     runtime.setCaseTries([tryData(1)])
     runtime.setCurrentTry(1)
     const settings = runtime.editable()
@@ -65,7 +70,8 @@ describe("settings runtime", () => {
       .mockResolvedValueOnce(response(tryData(3)))
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9, navigate: vi.fn() })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, navigate: vi.fn() })
     runtime.setCaseTries([tryData(1), tryData(2)])
     runtime.setCurrentTry(1)
 
@@ -85,7 +91,8 @@ describe("settings runtime", () => {
     const navigate = vi.fn()
     const updated = vi.fn()
     document.addEventListener("case-settings:updated", updated)
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9, navigate })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, navigate })
     runtime.setCaseTries([tryData(1)])
     runtime.setCurrentTry(1)
     const settings = runtime.editable()
@@ -121,7 +128,8 @@ describe("settings runtime", () => {
 
   it("references an existing search endpoint instead of inlining one", async () => {
     const request = vi.fn().mockResolvedValue(response())
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9, tryNo: () => 1 })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, tryNo: () => 1 })
     runtime.setCaseTries([{ ...tryData(1), search_endpoint_id: 3 }])
     runtime.setCurrentTry(1)
 
@@ -151,7 +159,8 @@ describe("settings runtime", () => {
   it("moves to the last remaining try when the selected try is deleted, and never deletes the only try", async () => {
     const request = vi.fn().mockResolvedValue(response())
     const navigate = vi.fn()
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9, navigate })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, navigate })
     runtime.setCaseTries([tryData(1), tryData(2), tryData(3)])
     runtime.setCurrentTry(3)
 
@@ -167,7 +176,8 @@ describe("settings runtime", () => {
     const request = vi.fn()
       .mockResolvedValueOnce(response({ args: { q: ["books"] } }))
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 503, json: vi.fn(async () => null) })
-    const runtime = createSettingsRuntime({ request, caseNo: () => 9 })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9 })
 
     await expect(runtime.previewArgs(1, "q=books")).resolves.toEqual({ q: ["books"] })
     await expect(runtime.previewArgs(1, "q=books")).rejects.toThrow("Request failed (503)")

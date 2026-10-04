@@ -457,7 +457,15 @@ describe("TuneRelevanceController", () => {
       controller.refreshQueryEditor()
 
       expect(controller.queryWarningTarget.hidden).toBe(false)
-      expect(controller.queryWarningTarget.innerHTML).toContain("defType")
+      expect(controller.queryWarningTarget.innerHTML).toBe(
+        "Your query params contain <code>deftype</code>, you probably meant <code>defType</code>."
+      )
+
+      settings.selectedTry.queryParams = "q=foo&defType=edismax"
+      controller.refreshQueryEditor()
+
+      expect(controller.queryWarningTarget.hidden).toBe(true)
+      expect(controller.queryWarningTarget.innerHTML).toBe("")
     })
 
     it("hides the static-engine messages unless the engine is static", () => {

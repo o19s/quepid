@@ -22,7 +22,6 @@ describe("createLiveQueryRuntime", () => {
       onError: vi.fn(),
       parseError: vi.fn(),
       publish: vi.fn(),
-      promiseApi: {},
       logger: {}
     }
 

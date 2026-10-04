@@ -66,8 +66,7 @@ export function registerAndHydrateSnapshots({
   getDoc,
   explainDoc,
   formatDate,
-  log,
-  promiseApi = Promise
+  log
 }) {
   const snapshotDocIds = []
   const useSnapshotScopedCache =
@@ -87,7 +86,7 @@ export function registerAndHydrateSnapshots({
   })
 
   if (!settings || Object.keys(settings).length === 0) {
-    return { models, promise: resolvedPromise(promiseApi) }
+    return { models, promise: Promise.resolve() }
   }
 
   if (useSnapshotScopedCache && snapshots.length > 0) {
@@ -106,7 +105,7 @@ export function registerAndHydrateSnapshots({
           })
           return updateDocs(snapshotSettings, snapshot.id)
         }),
-      resolvedPromise(promiseApi)
+      Promise.resolve()
     )
 
     return { models, promise }
@@ -114,10 +113,6 @@ export function registerAndHydrateSnapshots({
 
   snapshotDocIds.forEach((ids) => addDocIds(ids))
   return { models, promise: updateDocs(settings) }
-}
-
-function resolvedPromise(promiseApi) {
-  return promiseApi.when ? promiseApi.when() : promiseApi.resolve()
 }
 
 export function mapFieldSpecToSolrFormat(fieldSpec) {

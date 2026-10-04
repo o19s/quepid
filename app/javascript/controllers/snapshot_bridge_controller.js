@@ -8,6 +8,7 @@ import { getSnapshotCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
+import { isSameId } from "utils/record_identity"
 
 /*
  * Snapshot comparison bridge between the Stimulus read model and live queries.
@@ -22,6 +23,8 @@ import coreFlash from "utils/core_flash"
  * failure.
  */
 export default class extends Controller {
+  static values = { snapshotsUrl: String }
+
   connect() {
     void this.bootstrapSnapshots()
   }
@@ -88,11 +91,10 @@ export default class extends Controller {
   }
 
   async bootstrapSnapshots() {
-    const caseNo = Number(this.element.dataset.coreBootstrapCaseNoValue)
-    if (!caseNo) return
+    if (!this.snapshotsUrlValue) return
 
     try {
-      const payload = await getJson(`api/cases/${caseNo}/snapshots?shallow=true`)
+      const payload = await getJson(`${this.snapshotsUrlValue}?shallow=true`)
       const registry = this.snapshotRegistry()
       Object.keys(registry).forEach((id) => delete registry[id])
       await this.registerSnapshots(payload.snapshots || [])
@@ -103,14 +105,14 @@ export default class extends Controller {
 
   async create({ caseId, name, recordDocumentFields }) {
     const services = await getSnapshotCapabilities()
-    if (Number(caseId) !== Number(services.capability.navigation.caseNo())) throw new Error("case mismatch")
+    if (!isSameId(caseId, services.capability.navigation.caseNo())) throw new Error("case mismatch")
 
     const payload = buildSnapshotPayload(
       name,
       recordDocumentFields,
       getCoreCapabilities().queryCapabilities.getQueryArray()
     )
-    const snapshot = await postJson(`api/cases/${caseId}/snapshots`, payload)
+    const snapshot = await postJson(this.snapshotsUrlValue, payload)
     await this.registerSnapshots([snapshot])
     coreFlash.show("success", "Snapshot created successfully.")
   }

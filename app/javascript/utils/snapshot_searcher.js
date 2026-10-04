@@ -11,8 +11,7 @@ export function createSnapshotSearcher({
   query,
   fieldSpec,
   createRateableDoc,
-  explainDoc,
-  promiseApi = Promise
+  explainDoc
 }) {
   const searcher = {
     snapshot,
@@ -26,13 +25,13 @@ export function createSnapshotSearcher({
     searchError: null,
     lastResponse: null,
     search() {
-      return promiseApi.resolve()
+      return Promise.resolve()
     },
     pager() {
       return null
     },
     explainOther() {
-      return promiseApi.reject("ExplainOther not supported for snapshots")
+      return Promise.reject("ExplainOther not supported for snapshots")
     },
     name() {
       return snapshot.name()
@@ -75,7 +74,6 @@ export function createSnapshotSearcherFromRegistry({
   settings,
   createRateableDoc,
   explainDoc,
-  promiseApi = Promise,
   log = () => {}
 }) {
   const snapshot = snapshots[snapshotId]
@@ -90,7 +88,6 @@ export function createSnapshotSearcherFromRegistry({
     query,
     fieldSpec: settings ? settings.createFieldSpec() : null,
     createRateableDoc,
-    explainDoc,
-    promiseApi
+    explainDoc
   })
 }

@@ -33,11 +33,19 @@ function buildController(overrides = {}) {
   controller.htmlPreviewContainerTarget.style = {}
   controller.step2Target.style = {}
 
-  controller.captureEditors = vi.fn()
   controller.setButtonLoading = vi.fn()
   controller.showStatus = vi.fn()
 
-  Object.assign(controller, overrides)
+  // Editors live on their textarea targets, as CodeMirror's auto-init leaves them.
+  const editorTargets = { numberOfResultsEditor: "numberOfResultsMapper", docsEditor: "docsMapper", customHeadersEditor: "customHeaders" }
+  const { numberOfResultsEditor, docsEditor, customHeadersEditor, ...rest } = overrides
+  Object.assign(controller, rest)
+  Object.entries({ numberOfResultsEditor, docsEditor, customHeadersEditor }).forEach(([key, editor]) => {
+    if (editor === undefined) return
+    const target = editorTargets[key]
+    controller[`has${target[0].toUpperCase()}${target.slice(1)}Target`] = true
+    controller[`${target}Target`] = { ...(controller[`${target}Target`] || {}), editor }
+  })
   return controller
 }
 
@@ -399,9 +407,9 @@ describe("MapperWizardController AI generation and refinement", () => {
   })
 
   it.each([
-    ["refineDocsMapper", "docsMapper", "docsEditor", "refineDocsButtonTarget"],
-    ["refineNumberOfResultsMapper", "numberOfResultsMapper", "numberOfResultsEditor", "refineNumberButtonTarget"]
-  ])("%s only refines when the user gives feedback", async (action, mapperType, editorKey, buttonKey) => {
+    ["refineDocsMapper", "docsMapper", "docsEditor", "refineDocsButtonTarget", "docsMapperTarget"],
+    ["refineNumberOfResultsMapper", "numberOfResultsMapper", "numberOfResultsEditor", "refineNumberButtonTarget", "numberOfResultsMapperTarget"]
+  ])("%s only refines when the user gives feedback", async (action, mapperType, editorKey, buttonKey, textareaKey) => {
     const controller = aiController({ [editorKey]: editor("old"), [buttonKey]: document.createElement("button") })
     controller.refineMapper = vi.fn()
 
@@ -411,7 +419,7 @@ describe("MapperWizardController AI generation and refinement", () => {
 
     vi.stubGlobal("prompt", vi.fn(() => "be stricter"))
     await controller[action]({ preventDefault: vi.fn() })
-    expect(controller.refineMapper).toHaveBeenCalledWith(mapperType, controller[editorKey], undefined, "be stricter", controller[buttonKey])
+    expect(controller.refineMapper).toHaveBeenCalledWith(mapperType, controller[editorKey], controller[textareaKey], "be stricter", controller[buttonKey])
   })
 })
 
@@ -485,7 +493,6 @@ describe("MapperWizardController helpers", () => {
     const controller = buildController(overrides)
     delete controller.showStatus
     delete controller.setButtonLoading
-    delete controller.captureEditors
     return controller
   }
 
@@ -572,21 +579,22 @@ describe("MapperWizardController helpers", () => {
     expect(button.innerHTML).toBe("Generate")
   })
 
-  it("picks up code editors once they are attached to their textareas", () => {
+  it("reads each code editor from its textarea when used, including ones attached after connect", () => {
+    const docs = document.createElement("textarea")
     const controller = realHelpers({
       hasNumberOfResultsMapperTarget: true,
       numberOfResultsMapperTarget: { editor: "n-editor" },
       hasDocsMapperTarget: true,
-      docsMapperTarget: { editor: "d-editor" },
-      hasCustomHeadersTarget: true,
-      customHeadersTarget: {}
+      docsMapperTarget: docs,
+      hasCustomHeadersTarget: false
     })
 
-    controller.captureEditors()
-
     expect(controller.numberOfResultsEditor).toBe("n-editor")
+    expect(controller.docsEditor).toBe(null)
+    expect(controller.customHeadersEditor).toBe(null)
+
+    docs.editor = "d-editor"
     expect(controller.docsEditor).toBe("d-editor")
-    expect(controller.customHeadersEditor).toBeUndefined()
   })
 
   it("copies the HTML preview, briefly confirming on the button", async () => {

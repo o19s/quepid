@@ -29,12 +29,14 @@ export default class extends Controller {
 
   connect() {
     this.debounceTimer = null
+    this.request = null
     this.suggestions = []
     this.isLoading = false
   }
 
   disconnect() {
     this.clearDebounce()
+    this.abortRequest()
   }
 
   /**
@@ -43,9 +45,11 @@ export default class extends Controller {
    */
   search(event) {
     this.clearDebounce()
+    this.abortRequest()
     const query = this.inputTarget.value.trim()
 
     if (query.length < this.minLengthValue) {
+      this.hideLoading()
       this.hideSuggestions()
       return
     }
@@ -57,24 +61,44 @@ export default class extends Controller {
   }
 
   /**
-   * Fetch suggestions from the server
+   * Fetch suggestions from the server. Each request supersedes the previous
+   * one, so a slow response for an older query never replaces newer state.
    * @param {string} query - The search query
    */
   async fetchSuggestions(query) {
+    this.abortRequest()
+    const request = new AbortController()
+    this.request = request
     try {
       const data = await getJson(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        signal: request.signal
       })
+      if (this.request !== request) return
+      this.request = null
       this.suggestions = data
       this.hideLoading()
       this.showSuggestions(data)
     } catch (error) {
+      if (this.request !== request) return
+      this.request = null
       console.error('Error fetching suggestions:', error)
       this.hideLoading()
       this.hideSuggestions()
+    }
+  }
+
+  /**
+   * Abort the in-flight request, if any. Its response is then ignored.
+   */
+  abortRequest() {
+    if (this.request) {
+      const request = this.request
+      this.request = null
+      request.abort()
     }
   }
 

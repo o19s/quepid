@@ -54,6 +54,7 @@ function mount({ step = 0, settings = {} } = {}) {
   const element = document.createElement("div")
   const controller = Object.create(WizardController.prototype)
   controller.element = element
+  controller.connected = true
   controller.stepTargets = Array.from({ length: 6 }, () => element.appendChild(document.createElement("div")))
   controller.trackerTargets = Array.from({ length: 6 }, () => element.appendChild(document.createElement("button")))
   controller.continueButtonTargets = [element.appendChild(document.createElement("button"))]
@@ -128,20 +129,36 @@ describe("WizardController", () => {
       expect(controller.loaded).toBe(true)
     })
 
-    it("retries when capabilities are not ready, then gives up with an error after 100 attempts", async () => {
+    it("shows an error once, without polling, when capabilities cannot load", async () => {
       vi.useFakeTimers()
       getWizardCapabilities.mockRejectedValue(new Error("not ready"))
       const controller = mount()
       controller.loaded = false
 
       await controller.loadWizard()
-      await vi.advanceTimersByTimeAsync(100)
-      expect(getWizardCapabilities).toHaveBeenCalledTimes(2)
+      await vi.advanceTimersByTimeAsync(10000)
 
-      controller.loadAttempts = 100
-      await controller.loadWizard()
+      expect(getWizardCapabilities).toHaveBeenCalledTimes(1)
       expect(controller.error).toMatch(/Unable to load the case wizard/)
       vi.useRealTimers()
+    })
+
+    it("stops loading when disconnected mid-load", async () => {
+      const capability = makeCapability()
+      let resolveEndpoints
+      capability.endpoints.list.mockReturnValue(new Promise(resolve => { resolveEndpoints = resolve }))
+      getWizardCapabilities.mockResolvedValue({ capability })
+      const controller = mount()
+      controller.loaded = false
+
+      const loading = controller.loadWizard()
+      await flush()
+      controller.disconnect()
+      resolveEndpoints()
+      await loading
+
+      expect(controller.loaded).toBe(false)
+      expect(capability.mapper.list).toHaveBeenCalled()
     })
   })
 
@@ -556,6 +573,7 @@ describe("WizardController", () => {
     it("imports rows as a snapshot, switches to static, and collects unique queries", async () => {
       importSnapshotsToCase.mockResolvedValue([{ id: 11 }])
       const controller = mount()
+      controller.snapshotSearchUrlTemplateValue = "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
 
       await controller.importStatic(csvFile(`${HEADER}\nstar wars,d1,1,A\nstar wars,d2,2,B\nalien,d3,1,C\n,,,`))
 
@@ -569,7 +587,7 @@ describe("WizardController", () => {
         "http://quepid"
       )
       expect(controller.settings.searchEngine).toBe("static")
-      expect(controller.settings.searchUrl).toBe("/root/api/cases/5/snapshots/11/search")
+      expect(controller.settings.searchUrl).toBe("http://quepid/api/cases/5/snapshots/11/search")
       expect(controller.newQueries).toEqual([{ queryString: "star wars" }, { queryString: "alien" }])
       expect(controller.staticAlert).toBe("Static data imported successfully.")
     })
@@ -660,6 +678,20 @@ describe("WizardController", () => {
       vi.advanceTimersByTime(1500)
       expect(window.setupAndStartTour).toHaveBeenCalledTimes(1)
 
+      delete window.setupAndStartTour
+      vi.useRealTimers()
+    })
+
+    it("cancels the pending tour start when disconnected", async () => {
+      vi.useFakeTimers()
+      window.setupAndStartTour = vi.fn()
+      const controller = mount({ step: STEPS.finish })
+      await controller.finish()
+
+      controller.disconnect()
+      vi.advanceTimersByTime(1500)
+
+      expect(window.setupAndStartTour).not.toHaveBeenCalled()
       delete window.setupAndStartTour
       vi.useRealTimers()
     })

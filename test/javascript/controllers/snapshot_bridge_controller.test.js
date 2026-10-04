@@ -152,7 +152,7 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("bootstraps shallow snapshots into the shared registry", async () => {
-    controller.element = { dataset: { coreBootstrapCaseNoValue: "1" } }
+    controller.snapshotsUrlValue = "api/cases/1/snapshots"
     api.apiFetch.mockResolvedValue({
       async text() {
         return JSON.stringify(await this.json()) || ""
@@ -167,6 +167,14 @@ describe("SnapshotBridgeController", () => {
     expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
       snapshots: [{ id: 8 }]
     }))
+  })
+
+  it("skips bootstrapping on a page without a case", async () => {
+    controller.snapshotsUrlValue = ""
+
+    await controller.bootstrapSnapshots()
+
+    expect(api.apiFetch).not.toHaveBeenCalled()
   })
 
   it("creates a snapshot from the live query collection", async () => {
@@ -195,6 +203,7 @@ describe("SnapshotBridgeController", () => {
       json: vi.fn(async () => null).mockResolvedValue({ id: 9 })
     })
 
+    controller.snapshotsUrlValue = "api/cases/1/snapshots"
     await controller.create({ caseId: 1, name: "new snapshot", recordDocumentFields: true })
 
     expect(api.apiFetch).toHaveBeenCalledWith("api/cases/1/snapshots", expect.objectContaining({

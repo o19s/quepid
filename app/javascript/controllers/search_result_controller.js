@@ -8,10 +8,15 @@ import { ratingBackgroundColor } from "utils/scoring"
  */
 export default class extends Controller {
   static targets = ["content"]
-  static values = { explainView: String }
+  static values = { explainView: String, version: Number }
 
   connect() {
     this.render()
+  }
+
+  // search-results bumps the version when this document or its query context changed.
+  versionValueChanged(version) {
+    if (this.renderedVersion !== undefined && this.renderedVersion !== version) this.render()
   }
 
   disconnect() {
@@ -21,6 +26,7 @@ export default class extends Controller {
   render() {
     if (!this.hasContentTarget || !this.documentSnapshot) return
     this.renderedDocument = this.documentSnapshot
+    this.renderedVersion = this.versionValue
     this.contentTarget.replaceChildren(this.renderResult(this.documentSnapshot, this.querySnapshot))
   }
 
@@ -33,27 +39,19 @@ export default class extends Controller {
   }
 
   renderResult(doc, query) {
-    const row = document.createElement("div")
-    row.className = "row"
-    row.innerHTML = `
-      <div class="col-md-10" style="position: relative">
-        <div class="col-ratings"><div class="ratings"></div></div>
-        <div class="col-summary d-flex">
-          <div class="result-thumb-col flex-shrink-0 text-center me-2 d-none"><img class="img-thumbnail result-thumbnail"></div>
-          <div class="result-image-col flex-shrink-0 text-center me-2 d-none"><img class="img-thumbnail result-image"></div>
-          <ul class="subfields flex-grow-1"></ul>
-        </div>
-      </div>
-      ${this.explainViewValue === "full" && doc.matchExplain ? '<div class="col-md-2"><div class="stacked-chart-container" data-controller="match-explain"></div></div>' : ""}
-    `
+    // The row skeleton is the ERB `<template id="search-result-template">` in
+    // core/_query_list_templates.html.erb.
+    const row = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
+    const slot = name => row.querySelector(`[data-slot="${name}"]`)
+    const showExplain = this.explainViewValue === "full" && doc.matchExplain
+    if (!showExplain) slot("matchExplainColumn").remove()
 
-    const ratings = row.querySelector(".ratings")
-    if (doc.error === undefined) ratings.appendChild(this.ratingControl(doc, query.ratingScale || {}))
+    if (doc.error === undefined) slot("ratings").appendChild(this.ratingControl(doc, query.ratingScale || {}))
 
-    this.renderImage(row, ".result-thumb-col", ".result-thumbnail", doc.thumb, doc.thumb_options, doc.hasThumb)
-    this.renderImage(row, ".result-image-col", ".result-image", doc.image, doc.image_options, doc.hasImage)
+    this.renderImage(slot("thumbColumn"), slot("thumb"), doc.thumb, doc.thumb_options, doc.hasThumb)
+    this.renderImage(slot("imageColumn"), slot("image"), doc.image, doc.image_options, doc.hasImage)
 
-    const fields = row.querySelector(".subfields")
+    const fields = slot("fields")
     const title = document.createElement("li")
     title.className = "subTitle"
     const titleLink = document.createElement("a")
@@ -81,10 +79,7 @@ export default class extends Controller {
     rank.textContent = `Rank: #${this.element.getAttribute("rank") || ""}`
     fields.appendChild(rank)
 
-    if (this.explainViewValue === "full" && doc.matchExplain) {
-      const explain = row.querySelector("[data-controller=match-explain]")
-      explain.setAttribute("data-match-explain-data-value", JSON.stringify(doc.matchExplain))
-    }
+    if (showExplain) slot("matchExplain").setAttribute("data-match-explain-data-value", JSON.stringify(doc.matchExplain))
 
     const footer = document.createElement("div")
     if (query.depthOfRating === Number(this.element.getAttribute("rank"))) {
@@ -110,10 +105,8 @@ export default class extends Controller {
     return createRatingControl(rating, scale)
   }
 
-  renderImage(row, wrapperSelector, imageSelector, value, options, visible) {
+  renderImage(wrapper, image, value, options, visible) {
     if (!visible) return
-    const wrapper = row.querySelector(wrapperSelector)
-    const image = row.querySelector(imageSelector)
     image.src = `${options?.prefix || ""}${value}`
     image.alt = ""
     wrapper.classList.remove("d-none")

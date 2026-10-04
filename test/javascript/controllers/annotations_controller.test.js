@@ -2,6 +2,7 @@ import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import AnnotationsController from "controllers/annotations_controller"
 import { apiFetch } from "api/fetch"
+import { viewTemplateTargets } from "../support/view_template"
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) }))
@@ -17,10 +18,12 @@ function buildController() {
       empty: document.createElement("p"),
       editModal: document.createElement("div"),
       editMessage: document.createElement("textarea"),
-      editSave: document.createElement("button")
+      editSave: document.createElement("button"),
+      itemTemplate: viewTemplateTargets("app/views/core/_annotation_template.html.erb", "annotations").itemTemplate
     },
     values: {
-      urlTemplate: "/api/cases/__CASE_ID__/annotations",
+      url: "/api/cases/7/annotations",
+      annotationUrlTemplate: "/api/cases/7/annotations/__ANNOTATION_ID__",
       caseId: 7,
       tryId: 3
     }

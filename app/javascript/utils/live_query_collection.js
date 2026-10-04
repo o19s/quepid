@@ -11,12 +11,12 @@ function createSearchPromise() {
 /**
  * Orchestration for the live query collection boundary.
  *
- * The service graph provides the live Query implementation and HTTP adapter, but
+ * The service graph provides the live Query implementation and query loader, but
  * collection bootstrap, stale-request handling, and store publication live in
  * this runtime so they remain independent from transport details.
  */
 export function createLiveQueryCollectionRuntime({
-  request,
+  fetchQueries,
   createQuery,
   createDiff,
   clearQueries,
@@ -66,20 +66,20 @@ export function createLiveQueryCollectionRuntime({
     const requestDeferred = createSearchPromise()
     searchableDeferred = requestDeferred
 
-    request(caseId)
+    fetchQueries(caseId)
       .then(
-        (response) => {
+        (data) => {
           if (requestGeneration !== generation) {
             requestDeferred.reject({ status: 0, statusText: "Stale bootstrap request" })
-            return response
+            return data
           }
 
           clearQueries()
-          addQueriesFromResponse(response.data, caseId)
+          addQueriesFromResponse(data, caseId)
           setBootstrapping(false)
           publishState()
           requestDeferred.resolve()
-          return response
+          return data
         },
         (response) => {
           if (requestGeneration !== generation) {

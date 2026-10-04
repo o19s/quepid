@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { postJson } from "api/json"
+import { deleteJson, postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { showStatusMessage } from "utils/status_message"
 
@@ -33,9 +33,9 @@ export default class extends Controller {
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      await postJson(this.deleteUrlValue, {
+      await deleteJson(this.deleteUrlValue, {
         query_doc_pair_id: queryDocPairId
-        }, { method: "DELETE" })
+        })
 
       this.clearRatingUI(queryDocPairId)
       this.showStatus(queryDocPairId, "reset")

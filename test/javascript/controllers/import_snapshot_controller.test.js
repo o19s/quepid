@@ -9,17 +9,13 @@ vi.mock("api/fetch", () => ({
 }))
 
 describe("ImportSnapshotController sendSnapshotToAPI", () => {
-  beforeEach(() => {
-    document.body.dataset.quepidRootUrl = "https://example.com/quepid"
-  })
-
   afterEach(() => {
     vi.clearAllMocks()
-    delete document.body.dataset.quepidRootUrl
   })
 
-  it("builds the import URL under the quepid root, not a bare /api path", async () => {
+  it("fills the CSV row's case into the server's import URL template", async () => {
     const controller = Object.create(ImportSnapshotController.prototype)
+    controller.importsUrlTemplateValue = "/quepid/api/cases/__CASE_ID__/snapshots/imports"
     apiFetch.mockResolvedValue({
       async text() {
         return JSON.stringify(await this.json()) || ""
@@ -31,7 +27,7 @@ describe("ImportSnapshotController sendSnapshotToAPI", () => {
     await ImportSnapshotController.prototype.sendSnapshotToAPI.call(controller, "4", { name: "Snap A" })
 
     expect(apiFetch).toHaveBeenCalledWith(
-      "https://example.com/quepid/api/cases/4/snapshots/imports",
+      "/quepid/api/cases/4/snapshots/imports",
       expect.objectContaining({ method: "POST" })
     )
   })
@@ -256,15 +252,14 @@ describe("ImportSnapshotController submit", () => {
   })
 
   it("surfaces the server's message when a snapshot import is rejected", async () => {
-    document.body.dataset.quepidRootUrl = "https://example.com/quepid"
     apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({ message: "Case 4 not found" }) })
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, json: () => Promise.resolve({}) })
     const controller = uiController()
+    controller.importsUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots/imports"
 
     await expect(controller.sendSnapshotToAPI("4", {})).rejects.toThrow("Case 4 not found")
     await expect(controller.sendSnapshotToAPI("5", {})).rejects.toThrow("Failed to import snapshot for case 5")
     expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ snapshots: [{}] })
-    delete document.body.dataset.quepidRootUrl
   })
 })
 

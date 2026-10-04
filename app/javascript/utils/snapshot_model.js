@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 /**
  * Snapshot data model.
  *
@@ -67,9 +69,7 @@ export function createSnapshotModel({
   }
 
   function getQueryError(queryId) {
-    const score = (snapshot.scores || []).find(
-      (entry) => String(entry.query_id) === String(queryId)
-    )
+    const score = (snapshot.scores || []).find((entry) => isSameId(entry.query_id, queryId))
     return score?.error || null
   }
 }

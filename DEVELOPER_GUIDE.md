@@ -807,13 +807,26 @@ For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads
 
 ### Stimulus HTTP conventions
 
-Normative patterns for **new** client code on Rails pages (teams, books, admin, …).
+These apply to all client code: Rails pages and the case page alike. ESLint enforces the first two.
 
-- **Server owns URLs.** Pass Rails path helpers or `url_for` into Stimulus as `data-*-url-value` attributes (see `mapper_wizards/show.html.erb`, `mapper_wizard_controller.js`). For forms, use `this.formTarget.action` (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths for navigation.
-- **CSRF on mutating requests.** Layouts include `csrf_meta_tags`. Use `apiFetch` from `app/javascript/api/fetch.js` (importmap: `api/fetch`) so `X-CSRF-Token` is added automatically. For form submits (e.g. `confirm_delete_controller.js`), use `authenticity_token` instead.
-- **`fetch` shape:** `POST`/`PUT`/`DELETE` with `Content-Type: application/json`, the CSRF header, and `JSON.stringify` body. Check `response.ok`; on failure, parse JSON with `.catch(() => ({}))` before surfacing `data.message`, `data.error`, or `response.statusText`.
-- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
-- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
+- **JSON goes through the `api/json` verb helpers** (importmap: `api/json`):
+
+  | Call | Use for |
+  | --- | --- |
+  | `getJson(url, options)` | reads |
+  | `postJson(url, body, options)`, `putJson(...)`, `patchJson(...)` | writes with a JSON body |
+  | `deleteJson(url, body?, options)` | deletes (a body is rare: rating resets) |
+  | `requestJsonResponse(url, { method, json, ...options })` | only when the caller needs the response status (e.g. a 204 branch) |
+
+  Each helper resolves to the parsed body (`null` for 204/empty), sends `Accept`/`Content-Type` and the CSRF token, and rejects with an `HttpError` (`status`, parsed `data`) on any non-2xx response, so callers never check `response.ok`. `options` is the usual `fetch` init (`headers`, `signal`); never pass `method`, pick the helper for the verb.
+- **Non-JSON responses** (CSV/blob downloads) use `apiFetch` from `api/fetch`, which adds the CSRF header. Nothing outside `app/javascript/api/` calls the global `fetch`.
+- **No injected transports.** Runtimes and controllers import the helpers directly. Specs stub `fetch` (`vi.stubGlobal("fetch", ...)`) or `vi.mock("api/json")` / `vi.mock("api/fetch")`.
+- **Server owns URLs.** Emit concrete URLs with Rails path helpers as `data-*-url-value` attributes, or use `this.formTarget.action` for forms (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths.
+- **API-client modules in `utils/`** (`case_runtime`, `settings_runtime`, `ratings_store`, `query_lifecycle`, …) own their REST paths in one place each, like an SDK. Controllers do not build API paths.
+- **Ids known only in the browser use a URL template.** Emit the path helper with a named placeholder id as `data-<controller>-<action>-url-template-value` on the controller that owns the rows, e.g. `api_case_query_path(@case, "__QUERY_ID__")`. The controller fills it in with `replaceAll("__QUERY_ID__", id)`; ids the server knows are filled in by the server, not left as placeholders. There is no generic client-side URL-template helper.
+- **Form submits** (e.g. `confirm_delete_controller.js`) send `authenticity_token` instead of the header.
+- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard); the same helpers apply.
+- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import).
 
 ### Turbo on the case page
 
@@ -844,6 +857,10 @@ page that is the exception, not the default.
 - Use `data-action` for interactions and document/window events when the receiving controller owns the markup. Stimulus manages listener cleanup. Keep direct listeners for Bootstrap popover/tooltip content relocated outside that scope, and keep store subscriptions paired in `connect()` / `disconnect()`.
 - Use outlets when asking a known peer controller to perform an operation. Keep named events for facts broadcast to multiple consumers or emitted by runtime modules, and stores for shared mutable state.
 - Render static structure in ERB and populate targets. Client-computed query rows, results and scores stay in JavaScript. Keep interactive regions out of Turbo Frames unless their lifecycle is supported.
+- **Rows built in the browser** clone a `<template>` rendered by ERB (`core/_query_list_templates.html.erb`, `core/_annotation_template.html.erb`). Keep those partials free of ERB tags other than comments: the Vitest specs load them verbatim through `test/javascript/support/view_template.js`, and `core_controller_test.rb` checks they render. Mark every point the controller fills in with `data-slot="name"`, never a class, a Bootstrap attribute, or another controller's target.
+- **Key rows by record id and reuse them.** A list re-render updates existing rows in place (`li[data-query-id]` in `queries_list_controller.js`) instead of replacing them, so nested controllers keep their state (an open notes form, a half-typed draft) and only see real value changes. Child controllers react through `*ValueChanged` callbacks.
+- **Compare record ids with `isSameId`** from `utils/record_identity.js`, not `===` or `String(a) === String(b)`: ids arrive as numbers or strings, and a missing id never matches.
+- **Per-row data lives on the row.** A modal opened from a row reads the record id with `trigger.closest("[data-query-id]")` and current data from the live store, not from values copied onto the button when the row rendered.
 - Before converting Boolean dataset checks, verify absent and empty values: Stimulus treats an empty value attribute as true. Value callbacks also run during connection.
 
 ESLint enforces a per-controller count ceiling for direct `document.addEventListener` calls and `innerHTML` assignments, recorded in `config/stimulus_conventions_baseline.json`. New controllers have zero allowance. The AST check includes literal computed properties and compound assignments, and ignores reads, comments and strings. It prevents count growth; it does not detect replacing an old use with a different use, aliases or dynamically computed property names. Reduce the baseline when removing existing uses; increases require a documented scope/lifecycle reason reviewed with the change. Run `yarn lint:js` through the established Docker workflow.
@@ -871,26 +888,28 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 
 **`document` events**
 
-| Event | Emitter | Listeners |
-| --- | --- | --- |
-| `core-bootstrap:failed` | `core-bootstrap` | none in the app (Playwright and tests read it) |
-| `quepid:case-selected` | `utils/case_runtime` | `core_runtime.js` (copies detail into `quepidSearch.caseState`; page-lifetime) |
-| `quepid:case-renamed` | `utils/case_runtime` | `case-toolbar` |
-| `quepid:case-header-stale` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
-| `quepid:case-team-changed` | `share-case-core` | none in the app (tested only) |
-| `case-settings:updated` | `utils/settings_runtime` | none in the app |
-| `pick-scorer:selected` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
-| `query-options:saved` | `query-options-core` | `utils/live_query_events` |
-| `judgements:queries-need-reload`, `imports:queries-need-reload` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (runtime checks `detail.caseId`) |
-| `judgements:book-settings-saved` | `judgements-core` | `utils/live_query_events` (reconfigures book sync), `core_runtime.js` (updates `caseState` book; page-lifetime) |
-| `ratings:changed` | `utils/live_query_runtime_owner` (fallback only when there is no scoring store) | `utils/live_query_events` |
-| `queries-state:changed` | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
-| `query-diffs:refreshed` | `utils/live_query_runtime_owner` | `qscore-case` |
-| `case-score:persisted` | `qscore-case` | `qgraph` |
-| `annotations:changed` | `annotations` | `qgraph` |
-| `query-delete:completed` (Stimulus `dispatch` with `target: document`; a re-render can detach the button mid-request) | `query-delete` | `queries-list` |
-| `move-query-core:completed` (Stimulus `dispatch`; the modal is outside the list) | `move-query-core` | `queries-list` |
-| `flash:show`, `flash:hide` | `utils/flash.js` (`coreFlash`) | `flash` |
+`detail` is the payload contract. Ids are numbers unless noted; listeners compare them with `isSameId` (`utils/record_identity.js`).
+
+| Event | `detail` | Emitter | Listeners |
+| --- | --- | --- | --- |
+| `core-bootstrap:failed` | `{ error }` | `core-bootstrap` | none in the app (Playwright and tests read it) |
+| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | `core_runtime.js` (copies detail into `quepidSearch.caseState`; page-lifetime) |
+| `quepid:case-renamed` | `{ caseNo, caseName }` | `utils/case_runtime` | `case-toolbar` |
+| `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
+| `quepid:case-team-changed` | `{ action, caseNo, team: { id, name } }` | `share-case-core` | none in the app (tested only) |
+| `case-settings:updated` | `{ caseNo, lastTry }` | `utils/settings_runtime` | `tune-relevance` (`keepDrawerOpen`) |
+| `pick-scorer:selected` | `{ caseId, scorer }` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
+| `query-options:saved` | `{ queryId, options }` (no `caseId`: listeners treat it as the current case) | `query-options-core` | `utils/live_query_events` |
+| `judgements:queries-need-reload`, `imports:queries-need-reload` | `{ caseId }` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (reloads only for the current case) |
+| `judgements:book-settings-saved` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `judgements-core` | `utils/live_query_events` (reconfigures book sync), `core_runtime.js` (updates `caseState` book; page-lifetime) |
+| `ratings:changed` | `{ queryId }` | `utils/live_query_runtime_owner` (fallback only when there is no scoring store) | `utils/live_query_events` |
+| `queries-state:changed` | none | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
+| `query-diffs:refreshed` | `{ success }` | `utils/live_query_runtime_owner` | `qscore-case` |
+| `case-score:persisted` | `{ caseId }` | `qscore-case` | `qgraph` |
+| `annotations:changed` | `{ caseId }` | `annotations` | `qgraph` |
+| `query-delete:completed` (Stimulus `dispatch` with `target: document`; a re-render can detach the button mid-request) | `{ queryId }` | `query-delete` | `queries-list` |
+| `move-query-core:completed` (Stimulus `dispatch`; the modal is outside the list) | `{ caseId, queryId, targetCaseId }` | `move-query-core` | `queries-list` |
+| `flash:show`, `flash:hide` | `{ type, message, target, html }`, `{ target }` | `utils/flash.js` (`coreFlash`) | `flash` |
 
 **Element-scoped events** (dispatched on a controller's element, handled by an ancestor or a named sibling)
 
@@ -927,7 +946,7 @@ Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:com
 3. Add the listener in `connect()` and remove it in `disconnect()`, and cover both with a Vitest spec. Some specs already assert the dispatch, e.g. `share_case_core_controller.test.js` and `case_runtime.test.js`.
 4. Update the tables above.
 
-The globals `window.Stimulus`, Bootstrap, Sortable, and Ace support current browser integrations. Check their consumers before changing them; Angular compatibility globals are no longer required.
+The remaining globals are `window.Stimulus` (Playwright specs look up controllers through it), `window.bootstrap` (`bootstrap_globals.js`, for the data API), Vega's `vegaEmbed` (`vega_globals.js`), and `Tether`/`Shepherd` (`core_vendor.js`, because `tour.js` expects bare globals). Check their consumers before changing them; Angular compatibility globals are no longer required. CodeMirror is not global: import `fromTextArea` from `modules/editor`.
 
 ## Fonts
 

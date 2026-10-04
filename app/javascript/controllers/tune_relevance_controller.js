@@ -4,6 +4,7 @@ import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
 import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { searchEngineLabel } from "utils/search_engines"
+import { isSameId } from "utils/record_identity"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -128,10 +129,15 @@ export default class extends Controller {
   }
 
   refreshQueryWarning(value) {
-    if (this.hasQueryWarningTarget) {
-      this.queryWarningTarget.innerHTML = queryParamsWarning(value)
-      this.queryWarningTarget.hidden = !this.queryWarningTarget.innerHTML
-    }
+    if (!this.hasQueryWarningTarget) return
+    const warning = queryParamsWarning(value)
+    const code = (text) => Object.assign(document.createElement("code"), { textContent: text })
+    this.queryWarningTarget.replaceChildren(
+      ...(warning
+        ? ["Your query params contain ", code(warning.typo), ", you probably meant ", code(warning.correction), "."]
+        : [])
+    )
+    this.queryWarningTarget.hidden = !warning
   }
 
   refreshCuratorVars() {
@@ -172,10 +178,10 @@ export default class extends Controller {
     if (this.hasEndpointEmptyTarget) this.endpointEmptyTarget.hidden = hasEndpoints
     this.searchEndpoints.forEach(endpoint => {
       const option = new Option(endpoint.name, endpoint.id)
-      option.selected = String(endpoint.id) === String(this.settings.searchEndpointId)
+      option.selected = isSameId(endpoint.id, this.settings.searchEndpointId)
       this.endpointSelectTarget.add(option)
     })
-    const selected = this.searchEndpoints.find(item => String(item.id) === String(this.settings.searchEndpointId))
+    const selected = this.searchEndpoints.find(item => isSameId(item.id, this.settings.searchEndpointId))
     if (this.hasEndpointSearchTarget) this.endpointSearchTarget.value = selected?.name || ""
     this.renderEndpointSuggestions("")
   }
@@ -197,7 +203,7 @@ export default class extends Controller {
   }
 
   selectEndpointSuggestion(event) {
-    const endpoint = this.searchEndpoints.find(item => String(item.id) === String(event.params.endpointId))
+    const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.params.endpointId))
     if (endpoint) this.selectEndpoint(endpoint)
   }
 
@@ -279,12 +285,12 @@ export default class extends Controller {
 
   openTryDetails(event) {
     event.stopPropagation()
-    const item = this.settings.tries.find(item => String(item.tryNo) === String(event.params.tryNo))
+    const item = this.settings.tries.find(item => isSameId(item.tryNo, event.params.tryNo))
     if (item) this.showTryDetails(item)
   }
 
   updateEndpoint(event) {
-    const endpoint = this.searchEndpoints.find(item => String(item.id) === String(event.target.value))
+    const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.target.value))
     if (!endpoint) return
     const customHeaders = endpoint.customHeaders && typeof endpoint.customHeaders === "object" ? JSON.stringify(endpoint.customHeaders, null, 2) : endpoint.customHeaders
     const endpointSettings = {

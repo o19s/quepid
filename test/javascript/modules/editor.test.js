@@ -12,6 +12,17 @@ function jsonEditor(value) {
   return editor
 }
 
+describe("fromTextArea", () => {
+  it("attaches the editor to its textarea", () => {
+    const textarea = document.createElement("textarea")
+    document.createElement("div").appendChild(textarea)
+
+    const editor = fromTextArea(textarea, { mode: "text" })
+
+    expect(textarea.editor).toBe(editor)
+  })
+})
+
 describe("editor modes", () => {
   it("gives free-form text no language and no linter", () => {
     expect(languageFor("text")).toEqual([])

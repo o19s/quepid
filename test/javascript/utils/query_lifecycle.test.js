@@ -1,54 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
-import {
-  bootstrapRequest,
-  bulkCreateRequest,
-  createRequest,
-  deleteRequest,
-  deleteQuery,
-  moveRequest,
-  moveQuery,
-  positionRequest,
-  persistQuery,
-  persistQueries
-} from "utils/query_lifecycle"
+import { fetchQueries, moveQuery, persistQuery, persistQueries } from "utils/query_lifecycle"
 
 describe("query_lifecycle", () => {
-  it("builds the bootstrap request", () => {
-    expect(bootstrapRequest(42)).toEqual({
-      method: "GET",
-      url: "api/cases/42/queries",
-      params: { bootstrap: true }
-    })
-  })
+  it("loads the case's queries for bootstrap", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify({ queries: [] }), { status: 200 })))
 
-  it("builds single and bulk create requests", () => {
-    expect(createRequest(42, "star wars")).toEqual({
-      method: "POST",
-      url: "api/cases/42/queries",
-      data: { query: { query_text: "star wars" } }
-    })
-    expect(bulkCreateRequest(42, ["star wars", "dune"])).toEqual({
-      method: "POST",
-      url: "api/bulk/cases/42/queries",
-      data: { queries: ["star wars", "dune"] }
-    })
-  })
-
-  it("builds reorder, delete, and move requests", () => {
-    expect(positionRequest(42, 7, 6, true)).toEqual({
-      method: "PUT",
-      url: "api/cases/42/queries/7/position",
-      data: { after: 6, reverse: true }
-    })
-    expect(deleteRequest(42, 7)).toEqual({
-      method: "DELETE",
-      url: "api/cases/42/queries/7"
-    })
-    expect(moveRequest({ caseNo: 42, queryId: 7 }, 99)).toEqual({
-      method: "PUT",
-      url: "api/cases/42/queries/7",
-      data: { other_case_id: 99 }
-    })
+    await expect(fetchQueries(42)).resolves.toEqual({ queries: [] })
+    expect(fetch).toHaveBeenCalledWith("api/cases/42/queries?bootstrap=true", expect.objectContaining({ method: "GET" }))
+    vi.unstubAllGlobals()
   })
 
   it("persists a single query and returns its response", async () => {
@@ -81,20 +40,14 @@ describe("query_lifecycle", () => {
     vi.unstubAllGlobals()
   })
 
-  it("persists move and delete commands without a legacy adapter", async () => {
-    vi.stubGlobal("fetch", vi.fn()
-      .mockResolvedValueOnce(new Response("", { status: 204 }))
-      .mockResolvedValueOnce(new Response("", { status: 204 })))
+  it("persists a move, resolving a 204 with its status", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response("", { status: 204 })))
 
     await expect(moveQuery(42, 7, 99)).resolves.toEqual({ status: 204, data: null })
-    await expect(deleteQuery(42, 7)).resolves.toEqual({ status: 204, data: null })
 
-    expect(fetch).toHaveBeenNthCalledWith(1, "api/cases/42/queries/7", expect.objectContaining({
+    expect(fetch).toHaveBeenCalledWith("api/cases/42/queries/7", expect.objectContaining({
       method: "PUT",
       body: JSON.stringify({ other_case_id: 99 })
-    }))
-    expect(fetch).toHaveBeenNthCalledWith(2, "api/cases/42/queries/7", expect.objectContaining({
-      method: "DELETE"
     }))
     vi.unstubAllGlobals()
   })

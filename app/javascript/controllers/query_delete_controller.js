@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { requestJson } from "api/json"
+import { deleteJson } from "api/json"
 import coreFlash from "utils/core_flash"
 
 /**
@@ -31,7 +31,7 @@ export default class extends Controller {
     this.element.disabled = true
 
     try {
-      await requestJson(this.deleteUrlValue, { method: "DELETE" })
+      await deleteJson(this.deleteUrlValue)
     } catch (error) {
       console.error("query-delete: delete failed", error)
       this.element.disabled = false

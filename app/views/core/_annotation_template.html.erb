@@ -1,0 +1,9 @@
+<%# Static shell cloned by annotations_controller.js for each annotation. Keep
+    this partial free of ERB tags; the Vitest spec loads it verbatim. The
+    controller fills each `data-slot`. Inline
+    parts stay on one line so no whitespace appears between them. %>
+<template data-annotations-target="itemTemplate">
+  <li class="annotation"><div class="dropdown float-end"><a href="#" role="button" class="dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list"></i></a>
+      <ul class="dropdown-menu"><li><a href="#" class="dropdown-item" data-action="click->annotations#openEdit" data-slot="edit"><i class="bi bi-pencil-fill"></i> Edit</a></li>
+      <li><a href="#" class="dropdown-item text-danger" data-action="click->annotations#delete" data-slot="delete"><i class="bi bi-trash-fill"></i> Delete</a></li></ul></div><em class="annotations-time" data-slot="time"></em><span class="annotation-source" data-slot="user"></span><span class="annotation-source" data-slot="source"></span><div><span class="annotation-try" data-slot="try">Try No: </span><i class="bi bi-circle-fill"></i><span class="annotation-score" data-slot="score"> Score: </span></div><div class="annotation-message" data-slot="message"></div></li>
+</template>

@@ -1,5 +1,6 @@
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import SearchResultController from "controllers/search_result_controller"
+import { loadViewTemplate } from "../support/view_template"
 
 function buildController(documentSnapshot, querySnapshot = {}) {
   const element = document.createElement("search-result")
@@ -36,6 +37,11 @@ function snapshotFor(overrides = {}) {
 }
 
 describe("SearchResultController", () => {
+  beforeEach(() => {
+    // Provides the shipped <template id="search-result-template">.
+    document.body.innerHTML = loadViewTemplate("app/views/core/_query_list_templates.html.erb")
+  })
+
   it("renders the document title, fields, and rank", () => {
     const controller = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
     controller.render()
@@ -101,5 +107,21 @@ describe("SearchResultController", () => {
     expect(rating.dataset.controller).toBe("rating-popover")
     expect(rating.querySelector(".btn").textContent).toContain("2")
     expect(rating.querySelector(".btn").style.backgroundColor).toBe("green")
+  })
+
+  it("re-renders only when search-results gives it a new version", () => {
+    const controller = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
+    controller.versionValue = 1
+    controller.render()
+    const rendered = controller.contentTarget.firstElementChild
+
+    controller.versionValueChanged(1)
+    expect(controller.contentTarget.firstElementChild).toBe(rendered)
+
+    controller.element.__searchResultDocument = snapshotFor({ title: "Renamed" })
+    controller.versionValue = 2
+    controller.versionValueChanged(2)
+    expect(controller.contentTarget.firstElementChild).not.toBe(rendered)
+    expect(controller.contentTarget.textContent).toContain("Renamed")
   })
 })

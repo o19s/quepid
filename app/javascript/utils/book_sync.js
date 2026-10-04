@@ -1,5 +1,5 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { putJson } from "api/json"
+import { isSameId } from "utils/record_identity"
 
 export function buildQueryDocPairsPayload(queries) {
   return queries.flatMap((query) =>
@@ -44,22 +44,14 @@ export function buildQueryDocPairsPayload(queries) {
   )
 }
 
-export async function populateBook({ bookId, caseId, queries, fetcher = apiFetch }) {
-  return requestJson(
-    `api/books/${bookId}/populate`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        case_id: caseId,
-        query_doc_pairs: buildQueryDocPairsPayload(queries)
-      })
-    },
-    fetcher
-  )
+export async function populateBook({ bookId, caseId, queries }) {
+  return putJson(`api/books/${bookId}/populate`, {
+    case_id: caseId,
+    query_doc_pairs: buildQueryDocPairsPayload(queries)
+  })
 }
 
-export function createBookSyncRuntime({ fetcher = apiFetch, logger = console } = {}) {
+export function createBookSyncRuntime({ logger = console } = {}) {
   let caseId = null
   let bookId = null
   let autoPopulate = false
@@ -70,8 +62,7 @@ export function createBookSyncRuntime({ fetcher = apiFetch, logger = console } =
     bookId: nextBookId,
     autoPopulate: nextAutoPopulate
   }) => {
-    if (String(caseId) !== String(nextCaseId) || String(bookId) !== String(nextBookId))
-      syncedPairs = {}
+    if (!isSameId(caseId, nextCaseId) || !isSameId(bookId, nextBookId)) syncedPairs = {}
     caseId = nextCaseId
     bookId = nextBookId
     autoPopulate = nextAutoPopulate === true
@@ -107,7 +98,7 @@ export function createBookSyncRuntime({ fetcher = apiFetch, logger = console } =
     await Promise.all(
       batches.map(async (batch) => {
         try {
-          await populateBook({ bookId, caseId, queries: batch, fetcher })
+          await populateBook({ bookId, caseId, queries: batch })
         } catch (error) {
           batch.forEach((query) =>
             query.docs.forEach((doc) => {

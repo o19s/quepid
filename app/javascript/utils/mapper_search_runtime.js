@@ -1,5 +1,4 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { getJson } from "api/json"
 
 function mapEngine(data) {
   return {
@@ -28,12 +27,12 @@ function mapEngine(data) {
   }
 }
 
-export function createMapperSearchRuntime({ request = apiFetch } = {}) {
+export function createMapperSearchRuntime() {
   let engines = []
 
   return {
     list: async () => {
-      const data = await requestJson("api/mapper_based_search_engines", {}, request)
+      const data = await getJson("api/mapper_based_search_engines")
       engines = (data.mapper_based_search_engines || []).map(mapEngine)
       return engines
     },

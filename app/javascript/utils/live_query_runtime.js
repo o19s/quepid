@@ -23,7 +23,6 @@ export function createLiveQueryRuntime({
   onError,
   parseError,
   publish,
-  promiseApi,
   logger
 }) {
   return {
@@ -45,7 +44,6 @@ export function createLiveQueryRuntime({
         onError: (message) => onError(query, message),
         parseError,
         publish,
-        promiseApi,
         logger
       })
     }

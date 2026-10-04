@@ -1,5 +1,4 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { postJson } from "api/json"
 
 export function buildSnapshotImportGroups(rows, targetCaseId) {
   const cases = {}
@@ -42,21 +41,15 @@ export function buildSnapshotImportGroups(rows, targetCaseId) {
   return cases
 }
 
-export async function importSnapshotsToCase(rows, targetCaseId, rootUrl, fetcher = apiFetch) {
+export async function importSnapshotsToCase(rows, targetCaseId, rootUrl) {
   const groups = buildSnapshotImportGroups(rows, targetCaseId)
   const imported = []
 
   for (const [caseId, caseData] of Object.entries(groups)) {
     for (const snapshot of Object.values(caseData.snapshots)) {
-      const payload = await requestJson(
-        `${rootUrl}/api/cases/${caseId}/snapshots/imports`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ snapshots: [snapshot] })
-        },
-        fetcher
-      )
+      const payload = await postJson(`${rootUrl}/api/cases/${caseId}/snapshots/imports`, {
+        snapshots: [snapshot]
+      })
       imported.push(...(payload.snapshots || []))
     }
   }

@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 /**
  * Event bridge for live Query state owned by the runtime graph.
  *
@@ -20,10 +22,11 @@ export function createLiveQueryEventsRuntime({
   setScorer,
   reloadQueries,
   configureBook,
-  schedule
+  schedule,
+  onError = (message, error) => console.error(`live-query-events: ${message}`, error)
 }) {
   function currentCase(detail) {
-    return !Number(detail.caseId) || Number(detail.caseId) === Number(getCaseNo())
+    return !Number(detail.caseId) || isSameId(detail.caseId, getCaseNo())
   }
 
   function ratingChanged(event) {
@@ -50,26 +53,39 @@ export function createLiveQueryEventsRuntime({
 
   function scorerSelected(event) {
     const detail = event.detail || {}
-    if (Number(detail.caseId) !== Number(getCaseNo()) || !detail.scorer) return
-    schedule(() => setScorer(detail.scorer).then(updateScores))
+    if (!isSameId(detail.caseId, getCaseNo()) || !detail.scorer) return
+    schedule(() =>
+      Promise.resolve(setScorer(detail.scorer))
+        .then(updateScores)
+        .catch((error) => onError("Could not apply the selected scorer", error))
+    )
   }
 
   function queriesNeedReload(event) {
     const detail = event.detail || {}
-    if (Number(detail.caseId) !== Number(getCaseNo())) return
-    schedule(() => reloadQueries(detail.caseId))
+    if (!isSameId(detail.caseId, getCaseNo())) return
+    schedule(() =>
+      Promise.resolve(reloadQueries(detail.caseId)).catch((error) =>
+        onError("Could not reload queries", error)
+      )
+    )
   }
 
   function bookSettingsSaved(event) {
     const detail = event.detail || {}
-    if (Number(detail.caseId) !== Number(getCaseNo())) return
+    if (!isSameId(detail.caseId, getCaseNo())) return
     configureBook({
       bookId: detail.bookId ?? null,
       autoPopulate: detail.autoPopulateBookPairs === true
     })
   }
 
+  let connected = false
+
+  // Page-lifetime listeners; a second connect does not double-register them.
   function connect() {
+    if (connected) return
+    connected = true
     const ratingSource = scoringStore || eventTarget
     const ratingEvent = scoringStore ? "rating-changed" : "ratings:changed"
     ratingSource.addEventListener(ratingEvent, ratingChanged)

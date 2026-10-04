@@ -70,7 +70,8 @@ describe("TeamMemberAutocompleteController", () => {
     expect(controller.isLoading).toBe(true)
     expect(fetch).toHaveBeenCalledWith("/teams/3/suggest_members?query=a%26b", {
       method: "GET",
-      headers: { Accept: "application/json", "X-CSRF-Token": "", "X-Requested-With": "XMLHttpRequest" }
+      headers: { Accept: "application/json", "X-CSRF-Token": "", "X-Requested-With": "XMLHttpRequest" },
+      signal: expect.any(AbortSignal)
     })
 
     await vi.runAllTimersAsync()
@@ -233,6 +234,91 @@ describe("TeamMemberAutocompleteController", () => {
 
     expect(fetch).not.toHaveBeenCalled()
     expect(controller.debounceTimer).toBe(null)
+  })
+
+  describe("overlapping requests", () => {
+    function deferredFetch() {
+      const pending = []
+      const fetch = vi.fn((_url, init) => new Promise((resolve, reject) => {
+        pending.push({
+          init,
+          resolve: (body) => resolve({ ok: true, status: 200, text: async () => JSON.stringify(body) })
+        })
+        init.signal.addEventListener("abort", () => {
+          reject(new DOMException("Aborted", "AbortError"))
+        })
+      }))
+      return { fetch, pending }
+    }
+
+    it("ignores a slow older response once a newer query has been sent", async () => {
+      const { fetch, pending } = deferredFetch()
+      vi.stubGlobal("fetch", fetch)
+      const error = vi.spyOn(console, "error").mockImplementation(() => {})
+      const controller = buildController()
+
+      const older = controller.fetchSuggestions("ad")
+      const newer = controller.fetchSuggestions("ada")
+      expect(pending[0].init.signal.aborted).toBe(true)
+
+      pending[1].resolve([users[1]])
+      await newer
+      pending[0].resolve(users)
+      await older
+
+      expect(error).not.toHaveBeenCalled()
+      expect(controller.suggestions).toEqual([users[1]])
+      expect(controller.suggestionsTarget.querySelectorAll(".autocomplete-item")).toHaveLength(1)
+    })
+
+    it("keeps the newer request's spinner when the older request is aborted", async () => {
+      const { fetch, pending } = deferredFetch()
+      vi.stubGlobal("fetch", fetch)
+      const controller = buildController()
+
+      controller.showLoading()
+      const older = controller.fetchSuggestions("ad")
+      controller.fetchSuggestions("ada")
+      await older
+
+      expect(controller.spinnerTarget.style.display).toBe("inline-block")
+      expect(controller.isLoading).toBe(true)
+      expect(pending).toHaveLength(2)
+    })
+
+    it("drops an in-flight response when input falls below the minimum length", async () => {
+      const { fetch, pending } = deferredFetch()
+      vi.stubGlobal("fetch", fetch)
+      const controller = buildController()
+      controller.inputTarget.value = "ada"
+      controller.search()
+      vi.advanceTimersByTime(300)
+
+      controller.inputTarget.value = "a"
+      controller.search()
+      pending[0].resolve(users)
+      await vi.runAllTimersAsync()
+
+      expect(pending[0].init.signal.aborted).toBe(true)
+      expect(controller.spinnerTarget.style.display).toBe("none")
+      expect(controller.suggestionsTarget.style.display).toBe("none")
+      expect(controller.suggestionsTarget.children).toHaveLength(0)
+    })
+
+    it("aborts an in-flight request on disconnect", async () => {
+      const { fetch, pending } = deferredFetch()
+      vi.stubGlobal("fetch", fetch)
+      const error = vi.spyOn(console, "error").mockImplementation(() => {})
+      const controller = buildController()
+
+      const request = controller.fetchSuggestions("ada")
+      controller.disconnect()
+      await request
+
+      expect(pending[0].init.signal.aborted).toBe(true)
+      expect(error).not.toHaveBeenCalled()
+      expect(controller.request).toBe(null)
+    })
   })
 
   it("works without a spinner target", async () => {

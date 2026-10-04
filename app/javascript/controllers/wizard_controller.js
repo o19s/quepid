@@ -29,9 +29,10 @@ export default class extends Controller {
     "tlsWarning", "tlsReloadLink", "tlsProtocol", "endpointContinue", "loading"
   ]
 
-  static values = { rootUrl: String, caseNo: String }
+  static values = { rootUrl: String, caseNo: String, snapshotSearchUrlTemplate: String }
 
   connect() {
+    this.connected = true
     this.stepIndex = 0
     this.searchEndpoints = []
     this.mapperEngines = []
@@ -41,24 +42,23 @@ export default class extends Controller {
     this.loadWizard()
   }
 
+  disconnect() {
+    this.connected = false
+    if (this.tourTimer) window.clearTimeout(this.tourTimer)
+    this.tourTimer = null
+  }
+
   async loadWizard() {
-    this.loadAttempts = (this.loadAttempts || 0) + 1
-    if (this.loadAttempts > 100) {
+    try {
+      this.adapter = await getWizardCapabilities()
+    } catch (error) {
+      if (!this.connected) return
+      console.error("wizard: could not load capabilities", error)
       this.error = "Unable to load the case wizard. Please refresh the page and try again."
       this.render()
       return
     }
-    try {
-      this.adapter = await getWizardCapabilities()
-    } catch (error) {
-      if (this.loadAttempts < 100) {
-        window.setTimeout(() => this.loadWizard(), 100)
-        return
-      }
-      this.error = error.message
-      this.render()
-      return
-    }
+    if (!this.connected) return
 
     this.capability = this.adapter.capability
     const { settings, endpoints, mapper, user } = this.capability
@@ -77,6 +77,7 @@ export default class extends Controller {
     } catch (error) {
       console.error("wizard: could not load endpoint choices", error)
     }
+    if (!this.connected) return
 
     this.renderEndpointChoices()
     this.applySettings(this.settings.searchEnginePreset, this.settings.searchUrl)
@@ -300,7 +301,7 @@ export default class extends Controller {
         getQuepidRootUrl()
       )
       const snapshotId = importedSnapshots.at(-1)?.id
-      this.settings.searchUrl = `${this.capability.navigation.rootUrl()}/api/cases/${this.capability.navigation.caseNo()}/snapshots/${snapshotId}/search`
+      this.settings.searchUrl = this.snapshotSearchUrlTemplateValue.replaceAll("__SNAPSHOT_ID__", String(snapshotId))
       this.newQueries = [...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))].map((queryString) => ({ queryString }))
       this.staticAlert = "Static data imported successfully."
     } catch {
@@ -340,7 +341,12 @@ export default class extends Controller {
       const isFirstCaseWizard = !currentUser.completedCaseWizard
       user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
-      if (isFirstCaseWizard && typeof window.setupAndStartTour === "function") window.setTimeout(window.setupAndStartTour, 1500)
+      if (isFirstCaseWizard && typeof window.setupAndStartTour === "function") {
+        this.tourTimer = window.setTimeout(() => {
+          this.tourTimer = null
+          window.setupAndStartTour()
+        }, 1500)
+      }
     } catch (error) {
       this.saving = false
       this.showError(formatWizardSaveError(error))

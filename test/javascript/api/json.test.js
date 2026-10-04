@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getJson, postJson, readJson, requestJson, requestJsonResponse } from "api/json"
+import { deleteJson, getJson, patchJson, postJson, putJson, readJson, requestJsonResponse } from "api/json"
 import { HttpError } from "api/http_error"
 
 describe("api/json", () => {
@@ -100,19 +100,51 @@ describe("api/json", () => {
     })
   })
 
-  it("uses an injected transport and still rejects non-JSON failures with status", async () => {
-    const transport = vi.fn(async () => new Response("<html>Unavailable</html>", { status: 503 }))
-    await expect(requestJson("api/cases", {}, transport)).rejects.toMatchObject({
-      name: "HttpError",
-      status: 503,
-      data: null
+  it("rejects non-JSON failures with their status", async () => {
+    stubFetch(new Response("<html>Unavailable</html>", { status: 503 }))
+    await expect(getJson("api/cases")).rejects.toMatchObject({ name: "HttpError", status: 503, data: null })
+  })
+
+  it.each([
+    ["putJson", putJson, "PUT"],
+    ["patchJson", patchJson, "PATCH"],
+    ["postJson", postJson, "POST"]
+  ])("%s sends a JSON body with its verb", async (_name, helper, method) => {
+    stubFetch(new Response('{"ok":1}', { status: 200 }))
+
+    await expect(helper("api/tries/2", { name: "n" })).resolves.toEqual({ ok: 1 })
+
+    expect(fetch.mock.calls[0][1]).toMatchObject({
+      method,
+      body: '{"name":"n"}',
+      headers: { "Content-Type": "application/json", Accept: "application/json", "X-CSRF-Token": "tok" }
     })
-    expect(transport).toHaveBeenCalledWith("api/cases", { headers: { Accept: "application/json" } })
+  })
+
+  it("deleteJson sends a body only when given one", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("", { status: 204 }))))
+
+    await deleteJson("api/cases/1")
+    await deleteJson("api/ratings", { rating: { doc_id: "a" } })
+
+    expect(fetch.mock.calls[0][1].method).toBe("DELETE")
+    expect(fetch.mock.calls[0][1].body).toBeUndefined()
+    expect(fetch.mock.calls[0][1].headers["Content-Type"]).toBeUndefined()
+    expect(fetch.mock.calls[1][1]).toMatchObject({ method: "DELETE", body: '{"rating":{"doc_id":"a"}}' })
+  })
+
+  it("passes fetch options through, but the helper's verb always wins", async () => {
+    stubFetch(new Response("{}", { status: 200 }))
+    const { signal } = new AbortController()
+
+    await getJson("api/x", { signal, method: "DELETE" })
+
+    expect(fetch.mock.calls[0][1]).toMatchObject({ method: "GET", signal })
   })
 
   it("accepts an empty 200 response to a mutation", async () => {
     stubFetch(new Response("", { status: 200 }))
-    await expect(postJson("api/cases/1", {}, { method: "PUT" })).resolves.toBeNull()
+    await expect(putJson("api/cases/1", {})).resolves.toBeNull()
     expect(fetch.mock.calls[0][1].method).toBe("PUT")
   })
 

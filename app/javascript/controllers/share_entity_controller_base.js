@@ -4,6 +4,7 @@ import {
   parseTeamsJson,
   unsharedTeams
 } from "utils/share_case_teams"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Shared base for the "share/unshare on an index page + team page" pattern used by
@@ -110,7 +111,7 @@ export default class extends Controller {
   }
 
   selectSharedTeam(event) {
-    const team = this.renderedSharedTeams.find(team => String(team.id) === String(event.params.teamId))
+    const team = this.renderedSharedTeams.find(team => isSameId(team.id, event.params.teamId))
     if (team) this.toggleRailsSharedSelect(event, team)
   }
 

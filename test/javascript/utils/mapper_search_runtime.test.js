@@ -1,9 +1,13 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { createMapperSearchRuntime } from "utils/mapper_search_runtime"
 
 const response = data => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 200, json: vi.fn(async () => data) })
 
 describe("mapper search runtime", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("loads and maps mapper-based search engines", async () => {
     const request = vi.fn().mockResolvedValue(response({
       mapper_based_search_engines: [{
@@ -31,13 +35,12 @@ describe("mapper search runtime", () => {
         additional_fields: []
       }]
     }))
-    const runtime = createMapperSearchRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createMapperSearchRuntime()
 
     const engines = await runtime.list()
 
-    expect(request).toHaveBeenCalledWith("api/mapper_based_search_engines", {
-      headers: { Accept: "application/json" }
-    })
+    expect(request).toHaveBeenCalledWith("api/mapper_based_search_engines", { method: "GET", headers: { Accept: "application/json", "X-CSRF-Token": "" } })
     expect(engines[0]).toMatchObject({
       id: 8,
       name: "Custom JSON",
@@ -53,7 +56,8 @@ describe("mapper search runtime", () => {
 
   it("surfaces failed API responses", async () => {
     const request = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
-    const runtime = createMapperSearchRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createMapperSearchRuntime()
 
     await expect(runtime.list()).rejects.toThrow("Request failed (500)")
   })

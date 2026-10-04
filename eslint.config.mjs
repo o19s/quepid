@@ -5,6 +5,7 @@
  */
 import js from '@eslint/js';
 import stimulusConventions from './scripts/eslint/stimulus_conventions.mjs';
+import jsonHelpers from './scripts/eslint/json_helpers.mjs';
 import { readFileSync } from 'node:fs';
 
 const stimulusBaseline = JSON.parse(readFileSync(new URL('./config/stimulus_conventions_baseline.json', import.meta.url), 'utf8'));
@@ -34,7 +35,6 @@ export default [
         Stimulus: 'readonly',
         Turbo: 'readonly',
         bootstrap: 'readonly',
-        CodeMirror: 'readonly',
         ClipboardJS: 'readonly',
         Popper: 'readonly',
         ahoy: 'readonly',
@@ -56,6 +56,19 @@ export default [
     files: ['app/javascript/controllers/**/*.js'],
     plugins: { quepid: { rules: { 'stimulus-conventions': stimulusConventions } } },
     rules: { 'quepid/stimulus-conventions': ['error', stimulusBaseline] },
+  },
+  {
+    // HTTP goes through api/: the api/json verb helpers, or apiFetch for non-JSON.
+    files: ['app/javascript/**/*.js'],
+    ignores: ['app/javascript/api/**'],
+    plugins: { 'quepid-http': { rules: { 'json-helpers': jsonHelpers } } },
+    rules: {
+      'quepid-http/json-helpers': 'error',
+      'no-restricted-globals': ['error', {
+        name: 'fetch',
+        message: 'Use the api/json verb helpers, or apiFetch from api/fetch for non-JSON responses.',
+      }],
+    },
   },
   {
     files: LEGACY_SCRIPT_FILES,

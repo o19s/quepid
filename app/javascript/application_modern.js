@@ -20,11 +20,7 @@ import "ahoy"
 // data API and by the consent-toast initializer.
 import "bootstrap_globals"
 
-// Import the new CodeMirror module
-import { setupGlobalCodeMirror } from "modules/editor"
-
-// Initialize CodeMirror global instance
-setupGlobalCodeMirror();
+import { fromTextArea } from "modules/editor"
 
 // Auto-initialize CodeMirror editors when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -56,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
       options.readOnly = textarea.dataset.codemirrorReadonly === 'true';
     }
     
-    CodeMirror.fromTextArea(textarea, options);
+    fromTextArea(textarea, options);
   });
 });
 

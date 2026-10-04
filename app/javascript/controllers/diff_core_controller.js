@@ -1,6 +1,6 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson } from "api/json"
-import { showStatusMessage } from "utils/status_message"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Core snapshot comparison picker.
@@ -141,7 +141,7 @@ export default class extends CoreModalControllerBase {
     )
     if (!deleted) return
 
-    this.selectionValues = this.selectionValues.filter((id) => id !== String(snapshotId))
+    this.selectionValues = this.selectionValues.filter((id) => !isSameId(id, snapshotId))
     if (this.selectionValues.length === 0) this.selectionValues = [""]
     this.deleteId = null
     this.renderSelections()
@@ -182,7 +182,7 @@ export default class extends CoreModalControllerBase {
       select.dataset.action = "change->diff-core#selectChanged"
       this.addOption(select, "", "-- Select Snapshot --")
       this.snapshots.forEach((snapshot) => {
-        this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), selected === String(snapshot.id))
+        this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), isSameId(selected, snapshot.id))
       })
 
       const remove = document.createElement("button")
@@ -214,7 +214,7 @@ export default class extends CoreModalControllerBase {
     this.warningTarget.textContent = "You have selected the same snapshot multiple times. Each snapshot should be unique."
     this.toggleVisible(this.warningTarget, this.hasDuplicateSelections())
     const processing = this.selectionValues.some((id) => {
-      const snapshot = this.snapshots.find((candidate) => String(candidate.id) === String(id))
+      const snapshot = this.snapshots.find((candidate) => isSameId(candidate.id, id))
       return Boolean(snapshot?.has_snapshot_file || snapshot?.hasSnapshotFile)
     })
     this.toggleVisible(this.processingWarningTarget, processing)
@@ -268,7 +268,7 @@ export default class extends CoreModalControllerBase {
     this.warningTarget.classList.add("d-none")
     this.processingWarningTarget.classList.add("d-none")
     this.deleteWarningTarget.classList.add("d-none")
-    showStatusMessage(this.hasAlertTarget ? this.alertTarget : null, { message: "", className: "alert d-none" })
+    this.clearAlert()
   }
 
   showWarning(message) {
@@ -276,8 +276,8 @@ export default class extends CoreModalControllerBase {
     this.warningTarget.classList.remove("d-none")
   }
 
+  // Unlike the base showError, shows the message as-is in the alert.
   showError(message) {
-    const alert = this.hasAlertTarget ? this.alertTarget : null
-    if (alert) showStatusMessage(alert, { message, className: "alert alert-danger" })
+    this.showAlert(message, "danger")
   }
 }

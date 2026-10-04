@@ -32,7 +32,10 @@ import {
   queryLifecycleState,
   ratingChangedQueryId
 } from "utils/query_state"
-import { bootstrapRequest } from "utils/query_lifecycle"
+import { fetchQueries } from "utils/query_lifecycle"
+import { getJson } from "api/json"
+import coreFlash from "utils/core_flash"
+import { errorMessage } from "utils/error_message"
 import {
   buildSearchApiRatedDocsQueryParams as buildSearchApiRatedDocsQueryParamsFor,
   createSearcherFromSettings as createSearcherFor,
@@ -148,7 +151,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
             return liveQueryServices.scoring.getDefault()
           },
           scoreQuery: scoreQuery,
-          promiseApi: framework.promiseApi,
           getFieldSpec: function () {
             return currSettings.createFieldSpec()
           },
@@ -176,9 +178,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
             return svc.showOnlyRated
           },
           RatingsStore: RatingsStore,
-          request: function (options) {
-            return liveQueryServices.ratings.request(options)
-          },
           onRatingChanged: function (changedQueryId) {
             liveQueryServices.ratings.changed(changedQueryId)
           },
@@ -249,7 +248,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
           }
         },
         publish: publishQueryDocuments,
-        promiseApi: framework.promiseApi,
         logger: framework.logger
       }
     },
@@ -268,11 +266,11 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       }
     },
     book: {
-      configure: function (nextCaseNo, response) {
+      configure: function (nextCaseNo, caseData) {
         bookSyncRuntime.configure({
           caseId: nextCaseNo,
-          bookId: response.data.book_id,
-          autoPopulate: response.data.auto_populate_book_pairs
+          bookId: caseData.book_id,
+          autoPopulate: caseData.auto_populate_book_pairs
         })
       },
       reset: function () {
@@ -291,9 +289,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       }
     },
     ratings: {
-      request: function (options) {
-        return runtimeFramework.request(options)
-      },
       changed: function (changedQueryId) {
         if (store && store.scoring) {
           store.scoring.markRatingChanged(changedQueryId)
@@ -335,7 +330,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     getScorables: function () {
       return getLiveQueries()
     },
-    promiseApi: runtimeFramework.promiseApi,
     logger: console,
     onComplete: function (scoreInfo, metadata) {
       svc.latestScoreInfo = scoreInfo
@@ -352,9 +346,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   })
 
   const liveQueryCollectionRuntime = createLiveQueryCollectionRuntime({
-    request: function (caseId) {
-      return runtimeFramework.request(bootstrapRequest(caseId))
-    },
+    fetchQueries: fetchQueries,
     createQuery: function (queryData) {
       return liveQueryFactory.create(queryData)
     },
@@ -447,7 +439,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     onSearchFailed: function (error, generation) {
       if (queryCollectionStore) queryCollectionStore.failSearch(error, generation)
     },
-    promiseApi: runtimeFramework.promiseApi,
     logger: runtimeFramework.logger
   })
 
@@ -462,7 +453,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       runtimeFramework.schedule(callback)
     },
     reject: function (message) {
-      return runtimeFramework.promiseApi.reject(message)
+      return Promise.reject(message)
     }
   })
 
@@ -502,6 +493,10 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     },
     schedule: function (callback) {
       runtimeFramework.schedule(callback)
+    },
+    onError: function (message, error) {
+      console.error(`live-query-events: ${message}`, error)
+      coreFlash.show("error", `${message}: ${errorMessage(error, "unexpected error")}`)
     }
   })
   liveQueryEventsRuntime.connect()
@@ -563,8 +558,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
           detail: detail
         })
       )
-    },
-    promiseApi: runtimeFramework.promiseApi
+    }
   })
 
   const liveQueryStateRuntime = createLiveQueryStateRuntime({
@@ -596,8 +590,8 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       liveQueryCollectionRuntime.bootstrapQueries(newCaseNo).catch(() => {})
     },
     configureBook: function (newCaseNo) {
-      runtimeFramework.get("api/cases/" + newCaseNo).then(function (response) {
-        liveQueryServices.book.configure(newCaseNo, response)
+      getJson("api/cases/" + newCaseNo).then(function (data) {
+        liveQueryServices.book.configure(newCaseNo, data)
       })
     },
     refreshQueryDiff: function (query) {
@@ -610,8 +604,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       promise: function () {
         return liveQueryCollectionRuntime.searchablePromise()
       }
-    },
-    promiseApi: runtimeFramework.promiseApi
+    }
   })
 
   // Rated-docs lookup rules live in app/javascript/utils/rated_docs.js (Vitest-covered);
@@ -741,7 +734,6 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         return query.ratingsStore.createRateableDoc(doc)
       },
       explainDoc: runtimeDomain.documents.explainDoc,
-      promiseApi: runtimeFramework.promiseApi,
       log: runtimeFramework.logger.error
     })
   }
@@ -786,7 +778,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     )
 
     if (!ratedQueryParams) {
-      return runtimeFramework.promiseApi.resolve(null)
+      return Promise.resolve(null)
     }
 
     return runtimeDomain.settings
@@ -1027,8 +1019,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
       normalizeDocExplains: liveQueryServices.runtime.executionOptions.documents.normalize,
       searchApiRatedDocs: searchApiRatedDocs,
       supportsRatedDocsLookup: trySupportsRatedDocsLookup,
-      ratingScale: resolveQueryRatingScale(query),
-      promiseApi: runtimeFramework.promiseApi
+      ratingScale: resolveQueryRatingScale(query)
     })
   }
 

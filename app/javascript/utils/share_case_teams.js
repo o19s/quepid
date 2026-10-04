@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 export function parseTeamsJson(rawJson) {
   try {
     if (typeof rawJson === "string" && rawJson.trim() !== "") {
@@ -32,7 +34,7 @@ export function partitionTeams(teams, caseId) {
     const cases = Array.isArray(team.cases) ? team.cases : []
     const hasCase = cases.some((c) => {
       const id = c.case_id ?? c.caseNo ?? c.id
-      return Number(id) === caseNo
+      return isSameId(id, caseNo)
     })
     if (hasCase) sharedTeams.push(entry)
   })

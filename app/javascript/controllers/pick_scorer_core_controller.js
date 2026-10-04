@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getJson, postJson } from "api/json"
+import { getJson, putJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
@@ -88,7 +88,7 @@ export default class extends CoreModalControllerBase {
       const url = this.caseScorerUrlTemplateValue
         .replaceAll("__CASE_ID__", caseId)
         .replaceAll("__SCORER_ID__", String(scorerId))
-      await postJson(url, {}, { method: "PUT" })
+      await putJson(url, {})
 
       document.dispatchEvent(
         new CustomEvent("pick-scorer:selected", {

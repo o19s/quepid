@@ -9,6 +9,9 @@
 
 <% modal_body = capture do %>
   <p>There are a number of formats for exporting data from Quepid.</p>
+  <p class="alert alert-danger d-none" role="alert" data-export-case-core-target="snapshotsError">
+    Could not load this case's snapshots, so the snapshot lists below are empty. Close and reopen Export to try again.
+  </p>
 
   <div class="mb-3">
     <input data-export-case-core-target="format" type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"

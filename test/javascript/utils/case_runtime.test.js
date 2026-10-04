@@ -12,6 +12,10 @@ const response = (data = {}, status = 200) => ({
 
 describe("case runtime", () => {
   afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  afterEach(() => {
     delete window.quepidSearch
   })
 
@@ -22,7 +26,8 @@ describe("case runtime", () => {
       last_try_number: 2,
       tries: [{ try_number: 2 }]
     }))
-    const runtime = createCaseRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
     const selected = vi.fn()
     document.addEventListener("quepid:case-selected", selected)
 
@@ -58,7 +63,8 @@ describe("case runtime", () => {
 
   it("deletes a case, clearing the selection only when it was the deleted case", async () => {
     const request = vi.fn().mockResolvedValue(response({}, 204))
-    const runtime = createCaseRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
     runtime.select({ caseNo: 7 })
 
     await runtime.delete({ caseNo: 8 })
@@ -71,7 +77,8 @@ describe("case runtime", () => {
 
   it("rejects failed mutations with the action and status, and ignores a blank rename", async () => {
     const request = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 403, json: vi.fn(async () => null) })
-    const runtime = createCaseRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
 
     await expect(runtime.delete({ caseNo: 7 })).rejects.toThrow("Request failed (403)")
     await runtime.rename({ caseNo: 7 }, "")
@@ -80,7 +87,8 @@ describe("case runtime", () => {
 
   it("queues an evaluation, scoped to a try when one is given", async () => {
     const request = vi.fn().mockResolvedValue(response())
-    const runtime = createCaseRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
 
     await runtime.runEvaluation(7, 3)
     await runtime.runEvaluation(7)
@@ -95,7 +103,8 @@ describe("case runtime", () => {
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
       .mockResolvedValueOnce(response())
-    const runtime = createCaseRuntime({ request, now: () => new Date(2026, 8, 28, 21, 40, 5) })
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime({ now: () => new Date(2026, 8, 28, 21, 40, 5) })
     const value = { caseNo: 7, caseName: "Old", nightly: false }
     const renamed = vi.fn()
     const stale = vi.fn()
@@ -112,7 +121,8 @@ describe("case runtime", () => {
     expect(stale).toHaveBeenCalledOnce()
     expect(request.mock.calls[0][1].headers).toEqual({
       "Content-Type": "application/json",
-      Accept: "application/json"
+      Accept: "application/json",
+      "X-CSRF-Token": ""
     })
     expect(request.mock.calls[2][1].body).toContain("2026-09-28 21:40:05")
     document.removeEventListener("quepid:case-renamed", renamed)

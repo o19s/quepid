@@ -1,5 +1,6 @@
 import { paginateQuery, runSearchAll, searchQuery } from "utils/query_service"
 import { isEsLikeEngine } from "utils/search_engines"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Live query/search lifecycle with injected searcher construction,
@@ -23,7 +24,6 @@ export function createQueryRuntime({
   onError,
   parseError,
   publish,
-  promiseApi = Promise,
   logger = console
 }) {
   const runtime = {
@@ -35,8 +35,7 @@ export function createQueryRuntime({
         setDocs,
         onError,
         parseError,
-        logDebug: (...args) => logger.debug(...args),
-        promiseApi
+        logDebug: (...args) => logger.debug(...args)
       })
     },
 
@@ -48,7 +47,7 @@ export function createQueryRuntime({
         if (!query.searcher) {
           const message = `Snapshot not found: ${snapshotId}`
           onError(message)
-          return promiseApi.reject(message)
+          return Promise.reject(message)
         }
 
         return query.searcher.search().then(
@@ -59,13 +58,13 @@ export function createQueryRuntime({
               const message = query.searcher.searchError || "Error loading snapshot results"
               setDocs([], 0)
               onError(message)
-              return promiseApi.reject(message)
+              return Promise.reject(message)
             }
 
             const error = setDocs(query.searcher.docs, query.searcher.numFound)
             if (error) {
               onError(error)
-              return promiseApi.reject(error)
+              return Promise.reject(error)
             }
 
             return undefined
@@ -73,11 +72,11 @@ export function createQueryRuntime({
           () => {
             const message = `Failed to load snapshot: ${snapshotId}`
             onError(message)
-            return promiseApi.reject(message)
+            return Promise.reject(message)
           }
         )
       } catch (error) {
-        return promiseApi.reject(error)
+        return Promise.reject(error)
       }
     },
 
@@ -96,7 +95,7 @@ export function createQueryRuntime({
         query.ratingsReady = true
         publish(query)
         query.ratingsPromise = null
-        return promiseApi.resolve()
+        return Promise.resolve()
       }
 
       const refreshSearchApiRatedDocs = () => {
@@ -153,7 +152,7 @@ export function createQueryRuntime({
 
       query.ratingsPromise = request.catch((error) => {
         query.ratingsPromise = null
-        return promiseApi.reject(error)
+        return Promise.reject(error)
       })
       return query.ratingsPromise
     },
@@ -215,7 +214,6 @@ export function createSearchAllRuntime({
   onSearchStarted,
   onSearchCompleted,
   onSearchFailed,
-  promiseApi = Promise,
   logger = console
 }) {
   return {
@@ -230,7 +228,6 @@ export function createSearchAllRuntime({
         onSearchStarted,
         onSearchCompleted,
         onSearchFailed,
-        promiseApi,
         logger
       })
     }
@@ -249,8 +246,7 @@ export function createTargetedSearchAdapter({
   normalizeDocExplains,
   searchApiRatedDocs,
   supportsRatedDocsLookup,
-  ratingScale,
-  promiseApi = Promise
+  ratingScale
 }) {
   const adapter = {
     queryId,
@@ -316,13 +312,13 @@ export function createTargetedSearchAdapter({
     const ratedIds = Object.keys(query.ratings || {}).filter((id) => id.length > 0)
     adapter.totalRatings = ratedIds.length
     adapter.numFound = ratedIds.length
-    if (!adapter.usesQueryParamsEditor || ratedIds.length === 0) return promiseApi.resolve(adapter)
+    if (!adapter.usesQueryParamsEditor || ratedIds.length === 0) return Promise.resolve(adapter)
 
     adapter.searcher = createSearcherFromSettings(settings, query)
     if (!supportsRatedDocsLookup(selectedTry)) {
       adapter.ratedDocsLookupUnsupported = true
       adapter.numFound = 0
-      return promiseApi.resolve(adapter)
+      return Promise.resolve(adapter)
     }
 
     if (adapter.searcher.type === "searchapi") {
@@ -363,11 +359,11 @@ export function createTargetedSearchAdapter({
         })
     }
 
-    return promiseApi.resolve(adapter)
+    return Promise.resolve(adapter)
   }
 
   adapter.paginate = () => {
-    if (!adapter.searcher) return promiseApi.resolve(adapter)
+    if (!adapter.searcher) return Promise.resolve(adapter)
     adapter.paging = true
 
     if (adapter.defaultList && ["solr", "es", "os"].includes(adapter.searcher.type)) {
@@ -415,7 +411,7 @@ export function createTargetedSearchAdapter({
     adapter.searcher = adapter.searcher.pager()
     if (!adapter.searcher) {
       adapter.paging = false
-      return promiseApi.resolve(adapter)
+      return Promise.resolve(adapter)
     }
     return adapter.searcher.search().then(() => {
       const fieldSpec = settings.createFieldSpec()
@@ -429,7 +425,7 @@ export function createTargetedSearchAdapter({
   // Both resolve once the ratings store has applied the change, so callers
   // can re-render from the updated ratings rather than the pre-request state.
   adapter.rate = (docId, rating) => {
-    const doc = adapter.docs.find((candidate) => String(candidate.id) === String(docId))
+    const doc = adapter.docs.find((candidate) => isSameId(candidate.id, docId))
     if (!doc) return Promise.resolve(false)
     const request = rating == null ? doc.resetRating() : doc.rate(parseInt(rating, 10))
     return request.then(() => {

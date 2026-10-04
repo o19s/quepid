@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createLiveQueryEventsRuntime } from "utils/live_query_events"
 
 describe("live query events runtime", () => {
-  function setup() {
+  function setup({ onError } = {}) {
     const eventTarget = new EventTarget()
     const scoringStore = new EventTarget()
     const query = { queryId: 1, options: {}, setDirty: vi.fn() }
@@ -30,10 +30,11 @@ describe("live query events runtime", () => {
       setScorer,
       reloadQueries,
       configureBook,
-      schedule
+      schedule,
+      onError
     })
     runtime.connect()
-    return { eventTarget, scoringStore, query, scoreAll, schedule, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
+    return { runtime, eventTarget, scoringStore, query, scoreAll, schedule, setScorer, reloadQueries, configureBook, invalidateRatedDocs }
   }
 
   it("invalidates and rescoring on rating changes", () => {
@@ -101,5 +102,45 @@ describe("live query events runtime", () => {
     }))
 
     expect(configureBook).not.toHaveBeenCalled()
+  })
+
+  it("registers handlers once however often it connects", () => {
+    const { runtime, eventTarget, reloadQueries } = setup()
+
+    runtime.connect()
+    eventTarget.dispatchEvent(new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } }))
+
+    expect(reloadQueries).toHaveBeenCalledOnce()
+  })
+
+  it("reports a failed query reload instead of leaving the rejection unhandled", async () => {
+    const onError = vi.fn()
+    const { eventTarget, reloadQueries } = setup({ onError })
+    const failure = new Error("boom")
+    reloadQueries.mockRejectedValueOnce(failure)
+
+    eventTarget.dispatchEvent(new CustomEvent("judgements:queries-need-reload", { detail: { caseId: 7 } }))
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith("Could not reload queries", failure))
+  })
+
+  it("reports a failed scorer change without rescoring", async () => {
+    const onError = vi.fn()
+    const { eventTarget, setScorer, scoreAll } = setup({ onError })
+    const failure = new Error("nope")
+    setScorer.mockRejectedValueOnce(failure)
+
+    eventTarget.dispatchEvent(new CustomEvent("pick-scorer:selected", { detail: { caseId: 7, scorer: { id: 3 } } }))
+    await vi.waitFor(() => expect(onError).toHaveBeenCalledWith("Could not apply the selected scorer", failure))
+    expect(scoreAll).not.toHaveBeenCalled()
+  })
+
+  it("logs failures by default", async () => {
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    const { eventTarget, reloadQueries } = setup()
+    reloadQueries.mockRejectedValueOnce(new Error("boom"))
+
+    eventTarget.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: 7 } }))
+    await vi.waitFor(() => expect(error).toHaveBeenCalledWith("live-query-events: Could not reload queries", expect.any(Error)))
+    error.mockRestore()
   })
 })

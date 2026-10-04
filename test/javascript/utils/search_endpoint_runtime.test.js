@@ -1,9 +1,13 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 
 const response = data => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 200, json: vi.fn(async () => data) })
 
 describe("search endpoint runtime", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   it("loads, maps, and deduplicates endpoints", async () => {
     const request = vi.fn().mockResolvedValue(response({
       search_endpoints: [
@@ -23,13 +27,12 @@ describe("search endpoint runtime", () => {
         { search_endpoint_id: 4, name: "Duplicate" }
       ]
     }))
-    const runtime = createSearchEndpointRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSearchEndpointRuntime()
 
     const endpoints = await runtime.list()
 
-    expect(request).toHaveBeenCalledWith("api/search_endpoints", {
-      headers: { Accept: "application/json" }
-    })
+    expect(request).toHaveBeenCalledWith("api/search_endpoints", { method: "GET", headers: { Accept: "application/json", "X-CSRF-Token": "" } })
     expect(endpoints).toEqual([{
       id: 4,
       name: "Primary",
@@ -48,13 +51,12 @@ describe("search endpoint runtime", () => {
 
   it("fetches case endpoints and exposes engine predicates", async () => {
     const request = vi.fn().mockResolvedValue(response({ search_endpoints: [] }))
-    const runtime = createSearchEndpointRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSearchEndpointRuntime()
 
     await runtime.fetchForCase(12)
 
-    expect(request).toHaveBeenCalledWith("api/cases/12/search_endpoints", {
-      headers: { Accept: "application/json" }
-    })
+    expect(request).toHaveBeenCalledWith("api/cases/12/search_endpoints", { method: "GET", headers: { Accept: "application/json", "X-CSRF-Token": "" } })
     expect(runtime.isEsOrOsEngine("es")).toBe(true)
     expect(runtime.isEsOrOsEngine("os")).toBe(true)
     expect(runtime.isEsOrOsEngine("solr")).toBe(false)
@@ -65,7 +67,8 @@ describe("search endpoint runtime", () => {
 
   it("surfaces failed API responses", async () => {
     const request = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 503 })
-    const runtime = createSearchEndpointRuntime({ request })
+    vi.stubGlobal("fetch", request)
+    const runtime = createSearchEndpointRuntime()
 
     await expect(runtime.list()).rejects.toThrow("Request failed (503)")
   })

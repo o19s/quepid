@@ -33,6 +33,7 @@ function buildModalController(overrides = {}) {
       apiSnapshotSelect: document.createElement("select"),
       apiSnapshotLink: document.createElement("a"),
       apiSnapshotWrapper: document.createElement("span"),
+      snapshotsError: Object.assign(document.createElement("p"), { className: "d-none" }),
       caseLink: document.createElement("a"),
       queriesLink: document.createElement("a"),
       annotationsLink: document.createElement("a"),
@@ -134,6 +135,40 @@ describe("ExportCaseCoreController", () => {
     // Two snapshots can share a name — the date prefix is the only way to tell them apart.
     expect(controller.snapshotSelectTarget.children[1].textContent).toBe("(3/5/26) Weekly")
     expect(controller.snapshotSelectTarget.children[2].textContent).toBe("(1/1/26) Monthly")
+  })
+
+  it.each([
+    ["an HTTP error", () => Promise.resolve({ ok: false, status: 500, statusText: "Server Error", json: () => Promise.resolve(null) })],
+    ["a network failure", () => Promise.reject(new TypeError("Failed to fetch"))]
+  ])("_loadSnapshots shows an error after %s, and clears it on the next successful load", async (_label, failure) => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    apiFetch.mockImplementationOnce(failure)
+    const controller = buildModalController()
+    controller.currentCaseId = "5"
+
+    await controller._loadSnapshots()
+
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.snapshotSelectTarget.children).toHaveLength(1)
+
+    apiFetch.mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
+    await controller._loadSnapshots()
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("_loadSnapshots does not report a stale failure for a case the modal has moved off", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    let fail
+    apiFetch.mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject }))
+    const controller = buildModalController()
+    controller.currentCaseId = "5"
+
+    const loading = controller._loadSnapshots()
+    controller.currentCaseId = "6"
+    fail(new TypeError("Failed to fetch"))
+    await loading
+
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("selectFormat enables submit and shows the warning only for an unsupported detailed pick", () => {

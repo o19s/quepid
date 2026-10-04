@@ -81,21 +81,35 @@ describe("UserActivityController", () => {
 
       const data = await buildController().fetchData(new Date(2026, 0, 1), new Date(2026, 0, 31))
 
-      expect(fetchMock).toHaveBeenCalledWith("/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31", {
+      expect(fetchMock).toHaveBeenCalledWith(`${window.location.origin}/admin/users/1/pulse?data=scores&start=2026-01-01&end=2026-01-31`, {
         method: "GET",
         headers: { Accept: "application/json", "X-CSRF-Token": "" }
       })
       expect(data).toEqual([{ date: "2026-03-02", value: 4 }])
     })
 
-    it("returns no data when the server responds with an error status", async () => {
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 }))
+    it("adds the range to a URL without a query string", () => {
+      const controller = buildController()
+      controller.urlValue = "/admin/users/1/pulse"
+
+      expect(controller.activityUrl(new Date(2026, 0, 1), new Date(2026, 0, 31))).toBe(
+        `${window.location.origin}/admin/users/1/pulse?start=2026-01-01&end=2026-01-31`
+      )
+    })
+
+    it("returns an empty list for a successful response with no activity", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" }))
       expect(await buildController().fetchData(new Date(), new Date())).toEqual([])
     })
 
-    it("returns no data when the request fails", async () => {
+    it("returns null when the server responds with an error status", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 }))
+      expect(await buildController().fetchData(new Date(), new Date())).toBe(null)
+    })
+
+    it("returns null when the request fails", async () => {
       vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")))
-      expect(await buildController().fetchData(new Date(), new Date())).toEqual([])
+      expect(await buildController().fetchData(new Date(), new Date())).toBe(null)
     })
   })
 
@@ -115,8 +129,20 @@ describe("UserActivityController", () => {
       expect(options).toMatchObject({ actions: false, renderer: "svg" })
     })
 
-    it("still renders an empty calendar when the fetch fails, and logs render errors without throwing", async () => {
+    it("shows a load error instead of an empty calendar when the fetch fails", async () => {
       vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")))
+      const vegaEmbed = vi.fn()
+      vi.stubGlobal("vegaEmbed", vegaEmbed)
+      const controller = buildController()
+
+      await controller.initializeHeatmap()
+
+      expect(vegaEmbed).not.toHaveBeenCalled()
+      expect(controller.element.textContent).toBe("Could not load activity data.")
+    })
+
+    it("logs render errors without throwing", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, status: 200, text: async () => "{}" }))
       vi.stubGlobal("vegaEmbed", vi.fn().mockRejectedValue(new Error("vega broke")))
       const controller = buildController()
 

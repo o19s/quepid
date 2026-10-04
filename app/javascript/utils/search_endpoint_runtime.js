@@ -1,5 +1,4 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { getJson } from "api/json"
 import { isEsLikeEngine } from "utils/search_engines"
 
 function mapSearchEndpoint(data) {
@@ -18,12 +17,12 @@ function mapSearchEndpoint(data) {
   }
 }
 
-export function createSearchEndpointRuntime({ request = apiFetch } = {}) {
+export function createSearchEndpointRuntime() {
   let searchEndpoints = []
 
   async function load(url) {
     searchEndpoints = []
-    const data = await requestJson(url, {}, request)
+    const data = await getJson(url)
     const seen = new Set()
     searchEndpoints = (data.search_endpoints || []).map(mapSearchEndpoint).filter((endpoint) => {
       if (seen.has(endpoint.id)) return false

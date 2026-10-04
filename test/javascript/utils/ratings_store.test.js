@@ -1,19 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { deleteJson, postJson, putJson } from "api/json"
 import { RatingsStore } from "utils/ratings_store"
 
+vi.mock("api/json", () => ({
+  deleteJson: vi.fn(() => Promise.resolve(null)),
+  postJson: vi.fn(() => Promise.resolve(null)),
+  putJson: vi.fn(() => Promise.resolve(null))
+}))
+
 describe("RatingsStore", () => {
-  let request
   let onChanged
   let store
 
   beforeEach(() => {
-    request = vi.fn(() => Promise.resolve())
+    vi.clearAllMocks()
     onChanged = vi.fn()
     store = new RatingsStore({
       caseNo: 0,
       queryId: 1,
       ratingsDict: { doc1: "10", doc2: 8 },
-      request,
       onChanged
     })
   })
@@ -32,11 +37,7 @@ describe("RatingsStore", () => {
     expect(store.getRating("doc3")).toBe(5)
     expect(store.version()).toBe(1)
     expect(onChanged).toHaveBeenCalledWith(1)
-    expect(request).toHaveBeenCalledWith({
-      method: "PUT",
-      url: "api/cases/0/queries/1/ratings",
-      data: { rating: { doc_id: "doc3", rating: 5 } }
-    })
+    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", { rating: { doc_id: "doc3", rating: 5 } })
   })
 
   it("updates bulk ratings and bulk resets", async () => {
@@ -48,18 +49,24 @@ describe("RatingsStore", () => {
     expect(store.hasRating("doc3")).toBe(false)
     expect(store.hasRating("doc4")).toBe(false)
     expect(store.version()).toBe(2)
+    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings", { doc_ids: ["doc3", "doc4"], rating: 7 })
+    expect(postJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings/delete", { doc_ids: ["doc3", "doc4"] })
   })
 
-  it("uses the legacy delete request shape", async () => {
+  it("leaves ratings unchanged when the request fails", async () => {
+    putJson.mockRejectedValueOnce(new Error("offline"))
+
+    await expect(store.rateDocument("doc3", 5)).rejects.toThrow("offline")
+
+    expect(store.hasRating("doc3")).toBe(false)
+    expect(onChanged).not.toHaveBeenCalled()
+  })
+
+  it("resets a rating with a JSON DELETE body", async () => {
     await store.resetRating("doc1")
 
     expect(store.hasRating("doc1")).toBe(false)
-    expect(request).toHaveBeenCalledWith({
-      method: "DELETE",
-      url: "api/cases/0/queries/1/ratings",
-      data: JSON.stringify({ rating: { doc_id: "doc1" } }),
-      headers: { "Content-Type": "application/json;charset=UTF-8" }
-    })
+    expect(deleteJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", { rating: { doc_id: "doc1" } })
   })
 
   it("adds rating behavior without replacing document behavior", async () => {
@@ -76,8 +83,6 @@ describe("RatingsStore", () => {
     store.setQueryId(9)
     await store.rateDocument("doc1", 3)
 
-    expect(request).toHaveBeenCalledWith(expect.objectContaining({
-      url: "api/cases/0/queries/9/ratings"
-    }))
+    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/9/ratings", expect.anything())
   })
 })

@@ -1,4 +1,4 @@
-import { requestJsonResponse } from "api/json"
+import { getJson, requestJsonResponse } from "api/json"
 
 /**
  * Request contracts for the core query lifecycle.
@@ -6,75 +6,26 @@ import { requestJsonResponse } from "api/json"
  * Endpoint paths and payloads belong here so Stimulus and the query runtime
  * use the same API without copying service conventions.
  */
-export function bootstrapRequest(caseId) {
-  return {
-    method: "GET",
-    url: `api/cases/${caseId}/queries`,
-    params: { bootstrap: true }
-  }
+
+/** Loads the case's queries with their ratings, as the query list bootstraps them. */
+export function fetchQueries(caseId) {
+  return getJson(`api/cases/${caseId}/queries?bootstrap=true`)
 }
 
-export function createRequest(caseId, queryText) {
-  return {
-    method: "POST",
-    url: `api/cases/${caseId}/queries`,
-    data: { query: { query_text: queryText } }
-  }
-}
-
-export function bulkCreateRequest(caseId, queryTexts) {
-  return {
-    method: "POST",
-    url: `api/bulk/cases/${caseId}/queries`,
-    data: { queries: queryTexts }
-  }
-}
-
-export function positionRequest(caseId, queryId, previousQueryId, reverse) {
-  return {
-    method: "PUT",
-    url: `api/cases/${caseId}/queries/${queryId}/position`,
-    data: { after: previousQueryId, reverse }
-  }
-}
-
-export function deleteRequest(caseId, queryId) {
-  return {
-    method: "DELETE",
-    url: `api/cases/${caseId}/queries/${queryId}`
-  }
-}
-
-export function moveRequest(query, targetCaseId) {
-  return {
-    method: "PUT",
-    url: `api/cases/${query.caseNo}/queries/${query.queryId}`,
-    data: { other_case_id: targetCaseId }
-  }
-}
-
-async function persist(request) {
-  const { data, status } = await requestJsonResponse(request.url, {
-    method: request.method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(request.data)
-  })
-
+// Callers branch on a 204 (no new queries), so these resolve to `{ status, data }`.
+async function persist(method, url, json) {
+  const { data, status } = await requestJsonResponse(url, { method, json })
   return { status, data }
 }
 
 export function persistQuery(caseId, queryText) {
-  return persist(createRequest(caseId, queryText))
+  return persist("POST", `api/cases/${caseId}/queries`, { query: { query_text: queryText } })
 }
 
 export function persistQueries(caseId, queryTexts) {
-  return persist(bulkCreateRequest(caseId, queryTexts))
+  return persist("POST", `api/bulk/cases/${caseId}/queries`, { queries: queryTexts })
 }
 
 export function moveQuery(caseId, queryId, targetCaseId) {
-  return persist(moveRequest({ caseNo: caseId, queryId }, targetCaseId))
-}
-
-export function deleteQuery(caseId, queryId) {
-  return persist(deleteRequest(caseId, queryId))
+  return persist("PUT", `api/cases/${caseId}/queries/${queryId}`, { other_case_id: targetCaseId })
 }

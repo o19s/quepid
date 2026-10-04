@@ -48,15 +48,6 @@ export default class extends Controller {
 
   connect() {
     console.log("Mapper Wizard controller connected")
-    // Editors will be initialized by the global CodeMirror auto-init
-    // Store references when they become available
-    this.numberOfResultsEditor = null
-    this.docsEditor = null
-    this.customHeadersEditor = null
-
-    // Wait for CodeMirror to initialize the textareas
-    setTimeout(() => this.captureEditors(), 500)
-
     // If editing an existing endpoint with mappers, show steps 2 and 3
     if (this.hasExistingMappersValue) {
       this.step2Target.style.display = "block"
@@ -73,16 +64,15 @@ export default class extends Controller {
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
-  captureEditors() {
-    if (this.hasNumberOfResultsMapperTarget && this.numberOfResultsMapperTarget.editor) {
-      this.numberOfResultsEditor = this.numberOfResultsMapperTarget.editor
-    }
-    if (this.hasDocsMapperTarget && this.docsMapperTarget.editor) {
-      this.docsEditor = this.docsMapperTarget.editor
-    }
-    if (this.hasCustomHeadersTarget && this.customHeadersTarget.editor) {
-      this.customHeadersEditor = this.customHeadersTarget.editor
-    }
+  // CodeMirror's auto-init attaches each editor to its textarea, possibly after
+  // this controller connects, so look editors up when they are used.
+  get numberOfResultsEditor() { return this.editorFor("numberOfResultsMapper") }
+  get docsEditor() { return this.editorFor("docsMapper") }
+  get customHeadersEditor() { return this.editorFor("customHeaders") }
+
+  editorFor(target) {
+    const has = this[`has${target[0].toUpperCase()}${target.slice(1)}Target`]
+    return has ? this[`${target}Target`].editor || null : null
   }
 
   // Show the ERB-rendered hint for the chosen HTTP method and use its placeholder
@@ -192,8 +182,6 @@ export default class extends Controller {
       const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
 
       if (data.success) {
-        // Re-capture editors in case they weren't ready before
-        this.captureEditors()
 
         // Update CodeMirror editors
         if (this.numberOfResultsEditor) {
@@ -249,7 +237,6 @@ export default class extends Controller {
   }
 
   async testMapper(mapperType, editor, textarea, resultTarget, button, logsTarget, logsContainerTarget) {
-    this.captureEditors()
 
     const code = editor ? editor.getValue() : textarea.value
     if (!code.trim()) {
@@ -352,7 +339,6 @@ export default class extends Controller {
       return
     }
 
-    this.captureEditors()
     const currentCode = editor ? editor.getValue() : textarea.value
 
     this.setButtonLoading(button, true)
@@ -393,7 +379,6 @@ export default class extends Controller {
       return
     }
 
-    this.captureEditors()
 
     const numberOfResultsMapper = this.numberOfResultsEditor
       ? this.numberOfResultsEditor.getValue()

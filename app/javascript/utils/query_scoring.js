@@ -7,19 +7,12 @@ const LEGACY_UNSCORED_STYLE = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
  *
  * Promise scheduling is injected so callers can supply their own async runtime.
  */
-export function scoreQuery({
-  query,
-  docs,
-  ratingsStore,
-  scorer,
-  promiseApi = Promise,
-  depthOfRating
-}) {
+export function scoreQuery({ query, docs, ratingsStore, scorer, depthOfRating }) {
   const bestDocs = ratingsStore.bestDocs()
   const scorePromise = scorer.score(query, query.numFound, docs, bestDocs, query.options) || 0
   const maxScore = scorer.maxScore() || 1
 
-  return promiseApi.resolve(scorePromise).then((score) => {
+  return Promise.resolve(scorePromise).then((score) => {
     const docsToCheck = query.docs.slice(0, depthOfRating)
     let allRated = true
     let countMissingRatings = 0
@@ -48,7 +41,7 @@ export function scoreQuery({
  * Score a collection and aggregate the same case-level read model that
  * the live-query runtime's latest score shape currently exposes.
  */
-export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logger = console }) {
+export function scoreAllQueries({ scorableCollection, logger = console }) {
   const scores = []
   let allRated = true
   const queryScores = {}
@@ -57,7 +50,7 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
     : Object.values(scorableCollection || {})
 
   const promises = scorables.map((scorable) =>
-    promiseApi.resolve(scorable.score()).then((scoreInfo) => {
+    Promise.resolve(scorable.score()).then((scoreInfo) => {
       if (!scoreInfo.allRated) allRated = false
 
       if (scoreInfo.score === null) {
@@ -79,7 +72,7 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
     })
   )
 
-  return promiseApi.all(promises).then(() => ({
+  return Promise.all(promises).then(() => ({
     allRated,
     score: averageScore(scores),
     queries: queryScores
@@ -95,7 +88,6 @@ export function scoreAllQueries({ scorableCollection, promiseApi = Promise, logg
  */
 export function createCaseScoringRuntime({
   getScorables,
-  promiseApi = Promise,
   logger = console,
   onComplete = () => {}
 }) {
@@ -106,7 +98,6 @@ export function createCaseScoringRuntime({
 
       return scoreAllQueries({
         scorableCollection: collection,
-        promiseApi,
         logger
       }).then((scoreInfo) => {
         onComplete(scoreInfo, { isFullScoreAll })

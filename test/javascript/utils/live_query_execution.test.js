@@ -28,7 +28,6 @@ describe("live query execution runtime", () => {
       documents,
       errors,
       publish: vi.fn(),
-      promiseApi: {},
       logger: {}
     })
 

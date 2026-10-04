@@ -3,6 +3,7 @@ import { getJson, postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { caseNameFromHeader } from "utils/case_header"
+import { isSameId } from "utils/record_identity"
 
 const REDIRECT_DELAY_MS = 1000
 
@@ -95,7 +96,7 @@ export default class extends CoreModalControllerBase {
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must
       // not clobber the now-current case's try dropdown.
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       const tries = Array.isArray(data.tries) ? data.tries : []
 
       tries.forEach((tryItem) => {
@@ -109,7 +110,7 @@ export default class extends CoreModalControllerBase {
         this.trySelectTarget.value = String(this.tryNumber)
       }
     } catch (error) {
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       console.error("clone-case-core: load tries failed", error)
       this.showAlert("Unable to load try history. Please try again.", "danger")
     }

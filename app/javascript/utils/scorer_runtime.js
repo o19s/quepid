@@ -27,11 +27,7 @@ const copyValue = (value) => {
  *     error, depthOfRating.
  * The remaining helpers are runtime internals exposed for tests.
  */
-export function createScorer(
-  data = {},
-  { promiseApi = Promise, schedule, refreshRatedDocs = () => undefined } = {}
-) {
-  const promises = promiseApi
+export function createScorer(data = {}, { schedule, refreshRatedDocs = () => undefined } = {}) {
   const scorer = {}
   const source = { ...data }
 
@@ -168,8 +164,8 @@ export function createScorer(
   function hasLoop() {
     const matches = (scorer.code || "").match(/(while|for)\s*\(/g)
     return matches
-      ? promises.reject("Loops are currently not supported, use `eachDoc` to loop over documents.")
-      : promises.resolve("Passes the loop test.")
+      ? Promise.reject("Loops are currently not supported, use `eachDoc` to loop over documents.")
+      : Promise.resolve("Passes the loop test.")
   }
 
   function checkCode() {

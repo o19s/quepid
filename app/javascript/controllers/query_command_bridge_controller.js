@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Routes query-workspace intents from the shared stores to the
@@ -54,7 +55,7 @@ export default class extends Controller {
     if (queryId == null) return
 
     const capabilities = getCoreCapabilities().queryCapabilities
-    if (caseId != null && String(caseId) !== String(capabilities?.getCaseNo?.())) return
+    if (caseId != null && !isSameId(caseId, capabilities?.getCaseNo?.())) return
     capabilities?.reconcileQueryRemoval?.(queryId, true)
   }
 }

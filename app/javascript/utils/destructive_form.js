@@ -1,3 +1,5 @@
+import { getCsrfToken } from "api/fetch"
+
 /**
  * Builds and submits a hidden form for a destructive (non-GET) Rails action,
  * including the CSRF token and a `_method` override when needed. Shared by
@@ -11,7 +13,7 @@ export function submitDestructiveForm(url, method = "delete") {
   if (!url) return
 
   const normalizedMethod = method.toLowerCase()
-  const token = document.querySelector('meta[name="csrf-token"]')?.content
+  const token = getCsrfToken()
 
   const form = document.createElement("form")
   form.method = "post"

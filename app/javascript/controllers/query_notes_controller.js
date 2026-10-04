@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { getJson, postJson } from "api/json"
+import { getJson, putJson } from "api/json"
 import coreFlash from "utils/core_flash"
 
 export default class extends Controller {
@@ -37,7 +37,7 @@ export default class extends Controller {
     const informationNeed = this.informationNeedTarget.value
 
     try {
-      await postJson(this.urlValue, { query: { notes, information_need: informationNeed } }, { method: "PUT" })
+      await putJson(this.urlValue, { query: { notes, information_need: informationNeed } })
 
       this.loadedValues = { notes, informationNeed }
       coreFlash.show("success", "Success! Your query details have been saved.")

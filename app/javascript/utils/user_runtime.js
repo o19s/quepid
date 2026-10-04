@@ -1,5 +1,4 @@
-import { apiFetch } from "api/fetch"
-import { requestJson } from "api/json"
+import { getJson, putJson } from "api/json"
 
 function normalizeUser(data) {
   return {
@@ -11,7 +10,7 @@ function normalizeUser(data) {
   }
 }
 
-export function createUserRuntime({ request = apiFetch } = {}) {
+export function createUserRuntime() {
   let currentUser = null
 
   return {
@@ -20,7 +19,7 @@ export function createUserRuntime({ request = apiFetch } = {}) {
     },
 
     loadCurrent() {
-      return requestJson("api/users/current", {}, request).then((data) => {
+      return getJson("api/users/current").then((data) => {
         currentUser = normalizeUser(data)
         return currentUser
       })
@@ -28,15 +27,7 @@ export function createUserRuntime({ request = apiFetch } = {}) {
 
     shownIntroWizard() {
       const url = `api/users/${currentUser.id}`
-      return requestJson(
-        url,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ user: { completed_case_wizard: true } })
-        },
-        request
-      ).then(() => {
+      return putJson(url, { user: { completed_case_wizard: true } }).then(() => {
         currentUser.completedCaseWizard = true
         return currentUser
       })

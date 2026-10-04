@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 /**
  * Observable read model for the case query collection.
  *
@@ -120,7 +122,7 @@ export class QueryCollectionStore extends EventTarget {
   remove(queryId) {
     this._liveQueries.delete(String(queryId))
     this._queries.delete(String(queryId))
-    this._displayOrder = this._displayOrder.filter(id => String(id) !== String(queryId))
+    this._displayOrder = this._displayOrder.filter(id => !isSameId(id, queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 

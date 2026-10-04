@@ -4,6 +4,7 @@ import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 import { flashErrorMessage } from "utils/error_message"
+import { isSameId } from "utils/record_identity"
 
 export default class extends Controller {
   static outlets = ["case-toolbar"]
@@ -43,7 +44,7 @@ export default class extends Controller {
       await user.loadCurrent()
       const initialCaseNo = navigation.currentCaseNo()
 
-      const caseChanged = () => initialCaseNo !== caseNo
+      const caseChanged = () => !isSameId(initialCaseNo, caseNo)
       const getSearchEngine = selectedTryNo => {
         const currentSettings = settings.editable()
         const aTry = currentSettings?.getTry?.(selectedTryNo)

@@ -1,10 +1,11 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getJson, postJson } from "api/json"
+import { getJson, putJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
 import { getCoreStores } from "utils/core_store_access"
 import { populateBook } from "utils/book_sync"
+import { isSameId } from "utils/record_identity"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
 const TEAM_ID_PLACEHOLDER = "__TEAM_ID__"
@@ -174,13 +175,13 @@ export default class extends CoreModalControllerBase {
     try {
       const queries = Object.values(getCoreStores().documents.snapshot().queries || {})
       await populateBook({ bookId, caseId: Number(caseId), queries })
-      if (String(this.currentCaseId) !== String(caseId)) return
+      if (!isSameId(this.currentCaseId, caseId)) return
       this.setProgress(false)
       showFlash("success", "Updating Book with Query Doc Pairs.")
       this.hide()
       this.setBusy(false)
     } catch (error) {
-      if (String(this.currentCaseId) !== String(caseId)) return
+      if (!isSameId(this.currentCaseId, caseId)) return
       this.setProgress(false)
       this._handleActionError(error)
     }
@@ -409,7 +410,7 @@ export default class extends CoreModalControllerBase {
       auto_populate_case_judgements: bookId ? this.autoPopulateCaseJudgements : false
     }
 
-    const data = await postJson(url, payload, { method: "PUT" })
+    const data = await putJson(url, payload)
 
     this.savedBookId = bookId
     this.savedAutoPopulateBookPairs = payload.auto_populate_book_pairs
@@ -444,9 +445,9 @@ export default class extends CoreModalControllerBase {
 
     this.setProgress(true)
     try {
-      await postJson(url, {}, { method: "PUT" })
+      await putJson(url, {})
     } catch (error) {
-      if (String(this.currentCaseId) !== String(caseId)) return
+      if (!isSameId(this.currentCaseId, caseId)) return
       if (error instanceof HttpError) {
         error.message = error.data?.statusText || error.data?.error || error.data?.message || `Refresh failed (${error.status})`
       }
@@ -455,7 +456,7 @@ export default class extends CoreModalControllerBase {
 
     // The modal may have been closed and reopened for a different case
     // while this request was in flight — its result no longer applies here.
-    if (String(this.currentCaseId) !== String(caseId)) return
+    if (!isSameId(this.currentCaseId, caseId)) return
 
     this.setProgress(false)
 

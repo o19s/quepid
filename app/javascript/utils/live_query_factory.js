@@ -1,14 +1,13 @@
 /**
  * Construction of a live Query object.
  *
- * The case service provides transport and scoring/model adapters, while this
+ * The case service provides scoring/model adapters, while this
  * factory owns the stable query shape shared by bootstrapped and new queries.
  */
 export function createLiveQueryFactory({
   getCaseNo,
   getShowOnlyRated,
   RatingsStore,
-  request,
   onRatingChanged,
   createModel,
   getQueryState
@@ -48,7 +47,6 @@ export function createLiveQueryFactory({
         caseNo: query.caseNo,
         queryId: query.queryId,
         ratingsDict: query.ratings,
-        request,
         onChanged: onRatingChanged
       })
 

@@ -1,3 +1,5 @@
+import { isSameId } from "utils/record_identity"
+
 /**
  * Orchestration for the remaining live Query state transitions.
  * The service graph supplies the live objects and query callbacks;
@@ -14,13 +16,12 @@ export function createLiveQueryStateRuntime({
   bootstrapQueries,
   configureBook,
   refreshQueryDiff,
-  queryReady,
-  promiseApi = Promise
+  queryReady
 }) {
   return {
     updateScores() {
       Object.values(getQueries()).forEach((query) => query.setDirty())
-      return promiseApi.resolve(scoreAll())
+      return Promise.resolve(scoreAll())
     },
 
     scoreAllDiffs() {
@@ -34,7 +35,7 @@ export function createLiveQueryStateRuntime({
       applySettings(newSettings)
       setLifecycleCaseId(newCaseNo)
 
-      if (getCurrentCaseNo() !== newCaseNo) {
+      if (!isSameId(getCurrentCaseNo(), newCaseNo)) {
         bootstrapScorer(newCaseNo)
         bootstrapQueries(newCaseNo)
         configureBook(newCaseNo)
