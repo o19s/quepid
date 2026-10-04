@@ -7,7 +7,6 @@ import { createUserRuntime } from "utils/user_runtime"
 import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { createCaseRuntime } from "utils/case_runtime"
-import { createScorer } from "utils/scorer_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { requestJsonResponse } from "api/json"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -101,29 +100,18 @@ async function loadCapability(name) {
     name === "bootstrap"
       ? createScorerCatalog({
           request: nativeFramework.request,
-          constructFromData: (data) =>
-            createScorer(data, {
-              promiseApi: nativeFramework.promiseApi,
-              schedule: (callback) => nativeFramework.schedule(callback),
-              refreshRatedDocs: (queryId, count) =>
-                runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
-            }),
-          initialDefault: createScorer(
-            {},
-            {
-              promiseApi: nativeFramework.promiseApi,
-              schedule: (callback) => nativeFramework.schedule(callback),
-              refreshRatedDocs: (queryId, count) =>
-                runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
-            }
-          ),
-          promiseApi: nativeFramework.promiseApi
+          promiseApi: nativeFramework.promiseApi,
+          scorerOptions: {
+            schedule: (callback) => nativeFramework.schedule(callback),
+            refreshRatedDocs: (queryId, count) =>
+              runtimeOwner.queryCapabilities?.refreshRatedDocs(queryId, count)
+          }
         })
       : null
   runtimeOwner.caseRuntime[name] =
     name === "bootstrap"
       ? {
-          core: createCoreCapabilities(services, scorerCatalog, userRuntime),
+          core: createCoreCapabilities(services, userRuntime),
           docCache: runtimeOwner.docCache,
           liveQuery: createLiveQueryCapabilities(services, scorerCatalog)
         }
@@ -279,7 +267,7 @@ function createTuneRelevanceCapabilities(services, searchEndpointRuntime, runtim
   }
 }
 
-function createCoreCapabilities(services, scorerCatalog, userRuntime) {
+function createCoreCapabilities(services, userRuntime) {
   return {
     configuration: {
       setCommunalScorersOnly: (value) => configurationRuntime.setCommunalScorersOnly(value),
@@ -310,9 +298,6 @@ function createCoreCapabilities(services, scorerCatalog, userRuntime) {
       createSearchEndpointLink: (searchEndpointId) =>
         navigationRuntime.createSearchEndpointLink(searchEndpointId),
       proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
-    },
-    scoring: {
-      bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
     }
   }
 }
@@ -326,12 +311,7 @@ function createLiveQueryCapabilities(services, scorerCatalog) {
       isTrySelected: () => settingsRuntime.isTrySelected(),
       previewArgs: (tryNo, queryParams) => settingsRuntime.previewArgs(tryNo, queryParams)
     },
-    scorer: {
-      getDefault: () => scorerCatalog.getDefault(),
-      constructFromData: (scorerData) => scorerCatalog.constructFromData(scorerData),
-      setDefault: (scorer) => scorerCatalog.setDefault(scorer),
-      bootstrap: (caseNo) => scorerCatalog.bootstrap(caseNo)
-    },
+    scorer: scorerCatalog,
     navigation: {
       proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId)
     }

@@ -48,8 +48,7 @@ describe("CoreBootstrapController", () => {
               currentTryNo: vi.fn().mockReturnValue(1),
               complete: vi.fn(),
               needToRedirectQuepidProtocol: vi.fn().mockReturnValue(false)
-            },
-            scoring: { bootstrap: vi.fn() }
+            }
           },
           liveQuery: null,
           docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) }

@@ -258,8 +258,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         return runtimeDomain.scorer.getDefault()
       },
       select: function (scorerData) {
-        const scorer = runtimeDomain.scorer.constructFromData(scorerData)
-        return runtimeDomain.scorer.setDefault(scorer)
+        return runtimeDomain.scorer.select(scorerData)
       },
       bootstrap: function (newCaseNo) {
         return runtimeDomain.scorer.bootstrap(newCaseNo)

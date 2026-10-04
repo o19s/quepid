@@ -28,7 +28,12 @@ export default class extends Controller {
   }
 
   toggleSection(event) {
-    this.sectionBodyTargets.find(body => body.dataset.sectionBody === event.params.section)?.classList.toggle("d-none")
+    const body = this.sectionBodyTargets.find(body => body.dataset.sectionBody === event.params.section)
+    if (!body) return
+    const collapsed = body.classList.toggle("d-none")
+    const icon = event.currentTarget?.querySelector(".bi")
+    icon?.classList.toggle("bi-plus-circle-fill", collapsed)
+    icon?.classList.toggle("bi-dash-circle-fill", !collapsed)
   }
 
   filterEndpoints(event) {
@@ -341,7 +346,7 @@ export default class extends Controller {
       coreFlash.show("error", "Unable to queue evaluation.")
     }).finally(() => {
       this.runEvaluationTarget.disabled = false
-      this.runEvaluationTarget.textContent = "Rerun My Searches in the Background!"
+      this.runEvaluationTarget.textContent = "Rerun My Searches Now in the Background!"
     })
   }
 
@@ -409,6 +414,7 @@ export default class extends Controller {
     }
     const numberOfTries = (this.settings.tries || []).filter(item => !item.deleted).length
     if (numberOfTries <= 1) return
+    if (!window.confirm(`Are you sure you want to delete ${this.activeTry.name}? This cannot be undone.`)) return
     this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
       coreFlash.show("success", "Successfully deleted try!")
       this.reloadSettings()

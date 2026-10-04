@@ -30,7 +30,7 @@ export default class extends Controller {
         this.capabilities.liveQuery.create({ search: runtime, store: stores })
       }
 
-      const { configuration, user, case: caseCapability, settings, navigation, scoring } = this.capabilities.core
+      const { configuration, user, case: caseCapability, settings, navigation } = this.capabilities.core
       const { docCache } = this.capabilities
       const comparisonStore = stores.diff
       const caseNo = this.caseNoValue || 0
@@ -81,7 +81,6 @@ export default class extends Controller {
           if (caseChanged()) {
             comparisonStore.reset()
             docCache.empty()
-            scoring.bootstrap(caseNo)
           }
           comparisonStore.disable()
           docCache.invalidate()

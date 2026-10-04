@@ -56,6 +56,7 @@ Before testing individual features, get oriented:
   - [ ] With no other cases available, confirm the modal shows "Please create another case to move this query to first." with no way to proceed.
   - [ ] Rename or create a case in another tab while this modal is open, then reopen it — confirm the case list reflects the change.
   - [ ] Force a failure — confirm flash "Unable to move query."
+  - [ ] After picking a case, and again after a failed move, press Escape — confirm the modal closes.
 
 ### 4.5 Set per-query options (Query Options)
 
@@ -134,14 +135,14 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 ### 4.12 Tune Relevance drawer — Settings tab
 
 - [ ] **Steps:**
-  1. Switch to **Settings**.
+  1. Switch to **Settings**. Search Endpoints, Evaluate Nightly? and Escape Queries start collapsed (+); click a header to expand it (−).
   2. **Search Endpoints**: pick a different shared endpoint from the dropdown, or use the typeahead search. The list only contains endpoints shared with one of **this case's** teams (`api/cases/:id/search_endpoints`), so on a case that isn't shared with a team it shows "No search endpoints found. Create or share an endpoint to use it here." — share the case and an endpoint with the same team first.
   3. **Endpoint Details**: confirm read-only name/URL/icon show, and the "More" link works; if the endpoint is archived, confirm the warning banner appears.
   4. **Displayed Fields**: change the comma-separated list of fields shown per result, confirm the result rows update.
   5. **Number of Results to Show**: change the numeric value (max 100), confirm the result count changes accordingly.
   6. **Evaluate Nightly?**: toggle on, then click **Rerun My Searches Now in the Background!**.
   7. **Escape Queries**: toggle the Lucene-syntax escaping option and confirm query behavior changes as expected.
-- **Expected:** Each control's change takes effect either immediately or after the next search run, as appropriate.
+- **Expected:** Each control's change takes effect either immediately or after the next search run, as appropriate. The section list scrolls inside the drawer; **Rerun My Searches!** stays pinned at the drawer's bottom (check at a 900px-tall window).
 - **Edge cases:**
   - [ ] Set Number of Results above the max (100) — confirm it's clamped/rejected.
   - [ ] Toggle Evaluate Nightly on, then check that a background job is actually queued (verify via Admin > Job Manager, Part 14, if accessible).
@@ -154,7 +155,7 @@ Covered in depth in Part 5 (Tries / History). Quick smoke test here:
 
 - [ ] **Steps:**
   1. Switch to **History**, confirm links "Visualize your tries", "Check Scores", "Check Ratings" are present and navigate correctly.
-  2. Confirm the try list below renders, with tries color-coded by search URL.
+  2. Confirm the try list below renders, with tries color-coded by search URL. Each row shows the try name, the query params in plain text truncated inline with "...", and "using {endpoint}".
 - **Expected:** "Check Scores" goes to `/cases/:id/scores` — a table of all scores with Scorer/Try Number/Score/Day columns, filterable by scorer, with a bulk **Delete** action (checkboxes + a confirm dialog) and a link to "Understand Score Duplication" (Part 13). "Check Ratings" goes to `/cases/:id/ratings` — a searchable (`query, doc id, or rating`) table of every rating with Rating ID/Query/Doc ID/Rating/User/Created/Updated columns.
 - **Edge cases:**
   - [ ] On the Scores page, select several scores via checkboxes, confirm **Delete** is disabled until at least one is checked, then confirm deletion requires a confirm dialog and actually removes just those score rows (not the whole case).

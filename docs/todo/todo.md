@@ -33,38 +33,14 @@ Product bugs marked *Playwright MCP* were verified in a May 2026 headed pass and
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [MIGRATION] P3 I0 C1 — Minor Tune Relevance and Missing Documents differences
+### [MIGRATION] P3 I1 C2 — Workbench panes assume a 60px header
 
-Found in a before/after replay against a September `main` (`86e3de9f`) and confirmed in the pre-migration source (`be9b319a`, `devQueryParams.html`, `queryParamsHistory.html`, `searchEngineName.js`):
-- The Settings tab opens with every section expanded; the original starts Evaluate Nightly, Escape Queries and Search Endpoints collapsed (scenario 4.12).
-- The background-run button reads "Rerun My Searches in the Background!"; the original says "Rerun My Searches Now in the Background!".
-- Missing Documents names the static engine "Static"; the original says "Static File" (scenario 4.9).
-- History tab rows show the try's query params in bold italic with "..." on its own line; the original shows them plain and truncated inline (scenario 4.13).
-- At a 900px-tall viewport, **Rerun My Searches!** sits below the fold of the scrollable drawer; the original keeps it outside the scrolling area at the drawer's bottom (scenario 4.11).
-
-### [MIGRATION] P2 I1 C2 — Core modals ignore Escape after an in-modal control re-renders
-
-Picking a case calls `move_query_core_controller.js#renderCases`, which rebuilds the list buttons. The clicked button is replaced, so focus falls back to `<body>`. Bootstrap only handles Escape when focus is inside the modal, so Escape no longer closes it (the close button still works). Keep focus on the newly rendered active item. Found on 2026-10-02 while verifying scenario 4.4. This is a regression: the Angular modals (angular-ui-bootstrap 2.5) listened for Escape on the document, so focus location did not matter.
-
-The same focus loss happens after a failed **Move to …** (the footer button is disabled during the request) and after **Refresh ratings from book** in the Frog Report (scenarios 4.4, 6.9, 16.4). A freshly opened modal closes on Escape normally. Fix it once for core modals, for example by returning focus to the modal element when the focused control is disabled or removed, rather than per controller.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — core_smoke E2E fails against current dev data
-
-Five `test/playwright/core_smoke.spec.ts` tests fail identically on `HEAD` (`71ff9ad1`) and with the 2026-10-02 fixes applied:
-- Screenshot diffs: open case, explain modal, query results render, and leave a judgement (about 4–5% of pixels).
-- A timeout in "rating updates the query score…": the rating option is detached while the test clicks it.
-
-The fixture case 219 has drifted: it now has 21 queries and a "Try 31 - Try 2" header. Reseed or restore the fixture before treating these as regressions. Don't regenerate the baselines against the drifted data.
+`panes.css` sizes `.pane_main` and `.pane_east` as `calc(100% - 60px)`, but the BS5 core header is about 74px tall. Both panes extend about 14px past the viewport. The Tune Relevance drawer still fits **Rerun My Searches!** only because its 15px bottom padding absorbs the overflow, so a taller header pushes the button below the fold again. Size the panes from the header's actual height, for example with a flex column layout, instead of a hard-coded offset. Check the main pane's scrolling and the drawer before and after.
 
 ### [PREEXISTING] P0 I1 C3 — Scorer sandboxing
 
 Client scorer code still executes through `new Function()`; evaluate a Web
 Worker or equivalent browser isolation. V8/MiniRacer remains the batch path.
-
-### [PREEXISTING] P1 I3 C3 — Scorer contract drift
-
-`app/javascript/utils/scorer_runtime.js` and `scorer_catalog.js` need a canonical
-shared API and migration guidance.
 
 ### [PREEXISTING] P2 I0 C2 — Accessibility
 
@@ -73,14 +49,6 @@ Score and rating controls still convey state by color alone; add text or icons s
 axe-core flags two unlabeled `<select>`s as critical (`select-name`): the API snapshot picker in the Export modal (`shared/_export_case_core_modal.html.erb`) and each snapshot picker in Compare Snapshots (`diff_core_controller.js` builds a `<label>` that isn't tied to its select). Both were unlabeled on `main` too. Associate the labels (`for`/`id` or `aria-label`). The same scan reports `heading-order` in the Export, Compare Snapshots and Judgements modals (scenario 16.4).
 
 The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` elements without `href`, so they can't be reached with the keyboard. Make them buttons. Not compared against `main`.
-
-### [PREEXISTING] P2 I0 C1 — Try delete has no confirm dialog
-
-`deleteTry()` in `tune_relevance_controller.js` has the null and active-try guards, but one click on Delete still removes the try permanently. Add a confirm step.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C2 — Workbench clips at phone width
-
-At 375px the core workbench clips on the right with no scroll: the toolbar's Compare snapshots / Import / Share case links, each query row's result count and expand chevron, and the end of the case title are cut off. 768px is fine. Phone width isn't an official target and this wasn't compared against `main`; let the toolbar and query-row header wrap.
 
 ### [PREEXISTING] P2 I0 C1 — Explain Query Copy gives no feedback
 
@@ -368,7 +336,7 @@ review.
 
 **Fix direction:** After destroy, set `last_try_number` to `tries.maximum(:try_number)` (or null), or forbid deleting the current try. Add a test that deletes the latest try, reloads the case, and verifies the next core bootstrap and score update both succeed.
 
-**Frontend/UX** (confirm dialog): see [Frontend cleanup after Angular removal](#frontend-cleanup-after-angular-removal).
+**Frontend/UX:** the Tune Relevance try-delete action now asks for confirmation, but it still refuses only the *selected* try, not the latest one, so the backend fix above is still needed.
 
 ---
 

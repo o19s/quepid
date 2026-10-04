@@ -146,6 +146,7 @@ describe("TuneRelevanceController", () => {
     delete window.bootstrap
     vi.useRealTimers()
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
   })
 
   describe("declared Stimulus actions", () => {
@@ -157,10 +158,15 @@ describe("TuneRelevanceController", () => {
       const body = document.createElement("div")
       body.dataset.sectionBody = "fields"
       controller.sectionBodyTargets = [body]
-      controller.toggleSection({ params: { section: "fields" } })
+      const header = document.createElement("div")
+      header.innerHTML = '<i class="bi bi-dash-circle-fill"></i>'
+      const icon = header.querySelector(".bi")
+      controller.toggleSection({ params: { section: "fields" }, currentTarget: header })
       expect(body.classList.contains("d-none")).toBe(true)
-      controller.toggleSection({ params: { section: "fields" } })
+      expect(icon.className).toBe("bi bi-plus-circle-fill")
+      controller.toggleSection({ params: { section: "fields" }, currentTarget: header })
       expect(body.classList.contains("d-none")).toBe(false)
+      expect(icon.className).toBe("bi bi-dash-circle-fill")
     })
 
     it("filters endpoints from the search input and submits renames without navigating", () => {
@@ -603,13 +609,26 @@ describe("TuneRelevanceController", () => {
       expect(errorFlash()[0]).toMatch(/can not delete the currently active try \(Try 1\)/)
     })
 
-    it("deletes a non-active try and reloads", async () => {
+    it("does not delete a try when the confirm is cancelled", () => {
       const { controller, capability, settings } = mount()
+      vi.stubGlobal("confirm", vi.fn(() => false))
+      controller.showTryDetails(settings.tries[1])
+
+      controller.deleteTry()
+
+      expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining(settings.tries[1].name))
+      expect(capability.settings.deleteTry).not.toHaveBeenCalled()
+    })
+
+    it("deletes a non-active try after confirming and reloads", async () => {
+      const { controller, capability, settings } = mount()
+      vi.stubGlobal("confirm", vi.fn(() => true))
       controller.showTryDetails(settings.tries[1])
 
       controller.deleteTry()
       await flush()
 
+      expect(window.confirm).toHaveBeenCalled()
       expect(capability.settings.deleteTry).toHaveBeenCalledWith(2)
       expect(flash.show).toHaveBeenCalledWith("success", "Successfully deleted try!")
     })
@@ -617,6 +636,7 @@ describe("TuneRelevanceController", () => {
     it("reports a failed delete", async () => {
       const { controller, capability, settings } = mount()
       capability.settings.deleteTry.mockRejectedValue(new Error("x"))
+      vi.stubGlobal("confirm", vi.fn(() => true))
       controller.showTryDetails(settings.tries[1])
 
       controller.deleteTry()
@@ -684,7 +704,7 @@ describe("TuneRelevanceController", () => {
       expect(flash.show).toHaveBeenCalledWith("success", "Evaluation queued successfully.")
       expect(assign).toHaveBeenCalledWith("/")
       expect(controller.runEvaluationTarget.disabled).toBe(false)
-      expect(controller.runEvaluationTarget.textContent).toBe("Rerun My Searches in the Background!")
+      expect(controller.runEvaluationTarget.textContent).toBe("Rerun My Searches Now in the Background!")
       vi.unstubAllGlobals()
     })
 

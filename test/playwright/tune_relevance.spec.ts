@@ -45,6 +45,12 @@ test('generated endpoint and history controls route through Stimulus', async ({ 
 
   const root = page.locator('[data-controller="tune-relevance"]');
   await page.locator('[data-tune-relevance-tab-param="engineSettings"]').click();
+  // Search Endpoints, Evaluate Nightly and Escape Queries start collapsed, as they did in the Angular drawer.
+  for (const section of ['search', 'nightly', 'escape']) {
+    await expect(page.locator(`[data-tune-relevance-target="sectionBody"][data-section-body="${section}"]`)).toBeHidden();
+  }
+  await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
+  await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
   await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Routing test');
   await page.locator('[data-tune-relevance-target="endpointSuggestions"] button').click();
   await expect(root).toHaveAttribute('data-selected-endpoint', '987654');

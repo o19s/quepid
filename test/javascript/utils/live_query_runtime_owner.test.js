@@ -31,8 +31,7 @@ function buildOwner({ store, selectedTry = { searchEngine: "solr" }, isTrySelect
       },
       scorer: {
         getDefault: vi.fn(() => ({ getColors: () => [] })),
-        constructFromData: vi.fn(),
-        setDefault: vi.fn(),
+        select: vi.fn(),
         bootstrap: vi.fn()
       },
       navigation: { proxyUrlFor: vi.fn() }

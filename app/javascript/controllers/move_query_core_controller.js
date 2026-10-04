@@ -54,6 +54,8 @@ export default class extends CoreModalControllerBase {
     const caseId = event.params.caseId
     this.selectedCase = this.cases.find((acase) => String(acase.case_id) === String(caseId)) || null
     this.renderCases()
+    // renderCases replaced the clicked button; keep focus on its replacement.
+    this.caseListTarget.querySelector(".active")?.focus()
   }
 
   async submit(event) {

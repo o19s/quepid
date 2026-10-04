@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import {
   CASE_ID,
   dynamicRegions,
@@ -299,6 +299,26 @@ test.describe('core layout golden paths', () => {
     // identity and rating captured from the live case state before any mutation.
     let restoreState: { queryId: number; docId: string; rating: number | null } | undefined;
 
+    // Starts watching the expanded result lists. The returned function resolves
+    // once at least one list has been rebuilt and none has changed for quietMs.
+    async function watchResultsRebuilds(page: Page, quietMs = 500): Promise<() => Promise<void>> {
+      await page.evaluate((quiet) => {
+        (window as unknown as { __resultsSettled?: Promise<void> }).__resultsSettled = new Promise<void>((resolve) => {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const observer = new MutationObserver(() => {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+              observer.disconnect();
+              resolve();
+            }, quiet);
+          });
+          document.querySelectorAll('[data-search-results-target="results"]')
+            .forEach((list) => observer.observe(list, { childList: true }));
+        });
+      }, quietMs);
+      return () => page.evaluate(() => (window as unknown as { __resultsSettled: Promise<void> }).__resultsSettled);
+    }
+
     test.afterEach(async ({ page }) => {
       if (!restoreState) return;
       const { queryId, docId, rating } = restoreState;
@@ -346,23 +366,14 @@ test.describe('core layout golden paths', () => {
       await resultRating.click();
       const visiblePopover = () => page.locator('.popover:visible').last();
       await expect(visiblePopover()).toBeVisible();
+      // One rating publishes several store changes (the rating itself, then
+      // async scoring and the case summary), and each one rebuilds every
+      // result row. A popover opened on a row that is about to be replaced
+      // disappears mid-click, so wait until the list stops rebuilding.
+      const resultsSettled = await watchResultsRebuilds(page);
       await visiblePopover().locator('.reset').click();
       await expect(page.locator('.popover:visible')).toHaveCount(0);
-      // RESET rerenders the result row; wait for the replacement Stimulus
-      // controller to reconnect its Bootstrap popover before clicking again.
-      await page.waitForFunction(() => {
-        const trigger = document.querySelector('search-result .single-rating');
-        const application = (window as unknown as {
-          Stimulus?: {
-            getControllerForElementAndIdentifier: (element: Element, identifier: string) => {
-              handle?: { instance?: unknown };
-            } | undefined;
-          };
-        }).Stimulus;
-        return Boolean(
-          trigger && application?.getControllerForElementAndIdentifier(trigger, 'rating-popover')?.handle?.instance
-        );
-      });
+      await resultsSettled();
 
       const scoreBeforeRating = await queryScore.textContent();
       const caseScoreBeforeRating = await caseScore.textContent();

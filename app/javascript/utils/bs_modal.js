@@ -66,6 +66,28 @@ export function showStackedModal(wrapper, modal) {
   }
 }
 
+/**
+ * Bootstrap only closes a modal on Escape while focus is inside it. When an
+ * in-modal control is re-rendered or disabled, focus falls back to <body> and
+ * Escape stops working. In that case, hand the keypress to the topmost open
+ * modal so Bootstrap's own handler runs and still honors `keyboard: false`.
+ *
+ * @param {Document} [doc]
+ */
+export function installModalEscapeFallback(doc = document) {
+  doc.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || event.defaultPrevented) return
+    if (doc.activeElement && doc.activeElement !== doc.body) return
+
+    // Layout modals precede dynamic ones, which are appended to <body> as they
+    // open, so the last shown modal in DOM order is the topmost.
+    const modals = doc.querySelectorAll(".modal.show")
+    const modal = modals[modals.length - 1]
+    if (!modal || modal.contains(event.target)) return
+    modal.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+  })
+}
+
 /** Restore the outer modal's scroll lock after an inner modal closes. */
 export function restoreModalBodyLock() {
   if (document.querySelector(".modal.show")) document.body.classList.add("modal-open")

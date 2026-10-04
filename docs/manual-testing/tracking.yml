@@ -230,10 +230,10 @@ parts:
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js"]
       "4.4":
         title: "Move a query to another case"
-        last_run: 2026-10-03T12:44:30Z
-        result: pass
-        notes: "Covered live: 'Move Query to Another Case' modal, footer becomes 'Move to MCP17 empty', the query moves to case 471 (deleted there afterwards); a forced 500 flashes 'Unable to move query.' and the query stays. Observed: after the failed move focus falls to <body>, so Escape no longer closes the modal (Cancel works). Not covered live: no-other-cases message, case list refresh across tabs."
-        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/quepid_search.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
+        last_run: 2026-10-03T23:29:24Z
+        result: pass_with_fixes
+        notes: "Covered live with a headless Playwright script on case 219: after picking a case, focus stays on the new active item and Escape closes the modal; after a forced-500 Move, focus is on <body> and Escape still closes the modal. FOUND AND FIXED: Escape was ignored once focus fell to <body> (migration regression; the Angular modals listened for Escape on the document). Fixed for all core modals by installModalEscapeFallback in app/javascript/utils/bs_modal.js, plus refocusing the active case in move_query_core_controller.js. Also verified Escape after a failed Frog Report refresh. Not covered live: a successful move, no-other-cases message, case list refresh across tabs."
+        paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/quepid_search.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
         last_run: 2026-10-03T12:46:30Z
@@ -272,22 +272,22 @@ parts:
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-10-03T17:47:02Z
-        result: pass
-        notes: "Covered live (branch-ui-diff vs main f77c17d4, case 8) after Track D moved the knob row into an ERB <template>: typing &boost=##boost## in the Query tab (not saved) adds a 'boost:' numeric knob that accepts 7, same as main. Branch-wide, not from this change: main pins Rerun My Searches! at the drawer bottom; the branch puts it below the fold of the scrollable drawer at 900px. Not covered live: rerunning with the knob. Re-run on the branch only, after removing the write-only pollHandle field: same result."
-        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
+        last_run: 2026-10-03T23:29:24Z
+        result: pass_with_fixes
+        notes: "Covered live at 1400x900 on cases 219 and 2: Rerun My Searches! is pinned at the drawer bottom (y 866-899) on Query, Tuning Knobs and Settings, outside the scrolling tab. FOUND AND FIXED: it sat below the fold (y 941); #dev-settings is now a flex column with the canvas taking the remaining height (core-additions.css). Not covered live: creating and rerunning a knob."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-10-02T21:23:26Z
-        result: pass
-        notes: "Covered live via Playwright MCP after DRY #13 on static case 219: the troubleshooting link names 'Static File' from the server engine catalog. Not covered live: editing settings, switching endpoints."
-        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js"]
+        last_run: 2026-10-03T23:29:24Z
+        result: pass_with_fixes
+        notes: "Covered live on cases 219 and 2: Search Endpoints, Evaluate Nightly? and Escape Queries start collapsed with a + icon and expand with a - icon; the background button reads 'Rerun My Searches Now in the Background!'; the expanded list scrolls inside the drawer. FOUND AND FIXED: all sections started expanded, the icon never changed, and the button dropped 'Now' (migration differences from devQueryParams.html). Not covered live: editing settings, switching endpoints, queuing the background run."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-03T17:47:02Z
-        result: pass
-        notes: "Covered live (branch-ui-diff vs main f77c17d4, case 8, 5 tries) after Track D moved the history row into an ERB <template>: five rows with URL-bucket classes, hover shows '...', which opens the Try 4 details modal without navigating. The template clone's DOM is identical to the previous innerHTML row. Branch-wide, not from this change: rows show the query in bold italic with '...' on its own line; main shows it plain and truncated inline. Not covered live this pass: the History links, Scores/Ratings pages. Re-run on the branch only, after removing the write-only pollHandle field: same result."
-        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js"]
+        last_run: 2026-10-03T23:29:24Z
+        result: pass_with_fixes
+        notes: "Covered live on case 219: the history row shows 'Try 31', 'q=*:*...' in plain text inline, then 'using E2E Static Fixture Endpoint'. FOUND AND FIXED: the query params were bold italic with '...' on its own line, because the shared history-row span style also matched the query span (core-additions.css). Not covered live: the History links, Scores/Ratings pages, try details."
+        paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
         last_run: 2026-10-03T13:00:00Z

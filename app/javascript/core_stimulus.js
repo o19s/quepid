@@ -63,8 +63,11 @@ import WizardController from "controllers/wizard_controller"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
 import PaneController from "controllers/pane_controller"
+import { installModalEscapeFallback } from "utils/bs_modal"
 
 Turbo.session.drive = false
+
+installModalEscapeFallback()
 
 application.register("case-rename", CaseRenameController)
 application.register("case-toolbar", CaseToolbarController)

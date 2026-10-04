@@ -6,6 +6,27 @@ const copyValue = (value) => {
   return Object.fromEntries(Object.entries(value).map(([key, entry]) => [key, copyValue(entry)]))
 }
 
+/**
+ * The one scorer implementation, shared by the case UI (via scorer_catalog.js)
+ * and the server (lib/javascript_scorer.rb evaluates this file in MiniRacer).
+ * Keep it a dependency-free ES module whose only export is createScorer, and
+ * never use browser globals: the server strips `export` and runs it as-is.
+ *
+ * Input is scorer API JSON (snake_case: code, scale, scale_with_labels,
+ * show_scale_labels, name, scorer_id, communal, owner_*, teams).
+ *
+ * What callers may rely on:
+ *   score(query, total, docs, bestDocs, options) -> Promise of a number,
+ *     "zsr" (no results), "--" (no ratings) or null (error in scorer.error).
+ *     docs: [{ doc, hasRating(), getRating() }]; bestDocs: [{ id, rating }];
+ *     query: { queryId, ratedDocs }.
+ *   checkCode()            -> Promise rejecting with a message on bad code.
+ *   getColors(), showScaleLabel(value), teamNames() for rating UIs.
+ *   Fields: scorerId, name, displayName, code, scale, scaleWithLabels,
+ *     showScaleLabels, colors, communal, owned, ownerId, ownerName, teams,
+ *     error, depthOfRating.
+ * The remaining helpers are runtime internals exposed for tests.
+ */
 export function createScorer(
   data = {},
   { promiseApi = Promise, schedule, refreshRatedDocs = () => undefined } = {}

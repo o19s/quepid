@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBsModal, getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
+import { createBsModal, getOrCreateBsModal, hideBsModal, installModalEscapeFallback, showBsModal } from "utils/bs_modal"
 
 describe("bs_modal", () => {
   let element
@@ -86,5 +86,58 @@ describe("bs_modal", () => {
 
   it("hideBsModal does nothing when the instance is missing", () => {
     expect(() => hideBsModal(null)).not.toThrow()
+  })
+
+  describe("installModalEscapeFallback", () => {
+    let doc
+    let received
+
+    const addModal = () => {
+      const modal = doc.createElement("div")
+      modal.className = "modal show"
+      modal.innerHTML = "<button type=\"button\">Pick</button>"
+      modal.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") received.push(modal)
+      })
+      doc.body.appendChild(modal)
+      return modal
+    }
+    const pressEscape = (target = doc.body) =>
+      target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+
+    beforeEach(() => {
+      // A separate document keeps each test's listener from leaking into the next.
+      doc = document.implementation.createHTMLDocument("")
+      received = []
+      installModalEscapeFallback(doc)
+    })
+
+    it("hands Escape to the open modal when focus has fallen back to the body", () => {
+      const modal = addModal()
+      pressEscape()
+      expect(received).toEqual([modal])
+    })
+
+    it("picks the last shown modal, which is the topmost stacked one", () => {
+      addModal()
+      const inner = addModal()
+      pressEscape()
+      expect(received).toEqual([inner])
+    })
+
+    it("leaves Escape to Bootstrap when focus is still inside the modal", () => {
+      const modal = addModal()
+      const button = modal.querySelector("button")
+      button.focus()
+      pressEscape(button)
+      expect(received).toEqual([modal])
+    })
+
+    it("ignores other keys and Escape with no open modal", () => {
+      pressEscape()
+      addModal()
+      doc.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+      expect(received).toEqual([])
+    })
   })
 })

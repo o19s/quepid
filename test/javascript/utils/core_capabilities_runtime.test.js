@@ -113,9 +113,9 @@ describe("core runtime capabilities", () => {
       user: expect.any(Object),
       case: expect.any(Object),
       settings: expect.any(Object),
-      navigation: expect.any(Object),
-      scoring: expect.any(Object)
+      navigation: expect.any(Object)
     }))
+    expect(capabilities.core).not.toHaveProperty("scoring")
     expect(capabilities.liveQuery).toEqual({
       create: expect.any(Function),
       framework: expect.any(Object),

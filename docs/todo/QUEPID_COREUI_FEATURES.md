@@ -319,6 +319,24 @@ Scorers run in **two environments** that share one runtime:
 | **Client-side** | Browser `new Function`, scheduled with `queueMicrotask` | Rating change, search complete | [`scorer_runtime.js`](../../app/javascript/utils/scorer_runtime.js) → `runCode()` |
 | **Server-side** | MiniRacer V8 sandbox | Background evaluation, nightly runs | [`javascript_scorer.rb`](../../lib/javascript_scorer.rb) loads the same `scorer_runtime.js` |
 
+### Scorer Contract
+
+Two modules own scorers; nothing else builds or loads them.
+
+- [`scorer_runtime.js`](../../app/javascript/utils/scorer_runtime.js) — `createScorer(apiJson, options)` is the only scorer implementation. Its header comment lists the fields and methods callers may rely on (`score()`, `checkCode()`, `getColors()`, `scorerId`, `scale`, ...). It must stay a dependency-free module with a single export because the server evaluates it too.
+- [`scorer_catalog.js`](../../app/javascript/utils/scorer_catalog.js) — the case's default scorer: `getDefault()`, `select(apiJson)` and `bootstrap(caseNo)`. It builds every scorer with one set of `createScorer` options.
+
+The live-query runtime reaches the catalog as `domain.scorer` and exposes it as `queryCapabilities.setScorer(apiJson)` / `getDefaultScorer()`. `changeSettings()` bootstraps the scorer when the case changes; `core-bootstrap` does not.
+
+Migration from the older shape:
+
+| Before | Now |
+|--------|-----|
+| `catalog.constructFromData(data)` then `catalog.setDefault(scorer)` | `catalog.select(data)` |
+| `createScorerCatalog({ constructFromData, initialDefault })` | `createScorerCatalog({ request, promiseApi, scorerOptions })` |
+| `capabilities.core.scoring.bootstrap(caseNo)` in `core-bootstrap` | removed: `changeSettings()` already bootstraps, so the case's scorers were fetched twice |
+| `domain.scorer` wrapper object re-exposing the catalog | `domain.scorer` is the catalog |
+
 ### Server-Side Differences
 
 The server evaluates `scorer_runtime.js` itself, so every helper (`avgRating100`, `pass`, `assert`, `max`, ...) behaves the same in both places. `JavascriptScorer` adapts the stored snapshot to the runtime's inputs:

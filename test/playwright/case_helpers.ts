@@ -12,7 +12,7 @@ import { expect, Page } from '@playwright/test';
 //
 // "E2E Static Fixture (10s of Queries)" (case 219) is a clone of case 6 ("10s of Queries") —
 // same 20 queries and ratings, but its try's search endpoint is Quepid's own `static` engine,
-// pointing at a snapshot of case 6's results (`/api/cases/219/snapshots/35/search`) instead of
+// pointing at a snapshot of case 6's results (`/api/cases/219/snapshots/2/search`) instead of
 // the real external `quepid-solr.dev.o19s.com` host case 6 (and case 1, case 5 before it) used.
 // That external dependency was the root cause of most Playwright screenshot flakiness in this
 // suite: JSONP round-trips to a shared, uncontrolled third-party-ish host, contended further
