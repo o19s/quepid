@@ -490,18 +490,6 @@ breaking later judgement, snapshot comparison, and document identity behavior.
 Solr and Search API results, then add an extractor-to-`SnapshotDoc` regression
 test for both Elasticsearch and OpenSearch.
 
-### [PREEXISTING] P1 I1 C2 — Search-endpoint updates accept unauthorized team IDs
-
-**Location:** `app/controllers/search_endpoints_controller.rb:59-74`
-
-The HTML update action preserves hidden teams, but resolves submitted team IDs
-with `Team.find` rather than scoping them to `current_user.teams`. A user who
-can edit an endpoint can submit another team's ID and attach that endpoint to
-the foreign team.
-
-**Fix direction:** Resolve submitted IDs through `current_user.teams.where(id:
-...)`, reject or report unauthorized IDs, and add a negative controller test.
-
 ### [PREEXISTING] P1 I1 C3 — Mapper wizard function extraction is not lexical-aware
 
 **Location:** `app/services/mapper_wizard_service.rb:265-296`

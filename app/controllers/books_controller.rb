@@ -113,10 +113,12 @@ class BooksController < ApplicationController
   def new
     # we actually support passing in starting point configuration for a book
     @book = if params[:book]
-              Book.new(book_params)
+              Book.new(book_params.except(:team_ids, :ai_judge_ids))
             else
               Book.new
             end
+
+    assign_book_memberships if params[:book]
 
     if params[:scorer_id]
       scorer = current_user.scorers_involved_with.find_by(id: params[:scorer_id])
@@ -141,7 +143,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = accessible_ai_judges.joins(teams: :books).where(teams_books: { book_id: @book.id })
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -155,8 +157,9 @@ class BooksController < ApplicationController
   end
 
   def create
-    @book = Book.new(book_params)
+    @book = Book.new(book_params.except(:team_ids, :ai_judge_ids))
     @book.owner = current_user
+    assign_book_memberships
 
     # Handle scorer selection
     if book_params[:scorer_id].blank?
@@ -189,28 +192,14 @@ class BooksController < ApplicationController
     end
   end
 
-  # rubocop:disable Metrics/AbcSize
   def update
-    # this logic is crazy, but basically we don't want to touch the teams that are associated with
-    # an book that the current_user CAN NOT see, so we clear out of the relationship all the ones
-    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
-    team_ids_belonging_to_user = current_user.teams.pluck(:id)
-    preserved_team_ids = @book.team_ids - team_ids_belonging_to_user
-    selected_team_ids = Array(book_params[:team_ids]).compact_blank.map(&:to_i)
-    @book.team_ids = (preserved_team_ids + selected_team_ids).uniq
-
-    # checkboxes suck
-    @book.ai_judges.clear
-    ai_judge_ids = Array(book_params[:ai_judge_ids]).compact_blank
-    ai_judge_ids.each do |ai_judge_id|
-      @book.ai_judges << User.find(ai_judge_id)
-    end
+    assign_book_memberships
 
     # Handle scorer selection
     apply_scorer_to_book(@book, book_params[:scorer_id]) if book_params[:scorer_id].present?
 
     @book.update(book_params.except(
-                   :team_ids, :ai_judges, :link_the_case, :origin_case_id, :scorer_id,
+                   :team_ids, :ai_judge_ids, :link_the_case, :origin_case_id, :scorer_id,
                    :delete_export_file, :delete_import_file,
                    :auto_populate_book_pairs,
                    :auto_populate_case_judgements
@@ -221,13 +210,12 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = User.only_ai_judges.left_joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = accessible_ai_judges.joins(teams: :books).where(teams_books: { book_id: @book.id })
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
   end
 
-  # rubocop:enable Metrics/AbcSize
   def destroy
     @book.really_destroy
     redirect_to books_path, notice: 'Book is deleted'
@@ -431,6 +419,19 @@ class BooksController < ApplicationController
   end
 
   private
+
+  def accessible_ai_judges
+    User.only_ai_judges.joins(:teams)
+      .where(teams: { id: current_user.teams.select(:id) }).distinct
+  end
+
+  def assign_book_memberships
+    available_judges = accessible_ai_judges
+    judges = available_judges.find(Array(book_params[:ai_judge_ids]).compact_blank.uniq)
+    hidden_judges = @book.ai_judges.where.not(id: available_judges.select(:id)).to_a
+    TeamSharing.new(current_user).assign_teams(@book, book_params[:team_ids])
+    @book.ai_judges = (hidden_judges + judges).uniq
+  end
 
   def apply_scorer_to_book book, scorer_id
     scorer = current_user.scorers_involved_with.find_by(id: scorer_id)

@@ -61,7 +61,7 @@ module Api
 
           @book = Book.new
 
-          @book.teams << Team.find(team_id)
+          TeamSharing.new(@current_user).assign_teams(@book, [ team_id ])
           options = {}
           book_importer = ::BookImporter.new @book, @current_user, params_to_use, options
 

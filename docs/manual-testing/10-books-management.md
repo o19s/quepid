@@ -40,8 +40,10 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 - **Expected:** All settings persist correctly.
 - **Edge cases:**
   - [ ] With an import or export file already attached, check "Delete Import File" / "Delete Export File" and save — confirm the file is purged and the checkbox becomes disabled afterward.
-  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm teams/AI-judges you can't see are preserved rather than silently removed (best tested with two accounts).
+  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm hidden teams and AI judges are preserved. AI judge checkboxes should only list judges from your own teams that share the book; saving the unchanged visible selection must succeed (best tested with two accounts).
   - [ ] Change the Rating Scale after judgements already exist on the old scale — confirm existing judgements still display sensibly rather than breaking.
+
+  - [ ] Submit a foreign team ID or an inaccessible/human AI judge ID in a create/update request — expect 404, no new book and no changes to existing memberships.
 
 ### 10.4 Book Overview / Show page
 

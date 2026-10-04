@@ -7,9 +7,17 @@ class TeamSharing
 
   ASSOCIATIONS = { 'Case' => :cases, 'Book' => :books, 'Scorer' => :scorers, 'SearchEndpoint' => :search_endpoints }.freeze
 
-  def initialize user, team
+  def initialize user, team = nil
     @user = user
-    @team = user.teams.find(team.id)
+    @team = user.teams.find(team.id) if team
+  end
+
+  # Resolve every submitted ID before changing membership. Hidden existing teams
+  # belong to other collaborators and must survive edits to the visible checkboxes.
+  def assign_teams record, submitted_ids
+    selected = @user.teams.find(Array(submitted_ids).compact_blank.uniq)
+    hidden = record.teams.where.not(id: @user.teams.select(:id)).to_a
+    record.teams = (hidden + selected).uniq
   end
 
   def share record

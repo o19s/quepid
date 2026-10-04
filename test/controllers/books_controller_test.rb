@@ -9,6 +9,87 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'settings omit hidden judges and save the visible selection without losing hidden assignments' do
+    login_user_for_integration_test user
+    visible_team = user.teams.first
+    hidden_team = Team.create!(name: 'Hidden judge team')
+    hidden_judge = judge_judy.dup
+    hidden_judge.name = 'Hidden judge'
+    hidden_judge.save!
+    hidden_judge.teams = [ hidden_team ]
+    judge_judy.teams = [ visible_team ]
+    james_bond_movies.update!(owner: user)
+    james_bond_movies.teams = [ visible_team, hidden_team ]
+    james_bond_movies.ai_judges = [ judge_judy, hidden_judge ]
+
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+    get edit_book_path(james_bond_movies)
+    assert_response :success
+    assert_select 'input[type=checkbox][name="book[ai_judge_ids][]"][checked][value=?]', judge_judy.id.to_s
+    assert_select 'input[type=checkbox][name="book[ai_judge_ids][]"][value=?]', hidden_judge.id.to_s, count: 0
+
+    patch book_path(james_bond_movies), params: {
+      book: { name: 'Saved settings', team_ids: [ visible_team.id ], ai_judge_ids: [ judge_judy.id ] },
+    }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'Saved settings', james_bond_movies.reload.name
+    assert_equal [ judge_judy.id, hidden_judge.id ].sort, james_bond_movies.ai_judge_ids.sort
+    assert_equal [ visible_team.id, hidden_team.id ].sort, james_bond_movies.team_ids.sort
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
+  test 'update preserves hidden AI judges and accepts visible AI judges' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    james_bond_movies.ai_judges = [ judge_judy ]
+    judge_judy.teams.clear
+    patch book_path(james_bond_movies), params: { book: { ai_judge_ids: [] } }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal [ judge_judy.id ], james_bond_movies.reload.ai_judge_ids
+
+    judge_judy.teams << user.teams.first
+    patch book_path(james_bond_movies), params: { book: { ai_judge_ids: [ judge_judy.id ] } }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal [ judge_judy.id ], james_bond_movies.reload.ai_judge_ids
+  end
+
+  test 'create rejects a foreign team without creating a book' do
+    login_user_for_integration_test user
+    foreign = Team.create!(name: 'Foreign team')
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: { name: 'Unauthorized', scorer_id: communal_scorer.id, team_ids: [ foreign.id ] } }
+    end
+    assert_response :not_found
+  end
+
+  test 'update rejects a foreign team without changing existing memberships' do
+    login_user_for_integration_test user
+    original = book.team_ids.sort
+    foreign = Team.create!(name: 'Foreign team')
+    patch book_path(book), params: { book: { team_ids: [ foreign.id ] } }
+    assert_response :not_found
+    assert_equal original, book.reload.team_ids.sort
+  end
+
+  test 'create rejects a human submitted as an AI judge' do
+    login_user_for_integration_test user
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: { name: 'Unauthorized judge', scorer_id: communal_scorer.id, ai_judge_ids: [ user.id ] } }
+    end
+    assert_response :not_found
+  end
+
+  test 'update rejects an inaccessible AI judge before changing memberships' do
+    login_user_for_integration_test user
+    judge_judy.teams.clear
+    original = book.team_ids.sort
+    patch book_path(book), params: { book: { team_ids: [], ai_judge_ids: [ judge_judy.id ] } }
+    assert_response :not_found
+    assert_equal original, book.reload.team_ids.sort
+  end
+
   describe 'running judge judy' do
     setup { register_default_openai_stubs }
 

@@ -48,8 +48,9 @@ class SearchEndpointsController < ApplicationController
   end
 
   def create
-    @search_endpoint = SearchEndpoint.new(search_endpoint_params)
+    @search_endpoint = SearchEndpoint.new(search_endpoint_params.except(:team_ids))
     @search_endpoint.owner = @current_user
+    TeamSharing.new(current_user).assign_teams(@search_endpoint, search_endpoint_params[:team_ids])
     restore_cloned_credential
 
     @search_endpoint.save
@@ -57,21 +58,7 @@ class SearchEndpointsController < ApplicationController
   end
 
   def update
-    params_to_use = search_endpoint_params
-
-    params_to_use[:team_ids].compact_blank!
-
-    # this logic is crazy, but basically we don't want to touch the teams that are associated with
-    # an endpoint that the current_user CAN NOT see, so we clear out of the relationship all the ones
-    # they can see, and then repopulate it from the list of ids checked.  Checkboxes suck.
-    team_ids_belonging_to_user = current_user.teams.pluck(:id)
-    teams = @search_endpoint.teams.reject { |t| team_ids_belonging_to_user.include?(t.id) }
-    @search_endpoint.teams.clear
-    params_to_use[:team_ids].each do |team_id|
-      teams << Team.find(team_id)
-    end
-
-    @search_endpoint.teams.replace(teams)
+    TeamSharing.new(current_user).assign_teams(@search_endpoint, search_endpoint_params[:team_ids])
 
     filtered_params = search_endpoint_params.except(:team_ids)
     if filtered_params[:basic_auth_credential].present? &&

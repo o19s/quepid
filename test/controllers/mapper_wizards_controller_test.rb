@@ -10,6 +10,46 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
+  test 'invalid save rolls back sharing changes and retains wizard state' do
+    search_endpoint.update!(owner: user)
+    search_endpoint.teams = [ user.teams.first ]
+    original_team_ids = search_endpoint.team_ids
+    original_name = search_endpoint.name
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+
+    post mapper_wizard_save_url(search_endpoint), params: {
+      name: 'Rejected update', api_method: '', team_ids: []
+    }, as: :json
+
+    assert_response :unprocessable_content
+    assert_not response.parsed_body['success']
+    assert_not_empty response.parsed_body['errors']
+    assert_equal original_team_ids, search_endpoint.reload.team_ids
+    assert_equal original_name, search_endpoint.name
+    assert MapperWizardState.exists?(wizard_state.id)
+  end
+
+  test 'save rejects a foreign team without creating an endpoint' do
+    foreign = Team.create!(name: 'Foreign team')
+    assert_no_difference 'SearchEndpoint.count' do
+      post mapper_wizard_save_url('new'), params: {
+        name: 'Unauthorized', endpoint_url: 'https://example.com/search', team_ids: [ foreign.id ]
+      }, as: :json
+    end
+    assert_response :not_found
+  end
+
+  test 'save clears visible teams and preserves hidden teams' do
+    visible = user.teams.first
+    hidden = Team.create!(name: 'Hidden team')
+    search_endpoint.teams = [ visible, hidden ]
+    post mapper_wizard_save_url(search_endpoint), params: {
+      name: search_endpoint.name, team_ids: []
+    }, as: :json
+    assert_response :success
+    assert_equal [ hidden.id ], search_endpoint.reload.team_ids
+  end
+
   test 'should get show for new endpoint' do
     get new_mapper_wizard_url
     assert_response :success

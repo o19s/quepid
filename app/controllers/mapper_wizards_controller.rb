@@ -210,14 +210,14 @@ class MapperWizardsController < ApplicationController
       basic_auth_credential: basic_auth_credential
     )
 
-    if @search_endpoint.save
-      # Assign teams if team_ids provided
-      if params[:team_ids].present?
-        team_ids = params[:team_ids].map(&:to_i)
-        teams = current_user.teams.where(id: team_ids)
-        @search_endpoint.teams = teams
-      end
+    saved = SearchEndpoint.transaction do
+      TeamSharing.new(current_user).assign_teams(@search_endpoint, params[:team_ids]) if params.key?(:team_ids)
+      raise ActiveRecord::Rollback unless @search_endpoint.save
 
+      true
+    end
+
+    if saved
       clear_wizard_state
       render json: { success: true, redirect_url: search_endpoint_url(@search_endpoint) }
     else

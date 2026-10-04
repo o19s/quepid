@@ -518,9 +518,9 @@ parts:
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
-        last_run: 2026-09-14T18:37:50Z
-        result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main. Entered an Endpoint Name; confirmed 'Proxy requests through Quepid' defaults on and the sole team (OSC) is auto-checked for a new endpoint. Saved — redirected to the endpoint's Show page (/search_endpoints/21) with search_engine correctly forced to 'searchapi' and the two mapper functions combined into one Custom Code Mapper blob. Deleted the test endpoint afterward via its Edit page's Delete button. Did not test invalid-headers/missing-URL validation, the fresh-session-on-return edge case, the nonexistent-search_endpoint_id redirect, or the masked-credential-on-reopen edge case this pass."
+        last_run: 2026-10-04T23:10:00Z
+        result: pass_with_fixes
+        notes: "Playwright MCP review-fix sample on an existing disposable endpoint: unchecked team plus API method forced blank in the outgoing request returns 422 with visible validation error; saved membership and wizard state remain. Removing the interception and retrying succeeds, clears visible sharing and redirects to Show. Inspected error before/after pair and success screenshot in .playwright-mcp/team-assignment; records removed. Fetch/generate/refine, new endpoint, credentials and hidden-team success flows deferred this sample."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.11":
         title: "Quepid proxy: SSRF guard"
@@ -638,9 +638,9 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb"]
       "10.3":
         title: "Edit book settings"
-        last_run: 2026-10-02T15:02:15Z
-        result: pass
-        notes: "Covered live via Playwright MCP: Edited name, guidelines, Show Rank and implicit judgement setting; persistence verified. Not covered live: AI judge configuration, uploads and permission branches."
+        last_run: 2026-10-04T23:10:00Z
+        result: pass_with_fixes
+        notes: "Playwright MCP review-fix sample: unchanged visible AI judge selection saves successfully; hidden judge checkbox is omitted while both hidden team and judge assignments persist. Inspected Settings and save-result before/after pairs in .playwright-mcp/team-assignment. Disposable records removed. Other settings toggles, file purge and unauthorized submissions deferred this sample; controller tests cover authorization."
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb"]
       "10.4":
         title: "Book Overview / Show page"

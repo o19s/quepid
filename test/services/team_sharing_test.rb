@@ -16,6 +16,18 @@ class TeamSharingTest < ActiveSupport::TestCase
     Thread.current[:ahoy] = @previous_ahoy
   end
 
+  test 'form assignment replaces visible teams and preserves hidden teams' do
+    user = users(:random)
+    book = books(:book_of_comedy_films)
+    hidden = Team.create!(name: 'Hidden team')
+    book.teams = [ user.teams.first, hidden ]
+    service = TeamSharing.new(user)
+    service.assign_teams(book, [ '', user.teams.last.id.to_s, user.teams.last.id.to_s ])
+    assert_equal [ hidden.id, user.teams.last.id ].sort, book.reload.team_ids.sort
+    service.assign_teams(book, [])
+    assert_equal [ hidden.id ], book.reload.team_ids
+  end
+
   test 'case sharing includes its endpoint and is idempotent' do
     user = users(:joey)
     team = teams(:case_finder_shared_team)

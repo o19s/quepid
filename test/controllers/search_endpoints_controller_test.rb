@@ -4,12 +4,28 @@ require 'test_helper'
 
 class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
   let(:user) { users(:joey) }
-  let(:team) { teams(:shared) }
+  let(:team) { user.teams.first }
 
   setup do
     @search_endpoint = search_endpoints(:first_for_case_with_two_tries)
 
     login_user_for_integration_test user
+  end
+
+  test 'create rejects a foreign team' do
+    foreign = Team.create!(name: 'Foreign team')
+    assert_no_difference 'SearchEndpoint.count' do
+      post search_endpoints_url, params: { search_endpoint: { name: 'Unauthorized', team_ids: [ foreign.id ] } }
+    end
+    assert_response :not_found
+  end
+
+  test 'update rejects a foreign team without changing memberships' do
+    foreign = Team.create!(name: 'Foreign team')
+    original = @search_endpoint.team_ids.sort
+    patch search_endpoint_url(@search_endpoint), params: { search_endpoint: { team_ids: [ foreign.id ] } }
+    assert_response :not_found
+    assert_equal original, @search_endpoint.reload.team_ids.sort
   end
 
   test 'should get index' do

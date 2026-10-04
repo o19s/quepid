@@ -159,3 +159,12 @@ The **Proxy requests through Quepid** option (and the case wizard's Proxy mode) 
   - [ ] A public hostname that DNS-resolves to a private address is blocked (the check is on resolved addresses, not the literal URL).
   - [ ] Confirm a saved endpoint's Basic Auth credential is attached by the proxy server-side and is never present in the response or browser network tab (Part 7.3).
   - [ ] In a local dev setup where the search engine itself runs on localhost/Docker network (e.g. Solr on `localhost:8983`), note that Proxy mode will refuse it and CORS mode must be used — confirm the error message makes that diagnosable.
+
+Team assignment security checks (7.2, 7.3 and mapper wizard save): submit a team
+ID outside your memberships and confirm 404 without changing sharing. On wizard
+save, uncheck all visible teams and confirm hidden teams remain shared. API book
+import must likewise reject a foreign `team_id` without creating a book.
+
+For an existing mapper endpoint, submit an invalid API method while changing
+team selections. Confirm the validation error leaves the saved teams and
+endpoint attributes unchanged and retains the wizard state for correction.
