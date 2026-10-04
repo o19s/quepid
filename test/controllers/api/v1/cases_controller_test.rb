@@ -56,8 +56,30 @@ module Api
         end
 
         describe 'analytics' do
-          test 'posts event' do
-            expects_any_ga_event_call
+          test 'posts the regular case event for an existing case owner' do
+            login_user doug
+            count = doug.cases.count
+            assert_operator count, :>, 0
+            expects_any_ga_event_call 'cases:created_a_case', {
+              category: 'Cases',
+              action:   'Created a Case',
+              label:    'Another case',
+              value:    count + 1,
+            }
+
+            post :create, params: { case: { case_name: 'Another case' } }
+
+            assert_response :ok
+          end
+
+          test 'posts the first case event' do
+            assert_empty joe.cases
+            expects_any_ga_event_call 'cases:created_first_case', {
+              category: 'Cases',
+              action:   'Created First Case',
+              label:    joe.email,
+              value:    1,
+            }
 
             case_name = 'test case'
 

@@ -18,7 +18,7 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       @team.cases.delete(kase)
       flash[:notice] = "Case #{kase.case_name} removed from the team."
-      Analytics::Tracker.track_case_deleted_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+      Analytics::Tracker.track_case_deleted_event(current_user, kase)
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
@@ -189,7 +189,7 @@ class TeamsController < ApplicationController
     if @team.cases.exists?(kase.id)
       kase.owner = current_user
       kase.mark_archived!
-      Analytics::Tracker.track_case_archived_event(current_user, kase) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
+      Analytics::Tracker.track_case_archived_event(current_user, kase)
       flash[:notice] = "Case #{kase.case_name} archived."
     else
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
@@ -286,8 +286,6 @@ class TeamsController < ApplicationController
 
   # Looks up an existing user by email and adds to the team if found.
   # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   # rubocop:disable Metrics/MethodLength
   def add_member
     email = params[:email].to_s.strip.downcase
@@ -299,7 +297,7 @@ class TeamsController < ApplicationController
       else
         @team.members << user
         flash[:notice] = "#{user.fullname} added to the team."
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, user) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
+        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, user)
       end
       redirect_to team_path(@team) and return
     end
@@ -320,7 +318,7 @@ class TeamsController < ApplicationController
       @team.members << member unless @team.members.exists?(member.id)
 
       if @team.save
-        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_member_added_to_team_event)
+        Analytics::Tracker.track_member_added_to_team_event(current_user, @team, member)
         message = member.skip_invitation.present? ? "Please share the invite link with #{member.email} directly so they can join." : "Invitation email was sent to #{member.email}"
         flash[:notice] = message
       else
@@ -334,8 +332,6 @@ class TeamsController < ApplicationController
     end
   end
   # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
   # rubocop:enable Metrics/MethodLength
 
   # Rename the team (server-side form).

@@ -55,13 +55,6 @@ The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` e
 
 ---
 
-## [MIGRATION-FOLLOWUP] JavaScript defects and cleanup
-
-These items were rechecked against the current source when consolidating the
-sampled JavaScript review. They are source findings, not live browser
-reproductions. Each item's marker was checked against the pre-migration source
-(`be9b319a`).
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals
 
 `core_vendor.js` puts `Tether` and `Shepherd` on `window` because `tour.js`
@@ -203,10 +196,6 @@ review.
 
 ## [PREEXISTING] P0 — Product bugs
 
-### [PREEXISTING] P0 I1 C2 — Deleting the latest try bricks the case (backend)
-
----
-
 ### [PREEXISTING] P0 I1 C3 — Try delete orphans scores
 
 **Observed:** Scores keep a stale `try_id` after the try is deleted. (The `PUT /api/cases/:id/scores` 500 on an orphaned `last_score` is fixed — `same_score_source?` now treats a nil try as a different source.)
@@ -218,10 +207,6 @@ review.
 ---
 
 ## [PREEXISTING] P0 — Security
-
-### [PREEXISTING] P0 I1 C2 — Public cases and snapshots allow unauthenticated mutation
-
----
 
 ### [PREEXISTING] P0 I1 C2 — User API IDOR and cross-account write path
 
@@ -668,9 +653,8 @@ defines `archive!` but `BooksController` calls `update(archived: true)`
 directly. `not_archived` includes `nil` on `Case` but not on `SearchEndpoint`.
 Case archive/unarchive actions are copied between `CasesController` and
 `TeamsController`. One concern with `archive!`, `unarchive!`, `archived`,
-`not_archived` fixes naming and scope semantics. While there: the
-`if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(…)` guard is
-repeated 8 times; the tracker is always loaded, so it can go.
+`not_archived` fixes naming and scope semantics. The redundant analytics
+availability guards were removed in the analytics-layer cleanup.
 
 Not worth acting on: search-response parsing exists in Ruby
 (`FetchService#extract_docs_*`) and JS (splainer-search) because evaluations run

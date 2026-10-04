@@ -41,22 +41,29 @@ module Users
       end
 
       test 'tracks a signup analytics event' do
-        expects_any_ga_event_call
-
         invitee = invite_user
 
-        perform_enqueued_jobs do
-          put user_invitation_url, params: {
-            user: {
-              invitation_token:      invitee.stored_raw_invitation_token,
-              name:                  'Invited Person',
-              password:              'super secret password',
-              password_confirmation: 'super secret password',
-              agreed:                true,
-            },
-          }
+        assert_difference -> { Ahoy::Event.where(name: 'users:signed_up').count }, 1 do
+          perform_enqueued_jobs do
+            put user_invitation_url, params: {
+              user: {
+                invitation_token:      invitee.stored_raw_invitation_token,
+                name:                  'Invited Person',
+                password:              'super secret password',
+                password_confirmation: 'super secret password',
+                agreed:                true,
+              },
+            }
+          end
         end
 
+        event = Ahoy::Event.where(name: 'users:signed_up').order(:id).last
+        assert_equal({
+          'category' => 'Users',
+          'action'   => 'Signed Up',
+          'label'    => invitee.email,
+          'value'    => nil,
+        }, event.properties)
         assert_redirected_to team_path(team)
       end
 

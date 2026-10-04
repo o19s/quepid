@@ -45,7 +45,7 @@ class CasesController < ApplicationController
   def archive
     @case.owner = current_user
     @case.mark_archived!
-    Analytics::Tracker.track_case_archived_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
+    Analytics::Tracker.track_case_archived_event(current_user, @case)
     flash[:notice] = "Case #{@case.case_name} archived."
 
     redirect_to cases_path
@@ -64,7 +64,7 @@ class CasesController < ApplicationController
   def destroy
     case_name = @case.case_name
     @case.really_destroy
-    Analytics::Tracker.track_case_deleted_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+    Analytics::Tracker.track_case_deleted_event(current_user, @case)
     flash[:notice] = "Case #{case_name} deleted."
 
     redirect_to cases_path

@@ -19,6 +19,14 @@ module Api
 
         describe 'populate empty book' do
           test 'creates all query doc pairs' do
+            book.query_doc_pairs.destroy_all
+            expects_any_ga_event_call 'books:populated_empty_book', {
+              category: 'Books',
+              action:   'Populated empty book',
+              label:    book.name,
+              value:    book.id,
+            }
+
             data = {
               book_id:         book.id,
               case_id:         acase.id,
@@ -92,6 +100,14 @@ module Api
 
         describe 'refresh a existing book' do
           test 'updates the position and doc fields' do
+            assert_not_empty book.query_doc_pairs
+            expects_any_ga_event_call 'books:refreshed_a_book', {
+              category: 'Books',
+              action:   'Refreshed a book',
+              label:    book.name,
+              value:    book.id,
+            }
+
             data = {
               book_id:         book.id,
               case_id:         acase.id,

@@ -49,9 +49,9 @@ class TeamSharing
     when Case
       Analytics::Tracker.track_case_shared_event @user, record, @team
     when Book
-      Analytics::Ahoy.create_event(category: 'Books', action: 'Shared a Book', label: record.name, value: nil)
+      Analytics::Tracker.track_book_shared_event @user, record, @team
     when SearchEndpoint
-      Analytics::Ahoy.create_event(category: 'Search Endpoints', action: 'Shared a Search Endpoint', label: record.fullname, value: nil)
+      Analytics::Tracker.track_search_endpoint_shared_event @user, record, @team
     when Scorer
       Analytics::Tracker.track_scorer_shared_event @user, record, @team
     end
