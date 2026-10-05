@@ -11,18 +11,19 @@ class SearchEndpointsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @archived = bool.deserialize(params[:archived] || false )
 
-    query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
-    query = query.where(archived: @archived)
+    # name_downcase_or_endpoint_url_downcase_cont needs a downcased value -
+    # the ransackers downcase the columns (see the ransacker comments on
+    # SearchEndpoint). owned isn't a plain column match (the value comes from
+    # current_user, not the request), so it stays a manual filter applied
+    # after ransack rather than a ransack predicate.
+    ransack_params = { archived_eq: @archived }
+    ransack_params[:teams_id_eq] = params[:team_id] if params[:team_id].present?
+    ransack_params[:name_downcase_or_endpoint_url_downcase_cont] = params[:q].to_s.downcase if params[:q].present?
 
+    query = @current_user.search_endpoints_involved_with.ransack(ransack_params).result
     query = query.where(owner_id: current_user.id) if params[:owned].present?
-    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
 
-    if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(search_endpoints.name) LIKE ? OR LOWER(endpoint_url) LIKE ?', q, q)
-    end
-
-    @pagy, @search_endpoints = pagy(query)
+    @pagy, @search_endpoints = pagy(query.order(updated_at: :desc))
   end
 
   def show

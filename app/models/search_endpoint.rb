@@ -53,6 +53,28 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where(archived: false) }
 
+  # Ransack (used by SearchEndpointsController#index's filters) requires
+  # every searchable attribute/association allowlisted - keep this to what's
+  # used today. basic_auth_credential is encrypted and deliberately excluded.
+  def self.ransackable_attributes _auth_object = nil
+    %w[archived name_downcase endpoint_url_downcase]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[teams]
+  end
+
+  # Plain name_cont/endpoint_url_cont would compare case-sensitively on
+  # SQLite/PostgreSQL. Wraps each column in LOWER() the same way the index
+  # search used to by hand; the controller downcases the search value to match.
+  ransacker :name_downcase do
+    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
+  end
+
+  ransacker :endpoint_url_downcase do
+    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:endpoint_url] ])
+  end
+
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end

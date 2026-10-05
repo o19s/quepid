@@ -38,6 +38,17 @@ class Team < ApplicationRecord
 
   # rubocop:enable Rails/HasAndBelongsToMany
 
+  # Ransack needs this to let SearchEndpoint's index filter by
+  # teams_id_eq (see SearchEndpointsController#index) - just enough to
+  # identify a team, nothing else.
+  def self.ransackable_attributes _auth_object = nil
+    %w[id]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   # Validations
   # rubocop:disable-next Rails/UniqueValidationWithoutIndex
   validates :name,
