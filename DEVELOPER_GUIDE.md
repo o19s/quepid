@@ -830,7 +830,7 @@ These apply to all client code: Rails pages and the case page alike. ESLint enfo
 
 ### Turbo on the case page
 
-The case page (`app/views/layouts/core.html.erb`) loads Turbo through `core_stimulus.js`, but only
+The case branch of `app/views/layouts/application.html.erb` loads Turbo through `core_stimulus.js`, but only
 for **Frames and Streams**. `Turbo.session.drive = false` is set there, as it is in
 `application_modern.js` for the rest of the app.
 

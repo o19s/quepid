@@ -1,0 +1,48 @@
+<%# Core frames use hard-navigation links; only core includes active counts,
+    the wizard launcher, and case-derived book parameters. %>
+<ul class="navbar-nav me-auto">
+  <% %i[cases books].each do |section| %>
+    <% cases_menu = section == :cases %>
+    <li class="nav-item dropdown">
+      <% if case_page %>
+        <a href="#" role="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <% else %>
+        <a class="nav-link dropdown-toggle" href="#" id="<%= cases_menu ? 'dropdownCases' : 'dropdownBooks' %>" role="button" data-bs-toggle="dropdown">
+      <% end %>
+        <span class="nav-label"><%= cases_menu ? 'Relevancy Cases' : 'Books' %></span>
+        <% if case_page %><i class="bi bi-chevron-down"></i><% end %>
+      </a>
+
+      <% if case_page %>
+        <ul class="dropdown-menu">
+      <% else %>
+        <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="<%= cases_menu ? 'navbarDropdown' : 'navbarDropdownBooks' %>">
+      <% end %>
+        <li class="text-muted">
+          <% if case_page %><strong><% end %>RECENT <%= section.to_s.upcase %><% if case_page %></strong><% end %>
+        </li>
+        <li><hr class="dropdown-divider"></li>
+
+        <% dropdown_url = if cases_menu
+             case_page ? dropdown_cases_core_path : dropdown_cases_path
+           else
+             case_page ? dropdown_books_core_path : dropdown_books_path
+           end %>
+        <turbo-frame id="dropdown_<%= section %>" src="<%= dropdown_url %>" loading="lazy">
+        </turbo-frame>
+
+        <li class="actions">
+          <% if case_page %>
+            <%= render 'layouts/header_core_actions', cases_menu: cases_menu, section: section, kase: kase %>
+          <% else %>
+            <%= render 'layouts/header_management_actions', cases_menu: cases_menu %>
+          <% end %>
+        </li>
+      </ul>
+    </li>
+  <% end %>
+
+  <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
+  <li class="nav-item"><%= link_to "Scorers", scorers_path, class: "nav-link" %></li>
+  <li class="nav-item"><a class="nav-link" href="<%= root_path %>notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
+</ul>

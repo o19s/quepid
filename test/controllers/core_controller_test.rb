@@ -47,6 +47,60 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'script[type="module"]', text: /import "application_modern"/, count: 0
     end
 
+    test 'preserves case navigation actions and book creation context' do
+      kase = cases(:one)
+      kase.teams << teams(:valid)
+      kase.update!(scorer: scorers(:default_scorer))
+
+      get :index, params: { id: kase.id }
+
+      assert_response :success
+      assert_select '#coreNavbarContent'
+      assert_select '#header turbo-frame#dropdown_cases[src=?][loading="lazy"]', dropdown_cases_core_path
+      assert_select '#header turbo-frame#dropdown_books[src=?][loading="lazy"]', dropdown_books_core_path
+      assert_select '#header a[href=?] small', cases_path,
+                    text: "(#{users(:doug).cases_involved_with.not_archived.count} active)"
+      assert_select '#header a[href=?] small', books_path,
+                    text: "(#{users(:doug).books_involved_with.count} active)"
+      assert_select '#header button[data-action="click->wizard-launcher#newCase"][data-wizard-launcher-create-url-value=?]',
+                    case_new_path.delete_prefix('/')
+      assert_select '#header a[href=?]', new_book_path(scorer_id: kase.scorer_id, team_ids: [ teams(:valid).id ], origin_case_id: kase.id)
+      assert_select '#header a[href=?]', teams_path
+      assert_select '#header a[href=?]', scorers_path
+      assert_select '#header a[href=?][target="_blank"][rel="noopener noreferrer"]', "#{root_path}notebooks/lab/index.html"
+      assert_select '#header #case-header', 0
+      assert_select '#main-content #case-header', 1
+    end
+
+    test 'preserves case footer links inside the workspace pane' do
+      get :index, params: { id: cases(:one).id }
+
+      assert_select 'body > footer', 0
+      assert_select '.pane_main footer.pt-4.pb-4', 1
+      assert_select '.pane_main footer a[href="http://opensourceconnections.com"]' do |links|
+        assert_nil links.first['target']
+      end
+      assert_select '.pane_main footer a[href=?][target="_blank"]', oas_rails_path
+      assert_select '.pane_main footer a[href="http://www.opensourceconnections.com/slack"][rel="noopener noreferrer"]'
+      assert_select '.pane_main footer', text: /For community support and discussion/
+      assert_select '.pane_main footer code', 0
+    end
+
+    test 'preserves configured policy links in the case footer' do
+      config = Rails.application.config
+      keys = [ :terms_and_conditions_url, :privacy_url, :cookies_url ]
+      original_urls = keys.index_with { |key| config.public_send(key) }
+      keys.each { |key| config.public_send("#{key}=", "https://example.test/#{key}") }
+
+      get :index, params: { id: cases(:one).id }
+
+      keys.each do |key|
+        assert_select '.pane_main footer a[href=?][target="_blank"][rel="noopener noreferrer"]', "https://example.test/#{key}"
+      end
+    ensure
+      original_urls.each { |key, url| config.public_send("#{key}=", url) }
+    end
+
     test 'preserves an explicitly missing try in the body bootstrap data' do
       get :index, params: { id: cases(:one).id, try_number: 999_999 }
 

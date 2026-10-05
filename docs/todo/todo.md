@@ -133,7 +133,7 @@ coverage, management filtering/pagination, cross-case navigation, wizard,
 HTTPS/Solr JSONP protocol replay and a browser deployment below a sub-path.
 These are outside this representative batch; sub-path base rendering is tested.
 
-### [MIGRATION] P2 I2 C2 — Consolidate case and management header/footer markup
+### [MIGRATION] P2 I2 C2 — Consolidate case and management header/footer markup — Done
 
 After the layout batch, consolidate matching markup from
 `layouts/_header_core_app.html.erb` and `_header.html.erb`, and from the two
@@ -149,6 +149,53 @@ inspect before/after screenshots for desktop and collapsed navigation, both
 dropdowns, and both footers. Exercise wizard launch and book-creation navigation
 on the case page, plus management-page navigation. Record sampled/deferred
 manual coverage and update affected tracker paths when partials move.
+
+**Implementation / verification (2026-10-05):** Shared
+`layouts/_header_navigation.html.erb` and `_header_help_links.html.erb` own
+matching navigation markup. Small surface shells retain their existing brand,
+collapse and account-menu structure. Surface-specific dropdown actions live in
+`_header_core_actions.html.erb` and `_header_management_actions.html.erb`.
+The structurally different footers remain separate: `_footer.html.erb` for
+management and `_footer_core_app.html.erb` for cases, both sharing
+`shared/_osc_copyright.html.erb`. Application, admin and analytics render the
+management footer; `core/index` renders its footer inside `.pane_main`.
+
+| Contract | Case page | Management pages |
+| --- | --- | --- |
+| Recent frames | `cases_core` / `books_core`, hard navigation | `cases` / `books`, existing Turbo frame links |
+| Creation | Wizard launcher; book scorer/team/origin parameters | Existing creation links, no case book context |
+| Header | Active counts; name/try/score stay in workspace | Existing navigation and flash region |
+| Footer | Copyright, optional policies, API, Slack; scrolling pane | Blue copyright/version footer after content |
+
+38 Rails tests / 267 assertions pass, including dropdown endpoints, active
+counts, wizard URL, book parameters, configured footer policies, shared links,
+footer placement, and admin/analytics rendering. Ruby style passes. Focused
+Playwright coverage passes (three behavior tests plus authentication), covering
+desktop/narrow navigation, case-to-book navigation and wizard launch, with
+`afterAll` cleanup of created cases. No runtime JS or CSS changed.
+
+Playwright MCP sample: both surfaces at 1280x900 and 768x900; collapsed/expanded
+navigation, Cases/Books/account menus, and both footers. All 14 matched pairs
+under `.playwright-mcp/header-footer/` were opened and inspected, and are
+pixel-identical. Case 6 book navigation preserves scorer/team/origin parameters;
+the case header launches Welcome on a new disposable case (deleted, API 204).
+Management Teams, Scorers and View all books navigation pass. Tracker entries
+3.2, 15.2, 15.4, 16.2 and 16.6 record this partial sample; 15.7 adds management
+footer coverage. Shared partial path mappings were updated without changing
+other scenarios' verification timestamps.
+
+The component extraction was rechecked with the same 38 Rails tests / 267
+assertions and focused Playwright suite, all passing. Fresh 14-pair screenshots
+under `.playwright-mcp/header-footer-components/` were opened and inspected;
+all are pixel-identical. Shared navigation is 48 lines; case actions are 25
+lines and management actions nine. Separate footers retain shared copyright
+reuse. Tracker paths follow the extracted action partials and restored case
+footer; only scenarios sampled through MCP receive new verification timestamps.
+
+Deferred: full wizard completion/errors, book saving, zero-item dropdowns,
+every recent-link/account action, non-admin access replay, 375px and other
+modal reflow, narrow/drawer-open footers, live configured policies,
+HTTPS/Solr JSONP and browser sub-path deployment. No functionality was redesigned.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Evaluate moving the case JavaScript entry onto importmap
 

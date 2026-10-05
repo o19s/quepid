@@ -9,73 +9,10 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto">
-          <li class="nav-item dropdown">
-
-            <a class="nav-link dropdown-toggle" href="#" id="dropdownCases" role="button" data-bs-toggle="dropdown">
-              <span class="nav-label">Relevancy Cases</span>
-            </a>
-            <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdown">
-              <li class="text-muted">
-                RECENT CASES
-              </li>
-              <li><hr class="dropdown-divider"></li>
-
-              <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_path() %>" loading="lazy">
-              </turbo-frame>
-
-              <li class="actions">
-                <div class="d-grid gap-2">
-                <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
-                <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
-                </div>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="dropdownBooks" role="button" data-bs-toggle="dropdown">
-              <span class="nav-label">Books</span>
-            </a>
-            <ul class="dropdown-menu p-2" style="left: auto; width:250px;" aria-labelledby="navbarDropdownBooks">
-              <li class="text-muted">
-                RECENT BOOKS
-              </li>
-              <li><hr class="dropdown-divider"></li>
-
-              <turbo-frame id="dropdown_books" src="<%= dropdown_books_path() %>" loading="lazy">
-              </turbo-frame>
-
-              <li class="actions">
-                <div class="d-grid gap-2">
-                <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
-                <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
-                </div>
-              </li>
-
-            </ul>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Teams", teams_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Scorers", scorers_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Notebooks", "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link" %>
-          </li>
-        </ul>
+        <%= render 'layouts/header_navigation', case_page: false, kase: nil %>
 
         <ul class="navbar-right nav navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href='https://quepid-docs.dev.o19s.com/2/quepid' target="_blank" rel="noopener noreferrer">
-              User Manual
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href='https://github.com/o19s/quepid/wiki' target="_blank" rel="noopener noreferrer">
-              Wiki
-            </a>
-          </li>
+          <%= render 'layouts/header_help_links' %>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
               <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', title: 'Avatar image' %>

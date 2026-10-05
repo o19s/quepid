@@ -20,6 +20,8 @@ This part covers the chrome that surrounds every logged-in page — the left ico
   1. Click **Relevancy Cases** in the top navbar. Confirm a dropdown opens showing "RECENT CASES" (lazy-loaded), with **View all cases** and **Create a case** buttons at the bottom.
   2. Click **Books** in the top navbar. Confirm the equivalent "RECENT BOOKS" dropdown with **View all books** / **Create a book**.
   3. Click **Teams** and **Scorers** navbar links — confirm they navigate directly (no dropdown, just a link).
+- [ ] Repeat on a case page: **View all** actions include active counts; **Create a case** opens the new-case wizard. **Create a book** navigates with that case's `origin_case_id`, `scorer_id` and `team_ids[]`. On management pages, creation remains ordinary links without case-derived book parameters.
+- [ ] At 768px, expand **Toggle navigation** and repeat the dropdown checks on both surfaces; the case name, try and score remain in the workspace header.
 - **Expected:** Both dropdown lists load their recent items correctly (they're lazy turbo-frames, so allow a moment on slower connections) and the action buttons work.
 - **Edge cases:**
   - [ ] As a brand-new user with zero cases/books, confirm the dropdowns show a sensible empty state instead of an empty blank area.
@@ -61,3 +63,9 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 - **Edge cases:**
   - [ ] Confirm this works identically in a fresh Docker environment that has run `bin/setup_jupyterlite` (dev) vs. a deployed environment where the files are baked into the image at build time — if you can test both, confirm neither is broken.
   - [ ] Confirm the link always opens in a new tab (`target="_blank"`) and doesn't navigate away from (or lose state in) the current Quepid tab.
+
+### 15.7 Management footer
+
+- [ ] **Steps:** On a management page such as `/cases`, scroll to the footer. Repeat on a short page and on admin/analytics pages where available.
+- **Expected:** A single blue footer follows page content, with the OSC copyright link opening a new tab and the Quepid version displayed. The case footer is covered separately in 16.6; its API/policy/community links and scrolling-pane placement remain specific to that surface.
+- **Edge cases:** Check narrow viewports and a configured version value.

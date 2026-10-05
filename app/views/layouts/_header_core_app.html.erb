@@ -10,104 +10,10 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="coreNavbarContent">
-      <ul class="navbar-nav me-auto">
-        <!--
-          Begin case selector. Server-rendered. Same interaction model
-          (lazy-loaded Turbo Frame list, full-page link) as the Rails-page navbar's `dropdown/cases`
-          frame (`_header.html.erb`), but loaded from `dropdown#cases_core`: same template, but its
-          links do a hard navigation (`turbo: false`) instead of a Turbo AJAX visit, since
-          AJAX-swapping this page's body would leave core controllers against the old case - see
-          DropdownController::CORE_LINK_OPTIONS. The "(N active)" count and "Create a book"'s
-          case-derived query params are core-only additions that the case page showed but the Rails-page
-          navbar doesn't.
-        -->
-        <li class="nav-item dropdown">
-          <a href="#" role="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="nav-label">Relevancy Cases</span>
-            <i class="bi bi-chevron-down"></i>
-          </a>
-
-          <ul class="dropdown-menu">
-            <li class="text-muted">
-              <strong>RECENT CASES</strong>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-
-            <turbo-frame id="dropdown_cases" src="<%= dropdown_cases_core_path %>" loading="lazy">
-            </turbo-frame>
-
-            <li class="actions">
-              <a href="<%= cases_path %>" class="btn btn-outline-secondary w-100">
-                View all cases
-                <small class="text-muted">
-                  (<%= current_user.cases_involved_with.not_archived.count %> active)
-                </small>
-              </a>
-
-              <button
-                type="button"
-                class="btn btn-success w-100"
-                data-controller="wizard-launcher"
-                data-action="click->wizard-launcher#newCase"
-                data-wizard-launcher-create-url-value="<%= case_new_path.delete_prefix('/') %>"
-              >
-                <i class="bi bi-plus-lg"></i>
-                Create a case
-              </button>
-            </li>
-          </ul>
-        </li>
-        <!-- End case selector -->
-        <!-- Begin book selector -->
-        <li class="nav-item dropdown">
-          <a href="#" role="button" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            <span class="nav-label">Books</span>
-            <i class="bi bi-chevron-down"></i>
-          </a>
-
-          <ul class="dropdown-menu">
-            <li class="text-muted">
-              <strong>RECENT BOOKS</strong>
-            </li>
-            <li><hr class="dropdown-divider"></li>
-
-            <turbo-frame id="dropdown_books" src="<%= dropdown_books_core_path %>" loading="lazy">
-            </turbo-frame>
-
-            <li class="actions">
-              <a href="<%= books_path %>" class="btn btn-outline-secondary w-100">
-                View all books
-                <small class="text-muted">
-                  (<%= current_user.books_involved_with.count %> active)
-                </small>
-              </a>
-
-              <% new_book_params = kase.present? ? { scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id } : {} %>
-              <%= link_to new_book_path(new_book_params), class: "btn btn-success w-100" do %>
-                <i class="bi bi-plus-lg"></i>
-                Create a book
-              <% end %>
-            </li>
-          </ul>
-        </li>
-        <!-- End book selector -->
-
-        <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
-        <li class="nav-item"><%= link_to "Scorers", scorers_path, class: "nav-link" %></li>
-        <li class="nav-item"><a class="nav-link" href="<%= root_path %>notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>
-      </ul>
+      <%= render 'layouts/header_navigation', case_page: true, kase: kase %>
 
       <ul class="navbar-nav">
-        <li class="nav-item">
-          <a class="nav-link" href='https://quepid-docs.dev.o19s.com/2/quepid' target="_blank" rel="noopener noreferrer">
-            User Manual
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href='https://github.com/o19s/quepid/wiki' target="_blank" rel="noopener noreferrer">
-            Wiki
-          </a>
-        </li>
+        <%= render 'layouts/header_help_links' %>
       </ul>
 
       <ul class="navbar-nav">
