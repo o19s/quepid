@@ -36,6 +36,16 @@ module Api
             assert_not_empty body['try']['search_endpoint']
             assert_nil body['try']['search_endpoint']['scorer_id']
           end
+
+          test 'the embedder is exported by name only' do
+            acase.update!(embedder: embedders(:openai_small))
+
+            get :show, params: { case_id: acase.id }
+
+            body = response.parsed_body
+            assert_equal 'OpenAI small', body['embedder_name']
+            assert_nil body['embedder_id']
+          end
         end
       end
     end

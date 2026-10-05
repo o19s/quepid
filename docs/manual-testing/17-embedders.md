@@ -33,3 +33,18 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   5. Sign in as a member of the shared team and confirm the embedder appears in their list.
   6. Delete the clone from the list (confirmation dialog).
 - **Expected:** The saved key is never rendered into the page; blank keeps it; the clone keeps the source's key; the shared embedder is visible to team members; deleted embedders disappear from the list.
+
+### 17.3 Pick a case's embedder
+
+- [ ] **Steps:**
+  1. Open a case (`/case/:id`). With no embedder set, the header shows only the case, try and scorer names.
+  2. Click **Select embedder** in the toolbar (next to Select scorer).
+  3. Confirm the modal lists **None** plus every embedder you own or that is shared with one of your teams, each with provider, model and size; the current choice is highlighted and **Select Embedder** is disabled until you pick something else.
+  4. Pick an embedder and click **Select Embedder**.
+  5. Reload the page.
+  6. Reopen the modal, pick **None**, save.
+- **Expected:** After step 4 the modal closes and the header shows "— [::] *embedder name*" after the scorer, without a reload; it is still there after step 5. After step 6 the embedder name disappears from the header.
+- **Edge cases:**
+  - [ ] A case whose embedder was set by a teammate and isn't shared with you: the modal warns that switching away loses access, and still shows it as current.
+  - [ ] **Create New Embedder** opens the embedder form in a new tab.
+  - [ ] Clone the case: the clone keeps the embedder only if you can see it.

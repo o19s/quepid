@@ -72,6 +72,24 @@
                 &mdash;
                 {{ getScorer().name }}
               </small>
+
+              <!-- The case's embedder, like the scorer above; hidden while it has none. -->
+              <small class="fw-normal text-muted"
+                     hidden
+                     data-controller="case-embedder-core"
+                     data-action="quepid:case-embedder-changed@document->case-embedder-core#changed"
+                     data-case-embedder-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+                     title="Embedder">
+                &mdash;
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="0.8em" height="0.8em"
+                     fill="currentColor" aria-hidden="true" focusable="false" style="vertical-align: 0;">
+                  <path d="M4.5 2H2v12h2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                  <path d="M11.5 2H14v12h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                  <circle cx="6.25" cy="6" r="1.15"/><circle cx="9.75" cy="6" r="1.15"/>
+                  <circle cx="6.25" cy="10" r="1.15"/><circle cx="9.75" cy="10" r="1.15"/>
+                </svg>
+                <span data-case-embedder-core-target="name"></span>
+              </small>
             </h1>
           </div>
         </div>
@@ -85,6 +103,24 @@
               <a name="button" ng-click="pickCaseScorer()">
                 Select scorer
               </a>
+            </li>
+            <li class="list-inline-item">
+              <!-- Same [::] mark as the Embedders sidebar entry (app/views/embedders/_icon.html.erb). -->
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="1em" height="1em"
+                   fill="currentColor" aria-hidden="true" focusable="false" style="vertical-align: -0.125em;">
+                <path d="M4.5 2H2v12h2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                <path d="M11.5 2H14v12h-2.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+                <circle cx="6.25" cy="6" r="1.15"/><circle cx="9.75" cy="6" r="1.15"/>
+                <circle cx="6.25" cy="10" r="1.15"/><circle cx="9.75" cy="10" r="1.15"/>
+              </svg>
+              <a
+                href="#"
+                data-controller="case-embedder-core"
+                data-action="click->case-embedder-core#open"
+                data-bs-toggle="modal"
+                data-bs-target="#caseEmbedderModal"
+                data-case-embedder-core-id-value="{{ caseModel.selectedCase().caseNo }}"
+              >Select embedder</a>
             </li>
             <li class="list-inline-item">
               <judgements

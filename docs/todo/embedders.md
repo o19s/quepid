@@ -1,13 +1,13 @@
 # Embedders (query vectorizing service) plan
 
-Proposed 2026-10-05. **Phase 1 is implemented** (branch `embedders`); phases 2–4 are not started.
+Proposed 2026-10-05. **Phases 1 and 2 are implemented** (branch `embedders`); phases 3–4 are not started.
 
-An **embedder** is a team-shareable connection to an external API that turns text into a vector (OpenAI, Voyage, Ollama, any OpenAI-compatible server such as vLLM/TEI). A case (or the book it belongs to) can point at one embedder; every query in that case is then vectorized and the vector is stored in `queries.options.query_vec`, where search templates can already reach it as `#$qOption.query_vec##`.
+An **embedder** is a team-shareable connection to an external API that turns text into a vector (OpenAI, Voyage, Ollama, any OpenAI-compatible server such as vLLM/TEI). A case can point at one embedder, the same way it points at a scorer; every query in that case is then vectorized and the vector is stored in `queries.options.query_vec`, where search templates can already reach it as `#$qOption.query_vec##`.
 
 Delivered in four phases, each shippable on its own:
 
 1. Embedder CRUD, provider registry and adapters.
-2. Case and book link to an embedder.
+2. Case link to an embedder.
 3. Vectorization pipeline: jobs, triggers, staleness, progress.
 4. Using the vector in search: browser and background evaluation.
 
@@ -106,17 +106,17 @@ end
 
 Model validations, a registry test that every definition's adapter class exists, adapter tests with WebMock fixtures per provider (batching, ordering, truncation + renormalization, dimension mismatch error), controller tests, and the API tests.
 
-## Phase 2 — Case and book link
+## Phase 2 — Case link
 
-- Migrations: `cases.embedder_id` and `books.embedder_id` (nullable, indexed, `on_delete: :nullify`).
-- `Case#effective_embedder` = `embedder || book&.embedder`. Everything downstream calls only this method, so the precedence rule lives in one place.
-- Authorization: a case/book may only reference an embedder visible to its owner via `Embedder.for_user`.
-- UI:
-  - Book edit page (Rails): embedder dropdown.
-  - Case: per the `angular-case-migration` rule, add the picker as **Stimulus** in the core case settings area rather than new Angular code. Show the embedder, the vectorized/total query count, and a "Re-vectorize" button.
-- API: `embedder_id` accepted on case and book update; included in case/book JSON.
-- Case clone/export/import: clone keeps `embedder_id`. Export writes the embedder **name** only (ids are not portable); import leaves the link blank.
-- Archiving or deleting an embedder nullifies links; the vectors already in `query.options` stay, and phase 3 marks them stale.
+An embedder is attached to a **case only**, exactly like a scorer (`cases.scorer_id`). Books get no embedder: a case doesn't need a book (`belongs_to :book, optional: true`), and a book-level default would make a case's embedder change when its book is swapped, without anyone touching the case.
+
+- Migration: `cases.embedder_id` (nullable, indexed). `Case belongs_to :embedder, optional: true`; `Embedder has_many :cases, dependent: :nullify`.
+- API, mirroring `Api::V1::CaseScorersController`: `GET api/cases/:case_id/embedders` (embedders the user can pick, plus the current one) and `PUT api/cases/:case_id/embedders/:id`, with `0` meaning "remove". Unlike the scorer endpoint, check the id against `current_user.embedders_involved_with` -- assigning an embedder means spending its owner's API key.
+- `embedder_id` (and the embedder's name) included in the case JSON.
+- UI: per the `angular-case-migration` rule, the picker on the core case page is **Stimulus**, not Angular. Model it on the existing toolbar modals in `queriesLayout.html` (`share-case-core`, `clone-case-core`; base class `core_modal_trigger_controller_base.js`): a button opening a modal listing the visible embedders, with "None". Show the current embedder, the vectorized/total query count, and a "Re-vectorize" button.
+- Cases list / case wizard: no picker in phase 2; the case page is the one place to set it.
+- Case clone keeps `embedder_id`. Export writes the embedder **name** only (ids aren't portable); import leaves the link empty.
+- Archiving an embedder keeps existing links working (no new assignments); deleting it nullifies them. Vectors already in `query.options` stay, and phase 3 marks them stale.
 
 ## Phase 3 — Vectorization pipeline
 
@@ -125,25 +125,53 @@ Model validations, a registry test that every definition's adapter class exists,
 ```json
 {
   "query_vec": [0.0123, -0.0456, ...],
-  "query_vec_meta": { "embedder_id": 7, "fingerprint": "ab12…", "text_digest": "9f…", "dims": 1024, "at": "2026-10-05T10:00:00Z" }
+  "query_vec_meta": {
+    "embedder_id": 7,
+    "embedder_name": "Voyage 1024",
+    "provider": "voyage",
+    "model": "voyage-3.5",
+    "dimensions": 1024,
+    "truncation": "native",
+    "fingerprint": "ab12cd34ef56ab78",
+    "text_digest": "9f1e…",
+    "vectorized_at": "2026-10-05T10:00:00Z"
+  }
 }
 ```
 
-- `query_vec` is what the user asked for; it is what the search templates use.
-- `query_vec_meta` lets the system decide whether a vector is current without calling the API: a query is **stale** when its meta's `fingerprint` ≠ the effective embedder's fingerprint, or `text_digest` ≠ the digest of the rendered input text.
-- Write vectors with `Query#update_columns`-style merges into `options`, never overwriting user keys, so the "Options" modal still works. Round components to ~7 significant digits to keep the JSON size bounded.
+- `query_vec` is the vector the search templates use (`#$qOption.query_vec##`).
+- `query_vec_meta` records **how** that vector was made, readable by a person opening the query's options: which embedder (id and name at the time), provider, model, size and truncation, when. `fingerprint` is `Embedder#fingerprint` at the time (it covers every setting that changes the output: provider, URL, model, dimensions, truncation, instruction, template); `text_digest` is a digest of the exact text sent (query text through the input template).
+- A failed attempt writes `query_vec_error` instead (`message`, `fingerprint`, `at`) and keeps any older `query_vec`/`query_vec_meta` untouched, so the status below can say *failed* rather than silently *pending*. A later success removes `query_vec_error`.
+- Write with merges into `options`, never overwriting the user's own keys, so the "Set Options" modal keeps working. Round components to ~7 significant digits to keep the JSON size bounded.
+
+### Vector status per query
+
+Computed server-side by one method, `Query#vector_status(embedder)` (embedder = the case's), so the rules live in one place:
+
+| Status | When | Shown on the query row |
+| --- | --- | --- |
+| `none` | the case has no embedder | nothing |
+| `pending` | embedder set, no `query_vec` (new query, or embedder just assigned) | grey "pending vectorisation" badge |
+| `stale` | there is a `query_vec`, but its meta's `embedder_id` or `fingerprint` differs from the case's embedder, or `text_digest` differs from the text that would be sent now | amber "vector outdated" badge; tooltip says what changed (e.g. "made with OpenAI small, case now uses Voyage 1024", or "embedder settings changed since 2026-10-05") |
+| `failed` | `query_vec_error` matches the current fingerprint | red badge, tooltip with the error |
+| `current` | meta matches | nothing (or a subtle [::] mark) |
+
+- The queries JSON (`api/v1/queries/_query.json.jbuilder`) gains `vector_status` and `vector_status_reason`, computed with the case's embedder. The Angular query row only renders a badge from these two fields, so no fingerprint logic runs in the browser.
+- `VectorizeCaseQueriesJob` picks up exactly the `pending`, `stale` and `failed` queries (all of them with `force`), so "what the badge says" and "what the job will redo" can't drift apart.
+- Changing the case's embedder or editing the embedder makes statuses change without any write to the queries: the meta no longer matches, so they read as `stale` until re-vectorized.
+- When the embedder changes in the case picker, or a vectorisation run broadcasts progress, the case page reloads the queries' statuses so the badges update without a page reload.
 
 ### Service and jobs
 
 - `QueryVectorizer.new(embedder).vectorize(queries)` — renders the input text, calls the adapter in batches, and merges `query_vec` + `query_vec_meta` into each query's options in one transaction per batch.
-- `VectorizeCaseQueriesJob(case_id, force: false)` — loads queries that are missing or stale (all of them when `force`), runs the vectorizer, and broadcasts progress (`n/total`, errors) over ActionCable to the case. Uses a per-case concurrency key (SolidQueue `limits_concurrency`) so repeated triggers don't run in parallel.
+- `VectorizeCaseQueriesJob(case_id, force: false)` — loads the `pending`, `stale` and `failed` queries (all of them when `force`; see Vector status), runs the vectorizer, and broadcasts progress (`n/total`, errors) over ActionCable to the case. Uses a per-case concurrency key (SolidQueue `limits_concurrency`) so repeated triggers don't run in parallel.
 - Failures: per-batch errors are recorded on the case (or in a small log) and broadcast. A failed batch leaves those queries without a vector instead of failing the whole run.
 
 ### Triggers
 
 | Event | Action |
 | --- | --- |
-| Case's effective embedder set/changed (case or book update) | enqueue `VectorizeCaseQueriesJob` |
+| Case's embedder set or changed | enqueue `VectorizeCaseQueriesJob` |
 | Embedder edited so its fingerprint changes | enqueue the job for every case whose effective embedder it is |
 | Single query added (`Api::V1::QueriesController#create`) | vectorize **synchronously** with a short timeout so the first search already has the vector; on error, fall back to enqueueing the job |
 | Bulk paths: `Api::V1::Bulk::QueriesController` and `RatingsImporter` use `Query.insert_all` (no callbacks); also `CaseImporter`, book refresh / `UpdateCaseJob` (`RatingsManager` creating missing queries), information-need import | explicitly enqueue `VectorizeCaseQueriesJob` after the insert |
@@ -155,8 +183,8 @@ Do the single-query case with an explicit call in the controller rather than an 
 ### Frontend
 
 - The core case page listens on the case channel. When vectorization finishes, reload the affected queries' `options` (`GET .../queries/:id/options`, already exists) and re-run the search for them, because templates using `#$qOption.query_vec##` return nothing useful without a vector.
-- Per query, show a small "no vector / stale" indicator when the case has an embedder but the query's options lack a current vector.
-- The options modal: collapse `query_vec` to `[1024 floats]` in the editor so it doesn't open as an unreadable wall of numbers, and keep it unchanged on save.
+- Per query, the status badge from **Vector status per query** above.
+- The options modal: collapse `query_vec` to `[1024 floats]` in the editor so it doesn't open as an unreadable wall of numbers, keep it unchanged on save, and show `query_vec_meta` as is so people can read how the vector was made.
 
 ### Books
 
@@ -165,12 +193,12 @@ A book has no queries table and no `options` column. Query options live on `quer
 **Requirement:** `PopulateBookJob` must not copy `query_vec` or `query_vec_meta` into `query_doc_pair.options`. Copy every other key unchanged. Leave a comment at the copy site explaining why:
 
 - The vector would be stored once per rated doc instead of once per query (10 docs × ~40 KB for a 3072-dim vector), and nothing reads vectors from a book.
-- A case is always vectorized by its own effective embedder. A vector copied back from the book could come from a different embedder and would need re-vectorizing anyway.
+- A case is always vectorized by its own embedder. A vector copied back from the book could come from a different embedder and would need re-vectorizing anyway.
 - Longer term, query-level data (options, information need, notes) should be stored in the book **once per query**, not on every query/doc pair. That restructuring is out of scope here, but the comment should note it as the proper fix.
 
 Because the book carries no vectors, a case created from a book starts without `query_vec`. Creating the missing queries enqueues `VectorizeCaseQueriesJob` (see Triggers).
 
-A book's own `embedder_id` acts as the default for its cases (via `effective_embedder`). Vectorizing the book's query/doc pairs directly is out of scope unless something consumes those vectors.
+Books have no embedder (see Phase 2). Vectorizing the book's query/doc pairs is out of scope unless something consumes those vectors.
 
 ## Phase 4 — Using the vector in search
 
@@ -180,14 +208,13 @@ A book's own `embedder_id` acts as the default for its cases (via `effective_emb
 
 ## Docs and manual tests (same PRs)
 
-- `docs/data_mapping.md`: `embedders`, `teams_embedders`, `cases.embedder_id`, `books.embedder_id`, the `query_vec`/`query_vec_meta` option keys.
+- `docs/data_mapping.md`: `embedders`, `teams_embedders`, `cases.embedder_id`, the `query_vec`/`query_vec_meta` option keys.
 - `docs/app_structure.md`: the `embedder_adapters` service and the jobs.
 - `docs/manual-testing/`: new scenarios (embedder CRUD + test button per provider, link a case, add a query → vector present, change model → re-vectorized, kNN search using `#$qOption.query_vec##`), with `paths` in `tracking.yml`.
 
 ## Open questions
 
-1. **Precedence:** if both the case and its book have an embedder, which wins? Proposed: the case.
-2. **Single query add:** synchronous vectorization (proposed) or always async plus re-search on broadcast?
-3. **Payload size:** a 3072-dim vector is ~40 KB of JSON per query, and the case page loads every query's options. Acceptable at the start, or cap dimensions / move vectors to a separate `query_vectors` table and inject them into `qOption` server-side?
-4. **Who can use an embedder's key:** any team member who can see the case triggers paid API calls on the owner's key. Is team-sharing enough, or do we need an owner-only "may be used by team" flag?
-5. **Template variables:** should the input template support `{information_need}` besides `{query}`?
+1. **Single query add:** synchronous vectorization (proposed) or always async plus re-search on broadcast?
+2. **Payload size:** a 3072-dim vector is ~40 KB of JSON per query, and the case page loads every query's options. Acceptable at the start, or cap dimensions / move vectors to a separate `query_vectors` table and inject them into `qOption` server-side?
+3. **Who can use an embedder's key:** any team member who can see the case triggers paid API calls on the owner's key. Is team-sharing enough, or do we need an owner-only "may be used by team" flag?
+4. **Template variables:** should the input template support `{information_need}` besides `{query}`?

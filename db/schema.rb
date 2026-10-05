@@ -251,6 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "book_id"
     t.string "case_name", limit: 191
     t.datetime "created_at", precision: nil, null: false
+    t.bigint "embedder_id"
     t.integer "last_try_number"
     t.boolean "nightly"
     t.json "options"
@@ -259,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "scorer_id"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["embedder_id"], name: "index_cases_on_embedder_id"
     t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "index_cases_on_owner_id"
   end

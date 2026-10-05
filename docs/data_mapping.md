@@ -44,6 +44,8 @@ The data modeled by a Book can be imported back into a Case.  We take all the Ju
 
 An `Embedder` is a connection to an external API that turns text into a vector embedding (OpenAI, Voyage AI, Ollama, or any OpenAI-compatible server). Like a `SearchEndpoint`, it has an owner and is shared with teams through the `teams_embedders` join table. It stores the `provider` key, `service_url`, `model`, an encrypted `api_key`, and how to size the vectors (`dimensions` with `truncation`: `none`, `native` to ask the provider, or `client` to cut and re-normalize). Models that take an `instruction` get their input built from `input_template`. What each provider supports lives in code (`EmbedderProvider`), not in the database. `Embedder#fingerprint` changes whenever a setting that affects the vectors changes, so vectors produced earlier can be recognised as stale.
 
+A `Case` can point at one embedder through `embedder_id`, the same way it points at its `Scorer`. Books have no embedder.
+
 ## Other
 
 Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).

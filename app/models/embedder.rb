@@ -17,6 +17,10 @@ class Embedder < ApplicationRecord
 
   belongs_to :owner, class_name: 'User', optional: true
 
+  # Deleting an embedder unlinks its cases; the vectors already stored on their
+  # queries stay, and are recognisably stale by their fingerprint.
+  has_many :cases, dependent: :nullify, inverse_of: :embedder
+
   include ForUserScope
 
   encrypts :api_key, deterministic: false

@@ -189,9 +189,9 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-09-15T16:38:00Z
+        last_run: 2026-10-05T19:05:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on a disposable clone (case 6840). Double-clicked the case name to enter edit mode, renamed to 'Manual Test Part4 Renamed Case', clicked Rename — applied immediately in the header. Double-clicked the try name, renamed 'Try 20' to 'Manual Test Try Renamed', Rename applied immediately. Reloaded the page — both names persisted correctly. Did not re-test the blank-name guard this pass (confirmed previously)."
+        notes: "Partial re-check after adding the embedder name to the case header (queriesLayout.html): double-clicking the try name still opened the rename input with the current name, and Cancel closed it; no console errors. Nothing was renamed this pass, and case-name rename was not re-driven."
         paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
       "4.2":
         title: "Add a query (single)"
@@ -890,13 +890,19 @@ parts:
     scenarios:
       "17.1":
         title: "Create an embedder and test it"
-        last_run: 2026-10-05T18:40:00Z
+        last_run: 2026-10-05T19:10:00Z
         result: pass
         notes: "New scenario, driven with a Playwright script against localhost:3000. Checked: OpenAI shows key and hides instruction fields; switching to Ollama filled the configured URL, hid the key and showed Instruction/Input template; Ollama all-minilm with native 128 dims and an instruction tested live (128 dimensions, instruction template in the sent text) and saved. Voyage with 300 dims showed the allowed-sizes error. Not covered: live OpenAI/Voyage/OpenAI-compatible calls (no keys/servers here; covered by WebMock tests), client-side truncation live, a failing provider live."
         paths: ["app/controllers/embedders_controller.rb", "app/controllers/embedders/tests_controller.rb", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
       "17.2":
         title: "Edit, clone, share and delete an embedder"
-        last_run: 2026-10-05T18:40:00Z
+        last_run: 2026-10-05T19:10:00Z
         result: pass
         notes: "Partially driven: re-ran Test on the saved embedder's edit page with a blank key field (worked), and the list page renders it with owner/teams/dimensions. Clone keeping the key, blank-key update, team sharing and delete are covered by controller tests but were not clicked through in the browser this pass."
         paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb"]
+      "17.3":
+        title: "Pick a case's embedder"
+        last_run: 2026-10-05T19:00:00Z
+        result: pass
+        notes: "New scenario, driven with a Playwright script on case 1: header hidden with no embedder; modal listed None plus the two visible embedders with provider/model/size, Select disabled until a change; picked one, modal closed and the header showed it immediately and after reload; set back to None and the header hid again. No console errors. Not covered live: the not-shared-with-you warning, Create New Embedder, clone (warning and clone are covered by Vitest/model tests)."
+        paths: ["app/javascript/controllers/case_embedder_core_controller.js", "app/views/shared/_case_embedder_core_modal.html.erb", "app/controllers/api/v1/case_embedders_controller.rb", "app/assets/templates/views/queriesLayout.html", "app/javascript/core_stimulus.js"]

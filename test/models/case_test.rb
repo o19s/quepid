@@ -357,4 +357,25 @@ class CaseTest < ActiveSupport::TestCase
       options:   options
     )
   end
+
+  describe 'clone embedder' do
+    let(:the_case)    { cases(:random_case) }
+    let(:cloned_case) { Case.new(case_name: 'Cloned Case') }
+
+    it 'keeps an embedder the cloning user can see' do
+      the_case.update!(embedder: embedders(:openai_small))
+
+      cloned_case.clone_case the_case, users(:random), try: the_case.tries.latest
+
+      assert_equal embedders(:openai_small), cloned_case.embedder
+    end
+
+    it 'drops an embedder the cloning user cannot see' do
+      the_case.update!(embedder: embedders(:private_ollama))
+
+      cloned_case.clone_case the_case, users(:random), try: the_case.tries.latest
+
+      assert_nil cloned_case.embedder_id
+    end
+  end
 end

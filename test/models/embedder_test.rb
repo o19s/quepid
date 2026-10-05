@@ -119,6 +119,15 @@ class EmbedderTest < ActiveSupport::TestCase
     assert_nil embedder.reload.owner_id
   end
 
+  test 'deleting an embedder unlinks its cases' do
+    acase = cases(:shared_with_team)
+    acase.update!(embedder: embedders(:openai_small))
+
+    embedders(:openai_small).destroy!
+
+    assert_nil acase.reload.embedder_id
+  end
+
   test 'encrypts the api key at rest' do
     embedder = build_embedder(api_key: 'sk-secret')
     embedder.save!

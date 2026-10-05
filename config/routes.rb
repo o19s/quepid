@@ -273,6 +273,7 @@ Rails.application.routes.draw do
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
+        resources :embedders, only: [ :index, :update ], controller: :case_embedders
 
         # Case Queries
         resources :queries, except: [ :new, :edit, :show ] do

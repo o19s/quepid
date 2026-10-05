@@ -1,0 +1,39 @@
+<%# Core case toolbar — pick the case's embedder. Laid out like the scorer picker
+    (views/pick_scorer.html): a list-group to choose from, the current one active,
+    a warning when the current one isn't shared with you, and a footer link to
+    create a new one. Saves through the API and stays on the page. %>
+<% modal_footer = capture do %>
+  <%= link_to new_embedder_path, class: 'btn btn-primary me-auto', target: '_blank', rel: 'noopener' do %>
+    <i class="bi bi-plus" aria-hidden="true"></i> Create New Embedder
+  <% end %>
+  <button type="button" class="btn btn-success" disabled
+          data-case-embedder-core-target="submitButton"
+          data-action="click->case-embedder-core#save">Select Embedder</button>
+<% end %>
+
+<% modal_body = capture do %>
+  <div class="alert d-none" role="alert" data-case-embedder-core-target="alert"></div>
+  <div class="alert alert-warning d-none" role="alert" data-case-embedder-core-target="inaccessibleWarning"></div>
+
+  <p class="text-muted">
+    Every query in the case will be turned into a vector with this embedder, for search templates to use as
+    <code>#$qOption.query_vec##</code>.
+  </p>
+
+  <div style="max-height: 300px; overflow-y: auto;">
+    <ul class="list-group" data-case-embedder-core-target="list"></ul>
+    <p class="text-muted d-none mt-2 mb-0" data-case-embedder-core-target="emptyNotice">
+      No embedders are shared with you yet. Use "Create New Embedder" below to make one.
+    </p>
+  </div>
+<% end %>
+
+<%= render "shared/modal_shell", id: "caseEmbedderModal", title: "Which embedder should vectorize this case's queries?",
+                                 data: {
+                                   controller: "case-embedder-core",
+                                   case_embedder_core_index_url_template_value: api_case_embedders_path(case_id: '__CASE_ID__'),
+                                   case_embedder_core_update_url_template_value: api_case_embedder_path(case_id: '__CASE_ID__', id: '__EMBEDDER_ID__'),
+                                 },
+                                 title_data: { case_embedder_core_target: "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>
