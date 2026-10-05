@@ -44,7 +44,6 @@ describe("core runtime capabilities", () => {
       docCache: expect.any(Object)
     }))
     expect(capabilities.core).toEqual(expect.objectContaining({
-      configuration: expect.any(Object),
       user: expect.any(Object),
       case: expect.any(Object),
       settings: expect.any(Object),

@@ -8,35 +8,19 @@ describe("user runtime", () => {
     vi.unstubAllGlobals()
   })
 
-  it("initializes page data without a request and retains fresh API reads", async () => {
-    const request = vi.fn().mockResolvedValue(response({ id: 7, default_scorer_id: 4 }))
+  it("initializes and normalizes page data without a request", () => {
+    const request = vi.fn()
     vi.stubGlobal("fetch", request)
     const runtime = createUserRuntime()
 
-    const initial = runtime.initialize({ id: 7, default_scorer_id: 3, completed_case_wizard: false })
-
-    expect(initial.defaultScorerId).toBe(3)
-    expect(initial.completedCaseWizard).toBe(false)
-    expect(runtime.current()).toBe(initial)
-    expect(request).not.toHaveBeenCalled()
-    expect((await runtime.loadCurrent()).defaultScorerId).toBe(4)
-  })
-
-  it("loads and normalizes the current user", async () => {
-    const request = vi.fn().mockResolvedValue(response({
+    const user = runtime.initialize({
       id: 7,
       email: "user@example.com",
       default_scorer_id: 3,
       completed_case_wizard: false,
       cases_involved_with_count: 2,
       teams_involved_with_count: 1
-    }))
-    vi.stubGlobal("fetch", request)
-    const runtime = createUserRuntime()
-
-    const user = await runtime.loadCurrent()
-
-    expect(request).toHaveBeenCalledWith("api/users/current", { method: "GET", headers: { Accept: "application/json", "X-CSRF-Token": "" } })
+    })
     expect(user).toMatchObject({
       id: 7,
       defaultScorerId: 3,
@@ -45,19 +29,18 @@ describe("user runtime", () => {
       teamsInvolvedWithCount: 1
     })
     expect(runtime.current()).toBe(user)
+    expect(request).not.toHaveBeenCalled()
   })
 
   it("preserves the wizard completion PUT contract", async () => {
-    const request = vi.fn()
-      .mockResolvedValueOnce(response({ id: 9, completed_case_wizard: false }))
-      .mockResolvedValueOnce(response({ id: 9, completed_case_wizard: true }))
+    const request = vi.fn().mockResolvedValue(response({ id: 9, completed_case_wizard: true }))
     vi.stubGlobal("fetch", request)
     const runtime = createUserRuntime()
 
-    await runtime.loadCurrent()
+    runtime.initialize({ id: 9, completed_case_wizard: false })
     const user = await runtime.shownIntroWizard()
 
-    expect(request).toHaveBeenNthCalledWith(2, "api/users/9", {
+    expect(request).toHaveBeenCalledWith("api/users/9", {
       method: "PUT",
       headers: { Accept: "application/json", "Content-Type": "application/json", "X-CSRF-Token": "" },
       body: JSON.stringify({ user: { completed_case_wizard: true } })
@@ -65,11 +48,13 @@ describe("user runtime", () => {
     expect(user.completedCaseWizard).toBe(true)
   })
 
-  it("surfaces failed API responses", async () => {
+  it("surfaces failed wizard completion without marking the user complete", async () => {
     const request = vi.fn().mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 503, json: vi.fn(async () => null) })
     vi.stubGlobal("fetch", request)
     const runtime = createUserRuntime()
+    runtime.initialize({ id: 9, completed_case_wizard: false })
 
-    await expect(runtime.loadCurrent()).rejects.toThrow("Request failed (503)")
+    await expect(runtime.shownIntroWizard()).rejects.toThrow("Request failed (503)")
+    expect(runtime.current().completedCaseWizard).toBe(false)
   })
 })

@@ -4,7 +4,6 @@ import { createSearchEndpointRuntime } from "utils/search_endpoint_runtime"
 import { createSettingsCatalog } from "utils/settings_catalog_runtime"
 import { createSettingsRuntime } from "utils/settings_runtime"
 import { createUserRuntime } from "utils/user_runtime"
-import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 import { caseRuntime } from "utils/case_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
@@ -23,7 +22,6 @@ export function createCoreWorkspaceRuntime({
   const mapperSearchRuntime = createMapperSearchRuntime()
   const searchEndpointRuntime = createSearchEndpointRuntime()
   const settingsCatalog = createSettingsCatalog()
-  const configurationRuntime = createConfigurationRuntime()
   const navigationRuntime = createNavigationRuntime()
   const settingsRuntime = createSettingsRuntime({
     caseNo: () => navigationRuntime.getCaseNo(),
@@ -65,12 +63,7 @@ export function createCoreWorkspaceRuntime({
   })
   const caseCapabilities = {
     bootstrap: {
-      core: createCoreCapabilities(
-        configurationRuntime,
-        userRuntime,
-        settingsRuntime,
-        navigationRuntime
-      ),
+      core: createCoreCapabilities(userRuntime, settingsRuntime, navigationRuntime),
       docCache
     },
     snapshots: {
@@ -249,19 +242,8 @@ function createTuneRelevanceCapabilities(
   }
 }
 
-function createCoreCapabilities(
-  configurationRuntime,
-  userRuntime,
-  settingsRuntime,
-  navigationRuntime
-) {
+function createCoreCapabilities(userRuntime, settingsRuntime, navigationRuntime) {
   return {
-    configuration: {
-      setCommunalScorersOnly: (value) => configurationRuntime.setCommunalScorersOnly(value),
-      setQueryListSortable: (value) => configurationRuntime.setQueryListSortable(value),
-      setCaseNo: (value) => configurationRuntime.setCaseNo(value),
-      setTryNo: (value) => configurationRuntime.setTryNo(value)
-    },
     user: {
       initialize: (data) => userRuntime.initialize(data)
     },

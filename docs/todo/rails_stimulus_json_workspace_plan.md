@@ -162,8 +162,8 @@ all browser modules, adding HTML endpoints or enabling case-page Turbo Drive.
 
 **2026-10-05: batches 1 and 2 complete for the scorer-selection pilot; batch 3
 complete for page-supplied bootstrap data; batch 4 complete for Tune Relevance;
-batch 5 complete for the audited one-off modal lifecycles; batch 6 complete for
-judgement book choices, with other candidates still to assess.**
+batch 5 complete for the audited one-off modal lifecycles; the judgement book
+choices group of batch 6 is complete, while batch 6 remains open.**
 The existing restriction on parallel HTML endpoints
 does not block this plan.
 
@@ -445,3 +445,118 @@ refresh events retain their owners; no new state or lifecycle abstraction was ad
   multi-team catalogs and wider management coverage. Team lists, snapshot selectors
   and export configuration remain candidates to assess individually; this completes
   the judgement choices group, not all of batch 6.
+
+### Remaining-work audit (2026-10-05)
+
+This is a source and coverage audit, not new live verification. It examines the
+remaining batch-6 candidates, settings/history ownership, the completed modal
+helper boundary, workspace construction/forwarding and the duplicate annotation
+reads recorded in the baseline. The governing goal is fewer lines and clearer
+Rails/Stimulus ownership, not converting every `createElement` into a template.
+No implementation or manual verification timestamps were changed by this audit.
+
+| Candidate | Current source evidence | Recommendation |
+| --- | --- | --- |
+| Compare Snapshots | `diff_core_controller.js#renderSelections` constructs the whole row: layout styles, label, select, two buttons, icons and actions. `core/_diff_modal.html.erb` owns only the surrounding shell. | Strongest remaining conversion: an ERB row template removes substantial static structure from the controller. Keep options and computed labels dynamic. |
+| Core Share Case | `share_case_core_controller.js#renderTeamList` creates one button per team and receives classes/actions from its two callers. The modal shell and forms already live in ERB. | Conditional small conversion: only proceed if the complete patch improves clarity without disproportionate template/target plumbing. This removes markup construction, not a second state owner or manual listeners. |
+| Export configuration | `_export_case_core_modal.html.erb` already owns format controls, descriptions and links. `_loadSnapshots` only creates blank/data options for three selects; download dispatch and CSV generation serve distinct formats. | Retain. Moving a bare option into a template would add plumbing without removing meaningful structure or orchestration. No persisted export-configuration owner was found here. |
+| Tune Relevance/history | History already clones `historyItemTemplate`; `settings_runtime.js` owns tries and mutation reconciliation. Local form fields and shared query/curator/endpoint edits retain different contracts. | Do not reopen batch 4 without evidence of duplicate ownership. Endpoint-suggestion buttons and try-variable rows are small remaining markup candidates, deferred from this completion scope. |
+| Wizard | Built-in engine choices and steps are ERB; mapper/endpoint options and removable draft-query chips remain dynamic. | Retain in this scope. The small chip shell is a possible later template extraction, not a reason to rewrite wizard settings or validation. |
+
+The snapshot registry/hydration bridge, comparison selection store and live-query
+scoring adapter serve different responsibilities. Their presence is not evidence
+of redundant state. Likewise `dynamic_modal.js` now delegates lifecycle, and
+`detailed_document_modal.js` retains population/sanitation rather than its removed
+action listeners. Retain those boundaries; separately assess the forwarding layers
+used to reach them.
+
+The runtime audit found a stronger deletion candidate than team-button markup:
+`configuration_runtime.js` (31 lines) receives bootstrap writes, but none of its
+getters has a production caller. Scorer and query-list flags already arrive from
+Rails as their own controllers' Boolean values; navigation owns the active IDs.
+Remove this unused copy, its factory/forwarding/bootstrap plumbing and redundant
+bootstrap flag attributes as one group, after confirming consumer and failure
+contracts. Keep the live bootstrap case/try attributes.
+`user_runtime.loadCurrent` also has no production caller after batch 3; retain user
+normalization and wizard completion persistence, but assess deleting that old read.
+
+`core_workspace_runtime.js` is 290 lines, including four per-consumer capability
+builders; `core_capabilities_runtime.js` adds 19 lines of async getters over groups
+already built synchronously. Much of the builders forwards or renames existing
+methods. Simplifying them can remove indirection, but passing all services to every
+controller would weaken clarity. Audit the complete four-consumer group (bootstrap,
+wizard, tuning and snapshots), preserve necessary adapters such as tuning's
+`draft()` versus wizard's `editable()`, and expose existing owners directly where
+that eliminates wrappers. Do not add a replacement generic facade. These are
+source sizes and deletion candidates, not promised net savings.
+The independent Rails/Hotwire source review confirmed the unused-code findings,
+but made forwarding simplification conditional on a concrete dependency design.
+The async getters preserve Promise/error and microtask behavior: Tune Relevance
+uses `.then()`/`.catch()`, while the other consumers await them. Preserve startup
+timing, scoped dependencies and method receiver binding as well as data contracts;
+synchronous construction alone does not justify removing the async interface.
+
+#### Proposed remaining sequence and gates
+
+1. **[MIGRATION-FOLLOWUP] Unused bootstrap/configuration-state deletion complete
+   (2026-10-05; verification below).**
+   Assess redundant forwarding as a separate conditional follow-up, using a
+   concrete patch and preserving Promise/startup-order and receiver-binding
+   contracts. Retain forwarding when removing it increases consumer complexity.
+   This follows
+   batch 4's ownership criteria rather than treating its completed tuning group as
+   proof that all workspace plumbing is minimal. Preserve shared instances,
+   normalization, wizard update timing, tuning save/history reconciliation,
+   snapshot hydration and protocol/navigation behavior. Verify direct-link/reload
+   and invalid-try bootstrap, flags at their actual consuming controllers, wizard
+   completion, tuning save/error/retry and snapshot apply/clear. Keep existing
+   behavioral tests; tests solely exercising deleted unused getters do not create
+   a production requirement. Record production JS + ERB additions/deletions
+   separately from tests/docs, and explain every retained adapter.
+2. **[MIGRATION-FOLLOWUP] Establish the Compare Snapshots baseline, then complete
+   the row-template group.** Preserve the five-row limit, selection order, duplicate
+   and processing warnings, Remove versus Delete, delete confirmation, apply/clear
+   behavior and failure-retained selections. Keep hydration/scoring in the bridge.
+   Existing Vitest contracts cover these operations and rejected bridge commands;
+   checked-in Playwright covers creation/listing, duplicate warning, apply, diff
+   badges and clear, but not delete or forced picker/bridge failure/retry. Extend
+   that coverage on a disposable case with `afterAll` cleanup. Sample scenario
+   5.3: multi-row selection, apply/reopen/clear, delete cancel/confirm, load failure
+   and apply/delete failure/retry, including visible diff scores. Capture and inspect
+   matching baseline/current states; defer large/background snapshots and other
+   engines explicitly. Source shows every selection change replaces all rows, so
+   establish current focus behavior before choosing a keyed update strategy. The
+   plan's focus-preservation gate does not authorize silently improving a baseline
+   defect. Slow close/reopen behavior also needs a baseline before any lifecycle fix.
+3. **[MIGRATION-FOLLOWUP] Assess the smaller Core Share Case template group against
+   the same deletion/clarity gate.** If selected, complete it end-to-end:
+   Preserve mutually exclusive/toggle-off selection, distinct no-teams versus
+   all-teams-shared states, API stay-on-page mutations and the judgement-modal
+   outlet. Keep the management `share-case` surface's select/form/redirect contract
+   separate. Unit tests cover load/share/unshare errors, events and cross-case stale
+   loads. `share_case.spec.ts` covers both surfaces and the outlet, but changes
+   fixture memberships to establish its starting state; use a disposable case for
+   the new mutation/error sample. Scenario 6.5's latest recorded sample only opened
+   and closed the modal. Verify share/unshare persistence after reload, Cancel,
+   load failure/reopen, mutation failure/retry and no-team/all-shared states, with
+   inspected before/after pairs. Same-case reopen races are an investigation gate,
+   not an established regression or an authorized behavior change.
+4. **[MIGRATION-FOLLOWUP] Close the plan with explicit dispositions.** Record the
+   selected groups' removals and verification, retain Export and the small wizard/tuning
+   candidates with the rationale above, and update ownership docs/tracker paths
+   for templates actually added. Completion means the selected groups pass their
+   gates; it does not imply exhaustive workspace verification.
+
+The duplicate initial annotation GET remains measurable (list and graph each load
+their own projection). Sharing it would require a request/data ownership contract
+that preserves list errors, graph refresh and `annotations:changed`; embedding it
+alone would not remove both reads. Defer that optimization unless its benefit
+justifies the additional coordination. Later snapshot catalog reads on modal open
+also refresh server data; do not replace them with the bootstrap registry merely
+because the URL overlaps.
+
+Known accessibility defects in Compare/Export and the unrated-snapshot TREC export
+failure are already marked `[PREEXISTING]` in [todo.md](todo.md). They need separate
+authorization, not incidental fixes during template extraction. Nested Escape is
+still separately unresolved as recorded under batch 5. Case-page Drive and parallel
+HTML endpoints remain outside this plan.

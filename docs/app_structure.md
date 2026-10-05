@@ -48,6 +48,9 @@ result for case aggregates, persistence and graph consumers. `utils/case_runtime
 the selected case record; `coreWorkspace.caseState` reads it directly. Query and
 book events keep their existing contracts. Controllers own DOM interaction, and
 static page and modal structure remains in Rails ERB partials.
+Rails supplies scorer and query-sort flags directly to their consuming Stimulus
+controllers; bootstrap retains no separate configuration copy. User initialization
+uses page data, while wizard-completion persistence keeps its JSON PUT.
 Scorer and judgement-book choices clone core ERB row templates; their controllers
 populate JSON data and selection state while retaining existing mutation owners.
 

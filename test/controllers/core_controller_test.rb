@@ -25,8 +25,8 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'body[data-core-bootstrap-case-no-value=?]', cases(:one).id.to_s
       assert_select 'body[data-core-bootstrap-try-no-value=?]', tries(:one).try_number.to_s
       assert_select 'body[data-core-bootstrap-case-toolbar-outlet="#case-actions"]'
-      assert_select 'body[data-core-bootstrap-communal-scorers-only-value=?]', Rails.application.config.communal_scorers_only.to_s
-      assert_select 'body[data-core-bootstrap-query-list-sortable-value=?]', Rails.application.config.query_list_sortable.to_s
+      assert_select '#pickScorerModal[data-pick-scorer-core-communal-scorers-only-value=?]', Rails.application.config.communal_scorers_only.to_s
+      assert_select '[data-queries-list-query-list-sortable-value=?]', Rails.application.config.query_list_sortable.to_s
       assert_select 'body[data-quepid-root-url]'
       assert_select 'head base', 1
       assert_select 'meta[name="turbo-visit-control"][content="reload"]', 1

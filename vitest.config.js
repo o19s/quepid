@@ -63,7 +63,6 @@ export default defineConfig({
       { find: "utils/mapper_search_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/mapper_search_runtime.js") },
       { find: "utils/settings_catalog_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/settings_catalog_runtime.js") },
       { find: "utils/settings_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/settings_runtime.js") },
-      { find: "utils/configuration_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/configuration_runtime.js") },
       { find: "utils/navigation_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/navigation_runtime.js") },
       { find: "utils/case_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/case_runtime.js") },
       { find: "utils/diff_scores", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_scores.js") },

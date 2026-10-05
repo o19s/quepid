@@ -11,9 +11,7 @@ export default class extends Controller {
   static values = {
     caseNo: Number,
     tryNo: Number,
-    initial: Object,
-    communalScorersOnly: String,
-    queryListSortable: String
+    initial: Object
   }
 
   connect() {
@@ -28,16 +26,12 @@ export default class extends Controller {
       const runtime = getCoreCapabilities()
       this.capabilities = await getBootstrapCapabilities()
 
-      const { configuration, user, case: caseCapability, settings, navigation } = this.capabilities.core
+      const { user, case: caseCapability, settings, navigation } = this.capabilities.core
       const { docCache } = this.capabilities
       const comparisonStore = stores.diff
       const caseNo = this.caseNoValue || 0
       let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
 
-      configuration.setCommunalScorersOnly(this.communalScorersOnlyValue)
-      configuration.setQueryListSortable(this.queryListSortableValue)
-      configuration.setCaseNo(caseNo)
-      configuration.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
       user.initialize(this.initialValue.user)
       const initialCaseNo = navigation.currentCaseNo()
 

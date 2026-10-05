@@ -84,8 +84,6 @@
       data-snapshot-bridge-snapshots-url-value="<%= api_case_snapshots_path(@case) if @case %>"
       <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
       data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"
-      data-core-bootstrap-communal-scorers-only-value="<%= Rails.application.config.communal_scorers_only %>"
-      data-core-bootstrap-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
       data-quepid-root-url="<%= quepid_root_url %>">
 <% else %>
 <body data-controller="page-cache" data-action="turbo:before-cache@document->page-cache#prepare" class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">

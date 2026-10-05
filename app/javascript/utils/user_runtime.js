@@ -1,4 +1,4 @@
-import { getJson, putJson } from "api/json"
+import { putJson } from "api/json"
 
 function normalizeUser(data) {
   return {
@@ -21,13 +21,6 @@ export function createUserRuntime() {
     initialize(data) {
       currentUser = normalizeUser(data)
       return currentUser
-    },
-
-    loadCurrent() {
-      return getJson("api/users/current").then((data) => {
-        currentUser = normalizeUser(data)
-        return currentUser
-      })
     },
 
     shownIntroWizard() {

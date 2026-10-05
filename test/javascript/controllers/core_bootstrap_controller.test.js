@@ -24,12 +24,6 @@ describe("CoreBootstrapController", () => {
       caseRuntime: {
         bootstrap: {
           core: {
-            configuration: {
-              setCommunalScorersOnly: vi.fn(),
-              setQueryListSortable: vi.fn(),
-              setCaseNo: vi.fn(),
-              setTryNo: vi.fn()
-            },
             user: { initialize: vi.fn().mockReturnValue({ id: 7 }) },
             case: {
               initialize: vi.fn().mockReturnValue({ tries: [], lastTry: 1 }),
@@ -74,8 +68,6 @@ describe("CoreBootstrapController", () => {
     controller.caseNoValue = caseNo
     controller.initialValue = { user: { id: 7 }, case: { case_id: initialCaseNo, tries: [], last_try_number: 1 } }
     controller.tryNoValue = 1
-    controller.communalScorersOnlyValue = "false"
-    controller.queryListSortableValue = "true"
     controller.caseToolbarOutlet = { showActions: ready }
     controller.hasCaseToolbarOutlet = true
     await controller.bootstrap()
@@ -88,8 +80,6 @@ describe("CoreBootstrapController", () => {
     controller.caseNoValue = 2
     controller.initialValue = { user: { id: 7 }, case: { case_id: 2, tries: [], last_try_number: 1 } }
     controller.tryNoValue = 1
-    controller.communalScorersOnlyValue = "false"
-    controller.queryListSortableValue = "true"
 
     await controller.bootstrap()
 
