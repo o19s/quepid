@@ -22,30 +22,30 @@ function isStale(stream) {
  * the check runs when Turbo renders, not when the stream arrives, since the
  * reordering happens in between.
  */
+/**
+ * Wraps a replace's render so it checks staleness when Turbo renders it,
+ * not when the stream arrives.
+ * @param {CustomEvent} event turbo:before-stream-render
+ */
+function guard(event) {
+  const stream = event.target
+  if (stream.getAttribute("action") !== "replace") return
+
+  const render = event.detail.render
+  event.detail.render = async (streamElement) => {
+    if (isStale(streamElement)) return
+    await render(streamElement)
+  }
+}
+
 export default class extends Controller {
   /** Starts watching streams on the page. */
   connect() {
-    this.guard = this.guard.bind(this)
-    document.addEventListener("turbo:before-stream-render", this.guard)
+    document.addEventListener("turbo:before-stream-render", guard)
   }
 
   /** Stops watching. */
   disconnect() {
-    document.removeEventListener("turbo:before-stream-render", this.guard)
-  }
-
-  /**
-   * Wraps a replace's render so it checks staleness when Turbo renders it.
-   * @param {CustomEvent} event turbo:before-stream-render
-   */
-  guard(event) {
-    const stream = event.target
-    if (stream.getAttribute("action") !== "replace") return
-
-    const render = event.detail.render
-    event.detail.render = async (streamElement) => {
-      if (isStale(streamElement)) return
-      await render(streamElement)
-    }
+    document.removeEventListener("turbo:before-stream-render", guard)
   }
 }
