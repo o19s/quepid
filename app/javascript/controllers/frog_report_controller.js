@@ -45,11 +45,14 @@ export default class extends Controller {
     content.dataset.controller = "frog-report"
     content.dataset.frogReportModalRootValue = "true"
     content.dataset.frogReportRefreshUrlTemplateValue = this.refreshUrlTemplateValue
-    content.frogReportModal = modal
   }
 
   connect() {
     if (!this.modalRootValue) return
+    this.lifecycle = {}
+    this.modalElement = this.element.closest(".modal")
+    this.onHide = () => this.cleanup()
+    this.modalElement?.addEventListener("hide.bs.modal", this.onHide)
     this.store = getCoreStores().documents
     this.render()
     this.storeChange = () => this.render()
@@ -57,8 +60,17 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.cleanup()
+    this.modalElement?.removeEventListener("hide.bs.modal", this.onHide)
+  }
+
+  cleanup() {
+    this.lifecycle = null
+    this.chartRequest = null
     this.unsubscribeStore?.()
+    this.unsubscribeStore = null
     this.chartResult?.finalize()
+    this.chartResult = null
   }
 
   render() {
@@ -105,7 +117,12 @@ export default class extends Controller {
 
   renderChart(values) {
     if (!this.hasChartTarget || !window.vegaEmbed) return
+    const lifecycle = this.lifecycle
+    const request = {}
+    this.chartRequest = request
     this.chartResult?.finalize()
+    this.chartResult = null
+    const chart = document.createElement("div")
     const spec = {
       $schema: "https://vega.github.io/schema/vega/v5.json",
       width: 800,
@@ -136,10 +153,18 @@ export default class extends Controller {
         encode: { enter: { align: { value: "center" }, baseline: { value: "bottom" }, fill: { value: "#333" }, x: { scale: "xscale", field: "category", band: 0.5 }, y: { scale: "yscale", field: "amount", offset: -2 }, text: { field: "amount" } } }
       }]
     }
-    window.vegaEmbed(this.chartTarget, spec, { actions: false, renderer: "svg" }).then(result => { this.chartResult = result })
+    window.vegaEmbed(chart, spec, { actions: false, renderer: "svg" }).then(result => {
+      if (!lifecycle || lifecycle !== this.lifecycle || request !== this.chartRequest) {
+        result.finalize()
+        return
+      }
+      this.chartTarget.replaceChildren(chart)
+      this.chartResult = result
+    })
   }
 
   async refresh() {
+    const lifecycle = this.lifecycle
     const state = getCoreCapabilities().caseState || {}
     if (!state.bookId || !state.caseNo) return
     this.refreshButtonTarget.disabled = true
@@ -158,15 +183,19 @@ export default class extends Controller {
         }
         await refreshQueries(state.caseNo)
       }
-    coreFlash.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
+      if (!lifecycle || lifecycle !== this.lifecycle) return
+      coreFlash.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
       if (background) window.location.assign(getQuepidRootUrl())
     } catch (error) {
+      if (!lifecycle || lifecycle !== this.lifecycle) return
       if (error instanceof HttpError) error.message = `${error.status} ${error.statusText}`
       this.errorTarget.textContent = `An error (${error.message}) occurred, please try again.`
       this.errorTarget.classList.remove("d-none")
     } finally {
-      this.refreshButtonTarget.disabled = false
-      this.refreshIconTarget.classList.remove("spintime")
+      if (lifecycle && lifecycle === this.lifecycle) {
+        this.refreshButtonTarget.disabled = false
+        this.refreshIconTarget.classList.remove("spintime")
+      }
     }
   }
 }

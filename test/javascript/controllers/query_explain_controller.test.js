@@ -9,7 +9,7 @@ const dynamicModal = { element: document.createElement("div"), dispose: vi.fn() 
 // the mock actually renders `html` into `element` rather than leaving it empty.
 vi.mock("utils/dynamic_modal", () => ({
   openDynamicModal: vi.fn(({ html, templateId }) => {
-    dynamicModal.element.innerHTML = html || document.getElementById(templateId).innerHTML
+    dynamicModal.element.innerHTML = `<div class="modal-content">${html || document.getElementById(templateId).innerHTML}</div>`
     return dynamicModal
   })
 }))
@@ -39,11 +39,26 @@ function baseData(overrides = {}) {
 
 function buildController(element, data, renderQueryTemplate = vi.fn()) {
   const queriesList = { explainData: vi.fn(() => data), renderQueryTemplate }
-  return buildControllerFixture(QueryExplainController, {
+  const controller = buildControllerFixture(QueryExplainController, {
     element,
-    values: { queryId: 7 },
+    values: { queryId: 7, modalRoot: false },
     outlets: { queriesList }
   })
+  element.dataset.queryExplainQueriesListOutlet = "#query-container"
+  controller.requestOpen = () => {
+    QueryExplainController.prototype.requestOpen.call(controller)
+    const content = dynamicModal.element.querySelector(".modal-content")
+    const owner = buildControllerFixture(QueryExplainController, {
+      element: content,
+      values: { queryId: 7, modalRoot: true },
+      outlets: { queriesList }
+    })
+    // The browser's wrapper has .modal even though this test's stub does not.
+    dynamicModal.element.classList.add("modal")
+    owner.connect()
+    controller.modalOwner = owner
+  }
+  return controller
 }
 
 // Lets the awaited outlet promise settle before asserting on the rendered pane.
@@ -68,6 +83,7 @@ describe("QueryExplainController", () => {
   })
 
   afterEach(() => {
+    dynamicModal.element.dispatchEvent(new Event("hide.bs.modal"))
     element.remove()
     document.getElementById("query-explain-modal-template")?.remove()
     vi.restoreAllMocks()
@@ -255,7 +271,7 @@ describe("QueryExplainController", () => {
     QueryExplainController.prototype.connect.call(controller)
     controller.requestOpen()
     const el = dynamicModal.element
-    Object.defineProperty(controller, "queriesListOutlet", {
+    Object.defineProperty(controller.modalOwner, "queriesListOutlet", {
       get() { throw new Error("Missing outlet element \"queries-list\"") }
     })
     shownTab(el, "query-explain-tab-template")
@@ -263,4 +279,99 @@ describe("QueryExplainController", () => {
 
     expect(el.querySelector(".query-explain-template").textContent).toContain("Unable to render the query template.")
   })
+  it("ignores a template response after closing and reopening", async () => {
+    let complete
+    const render = vi.fn(() => new Promise(resolve => { complete = resolve }))
+    const controller = buildController(element, baseData({ supportsTemplate: true }), render)
+    controller.connect()
+    controller.requestOpen()
+    const oldOwner = controller.modalOwner
+    const oldPane = oldOwner.element.querySelector(".query-explain-template")
+    shownTab(dynamicModal.element, "query-explain-tab-template")
+    dynamicModal.element.dispatchEvent(new Event("hide.bs.modal"))
+    oldOwner.disconnect()
+    controller.requestOpen()
+    complete({ isTemplatedQuery: true, renderedQueryTemplate: "obsolete" })
+    await flush()
+    expect(oldPane.textContent).toContain("Rendering query template")
+    expect(controller.modalOwner.copyValues.renderedQueryTemplate).toBeNull()
+    expect(dynamicModal.element.textContent).not.toContain("obsolete")
+  })
+
+  it("allows only the latest template request to update the pane", async () => {
+    const completions = []
+    const render = vi.fn(() => new Promise(resolve => completions.push(resolve)))
+    const controller = buildController(element, baseData({ supportsTemplate: true }), render)
+    controller.connect()
+    controller.requestOpen()
+    shownTab(dynamicModal.element, "query-explain-tab-template")
+    shownTab(dynamicModal.element, "query-explain-tab-template")
+    completions[1]({ isTemplatedQuery: true, renderedQueryTemplate: "latest" })
+    await flush()
+    completions[0]({ error: true })
+    await flush()
+    expect(dynamicModal.element.querySelector(".query-explain-template").textContent).toContain("latest")
+    expect(controller.modalOwner.copyValues.renderedQueryTemplate).toBe("latest")
+  })
+
+  it("cancels feedback timers and removes listeners on disconnect/reconnect", async () => {
+    vi.useFakeTimers()
+    try {
+      const controller = buildController(element, baseData())
+      controller.connect()
+      controller.requestOpen()
+      const owner = controller.modalOwner
+      const button = dynamicModal.element.querySelector('.query-explain-copy[data-tab="queryDetails"]')
+      button.click()
+      await vi.advanceTimersByTimeAsync(0)
+      expect(vi.getTimerCount()).toBe(1)
+      owner.disconnect()
+      expect(vi.getTimerCount()).toBe(0)
+      button.click()
+      expect(copyText).toHaveBeenCalledTimes(1)
+      owner.connect()
+      button.click()
+      expect(copyText).toHaveBeenCalledTimes(2)
+      owner.disconnect()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it("ignores clipboard failure after the modal has closed", async () => {
+    let fail
+    copyText.mockImplementationOnce(() => new Promise((resolve, reject) => { fail = reject }))
+    const controller = buildController(element, baseData())
+    controller.connect()
+    controller.requestOpen()
+    const button = dynamicModal.element.querySelector('.query-explain-copy[data-tab="queryDetails"]')
+    button.click()
+    dynamicModal.element.dispatchEvent(new Event("hide.bs.modal"))
+    fail(new Error("denied"))
+    await flush()
+    expect(button.textContent.trim()).toBe("Copy")
+  })
+
+  it("disposes Bootstrap tab widgets when its modal closes", () => {
+    const widgets = new Map()
+    const controller = buildController(element, baseData())
+    controller.connect()
+    controller.requestOpen()
+    for (const id of ["query-explain-tab-params", "query-explain-tab-parsing", "query-explain-tab-template"]) {
+      const tab = dynamicModal.element.querySelector(`#${id}`)
+      const dispose = vi.fn(() => widgets.delete(tab))
+      widgets.set(tab, { dispose })
+    }
+    const disposals = [...widgets.values()].map(widget => widget.dispose)
+    window.bootstrap = { Tab: { getInstance: tab => widgets.get(tab) } }
+    try {
+      dynamicModal.element.dispatchEvent(new Event("hide.bs.modal"))
+      controller.modalOwner.disconnect()
+      disposals.forEach(dispose => expect(dispose).toHaveBeenCalledOnce())
+      expect(widgets.size).toBe(0)
+    } finally {
+      delete window.bootstrap
+    }
+  })
+
 })

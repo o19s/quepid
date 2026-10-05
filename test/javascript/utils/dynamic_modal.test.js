@@ -1,5 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { openDynamicModal } from "utils/dynamic_modal"
+import DynamicModalController from "controllers/dynamic_modal_controller"
+import { openDynamicModal as cloneModal } from "utils/dynamic_modal"
+
+// Drive the modal's Stimulus lifecycle explicitly; the browser connects it
+// after the caller has populated the cloned shell.
+function openDynamicModal(options) {
+  const handle = cloneModal(options)
+  const controller = Object.create(DynamicModalController.prototype)
+  controller.element = handle.element
+  controller.connect()
+  handle.controller = controller
+  return handle
+}
 
 describe("dynamic_modal", () => {
   beforeEach(() => {
@@ -17,11 +29,13 @@ describe("dynamic_modal", () => {
           const backdrop = document.createElement("div")
           backdrop.className = "modal-backdrop"
           document.body.appendChild(backdrop)
+          this.element.dispatchEvent(new Event("shown.bs.modal"))
         }
 
         hide() {
           this._shown = false
           this.element.classList.remove("show")
+          document.querySelector(".modal-backdrop:last-child")?.remove()
           this.element.dispatchEvent(new Event("hidden.bs.modal"))
         }
 

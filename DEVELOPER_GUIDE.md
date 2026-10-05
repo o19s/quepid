@@ -958,6 +958,7 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 
 | Event | Emitter | Listener |
 | --- | --- | --- |
+| `dynamic-modal:close` | `utils/dynamic_modal` (on the cloned wrapper) | `dynamic-modal` |
 | `rating-popover:rate`, `rating-popover:reset` | `rating-popover` (bubbles) | `search-results`, `missing-documents` |
 | `search-result:show-document`, `query-notes:close` | `search-result`, `query-notes` (bubbles) | `search-results` |
 | `query-row:toggle` | `queries-list` (on the search-results element); `query-row` also fires a Stimulus `dispatch("toggle")` | `search-results`, `queries-list` |

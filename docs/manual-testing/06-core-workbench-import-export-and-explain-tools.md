@@ -102,6 +102,7 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   3. **Parsing** tab — view how the engine parsed the query.
   4. **Query Template** tab — click it; if the query is templated, confirm the populated template renders; otherwise confirm "This is not a templated query." shows.
   5. Use the **Copy** icon to copy the active tab's content, then paste it somewhere to confirm it copied correctly.
+  6. For a templated query, force a render failure and revisit the tab to retry. Delay a response, close/reopen the modal and confirm it cannot replace the new modal's content; when requests overlap, the latest request wins.
 - **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open). After **Copy**, the button reads "Copied!" for about two seconds and then returns to "Copy"; if the browser refuses the clipboard write, it reads "Copy failed" instead.
 
 ### 6.8 Explain a single document (Debug Explain)
@@ -121,7 +122,8 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   2. Review "The Frog Pond Report: {case name}" — summary stats on ratings coverage (queries with/without results, total ratings needed, % missing).
   3. On a fully-rated case, confirm the "All the queries have been fully rated!" congratulations state appears.
   4. Review the bar chart of query counts grouped by missing-rating depth.
-  5. If the case is linked to a Book, use **Refresh ratings from book {book name}**.
+  5. If the case is linked to a Book, use **Refresh ratings from book {book name}**. Force a save failure, confirm the error and re-enabled button, then retry.
+  6. Close/reopen while a chart or refresh is pending. Confirm one current chart and no late error or button changes from the closed modal; a completed refresh still updates shared query data.
 - **Expected:** Stats and chart accurately reflect the case's current rating coverage; the refresh action pulls the latest judgements from the linked book.
 
 ### 6.10 Unarchive case (from a list's Archived filter)
@@ -138,4 +140,5 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   2. In "Detailed Document View of doc: {doc id}", review the listed sub-fields, translations, and embeds.
   3. Click **View All Fields** to reveal the full raw document as formatted JSON, then **Hide All Fields** to collapse it again.
   4. Click **View Document** (opens the document at the search engine in a new tab) if the doc has a resolvable URL, otherwise confirm the button is disabled.
+  5. Repeat open/close with Close, Escape and a backdrop click. Reopening starts with raw fields hidden; dismissal leaves no orphaned backdrop or body scroll lock.
 - **Expected:** Fields shown match the document's actual data; an object/array-valued sub-field renders as an expandable JSON tree, not raw text.

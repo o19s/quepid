@@ -69,6 +69,7 @@ function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) 
     controller[`${name}Target`] = element
     controller[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
   })
+  controller.lifecycle = {}
   controller.store = store
   return controller
 }
@@ -79,6 +80,8 @@ describe("FrogReportController", () => {
     resetCoreStoresForTest()
     resetCoreFlashForTest()
     vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+    delete window.vegaEmbed
   })
 
   it("buckets queries by missing ratings for the chart, labelling the extremes", () => {
@@ -185,4 +188,72 @@ describe("FrogReportController", () => {
 
     expect(fetch).not.toHaveBeenCalled()
   })
+  it("finalizes superseded and disconnected chart results without mounting them", async () => {
+    const complete = []
+    window.vegaEmbed = vi.fn(() => new Promise(resolve => complete.push(resolve)))
+    const controller = buildController()
+    controller.renderChart([])
+    controller.renderChart([])
+    const oldResult = { finalize: vi.fn() }
+    const currentResult = { finalize: vi.fn() }
+    complete[1](currentResult)
+    await Promise.resolve()
+    expect(controller.chartResult).toBe(currentResult)
+    complete[0](oldResult)
+    await Promise.resolve()
+    expect(oldResult.finalize).toHaveBeenCalledOnce()
+    expect(controller.chartResult).toBe(currentResult)
+    controller.renderChart([])
+    expect(currentResult.finalize).toHaveBeenCalledOnce()
+    controller.disconnect()
+    const lateResult = { finalize: vi.fn() }
+    complete[2](lateResult)
+    await Promise.resolve()
+    expect(lateResult.finalize).toHaveBeenCalledOnce()
+    expect(controller.chartResult).toBeNull()
+  })
+
+  it.each([200, 500])("completes the shared mutation but ignores late UI feedback (%s) after disconnect", async status => {
+    let complete
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { complete = resolve })))
+    const refreshQueries = vi.fn().mockResolvedValue()
+    const flash = { show: vi.fn() }
+    setCoreFlashForTest(flash)
+    const controller = buildController({
+      queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries }
+    })
+    controller.refreshUrlTemplateValue = "refresh"
+    const pending = controller.refresh()
+    controller.disconnect()
+    controller.errorTarget.textContent = "new connection"
+    controller.lifecycle = {}
+    complete(new Response("{}", { status }))
+    await pending
+    expect(refreshQueries).toHaveBeenCalledTimes(status === 200 ? 1 : 0)
+    expect(controller.errorTarget.textContent).toBe("new connection")
+    expect(flash.show).not.toHaveBeenCalled()
+  })
+
+  it("removes its store subscription and hide listener before reconnecting", () => {
+    const controller = buildController()
+    const modal = document.createElement("div")
+    modal.className = "modal"
+    modal.append(controller.element)
+    controller.modalRootValue = true
+    const render = vi.spyOn(controller, "render").mockImplementation(() => {})
+    controller.connect()
+    controller.disconnect()
+    const count = render.mock.calls.length
+    controller.store.dispatchEvent(new Event("change"))
+    expect(render).toHaveBeenCalledTimes(count)
+    controller.connect()
+    controller.store.dispatchEvent(new Event("change"))
+    expect(render).toHaveBeenCalledTimes(count + 2)
+    modal.dispatchEvent(new Event("hide.bs.modal"))
+    controller.store.dispatchEvent(new Event("change"))
+    expect(render).toHaveBeenCalledTimes(count + 2)
+    expect(controller.lifecycle).toBeNull()
+    controller.disconnect()
+  })
+
 })

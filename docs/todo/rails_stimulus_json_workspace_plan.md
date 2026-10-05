@@ -161,7 +161,8 @@ all browser modules, adding HTML endpoints or enabling case-page Turbo Drive.
 ## Execution record
 
 **2026-10-05: batches 1 and 2 complete for the scorer-selection pilot; batch 3
-complete for page-supplied bootstrap data; batch 4 complete for Tune Relevance.**
+complete for page-supplied bootstrap data; batch 4 complete for Tune Relevance;
+batch 5 complete for the audited one-off modal lifecycles.**
 The existing restriction on parallel HTML endpoints
 does not block this plan.
 
@@ -358,3 +359,59 @@ Save-error feedback fixes a pre-existing defect with approval. Historical source
 `86e3de9f96b0cca87655da51f4d9dc8e92aaa782` lacks rejection handling in
 `app/assets/javascripts/controllers/settings.js` and `services/settingsSvc.js`
 (lines 592–607); this was source inspection, not a live historical replay.
+
+### Batch 5: one-off modal lifecycle cleanup complete
+
+- `dynamic-modal` now owns Bootstrap show/hide transitions, nested-event guards
+  and teardown. `dynamic_modal.js` only clones/populates the shell boundary and
+  exposes close; its helper-owned hidden listener and Bootstrap lifecycle were
+  removed. Close-before-connect is handled; disconnect during opening waits
+  safely for Bootstrap's transition. Existing stacking, body-lock restoration and
+  full-document navigation remain in place.
+- Detailed Document actions moved from manual helper listeners to ERB actions
+  and `detailed-document`. Browse and Explain Query have modal-owned controller
+  instances instead of retaining their work on a result-row launcher. Explain
+  Query removes listeners, cancels feedback timers, disposes Bootstrap tabs and
+  ignores closed/superseded template responses. Existing error/copy behavior is
+  retained; no endpoint or additional shared state owner was introduced.
+- Frog Report unsubscribes and finalizes charts on hide/disconnect. Charts render
+  into a detached host and only the latest result mounts; obsolete results are
+  finalized. A successful in-flight foreground book refresh still reloads shared
+  queries after close, while late feedback and navigation require the original
+  connection. Missing Documents already has request-generation/editor cleanup;
+  its implementation was retained.
+- Passed: full Vitest (168 files / 1,492 tests), JavaScript lint, enforced-scope
+  formatting, core bundle build and core controller rendering (16 tests /
+  145 assertions). Final `workspace_modal_lifecycle.spec.ts` passes four flows
+  plus authentication: repeated detail dismissal, template failure/retry and
+  stale responses/navigation, refresh failure/retry and chart races, and repeated
+  nested Debug backdrop dismissal. Existing detail/Frog smoke flows also passed.
+- MCP sample: detail open/raw fields/close on case 219; Browse/copy, Params/Parsing,
+  tab disposal, forced template error and delayed close/reopen, fully-rated Frog
+  chart and refresh failure/retry, and finder/nested Debug on case 6. Book settings
+  were changed only in memory and refresh PUT responses intercepted; template
+  responses used the existing outlet seam. No disposable users, teams or cases
+  were created. Tracker entries record partial coverage and actual timestamps.
+- Captured and inspected ten viewport pairs under
+  `.playwright-mcp/json-lifecycle/`: detail/fields, Explain Params/template error,
+  Browse/copy, Frog normal/error, nested Debug/backdrop close. Modal appearance
+  is preserved; background toasts, scroll offsets and search progress differ.
+  The extra nested Escape pair records the baseline limitation below, and an
+  after-only screenshot records current-template rendering after a delayed reopen.
+  Current sources and bundles were restored and checked after helper-only baseline
+  captures. Ownership docs and scenario prose/path mappings are updated.
+- Deferred live coverage: real ES/OpenSearch template rendering, real book sync
+  and 50+ query background refresh, external document/browse navigation,
+  credentials, translations/embeds, other engines, full JSON-tree interactions,
+  and broader snapshot/management flows. Existing unit contracts retain rendering,
+  sanitation and foreground/background refresh behavior.
+
+Nested Escape can close the finder while leaving Debug open in both the live
+pre-batch helper baseline and current code. Backdrop dismissal closes only the
+inner modal and retains the finder/scroll lock. Historical pre-removal source at
+`86e3de9f96b0cca87655da51f4d9dc8e92aaa782` (`services/quepidModalSvc.js`) constructs
+BS5 modals with `focus: true`, stacks their z-indices and restores body lock, but
+has no explicit focus-trap handoff. This is source inspection, not a live
+historical replay; Angular-regression classification remains unresolved. The
+unchanged Escape behavior is recorded for separate investigation, not changed by
+this lifecycle batch.

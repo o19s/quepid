@@ -17,7 +17,7 @@
     </p>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-outline-secondary float-start me-auto" data-modal-target="copy">
+    <button class="btn btn-outline-secondary float-start me-auto" data-modal-target="copy" data-action="browse-query#copy">
       <i class="bi bi-copy" data-modal-target="copyIcon"></i>
       <span data-modal-target="copyLabel">Copy curl command</span>
     </button>
@@ -117,15 +117,15 @@
 </template>
 
 <template id="detailed-document-modal-template">
-  <div style="margin: 20px">
+  <div style="margin: 20px" data-controller="detailed-document">
     <h3>Detailed Document View of doc: <span data-modal-target="docId"></span></h3>
     <h4 data-modal-target="title"></h4>
     <div data-modal-target="fields"></div>
-    <div class="row detaileddoc code detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
+    <div data-detailed-document-target="allFields" class="row detaileddoc code detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
       <pre data-modal-target="allFields"></pre>
     </div>
-    <button class="btn btn-primary detailed-doc-view" data-modal-target="view">View Document</button>
-    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields" data-modal-target="toggleFields">View All Fields</a>
-    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close" data-modal-target="close">Close</button>
+    <button class="btn btn-primary detailed-doc-view" data-modal-target="view" data-action="detailed-document#view">View Document</button>
+    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields" data-modal-target="toggleFields" data-detailed-document-target="toggle" data-action="detailed-document#toggleFields">View All Fields</a>
+    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close" data-modal-target="close" data-bs-dismiss="modal">Close</button>
   </div>
 </template>

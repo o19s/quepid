@@ -61,6 +61,7 @@ describe("controller store subscription lifecycles", () => {
   it.each(cases)("%s preserves event lists and cleans up across reconnects", (_, Controller, storeNames, events) => {
     const controller = Object.create(Controller.prototype)
     controller.modalRootValue = true
+    controller.element = document.createElement("div")
     for (const method of ["render", "renderScore", "renderLabel", "scheduleRender", "syncSortFromUrl", "setupSortable", "load", "updateCreateState", "renderFromStore", "handleSearchFailed", "handleSearchSettled", "persistScore", "refreshCaseDiffScores"]) {
       controller[method] = vi.fn()
     }

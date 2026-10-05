@@ -31,7 +31,7 @@ describe("detailed document modal", () => {
     vi.clearAllMocks()
     const template = document.createElement("template")
     template.id = "detailed-document-modal-template"
-    template.innerHTML = `<span data-modal-target="docId"></span><h4 data-modal-target="title"></h4><div data-modal-target="fields"></div><div class="detailed-doc-all-fields" style="display: none"><pre data-modal-target="allFields"></pre></div><button data-modal-target="view" class="detailed-doc-view"></button><a href="#" data-modal-target="toggleFields" class="detailed-doc-toggle-fields">View All Fields</a><button data-modal-target="close" class="detailed-doc-close">Close</button>`
+    template.innerHTML = `<div data-controller="detailed-document"><span data-modal-target="docId"></span><h4 data-modal-target="title"></h4><div data-modal-target="fields"></div><div class="detailed-doc-all-fields" style="display: none"><pre data-modal-target="allFields"></pre></div><button data-modal-target="view" class="detailed-doc-view"></button><a href="#" data-modal-target="toggleFields" class="detailed-doc-toggle-fields">View All Fields</a><button data-modal-target="close" class="detailed-doc-close">Close</button></div>`
     document.body.appendChild(template)
   })
 
@@ -128,23 +128,6 @@ describe("detailed document modal", () => {
     expect(field.textContent).toContain("First")
     expect(field.textContent).not.toContain("<section")
     expect(field.querySelector("script")).toBeNull()
-  })
-
-  it("toggles all-fields visibility and disposes from Close", () => {
-    openDetailedDocumentModal({ doc: { id: "doc-1", title: "Title", rawFields: {} } })
-    const allFields = modal.element.querySelector(".detailed-doc-all-fields")
-    const toggle = modal.element.querySelector(".detailed-doc-toggle-fields")
-    const close = modal.element.querySelector(".detailed-doc-close")
-
-    expect(allFields.style.display).toBe("none")
-    toggle.click()
-    expect(allFields.style.display).toBe("")
-    expect(toggle.textContent).toBe("Hide All Fields")
-    toggle.click()
-    expect(allFields.style.display).toBe("none")
-    expect(toggle.textContent).toBe("View All Fields")
-    close.click()
-    expect(modal.dispose).toHaveBeenCalledTimes(1)
   })
 
   it("disables View Document when there is no link", () => {

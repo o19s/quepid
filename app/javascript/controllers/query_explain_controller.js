@@ -23,9 +23,17 @@ const COPY_FEEDBACK_MS = 2000
  */
 export default class extends Controller {
   static outlets = ["queries-list"]
-  static values = { queryId: Number }
+  static values = { queryId: Number, modalRoot: Boolean }
 
   connect() {
+    if (this.modalRootValue) {
+      this.lifecycle = {}
+      this.listeners = []
+      this.feedback = []
+      this.listen(this.element.closest(".modal"), "hide.bs.modal", () => this.cleanup())
+      this.wireModal(this.element, this.element.queryExplainData)
+      return
+    }
     const button = document.createElement("button")
     button.type = "button"
     button.className = "btn btn-outline-secondary btn-sm"
@@ -47,7 +55,34 @@ export default class extends Controller {
       ariaLabelledBy: "query-explain-modal-title"
     })
 
-    this.wireModal(modal.element, data)
+    const content = modal.element.querySelector(".modal-content")
+    content.dataset.controller = "query-explain"
+    content.dataset.queryExplainModalRootValue = "true"
+    content.dataset.queryExplainQueryIdValue = String(this.queryIdValue)
+    content.dataset.queryExplainQueriesListOutlet = this.element.dataset.queryExplainQueriesListOutlet
+    content.queryExplainData = data
+  }
+
+  disconnect() {
+    this.cleanup()
+  }
+
+  listen(element, event, handler) {
+    element.addEventListener(event, handler)
+    this.listeners.push(() => element.removeEventListener(event, handler))
+  }
+
+  cleanup() {
+    this.lifecycle = null
+    this.templateRequest = null
+    this.listeners?.forEach(remove => remove())
+    this.listeners = []
+    this.feedback?.forEach(cancel => cancel())
+    this.feedback = []
+    TABS.forEach(tab => {
+      const element = this.element.querySelector(`#${tab.tabId}`)
+      if (element) window.bootstrap?.Tab?.getInstance(element)?.dispose()
+    })
   }
 
   wireModal(el, data) {
@@ -69,6 +104,10 @@ export default class extends Controller {
     el.querySelectorAll(".query-explain-copy").forEach((button) => {
       const label = [...button.childNodes].map((node) => node.cloneNode(true))
       const feedback = createTemporaryFeedback(COPY_FEEDBACK_MS)
+      this.feedback.push(() => {
+        feedback.cancel()
+        button.replaceChildren(...label.map(node => node.cloneNode(true)))
+      })
       const showFeedback = (iconClass, text) => {
         const icon = document.createElement("i")
         icon.className = `bi ${iconClass}`
@@ -78,18 +117,19 @@ export default class extends Controller {
         )
       }
 
-      button.addEventListener("click", () => {
+      this.listen(button, "click", () => {
+        const lifecycle = this.lifecycle
         const text = this.copyValues[button.dataset.tab]
         if (!text) return
         copyText(text).then(
-          () => showFeedback("bi-check-lg", "Copied!"),
-          () => showFeedback("bi-exclamation-triangle", "Copy failed")
+          () => { if (lifecycle && lifecycle === this.lifecycle) showFeedback("bi-check-lg", "Copied!") },
+          () => { if (lifecycle && lifecycle === this.lifecycle) showFeedback("bi-exclamation-triangle", "Copy failed") }
         )
       })
     })
 
     TABS.forEach((tab) => {
-      el.querySelector(`#${tab.tabId}`).addEventListener("shown.bs.tab", () => {
+      this.listen(el.querySelector(`#${tab.tabId}`), "shown.bs.tab", () => {
         this.toggledPanel = tab.key
         el.querySelectorAll(".query-explain-copy").forEach((button) => {
           button.classList.toggle("d-none", button.dataset.tab !== tab.key)
@@ -99,14 +139,18 @@ export default class extends Controller {
 
     const templateTab = el.querySelector("#query-explain-tab-template")
     const templatePane = el.querySelector(".query-explain-template")
-    templatePane.querySelector("[data-modal-target='templateMessage']").textContent = "This is not a templated query."
+    templatePane.replaceChildren(Object.assign(document.createElement("p"), { textContent: "This is not a templated query." }))
 
     if (data.supportsTemplate) {
-      templateTab.addEventListener("shown.bs.tab", () => this.requestTemplate(templatePane))
+      this.listen(templateTab, "shown.bs.tab", () => this.requestTemplate(templatePane))
     }
   }
 
   async requestTemplate(templatePane) {
+    const lifecycle = this.lifecycle
+    if (!lifecycle) return
+    const request = {}
+    this.templateRequest = request
     templatePane.replaceChildren(Object.assign(document.createElement("p"), { textContent: "Rendering query template…" }))
 
     let result
@@ -116,6 +160,7 @@ export default class extends Controller {
       console.error("query-explain: render template failed", error)
       result = { error: true }
     }
+    if (!lifecycle || lifecycle !== this.lifecycle || request !== this.templateRequest) return
     this.renderTemplateResult(templatePane, result)
   }
 

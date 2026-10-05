@@ -55,6 +55,16 @@ local and reset on successful history mutations. Its Stimulus controller awaits
 save, retains the drawer/tab and navigates to the returned try. Query, snapshot and
 wizard consumers retain their existing read/update adapters.
 
+One-off ERB modal templates are cloned by `dynamic_modal.js`; the modal's
+`dynamic-modal` controller owns Bootstrap show/hide transitions and teardown.
+Detailed Document actions belong to `detailed-document`. Browse and Explain Query
+use separate controller instances on their modal content, so replacing a result
+row does not own or overwrite an open modal's state. Explain Query cancels copy
+feedback on hide/disconnect and ignores superseded template responses. Frog Report
+unsubscribes and finalizes charts on hide/disconnect; only the latest chart mounts.
+A pending book refresh still reconciles shared queries after close, while feedback
+and navigation require the original modal connection.
+
 This is the basic structure of the app and should get you started.
 
 ## Long running/async processes

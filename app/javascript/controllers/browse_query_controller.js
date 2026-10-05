@@ -7,7 +7,34 @@ export default class extends Controller {
   static values = {
     url: String,
     engineName: String,
-    headers: Object
+    headers: Object,
+    modalRoot: Boolean,
+    command: String
+  }
+
+  connect() {
+    if (!this.modalRootValue) return
+    this.lifecycle = {}
+    this.modalElement = this.element.closest(".modal")
+    this.onHide = () => { this.lifecycle = null }
+    this.modalElement.addEventListener("hide.bs.modal", this.onHide)
+  }
+
+  disconnect() {
+    this.lifecycle = null
+    this.modalElement?.removeEventListener("hide.bs.modal", this.onHide)
+  }
+
+  async copy() {
+    const lifecycle = this.lifecycle
+    try {
+      await copyText(this.commandValue)
+      if (!lifecycle || lifecycle !== this.lifecycle) return
+      this.element.querySelector("[data-modal-target='copyIcon']").className = "bi bi-check-lg"
+      this.element.querySelector("[data-modal-target='copyLabel']").textContent = "Copied!"
+    } catch {
+      // Preserve the existing silent clipboard failure behavior.
+    }
   }
 
   open(event) {
@@ -40,11 +67,9 @@ export default class extends Controller {
       directLink.append(icon, " Open URL directly")
       element.querySelector(".modal-footer").insertBefore(directLink, element.querySelector(".btn-primary"))
     }
-      element.querySelector("[data-modal-target='copy']").addEventListener("click", () => {
-      copyText(curlCommand).then(() => {
-        element.querySelector("[data-modal-target='copyIcon']").className = "bi bi-check-lg"
-        element.querySelector("[data-modal-target='copyLabel']").textContent = "Copied!"
-      }).catch(() => {})
-    })
+    const content = element.querySelector(".modal-content")
+    content.dataset.controller = "browse-query"
+    content.dataset.browseQueryModalRootValue = "true"
+    content.dataset.browseQueryCommandValue = curlCommand
   }
 }

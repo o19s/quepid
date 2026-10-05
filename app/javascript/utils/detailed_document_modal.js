@@ -120,24 +120,9 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   )
   modal.element.querySelector("[data-modal-target='view']").toggleAttribute("disabled", !linkUrl)
 
-  modal.element
-    .querySelector("[data-modal-target='close']")
-    ?.addEventListener("click", () => modal.dispose())
-
-  if (linkUrl) {
-    modal.element.querySelector("[data-modal-target='view']")?.addEventListener("click", () => {
-      window.open(linkUrl, "_blank", "noopener,noreferrer")
-    })
-  }
-
-  const allFields = modal.element.querySelector(".detailed-doc-all-fields")
-  const toggle = modal.element.querySelector("[data-modal-target='toggleFields']")
-  toggle?.addEventListener("click", (event) => {
-    event.preventDefault()
-    const showing = allFields.style.display !== "none"
-    allFields.style.display = showing ? "none" : ""
-    toggle.textContent = showing ? "View All Fields" : "Hide All Fields"
-  })
+  modal.element.querySelector(
+    "[data-controller='detailed-document']"
+  ).dataset.detailedDocumentLinkUrlValue = linkUrl || ""
 
   return modal
 }
