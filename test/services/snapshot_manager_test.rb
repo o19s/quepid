@@ -107,6 +107,66 @@ class SnapshotManagerTest < ActiveSupport::TestCase
     assert_empty service.setup_docs_for_query(nil, docs)
   end
 
+  test 'shared writer normalizes metadata and preserves input documents' do
+    doc = { 'id' => 'doc1', 'explain' => { 'value' => 1.5 } }.freeze
+    result = {
+      'score' => '--', 'all_rated' => false, 'number_of_results' => 12,
+      'response_status' => 503, 'error' => 'unavailable', 'docs' => [ doc ]
+    }
+
+    service.write_queries(first_query.id => result)
+
+    persisted = snapshot.snapshot_queries.find_by!(query_id: first_query.id)
+    assert_nil persisted.score
+    assert_not persisted.all_rated
+    assert_equal 12, persisted.number_of_results
+    assert_equal 503, persisted.response_status
+    assert_equal 'unavailable', persisted.error
+    assert_equal({ 'value' => 1.5 }, JSON.parse(persisted.snapshot_docs.first.explain))
+    assert_equal '--', result['score']
+    assert doc.key?('id')
+  end
+
+  test 'shared writer rolls back query rows when document normalization fails' do
+    assert_no_difference 'SnapshotQuery.count' do
+      assert_raises NoMethodError do
+        service.write_queries(first_query.id => { docs: [ 123 ] })
+      end
+    end
+  end
+
+  test 'repeated writes append independent rows without inheriting metadata' do
+    first = service.write_queries(first_query.id => {
+      score: 0.75, all_rated: true, response_status: 200, docs: [ { id: 'original' } ]
+    }).fetch(first_query.id)
+
+    second = nil
+    assert_difference 'snapshot.snapshot_queries.count' do
+      second = service.write_queries(first_query.id => {
+        docs: [ { id: 'repeated' } ],
+      }).fetch(first_query.id)
+    end
+
+    assert_not_equal first.id, second.id
+    assert_equal [ 'original' ], first.reload.snapshot_docs.pluck(:doc_id)
+    assert_equal [ 'repeated' ], second.snapshot_docs.map(&:doc_id)
+    assert_in_delta 0.75, first.score
+    assert_nil second.score
+    assert_nil second.all_rated
+    assert_nil second.response_status
+  end
+
+  test 'imports normalize score metadata through the shared writer' do
+    service.import_queries(first_query.query_text => {
+      score: '--', all_rated: true, number_of_results: 24, docs: []
+    })
+
+    persisted = snapshot.snapshot_queries.find_by!(query_id: first_query.id)
+    assert_nil persisted.score
+    assert persisted.all_rated
+    assert_equal 24, persisted.number_of_results
+  end
+
   describe 'Import queries' do
     test 'creates queries if they do not already exist' do
       data = {

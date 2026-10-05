@@ -42,41 +42,13 @@ class SnapshotManager
   # }
   # manager.add_docs data
   def add_docs docs, queries
-    queries_to_import = []
-
-    keys = docs.nil? ? [] : docs.keys
-
-    # Start by adding queries to snapshot.
-    # First, setup all queries to be added in an array.
-    # block_with_progress_bar(keys.length) do |i|
-    keys.length.times.each do |i|
-      query_id = keys[i]
-
-      snapshot_query = @snapshot.snapshot_queries.where(query_id: query_id).first_or_initialize
-
-      # Quepid front end can send -- as no score.
-      queries[query_id]['score'] = nil if '--' == queries[query_id]['score']
-      snapshot_query.score = queries[query_id][:score]
-      snapshot_query.all_rated = queries[query_id][:all_rated]
-      snapshot_query.number_of_results = queries[query_id][:number_of_results]
-
-      queries_to_import << snapshot_query
+    docs = docs.to_unsafe_h if docs.is_a?(ActionController::Parameters)
+    data = (docs || {}).to_h do |query_id, query_docs|
+      result = queries[query_id]
+      result = result.to_unsafe_h if result.is_a?(ActionController::Parameters)
+      [ query_id, result.to_h.merge(docs: query_docs) ]
     end
-
-    # Second, mass insert queries.
-    if queries_to_import.any?
-      SnapshotQuery.insert_all(
-        queries_to_import.map do |query|
-          query.attributes.except('id')
-        end
-      )
-    end
-    # End of queries import.
-
-    # Then import docs for the queries that were just created.
-    # This method is shared with the `import_queries` method
-    # which does the same thing with a slightly different set of data.
-    import_docs keys, docs
+    write_queries data
 
     self
   end
@@ -108,53 +80,47 @@ class SnapshotManager
   # manager.import_queries data
   #
   def import_queries queries
-    queries_to_import = []
-    keys              = queries.keys
+    indexed_queries = Query.where(query_text: queries.keys, case_id: @snapshot.case_id).index_by(&:query_text)
 
-    # Fetch all queries for the snapshot's case where the query text
-    # matches the keys in the hash supplied in the params.
-    queries_params = {
-      query_text: keys,
-      case_id:    @snapshot.case_id,
-    }
-    indexed_queries = Query.where(queries_params)
-      .all
-      .index_by(&:query_text)
-
-    # Start by adding queries to snapshot.
-    # First, setup all queries to be added in an array.
-    # print_step 'Importing queries'
-    # block_with_progress_bar(keys.length) do |i|
-    keys.length.times.each do |i|
-      query_text  = keys[i]
-      query       = fetch_or_create_query indexed_queries, query_text
-
-      snapshot_query = @snapshot.snapshot_queries.where(query_id: query.id).first_or_initialize
-
-      queries[query.id] = queries.delete(keys[i])
-
-      queries_to_import << snapshot_query
+    # Import preparation resolves text to case queries; existing-query writers
+    # supply ids directly. Keep the import's id-keyed result for callers.
+    queries.keys.each do |query_text|
+      query = fetch_or_create_query indexed_queries, query_text
+      queries[query.id] = queries.delete(query_text)
     end
 
-    # Second, mass insert queries.
-    if queries_to_import.any?
-      SnapshotQuery.insert_all(
-        queries_to_import.map do |query|
-          query.attributes.except('id')
-        end
-      )
-    end
-    # End of queries import.
-
-    # Updates keys after we switched them out from the text to the id
-    keys = queries.keys
-    data = {}
-    queries.each { |key, q| data[key] = q[:docs] || q['docs'] }
-
-    # Then import docs for the queries that were just created.
-    import_docs keys, data
+    write_queries queries
 
     self
+  end
+
+  # Each write appends a fresh row for each query, even when this snapshot
+  # already contains that query. Return the exact rows created, keyed by query
+  # id, so callers never need to select among duplicates.
+  def write_queries data
+    data = data.to_unsafe_h if data.is_a?(ActionController::Parameters)
+    SnapshotQuery.transaction do
+      written_queries = {}
+      docs_to_import = []
+      data.each do |query_id, result|
+        result = normalize_query_result(result)
+        attributes = result.slice(:score, :all_rated, :number_of_results, :response_status, :error)
+        attributes[:score] = nil if '--' == attributes[:score]
+        query = @snapshot.snapshot_queries.create!(attributes.merge(query_id: query_id))
+        written_queries[query_id] = query
+        docs_to_import.concat(setup_docs_for_query(query, result[:docs]))
+      end
+      SnapshotDoc.insert_all(docs_to_import.map { |doc| doc.attributes.except('id') }) if docs_to_import.any?
+
+      # Discard the unsaved association objects used to prepare the bulk insert.
+      written_queries.each_value { |query| query.snapshot_docs.reset }
+      written_queries
+    end
+  end
+
+  def normalize_query_result result
+    result = result.to_unsafe_h if result.is_a?(ActionController::Parameters)
+    result.to_h.symbolize_keys
   end
 
   def csv_to_queries_hash docs
@@ -217,41 +183,10 @@ class SnapshotManager
       each = each.to_unsafe_h if each.is_a?(ActionController::Parameters)
       each = each.to_hash     if each.is_a?(ActiveSupport::HashWithIndifferentAccess)
 
-      each.presence&.symbolize_keys!
+      each.presence&.symbolize_keys
     end.compact
 
     result
-  end
-
-  def import_docs keys, data
-    docs_to_import = []
-
-    indexed_snap_queries = @snapshot.snapshot_queries
-      .where(query_id: keys)
-      .all
-      .index_by { |q| q.query_id.to_s }
-
-    # print_step 'Importing docs'
-    # block_with_progress_bar(keys.length) do |i|
-    keys.length.times.each do |i|
-      query_id  = keys[i]
-      docs      = data[keys[i]]
-
-      snapshot_query  = indexed_snap_queries[query_id.to_s]
-      query_docs      = setup_docs_for_query snapshot_query, docs
-
-      docs_to_import += query_docs
-    end
-
-    if docs_to_import.any?
-      SnapshotDoc.insert_all(
-        docs_to_import.map do |doc|
-          doc.attributes.except('id')
-        end
-      )
-    end
-
-    self
   end
 
   def fetch_or_create_query indexed_queries, query_text

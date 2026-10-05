@@ -50,8 +50,8 @@ class ScoresControllerTest < ActionController::TestCase
         get :index, params: { case_id: matt_case.id }
 
         assert_response :not_found
-        # `check_case`'s JSON 404 is also :not_found -- pin the HTML page specifically so a
-        # regression back to that guard fails.
+        # `render_not_found_json`'s JSON 404 is also :not_found -- pin the HTML page specifically
+        # so a regression to the JSON response fails.
         assert_match "doesn't exist (404 Not found)", response.body
         assert_no_match 'Case not found!', response.body
       end

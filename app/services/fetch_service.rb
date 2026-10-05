@@ -106,31 +106,22 @@ class FetchService
     docs
   end
 
-  # This maybe should be split out into a snapshot_query and a snapshot_docs?
   def store_query_results query, docs, response_status, response_body, error: nil
-    snapshot_query = @snapshot.snapshot_queries.create(
-      query:             query,
-      number_of_results: docs.count,
-      response_status:   response_status,
-      error:             error
+    written_queries = SnapshotManager.new(@snapshot).write_queries(
+      query.id => {
+        docs:              docs,
+        number_of_results: docs.count,
+        response_status:   response_status,
+        error:             error,
+      }
     )
+    snapshot_query = written_queries.fetch(query.id)
     if @options[:track_web_requests]
       snapshot_query.create_web_request(
         response_status: response_status,
         response:        response_body
       )
     end
-    snapshot_manager = SnapshotManager.new(@snapshot)
-    query_docs = snapshot_manager.setup_docs_for_query(snapshot_query, docs)
-    if query_docs.any?
-      SnapshotDoc.insert_all(
-        query_docs.map do |doc|
-          doc.attributes.except('id')
-        end
-      )
-    end
-
-    snapshot_query.reload # without this we get duplicate sets of snapshot_docs
 
     snapshot_query
   end

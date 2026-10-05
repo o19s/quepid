@@ -265,6 +265,24 @@ class FetchServiceTest < ActiveSupport::TestCase
       end
     end
 
+    it 'returns the exact row and web request for each repeated query run' do
+      fetch_service = FetchService.new(options.merge(track_web_requests: true))
+      fetch_service.begin(acase, atry)
+
+      first = fetch_service.store_query_results(first_query, [ { id: 'original' } ], 200, 'first response')
+      second = fetch_service.store_query_results(first_query, [], 503, 'second response', error: 'unavailable')
+
+      assert_not_equal first.id, second.id
+      assert_equal [ 'original' ], first.reload.snapshot_docs.pluck(:doc_id)
+      assert_empty second.snapshot_docs
+      assert_equal 1, first.number_of_results
+      assert_equal 0, second.number_of_results
+      assert_equal 503, second.response_status
+      assert_equal 'unavailable', second.error
+      assert_equal 'first response', first.web_request.response
+      assert_equal 'second response', second.web_request.response
+    end
+
     it 'limits how many snapshots you can have when completed' do
       fetch_service = FetchService.new options
       assert_difference 'acase.snapshots.count', 6 do
