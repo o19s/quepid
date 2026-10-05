@@ -23,10 +23,28 @@ function makeCapability(settingsOverrides = {}) {
     tries: [makeTry(), makeTry({ tryNo: 2, name: "Try 2", searchUrl: "http://b" })],
     ...settingsOverrides
   }
+  Object.assign(settings, {
+    endpointName: settings.selectedTry.endpointName,
+    endpointArchived: settings.selectedTry.endpointArchived,
+    mapperBasedSearchEngineId: settings.selectedTry.mapperBasedSearchEngineId,
+    mapperBasedSearchEngineName: settings.selectedTry.mapperBasedSearchEngineName,
+    searchEndpointId: settings.selectedTry.searchEndpointId
+  })
+  settings.tryNo = settings.selectedTry.tryNo
+  settings.curatorVars = settings.selectedTry.curatorVars
+  settings.updateVars = () => settings.selectedTry.updateVars?.()
+  settings.applyEndpoint = values => {
+    Object.assign(settings, values)
+    Object.assign(settings.selectedTry, values)
+  }
+  Object.defineProperty(settings, "queryParams", {
+    get: () => settings.selectedTry.queryParams,
+    set: value => { settings.selectedTry.queryParams = value }
+  })
   const capability = {
     settings: {
-      editable: vi.fn(() => settings),
-      reload: vi.fn(() => settings),
+      editable: vi.fn(() => settings.selectedTry ? settings : null),
+      tries: vi.fn(() => settings.tries),
       save: vi.fn(),
       duplicateTry: vi.fn(() => Promise.resolve({ name: "Try 3" })),
       renameTry: vi.fn(() => Promise.resolve()),
@@ -299,6 +317,26 @@ describe("TuneRelevanceController", () => {
       expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "curator" })
     })
 
+    it("hands off the drawer and navigates only after the new try is saved", async () => {
+      const { controller, capability } = mount()
+      controller.hasPaneOutlet = true
+      controller.paneOutlet = { keepOpenAcrossNavigation: vi.fn() }
+      controller.showTab("curator")
+      let resolve
+      capability.settings.save.mockReturnValue(new Promise(done => { resolve = done }))
+
+      const pending = controller.save()
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).not.toHaveBeenCalled()
+      expect(capability.navigation.goToTry).not.toHaveBeenCalled()
+      resolve({ tryNo: 4 })
+      await pending
+
+      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "curator" })
+      expect(capability.navigation.goToTry).toHaveBeenCalledWith(4)
+      expect(controller.paneOutlet.keepOpenAcrossNavigation.mock.invocationCallOrder[0])
+        .toBeLessThan(capability.navigation.goToTry.mock.invocationCallOrder[0])
+    })
+
     it("rejects an out-of-range number of results without saving", () => {
       const { controller, capability } = mount()
       controller.numberOfRowsTarget.value = "101"
@@ -340,19 +378,52 @@ describe("TuneRelevanceController", () => {
       expect(capability.settings.save).toHaveBeenCalledWith(settings)
     })
 
-    it("treats searchapi params starting with { as JSON but leaves plain text alone", () => {
+    it("treats searchapi params starting with { as JSON but leaves plain text alone", async () => {
       const { controller, capability, settings } = mount({ searchEngine: "searchapi" })
       settings.selectedTry.queryParams = "q=hello"
 
-      controller.save()
+      await controller.save()
 
       expect(settings.selectedTry.queryParams).toBe("q=hello")
       expect(capability.settings.save).toHaveBeenCalled()
 
       capability.settings.save.mockClear()
       settings.selectedTry.queryParams = "{bad"
-      controller.save()
+      await controller.save()
       expect(capability.settings.save).not.toHaveBeenCalled()
+    })
+
+    it("reports failed saves, preserves the editor/form values and allows retry", async () => {
+      const { controller, capability, settings } = mount()
+      capability.settings.save.mockRejectedValueOnce(new Error("Settings save unavailable"))
+      controller.fieldSpecTarget.value = "id title unsaved"
+      controller.numberOfRowsTarget.value = "23"
+      settings.selectedTry.queryParams = "q=edited"
+
+      await controller.save()
+
+      expect(errorFlash()).toEqual(["Settings save unavailable"])
+      expect(controller.saveButtonTarget.disabled).toBe(false)
+      expect(controller.settings).toBe(settings)
+      expect(settings.selectedTry.queryParams).toBe("q=edited")
+      expect(controller.fieldSpecTarget.value).toBe("id title unsaved")
+      expect(controller.numberOfRowsTarget.value).toBe("23")
+      await controller.save()
+      expect(capability.settings.save).toHaveBeenCalledTimes(2)
+    })
+
+    it("blocks repeat submissions while a save is pending", async () => {
+      const { controller, capability } = mount()
+      let resolve
+      capability.settings.save.mockImplementationOnce(() => new Promise(resolveSave => { resolve = resolveSave }))
+      const pending = controller.save()
+      await controller.save()
+
+      expect(controller.saveButtonTarget.disabled).toBe(true)
+      expect(capability.settings.save).toHaveBeenCalledOnce()
+      resolve()
+      await pending
+      expect(controller.saveButtonTarget.disabled).toBe(false)
     })
 
     it("copies the form fields into settings before saving", () => {
@@ -594,7 +665,7 @@ describe("TuneRelevanceController", () => {
       await flush()
 
       expect(capability.settings.renameTry).toHaveBeenCalledWith(2, "Better name")
-      expect(capability.settings.reload).toHaveBeenCalled()
+      expect(capability.settings.editable).toHaveBeenCalled()
       expect(flash.show).toHaveBeenCalledWith("success", "Try renamed successfully.")
     })
 

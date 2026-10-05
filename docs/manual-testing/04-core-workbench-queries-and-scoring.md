@@ -151,6 +151,8 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 - **Expected:** Each control's change takes effect either immediately or after the next search run, as appropriate. The section list scrolls inside the drawer; **Rerun My Searches!** stays pinned at the drawer's bottom (check at a 900px-tall window).
 - **Edge cases:**
   - [ ] Set Number of Results above the max (100) — confirm it's clamped/rejected.
+  - [ ] Force the new-try POST to fail: an error appears, the form/editor values remain, and the save button becomes enabled for retry. While pending, repeat clicks must not create multiple tries.
+  - [ ] Retry successfully: the URL selects the new try, the drawer remains open on Settings, and reload retains the saved values.
   - [ ] Toggle Evaluate Nightly on, then check that a background job is actually queued (verify via Admin > Job Manager, Part 14, if accessible).
 
 > Toggling **Evaluate Nightly** must also update the nightly (repeat) icon in the case header immediately, without a page reload — the header is server-rendered, so it only reflects the change if the toggle tells it to refresh. Regression-covered by `test/playwright/case_header_rename.spec.ts`.

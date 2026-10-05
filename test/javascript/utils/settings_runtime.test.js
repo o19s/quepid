@@ -45,6 +45,57 @@ describe("settings runtime", () => {
     expect(settings.createFieldSpec()).toEqual({ value: "id:id, title:title" })
   })
 
+  it("keeps query, curator and endpoint edits shared while form fields reset after history changes", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response()))
+    const runtime = createSettingsRuntime({ caseNo: () => 9 })
+    expect(runtime.draft()).toBeNull()
+    runtime.setCaseTries([tryData(1), tryData(2)])
+    runtime.setCurrentTry(1)
+    const selected = runtime.applicable()
+    const form = runtime.draft()
+    form.queryParams = "q=#$query##&boost=##boost##"
+    form.curatorVars[0].value = "8"
+    form.numberOfRows = 23
+    form.fieldSpec = "id,title"
+    form.escapeQuery = false
+    form.applyEndpoint({ searchEndpointId: 7, searchUrl: "http://new/select", searchEngine: "solr", endpointName: "New" })
+
+    expect(selected.queryParams).toBe(form.queryParams)
+    expect(form.curatorVars).toBe(selected.curatorVars)
+    expect(selected.curatorVarsDict()).toEqual({ boost: "8" })
+    expect(selected.searchEndpointId).toBe(7)
+    expect(selected.numberOfRows).toBe(10)
+    expect(selected.fieldSpec).toBe("id:id, title:title")
+    expect(selected.escapeQuery).toBe(true)
+    await runtime.renameTry(2, "Renamed")
+    const reloaded = runtime.draft()
+    expect(reloaded).toMatchObject({ numberOfRows: 10, fieldSpec: "id:id, title:title", escapeQuery: true, queryParams: form.queryParams, searchEndpointId: 7 })
+    expect(reloaded.curatorVars).toBe(selected.curatorVars)
+    expect(runtime.tries().find(item => item.tryNo === 2).name).toBe("Renamed")
+  })
+
+  it("retains shared wizard edits before a failed update without applying the response", async () => {
+    const request = vi.fn().mockResolvedValue({ ok: false, status: 503, text: async () => "", json: async () => null })
+    const navigate = vi.fn()
+    vi.stubGlobal("fetch", request)
+    const runtime = createSettingsRuntime({ caseNo: () => 9, tryNo: () => 1, navigate })
+    runtime.setCaseTries([tryData(1)])
+    runtime.setCurrentTry(1)
+    const settings = runtime.editable()
+    settings.apiMethod = "POST"
+    settings.queryParams = "q=wizard"
+    settings.numberOfRows = 25
+
+    const pending = runtime.update(settings)
+    expect(runtime.applicable()).toMatchObject({ apiMethod: "POST", queryParams: "q=wizard", numberOfRows: 10 })
+    await expect(pending).rejects.toThrow("Request failed (503)")
+    expect(navigate).not.toHaveBeenCalled()
+    request.mockResolvedValue(response({ ...tryData(1), number_of_rows: 99 }))
+    await runtime.update(settings)
+    expect(runtime.applicable().numberOfRows).toBe(10)
+    expect(navigate).toHaveBeenCalledWith({ tryNo: 1 })
+  })
+
   it("updates settings through the API and publishes the changed try", async () => {
     const request = vi.fn().mockResolvedValue(response())
     const navigate = vi.fn()
@@ -86,7 +137,7 @@ describe("settings runtime", () => {
     expect(runtime.editable().tries.find(item => item.tryNo === 2).deleted).toBe(true)
   })
 
-  it("saves settings as a new try, selects it, and navigates to it", async () => {
+  it("saves a tuning draft, selects the new try, and returns it for controller navigation", async () => {
     const request = vi.fn().mockResolvedValue(response(tryData(5)))
     const navigate = vi.fn()
     const updated = vi.fn()
@@ -95,14 +146,14 @@ describe("settings runtime", () => {
     const runtime = createSettingsRuntime({ caseNo: () => 9, navigate })
     runtime.setCaseTries([tryData(1)])
     runtime.setCurrentTry(1)
-    const settings = runtime.editable()
-    settings.selectedTry.queryParams = "q=#$query##&bq=##zeta## ##alpha##"
+    const settings = runtime.draft()
+    settings.queryParams = "q=#$query##&bq=##zeta## ##alpha##"
     settings.searchEnginePreset = 42
 
     await runtime.save({ ...settings, inError: true })
     expect(request).not.toHaveBeenCalled()
 
-    await runtime.save(settings)
+    const savedTry = await runtime.save(settings)
 
     const [url, init] = request.mock.calls[0]
     expect(url).toBe("api/cases/9/tries")
@@ -120,9 +171,10 @@ describe("settings runtime", () => {
     // New query-param variables default to 10; the stale `boost` is kept but sorted in.
     expect(Object.keys(body.curator_vars)).toEqual(["alpha", "boost", "zeta"])
     expect(body.curator_vars).toMatchObject({ alpha: 10, zeta: 10 })
-    expect(runtime.editable().selectedTry.tryNo).toBe(5)
-    expect(updated).toHaveBeenCalledWith(expect.objectContaining({ detail: expect.objectContaining({ caseNo: 9 }) }))
-    expect(navigate).toHaveBeenCalledWith({ tryNo: 5 })
+    expect(runtime.applicable()).toBe(savedTry)
+    expect(savedTry.tryNo).toBe(5)
+    expect(updated).not.toHaveBeenCalled()
+    expect(navigate).not.toHaveBeenCalled()
     document.removeEventListener("case-settings:updated", updated)
   })
 

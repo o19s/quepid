@@ -215,14 +215,14 @@ function createTuneRelevanceCapabilities(
 
   return {
     settings: {
-      editable: () => settingsRuntime.editable(),
+      editable: () => settingsRuntime.draft(),
       supportsEscapeQuery: (engine) => settingsCatalog.supportsEscapeQuery(engine),
       troubleshootingWikiUrl: (...args) => settingsCatalog.troubleshootingWikiUrl(...args),
       save: (value) => settingsRuntime.save(value),
       duplicateTry: (tryNo) => settingsRuntime.duplicateTry(tryNo),
       renameTry: (tryNo, name) => settingsRuntime.renameTry(tryNo, name),
       deleteTry: (tryNo) => settingsRuntime.deleteTry(tryNo),
-      reload: () => settingsRuntime.editable()
+      tries: () => settingsRuntime.tries()
     },
     endpoints: {
       fetchForCase: (caseNo) => searchEndpointRuntime.fetchForCase(caseNo),

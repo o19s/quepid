@@ -1,8 +1,6 @@
 import { deleteJson, postJson, putJson } from "api/json"
 import { extractCuratorVars } from "utils/curator_vars"
 
-const clone = (value) => JSON.parse(JSON.stringify(value))
-
 function createTry(data, { caseNo, createFieldSpec }) {
   const source = { ...data }
   if (source.query_params === null)
@@ -80,97 +78,92 @@ export function createSettingsRuntime({
   navigate = () => {},
   createFieldSpec = (value) => value
 } = {}) {
-  let state = null
-  let settingsId = 0
+  let tries = null
+  let selectedTry = null
 
-  const createState = (tries) => {
-    const current = {
-      tries: [],
-      selectedTry: null,
-      settingsId: settingsId++
-    }
-    const getTry = (number) => current.tries.find((item) => item.tryNo === number) || null
-    const selectTry = (number) => {
-      current.selectedTry = getTry(number)
-    }
-    const activeTries = () => current.tries.filter((item) => !item.deleted)
+  const getTry = (number) => tries?.find((item) => item.tryNo === number) || null
+  const selectTry = (number) => {
+    selectedTry = getTry(number)
+  }
+  const activeTries = () => (tries || []).filter((item) => !item.deleted)
+  const addTry = (data) => {
+    const item = createTry(data, { caseNo, createFieldSpec })
+    tries.push(item)
+    return item
+  }
 
-    current.getTry = getTry
-    current.selectTry = selectTry
-    current.numTries = () => activeTries().length
-    current.lastTry = () => activeTries().at(-1) || null
-    current.addTry = (data) => {
-      const item = createTry(data, { caseNo, createFieldSpec })
-      current.tries.push(item)
-      return item
+  const formSettings = (currentTry) => {
+    return {
+      escapeQuery: currentTry.escapeQuery,
+      apiMethod: currentTry.apiMethod,
+      customHeaders: currentTry.customHeaders || "",
+      fieldSpec: currentTry.fieldSpec,
+      numberOfRows: currentTry.numberOfRows,
+      queryParams: currentTry.queryParams,
+      searchEngine: currentTry.searchEngine,
+      searchEndpointId: currentTry.searchEndpointId,
+      searchUrl: currentTry.searchUrl,
+      proxyRequests: currentTry.proxyRequests,
+      basicAuthCredential: currentTry.basicAuthCredential,
+      mapperCode: currentTry.mapperCode,
+      options: currentTry.options,
+      headerType:
+        typeof currentTry.customHeaders === "object" && currentTry.customHeaders
+          ? JSON.stringify(currentTry.customHeaders).includes("ApiKey")
+            ? "API Key"
+            : "Custom"
+          : "None",
+      createFieldSpec: () => currentTry.createFieldSpec()
     }
-    current.deleteTry = async (number) => {
-      if (current.numTries() <= 1) return
-      const item = getTry(number)
-      if (!item) return
-      await deleteJson(`api/cases/${caseNo()}/tries/${number}`)
-      item.deleted = true
-      settingsId++
-      if (current.selectedTry?.tryNo === number) navigate({ tryNo: current.lastTry().tryNo })
-    }
-    current.duplicateTry = async (number) => {
-      const data = await postJson(`api/clone/cases/${caseNo()}/tries/${number}`)
-      const item = createTry(data, { caseNo, createFieldSpec })
-      current.tries.unshift(item)
-      settingsId++
-      return item
-    }
-    current.renameTry = async (number, name) => {
-      const item = getTry(number)
-      if (!item) return
-      await item.rename(name)
-      settingsId++
-    }
-    tries.forEach((item) => current.addTry(item))
-    return current
   }
 
   const editable = () => {
-    if (!state) return {}
-    const settings = { ...state, tries: state.tries, selectedTry: state.selectedTry }
-    const selectedTry = state.selectedTry
-    if (!selectedTry) return settings
-    Object.assign(settings, {
-      escapeQuery: selectedTry.escapeQuery,
-      apiMethod: selectedTry.apiMethod,
-      customHeaders: selectedTry.customHeaders || "",
-      fieldSpec: selectedTry.fieldSpec,
-      numberOfRows: selectedTry.numberOfRows,
-      queryParams: selectedTry.queryParams,
-      searchEngine: selectedTry.searchEngine,
-      searchEndpointId: selectedTry.searchEndpointId,
-      searchUrl: selectedTry.searchUrl,
-      proxyRequests: selectedTry.proxyRequests,
-      basicAuthCredential: selectedTry.basicAuthCredential,
-      mapperCode: selectedTry.mapperCode,
-      options: selectedTry.options,
-      headerType:
-        typeof selectedTry.customHeaders === "object" && selectedTry.customHeaders
-          ? JSON.stringify(selectedTry.customHeaders).includes("ApiKey")
-            ? "API Key"
-            : "Custom"
-          : "None"
-    })
-    settings.createFieldSpec = () => selectedTry.createFieldSpec()
-    return settings
+    if (!tries) return {}
+    return {
+      tries,
+      selectedTry,
+      getTry,
+      ...(selectedTry ? formSettings(selectedTry) : {})
+    }
+  }
+
+  const draft = () => {
+    if (!selectedTry) return null
+    const currentTry = selectedTry
+    return {
+      ...formSettings(currentTry),
+      tryNo: currentTry.tryNo,
+      endpointName: currentTry.endpointName,
+      endpointArchived: currentTry.endpointArchived,
+      mapperBasedSearchEngineId: currentTry.mapperBasedSearchEngineId,
+      mapperBasedSearchEngineName: currentTry.mapperBasedSearchEngineName,
+      get queryParams() {
+        return currentTry.queryParams
+      },
+      set queryParams(value) {
+        currentTry.queryParams = value
+      },
+      curatorVars: currentTry.curatorVars,
+      updateVars: () => currentTry.updateVars(),
+      curatorVarsDict: () => currentTry.curatorVarsDict(),
+      applyEndpoint(values) {
+        Object.assign(this, values)
+        Object.assign(currentTry, values)
+      }
+    }
   }
 
   const payloadFor = (settings) => {
-    settings.selectedTry.updateVars()
+    settings.updateVars()
     const payload = {
       try: {
         escape_query: settings.escapeQuery,
         field_spec: settings.fieldSpec,
         number_of_rows: settings.numberOfRows,
-        query_params: settings.selectedTry.queryParams
+        query_params: settings.queryParams
       },
-      parent_try_number: settings.selectedTry.tryNo,
-      curator_vars: settings.selectedTry.curatorVarsDict()
+      parent_try_number: settings.tryNo,
+      curator_vars: settings.curatorVarsDict()
     }
     if (settings.searchEndpointId) payload.try.search_endpoint_id = settings.searchEndpointId
     else {
@@ -191,33 +184,36 @@ export function createSettingsRuntime({
   }
 
   return {
-    setCaseTries: (tries) => {
-      state = createState(tries || [])
+    setCaseTries: (data) => {
+      tries = []
+      selectedTry = null
+      for (const item of data || []) addTry(item)
     },
-    setCurrentTry: (number) => state?.selectTry(number),
-    isTrySelected: () => Boolean(state?.selectedTry),
+    setCurrentTry: selectTry,
+    isTrySelected: () => Boolean(selectedTry),
     editable,
-    applicable: () => state?.selectedTry || {},
-    settingsId: () => (state ? state.settingsId : -1),
+    draft,
+    tries: () => tries || [],
+    applicable: () => selectedTry || {},
     save: async (settings) => {
       if (settings.inError) return
-      const data = await postJson(`api/cases/${caseNo()}/tries`, {
-        ...payloadFor(settings),
-        parent_try_number: settings.selectedTry.tryNo
-      })
-      const item = state.addTry(data)
-      state.selectTry(item.tryNo)
-      document.dispatchEvent(
-        new CustomEvent("case-settings:updated", { detail: { caseNo: caseNo(), lastTry: item } })
-      )
-      navigate({ tryNo: item.tryNo })
+      const data = await postJson(`api/cases/${caseNo()}/tries`, payloadFor(settings))
+      const item = addTry(data)
+      selectTry(item.tryNo)
+      return item
     },
     update: async (settings) => {
       if (settings.inError) return
       settings.selectedTry.updateVars()
       settings.selectedTry.apiMethod = settings.apiMethod
       settings.selectedTry.queryParams = settings.queryParams
-      const payload = payloadFor(settings)
+      const payload = payloadFor({
+        ...settings,
+        tryNo: settings.selectedTry.tryNo,
+        queryParams: settings.selectedTry.queryParams,
+        updateVars: () => settings.selectedTry.updateVars(),
+        curatorVarsDict: () => settings.selectedTry.curatorVarsDict()
+      })
       await putJson(`api/cases/${caseNo()}/tries/${tryNo()}`, payload)
       document.dispatchEvent(
         new CustomEvent("case-settings:updated", {
@@ -226,9 +222,24 @@ export function createSettingsRuntime({
       )
       navigate({ tryNo: settings.selectedTry.tryNo })
     },
-    duplicateTry: (number) => state?.duplicateTry(number),
-    renameTry: (number, name) => state?.renameTry(number, name),
-    deleteTry: (number) => state?.deleteTry(number),
+    duplicateTry: async (number) => {
+      if (!tries) return
+      const data = await postJson(`api/clone/cases/${caseNo()}/tries/${number}`)
+      const item = createTry(data, { caseNo, createFieldSpec })
+      tries.unshift(item)
+      return item
+    },
+    renameTry: async (number, name) => {
+      await getTry(number)?.rename(name)
+    },
+    deleteTry: async (number) => {
+      if (activeTries().length <= 1) return
+      const item = getTry(number)
+      if (!item) return
+      await deleteJson(`api/cases/${caseNo()}/tries/${number}`)
+      item.deleted = true
+      if (selectedTry?.tryNo === number) navigate({ tryNo: activeTries().at(-1).tryNo })
+    },
     previewArgs: async (number, queryParams) => {
       const data = await postJson(`api/cases/${caseNo()}/tries/${number}/preview_args`, {
         query_params: queryParams
@@ -236,7 +247,8 @@ export function createSettingsRuntime({
       return data.args
     },
     reset: () => {
-      state = null
+      tries = null
+      selectedTry = null
     }
   }
 }

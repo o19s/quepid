@@ -49,6 +49,12 @@ the selected case record; `coreWorkspace.caseState` reads it directly. Query and
 book events keep their existing contracts. Controllers own DOM interaction, and
 static page and modal structure remains in Rails ERB partials.
 
+`settings_runtime.js` owns tries and selection. Tune Relevance receives a flat form:
+query, curator and endpoint edits share the selected try; scalar form fields stay
+local and reset on successful history mutations. Its Stimulus controller awaits
+save, retains the drawer/tab and navigates to the returned try. Query, snapshot and
+wizard consumers retain their existing read/update adapters.
+
 This is the basic structure of the app and should get you started.
 
 ## Long running/async processes

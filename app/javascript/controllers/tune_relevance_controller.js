@@ -64,7 +64,7 @@ export default class extends Controller {
 
   load() {
     this.settings = this.capability.settings.editable()
-    if (!this.settings?.selectedTry) {
+    if (!this.settings) {
       this.settingsRetry = window.setTimeout(() => this.load(), 200)
       return
     }
@@ -105,10 +105,10 @@ export default class extends Controller {
   mountEditor() {
     if (!this.hasQueryEditorTarget || this.editor) return
     this.editor = fromTextArea(this.queryEditorTarget, {
-      mode: queryParamsMode(this.settings.selectedTry?.queryParams),
+      mode: queryParamsMode(this.settings.queryParams),
       height: 360,
       onChange: value => {
-        this.settings.selectedTry.queryParams = value
+        this.settings.queryParams = value
         this.refreshQueryWarning(value)
         this.refreshCuratorVars()
         this.refreshTemplateWarning()
@@ -117,13 +117,13 @@ export default class extends Controller {
   }
 
   refreshQueryEditor() {
-    if (!this.settings?.selectedTry) return
+    if (!this.settings) return
     const isStatic = this.settings.searchEngine === "static"
     if (this.hasStaticEngineMessageTarget) this.staticEngineMessageTarget.hidden = !isStatic
     if (this.hasStaticKnobsMessageTarget) this.staticKnobsMessageTarget.hidden = !isStatic
     const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
     if (editorShell) editorShell.hidden = isStatic
-    const value = this.settings.selectedTry.queryParams || ""
+    const value = this.settings.queryParams || ""
     if (this.editor && this.editor.getValue() !== value) this.editor.setValue(value)
     this.refreshQueryWarning(value)
     if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
@@ -144,8 +144,8 @@ export default class extends Controller {
 
   refreshCuratorVars() {
     if (!this.hasCuratorVarsTarget || !this.hasCuratorVarTemplateTarget) return
-    this.settings?.selectedTry?.updateVars?.()
-    const vars = this.settings?.selectedTry?.curatorVars || []
+    this.settings?.updateVars?.()
+    const vars = this.settings?.curatorVars || []
     this.curatorVarsTarget.replaceChildren(...curatorVariableEntries(vars).map(({ item, index }) => {
       const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
       row.querySelector("label").textContent = `${item.name}:`
@@ -157,7 +157,7 @@ export default class extends Controller {
   }
 
   updateCuratorVariable(event) {
-    this.settings.selectedTry.curatorVars[event.params.index].value = event.currentTarget.value
+    this.settings.curatorVars[event.params.index].value = event.currentTarget.value
   }
 
   refreshSettings() {
@@ -215,7 +215,7 @@ export default class extends Controller {
   }
 
   refreshEndpointDetails() {
-    const selected = this.settings?.selectedTry || {}
+    const selected = this.settings || {}
     if (this.hasEndpointNameTarget) this.endpointNameTarget.textContent = selected.endpointName || ""
     if (this.hasEndpointUrlTarget) this.endpointUrlTarget.textContent = this.settings?.searchUrl || ""
     if (this.hasEndpointIconTarget) {
@@ -240,7 +240,7 @@ export default class extends Controller {
   refreshTemplateWarning() {
     if (!this.hasEsTemplateWarningTarget) return
     let templated = false
-    const queryParams = this.settings?.selectedTry?.queryParams || ""
+    const queryParams = this.settings?.queryParams || ""
     if (this.settings?.searchEngine && this.capability.endpoints.isEsOrOs(this.settings.searchEngine)) {
       try { templated = this.capability.search.isTemplateCall(JSON.parse(queryParams)) } catch { templated = false }
     }
@@ -264,7 +264,7 @@ export default class extends Controller {
 
   refreshHistory() {
     if (!this.hasHistoryListTarget || !this.hasHistoryItemTemplateTarget) return
-    const tries = (this.settings?.tries || []).filter(item => !item.deleted)
+    const tries = this.capability.settings.tries().filter(item => !item.deleted)
     const urls = [...new Set(tries.map(item => item.searchUrl))]
     this.historyListTarget.replaceChildren(...tries.map(item => {
       const row = this.historyItemTemplateTarget.content.firstElementChild.cloneNode(true)
@@ -287,7 +287,7 @@ export default class extends Controller {
 
   openTryDetails(event) {
     event.stopPropagation()
-    const item = this.settings.tries.find(item => isSameId(item.tryNo, event.params.tryNo))
+    const item = this.capability.settings.tries().find(item => isSameId(item.tryNo, event.params.tryNo))
     if (item) this.showTryDetails(item)
   }
 
@@ -298,31 +298,41 @@ export default class extends Controller {
       ...endpointSettings(endpoint),
       mapperBasedSearchEngineId: endpoint.mapperBasedSearchEngineId
     }
-    Object.assign(this.settings, selectedEndpointSettings)
-    Object.assign(this.settings.selectedTry, { ...selectedEndpointSettings, endpointName: endpoint.name })
+    this.settings.applyEndpoint({ ...selectedEndpointSettings, endpointName: endpoint.name })
     this.refresh()
   }
 
-  save() {
-    if (this.editor) this.settings.selectedTry.queryParams = this.editor.getValue()
+  async save() {
+    if (this.saving) return
+    if (this.editor) this.settings.queryParams = this.editor.getValue()
     this.settings.fieldSpec = this.fieldSpecTarget.value
     this.settings.numberOfRows = this.numberOfRowsTarget.value
     this.settings.escapeQuery = this.escapeQueryTarget.checked
     if (!validateNumberOfRows(this.settings.numberOfRows)) return this.showError("Number of Results to Show must be between 1 and 100.")
-    const queryParams = this.settings.selectedTry?.queryParams || ""
+    const queryParams = this.settings.queryParams || ""
     const needsJson = this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) || (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
     if (needsJson) {
       const formatted = formatJson(queryParams)
       if (!formatted) return this.showError("Please provide a valid formatted JSON object for the query DSL.")
-      this.settings.selectedTry.queryParams = formatted
+      this.settings.queryParams = formatted
     }
-    this.capability.settings.save(this.settings)
+    this.saving = true
+    this.saveButtonTarget.disabled = true
+    try {
+      const savedTry = await this.capability.settings.save(this.settings)
+      if (savedTry) {
+        this.keepDrawerOpen()
+        this.capability.navigation.goToTry(savedTry.tryNo)
+      }
+    } catch (error) {
+      this.showError(error.message || "Unable to save settings. Please try again.")
+    } finally {
+      this.saving = false
+      this.saveButtonTarget.disabled = false
+    }
   }
 
-  // Saving and History both load the new try as a full page, which would otherwise collapse the
-  // drawer and reset it to the Query tab; the Angular workbench kept both so tuning could
-  // continue (scenario 4.10). A save reaches here via `case-settings:updated`, which the settings
-  // runtime fires only once the new try exists, right before it navigates.
+  // The wizard still uses case-settings:updated for its existing navigation handoff.
   keepDrawerOpen() {
     if (this.hasPaneOutlet) this.paneOutlet.keepOpenAcrossNavigation({ tab: this.tab })
   }
@@ -339,7 +349,7 @@ export default class extends Controller {
     if (!this.hasRunEvaluationTarget) return
     this.runEvaluationTarget.disabled = true
     this.runEvaluationTarget.textContent = "Queuing evaluation job..."
-    this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.selectedTry.tryNo).then(() => {
+    this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.tryNo).then(() => {
       coreFlash.show("success", "Evaluation queued successfully.")
       window.location.assign(this.capability.navigation.rootUrl())
     }).catch(() => {
@@ -374,7 +384,7 @@ export default class extends Controller {
     this.tryNameInputTarget.value = item.name || ""
     this.tryRenameFormTarget.hidden = true
     this.tryRenameActionTarget.textContent = "Rename"
-    this.tryDeleteTarget.disabled = (this.settings.tries || []).filter(tryItem => !tryItem.deleted).length <= 1
+    this.tryDeleteTarget.disabled = this.capability.settings.tries().filter(tryItem => !tryItem.deleted).length <= 1
     this.activeTry = item
     window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.show()
   }
@@ -407,12 +417,12 @@ export default class extends Controller {
 
   deleteTry() {
     if (!this.activeTry) return
-    const activeTryNo = this.settings.selectedTry?.tryNo
+    const activeTryNo = this.settings.tryNo
     if (this.activeTry.tryNo === activeTryNo) {
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
       return this.showError(`You can not delete the currently active try (${this.activeTry.name})! Please select another try first.`)
     }
-    const numberOfTries = (this.settings.tries || []).filter(item => !item.deleted).length
+    const numberOfTries = this.capability.settings.tries().filter(item => !item.deleted).length
     if (numberOfTries <= 1) return
     if (!window.confirm(`Are you sure you want to delete ${this.activeTry.name}? This cannot be undone.`)) return
     this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
@@ -423,7 +433,7 @@ export default class extends Controller {
   }
 
   reloadSettings() {
-    this.settings = this.capability.settings.reload()
+    this.settings = this.capability.settings.editable()
     this.refresh()
   }
 

@@ -44,7 +44,11 @@ describe("core workspace construction", () => {
     bootstrap.core.settings.setCaseTries([{ try_number: 1, search_engine: "solr", field_spec: "id,title" }])
     bootstrap.core.settings.setCurrentTry(1)
     expect(wizard.capability.settings.editable().selectedTry).toBe(bootstrap.core.settings.editable().selectedTry)
-    expect(snapshots.capability.settings.editable().selectedTry).toBe(tuneRelevance.capability.settings.editable().selectedTry)
+    const draft = tuneRelevance.capability.settings.editable()
+    draft.queryParams = "q=shared"
+    expect(snapshots.capability.settings.editable().selectedTry.queryParams).toBe("q=shared")
+    expect(tuneRelevance.capability.settings.tries()).toBe(bootstrap.core.settings.editable().tries)
+    expect(draft.curatorVars).toBe(wizard.capability.settings.editable().selectedTry.curatorVars)
     expect(wizard.capability.documents.cache).toBe(workspace.docCache)
     expect(snapshots.docCache).toBe(bootstrap.docCache)
     expect(snapshots.capability.fieldSpec.create("id,title")).toEqual({ fields: "id,title" })

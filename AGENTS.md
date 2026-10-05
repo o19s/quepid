@@ -1,8 +1,18 @@
 # Quepid agent instructions
 
+## Scope and change control
+
+Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
+
+- Preserve behavior unless the user specifically authorizes a change. Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
+- Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts. Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved.
+- Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
+- Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
+- Keep documentation concise: state each rule once, link to shared guidance and retain only necessary rationale and verification evidence.
+
 ## General Configuration / Execution
 
-- You are working on Quepid, a Rails application. Also look at @DEVELOPER_GUIDE.md.
+- You are working on Quepid, a Rails application. Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for human-facing development workflows and conventions.
 - We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 - To set up the environment use:
     `bin/setup_docker`.
@@ -49,7 +59,7 @@
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
-- **Turbo on the core case page** (Frames/Streams only, Drive off; keep interactive regions out of Turbo Frames unless their lifecycle is explicitly supported) — see the Turbo guidance in DEVELOPER_GUIDE.md before adding Hotwire to `core`.
+- **Turbo navigation:** Drive is the default on ordinary Rails management/admin pages. Follow [DEVELOPER_GUIDE.md — Turbo navigation](DEVELOPER_GUIDE.md#turbo-navigation) for form responses, confirmations, caching, and opt-outs. The case workspace and standalone analytics retain full-page boundaries; see [Turbo on the case page](DEVELOPER_GUIDE.md#turbo-on-the-case-page) before changing either lifecycle.
 
 
 ## JavaScript
@@ -109,7 +119,7 @@
   splitting an item.
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
-- **DEVELOPER_GUIDE.md is the primary human-facing doc; AGENTS.md is agent-only guidance.** When a rule applies to both, keep the full text in DEVELOPER_GUIDE.md and have AGENTS.md point to it — never the other way around. Skill files (`.agents/skills/**/SKILL.md`, exposed to Claude Code through `.claude/skills`) are agent-only too, so they may reference AGENTS.md directly.
+- **Documentation audience:** shared development conventions belong in DEVELOPER_GUIDE.md, linked from AGENTS.md. Agent-specific execution, approval, scope and recovery rules belong in AGENTS.md or `.agents/skills/**/SKILL.md`, with links to relevant developer guidance.
 - **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
 
 
