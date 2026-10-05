@@ -2,7 +2,7 @@
 
 ## Overview
 
-An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like search endpoints. They live at **Embedders** in the left sidebar (the `[::]` icon) and at `/embedders`.
+An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere, Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like search endpoints. They live at **Embedders** in the left sidebar (the `[::]` icon) and at `/embedders`.
 
 For a local run, the Ollama container needs an embedding model: `docker exec ollama ollama pull all-minilm` (small) or `qwen3-embedding:0.6b` (takes instructions).
 
@@ -12,8 +12,8 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
 
 - [ ] **Steps:**
   1. Click **Embedders** in the sidebar, then **Create Embedder**.
-  2. Cycle the **Provider** dropdown through OpenAI, Voyage AI, Ollama and OpenAI-compatible.
-  3. For each, confirm URL and Model fill with that provider's defaults and the **Provider notes** panel updates. OpenAI and Voyage show the API key and hide Instruction/Input template; Ollama hides the API key and shows Instruction/Input template; OpenAI-compatible shows both.
+  2. Cycle the **Provider** dropdown through OpenAI, Voyage AI, Cohere, Ollama and OpenAI-compatible.
+  3. For each, confirm URL and Model fill with that provider's defaults and the **Provider notes** panel updates. OpenAI, Voyage and Cohere show the API key (marked required) and hide Instruction/Input template; Ollama hides the API key and shows Instruction/Input template; OpenAI-compatible shows both.
   4. Pick Ollama, set Model to an installed embedding model, Truncation **Native**, Dimensions `128`, and an Instruction.
   5. Click **Test**.
   6. Save.

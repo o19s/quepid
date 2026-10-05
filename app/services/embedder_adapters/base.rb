@@ -92,7 +92,7 @@ module EmbedderAdapters
     end
 
     def error_detail body
-      body.is_a?(Hash) ? (body.dig('error', 'message') || body['error'] || body['detail'] || body).to_s : body.to_s
+      body.is_a?(Hash) ? (body.dig('error', 'message') || body['error'] || body['message'] || body['detail'] || body).to_s : body.to_s
     end
 
     # Matryoshka-style truncation: keep the leading components, then rescale to unit length

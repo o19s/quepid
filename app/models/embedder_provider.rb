@@ -90,6 +90,31 @@ class EmbedderProvider
         <b>Dimensions:</b> 256, 512, 1024 or 2048 on models that support <code>output_dimension</code>.
       HTML
     },
+    {
+      key:                 'cohere',
+      label:               'Cohere',
+      adapter:             'EmbedderAdapters::Cohere',
+      default_service_url: 'https://api.cohere.com',
+      default_model:       'embed-v4.0',
+      requires_key:        true,
+      supports_dimensions: true,
+      # The union across models: embed-v5.0-* take all of these, embed-v4.0 not 768 or 2048,
+      # and the v3 models none (they have a fixed size). Cohere rejects a size its model
+      # doesn't support, which the form's Test button shows.
+      allowed_dimensions:  [ 256, 512, 768, 1024, 1536, 2048 ],
+      max_batch_size:      96,
+      help_html:           <<~HTML.squish,
+        <strong>Cohere</strong> &mdash; <code>POST /v2/embed</code>, sent with
+        <code>input_type: "search_query"</code>.<br>
+        <b>URL:</b> <code>https://api.cohere.com</code><br>
+        <b>Model:</b> e.g. <code>embed-v4.0</code> (1536), <code>embed-v5.0-fast</code>,
+        <code>embed-v5.0-pro</code> (2048), <code>embed-english-v3.0</code>,
+        <code>embed-multilingual-v3.0</code> (1024)<br>
+        <b>Key:</b> Your Cohere API key<br>
+        <b>Dimensions:</b> <code>embed-v5.0-*</code> take 256&ndash;2048, <code>embed-v4.0</code>
+        256, 512, 1024 or 1536; the v3 models have a fixed size, so use no truncation (or client-side).
+      HTML
+    },
     # URL and help text come from config at lookup time -- see runtime_settings.
     {
       key:                   'ollama',

@@ -34,6 +34,7 @@ Each definition declares what the vendor supports, so the form and the adapter a
 | --- | --- | --- | --- | --- | --- |
 | `openai` | `OpenAi` | `https://api.openai.com` | `text-embedding-3-small` | `dimensions` (text-embedding-3-* only) | no |
 | `voyage` | `Voyage` | `https://api.voyageai.com` | `voyage-3.5` | `output_dimension` (256/512/1024/2048 on supporting models) | no, but sends `input_type: "query"` |
+| `cohere` | `Cohere` | `https://api.cohere.com` | `embed-v4.0` | `output_dimension` (embed-v5.0-*: 256–2048; embed-v4.0: 256/512/1024/1536; v3: none) | no, but sends `input_type: "search_query"` |
 | `ollama` | `Ollama` | from config, like `LlmProvider` ollama | `qwen3-embedding:0.6b` | `dimensions` on `/api/embed` (verify minimum Ollama version) | yes (prompt template) |
 | `openai_compatible` | `OpenAi` | blank | blank | `dimensions` (server-dependent) | yes (prompt template) |
 

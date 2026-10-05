@@ -8,7 +8,7 @@ engine never has to embed the query itself.
 ## Setting it up
 
 1. **Create an embedder** under **Embedders** in the sidebar (`/embedders`): OpenAI, Voyage AI,
-   Ollama, or any OpenAI-compatible server (vLLM, Text Embeddings Inference, LM Studio,
+   Cohere, Ollama, or any OpenAI-compatible server (vLLM, Text Embeddings Inference, LM Studio,
    LiteLLM). Use the same model, size and settings your documents were indexed with — a
    query vector from a different model is meaningless to the index. The **Test** button
    embeds a sample query and shows the size it got back.
