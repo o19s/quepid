@@ -1,9 +1,8 @@
 # Optimizing an LLM judge's prompt against a golden dataset
 
 > **Status:** how-to and plan, nothing implemented in Quepid. Background:
-> `docs/todo/judge_calibration_research.md` (§2.4: "calibrate against a gold set, and pick the
-> prompt by agreement with it") and `docs/todo/inter_judge_agreement.md` (how agreement is
-> measured). Used by the escalation plan, `docs/todo/escalating_judges.md` §5.2.
+> `docs/todo/judge_agreement_and_calibration.md` (§2.4: "calibrate against a gold set, and pick the
+> prompt by agreement with it"; Part II: how agreement is measured). Used by the escalation plan, `docs/todo/escalating_judges.md` §5.2.
 
 ## 1. The idea
 
@@ -14,8 +13,8 @@ a time, by eye.
 The industry practice is to tune it against a **golden dataset** instead: a few hundred query/doc
 pairs whose grades come from people you trust, and pick the prompt whose answers agree with those
 grades best. Bing chose its LLM judge prompt exactly this way, against first-party gold labels,
-and checked the choice held up on held-out data (Thomas et al. 2023, §2.2, §5.2 — see the
-research note). Tools such as DSPy automate the search.
+and checked the choice held up on held-out data (Thomas et al. 2023, §2.2, §5.2 — see
+`judge_agreement_and_calibration.md` §2.4). Tools such as DSPy automate the search.
 
 ## 2. The golden dataset
 
@@ -159,7 +158,7 @@ into Quepid as-is:
    expects (§4).
 3. **Re-validate inside Quepid** on the held-out test set: put the test pairs in a book, run the
    judge over them, and measure agreement with the experts (Krippendorff's α or Cohen's κ — see
-   `inter_judge_agreement.md`). This number, not DSPy's training score, is the result.
+   `judge_agreement_and_calibration.md` Part II). This number, not DSPy's training score, is the result.
 
 To shrink the gap between DSPy's score and Quepid's, write a custom DSPy module that sends
 *exactly* Quepid's system message (with the scale reminder) and user message, and parses the
@@ -200,11 +199,11 @@ Quepid itself, is probably enough for Jev.
 None of this needs Quepid changes to try once by hand. To make it routine:
 
 1. **A reference judge or book.** Mark which judges' judgements are gold for a book. Needed by
-   this workflow and by `inter_judge_agreement.md` (its open question on a human reference).
+   this workflow and by `judge_agreement_and_calibration.md` (its open question on a human reference).
 2. **A gold export.** A rake task or export option: given a book and its reference judges, write
    agreed pairs only, as JSONL, with the document rendered exactly as `user_prompt` renders it
    (`document_yaml`) and the book's scale — the input to §5.2, with no hand filtering.
 3. **Agreement against gold on Judgement Stats.** The test-set measurement in §5.3 without leaving
-   Quepid — the `inter_judge_agreement.md` work, with the reference judge from (1).
+   Quepid — the `judge_agreement_and_calibration.md` Part II work, with the reference judge from (1).
 4. **Prompt versions.** Record which prompt produced each judgement, so a tuned prompt can be
    compared with the one it replaced on the same pairs.

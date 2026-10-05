@@ -8,8 +8,8 @@
 > open and must be settled before S4: whether escalation runs **inline** or as a **second pass**
 > (D5).
 >
-> Related: `docs/todo/inter_judge_agreement.md` (measuring whether judges agree — a prerequisite
-> for trusting a chain) and `docs/todo/judge_calibration_research.md` (sources).
+> Related: `docs/todo/judge_agreement_and_calibration.md` (sources, and the plan for measuring
+> whether judges agree — a prerequisite for trusting a chain).
 
 ## 1. The scenario
 
@@ -42,10 +42,14 @@ asked.
 1. **Unrateable judgements still occupy a slot.** `SelectionStrategy`'s cap counts rows, not
    ratings: `HAVING COUNT(judgements.id) < 3`
    (`SelectionStrategy.random_query_doc_pair_for_multiple_judges`). Nothing filters on `unrateable`.
-2. **Scoring ignores them.** `RatingsManager` averages `query_doc_pair.judgements.rateable`
-   (`RatingsManager#sync_judgements_to_ratings`), so an unrateable row never moves a rating.
-3. **A pair's rating is the mean of whoever rated it.** Same place — so on an escalated pair the
-   rating is the expensive judge's alone, because the cheap judge's row is excluded.
+2. **Scoring ignores them.** `RatingsManager` computes a rating from
+   `query_doc_pair.judgements.rateable` only (`RatingsManager#sync_judgements_to_ratings`), so an
+   unrateable row never moves a rating.
+3. **A pair's rating is combined from whoever rated it, and is not always a mean.**
+   `RatingsManager#calculate_rating_from_judgements` averages one or two rateable judgements; at
+   three or more it takes the top three and uses their value if they agree, else their minimum.
+   So on an escalated pair the rating is the expensive judge's alone, because the cheap judge's
+   row is excluded.
 4. **`RunJudgeJudyJob` allows one run per (book, judge), not per book.** Its
    `limits_concurrency` key is `run_judge_judy_<book>_<judge>` with `on_conflict: :discard`, so the
    same judge cannot run twice on a book, but two *different* judges can run on one book at once.
@@ -97,7 +101,7 @@ answer to a model that did not give it, and destroys the evidence of what the es
 *Rejected:* discarding the cheap judge's row — cheaper on the cap (§4) but it hides how often the
 first judge punts, which is the number that tells you whether the arrangement is worth it.
 *Rejected:* storing escalated judgements in a separate table. Each judge's judgements are already
-separable by `user_id`; the mixing happens when ratings are averaged per pair (§5.1), not in
+separable by `user_id`; the mixing happens when ratings are combined per pair (§5.1), not in
 storage. A separate table either feeds ratings (and the mixture is back) or does not (and the
 hard pairs have no rating), while every consumer of `judgements` would have to learn about it.
 
@@ -256,42 +260,31 @@ the escalation itself, so no book is ever judged by a chain under the old arithm
 
 ## 5. Risks
 
-### 5.1 The judgement set stops being homogeneous — and nothing says so
+### 5.1 The mix of judges becomes correlated with difficulty
 
-The risk to think hardest about, because it is silent and survives into everything downstream.
+Mixed judging is not new. Books already combine several judges per pair — human and AI —
+`SelectionStrategy` hands each judge pairs at random up to the cap, so which judges rated a pair
+already varies, and `RatingsManager#calculate_rating_from_judgements` combines whoever did (mean,
+or the top three's agreed value or minimum). Nothing in the UI or export marks that mixture today
+either.
 
-With a chain, **which model rated a pair depends on how hard the pair was**. Easy pairs get the
-cheap model; the pairs it found ambiguous get the expensive one. The book's ratings are then a
-mixture of two distributions, correlated with difficulty — and every number computed from that
-book inherits it:
+What escalation changes is only *why* a pair got the judge it got: today it is random, with a chain
+it is difficulty — easy pairs are rated by the cheap judge, hard ones by the expensive one. That
+matters only if the two judges grade differently (§5.2): if the expensive judge is systematically
+stricter, the hard pairs drift down together instead of the offset being spread at random. One
+narrower consequence: agreement between the cheap judge and a human, measured on the book, covers
+the easy pairs only, because the hard ones were handed away.
 
-- agreement between Jev and a human is measured on the *easy* subset only, because the hard pairs
-  were handed away;
-- a comparison of two search configurations is scored against ratings whose provenance varies by
-  pair, so a difference between configurations can be a difference between judges;
-- anyone exporting the book to train or evaluate a model gets that mixture with no marker for it.
-  The export carries each judgement's `user_id`, so the information exists — but nothing in the
-  UI, the export, or `RatingsManager` says "these ratings came from different tiers of judge".
-
-The mixture is inherent to routing by difficulty, not to where rows are stored (D2's rejected
-alternative): the only fully homogeneous options are one judge for everything, or hard pairs left
-unrated. Books already mix raters — human and AI judges are averaged on the same pairs — but
-escalation makes the mix depend on difficulty. A human panel has the same property whenever the
-confident rater answers first.
-
-So: (a) make provenance visible wherever ratings are consumed, and (b) never quietly present a
-chain-judged book as if one judge rated it. `escalated_from_id` makes (a) a query rather than a
-parse of explanation text; the UI, the export and `RatingsManager` still have to use it. A per-book
-setting for whether escalated judgements count toward ratings is worth considering: on gives full
-coverage with a labelled mixture, off gives a homogeneous book with holes while keeping the
-escalated ratings for comparison.
+So this is a calibration question, not a new class of risk, and the answer is §5.2's measurement.
+`escalated_from_id` keeps "which ratings came from escalation" a query, for whenever provenance is
+surfaced (S6).
 
 ### 5.2 Calibration — same scale, different judges
 
-Making the mixture visible says *who* rated each pair. It does not say whether the two judges
-*mean the same thing* by a grade. Sharing the book's scale (D5) guarantees the same values and
+Knowing *who* rated each pair does not say whether the two judges *mean the same thing* by a
+grade. Sharing the book's scale (D5) guarantees the same values and
 labels; it does not stop one judge being systematically stricter about "Relevant", or avoiding the
-middle grades. Sources and numbers are in `docs/todo/judge_calibration_research.md`; in short:
+middle grades. Sources and numbers are in `docs/todo/judge_agreement_and_calibration.md` §2; in short:
 
 - **Label-level disagreement is large and its direction is not predictable.** GPT-4o reaches
   κ ≈ 0.31–0.37 against TREC assessors on a 4-grade scale, worst on the middle grades. Bing's GPT-4
@@ -307,7 +300,7 @@ middle grades. Sources and numbers are in `docs/todo/judge_calibration_research.
 
 Quepid has **no inter-judge agreement measure today**: Judgement Stats shows per-judge counts, and
 nothing compares judges on the pairs they share. Measuring that is planned as its own feature in
-`docs/todo/inter_judge_agreement.md`. What a chain needs from it before it is trusted on a real
+`docs/todo/judge_agreement_and_calibration.md` (Part II). What a chain needs from it before it is trusted on a real
 book:
 
 1. **An agreement figure per pair of judges** — Krippendorff's α (ordinal) — plus a confusion
@@ -315,7 +308,7 @@ book:
 2. **Overlap on random pairs, not escalated ones.** Escalated pairs are hard by construction, and
    carry the cheap judge's *unrateable* row, so they give no overlap at all. The expensive judge
    must also rate a small random sample of the pairs the cheap judge answered confidently (the
-   calibration sample in `inter_judge_agreement.md` D6).
+   calibration sample in `judge_agreement_and_calibration.md` D6).
 3. **Humans as the reference where they exist.** Each AI judge's α and confusion matrix against a
    book's human judgements says whether to trust it at all, and which one to put first. The same
    gold set can tune each judge's prompt first
@@ -402,7 +395,7 @@ real threshold on a real corpus, is exactly what the suite cannot tell us (§10)
 
 ### 5.10 Smaller things
 
-- **Implicit judgements.** `Book#support_implicit_judgements` decides whether the averaged rating
+- **Implicit judgements.** `Book#support_implicit_judgements` decides whether the computed rating
   is rounded (`RatingsManager#sync_judgements_to_ratings`). With one rater per escalated pair,
   rounding is unchanged — but it is worth a test, because "average of one" is the case people
   forget.
@@ -488,9 +481,8 @@ count as "handed on" where it was escalated (§5.8). Show where ratings came fro
   probably says **on call**. Settle before S1 so the vocabulary matches everywhere.
 - **Budget default.** 10% of the run is a guess. It should probably be per book, and visible.
 - **Calibration as a gate.** Should a chain be configurable at all before
-  `inter_judge_agreement.md` exists and the two judges have been measured (§5.2)? Or is that a
+  the agreement work (`judge_agreement_and_calibration.md` Part II) exists and the two judges have been measured (§5.2)? Or is that a
   warning rather than a gate?
-- **Do escalated ratings count toward the book's ratings?** Per-book setting or always (§5.1).
 - **Does a human count as a rung?** "No model could rate this" is useful signal, and `judge_later`
   already means "a human should look". Ending the chain there instead of at `unrateable` turns a
   dead end into a work queue.
@@ -523,5 +515,5 @@ directly.
    discarded.)
 
 If (1) says 2% of pairs escalate, this feature saves almost nothing on a cheap-judge-only workflow
-and mostly buys insurance. If it says 40%, the economics are excellent but §5.1 and §4 become
+and mostly buys insurance. If it says 40%, the economics are excellent but §5.2 and §4 become
 serious and two-pass becomes close to mandatory.
