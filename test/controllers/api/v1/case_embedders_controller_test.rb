@@ -5,6 +5,8 @@ require 'test_helper'
 module Api
   module V1
     class CaseEmbeddersControllerTest < ActionController::TestCase
+      include ActiveJob::TestHelper
+
       let(:user)     { users(:random) }
       let(:acase)    { cases(:shared_with_team) }
       let(:embedder) { embedders(:openai_small) }
@@ -78,6 +80,47 @@ module Api
 
         assert_response :not_found
         assert_nil public_case.reload.embedder_id
+      end
+
+      test 'picking a different embedder starts vectorising the case' do
+        assert_enqueued_with(job: VectorizeCaseQueriesJob, args: [ acase, { force: false } ]) do
+          put :update, params: { case_id: acase.id, id: embedder.id }
+        end
+      end
+
+      test 'picking the same embedder again does not' do
+        acase.update!(embedder: embedder)
+
+        assert_no_enqueued_jobs(only: VectorizeCaseQueriesJob) do
+          put :update, params: { case_id: acase.id, id: embedder.id }
+        end
+      end
+
+      test 'index reports each query\'s vector status and the totals' do
+        acase.update!(embedder: embedder)
+        query = acase.queries.create!(query_text: 'star wars')
+
+        get :index, params: { case_id: acase.id }
+
+        vectors = response.parsed_body['vectors']
+        assert_not vectors['running']
+        assert_equal 'pending', vectors['queries'][query.id.to_s]['status']
+        assert_equal acase.queries.count, vectors['counts']['pending']
+      end
+
+      test 'vectorize with force enqueues a full run' do
+        acase.update!(embedder: embedder)
+
+        assert_enqueued_with(job: VectorizeCaseQueriesJob, args: [ acase, { force: true } ]) do
+          post :vectorize, params: { case_id: acase.id, force: 'true' }
+        end
+        assert_response :ok
+      end
+
+      test 'vectorize needs an embedder' do
+        post :vectorize, params: { case_id: acase.id }
+
+        assert_response :unprocessable_content
       end
     end
   end

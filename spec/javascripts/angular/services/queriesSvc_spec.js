@@ -608,6 +608,68 @@ describe('Service: queriesSvc', function () {
     });
   });
 
+  describe('vector statuses', function() {
+    beforeEach(function() {
+      setupQuerySvc();
+    });
+
+    it('a new query takes the options and status the server returns, so its first search has the vector', function() {
+      $httpBackend.expectPOST('api/cases/2/queries').respond(200, {
+        display_order: [3, 2, 1, 0],
+        query: {
+          'query_text':    'vectorised',
+          'query_id':      '3',
+          'options':       {'query_vec': [0.1, 0.2]},
+          'vector_status': 'current'
+        }
+      });
+
+      var q = queriesSvc.createQuery('vectorised');
+      queriesSvc.persistQuery(q);
+      $httpBackend.flush();
+
+      expect(queriesSvc.queries['3'].options.query_vec).toEqual([0.1, 0.2]);
+      expect(queriesSvc.queries['3'].vectorStatus).toBe('current');
+    });
+
+    it('updates badges, and reloads options and searches again for a query whose vector became current', function() {
+      var becameCurrent = queriesSvc.queries['2'];
+      var stillPending  = queriesSvc.queries['0'];
+      spyOn(becameCurrent, 'searchAndScore').and.returnValue($q.resolve());
+      spyOn(stillPending, 'searchAndScore').and.returnValue($q.resolve());
+      $httpBackend.expectGET('api/cases/2/queries/2/options')
+        .respond(200, {options: {'query_vec': [0.5]}});
+
+      queriesSvc.applyVectorStatuses({
+        0: {status: 'pending', reason: 'Waiting to be vectorised with MiniLM'},
+        2: {status: 'current', reason: null}
+      });
+      $httpBackend.flush();
+
+      expect(stillPending.vectorStatus).toBe('pending');
+      expect(stillPending.vectorStatusReason).toBe('Waiting to be vectorised with MiniLM');
+      expect(stillPending.searchAndScore).not.toHaveBeenCalled();
+      expect(becameCurrent.vectorStatus).toBe('current');
+      expect(becameCurrent.options.query_vec).toEqual([0.5]);
+      expect(becameCurrent.searchAndScore).toHaveBeenCalled();
+    });
+
+    it('listens for statuses from the case page, for its own case only', function() {
+      document.dispatchEvent(new CustomEvent('quepid:query-vectors-changed', {
+        detail: {caseNo: '99', queries: {0: {status: 'stale', reason: 'x'}}}
+      }));
+      $rootScope.$digest();
+      expect(queriesSvc.queries['0'].vectorStatus).toBe('none');
+
+      document.dispatchEvent(new CustomEvent('quepid:query-vectors-changed', {
+        detail: {caseNo: '2', queries: {0: {status: 'stale', reason: 'Made with Old one'}}}
+      }));
+      $rootScope.$digest();
+      expect(queriesSvc.queries['0'].vectorStatus).toBe('stale');
+      expect(queriesSvc.queries['0'].vectorStatusReason).toBe('Made with Old one');
+    });
+  });
+
   describe('adds queries in bulk', function() {
     var queryTexts    = ['one', 'two', 'three'];
     var bulkResponse  = {

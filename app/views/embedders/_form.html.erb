@@ -62,6 +62,7 @@
             <%# Never rendered back: blank keeps the saved key. %>
             <%= form.password_field :api_key, value: nil, autocomplete: 'off', class: 'form-control',
                   placeholder: key_source&.api_key.present? ? 'Saved — leave blank to keep it' : '' %>
+            <div class="form-text" data-embedder-form-target="apiKeyHint"></div>
           </div>
         </div>
 

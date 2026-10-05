@@ -20,6 +20,16 @@
     <code>#$qOption.query_vec##</code>.
   </p>
 
+  <%# hidden on a wrapper: Bootstrap's d-flex would override it on the same element. %>
+  <div hidden data-case-embedder-core-target="vectorPanel">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <span class="small" data-case-embedder-core-target="vectorSummary"></span>
+      <button type="button" class="btn btn-sm btn-outline-primary ms-auto"
+              data-case-embedder-core-target="revectorizeButton"
+              data-action="click->case-embedder-core#revectorize">Re-vectorize all queries</button>
+    </div>
+  </div>
+
   <div style="max-height: 300px; overflow-y: auto;">
     <ul class="list-group" data-case-embedder-core-target="list"></ul>
     <p class="text-muted d-none mt-2 mb-0" data-case-embedder-core-target="emptyNotice">
@@ -33,6 +43,7 @@
                                    controller: "case-embedder-core",
                                    case_embedder_core_index_url_template_value: api_case_embedders_path(case_id: '__CASE_ID__'),
                                    case_embedder_core_update_url_template_value: api_case_embedder_path(case_id: '__CASE_ID__', id: '__EMBEDDER_ID__'),
+                                   case_embedder_core_vectorize_url_template_value: api_case_embedders_vectorize_path(case_id: '__CASE_ID__'),
                                  },
                                  title_data: { case_embedder_core_target: "title" },
                                  footer: modal_footer,

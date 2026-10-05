@@ -46,6 +46,8 @@ An `Embedder` is a connection to an external API that turns text into a vector e
 
 A `Case` can point at one embedder through `embedder_id`, the same way it points at its `Scorer`. Books have no embedder.
 
+Vectorising a case's queries stores, in each `Query`'s `options`, `query_vec` (the vector, readable by search templates as `#$qOption.query_vec##`) and `query_vec_meta` (which embedder, provider, model, size and settings fingerprint produced it, a digest of the exact text sent, and when), or `query_vec_error` after a failed attempt. `QueryVectorStatus` compares these with the case's embedder to say whether each query's vector is current, pending, stale or failed. These keys are not copied into a book's query/doc pairs.
+
 ## Other
 
 Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).

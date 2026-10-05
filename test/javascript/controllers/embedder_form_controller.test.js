@@ -15,7 +15,8 @@ const PRESETS = {
     supports_dimensions: true,
     allowed_dimensions: [],
     supports_instructions: false,
-    uses_key: true
+    uses_key: true,
+    requires_key: true
   },
   voyage: {
     label: "Voyage AI",
@@ -58,6 +59,8 @@ function buildController({ provider = "openai", truncation = "none" } = {}) {
   controller.serviceUrlTarget = document.createElement("input")
   controller.modelTarget = document.createElement("input")
   controller.apiKeyRowTarget = document.createElement("div")
+  controller.hasApiKeyHintTarget = true
+  controller.apiKeyHintTarget = document.createElement("div")
   controller.truncationTarget = select(["none", "native", "client"], truncation)
   controller.truncationHintTarget = document.createElement("div")
   controller.dimensionsRowTarget = document.createElement("div")
@@ -86,6 +89,17 @@ describe("EmbedderFormController", () => {
     expect(controller.truncationTarget.querySelector("option[value='native']").disabled).toBe(true)
     expect(controller.dimensionsRowTarget.hidden).toBe(true)
     expect(controller.helpTarget.innerHTML).toContain("Ollama")
+  })
+
+  it("says whether the provider needs a key", () => {
+    const controller = buildController({ provider: "openai" })
+
+    controller.refresh()
+    expect(controller.apiKeyHintTarget.textContent).toBe("Required for OpenAI.")
+
+    controller.providerTarget.value = "ollama"
+    controller.refresh()
+    expect(controller.apiKeyHintTarget.textContent).toBe("Optional.")
   })
 
   it("lists the allowed sizes for native truncation", () => {

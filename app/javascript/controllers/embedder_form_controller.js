@@ -15,6 +15,7 @@ export default class extends Controller {
     "serviceUrl",
     "model",
     "apiKeyRow",
+    "apiKeyHint",
     "truncation",
     "truncationHint",
     "dimensionsRow",
@@ -52,6 +53,9 @@ export default class extends Controller {
 
     this.helpTarget.innerHTML = preset.help || ""
     this.apiKeyRowTarget.hidden = preset.uses_key === false
+    if (this.hasApiKeyHintTarget) {
+      this.apiKeyHintTarget.textContent = preset.requires_key ? `Required for ${preset.label}.` : "Optional."
+    }
     this.instructionFieldsTarget.hidden = !preset.supports_instructions
 
     const nativeOption = this.truncationTarget.querySelector("option[value='native']")

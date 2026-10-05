@@ -47,6 +47,15 @@ module Embedders
       assert_requested stub
     end
 
+    test 'a new OpenAI embedder without a key is refused before calling out' do
+      post embedder_test_url('new'), params: {
+        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
+      }
+
+      assert_response :unprocessable_content
+      assert_match(/Api key is required for OpenAI/, response.parsed_body['error'])
+    end
+
     test 'reports invalid settings without calling out' do
       post embedder_test_url('new'), params: { embedder: { provider: 'openai', service_url: '', model: '' } }
 
@@ -59,7 +68,7 @@ module Embedders
         .to_return(status: 500, body: 'boom')
 
       post embedder_test_url('new'), params: {
-        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', timeout: '30' },
+        embedder: { provider: 'openai', service_url: 'https://api.openai.com', model: 'm', api_key: 'sk-x', timeout: '30' },
       }
 
       assert_response :bad_gateway

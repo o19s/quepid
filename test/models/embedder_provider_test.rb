@@ -26,5 +26,8 @@ class EmbedderProviderTest < ActiveSupport::TestCase
     assert presets['ollama'][:supports_instructions]
     assert_not presets['openai'][:supports_instructions]
     assert_not presets['ollama'][:uses_key]
+    assert presets['openai'][:requires_key]
+    assert presets['voyage'][:requires_key]
+    assert_not presets['openai_compatible'][:requires_key]
   end
 end

@@ -38,6 +38,9 @@ class EmbedderProvider
   attribute :default_model,                :string
   # How the API key is sent: :bearer, or :none for providers that never take one.
   attribute :auth_style,                   default: :bearer
+  # Whether the vendor rejects every request without a key, so an embedder can't be
+  # saved without one. Self-hosted servers (Ollama, vLLM, TEI) often run without.
+  attribute :requires_key,                 :boolean, default: false
   # Whether the API takes a requested output size. Drives whether `native` truncation is
   # offered; `client` truncation is always available.
   attribute :supports_dimensions,          :boolean, default: false
@@ -57,6 +60,7 @@ class EmbedderProvider
       adapter:             'EmbedderAdapters::OpenAi',
       default_service_url: 'https://api.openai.com',
       default_model:       'text-embedding-3-small',
+      requires_key:        true,
       supports_dimensions: true,
       max_batch_size:      2048,
       help_html:           <<~HTML.squish,
@@ -73,6 +77,7 @@ class EmbedderProvider
       adapter:             'EmbedderAdapters::Voyage',
       default_service_url: 'https://api.voyageai.com',
       default_model:       'voyage-3.5',
+      requires_key:        true,
       supports_dimensions: true,
       allowed_dimensions:  [ 256, 512, 1024, 2048 ],
       max_batch_size:      1000,
@@ -158,6 +163,10 @@ class EmbedderProvider
     supports_instructions
   end
 
+  def requires_key?
+    requires_key
+  end
+
   def adapter_class
     adapter.constantize
   end
@@ -173,6 +182,7 @@ class EmbedderProvider
       allowed_dimensions:    allowed_dimensions,
       supports_instructions: supports_instructions?,
       uses_key:              :none != auth_style,
+      requires_key:          requires_key?,
     }
   end
 end

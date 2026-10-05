@@ -21,3 +21,11 @@ json.embedders @embedders do |embedder|
   json.model       embedder.model
   json.dimensions  embedder.dimensions
 end
+
+# Vector status per query (QueryVectorStatus), keyed by query id, plus totals and
+# whether a run is queued or under way.
+json.vectors do
+  json.running @running
+  json.counts(@statuses.values.map(&:status).tally)
+  json.queries(@statuses.transform_keys(&:to_s).transform_values(&:as_json))
+end

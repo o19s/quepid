@@ -13,9 +13,13 @@ module EmbedderAdapters
     end
 
     # @param texts [Array<String>] raw query texts; the input template is applied here
+    # @param timeout [Integer, nil] seconds per request, overriding the embedder's own
+    #   (a web request vectorising one new query can't wait as long as a background job)
     # @return [Array<Array<Float>>] one vector per text, in the same order
-    def embed texts
+    def embed texts, timeout: nil
       return [] if texts.empty?
+
+      @timeout = timeout || embedder.timeout
 
       inputs = texts.map { |text| embedder.render_input(text) }
       vectors = inputs.each_slice(batch_size).flat_map { |batch| embed_batch(batch) }
@@ -64,7 +68,7 @@ module EmbedderAdapters
     def post body
       response = connection.post(path) do |req|
         req.headers.merge!(headers)
-        req.options.timeout = embedder.timeout.to_i
+        req.options.timeout = (@timeout || embedder.timeout).to_i
         req.body = body
       end
 

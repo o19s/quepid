@@ -1,6 +1,6 @@
 # Embedders (query vectorizing service) plan
 
-Proposed 2026-10-05. **Phases 1 and 2 are implemented** (branch `embedders`); phases 3–4 are not started.
+Proposed 2026-10-05. **Phases 1–3 are implemented** (branch `embedders`); phase 4 is not started. Phase 3 deviations from this plan are noted in its section.
 
 An **embedder** is a team-shareable connection to an external API that turns text into a vector (OpenAI, Voyage, Ollama, any OpenAI-compatible server such as vLLM/TEI). A case can point at one embedder, the same way it points at a scorer; every query in that case is then vectorized and the vector is stored in `queries.options.query_vec`, where search templates can already reach it as `#$qOption.query_vec##`.
 
@@ -160,6 +160,13 @@ Computed server-side by one method, `Query#vector_status(embedder)` (embedder = 
 - `VectorizeCaseQueriesJob` picks up exactly the `pending`, `stale` and `failed` queries (all of them with `force`), so "what the badge says" and "what the job will redo" can't drift apart.
 - Changing the case's embedder or editing the embedder makes statuses change without any write to the queries: the meta no longer matches, so they read as `stale` until re-vectorized.
 - When the embedder changes in the case picker, or a vectorisation run broadcasts progress, the case page reloads the queries' statuses so the badges update without a page reload.
+
+### As implemented (deviations)
+
+- **Progress is polled, not pushed.** The core case page loads no Turbo/ActionCable, so the case header's Stimulus controller polls `GET api/cases/:case_id/embedders` every 3 s while `vectors.running` is true (a SolidQueue job for the case is queued or running), and hands the statuses to Angular with a `quepid:query-vectors-changed` document event (`queriesSvc.applyVectorStatuses`).
+- **Statuses for the poll read only the metadata** (`Query.vector_statuses_for`, via `AdapterFunctions.json_value`/`json_has_key`), never the vectors themselves. Tested on PostgreSQL and MySQL.
+- **Re-vectorize** is `POST api/cases/:case_id/embedders/vectorize?force=true`, a button in the embedder picker with a status summary.
+- **Not done yet:** collapsing `query_vec` in the Set Options editor; it shows the full array for now.
 
 ### Service and jobs
 

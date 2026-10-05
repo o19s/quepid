@@ -30,6 +30,10 @@ function buildModalController() {
   controller.element = document.createElement("div")
   controller.indexUrlTemplateValue = "api/cases/__CASE_ID__/embedders"
   controller.updateUrlTemplateValue = "api/cases/__CASE_ID__/embedders/__EMBEDDER_ID__"
+  controller.vectorizeUrlTemplateValue = "api/cases/__CASE_ID__/embedders/vectorize"
+  controller.vectorPanelTarget = document.createElement("div")
+  controller.vectorSummaryTarget = document.createElement("span")
+  controller.revectorizeButtonTarget = document.createElement("button")
   controller.hasTitleTarget = true
   controller.titleTarget = document.createElement("h5")
   controller.alertTarget = document.createElement("div")
@@ -170,5 +174,82 @@ describe("CaseEmbedderCoreController", () => {
 
     header.changed({ detail: { caseId: "5", state: { embedder: null } } })
     expect(header.element.hidden).toBe(true)
+  })
+
+  describe("vectorisation progress", () => {
+    const WITH_VECTORS = {
+      embedder_id: 7,
+      embedder: { ...STATE.embedders[0], accessible: true },
+      embedders: STATE.embedders,
+      vectors: { running: true, counts: { current: 18, pending: 2 }, queries: { 11: { status: "pending", reason: "Waiting" } } }
+    }
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it("hands each query's status to Angular and polls while a run is under way", async () => {
+      vi.useFakeTimers()
+      const modal = buildModalController()
+      const done = { ...WITH_VECTORS, vectors: { ...WITH_VECTORS.vectors, running: false } }
+      const fetchState = vi.spyOn(modal, "fetchState").mockResolvedValue(done)
+      const header = buildHeader(modal, "5")
+      const received = vi.fn()
+      document.addEventListener("quepid:query-vectors-changed", received)
+
+      header.applyState(WITH_VECTORS)
+
+      expect(received.mock.calls[0][0].detail).toEqual({ caseNo: "5", queries: WITH_VECTORS.vectors.queries })
+      expect(fetchState).not.toHaveBeenCalled()
+
+      await vi.advanceTimersByTimeAsync(3000)
+      expect(fetchState).toHaveBeenCalledTimes(1)
+      expect(received).toHaveBeenCalledTimes(2)
+
+      // The run finished: no further polling.
+      await vi.advanceTimersByTimeAsync(10000)
+      expect(fetchState).toHaveBeenCalledTimes(1)
+      document.removeEventListener("quepid:query-vectors-changed", received)
+    })
+
+    it("the modal summarises the statuses and disables re-vectorising during a run", async () => {
+      apiFetch.mockResolvedValue(jsonResponse(WITH_VECTORS))
+      const controller = buildModalController()
+
+      await openModal(controller)
+
+      expect(controller.vectorPanelTarget.hidden).toBe(false)
+      expect(controller.vectorSummaryTarget.textContent).toBe("18 current · 2 pending — vectorising…")
+      expect(controller.revectorizeButtonTarget.disabled).toBe(true)
+    })
+
+    it("hides the summary for a case without an embedder", async () => {
+      apiFetch.mockResolvedValue(jsonResponse({ ...STATE, vectors: { running: false, counts: {}, queries: {} } }))
+      const controller = buildModalController()
+
+      await openModal(controller)
+
+      expect(controller.vectorPanelTarget.hidden).toBe(true)
+    })
+
+    it("re-vectorize POSTs force=true and announces the new state", async () => {
+      const idle = { ...WITH_VECTORS, vectors: { ...WITH_VECTORS.vectors, running: false } }
+      apiFetch.mockResolvedValueOnce(jsonResponse(idle)).mockResolvedValueOnce(jsonResponse(WITH_VECTORS))
+      const controller = buildModalController()
+      const announced = vi.fn()
+      document.addEventListener("quepid:case-embedder-changed", announced)
+
+      await openModal(controller)
+      expect(controller.revectorizeButtonTarget.disabled).toBe(false)
+      await controller.revectorize()
+
+      expect(apiFetch).toHaveBeenLastCalledWith(
+        "api/cases/5/embedders/vectorize?force=true",
+        expect.objectContaining({ method: "POST" })
+      )
+      expect(announced.mock.calls[0][0].detail.state).toEqual(WITH_VECTORS)
+      expect(controller.revectorizeButtonTarget.disabled).toBe(true)
+      document.removeEventListener("quepid:case-embedder-changed", announced)
+    })
   })
 })

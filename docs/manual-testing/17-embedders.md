@@ -48,3 +48,22 @@ For a local run, the Ollama container needs an embedding model: `docker exec oll
   - [ ] A case whose embedder was set by a teammate and isn't shared with you: the modal warns that switching away loses access, and still shows it as current.
   - [ ] **Create New Embedder** opens the embedder form in a new tab.
   - [ ] Clone the case: the clone keeps the embedder only if you can see it.
+
+### 17.4 Vectorise a case's queries
+
+- [ ] **Steps:**
+  1. Open a case with queries and pick an embedder (17.3). A local Ollama embedding model is enough.
+  2. Watch the query rows; open **Select embedder** again to see the summary ("20 pending — vectorising…").
+  3. When the run finishes, open a query's **Set Options** and look for `query_vec` and `query_vec_meta`. Close with **Cancel**.
+  4. Add a new query.
+  5. Edit the embedder (e.g. change Dimensions) and come back to the case.
+  6. Switch the case to an embedder with no or a wrong API key.
+  7. Click **Re-vectorize all queries** in the picker.
+- **Expected:**
+  - Step 1–2: every row shows a light grey "pending vectorisation" badge, which disappears as the run finishes, without a reload; the queries search again with the vector.
+  - Step 3: `query_vec` has the embedder's size; `query_vec_meta` names the embedder, provider, model, dimensions, truncation, fingerprint, text digest and time.
+  - Step 4: the new query has its vector before its first search (no badge).
+  - Step 5: rows show "vector outdated" (amber) until the automatic re-run finishes; the tooltip says the settings changed.
+  - Step 6: rows show "vectorisation failed" (red); the tooltip has the provider's error (e.g. 401). Older vectors are kept.
+  - Step 7: all queries are redone.
+

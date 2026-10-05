@@ -4,6 +4,10 @@ import { getOrCreateBsModal, hideBsModal } from "utils/bs_modal"
 import { escapeHtml } from "utils/stimulus_ui"
 
 const CHANGED_EVENT = "quepid:case-embedder-changed"
+// Read by queriesSvc.applyVectorStatuses (Angular) to update the query badges.
+const VECTORS_EVENT = "quepid:query-vectors-changed"
+const POLL_MS = 3000
+const STATUS_LABELS = { current: "current", pending: "pending", stale: "outdated", failed: "failed" }
 
 /**
  * Picks the case's embedder from the core case toolbar. New on core (there was no
@@ -15,15 +19,29 @@ const CHANGED_EVENT = "quepid:case-embedder-changed"
  * owns the URLs. A third, in the case header, shows the current embedder's name the
  * way the header shows the scorer's (hidden while there is none): it asks the modal
  * instance for it once Angular has filled in the case id, and again whenever a save
- * announces a change on `document`.
+ * announces a change on `document`. It also hands every query's vector status to
+ * Angular (VECTORS_EVENT) and, while a vectorisation run is queued or under way, polls
+ * for progress -- the core page has no ActionCable.
  */
 export default class extends ModalTriggerControllerBase {
-  static targets = ["title", "alert", "inaccessibleWarning", "list", "emptyNotice", "submitButton", "name"]
+  static targets = [
+    "title",
+    "alert",
+    "inaccessibleWarning",
+    "list",
+    "emptyNotice",
+    "submitButton",
+    "name",
+    "vectorPanel",
+    "vectorSummary",
+    "revectorizeButton"
+  ]
 
   static values = {
     id: String,
     indexUrlTemplate: String,
-    updateUrlTemplate: String
+    updateUrlTemplate: String,
+    vectorizeUrlTemplate: String
   }
 
   get modalElementId() {
@@ -37,13 +55,39 @@ export default class extends ModalTriggerControllerBase {
   idValueChanged() {
     if (!this.hasNameTarget || !/^\d+$/.test(this.idValue)) return
 
-    this.modalController()?.fetchState(this.idValue).then((state) => this.renderLabel(state)).catch(() => {})
+    this.poll()
+  }
+
+  disconnect() {
+    clearTimeout(this.pollTimer)
   }
 
   changed(event) {
     if (!this.hasNameTarget || String(event.detail?.caseId) !== this.idValue) return
 
-    this.renderLabel(event.detail.state)
+    this.applyState(event.detail.state)
+  }
+
+  async poll() {
+    try {
+      const state = await this.modalController()?.fetchState(this.idValue)
+      if (state) this.applyState(state)
+    } catch {
+      // A failed poll leaves the page as it was; the next save or reload tries again.
+    }
+  }
+
+  applyState(state) {
+    this.renderLabel(state)
+
+    if (state?.vectors) {
+      document.dispatchEvent(
+        new CustomEvent(VECTORS_EVENT, { detail: { caseNo: this.idValue, queries: state.vectors.queries } })
+      )
+    }
+
+    clearTimeout(this.pollTimer)
+    if (state?.vectors?.running) this.pollTimer = setTimeout(() => this.poll(), POLL_MS)
   }
 
   renderLabel(state) {
@@ -106,6 +150,41 @@ export default class extends ModalTriggerControllerBase {
     }
 
     this.highlight()
+    this.renderVectors()
+  }
+
+  // "18 current · 2 pending" plus the Re-vectorize button, for a case with an embedder.
+  renderVectors() {
+    const vectors = this.state?.vectors
+    const show = Boolean(this.state?.embedder && vectors)
+    this.vectorPanelTarget.hidden = !show
+    if (!show) return
+
+    const counts = Object.entries(STATUS_LABELS)
+      .filter(([status]) => vectors.counts?.[status])
+      .map(([status, label]) => `${vectors.counts[status]} ${label}`)
+    const summary = counts.length > 0 ? counts.join(" · ") : "No queries yet"
+    this.vectorSummaryTarget.textContent = vectors.running ? `${summary} — vectorising…` : summary
+    this.revectorizeButtonTarget.disabled = Boolean(vectors.running)
+  }
+
+  async revectorize() {
+    this.clearAlert()
+    this.revectorizeButtonTarget.disabled = true
+
+    try {
+      const url = this.vectorizeUrlTemplateValue.replaceAll("__CASE_ID__", this.caseId)
+      const response = await apiFetch(`${url}?force=true`, { method: "POST", headers: { Accept: "application/json" } })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || `Unable to re-vectorize (${response.status})`)
+
+      this.state = data
+      this.renderVectors()
+      document.dispatchEvent(new CustomEvent(CHANGED_EVENT, { detail: { caseId: this.caseId, state: data } }))
+    } catch (error) {
+      this.showAlert(error.message, "danger")
+      this.revectorizeButtonTarget.disabled = false
+    }
   }
 
   describe(embedder) {

@@ -273,6 +273,7 @@ Rails.application.routes.draw do
 
         # Case Scorers
         resources :scorers, only: [ :index, :update ], controller: :case_scorers
+        post 'embedders/vectorize' => 'case_embedders#vectorize', as: :embedders_vectorize
         resources :embedders, only: [ :index, :update ], controller: :case_embedders
 
         # Case Queries

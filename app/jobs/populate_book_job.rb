@@ -68,7 +68,14 @@ class PopulateBookJob < ApplicationJob
 
         query_doc_pair.information_need = query.information_need
         query_doc_pair.notes = query.notes
-        query_doc_pair.options = query.options
+        # Everything but the vectorisation keys (Query::VECTOR_OPTION_KEYS). A book keeps
+        # query options once per query/doc pair, so a vector would be copied onto every
+        # rated doc of the query (10 docs x ~40 KB for a 3072-dim one), and nothing reads
+        # vectors from a book: a case is vectorised with its own embedder, so a vector
+        # coming back from the book could be from a different one anyway.
+        # TODO: store query-level data (options, information need, notes) in the book
+        # once per query rather than on every query/doc pair; that is the proper fix.
+        query_doc_pair.options = query.options.nil? ? nil : query.options_hash.except(*Query::VECTOR_OPTION_KEYS)
 
         # At one time we copied ratings over to the judgements based on your user_id
         # however what do you do when you change the rating as a individual and then do it.

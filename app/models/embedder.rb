@@ -7,6 +7,11 @@
 class Embedder < ApplicationRecord
   TRUNCATIONS = %w[none native client].freeze
 
+  # The settings that change the vectors produced. The fingerprint covers exactly these,
+  # and changing any of them re-vectorises the cases using this embedder. Name, key and
+  # timeout don't change the output.
+  VECTOR_SETTINGS = %w[provider service_url model dimensions truncation instruction input_template].freeze
+
   # Shown in the form and the API instead of the key itself.
   MASKED_API_KEY = '******'
 
@@ -28,6 +33,7 @@ class Embedder < ApplicationRecord
   scope :not_archived, -> { where(archived: false) }
 
   before_validation :drop_settings_the_provider_ignores
+  after_update_commit :revectorize_cases, if: -> { saved_changes.keys.intersect?(VECTOR_SETTINGS) }
 
   validates :name, presence: true
   validates :provider, inclusion: { in: ->(_) { EmbedderProvider.keys }, message: 'is not a known provider' }
@@ -39,6 +45,7 @@ class Embedder < ApplicationRecord
   validates :dimensions, presence: { message: 'are required to truncate' }, unless: -> { 'none' == truncation }
   validates :timeout, numericality: { only_integer: true, greater_than: 0, less_than_or_equal_to: 600 }
   validate :native_truncation_supported
+  validate :api_key_present_when_required
   validate :input_template_has_query
 
   def provider_definition
@@ -50,8 +57,8 @@ class Embedder < ApplicationRecord
   end
 
   # Vectors for these texts, in order. See EmbedderAdapters::Base#embed.
-  def embed texts
-    adapter.embed(Array(texts))
+  def embed texts, timeout: nil
+    adapter.embed(Array(texts), timeout: timeout)
   end
 
   # The string actually sent for a query: wrapped in the input template when there is one,
@@ -63,12 +70,16 @@ class Embedder < ApplicationRecord
     template.gsub('{instruction}') { instruction.to_s }.gsub('{query}') { text.to_s }
   end
 
-  # Changes whenever a setting that affects the vectors produced changes. Vectors stored with
-  # an older fingerprint are stale. The key, name and timeout don't change the output.
+  # Changes whenever one of VECTOR_SETTINGS changes; vectors stored with an older
+  # fingerprint are stale (see QueryVectorStatus).
   def fingerprint
-    Digest::SHA256.hexdigest(
-      [ provider, service_url, model, dimensions, truncation, instruction, input_template ].map(&:to_s).to_json
-    )[0, 16]
+    Digest::SHA256.hexdigest(VECTOR_SETTINGS.map { |attribute| self[attribute].to_s }.to_json)[0, 16]
+  end
+
+  # Identifies the exact text sent for a query, so a stored vector can be checked
+  # against what would be sent now without calling the API.
+  def input_digest text
+    Digest::SHA256.hexdigest(render_input(text))[0, 16]
   end
 
   def masked_api_key
@@ -80,6 +91,10 @@ class Embedder < ApplicationRecord
   end
 
   private
+
+  def revectorize_cases
+    cases.find_each { |kase| VectorizeCaseQueriesJob.enqueue_for(kase) }
+  end
 
   # The form posts every field whatever the provider; drop what this provider can't use so a
   # setting left over from another provider isn't silently stored -- or silently sent.
@@ -111,6 +126,13 @@ class Embedder < ApplicationRecord
     return if allowed.empty? || dimensions.nil? || allowed.include?(dimensions)
 
     errors.add(:dimensions, "must be one of #{allowed.to_sentence(two_words_connector: ' or ', last_word_connector: ' or ')} for #{definition.label}")
+  end
+
+  def api_key_present_when_required
+    definition = provider_definition
+    return if definition.nil? || !definition.requires_key? || api_key.present?
+
+    errors.add(:api_key, "is required for #{definition.label}")
   end
 
   def input_template_has_query

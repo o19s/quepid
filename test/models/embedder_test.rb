@@ -9,6 +9,7 @@ class EmbedderTest < ActiveSupport::TestCase
       provider:    'openai',
       service_url: 'https://api.openai.com',
       model:       'text-embedding-3-small',
+      api_key:     'sk-test',
     }.merge(attributes))
   end
 
@@ -47,6 +48,15 @@ class EmbedderTest < ActiveSupport::TestCase
       assert_not build_embedder(provider: 'voyage', truncation: 'native', dimensions: 300).valid?
       assert_predicate build_embedder(provider: 'voyage', truncation: 'native', dimensions: 1024), :valid?
       assert_predicate build_embedder(truncation: 'native', dimensions: 300), :valid?
+    end
+
+    test 'OpenAI and Voyage need a key; Ollama does not' do
+      embedder = build_embedder(api_key: nil)
+
+      assert_not embedder.valid?
+      assert_includes embedder.errors[:api_key], 'is required for OpenAI'
+      assert_not build_embedder(provider: 'voyage', api_key: '').valid?
+      assert_predicate build_embedder(provider: 'ollama', service_url: 'http://ollama:11434', api_key: nil), :valid?
     end
 
     test 'input template must contain {query}' do
