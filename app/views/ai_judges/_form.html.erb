@@ -64,6 +64,39 @@
         </div>
       </div>
 
+      <div class="row mb-3">
+        <%= form.label :escalates_to_id, 'When unsure, wake', class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,
+                { include_blank: 'Nobody' }, class: 'form-select' %>
+        </div>
+        <div class="col-sm-10 offset-sm-2 form-text" id="escalation-help">
+          A second judge to ask when this one can't give a usable rating. This judge's answer is
+          marked <strong>unrateable</strong>, and the pair is handed on, when:
+          <ul class="mb-1">
+            <li>it answered with no rating at all;</li>
+            <li>its rating isn't one of the book's scale values (e.g. a 3 on a 0&ndash;1 book);</li>
+            <li>it was less sure than its <strong>Minimum confidence</strong>. Only judges that report
+              how sure they are have this setting (TypeSafe Jev, under Model Configuration). Leave it
+              blank and low confidence alone never escalates;</li>
+            <li>the call to the model failed (timeout, bad key, provider error).</li>
+          </ul>
+          The judge you pick is <strong>on call</strong>: it sleeps, and only judges pairs this one
+          escalates to it. When this judge's run on a book ends, the on-call judge judges those pairs as a
+          run of its own, in every book this judge judges. Its rating is saved next to this judge's
+          unrateable one, so both stay visible.
+        </div>
+        <% if ai_judge.persisted? && ai_judge.on_call? %>
+          <div class="col-sm-10 offset-sm-2 mt-2">
+            <div class="alert alert-info small mb-0" id="on-call-notice">
+              <i class="bi bi-moon-stars" aria-hidden="true"></i>
+              <strong>On call</strong> for <%= ai_judge.escalated_from.map(&:name).sort.to_sentence %>:
+              this judge only rates pairs escalated to it.
+            </div>
+          </div>
+        <% end %>
+      </div>
+
       <div class="row">
         <div class="col-md-6">
           <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">

@@ -1,0 +1,36 @@
+<%# locals: (judgement:) %>
+<%# Why an AI judge's answer was unrateable, and -- with escalation
+    (docs/todo/escalating_judges.md) -- where the pair went next, linked both
+    ways. %>
+<% reason = judgement.unrateable_reason %>
+<% escalation = judgement.persisted? && judgement.escalation %>
+<% if reason %>
+  <div class="alert alert-info" role="alert" id="escalation-notice">
+    <i class="bi bi-slash-circle" aria-hidden="true"></i>
+    <strong>Unrateable:</strong> <%= judgement.user.fullname %> gave no usable rating, because <%= reason %>.
+    <% if escalation %>
+      <br>
+      <i class="bi bi-arrow-return-right" aria-hidden="true"></i>
+      The pair was <strong>handed on</strong> to <%= escalation.user&.fullname %>, which
+      <% if escalation.unrateable %>
+        couldn't rate it either.
+      <% else %>
+        rated it <strong><%= escalation.rating.to_s.delete_suffix('.0') %></strong>.
+      <% end %>
+      <%= link_to "See #{escalation.user&.fullname}'s judgement",
+            edit_book_query_doc_pair_judgement_path(@book, escalation.query_doc_pair, escalation),
+            class: 'alert-link' %>
+    <% end %>
+  </div>
+<% end %>
+<% if judgement.escalated_from %>
+  <% source = judgement.escalated_from %>
+  <div class="alert alert-info" role="alert" id="escalated-from-notice">
+    <i class="bi bi-moon-stars" aria-hidden="true"></i>
+    <strong>Escalated:</strong> <%= judgement.user&.fullname %> judged this pair because
+    <%= source.user&.fullname %>'s answer was unrateable<%= ": #{source.unrateable_reason}" if source.unrateable_reason %>.
+    <%= link_to "See #{source.user&.fullname}'s judgement",
+          edit_book_query_doc_pair_judgement_path(@book, source.query_doc_pair, source),
+          class: 'alert-link' %>
+  </div>
+<% end %>

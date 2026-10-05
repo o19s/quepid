@@ -138,6 +138,37 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'on_call_ai_judges' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+    let(:middle) { AiJudge.create!(name: 'Middle') }
+    let(:top) { AiJudge.create!(name: 'Top') }
+
+    it 'follows each assigned judge to the end of its chain, without the judges being assigned' do
+      middle.update!(escalates_to: top)
+      users(:judge_judy).update!(escalates_to: middle)
+      book.ai_judges << users(:judge_judy)
+
+      assert_equal [ middle, top ].sort_by(&:id), book.on_call_ai_judges.sort_by(&:id)
+    end
+
+    it 'is empty when no assigned judge wakes anybody' do
+      book.ai_judges << users(:judge_judy)
+
+      assert_empty book.on_call_ai_judges
+    end
+
+    it 'lists an on-call judge in the activity rows before it has judged anything' do
+      users(:judge_judy).update!(escalates_to: top)
+      book.ai_judges << users(:judge_judy)
+
+      row = book.judge_activity_rows.find { |r| r[:judge] == top }
+
+      assert_not_nil row
+      assert row[:on_call]
+      assert_equal 0, row[:count]
+    end
+  end
+
   describe 'sampling random query doc pairs' do
     let(:user) { users(:random) }
     let(:book) { books(:book_of_star_wars_judgements) }

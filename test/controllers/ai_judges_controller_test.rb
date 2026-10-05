@@ -232,6 +232,18 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to ai_judges_url
   end
 
+  test 'says why a judge with judgements cannot be deleted' do
+    ai_judge.update!(owner: user)
+    books(:james_bond_movies).query_doc_pairs.first.judgements.create!(user: ai_judge, rating: 1)
+
+    assert_no_difference('User.count') do
+      delete ai_judge_url(id: ai_judge.id)
+    end
+
+    assert_redirected_to ai_judges_url
+    assert_equal 'Could not delete AI Judge Judge Judy: Please reassign ownership of the 1 judgements.', flash[:alert]
+  end
+
   describe 'index' do
     it 'lists AI judges the user owns or shares a team with' do
       owned_judge = AiJudge.create!(name: 'My Judge', llm_key: '1234', owner: user)
@@ -250,6 +262,82 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       get ai_judges_url
 
       assert_not_includes assigns(:ai_judges), private_judge
+    end
+  end
+
+  describe 'escalation' do
+    let(:sleeper) { AiJudge.create!(name: 'Sleeper', owner: user) }
+
+    it 'offers the judges the user can see, but not the judge itself' do
+      sleeper
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+
+      get edit_ai_judge_url(ai_judge)
+
+      assert_select 'select#user_escalates_to_id option[value=?]', sleeper.id.to_s, text: 'Sleeper'
+      assert_select 'select#user_escalates_to_id option[value=?]', ai_judge.id.to_s, count: 0
+      assert_select 'select#user_escalates_to_id option[value=?]', private_judge.id.to_s, count: 0
+    end
+
+    it 'saves the judge to wake, and shows that judge as on call' do
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
+
+      assert_redirected_to ai_judge_path(ai_judge)
+      assert_equal sleeper, ai_judge.reload.escalates_to
+
+      get edit_ai_judge_url(sleeper)
+      assert_select '#on-call-notice', text: /On call\s+for Judge Judy/
+
+      get ai_judges_url
+      assert_select 'td', text: /wakes Sleeper/
+      assert_select '.badge', text: /On call/
+    end
+
+    it 'explains when a pair is handed on, including the confidence floor' do
+      get edit_ai_judge_url(ai_judge)
+
+      assert_select '#escalation-help li', 4
+      assert_select '#escalation-help li', text: /Minimum confidence/
+    end
+
+    it 'clears the judge to wake when Nobody is picked' do
+      ai_judge.update!(escalates_to: sleeper)
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: '' } }
+
+      assert_nil ai_judge.reload.escalates_to_id
+    end
+
+    it 'refuses a judge the user cannot see' do
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: private_judge.id } }
+
+      assert_response :success
+      assert_nil ai_judge.reload.escalates_to_id
+      assert_select 'li', text: /is not an AI judge you can use/
+    end
+
+    it 'keeps a target the user cannot see when saving something else' do
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+      ai_judge.update!(escalates_to: private_judge)
+
+      get edit_ai_judge_url(ai_judge)
+      assert_select 'select#user_escalates_to_id option[selected][value=?]', private_judge.id.to_s
+
+      patch ai_judge_url(ai_judge), params: { user: { name: 'Renamed', escalates_to_id: private_judge.id } }
+
+      assert_redirected_to ai_judge_path(ai_judge)
+      assert_equal private_judge, ai_judge.reload.escalates_to
+    end
+
+    it 'refuses a loop' do
+      sleeper.update!(escalates_to: ai_judge)
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
+
+      assert_response :success
+      assert_nil ai_judge.reload.escalates_to_id
     end
   end
 

@@ -141,7 +141,11 @@ class BooksController < ApplicationController
     # link so it isn't shown for a judge the viewer can't actually open.
     @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id)
 
-    stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
+    # On-call judges are listed before they have judged anything, so the
+    # book shows who its judges will wake.
+    @on_call_judge_ids = @book.on_call_ai_judges.map(&:id)
+    stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
+    @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
     stats_judges = []
     stats_judges_ids.each do |judge_id|
@@ -196,7 +200,7 @@ class BooksController < ApplicationController
       end
     end
 
-    @ai_judges = AiJudge.for_user(current_user)
+    @ai_judges = AiJudge.for_user(current_user).preload(:escalates_to, :escalated_from)
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -209,7 +213,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = visible_ai_judges_for(current_user).preload(:escalates_to, :escalated_from)
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -282,7 +286,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = visible_ai_judges_for(current_user).preload(:escalates_to, :escalated_from)
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -369,6 +373,14 @@ class BooksController < ApplicationController
   def run_judge_judy
     ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
 
+    # An on-call judge sleeps until another judge escalates to it; it is
+    # woken by the end of that judge's run, never started by hand.
+    if ai_judge&.on_call?
+      waking = ai_judge.escalated_from.map(&:name).sort.to_sentence
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it."
+      return
+    end
+
     judge_all = deserialize_bool_param(params[:judge_all])
     number_of_pairs = params[:number_of_pairs].to_i
     number_of_pairs = nil if judge_all
@@ -378,7 +390,9 @@ class BooksController < ApplicationController
   end
 
   def cancel_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    # An on-call judge runs here without being assigned, so look there too.
+    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first ||
+               @book.on_call_ai_judges.find { |judge| judge.id == params[:ai_judge_id].to_i }
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.'
       return

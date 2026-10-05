@@ -272,6 +272,79 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'escalation to an on-call judge' do
+    let(:on_call) { AiJudge.create!(name: 'Night Shift', owner: user) }
+
+    setup do
+      login_user_for_integration_test user
+      judge_judy.update!(escalates_to: on_call)
+    end
+
+    test 'refuses to start an on-call judge by hand' do
+      james_bond_movies.ai_judges << on_call
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{on_call.id}", params: { number_of_pairs: 1 }
+      end
+
+      follow_redirect!
+      assert_equal 'AI Judge Night Shift is on call: it only judges pairs Judge Judy escalates to it.', flash[:alert]
+    end
+
+    test 'can cancel an on-call judge that is not assigned to the book' do
+      delete "/books/#{james_bond_movies.id}/cancel_judge_judy/#{on_call.id}"
+
+      follow_redirect!
+      assert_equal 'AI Judge Night Shift has been cancelled.', flash[:notice]
+    end
+
+    test 'judgement stats lists the on-call judge, with no way to start it, and who wakes it' do
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+
+      assert_response :success
+      rows = css_select('tbody th').index_by { |th| th.text.strip.split("\n").first.strip }
+      night_shift = rows.fetch('Night Shift')
+      assert_includes night_shift.text, 'On call'
+      assert_empty night_shift.css('button')
+      assert_includes rows.fetch('Judge Judy').text, 'wakes Night Shift when unsure'
+    end
+
+    test 'the book overview shows the on-call judge in Judge Activity, without a run button' do
+      get "/books/#{james_bond_movies.id}"
+
+      assert_response :success
+      assert_select "#judge-row-#{on_call.id}" do
+        assert_select '.badge', text: /On call/
+        assert_select 'form', count: 0
+      end
+      assert_select "#judge-row-#{judge_judy.id}", text: /wakes Night Shift when unsure/
+    end
+
+    test 'pages listing several linked judges load the links without an N+1' do
+      second = AiJudge.create!(name: 'Second Opinion', owner: user)
+      AiJudge.create!(name: 'Day Shift', owner: user, escalates_to: second).tap { |j| james_bond_movies.ai_judges << j }
+
+      get "/books/#{james_bond_movies.id}"
+      assert_response :success
+      assert_select "#judge-row-#{judge_judy.id}", text: /wakes Night Shift when unsure/
+
+      get "/books/#{james_bond_movies.id}/judgement_stats"
+      assert_response :success
+      assert_select 'th', text: /wakes Second Opinion when unsure/
+    end
+
+    test 'the book settings show who each judge wakes' do
+      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
+      Bullet.enable = false
+      get "/books/#{james_bond_movies.id}/edit"
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'small', text: /wakes Night Shift when unsure/
+      assert_select '.badge', text: /On call/
+    end
+  end
+
   describe 'judgement stats' do
     before do
       james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }

@@ -82,8 +82,15 @@ module LlmJudgeAdapters
       judgement.explanation = explanation_from(answer, response_body, scale)
 
       # Two answers can share a score and mean very different things, so a run
-      # can be told to treat a flat distribution as no answer at all.
-      judgement.mark_unrateable if below_confidence_floor?(answer)
+      # can be told to treat a flat distribution as no answer at all. Say so in
+      # the explanation, which otherwise still reads "Jev rated 1": the
+      # judgement is unrateable because of the floor, not the rating.
+      if below_confidence_floor?(answer)
+        judgement.mark_unrateable
+        judgement.explanation = "#{judgement.explanation} [confidence #{answer['confidence']} is below this " \
+                                "judge's minimum confidence of #{options[:jev_min_confidence]}, so it was " \
+                                'marked unrateable]'
+      end
 
       judgement
     end

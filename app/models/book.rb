@@ -218,14 +218,31 @@ class Book < ApplicationRecord
   # Shared by the initial page render and the live broadcast (which
   # re-renders the whole table on every change) so a judge's row is never
   # missing just because it didn't exist yet when a viewer's page loaded.
+  # The judges this book's assigned AI judges wake when unsure, following
+  # each link to the end of its chain. They judge here without being
+  # assigned: the link on the judge is what puts them on call for this book
+  # (docs/todo/escalating_judges.md D3).
+  def on_call_ai_judges
+    found = {}
+    frontier = ai_judges.where.not(escalates_to_id: nil).pluck(:escalates_to_id)
+    while frontier.any?
+      judges = AiJudge.where(id: frontier - found.keys).to_a
+      judges.each { |judge| found[judge.id] = judge }
+      frontier = judges.filter_map(&:escalates_to_id) - found.keys
+    end
+    found.values
+  end
+
   def judge_activity_rows days: 30
-    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
+    on_call_ids = on_call_ai_judges.map(&:id)
+    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id) + on_call_ids).uniq
     return [] if judge_ids.empty?
 
     actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
     judges_by_id = User.where(id: judge_ids).index_by(&:id)
     activity = judge_activity_for(judge_ids, days: days)
     auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
+    wakes = AiJudge.escalation_target_names(judge_ids)
 
     rows = judge_ids.filter_map do |uid|
       judge = judges_by_id[uid]
@@ -234,7 +251,8 @@ class Book < ApplicationRecord
       stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
       { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
         count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
-        auto_run: auto_run_ids.include?(judge.id) }
+        auto_run: auto_run_ids.include?(judge.id), on_call: on_call_ids.include?(judge.id),
+        wakes: wakes[judge.id] }
     end
 
     rows.sort_by { |row| row[:judge].fullname }

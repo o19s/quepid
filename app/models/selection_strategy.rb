@@ -4,6 +4,13 @@
 # to be judged. This implementation supports only the "Multiple Raters" strategy,
 # which allows up to three ratings for each query/doc pair.
 module SelectionStrategy
+  # Judgements per pair, counting an escalation once: a judgement handed on
+  # to an on-call judge and the judgement that answered it are one opinion,
+  # not two (docs/todo/escalating_judges.md §4). Every escalated row points
+  # at exactly one row on the same pair, so subtracting the escalated rows
+  # needs no subquery. Without escalation this is plain COUNT(judgements.id).
+  JUDGEMENT_COUNT = 'COUNT(judgements.id) - COUNT(judgements.escalated_from_id)'
+
   # Under the Multiple Raters strategy, we need up to 3 judgements per query/doc pair
   def self.moar_judgements_needed? book
     !every_query_doc_pair_has_three_judgements?(book)
@@ -26,12 +33,12 @@ module SelectionStrategy
 
   # Returns count of query-doc pairs with no judgements
   def self.unjudged_pairs_count book
-    grouped_pair_count(book, 'COUNT(judgements.id) = 0')
+    grouped_pair_count(book, "#{JUDGEMENT_COUNT} = 0")
   end
 
   # Returns count of query-doc pairs with 1-2 judgements (partially judged)
   def self.partially_judged_pairs_count book
-    grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2')
+    grouped_pair_count(book, "#{JUDGEMENT_COUNT} BETWEEN 1 AND 2")
   end
 
   # Returns count of partially judged (1-2 judgements) pairs that the given
@@ -39,7 +46,7 @@ module SelectionStrategy
   # available pairs.
   def self.partially_judged_pairs_not_yet_judged_by_count book, user
     judged_pair_ids = book.judgements.where(user: user).pluck(:query_doc_pair_id)
-    grouped_pair_count(book, 'COUNT(judgements.id) BETWEEN 1 AND 2') do |relation|
+    grouped_pair_count(book, "#{JUDGEMENT_COUNT} BETWEEN 1 AND 2") do |relation|
       relation.where.not(id: judged_pair_ids)
     end
   end
@@ -49,7 +56,7 @@ module SelectionStrategy
     query_doc_pair = book.query_doc_pairs_within_rank_depth
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
-      .having('COUNT(judgements.id) < 3')
+      .having("#{JUDGEMENT_COUNT} < 3")
       .first
     query_doc_pair.nil? # if we didn't find a match, then return true
   end
@@ -73,8 +80,8 @@ module SelectionStrategy
       .left_joins(:judgements)
       .group('query_doc_pairs.id')
       .having('COUNT(CASE WHEN judgements.user_id = ? THEN 1 END) = 0', user.id)
-      .having('COUNT(judgements.id) < 3')
-      .order(Arel.sql('COUNT(judgements.id)'))
+      .having("#{JUDGEMENT_COUNT} < 3")
+      .order(Arel.sql(JUDGEMENT_COUNT))
       .order(Arel.sql(weighted_random_order))
       .first
   end

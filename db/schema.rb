@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_15_214546) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -281,6 +281,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_214546) do
     t.boolean "unrateable", default: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
+    t.bigint "escalated_from_id"
+    t.index ["escalated_from_id"], name: "index_judgements_on_escalated_from_id", unique: true
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
@@ -626,8 +628,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_214546) do
     t.string "system_prompt", limit: 4000
     t.string "type"
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "escalates_to_id"
     t.index ["default_scorer_id"], name: "index_users_on_default_scorer_id"
     t.index ["email"], name: "ix_user_username", unique: true
+    t.index ["escalates_to_id"], name: "index_users_on_escalates_to_id"
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true, length: 191
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["name"], name: "index_users_on_name"
@@ -658,6 +662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_214546) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
+  add_foreign_key "judgements", "judgements", column: "escalated_from_id", on_delete: :nullify
   add_foreign_key "judgements", "query_doc_pairs"
   add_foreign_key "mapper_wizard_states", "users"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"
@@ -681,6 +686,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_15_214546) do
   add_foreign_key "teams_scorers", "teams"
   add_foreign_key "tries", "cases", name: "tries_ibfk_1"
   add_foreign_key "users", "scorers", column: "default_scorer_id"
+  add_foreign_key "users", "users", column: "escalates_to_id", on_delete: :nullify
   add_foreign_key "users", "users", column: "invited_by_id"
   add_foreign_key "web_requests", "snapshot_queries"
 end

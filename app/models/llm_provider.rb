@@ -274,7 +274,8 @@ class LlmProvider
           step:  0.1,
           hint:  'Optional, 0 to 1. Jev reports how concentrated its answer is; below this ' \
                  'the judgement is marked unrateable instead of rated, with the numbers kept ' \
-                 'in the explanation. Leave blank to accept every answer.',
+                 'in the explanation -- and, if this judge wakes another when unsure, handed ' \
+                 'on to it. Leave blank to accept every answer.',
         },
       },
     }

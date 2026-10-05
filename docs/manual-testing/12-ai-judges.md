@@ -83,3 +83,28 @@ Jev is a typed evaluation model rather than a chat model: the book's rating scal
   - [ ] Point the judge at a book whose scale has **more than 10 values** — confirm it still judges (the question becomes a choice between the rating values rather than a score).
   - [ ] Set **Minimum confidence** to `0.5` on the judge (a number field that appears only while TypeSafe Jev is the provider, stored in the judge's options JSON — no new column) and re-run — confirm answers below that confidence are saved as **unrateable** with their numbers still in the explanation, and that switching provider away hides and disables the field.
   - [ ] Judge a book whose documents have an `image` field — confirm judging still works and the image is simply ignored (Jev is text-only).
+
+### 12.7 Escalate from one AI judge to an on-call judge
+
+A judge can name a second judge to wake when it can't give a usable rating ("escalation", `docs/todo/escalating_judges.md`). The link lives on the judge, not on a book, and the judge it points at is **on call**: it doesn't have to be assigned to the book, it can't be started by hand, and it judges only the pairs handed to it. When the first judge's run ends, the on-call judge judges those pairs as a run of its own.
+
+- [ ] **Steps:**
+  1. Open **AI Judges**, edit a TypeSafe Jev judge, set **When unsure, wake** to an OpenAI judge, and set **Minimum confidence** to `1.0` (every answer falls below it, so every pair escalates). Save.
+  2. Back on **AI Judges**, read the **Escalation** column, then open the OpenAI judge.
+  3. Assign **only** the Jev judge to a book whose scale matches the OpenAI judge's prompt (the stock OpenAI prompt grades 0–3). Open the book's **Settings**, then the book overview, then **Judgement Stats**.
+  4. Run the Jev judge on a handful of pairs (the ▶ button in Judge Activity runs 10).
+  5. When it finishes, watch the OpenAI judge start judging on its own. When it finishes, open one of Jev's judgements from the run, follow the link, and open the OpenAI judgement.
+  6. Try to start the OpenAI judge directly (it has no button; a crafted `PATCH .../run_judge_judy/<id>` should be refused).
+  7. Set Jev's **Minimum confidence** back to blank and run Jev again.
+- **Expected:**
+  - The list shows "→ wakes {OpenAI judge}" on Jev and an **On call** badge on the OpenAI judge, whose edit page says "On call for {Jev}: this judge only rates pairs escalated to it."
+  - The book's settings, Judge Activity and Judgement Stats show "wakes {OpenAI judge} when unsure" under Jev, and the OpenAI judge with **On call** and no ▶ / **Prepare to Judge!**, even though it isn't assigned.
+  - After step 5, every pair Jev judged has two judgements: Jev's unrateable one and the OpenAI judge's. Jev's judgement page says **Unrateable:** "Jev gave no usable rating, because its confidence (…) was below its minimum confidence of 1.0", and that the pair was **handed on**, with what the OpenAI judge did and a link. The OpenAI judgement says **Escalated:** with Jev's reason and a link back, and its explanation starts "Escalated from Jev, whose answer was unrateable: …".
+  - Step 6 is refused with "AI Judge {name} is on call: it only judges pairs {Jev} escalates to it."
+  - After step 7, nothing escalates: no new OpenAI judgements.
+- **Edge cases:**
+  - [ ] Try to close a loop (A wakes B, then set B to wake A): the save is refused with "would wake a judge that already escalates back to this one".
+  - [ ] Delete the on-call judge (one with no judgements): the main judge's **When unsure, wake** goes back to Nobody. A judge that has judgements can't be deleted, and the AI Judges page says why.
+  - [ ] As a user who can't see the woken judge, edit and save the main judge: the link is kept.
+  - [ ] Book with a 0–1 scale and the stock 0–3 OpenAI prompt: the OpenAI judge's off-scale answers are marked unrateable, and its judgement page gives *its own* reason ("its rating wasn't one of the book's scale values"), not Jev's.
+  - [ ] Cancel the on-call judge's run from Judge Activity mid-way: it stops; running Jev again later picks up the pairs it didn't reach.

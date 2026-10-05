@@ -109,10 +109,21 @@
             <% if @refinable_ai_judge_ids.include?(row[:judge].id) %>
               <%= link_to 'Refine Prompt', edit_ai_judge_path(row[:judge], book_id: @book.id), class: 'btn btn-light', role: 'button' %>
             <% end %>
+            <% if @on_call_judge_ids.include?(row[:judge].id) %>
+              <span class="badge text-bg-info align-self-center" title="Sleeps until a judge on this book escalates a pair to it">
+                <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
+              </span>
+            <% else %>
             <button type="button" class="btn btn-light" <%= (row[:can_judge_more] && @moar_judgements_needed )? '' : 'disabled' %> data-bs-toggle="modal" data-bs-target="#unleash_modal_<%= row[:judge].id %>">
               Prepare to Judge!
-            </button>      
-          </div>         
+            </button>
+            <% end %>
+          </div>
+          <% if @wakes[row[:judge].id] %>
+            <div class="small text-muted fw-normal">
+              <i class="bi bi-arrow-return-right" aria-hidden="true"></i> wakes <%= @wakes[row[:judge].id] %> when unsure
+            </div>
+          <% end %>
         <% end %>
       </th>
       <td>
