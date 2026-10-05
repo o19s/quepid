@@ -8,7 +8,10 @@ class CalibrationsController < ApplicationController
   before_action :set_run, only: [ :show, :cancel, :resume, :rerun, :apply_settings ]
 
   def index
-    @runs = CalibrationRun.for_book(@book).includes(:judge, sample: [ :reference, :book ]).order(id: :desc)
+    @runs = CalibrationRun.for_book(@book).includes(:judge, sample: [ :reference, :book ]).order(id: :desc).to_a
+    # Each finished run's row shows its figures, which need its answers and sample.
+    ActiveRecord::Associations::Preloader.new(records:      @runs.reject(&:active?),
+                                              associations: [ :answers, { sample: :sample_pairs } ]).call
     @judges = visible_ai_judges
     @references = @book.calibration_references
     @samples = @book.calibration_samples.includes(:reference, runs: :judge).order(id: :desc)
@@ -30,7 +33,7 @@ class CalibrationsController < ApplicationController
 
     run = CalibrationRun.start!(sample: sample, judge: judge, created_by: current_user)
     redirect_to book_calibration_path(@book, run),
-                notice: "Calibrating #{judge.name} against #{sample.reference.name} on #{sample.size} pairs."
+                notice: "Calibrating #{judge.name} against #{sample.reference.name} on #{sample.description}."
   end
 
   def cancel
@@ -80,7 +83,7 @@ class CalibrationsController < ApplicationController
   end
 
   def calibration_params
-    params.expect(calibration: [ :judge_id, :reference_id, :sample_size, :pairs, :sample_id ])
+    params.expect(calibration: [ :judge_id, :reference_id, :sample_size, :pairs, :sample_id, :unit, :query_count ])
   end
 
   def tuning_params
@@ -104,6 +107,8 @@ class CalibrationsController < ApplicationController
     reference = @book.calibration_references.find { |entry| entry[:judge].id == calibration_params[:reference_id].to_i }
     return refuse('Choose a judge who has rated pairs on this book to compare against.') unless reference
 
+    return new_query_sample(reference) if 'queries' == calibration_params[:unit]
+
     eligible = reference[:eligible_pairs]
     upper = [ eligible, CalibrationSample::MAX_SIZE ].min
     size = Integer(calibration_params[:sample_size], exception: false)
@@ -114,6 +119,21 @@ class CalibrationsController < ApplicationController
     return refuse("Pick a sample size between #{CalibrationSample::MIN_SIZE} and #{upper}.") unless size&.between?(CalibrationSample::MIN_SIZE, upper)
 
     CalibrationSample.draw!(book: @book, reference: reference[:judge], size: size, created_by: current_user)
+  end
+
+  # Whole top lists: the queries the reference rated every top pair of.
+  def new_query_sample reference
+    complete = reference[:complete_queries]
+    if complete < CalibrationSample::MIN_QUERIES
+      return refuse("#{reference[:judge].name} rated the whole top list of only #{complete} queries; " \
+                    "sampling by queries needs at least #{CalibrationSample::MIN_QUERIES}. Sample by pairs instead.")
+    end
+
+    upper = [ complete, CalibrationSample::MAX_QUERIES ].min
+    count = Integer(calibration_params[:query_count], exception: false)
+    return refuse("Pick between #{CalibrationSample::MIN_QUERIES} and #{upper} queries.") unless count&.between?(CalibrationSample::MIN_QUERIES, upper)
+
+    CalibrationSample.draw_queries!(book: @book, reference: reference[:judge], count: count, created_by: current_user)
   end
 
   def refuse message

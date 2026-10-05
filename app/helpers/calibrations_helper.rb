@@ -8,6 +8,12 @@ module CalibrationsHelper
     label.present? ? "#{number} #{label}" : number.to_s
   end
 
+  # When the server rendered a live-updated element, for stale_stream_guard:
+  # milliseconds, so updates rendered in one second still order.
+  def calibration_rendered_at
+    (Time.current.to_f * 1000).to_i
+  end
+
   def calibration_percent share
     share.nil? ? '—' : number_to_percentage(share * 100, precision: 0)
   end

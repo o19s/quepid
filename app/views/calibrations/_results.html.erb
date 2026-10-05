@@ -1,15 +1,13 @@
 <%# locals: (run:, cell: nil) %>
 <%# Rendered by the page and, when the run stops, broadcast by CalibrationRunJob in its place. %>
 <% book = run.book %>
-<% agreement = run.agreement %>
-<% scale = JudgeScale.for(book) %>
 <% judge_name = run.judge.name %>
 <% reference_name = calibration_judge_name(run.reference) %>
-<% unrateable_answers = run.answers.where(unrateable: true).includes(:query_doc_pair).order(:id) %>
-<% cell_answers = run.answers_in_cell(*cell) if cell %>
 <%# This judge's tuning history on these pairs: other judges' runs compare something else. %>
-<% sample_runs = run.sample.runs.where(judge_id: run.judge_id).order(:id) %>
-<div id="calibration-results-<%= run.id %>">
+<% sample_runs = run.sample.runs.where(judge_id: run.judge_id).order(:id).to_a %>
+<%# Figures are shown for finished runs only, so only theirs need answers. %>
+<% ActiveRecord::Associations::Preloader.new(records: sample_runs.reject(&:active?), associations: :answers).call %>
+<div id="calibration-results-<%= run.id %>" data-rendered-at="<%= calibration_rendered_at %>">
 <% if run.failed? && run.error.present? %>
   <div class="alert alert-danger"><strong>The run failed:</strong> <%= run.error.truncate(400) %></div>
 <% end %>
@@ -21,148 +19,29 @@
     <p class="text-muted small">Figures so far, over the <%= pluralize(run.answered_count, 'pair') %> answered. They update when the run finishes.</p>
   <% end %>
 
-  <%# ── Headline ─────────────────────────────────────────────────────────── %>
-  <div class="row g-3 mb-3">
-    <div class="col-sm-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Agreement (Krippendorff's α)</div>
-        <div class="fs-2 fw-semibold"><%= calibration_alpha(agreement) %></div>
-        <div class="small text-muted">
-          <% if !agreement.enough? %>
-            Not enough pairs compared (<%= agreement.n %> of the <%= JudgeAgreement::MIN_PAIRS %> needed)<% if unrateable_answers.any? %>:
-            <%= pluralize(unrateable_answers.size, 'answer was', plural: 'answers were') %> unrateable<% if (floor = run.judge_snapshot&.dig('judge_options', 'jev_min_confidence')).present? %>,
-            some because they were below <%= judge_name %>'s minimum confidence of <%= floor %><% end %>.
-            Read why below, or use a larger sample<% end %>.
-          <% elsif agreement.alpha.nil? %>
-            Undefined: both gave one grade throughout.
-          <% else %>
-            1 is perfect agreement, 0 no better than chance.
-          <% end %>
-        </div>
-      </div></div>
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <%# Buttons, not links: with Quepid's <base href>, href="#..." navigates to the root. %>
+      <button class="nav-link active" id="pairs-tab-<%= run.id %>" data-bs-toggle="tab" data-bs-target="#pairs-pane-<%= run.id %>"
+              type="button" role="tab" aria-controls="pairs-pane-<%= run.id %>" aria-selected="true">
+        Pairs agreement
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="ranks-tab-<%= run.id %>" data-bs-toggle="tab" data-bs-target="#ranks-pane-<%= run.id %>"
+              type="button" role="tab" aria-controls="ranks-pane-<%= run.id %>" aria-selected="false">
+        Ranks agreement
+      </button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="pairs-pane-<%= run.id %>" role="tabpanel" aria-labelledby="pairs-tab-<%= run.id %>" tabindex="0">
+      <%= render 'calibrations/pairs_agreement', run: run, cell: cell %>
     </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Same grade</div>
-        <div class="fs-2 fw-semibold"><%= calibration_percent(agreement.exact_share) %></div>
-        <div class="small text-muted">of pairs graded exactly the same</div>
-      </div></div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Within one grade</div>
-        <div class="fs-2 fw-semibold"><%= calibration_percent(agreement.within_one_share) %></div>
-        <div class="small text-muted">of pairs at most one grade apart</div>
-      </div></div>
-    </div>
-    <div class="col-sm-6 col-lg-3">
-      <div class="card h-100"><div class="card-body">
-        <div class="text-muted small">Compared</div>
-        <div class="fs-2 fw-semibold"><%= agreement.n %></div>
-        <div class="small text-muted">
-          <%= pluralize(unrateable_answers.size, 'unrateable answer') %> not compared<% if agreement.skipped.positive? %>,
-          <%= agreement.skipped %> off the scale<% end %>
-        </div>
-      </div></div>
+    <div class="tab-pane fade" id="ranks-pane-<%= run.id %>" role="tabpanel" aria-labelledby="ranks-tab-<%= run.id %>" tabindex="0">
+      <%= render 'calibrations/ranks_agreement', run: run %>
     </div>
   </div>
-
-  <% if (lean = calibration_lean(agreement, judge_name, reference_name)) %>
-    <p class="fs-6"><i class="bi bi-arrow-down-up text-primary" aria-hidden="true"></i> <%= lean %></p>
-  <% end %>
-
-  <div class="row g-4 mb-4">
-    <%# ── Confusion matrix ─────────────────────────────────────────────────── %>
-    <div class="col-lg-7">
-      <h5>Where they agree and differ</h5>
-      <p class="small text-muted mb-2">
-        Rows are <%= reference_name %>'s grade, columns <%= judge_name %>'s. The diagonal is agreement.
-        Click a number to read those pairs.
-      </p>
-      <% confusion = agreement.confusion %>
-      <% peak = [ confusion.values.max.to_i, 1 ].max %>
-      <div class="table-responsive">
-        <table class="table table-bordered text-center align-middle mb-0" id="calibration-confusion">
-          <thead>
-            <tr>
-              <th scope="col" class="text-start small text-muted fw-normal"><%= reference_name %> ↓ / <%= judge_name %> →</th>
-              <% agreement.scale.each do |grade| %>
-                <th scope="col" class="small"><%= calibration_grade(grade, scale) %></th>
-              <% end %>
-            </tr>
-          </thead>
-          <tbody>
-            <% agreement.scale.each do |reference_grade| %>
-              <tr>
-                <th scope="row" class="text-start small"><%= calibration_grade(reference_grade, scale) %></th>
-                <% agreement.scale.each do |judge_grade| %>
-                  <% count = confusion[[ reference_grade, judge_grade ]] %>
-                  <% agree = reference_grade == judge_grade %>
-                  <% selected = cell == [ reference_grade, judge_grade ] %>
-                  <% tint = count.zero? ? 0 : (0.12 + (0.5 * count / peak)).round(2) %>
-                  <td class="<%= 'border-primary border-2' if selected %>"
-                      style="background-color: rgba(<%= agree ? '25, 135, 84' : '220, 53, 69' %>, <%= tint %>);">
-                    <% if count.positive? %>
-                      <%= link_to count, book_calibration_path(book, run, reference: reference_grade, judge: judge_grade, anchor: 'calibration-cell'),
-                                  class: 'fw-semibold text-body', title: "#{count} pairs" %>
-                    <% else %>
-                      <span class="text-muted">0</span>
-                    <% end %>
-                  </td>
-                <% end %>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <%# ── Distributions ────────────────────────────────────────────────────── %>
-    <div class="col-lg-5">
-      <h5>How each one grades</h5>
-      <p class="small text-muted mb-2">Share of the compared pairs given each grade.</p>
-      <% reference_distribution = agreement.reference_distribution %>
-      <% judge_distribution = agreement.judge_distribution %>
-      <% compared = [ agreement.n, 1 ].max %>
-      <% agreement.scale.each do |grade| %>
-        <div class="mb-2">
-          <div class="small fw-semibold"><%= calibration_grade(grade, scale) %></div>
-          <% [ [ reference_name, reference_distribution[grade], 'bg-secondary' ], [ judge_name, judge_distribution[grade], 'bg-primary' ] ].each do |name, count, colour| %>
-            <div class="d-flex align-items-center gap-2 small">
-              <span class="text-truncate text-muted" style="width: 9rem;"><%= name %></span>
-              <div class="progress flex-grow-1" style="height: 0.8rem;" role="progressbar"
-                   aria-label="<%= name %>, grade <%= grade %>" aria-valuenow="<%= count %>" aria-valuemin="0" aria-valuemax="<%= compared %>">
-                <div class="progress-bar <%= colour %>" style="width: <%= (count * 100.0 / compared).round %>%"></div>
-              </div>
-              <span class="text-nowrap" style="width: 3rem;"><%= count %></span>
-            </div>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-
-  <%# ── One cell's pairs ─────────────────────────────────────────────────────── %>
-  <% if cell %>
-    <div id="calibration-cell" class="mb-4">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5 class="mb-2">
-          <%= reference_name %> said <%= calibration_grade(cell.first, scale) %>,
-          <%= judge_name %> said <%= calibration_grade(cell.last, scale) %>
-          <span class="text-muted fw-normal">(<%= cell_answers.size %>)</span>
-        </h5>
-        <%= link_to 'Close', book_calibration_path(book, run), class: 'btn btn-sm btn-light' %>
-      </div>
-      <%= render 'calibrations/answers_table', answers: cell_answers, book: book, judge_name: judge_name %>
-    </div>
-  <% end %>
-
-  <% if unrateable_answers.any? %>
-    <details class="mb-4">
-      <summary class="mb-2"><%= pluralize(unrateable_answers.size, 'unrateable answer') %> from <%= judge_name %></summary>
-      <%= render 'calibrations/answers_table', answers: unrateable_answers, book: book, judge_name: judge_name %>
-    </details>
-  <% end %>
 <% end %>
 
 <%# ── Runs on this sample ────────────────────────────────────────────────────── %>
@@ -180,6 +59,7 @@
           <th scope="col" class="text-end">α</th>
           <th scope="col" class="text-end">Exact</th>
           <th scope="col" class="text-end">Within one</th>
+          <% if run.sample.by_queries? %><th scope="col" class="text-end">Score shift</th><th scope="col" class="text-end">τ</th><% end %>
         </tr>
       </thead>
       <tbody>
@@ -202,6 +82,11 @@
             <td class="text-end"><%= figures ? calibration_alpha(figures) : '—' %></td>
             <td class="text-end"><%= figures ? calibration_percent(figures.exact_share) : '—' %></td>
             <td class="text-end"><%= figures ? calibration_percent(figures.within_one_share) : '—' %></td>
+            <% if run.sample.by_queries? %>
+              <% impact = sample_run.score_impact unless sample_run.active? %>
+              <td class="text-end"><%= impact&.mean_absolute_difference ? format('%.2f', impact.mean_absolute_difference) : '—' %></td>
+              <td class="text-end"><%= impact&.kendall_tau ? format('%.2f', impact.kendall_tau) : '—' %></td>
+            <% end %>
           </tr>
         <% end %>
       </tbody>

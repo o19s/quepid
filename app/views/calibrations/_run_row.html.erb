@@ -1,6 +1,6 @@
 <%# locals: (run:) %>
 <% agreement = run.agreement unless run.active? %>
-<tr id="calibration-run-<%= run.id %>">
+<tr id="calibration-run-<%= run.id %>" data-rendered-at="<%= calibration_rendered_at %>">
   <td>
     <%= link_to run.judge.name, book_calibration_path(run.book, run) %>
     <% if run.stale? %>
@@ -8,7 +8,7 @@
     <% end %>
   </td>
   <td><%= calibration_judge_name(run.reference) %></td>
-  <td class="text-end"><%= run.sample.size %></td>
+  <td class="text-end"><%= run.sample.description %></td>
   <td>
     <%= calibration_status_badge(run) %>
     <% if run.active? %>

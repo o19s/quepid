@@ -42,7 +42,7 @@ calibrated**. The same tool covers every case the research doc names:
 
 ### C1 — Where calibration starts
 
-**A "Calibration" page per book**, as a top-level book tab beside Overview and Judge Overview
+**A "Calibration" page per book**, as a top-level book tab, **Judge Calibration** (marked beta), beside Overview and Judge Overview
 (`books/_tabs.html.erb`), at `books/:book_id/calibrations`. It lists the book's calibrations and
 has the **New calibration** button. Two shortcuts open the same dialog pre-filled:
 
@@ -99,6 +99,15 @@ The page shows the sample's **reference grade mix** ("0: 31, 1: 19"). On a book 
 reference ratings are 0, a 50-pair sample has few of the middle grades, which is where judges
 disagree most (research §2.1). The figure is still right for the book, but the confusion matrix is
 thin there, and the page says so when a grade has fewer than 5 pairs.
+
+**Sampling by queries** (the dialog's default when the reference allows it): draw N queries
+uniformly at random from those whose whole top list the reference rated, and take every pair of
+each. A query's top list is its pairs within `rank_depth` that have a position, lowest position first,
+at most 10 (positions may start at 0 or 1, so it is the lowest ten, not positions 1–10). A query sample
+is still a set of pairs, so it shows pair agreement as well, and adds **ranks agreement** (C6). It
+needs at least 10 queries, and 20 or more says something useful; references that rated scattered pairs
+rather than whole lists can only be sampled by pairs. The pairs are clustered by query, so an α from
+20 queries rests on fewer independent observations than one from 200 random pairs.
 
 *Not v1:* a "balanced across grades" sample. It diagnoses the middle grades better, but its α
 doesn't describe the book. It can come later as an option, labelled that way.
@@ -215,6 +224,16 @@ prompt changed since this run — results may be stale   [ Tune and run again…
 - **Runs on this sample:** when a sample has more than one run, a small table of them, newest first:
   date, what changed in `judge_options` since the previous run (prompt, model, minimum confidence),
   α, exact, within one. This is the before/after for a prompt edit.
+
+**Two tabs** on the result: **Pairs agreement** (everything above) and **Ranks agreement**, for a
+sample drawn by queries (`CalibrationScoreImpact`). Each query's top 10 is scored with nDCG@10 (linear
+gain) in the order the search returned it, once with each judge's grades, so a disagreement at rank 1
+counts for more than one at rank 9, as in a case's score. It shows Kendall's τ-b between the two
+judges' per-query scores (do both find the same queries easy and hard? none under 10 queries), the
+average absolute shift, how many queries move by 0.1 or more, which way the judge leans, and a
+per-query table, largest shift first. A query with an unrateable answer is left out and counted: a
+hole in the list changes its score by itself. A pair-sampled calibration's Ranks tab says how to get
+this view.
 
 **The calibrations list** (`books/:book_id/calibrations`): one row per run, with judge, reference,
 pairs, status (with progress while running), α and exact agreement, a stale badge, and the date.

@@ -11,14 +11,17 @@ function buildController({ open = false } = {}) {
       </select>
       <select id="reference">
         <option value="">Choose</option>
-        <option value="5" data-name="Osc Team Member" data-eligible-pairs="178">Osc</option>
-        <option value="11" data-name="openai" data-eligible-pairs="20">openai</option>
-        <option value="7" data-name="Azure" data-eligible-pairs="40">Azure</option>
-        <option value="8" data-name="Exact" data-eligible-pairs="30">Exact</option>
+        <option value="5" data-name="Osc Team Member" data-eligible-pairs="178" data-complete-queries="17">Osc</option>
+        <option value="11" data-name="openai" data-eligible-pairs="20" data-complete-queries="0">openai</option>
+        <option value="7" data-name="Azure" data-eligible-pairs="40" data-complete-queries="3">Azure</option>
+        <option value="8" data-name="Exact" data-eligible-pairs="30" data-complete-queries="0">Exact</option>
       </select>
       <div id="referenceHint"></div>
-      <input id="sampleSize" type="number" value="50">
-      <div id="sampleHint"></div>
+      <input id="unitQueries" type="radio" name="unit" value="queries">
+      <input id="unitPairs" type="radio" name="unit" value="pairs" checked>
+      <div id="unitHint" class="d-none"></div>
+      <div id="queryRow"><input id="queryCount" type="number" value="20"><div id="queryHint"></div></div>
+      <div id="sizeRow"><input id="sampleSize" type="number" value="50"><div id="sampleHint"></div></div>
       <input id="pairsNew" type="radio" name="pairs" value="new" checked>
       <input id="pairsSame" type="radio" name="pairs" value="same">
       <select id="sample" disabled>
@@ -38,6 +41,13 @@ function buildController({ open = false } = {}) {
   controller.referenceHintTarget = el("referenceHint")
   controller.sampleSizeTarget = el("sampleSize")
   controller.sampleHintTarget = el("sampleHint")
+  controller.unitQueriesTarget = el("unitQueries")
+  controller.unitPairsTarget = el("unitPairs")
+  controller.unitHintTarget = el("unitHint")
+  controller.queryRowTarget = el("queryRow")
+  controller.queryCountTarget = el("queryCount")
+  controller.queryHintTarget = el("queryHint")
+  controller.sizeRowTarget = el("sizeRow")
   controller.problemTarget = el("problem")
   controller.summaryTarget = el("summary")
   controller.pairsNewTarget = el("pairsNew")
@@ -48,6 +58,8 @@ function buildController({ open = false } = {}) {
   controller.hasSampleTarget = true
   controller.minValue = 30
   controller.maxValue = 500
+  controller.minQueriesValue = 10
+  controller.maxQueriesValue = 50
   controller.openValue = open
   return controller
 }
@@ -173,8 +185,6 @@ describe("CalibrationDialogController", () => {
     expect(controller.referenceTarget.value).toBe("5")
     expect(controller.referenceHintTarget.textContent)
       .toBe("These pairs were drawn from Osc Team Member's ratings, so Osc Team Member is the reference.")
-    expect(controller.sampleSizeTarget.value).toBe("60")
-    expect(controller.sampleHintTarget.textContent).toBe("All 60 pairs of that calibration.")
     expect(controller.summaryTarget.textContent).toBe("This makes 60 calls to jev, compared against Osc Team Member.")
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
@@ -188,6 +198,54 @@ describe("CalibrationDialogController", () => {
 
     expect(controller.problemTarget.textContent).toMatch(/can't be calibrated against itself/)
     expect(controller.submitButtonTarget.disabled).toBe(true)
+  })
+
+  describe("sampling by queries", () => {
+    function byQueries(controller) {
+      controller.unitQueriesTarget.checked = true
+      controller.unitPairsTarget.checked = false
+      controller.update({ target: controller.unitQueriesTarget })
+    }
+
+    it("asks for a number of queries, up to the reference's whole top lists, and states the calls", () => {
+      const controller = buildController()
+      controller.connect()
+      byQueries(controller)
+      choose(controller, "judge", "10")
+      choose(controller, "reference", "5")
+
+      expect(controller.queryRowTarget.classList.contains("d-none")).toBe(false)
+      expect(controller.sizeRowTarget.classList.contains("d-none")).toBe(true)
+      expect(controller.queryCountTarget.value).toBe("17")
+      expect(controller.queryHintTarget.textContent).toBe("Between 10 and 17 queries.")
+      expect(controller.summaryTarget.textContent).toBe("This makes up to 170 calls to jev, compared against Osc Team Member.")
+      expect(controller.submitButtonTarget.disabled).toBe(false)
+    })
+
+    it("falls back to pairs when the reference rated too few whole top lists", () => {
+      const controller = buildController()
+      controller.connect()
+      byQueries(controller)
+      choose(controller, "judge", "10")
+      choose(controller, "reference", "7")
+
+      expect(controller.unitQueriesTarget.disabled).toBe(true)
+      expect(controller.unitPairsTarget.checked).toBe(true)
+      expect(controller.unitHintTarget.textContent).toBe("Azure rated the whole top list of only 3 queries, so this samples pairs.")
+      expect(controller.sizeRowTarget.classList.contains("d-none")).toBe(false)
+    })
+
+    it("refuses a number of queries outside the range", () => {
+      const controller = buildController()
+      controller.connect()
+      byQueries(controller)
+      choose(controller, "judge", "10")
+      choose(controller, "reference", "5")
+      choose(controller, "queryCount", "5")
+
+      expect(controller.problemTarget.textContent).toBe("Pick between 10 and 17 queries.")
+      expect(controller.submitButtonTarget.disabled).toBe(true)
+    })
   })
 
   it("opens itself when asked to", () => {

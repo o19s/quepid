@@ -341,6 +341,15 @@ class BookTest < ActiveSupport::TestCase
       assert_equal({ users(:doug) => 1, users(:matt) => 2 }, counts)
     end
 
+    it 'counts the queries whose whole top list each judge rated' do
+      rate_queries_for_calibration(book, users(:matt), queries: 2, depth: 2)
+      book.query_doc_pairs.find_by(doc_id: 'doc_1_1').judgements.find_by(user: users(:matt)).update!(judge_later: true)
+
+      matt = book.calibration_references.find { |reference| reference[:judge] == users(:matt) }
+
+      assert_equal 1, matt[:complete_queries]
+    end
+
     it 'is empty when nobody has rated anything' do
       assert_empty book.calibration_references
     end

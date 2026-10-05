@@ -1,7 +1,7 @@
 <%# locals: (run:) %>
 <% total = run.sample.size %>
 <% answered = run.answered_count %>
-<div id="calibration-progress-<%= run.id %>" class="d-flex align-items-center gap-3 mb-3">
+<div id="calibration-progress-<%= run.id %>" class="d-flex align-items-center gap-3 mb-3" data-rendered-at="<%= calibration_rendered_at %>">
   <%= calibration_status_badge(run) %>
   <% if run.active? %>
     <div class="progress flex-grow-1" style="height: 1.25rem;" role="progressbar"

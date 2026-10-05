@@ -5,6 +5,7 @@
 <%= turbo_stream_from @run.broadcast_channel %>
 
 <%= render 'books/tabs', book: @book %>
+<div data-controller="stale-stream-guard" hidden></div>
 
 <% judge_name = @run.judge.name %>
 <% reference_name = calibration_judge_name(@run.reference) %>
@@ -16,7 +17,7 @@
     <% end %>
     <h3 class="mb-0 mt-1"><%= judge_name %> <span class="text-muted fw-normal">vs</span> <%= reference_name %></h3>
     <div class="text-muted small">
-      <%= pluralize(@sample.size, 'pair') %> · <%= @run.reference.ai_judge? ? 'AI' : 'human' %> reference ·
+      <%= @sample.description %> · <%= @run.reference.ai_judge? ? 'AI' : 'human' %> reference ·
       started <%= time_ago_in_words(@run.created_at) %> ago
       <% if @run.created_by %>by <%= @run.created_by.fullname %><% end %>
     </div>

@@ -35,6 +35,28 @@ class CalibrationSampleTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'draw_queries!' do
+    it 'takes whole top lists the reference rated in full, and nothing else' do
+      lists = rate_queries_for_calibration(book, reference, queries: 12)
+      holed = lists.last
+      holed.first.judgements.find_by(user: reference).update!(unrateable: true)
+
+      sample = CalibrationSample.draw_queries!(book: book, reference: reference, count: 50)
+
+      assert_predicate sample, :by_queries?
+      assert_equal 11, sample.queries_count
+      assert_equal 110, sample.size
+      assert_empty(sample.sample_pairs.map(&:query_doc_pair_id) & holed.map(&:id))
+      assert_equal '11 queries (110 pairs)', sample.description
+    end
+
+    it 'takes only the top ten of a longer list' do
+      rate_queries_for_calibration(book, reference, queries: 1, depth: 12)
+
+      assert_equal 10, CalibrationSample.draw_queries!(book: book, reference: reference, count: 1).size
+    end
+  end
+
   describe 'reference_changes_count' do
     it 'counts sampled ratings the reference has since changed or removed' do
       rate_pairs_for_calibration(book, reference, count: 4)

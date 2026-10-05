@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_160000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -263,6 +263,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
     t.integer "created_by_id"
     t.integer "pairs_count", default: 0, null: false
     t.integer "reference_id", null: false
+    t.string "unit", default: "pairs", null: false
     t.datetime "updated_at", null: false
     t.index ["book_id"], name: "index_calibration_samples_on_book_id"
     t.index ["created_by_id"], name: "index_calibration_samples_on_created_by_id"

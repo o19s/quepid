@@ -91,8 +91,23 @@ class CalibrationRun < ApplicationRecord
   def agreement
     @agreement ||= begin
       reference_ratings = sample.sample_pairs.to_h { |pair| [ pair.query_doc_pair_id, pair.reference_rating ] }
-      ratings = answers.rateable.map { |answer| [ reference_ratings[answer.query_doc_pair_id], answer.rating ] }
+      # From the loaded answers, so a list of runs can preload them.
+      ratings = answers.reject(&:unrateable).map { |answer| [ reference_ratings[answer.query_doc_pair_id], answer.rating ] }
       JudgeAgreement.new(ratings, scale: JudgeScale.for(book).values)
+    end
+  end
+
+  # Per-query score movement, for a sample drawn by queries; nil otherwise.
+  def score_impact
+    return nil unless sample.by_queries?
+
+    @score_impact ||= begin
+      grades = answers.to_h { |answer| [ answer.query_doc_pair_id, answer.unrateable ? nil : answer.rating ] }
+      rows = sample.sample_pairs.includes(:query_doc_pair).map do |pair|
+        { query_text: pair.query_doc_pair.query_text, position: pair.query_doc_pair.position,
+          reference: pair.reference_rating, judge: grades[pair.query_doc_pair_id] }
+      end
+      CalibrationScoreImpact.new(rows)
     end
   end
 

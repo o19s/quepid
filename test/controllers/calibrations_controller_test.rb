@@ -14,7 +14,8 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
   end
 
   def start_params overrides = {}
-    { calibration: { judge_id: judge.id, reference_id: reference.id, sample_size: 30, pairs: 'new' }.merge(overrides) }
+    defaults = { judge_id: judge.id, reference_id: reference.id, sample_size: 30, pairs: 'new', unit: 'pairs' }
+    { calibration: defaults.merge(overrides) }
   end
 
   def started_run
@@ -87,6 +88,30 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
       assert_equal reference, calibration_run.reference
       assert_equal user, calibration_run.created_by
       assert_equal CalibrationRun.snapshot_of(judge), calibration_run.judge_snapshot
+    end
+
+    test 'draws whole top lists when sampling by queries' do
+      rate_queries_for_calibration(book, reference, queries: 12)
+
+      post book_calibrations_path(book), params: start_params(unit: 'queries', query_count: 10, sample_size: nil)
+
+      sample = CalibrationRun.last.sample
+      assert_predicate sample, :by_queries?
+      assert_equal 10, sample.queries_count
+      assert_equal 100, sample.size
+    end
+
+    test 'refuses sampling by queries when the reference rated too few whole top lists' do
+      # Twelve top lists, each missing the reference's grade on its last pair.
+      rate_queries_for_calibration(book, reference, queries: 12, depth: 3).each do |pairs|
+        pairs.last.judgements.find_by(user: reference).destroy!
+      end
+
+      assert_no_difference 'CalibrationRun.count' do
+        post book_calibrations_path(book), params: start_params(unit: 'queries', query_count: 10)
+      end
+
+      assert_match(/whole top list of only 0 queries/, flash[:alert])
     end
 
     test 'reuses the pairs of an earlier calibration' do
@@ -219,6 +244,29 @@ class CalibrationsControllerTest < ActionDispatch::IntegrationTest
       assert_select 'h5', text: "#{judge.name}'s runs on these pairs"
       assert_select 'h5 + p + div tbody tr', count: 2
       assert_select 'h5 + p + div', text: /Other Judge/, count: 0
+    end
+
+    test 'shows ranks agreement for a sample drawn by queries' do
+      rate_queries_for_calibration(book, reference, queries: 12)
+      post book_calibrations_path(book), params: start_params(unit: 'queries', query_count: 12)
+      perform_enqueued_jobs only: CalibrationRunJob
+
+      get book_calibration_path(book, CalibrationRun.last)
+
+      assert_select 'button.nav-link', text: /Pairs agreement/
+      assert_select 'button.nav-link', text: /Ranks agreement/
+      assert_select '#calibration-queries tbody tr', count: 12
+      assert_select '.card', text: /Kendall/
+    end
+
+    test 'explains that ranks agreement needs a sample drawn by queries' do
+      calibration_run = started_run
+      perform_enqueued_jobs only: CalibrationRunJob
+
+      get book_calibration_path(book, calibration_run)
+
+      assert_select "#ranks-pane-#{calibration_run.id}", text: /sample by\s+queries/
+      assert_select '#calibration-queries', count: 0
     end
 
     test 'is not found through another book' do

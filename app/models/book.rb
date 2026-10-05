@@ -276,13 +276,36 @@ class Book < ApplicationRecord
   end
 
   # The judges a calibration can compare against, each with how many pairs it
-  # could sample: the judge's rateable judgements, on the book's scale, within
-  # rank_depth (docs/todo/judge_calibration.md C2). Anonymous judgements are
-  # left out, since they don't come from one judge. Sorted by name.
+  # could sample (the judge's rateable judgements, on the book's scale, within
+  # rank_depth) and how many queries it rated the whole top list of
+  # (docs/todo/judge_calibration.md C2). Anonymous judgements are left out,
+  # since they don't come from one judge. Sorted by name.
   def calibration_references
-    counts = calibration_eligible_judgements.group(:user_id).count
-    User.where(id: counts.keys).map { |user| { judge: user, eligible_pairs: counts[user.id] } }
-      .sort_by { |reference| reference[:judge].fullname }
+    rated = calibration_eligible_judgements.pluck(:user_id, :query_doc_pair_id)
+      .group_by(&:first).transform_values { |rows| rows.to_set(&:last) }
+    top_lists = calibration_top_lists
+    references = User.where(id: rated.keys).map do |user|
+      pairs = rated[user.id]
+      complete = top_lists.count { |_, ids| ids.all? { |id| pairs.include?(id) } }
+      { judge: user, eligible_pairs: pairs.size, complete_queries: complete }
+    end
+    references.sort_by { |reference| reference[:judge].fullname }
+  end
+
+  # Each query's top list: its pairs within rank_depth that have a position,
+  # lowest position first, at most depth of them. { query_text => [pair ids] }
+  def calibration_top_lists depth: CalibrationSample::QUERY_DEPTH
+    query_doc_pairs_within_rank_depth.where.not(position: nil)
+      .order(:query_text, :position, :id)
+      .pluck(:query_text, :id)
+      .group_by(&:first)
+      .transform_values { |rows| rows.first(depth).map(&:last) }
+  end
+
+  # The top lists reference rated every pair of, eligibly.
+  def calibration_complete_queries reference
+    rated = calibration_eligible_judgements.where(user_id: reference.id).pluck(:query_doc_pair_id).to_set
+    calibration_top_lists.select { |_, ids| ids.all? { |id| rated.include?(id) } }
   end
 
   # Not proud of this method, but it's the only way I can get the dependent
