@@ -116,6 +116,7 @@ An embedder is attached to a **case only**, exactly like a scorer (`cases.scorer
 - UI: per the `angular-case-migration` rule, the picker on the core case page is **Stimulus**, not Angular. Model it on the existing toolbar modals in `queriesLayout.html` (`share-case-core`, `clone-case-core`; base class `core_modal_trigger_controller_base.js`): a button opening a modal listing the visible embedders, with "None". Show the current embedder, the vectorized/total query count, and a "Re-vectorize" button.
 - Cases list / case wizard: no picker in phase 2; the case page is the one place to set it.
 - Case clone keeps `embedder_id`. Export writes the embedder **name** only (ids aren't portable); import leaves the link empty.
+- **Decided:** case exports keep each query's `query_vec`, `query_vec_meta` and `query_vec_error` in its options (they are not stripped like they are for books), so an export carries its vectors and how they were made.
 - Archiving an embedder keeps existing links working (no new assignments); deleting it nullifies them. Vectors already in `query.options` stay, and phase 3 marks them stale.
 
 ## Phase 3 — Vectorization pipeline
