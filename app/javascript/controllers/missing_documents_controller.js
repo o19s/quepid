@@ -7,7 +7,7 @@ import { fromTextArea } from "modules/editor"
 import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
-  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
+  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported"]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
@@ -51,91 +51,15 @@ export default class extends Controller {
   renderShell() {
     const supported = this.adapter.usesQueryParamsEditor
     const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
-    this.element.replaceChildren(this.missingDocumentsContentTemplate(jsonEditor, supported))
+    this.supportedTarget.classList.toggle("d-none", !supported)
+    this.unsupportedTarget.classList.toggle("d-none", supported)
+    this.engineNameTarget.textContent = this.engineLabel
+    this.queryParamsTarget.disabled = !supported
     this.editor = null
     if (jsonEditor && this.hasQueryParamsTarget) {
       this.editor = fromTextArea(this.queryParamsTarget, { mode: "json", height: 400 })
     }
     this.setQueryParams(this.adapter.initialQueryParams() || "")
-  }
-
-  missingDocumentsContentTemplate(jsonEditor, supported) {
-    const fragment = document.createDocumentFragment()
-    if (supported) {
-      const intro = document.createElement("p")
-      const code = text => Object.assign(document.createElement("code"), { textContent: text })
-      intro.append(
-        "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer. For example, NDCG is based on your global scores, so if your top 10 are all ",
-        code("1"), "'s, and you find and rate a document as a ", code("3"),
-        ", then the score will drop if that ", code("3"), " rated document doesn't show up first!"
-      )
-      fragment.appendChild(intro)
-
-      const form = document.createElement("form")
-      form.dataset.action = "submit->missing-documents#search"
-      const row = document.createElement("div")
-      row.className = "row"
-      const editorColumn = document.createElement("div")
-      editorColumn.className = "mb-3 col-sm-6"
-      const queryParams = document.createElement("textarea")
-      queryParams.className = "form-control"
-      queryParams.rows = 4
-      queryParams.dataset.missingDocumentsTarget = "queryParams"
-      editorColumn.appendChild(queryParams)
-      const hint = document.createElement("p")
-      hint.className = "form-text"
-      hint.textContent = "This is pre-filled from your current try's query, just like the Query Sandbox \u2014 edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query."
-      editorColumn.appendChild(hint)
-      row.appendChild(editorColumn)
-      const searchColumn = document.createElement("div")
-      searchColumn.className = "col-sm-3"
-      const search = document.createElement("input")
-      search.type = "submit"
-      search.className = "btn btn-primary form-control"
-      search.value = "Search"
-      search.dataset.missingDocumentsTarget = "searchButton"
-      searchColumn.appendChild(search)
-      row.appendChild(searchColumn)
-      form.appendChild(row)
-      fragment.appendChild(form)
-      const reset = document.createElement("button")
-      reset.type = "button"
-      reset.className = "btn btn-outline-secondary form-control mb-3"
-      reset.dataset.missingDocumentsTarget = "resetButton"
-      reset.dataset.action = "missing-documents#reset"
-      reset.textContent = "Reset to All Rated Docs"
-      fragment.appendChild(reset)
-    } else {
-      const warning = document.createElement("div")
-      warning.className = "alert alert-warning"
-      const engineName = document.createElement("strong")
-      engineName.dataset.missingDocumentsTarget = "engineName"
-      engineName.textContent = this.engineLabel
-      warning.append("Finding and rating missing documents isn't supported for the ", engineName, " search engine yet.")
-      fragment.appendChild(warning)
-    }
-    const status = document.createElement("div")
-    status.dataset.missingDocumentsTarget = "status"
-    const results = document.createElement("div")
-    results.dataset.missingDocumentsTarget = "results"
-    fragment.append(status, results)
-    const paging = document.createElement("div")
-    paging.className = "row paging-row"
-    const next = document.createElement("button")
-    next.type = "button"
-    next.className = "btn btn-outline-secondary d-none"
-    next.dataset.missingDocumentsTarget = "next"
-    next.dataset.action = "missing-documents#paginate"
-    next.textContent = "Peek at the next page of results"
-    const spinner = document.createElement("span")
-    spinner.className = "ms-2 d-none"
-    spinner.dataset.missingDocumentsTarget = "spinner"
-    const spinnerIcon = document.createElement("i")
-    spinnerIcon.className = "bi bi-arrow-repeat spintime"
-    spinner.appendChild(spinnerIcon)
-    paging.append(next, spinner)
-    fragment.appendChild(paging)
-    return fragment
   }
 
   get queryParams() {
@@ -198,8 +122,8 @@ export default class extends Controller {
   }
 
   setControlsDisabled(disabled) {
-    if (this.hasSearchButtonTarget) this.searchButtonTarget.disabled = disabled
-    if (this.hasResetButtonTarget) this.resetButtonTarget.disabled = disabled || this.adapter.defaultList
+    if (this.hasSearchButtonTarget) this.searchButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor
+    if (this.hasResetButtonTarget) this.resetButtonTarget.disabled = disabled || !this.adapter.usesQueryParamsEditor || this.adapter.defaultList
     if (this.hasNextTarget) this.nextTarget.disabled = disabled
   }
 

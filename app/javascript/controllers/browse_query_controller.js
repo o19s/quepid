@@ -4,6 +4,7 @@ import { buildBrowseCurlCommand } from "utils/browse_query"
 import { openDynamicModal } from "utils/dynamic_modal"
 
 export default class extends Controller {
+  static targets = ["engineName", "curl", "headersNotice", "noHeadersNotice", "directLink", "copyIcon", "copyLabel"]
   static values = {
     url: String,
     engineName: String,
@@ -14,6 +15,13 @@ export default class extends Controller {
 
   connect() {
     if (!this.modalRootValue) return
+    this.engineNameTargets.forEach(node => { node.textContent = this.engineNameValue })
+    this.curlTarget.textContent = this.commandValue
+    const hasHeaders = Object.keys(this.headersValue || {}).length > 0
+    this.headersNoticeTarget.classList.toggle("d-none", !hasHeaders)
+    this.noHeadersNoticeTarget.classList.toggle("d-none", hasHeaders)
+    this.directLinkTarget.classList.toggle("d-none", hasHeaders)
+    this.directLinkTarget.href = this.urlValue
     this.lifecycle = {}
     this.modalElement = this.element.closest(".modal")
     this.onHide = () => { this.lifecycle = null }
@@ -30,8 +38,8 @@ export default class extends Controller {
     try {
       await copyText(this.commandValue)
       if (!lifecycle || lifecycle !== this.lifecycle) return
-      this.element.querySelector("[data-modal-target='copyIcon']").className = "bi bi-check-lg"
-      this.element.querySelector("[data-modal-target='copyLabel']").textContent = "Copied!"
+      this.copyIconTarget.className = "bi bi-check-lg"
+      this.copyLabelTarget.textContent = "Copied!"
     } catch {
       // Preserve the existing silent clipboard failure behavior.
     }
@@ -44,32 +52,18 @@ export default class extends Controller {
       url: this.urlValue,
       headers: this.headersValue
     })
-    const hasHeaders = Object.keys(this.headersValue || {}).length > 0
     const modal = openDynamicModal({
       templateId: "browse-query-modal-template",
       size: "lg",
       ariaLabelledBy: "browse-query-modal-title"
     })
 
-    const element = modal.element
-    element.querySelectorAll("[data-modal-target='engineName']").forEach((node) => { node.textContent = this.engineNameValue })
-    element.querySelector("[data-modal-target='curl']").textContent = curlCommand
-    element.querySelector("[data-modal-target='headersNotice']").classList.toggle("d-none", !hasHeaders)
-    element.querySelector("[data-modal-target='noHeadersNotice']").classList.toggle("d-none", hasHeaders)
-    if (!hasHeaders) {
-      const directLink = document.createElement("a")
-      directLink.className = "btn btn-outline-secondary float-start me-2"
-      directLink.href = this.urlValue
-      directLink.target = "_blank"
-      directLink.rel = "noopener noreferrer"
-      const icon = document.createElement("i")
-      icon.className = "bi bi-box-arrow-up-right"
-      directLink.append(icon, " Open URL directly")
-      element.querySelector(".modal-footer").insertBefore(directLink, element.querySelector(".btn-primary"))
-    }
-    const content = element.querySelector(".modal-content")
+    const content = modal.element.querySelector(".modal-content")
     content.dataset.controller = "browse-query"
     content.dataset.browseQueryModalRootValue = "true"
     content.dataset.browseQueryCommandValue = curlCommand
+    content.dataset.browseQueryUrlValue = this.urlValue
+    content.dataset.browseQueryEngineNameValue = this.engineNameValue
+    content.dataset.browseQueryHeadersValue = JSON.stringify(this.headersValue || {})
   }
 }

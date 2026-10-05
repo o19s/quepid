@@ -22,6 +22,7 @@ const COPY_FEEDBACK_MS = 2000
  * Re-requested every time the tab is shown.
  */
 export default class extends Controller {
+  static targets = ["params", "paramsMessage", "paramsMessageText", "paramsWarningIcon", "parsing", "templatePane", "tab", "copy"]
   static outlets = ["queries-list"]
   static values = { queryId: Number, modalRoot: Boolean }
 
@@ -31,15 +32,9 @@ export default class extends Controller {
       this.listeners = []
       this.feedback = []
       this.listen(this.element.closest(".modal"), "hide.bs.modal", () => this.cleanup())
-      this.wireModal(this.element, this.element.queryExplainData)
+      this.wireModal(this.element.queryExplainData)
       return
     }
-    const button = document.createElement("button")
-    button.type = "button"
-    button.className = "btn btn-outline-secondary btn-sm"
-    button.textContent = "Explain Query"
-    button.dataset.action = "query-explain#requestOpen"
-    this.element.replaceChildren(button)
   }
 
   requestOpen() {
@@ -79,29 +74,29 @@ export default class extends Controller {
     this.listeners = []
     this.feedback?.forEach(cancel => cancel())
     this.feedback = []
-    TABS.forEach(tab => {
-      const element = this.element.querySelector(`#${tab.tabId}`)
-      if (element) window.bootstrap?.Tab?.getInstance(element)?.dispose()
+    this.tabTargets.forEach(element => {
+      window.bootstrap?.Tab?.getInstance(element)?.dispose()
     })
   }
 
-  wireModal(el, data) {
+  wireModal(data) {
     if (!data.queryDetailsMessage) {
-      renderJsonExplorer(el.querySelector(".query-explain-params"), data.queryDetails, { collapsed: false })
+      renderJsonExplorer(this.paramsTarget, data.queryDetails, { collapsed: false })
     }
-    const paramsMessage = el.querySelector("[data-modal-target='paramsMessage']")
-    const paramsMessageText = el.querySelector("[data-modal-target='paramsMessageText']")
+    const paramsMessage = this.paramsMessageTarget
+    const paramsMessageText = this.paramsMessageTextTarget
     const hasMessage = Boolean(data.queryDetailsMessage)
     paramsMessageText.textContent = data.queryDetailsMessage || "These are the query parameters processed by the search engine."
-    paramsMessage.querySelector("[data-modal-target='paramsWarningIcon']").classList.toggle("d-none", !hasMessage)
+    this.paramsWarningIconTarget.classList.toggle("d-none", !hasMessage)
     paramsMessage.classList.toggle("bg-warning", hasMessage)
     paramsMessage.classList.toggle("text-warning-emphasis", hasMessage)
     paramsMessage.classList.toggle("p-3", hasMessage)
-    renderJsonExplorer(el.querySelector(".query-explain-parsing"), data.parsedQueryDetails, { collapsed: false })
+    renderJsonExplorer(this.parsingTarget, data.parsedQueryDetails, { collapsed: false })
 
     this.copyValues = { queryDetails: data.queryDetails, parsedQueryDetails: data.parsedQueryDetails, renderedQueryTemplate: null }
 
-    el.querySelectorAll(".query-explain-copy").forEach((button) => {
+    this.copyFeedback = new WeakMap()
+    this.copyTargets.forEach((button) => {
       const label = [...button.childNodes].map((node) => node.cloneNode(true))
       const feedback = createTemporaryFeedback(COPY_FEEDBACK_MS)
       this.feedback.push(() => {
@@ -117,32 +112,35 @@ export default class extends Controller {
         )
       }
 
-      this.listen(button, "click", () => {
-        const lifecycle = this.lifecycle
-        const text = this.copyValues[button.dataset.tab]
-        if (!text) return
-        copyText(text).then(
-          () => { if (lifecycle && lifecycle === this.lifecycle) showFeedback("bi-check-lg", "Copied!") },
-          () => { if (lifecycle && lifecycle === this.lifecycle) showFeedback("bi-exclamation-triangle", "Copy failed") }
-        )
-      })
+      this.copyFeedback.set(button, showFeedback)
     })
 
-    TABS.forEach((tab) => {
-      this.listen(el.querySelector(`#${tab.tabId}`), "shown.bs.tab", () => {
-        this.toggledPanel = tab.key
-        el.querySelectorAll(".query-explain-copy").forEach((button) => {
-          button.classList.toggle("d-none", button.dataset.tab !== tab.key)
-        })
-      })
+    this.supportsTemplate = data.supportsTemplate
+    this.templatePaneTarget.replaceChildren(Object.assign(document.createElement("p"), { textContent: "This is not a templated query." }))
+  }
+
+  copy(event) {
+    const lifecycle = this.lifecycle
+    if (!lifecycle) return
+    const button = event.currentTarget
+    const text = this.copyValues[button.dataset.tab]
+    if (!text) return
+    const showFeedback = this.copyFeedback.get(button)
+    copyText(text).then(
+      () => { if (lifecycle === this.lifecycle) showFeedback("bi-check-lg", "Copied!") },
+      () => { if (lifecycle === this.lifecycle) showFeedback("bi-exclamation-triangle", "Copy failed") }
+    )
+  }
+
+  tabShown(event) {
+    if (!this.lifecycle) return
+    const tab = TABS.find(tab => tab.tabId === event.currentTarget.id)
+    this.toggledPanel = tab.key
+    this.copyTargets.forEach(button => {
+      button.classList.toggle("d-none", button.dataset.tab !== tab.key)
     })
-
-    const templateTab = el.querySelector("#query-explain-tab-template")
-    const templatePane = el.querySelector(".query-explain-template")
-    templatePane.replaceChildren(Object.assign(document.createElement("p"), { textContent: "This is not a templated query." }))
-
-    if (data.supportsTemplate) {
-      this.listen(templateTab, "shown.bs.tab", () => this.requestTemplate(templatePane))
+    if (tab.key === "renderedQueryTemplate" && this.supportsTemplate) {
+      this.requestTemplate(this.templatePaneTarget)
     }
   }
 

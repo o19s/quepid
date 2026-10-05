@@ -1,3 +1,4 @@
+import { loadDynamicModalTemplate } from "../support/view_template"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
 import MissingDocumentsController from "controllers/missing_documents_controller"
@@ -11,12 +12,13 @@ function fixture(Controller, kind) {
   instance.element = document.createElement("div")
   document.body.append(instance.element)
   if (kind === "missing documents") {
+    instance.element.append(loadDynamicModalTemplate("missing-documents-modal-template").content.cloneNode(true))
     instance.modalRootValue = true
     instance.hasQueryParamsTarget = true
     Object.defineProperty(instance, "queryParamsTarget", {
       get: () => instance.element.querySelector("textarea")
     })
-    for (const target of ["spinner", "status", "searchButton", "resetButton", "next"]) {
+    for (const target of ["spinner", "status", "searchButton", "resetButton", "next", "supported", "unsupported", "engineName"]) {
       Object.defineProperty(instance, `${target}Target`, {
         get: () => instance.element.querySelector(`[data-missing-documents-target="${target}"]`)
       })

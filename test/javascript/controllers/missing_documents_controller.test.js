@@ -1,3 +1,4 @@
+import { loadDynamicModalTemplate, controllerTargets } from "../support/view_template"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it, vi } from "vitest"
 import MissingDocumentsController from "controllers/missing_documents_controller"
@@ -5,39 +6,14 @@ import MissingDocumentsController from "controllers/missing_documents_controller
 function buildController(adapter) {
   const element = document.createElement("div")
   document.body.appendChild(element)
+  const template = loadDynamicModalTemplate("missing-documents-modal-template")
+  element.append(template.content.cloneNode(true))
   const controller = buildControllerFixture(MissingDocumentsController, {
-    targets: {
-      queryParams: document.createElement("textarea"),
-      searchButton: document.createElement("button"),
-      resetButton: document.createElement("button"),
-      status: document.createElement("div"),
-      results: document.createElement("div"),
-      next: document.createElement("button"),
-      spinner: document.createElement("span"),
-      engineName: document.createElement("strong")
-    }
+    element,
+    targets: controllerTargets(element, MissingDocumentsController, "missing-documents")
   })
-  controller.element = element
   controller.adapter = adapter
-  element.append(
-    controller.queryParamsTarget,
-    controller.searchButtonTarget,
-    controller.resetButtonTarget,
-    controller.statusTarget,
-    controller.resultsTarget,
-    controller.nextTarget,
-    controller.spinnerTarget,
-    controller.engineNameTarget
-  )
   return controller
-}
-
-// renderShell replaces the element's children, so point the target at the
-// textarea it rendered, as Stimulus would.
-function trackRenderedQueryParams(controller) {
-  Object.defineProperty(controller, "queryParamsTarget", {
-    get: () => controller.element.querySelector("[data-missing-documents-target='queryParams']")
-  })
 }
 
 function adapter(overrides = {}) {
@@ -167,7 +143,6 @@ describe("MissingDocumentsController", () => {
       settings: { searchEngine: "es" },
       initialQueryParams: () => '{"query":{"match_all":{}}}'
     }))
-    trackRenderedQueryParams(controller)
     controller.renderShell()
 
     expect(controller.element.querySelector(".cm-editor")).not.toBeNull()
@@ -185,7 +160,6 @@ describe("MissingDocumentsController", () => {
       settings: { searchEngine: "solr" },
       initialQueryParams: () => "q=#$query##"
     }))
-    trackRenderedQueryParams(controller)
     controller.renderShell()
 
     expect(controller.element.querySelector(".cm-editor")).toBeNull()
@@ -193,16 +167,19 @@ describe("MissingDocumentsController", () => {
     expect(controller.queryParams).toBe("q=#$query##")
   })
 
-  it("renders the unsupported-engine message, labelled from the engine catalog, without a query editor target", () => {
+  it("renders the unsupported-engine message, labelled from the engine catalog, without exposing active query controls", () => {
     const controller = buildController(adapter({
       usesQueryParamsEditor: false,
       engineName: "static"
     }))
     controller.engineLabelsValue = { static: "Static File" }
-    controller.hasQueryParamsTarget = false
 
     expect(() => controller.renderShell()).not.toThrow()
-    expect(controller.element.textContent).toContain("Static File")
+    expect(controller.unsupportedTarget.textContent).toContain("Static File")
+    expect(controller.supportedTarget.classList.contains("d-none")).toBe(true)
+    controller.setControlsDisabled(false)
+    expect(controller.searchButtonTarget.disabled).toBe(true)
+    expect(controller.resetButtonTarget.disabled).toBe(true)
   })
 
   it("renders documents with the shared search-result controller", () => {

@@ -1,3 +1,4 @@
+import { loadDynamicModalTemplate, controllerTargets } from "../support/view_template"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryExplainController from "controllers/query_explain_controller"
 import { buildControllerFixture } from "../support/controller_fixture"
@@ -42,7 +43,8 @@ function buildController(element, data, renderQueryTemplate = vi.fn()) {
   const controller = buildControllerFixture(QueryExplainController, {
     element,
     values: { queryId: 7, modalRoot: false },
-    outlets: { queriesList }
+    outlets: { queriesList },
+    targets: { tab: [] }
   })
   element.dataset.queryExplainQueriesListOutlet = "#query-container"
   controller.requestOpen = () => {
@@ -50,11 +52,18 @@ function buildController(element, data, renderQueryTemplate = vi.fn()) {
     const content = dynamicModal.element.querySelector(".modal-content")
     const owner = buildControllerFixture(QueryExplainController, {
       element: content,
+      targets: controllerTargets(content, QueryExplainController, "query-explain"),
       values: { queryId: 7, modalRoot: true },
       outlets: { queriesList }
     })
     // The browser's wrapper has .modal even though this test's stub does not.
     dynamicModal.element.classList.add("modal")
+    content.querySelectorAll("[data-action]").forEach(node => {
+      node.dataset.action.split(" ").forEach(action => {
+        const [event, method] = (action.includes("->") ? action : `click->${action}`).split("->query-explain#")
+        node.addEventListener(event, event => owner[method](event))
+      })
+    })
     owner.connect()
     controller.modalOwner = owner
   }
@@ -73,12 +82,11 @@ describe("QueryExplainController", () => {
 
   beforeEach(() => {
     element = document.createElement("div")
+    element.innerHTML = '<button type="button" data-action="query-explain#requestOpen">Explain Query</button>'
     document.body.appendChild(element)
     vi.clearAllMocks()
     dynamicModal.element = document.createElement("div")
-    const template = document.createElement("template")
-    template.id = "query-explain-modal-template"
-    template.innerHTML = `<div class="query-explain-params"></div><div class="query-explain-parsing"></div><div class="query-explain-template"><p data-modal-target="templateMessage"></p><pre data-modal-target="templateValue"></pre></div><p data-modal-target="paramsMessage"><i data-modal-target="paramsWarningIcon"></i><span data-modal-target="paramsMessageText"></span></p><button id="query-explain-tab-params"></button><button id="query-explain-tab-parsing"></button><button id="query-explain-tab-template"></button><button class="query-explain-copy" data-tab="queryDetails"><i class="bi bi-copy"></i> Copy</button><button class="query-explain-copy d-none" data-tab="parsedQueryDetails"></button><button class="query-explain-copy d-none" data-tab="renderedQueryTemplate"></button>`
+    const template = loadDynamicModalTemplate("query-explain-modal-template")
     document.body.appendChild(template)
   })
 
@@ -89,7 +97,7 @@ describe("QueryExplainController", () => {
     vi.restoreAllMocks()
   })
 
-  it("renders an Explain Query trigger button on connect", () => {
+  it("preserves the Rails-rendered Explain Query trigger on connect", () => {
     const controller = buildController(element, baseData())
     QueryExplainController.prototype.connect.call(controller)
 
