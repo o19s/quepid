@@ -231,6 +231,32 @@ class User < ApplicationRecord
   # don't depend on every stored address already being lowercase.
   scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
 
+  # Ransack (used by admin/users#index's search box) requires every
+  # searchable/sortable attribute to be allowlisted - deny-by-default so
+  # nothing sensitive (password, *_token, llm_key, system_prompt) becomes
+  # queryable just by adding a param. Keep this list to what the admin UI
+  # actually needs.
+  def self.ransackable_attributes _auth_object = nil
+    %w[name email administrator created_at type name_downcase email_downcase]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
+  # Plain name_or_email_cont would compare case-sensitively on PostgreSQL/
+  # SQLite (and isn't guaranteed case-insensitive on MySQL either - see the
+  # by_email comment above). These wrap each column in LOWER() the same way
+  # the admin search used to by hand; the controller downcases the search
+  # value to match.
+  ransacker :name_downcase do
+    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
+  end
+
+  ransacker :email_downcase do
+    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:email] ])
+  end
+
   def ai_judge?
     is_a?(AiJudge)
   end

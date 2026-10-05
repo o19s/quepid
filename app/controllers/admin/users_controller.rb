@@ -14,13 +14,18 @@ module Admin
     def index
       @shallow = 'true' == params[:shallow]
 
-      # Exclude AI judges from the admin user list.
-      query = User.real_users.order(created_at: :desc)
-
-      if params[:q].present?
-        q = "%#{params[:q].to_s.downcase}%"
-        query = query.where('LOWER(users.name) LIKE ? OR LOWER(users.email) LIKE ?', q, q)
+      # name_downcase_or_email_downcase_cont needs a downcased value on both
+      # sides of the LIKE - the ransackers downcase the column, this downcases
+      # the search term (see the ransacker comments on User).
+      ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+      if ransack_params[:name_downcase_or_email_downcase_cont].present?
+        ransack_params[:name_downcase_or_email_downcase_cont] =
+          ransack_params[:name_downcase_or_email_downcase_cont].downcase
       end
+
+      # Exclude AI judges from the admin user list.
+      @q = User.real_users.ransack(ransack_params)
+      query = @q.result.order(created_at: :desc)
 
       respond_to do |format|
         format.html { @pagy, @users = pagy(query) }

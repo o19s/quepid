@@ -698,6 +698,7 @@ DEPENDENCIES
   rails-erd
   rails-html-sanitizer
   rails_pulse
+  ransack
   redcarpet
   responders
   rubocop
