@@ -11,19 +11,32 @@ class SearchEndpointsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @archived = bool.deserialize(params[:archived] || false )
 
+    # The free-text search now lives under the nested q[...] ransack hash
+    # (q[name_downcase_or_endpoint_url_downcase_cont]) rather than a plain
+    # top-level q string - sort_link's links are q[s]=..., and params[:q]
+    # can't be both a Hash (sort) and a String (free text) at once.
     # name_downcase_or_endpoint_url_downcase_cont needs a downcased value -
     # the ransackers downcase the columns (see the ransacker comments on
     # SearchEndpoint). owned isn't a plain column match (the value comes from
     # current_user, not the request), so it stays a manual filter applied
     # after ransack rather than a ransack predicate.
-    ransack_params = { archived_eq: @archived }
+    ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+    if ransack_params[:name_downcase_or_endpoint_url_downcase_cont].present?
+      ransack_params[:name_downcase_or_endpoint_url_downcase_cont] =
+        ransack_params[:name_downcase_or_endpoint_url_downcase_cont].downcase
+    end
+    ransack_params[:archived_eq] = @archived
     ransack_params[:teams_id_eq] = params[:team_id] if params[:team_id].present?
-    ransack_params[:name_downcase_or_endpoint_url_downcase_cont] = params[:q].to_s.downcase if params[:q].present?
 
-    query = @current_user.search_endpoints_involved_with.ransack(ransack_params).result
+    @q = @current_user.search_endpoints_involved_with.ransack(ransack_params)
+    # Default sort until the user clicks a column header (sort_link in the
+    # view drives @q.sorts from here on).
+    @q.sorts = 'updated_at desc' if @q.sorts.empty?
+
+    query = @q.result
     query = query.where(owner_id: current_user.id) if params[:owned].present?
 
-    @pagy, @search_endpoints = pagy(query.order(updated_at: :desc))
+    @pagy, @search_endpoints = pagy(query)
   end
 
   def show

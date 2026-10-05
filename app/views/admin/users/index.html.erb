@@ -42,12 +42,12 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          <th>Username</th>
-          <th>Name</th>
-          <th>Signed Up</th>
-          <th>Marketing</th>
-          <th>Number of Logins</th>
-          <th>Administrator?</th>
+          <th><%= sort_link(@q, :email, 'Username') %></th>
+          <th><%= sort_link(@q, :name, 'Name') %></th>
+          <th><%= sort_link(@q, :agreed_time, 'Signed Up') %></th>
+          <th><%= sort_link(@q, :email_marketing, 'Marketing') %></th>
+          <th><%= sort_link(@q, :num_logins, 'Number of Logins') %></th>
+          <th><%= sort_link(@q, :administrator, 'Administrator?') %></th>
           <th colspan="2"></th>
         </tr>
       </thead>

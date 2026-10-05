@@ -25,7 +25,10 @@ module Admin
 
       # Exclude AI judges from the admin user list.
       @q = User.real_users.ransack(ransack_params)
-      query = @q.result.order(created_at: :desc)
+      # Default sort until the user clicks a column header (sort_link in the
+      # view drives @q.sorts from here on).
+      @q.sorts = 'created_at desc' if @q.sorts.empty?
+      query = @q.result
 
       respond_to do |format|
         format.html { @pagy, @users = pagy(query) }

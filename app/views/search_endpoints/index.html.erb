@@ -14,7 +14,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 
 <p id="notice"><%= notice %></p>
 
-<% if @search_endpoints.empty? && params[:q].blank? && params[:owned].blank? && params[:team_id].blank? && !@archived %>
+<% if @search_endpoints.empty? && params.dig(:q, :name_downcase_or_endpoint_url_downcase_cont).blank? && params[:owned].blank? && params[:team_id].blank? && !@archived %>
   Create your first search endpoint by clicking on the New Search Endpoint button above.
   <br>
 <% end %>
@@ -26,7 +26,8 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
 
           <!-- Search input with fixed width -->
           <div class="input-group" style="max-width: 280px;">
-            <%= text_field_tag :q, params[:q],
+            <%= text_field_tag 'q[name_downcase_or_endpoint_url_downcase_cont]',
+                params.dig(:q, :name_downcase_or_endpoint_url_downcase_cont),
                 class: 'form-control form-control-sm',
                 placeholder: 'Filter by name or url',
                 id: 'q'
@@ -83,9 +84,9 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
       <table class="table table-hover table-sm">
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Search Engine</th>
-            <th>Endpoint Url</th>
+            <th><%= sort_link(@q, :name, 'Name') %></th>
+            <th><%= sort_link(@q, :search_engine, 'Search Engine') %></th>
+            <th><%= sort_link(@q, :endpoint_url, 'Endpoint Url') %></th>
             <th class="text-end"></th>
           </tr>
         </thead>

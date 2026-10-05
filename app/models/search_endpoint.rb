@@ -53,11 +53,12 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where(archived: false) }
 
-  # Ransack (used by SearchEndpointsController#index's filters) requires
-  # every searchable attribute/association allowlisted - keep this to what's
-  # used today. basic_auth_credential is encrypted and deliberately excluded.
+  # Ransack (used by SearchEndpointsController#index's filters and sortable
+  # column headers) requires every searchable/sortable attribute/association
+  # allowlisted - keep this to what's used today. basic_auth_credential is
+  # encrypted and deliberately excluded.
   def self.ransackable_attributes _auth_object = nil
-    %w[archived name_downcase endpoint_url_downcase]
+    %w[archived name_downcase endpoint_url_downcase name search_engine endpoint_url updated_at]
   end
 
   def self.ransackable_associations _auth_object = nil

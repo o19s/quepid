@@ -231,13 +231,14 @@ class User < ApplicationRecord
   # don't depend on every stored address already being lowercase.
   scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
 
-  # Ransack (used by admin/users#index's search box) requires every
-  # searchable/sortable attribute to be allowlisted - deny-by-default so
-  # nothing sensitive (password, *_token, llm_key, system_prompt) becomes
-  # queryable just by adding a param. Keep this list to what the admin UI
-  # actually needs.
+  # Ransack (used by admin/users#index's search box and sortable column
+  # headers) requires every searchable/sortable attribute to be allowlisted -
+  # deny-by-default so nothing sensitive (password, *_token, llm_key,
+  # system_prompt) becomes queryable just by adding a param. Keep this list
+  # to what the admin UI actually needs.
   def self.ransackable_attributes _auth_object = nil
-    %w[name email administrator created_at type name_downcase email_downcase]
+    %w[name email administrator created_at type name_downcase email_downcase
+       agreed_time email_marketing num_logins]
   end
 
   def self.ransackable_associations _auth_object = nil
