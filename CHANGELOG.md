@@ -2,6 +2,9 @@
 
 ## 8.7.0 -- 2026-??-??
 
+* **Performance monitoring:** administrators can inspect request, query, job and exception performance through Rails Pulse. Monitoring data stays in the application database.
+* **Kamal image compatibility:** the production Docker image includes the `service="quepid"` label.
+
 Three big things in this release: **Quepid now runs on SQLite or PostgreSQL, not just MySQL**; **Vespa is a fully worked-out example search engine**, backed by a coordinated `splainer-search` refactor and upgrade to 3.2.2; and **the Bootstrap 5 migration crossed the finish line**, alongside two more phases of AngularJS removal. On top of that, a batch of SQL correctness/security hardening from @frutik.
 
 ## 🗄️ SQLite and PostgreSQL Support

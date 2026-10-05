@@ -28,12 +28,13 @@
   <p/>
   <div class="card" style="">
     <div class="card-body">
-      <h5 class="card-title">Background Jobs</h5>
-      <p class="card-text">These tools are to help you manage the various background jobs in Quepid.</p>
+      <h5 class="card-title">Background Jobs &amp; Performance Monitoring</h5>
+      <p class="card-text">Manage background jobs and track request, query, and job performance over time.</p>
 
       <ul class="list-group list-group-flush">
         <li class="list-group-item"><%= link_to 'Job Manager', mission_control_jobs_path, data: { turbo: false } %></li>
         <li class="list-group-item"><%= link_to 'Websocket Tester', admin_websocket_tester_index_path %></li>
+        <li class="list-group-item"><%= link_to 'Rails Pulse', rails_pulse_path %></li>
       </ul>
     </div>
   </div>
