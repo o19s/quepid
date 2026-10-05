@@ -307,6 +307,26 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_equal 'AI Judge Night Shift is on call: it only judges pairs Judge Judy escalates to it.', flash[:alert]
     end
 
+    test 'refuses to start an on-call judge that is not assigned to the book' do
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{on_call.id}", params: { number_of_pairs: 1 }
+      end
+
+      follow_redirect!
+      assert_equal 'AI Judge Night Shift is on call: it only judges pairs Judge Judy escalates to it.', flash[:alert]
+    end
+
+    test 'refuses to start a judge that is neither assigned nor on call' do
+      stranger = AiJudge.create!(name: 'Stranger', owner: user)
+
+      assert_no_enqueued_jobs(only: RunJudgeJudyJob) do
+        patch "/books/#{james_bond_movies.id}/run_judge_judy/#{stranger.id}", params: { number_of_pairs: 1 }
+      end
+
+      follow_redirect!
+      assert_equal 'AI Judge not found.', flash[:alert]
+    end
+
     test 'can cancel an on-call judge that is not assigned to the book' do
       delete "/books/#{james_bond_movies.id}/cancel_judge_judy/#{on_call.id}"
 

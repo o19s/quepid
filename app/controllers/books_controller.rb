@@ -159,20 +159,7 @@ class BooksController < ApplicationController
     stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
     @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
-    stats_judges = []
-    stats_judges_ids.each do |judge_id|
-      begin
-        judge = User.find(judge_id) unless judge_id.nil?
-      rescue ActiveRecord::RecordNotFound
-        judge = nil
-      end
-      stats_judges << judge
-    end
-
-    stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
-
-    stats_judges.each do |judge|
+    stats_judges_for(stats_judges_ids).each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -380,11 +367,17 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    # An on-call judge needn't be assigned, so look there too - only to refuse it below.
+    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first ||
+               @book.on_call_ai_judges.find { |judge| judge.id == params[:ai_judge_id].to_i }
+    unless ai_judge
+      redirect_to book_path(@book), alert: 'AI Judge not found.'
+      return
+    end
 
     # An on-call judge sleeps until another judge escalates to it; it is
     # woken by the end of that judge's run, never started by hand.
-    if ai_judge&.on_call?
+    if ai_judge.on_call?
       waking = ai_judge.escalated_from.map(&:name).sort.to_sentence
       redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it."
       return
@@ -597,6 +590,23 @@ class BooksController < ApplicationController
 
   def find_user
     @user = User.find(params.expect(:user_id))
+  end
+
+  # The judges behind these ids, sorted by name; ids that no longer resolve
+  # to a user collapse into a single nil (anonymous) entry.
+  def stats_judges_for judge_ids
+    stats_judges = []
+    judge_ids.each do |judge_id|
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        judge = nil
+      end
+      stats_judges << judge
+    end
+
+    stats_judges = compact_keep_one_nil(stats_judges)
+    stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
   end
 
   def compact_keep_one_nil array
