@@ -1,3 +1,5 @@
+import { prettyPrintJson } from "utils/json_format"
+
 // Wrongly-cased Solr params, matched case-sensitively anywhere in the text.
 const SOLR_PARAM_TYPOS = Object.entries({
   deftype: "defType",
@@ -31,7 +33,7 @@ export function queryParamsWarning(value) {
 
 export function formatJson(value) {
   try {
-    return JSON.stringify(JSON.parse(value), null, 2)
+    return prettyPrintJson(value)
   } catch {
     return null
   }

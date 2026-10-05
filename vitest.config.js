@@ -76,6 +76,7 @@ export default defineConfig({
       { find: "core_runtime", replacement: path.resolve(repoRoot, "app/javascript/core_runtime.js") },
       { find: "quepid_store", replacement: path.resolve(repoRoot, "app/javascript/quepid_store.js") },
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },
+      { find: "utils/json_format", replacement: path.resolve(repoRoot, "app/javascript/utils/json_format.js") },
       { find: "utils/query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/query_lifecycle.js") },
       { find: "utils/query_service", replacement: path.resolve(repoRoot, "app/javascript/utils/query_service.js") },
       { find: "utils/live_query_documents", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_documents.js") },

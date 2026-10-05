@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { undo } from "@codemirror/commands"
 import { runScopeHandlers } from "@codemirror/view"
 import { fromTextArea, languageFor, linterFor } from "modules/editor"
@@ -20,6 +20,39 @@ describe("fromTextArea", () => {
     const editor = fromTextArea(textarea, { mode: "text" })
 
     expect(textarea.editor).toBe(editor)
+  })
+})
+
+describe("JSON formatting", () => {
+  it("formats content without adding an undo step", () => {
+    const editor = jsonEditor('{"size":3}')
+    try {
+      expect(editor.formatJSON()).toBe(true)
+      expect(editor.getValue()).toBe('{\n  "size": 3\n}')
+      expect(undo(editor.view)).toBe(false)
+      expect(editor.formatJSON()).toBe(true)
+      expect(editor.getValue()).toBe('{\n  "size": 3\n}')
+    } finally {
+      editor.view.destroy()
+    }
+  })
+
+  it("keeps blank content successful and invalid content logged and unchanged", () => {
+    const editor = jsonEditor("  \n")
+    const log = vi.spyOn(console, "error").mockImplementation(() => {})
+    try {
+      expect(editor.formatJSON()).toBe(true)
+      expect(editor.getValue()).toBe("  \n")
+      expect(log).not.toHaveBeenCalled()
+
+      editor.setValue("{broken")
+      expect(editor.formatJSON()).toBe(false)
+      expect(editor.getValue()).toBe("{broken")
+      expect(log).toHaveBeenCalledWith("JSON formatting failed:", expect.any(SyntaxError))
+    } finally {
+      log.mockRestore()
+      editor.view.destroy()
+    }
   })
 })
 

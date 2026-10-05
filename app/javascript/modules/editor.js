@@ -9,6 +9,7 @@ import { linter, lintGutter } from "@codemirror/lint";
 import { syntaxHighlighting, HighlightStyle, indentOnInput } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
 import { isJsonEditorMode } from "utils/editor_mode";
+import { prettyPrintJson } from "utils/json_format"
 
 // Syntax highlighting theme - CodeMirror 5 default colors
 const highlightStyle = HighlightStyle.define([
@@ -352,7 +353,7 @@ export function fromTextArea(textarea, options = {}) {
         if (!currentValue.trim()) return true;
         
         // Parse and stringify with pretty formatting (2 space indentation)
-        const formatted = JSON.stringify(JSON.parse(currentValue), null, 2);
+        const formatted = prettyPrintJson(currentValue);
         
         // Only update if the formatted content is different
         if (formatted !== currentValue) {

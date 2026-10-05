@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
+import { prettyPrintJson } from "utils/json_format"
 
 export default class extends Controller {
   static targets = ["queryText", "docId", "content", "modal"]
@@ -16,8 +17,7 @@ export default class extends Controller {
     this.docIdTarget.textContent = docId
 
     try {
-      const parsed = JSON.parse(documentFields)
-      this.contentTarget.textContent = JSON.stringify(parsed, null, 2)
+      this.contentTarget.textContent = prettyPrintJson(documentFields)
     } catch (e) {
       // Fallback: show raw content if JSON parsing fails
       this.contentTarget.textContent = documentFields
