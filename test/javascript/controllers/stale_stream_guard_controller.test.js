@@ -28,6 +28,7 @@ describe("StaleStreamGuardController", () => {
   function setup(shownAt) {
     document.body.innerHTML = `<div id="progress" data-rendered-at="${shownAt}"></div>`
     controller = Object.create(StaleStreamGuardController.prototype)
+    controller.element = document.body
     controller.connect()
   }
 

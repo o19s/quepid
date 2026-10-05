@@ -39,13 +39,13 @@ function guard(event) {
 }
 
 export default class extends Controller {
-  /** Starts watching streams on the page. */
+  /** Starts watching streams on the page this controller is on. */
   connect() {
-    document.addEventListener("turbo:before-stream-render", guard)
+    this.element.ownerDocument.addEventListener("turbo:before-stream-render", guard)
   }
 
   /** Stops watching. */
   disconnect() {
-    document.removeEventListener("turbo:before-stream-render", guard)
+    this.element.ownerDocument.removeEventListener("turbo:before-stream-render", guard)
   }
 }
