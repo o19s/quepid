@@ -167,7 +167,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     // Deleting the disposable case in afterAll removes its snapshots too.
   });
 
-  test('judgements modal links a book and saves settings', async ({ page }) => {
+  test('judgements book choices cancel, retry, persist, navigate and disconnect', async ({ page }) => {
     const caseId = await createDisposableCase(page, 'Judgements');
     judgementsCaseId = caseId;
     const teamId = await shareCaseWithFirstTeam(page, caseId);
@@ -198,9 +198,40 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     }
 
     // Skip "None"; pick the first real book.
+    const bookId = await bookItems.nth(1).getAttribute('data-judgements-core-book-id-param');
     await bookItems.nth(1).click();
     const saveButton = modal.locator('[data-judgements-core-target="saveButton"]');
     await expect(saveButton).toBeVisible();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
+    await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
+    await expect(saveButton).toBeHidden();
+
+    // View must navigate without selecting or saving the book.
+    await modal.locator(`[data-judgements-core-book-id-param="${bookId}"]`).getByRole('link', { name: 'View' }).click();
+    await page.waitForURL(new RegExp(`/books/${bookId}$`));
+    await gotoCase(page, caseId);
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
+    await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
+    await modal.locator(`[data-judgements-core-book-id-param="${bookId}"]`).click();
+    await modal.locator('[data-judgements-core-target="autoPopulateBookPairs"]').uncheck();
+    await modal.locator('[data-judgements-core-target="autoPopulateCaseJudgements"]').uncheck();
+
+    let failSave = true;
+    await page.route(`**/api/cases/${caseId}`, async route => {
+      if (route.request().method() === 'PUT' && failSave) {
+        failSave = false;
+        await route.fulfill({ status: 422, contentType: 'application/json', body: JSON.stringify({ error: 'Book save verification failure' }) });
+      } else await route.continue();
+    });
+    await saveButton.click();
+    await expect(modal.locator('[data-judgements-core-target="error"]')).toContainText('Book save verification failure');
+    await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', bookId!);
+    await expect(saveButton).toBeEnabled();
+    await expect(modal.getByRole('button', { name: 'Cancel', exact: true })).toBeEnabled();
 
     const saved = page.waitForResponse(
       (response) =>
@@ -218,6 +249,54 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await page.locator('a[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
     await expect(modal.locator('[data-judgements-core-target="bookList"] .list-group-item.active')).toHaveCount(1);
+    await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', bookId!);
     await expect(saveButton).toBeHidden();
+    await modal.locator('[data-judgements-core-book-id-param=""]').click();
+    await expect(modal.locator('[data-judgements-core-target="integration"]')).toBeHidden();
+    await saveButton.click();
+    await expect(modal).toBeHidden();
+    await page.reload();
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
+    await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
+    await expect(saveButton).toBeHidden();
+    const persisted = await (await page.request.get(`api/cases/${caseId}`)).json();
+    expect(persisted.book_id).toBeNull();
+    expect(persisted.auto_populate_book_pairs).toBe(false);
+    expect(persisted.auto_populate_case_judgements).toBe(false);
+
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await page.route(`**/api/teams/${teamId}/books`, route => route.fulfill({
+      status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Book list verification failure' })
+    }));
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="error"]')).toContainText('Book list verification failure');
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await page.unroute(`**/api/teams/${teamId}/books`);
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeVisible();
+    await expect(modal.locator('[data-judgements-core-target="error"]')).toBeHidden();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await page.route(`**/api/teams/${teamId}/books`, route => route.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify({ books: [] })
+    }));
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="noBooks"]')).toBeVisible();
+    await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeHidden();
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(modal).toBeHidden();
+    await page.unroute(`**/api/teams/${teamId}/books`);
+    await page.unroute(`**/api/cases/${caseId}`);
+    await page.route(`**/api/cases/${caseId}`, async route => {
+      const response = await route.fetch();
+      const data = await response.json();
+      await route.fulfill({ response, json: { ...data, teams: [] } });
+    });
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="noTeams"]')).toBeVisible();
+    await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeHidden();
   });
 });

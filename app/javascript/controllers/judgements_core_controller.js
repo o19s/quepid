@@ -32,6 +32,8 @@ export default class extends CoreModalControllerBase {
     "noBooks",
     "bookPicker",
     "bookList",
+    "noneTemplate",
+    "bookTemplate",
     "selectHint",
     "integration",
     "autoPopulateBookPairs",
@@ -52,6 +54,7 @@ export default class extends CoreModalControllerBase {
     teamBooksUrlTemplate: String,
     refreshUrlTemplate: String,
     newBookUrlTemplate: String,
+    bookUrlTemplate: String,
     judgeUrlTemplate: String
   }
 
@@ -328,35 +331,16 @@ export default class extends CoreModalControllerBase {
 
   _renderBooks() {
     if (!this.hasBookListTarget) return
-    this.bookListTarget.innerHTML = ""
-
-    const none = document.createElement("li")
-    none.className = "list-group-item"
-    none.innerHTML = "<em>None (disconnect from any book)</em>"
-    none.dataset.judgementsCoreTarget = "item"
-    none.dataset.judgementsCoreBookIdParam = ""
-    none.dataset.action = "click->judgements-core#selectBook"
-    this.bookListTarget.appendChild(none)
+    this.bookListTarget.replaceChildren(this.noneTemplateTarget.content.cloneNode(true))
 
     this.books.forEach((book) => {
-      const li = document.createElement("li")
-      li.className = "list-group-item"
-      li.dataset.judgementsCoreTarget = "item"
+      const li = this.bookTemplateTarget.content.firstElementChild.cloneNode(true)
       li.dataset.judgementsCoreBookIdParam = String(book.id)
-      li.dataset.action = "click->judgements-core#selectBook"
-
-      const name = document.createElement("span")
-      name.textContent = book.name
-      li.appendChild(name)
-
-      const view = document.createElement("a")
-      view.href = `books/${book.id}`
-      view.target = "_self"
-      view.className = "btn btn-outline-secondary btn-sm float-end"
-      view.title = "Open this book in a new page"
-      view.innerHTML = '<i class="bi bi-eye-fill"></i> View'
-      view.dataset.action = "click->judgements-core#viewBook"
-      li.appendChild(view)
+      li.querySelector('[data-slot="name"]').textContent = book.name
+      li.querySelector('[data-slot="view"]').href = this.bookUrlTemplateValue.replaceAll(
+        BOOK_ID_PLACEHOLDER,
+        String(book.id)
+      )
 
       this.bookListTarget.appendChild(li)
     })

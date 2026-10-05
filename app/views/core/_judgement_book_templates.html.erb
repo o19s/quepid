@@ -1,0 +1,16 @@
+<%# Static book choices cloned and populated by judgements-core. %>
+<template data-judgements-core-target="noneTemplate">
+  <li class="list-group-item"
+      data-judgements-core-target="item"
+      data-judgements-core-book-id-param=""
+      data-action="click->judgements-core#selectBook"><em>None (disconnect from any book)</em></li>
+</template>
+
+<template data-judgements-core-target="bookTemplate">
+  <li class="list-group-item"
+      data-judgements-core-target="item"
+      data-action="click->judgements-core#selectBook"><span data-slot="name"></span><a
+      target="_self" class="btn btn-outline-secondary btn-sm float-end"
+      title="Open this book in a new page" data-slot="view"
+      data-action="click->judgements-core#viewBook"><i class="bi bi-eye-fill"></i> View</a></li>
+</template>

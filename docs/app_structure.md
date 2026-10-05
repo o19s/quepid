@@ -48,6 +48,8 @@ result for case aggregates, persistence and graph consumers. `utils/case_runtime
 the selected case record; `coreWorkspace.caseState` reads it directly. Query and
 book events keep their existing contracts. Controllers own DOM interaction, and
 static page and modal structure remains in Rails ERB partials.
+Scorer and judgement-book choices clone core ERB row templates; their controllers
+populate JSON data and selection state while retaining existing mutation owners.
 
 `settings_runtime.js` owns tries and selection. Tune Relevance receives a flat form:
 query, curator and endpoint edits share the selected try; scalar form fields stay

@@ -83,15 +83,22 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   1. Click **Judgements** in the case toolbar.
   2. If the case isn't yet shared with any team, confirm you're prompted to share it or create a team first.
   3. Pick (or create) a Book from a team the case is shared with.
+     Confirm None appears first and the saved book precedes other books. View opens
+     the book without saving a selection; Cancel discards a changed selection.
   4. Toggle **Case → Book: Query/Doc Pairs** sync and use its manual **Populate Now** button.
   5. Toggle **Book → Case: Judgement Ratings** sync and use its manual **Refresh Ratings** button.
   6. Try **Sync Queries** (pulls in queries missing from the book).
   7. Click **Save** (should only be enabled once something has actually changed).
   8. Reopen Judgements without reloading the page: the saved book and sync toggles remain selected, and Save is hidden until another change.
   9. Switch to another case and open Judgements: its own book settings appear. If a settings read/save fails, show the error and allow a retry without replacing the current settings.
+  10. Select **None**, save and reload: the case remains disconnected, both sync
+      flags are off, integration controls are hidden and Save is hidden on reopen.
 - **Expected:** The case-to-book link is established; sync directions work independently in both directions. Large operations (50+ queries) run as a background job with a redirect and a flash notice rather than blocking the UI.
 - **Edge cases:**
   - [ ] Attempt this on a case with zero team-sharing — confirm the gating message/prompt to share first.
+  - [ ] A shared team with no books shows Create a book rather than the picker.
+  - [ ] Force a book-list load failure, then close/reopen to retry; force a save
+        failure and retry with the selected book and sync flags retained.
   - [ ] Use **Create a book** and **Judge Documents!** shortcuts — confirm they land you in the right place (Part 10/11).
 
 ### 6.7 Explain a query (Explain Query modal)

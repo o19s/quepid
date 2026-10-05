@@ -1,4 +1,5 @@
 import { buildControllerFixture } from "../support/controller_fixture"
+import { viewTemplateTargets } from "../support/view_template"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import JudgementsCoreController from "controllers/judgements_core_controller"
@@ -21,6 +22,7 @@ function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(JudgementsCoreController, {
     overrides: { identifier: "judgements-core" },
     targets: {
+      ...viewTemplateTargets("app/views/core/_judgement_book_templates.html.erb", "judgements-core"),
       title: document.createElement("h5"),
       loading: document.createElement("div"),
       noTeams: document.createElement("div"),
@@ -44,6 +46,7 @@ function buildModalController(overrides = {}) {
       caseUrlTemplate: "/api/cases/__CASE_ID__",
       teamBooksUrlTemplate: "/api/teams/__TEAM_ID__/books",
       newBookUrlTemplate: "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__",
+      bookUrlTemplate: "books/__BOOK_ID__",
       judgeUrlTemplate: "books/__BOOK_ID__/judge"
     }
   })
@@ -62,6 +65,23 @@ function buildModalController(overrides = {}) {
 }
 
 describe("JudgementsCoreController", () => {
+  it("renders names safely and replaces rows without losing the current selection", () => {
+    const name = '<img src=x onerror="alert(1)">'
+    const controller = buildModalController({ books: [{ id: 2, name }], activeBookId: 2 })
+    controller.bookUrlTemplateValue = "/quepid/books/__BOOK_ID__"
+    controller._renderBooks()
+    controller._renderBooks()
+
+    expect(controller.itemTargets).toHaveLength(2)
+    const row = controller.itemTargets[1]
+    expect(row.querySelector('[data-slot="name"]').textContent).toBe(name)
+    expect(row.querySelector("img")).toBeNull()
+    expect(row.dataset.action).toBe("click->judgements-core#selectBook")
+    expect(row.querySelector("a").getAttribute("href")).toBe("/quepid/books/2")
+    expect(row.classList.contains("active")).toBe(true)
+    expect(controller.itemTargets[0].querySelector("em").textContent).toBe("None (disconnect from any book)")
+  })
+
   it("shows the selection hint only with available books and no active book", () => {
     const controller = buildModalController({ books: [], activeBookId: null })
     controller._refreshIntegrationVisibility()
@@ -456,4 +476,3 @@ describe("JudgementsCoreController", () => {
     })
   })
 })
-

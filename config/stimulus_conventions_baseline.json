@@ -27,9 +27,6 @@
   "app/javascript/controllers/invite_controller.js": {
     "innerHTML": 1
   },
-  "app/javascript/controllers/judgements_core_controller.js": {
-    "innerHTML": 3
-  },
   "app/javascript/controllers/mapper_wizard_controller.js": {
     "innerHTML": 4
   },

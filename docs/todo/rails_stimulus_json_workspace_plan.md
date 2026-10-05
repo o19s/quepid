@@ -162,7 +162,8 @@ all browser modules, adding HTML endpoints or enabling case-page Turbo Drive.
 
 **2026-10-05: batches 1 and 2 complete for the scorer-selection pilot; batch 3
 complete for page-supplied bootstrap data; batch 4 complete for Tune Relevance;
-batch 5 complete for the audited one-off modal lifecycles.**
+batch 5 complete for the audited one-off modal lifecycles; batch 6 complete for
+judgement book choices, with other candidates still to assess.**
 The existing restriction on parallel HTML endpoints
 does not block this plan.
 
@@ -415,3 +416,32 @@ has no explicit focus-trap handoff. This is source inspection, not a live
 historical replay; Angular-regression classification remains unresolved. The
 unchanged Escape behavior is recorded for separate investigation, not changed by
 this lifecycle batch.
+
+### Batch 6: judgement book choices complete
+
+Rails now owns None/book-row structure in `core/_judgement_book_templates.html.erb`.
+`judgements-core` clones rows, inserts names as text and supplies IDs and View URLs.
+The server supplies the View URL template relative to the existing base element,
+preserving subpath navigation. Removed three `innerHTML` sites and their lint
+allowance. Existing ordering, selection/Cancel, sync flags, JSON persistence and
+refresh events retain their owners; no new state or lifecycle abstraction was added.
+
+- Passed: full Vitest (168 files / 1,493 tests), JavaScript lint, core build,
+  changed Ruby RuboCop and core rendering (16 tests / 149 assertions). Unit contracts
+  use the shipped templates and cover safe names, repeated rendering, selection
+  and supplied URLs. The strengthened toolbar Playwright flow passes with auth
+  (2 tests), covering View/Cancel, save failure/retry, reopen, disconnect/reload,
+  load failure/reopen and empty states; its disposable case uses `afterAll` cleanup.
+- MCP sample covered the same settings paths on clone 660; no-team/no-book states
+  and load/save errors used intercepted responses. Both sync flags were off for
+  successful linking, so no book data or fixture ratings were changed. Deleted
+  the clone (204) and confirmed GET 404.
+- Captured and inspected six viewport pairs under `.playwright-mcp/json-judgements/`:
+  list, save-error, reopened, load-error, no-books and no-teams. Modal appearance
+  and feedback are preserved; background progress, scroll position and toasts
+  differ. The latter three baselines used the pre-batch controller from HEAD;
+  current sources/bundles were restored, and final relative View navigation checked.
+- Deferred: real Populate/Refresh/Sync, background jobs, Create/Judge shortcuts,
+  multi-team catalogs and wider management coverage. Team lists, snapshot selectors
+  and export configuration remain candidates to assess individually; this completes
+  the judgement choices group, not all of batch 6.

@@ -180,6 +180,11 @@ class CoreControllerTest < ActionController::TestCase
       end
       assert_select "template[data-annotations-target='itemTemplate']", 1
       assert_select "#pickScorerModal template[data-pick-scorer-core-target='itemTemplate']", 1
+      %w[noneTemplate bookTemplate].each do |name|
+        assert_select "#judgementsModal template[data-judgements-core-target='#{name}']", 1
+      end
+      assert_select '#judgementsModal[data-judgements-core-book-url-template-value=?]',
+                    book_path(id: '__BOOK_ID__', script_name: '').delete_prefix('/')
       assert_select '#query-container[data-queries-list-query-url-template-value=?]',
                     "/api/cases/#{kase.id}/queries/__QUERY_ID__"
       assert_select '#query-container[data-queries-list-notes-url-template-value=?]',
