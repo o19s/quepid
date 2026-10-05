@@ -8,155 +8,6 @@
   -->
 <% end %>
 
-<script>
-  function rate(rating, key_name) {
-      keyDown(key_name);
-      resetStylesExcept(key_name);
-      document.getElementById("judgement_rating").value = rating;
-      delay(100).then(() => (document.getElementsByName("commit")[0].click()));
-  }
-
-  function resetStyles() {
-      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
-      keyboard_shortcuts_suffixes.forEach(suffix => {
-          const spanElement = document.getElementById("span-for-" + suffix);
-          const buttonElement = document.getElementById("button-for-" + suffix);
-
-          if (spanElement) {
-              spanElement.style.color = "gray";
-              spanElement.style.fontWeight = "normal";
-          }
-
-          if (buttonElement) {
-              buttonElement.classList.remove("btn-preselected");
-          }
-      });
-  }
-
-  function resetStylesExcept(except_suffix){
-      let keyboard_shortcuts_suffixes = ["a", "s", "d", "f", "g", "h", "j", "k", "l", "sc"];
-      keyboard_shortcuts_suffixes.forEach(suffix => {
-          if (suffix !== except_suffix) {
-              const spanElement = document.getElementById("span-for-" + suffix);
-              const buttonElement = document.getElementById("button-for-" + suffix);
-
-              if (spanElement) {
-                  spanElement.style.color = "gray";
-                  spanElement.style.fontWeight = "normal";
-              }
-
-              if (buttonElement) {
-                  buttonElement.classList.remove("btn-preselected");
-              }
-          }
-      });
-  }
-
-  function keyDown(suffix) {
-      resetStyles();
-      const spanElement = document.getElementById("span-for-" + suffix);
-      const buttonElement = document.getElementById("button-for-" + suffix);
-
-      if (spanElement) {
-          spanElement.style.color = "black";
-          spanElement.style.fontWeight = "bold";
-      }
-
-      if (buttonElement) {
-          buttonElement.classList.add("btn-preselected");
-      }
-  }
-
-  function delay(time) {
-      return new Promise(resolve => setTimeout(resolve, time));
-  }
-
-  function keyPressed(suffix) {
-      delay(500).then(() => {
-          const buttonElement = document.getElementById("button-for-" + suffix);
-          if (buttonElement) {
-              buttonElement.click();
-          }
-      });
-  }
-
-  // Function to check if modal is open
-  function isExplanationModalOpen() {
-      const modal = document.getElementById('explanationModal');
-      return modal && modal.classList.contains('show');
-  }
-
-  // Function to check if user is typing in a text field
-  function isTypingInTextField() {
-      const activeElement = document.activeElement;
-      const tagName = activeElement ? activeElement.tagName.toLowerCase() : '';
-      return tagName === 'input' || tagName === 'textarea';
-  }
-
-  document.addEventListener('keypress', function(e) {
-      // Skip if explanation modal is open or typing in a text field
-      if (isExplanationModalOpen() || isTypingInTextField()) {
-        return;
-      }
-
-      const keyCode = e.which || e.keyCode;
-
-      if (keyCode == 97 || keyCode == 65) {
-          keyPressed("a");
-      } else if (keyCode == 115 || keyCode == 83) {
-          keyPressed("s");
-      } else if (keyCode == 100 || keyCode == 68) {
-          keyPressed("d");
-      } else if (keyCode == 102 || keyCode == 70) {
-          keyPressed("f");
-      } else if (keyCode == 103 || keyCode == 71) {
-          keyPressed("g");
-      } else if (keyCode == 104 || keyCode == 72) {
-          keyPressed("h");
-      } else if (keyCode == 106 || keyCode == 74) {
-          keyPressed("j");
-      } else if (keyCode == 107 || keyCode == 75) {
-          keyPressed("k");
-      } else if (keyCode == 108 || keyCode == 76) {
-          keyPressed("l");
-      } else if (keyCode == 59 || keyCode == 186) {
-          keyPressed("sc");
-      }
-  });
-
-  document.addEventListener('keydown', function(e) {
-      // Skip if explanation modal is open or typing in a text field
-      if (isExplanationModalOpen() || isTypingInTextField()) {
-        return;
-      }
-
-      const keyCode = e.which || e.keyCode;
-
-      if (keyCode == 97 || keyCode == 65) {
-          keyDown("a");
-      } else if (keyCode == 115 || keyCode == 83) {
-          keyDown("s");
-      } else if (keyCode == 100 || keyCode == 68) {
-          keyDown("d");
-      } else if (keyCode == 102 || keyCode == 70) {
-          keyDown("f");
-      } else if (keyCode == 103 || keyCode == 71) {
-          keyDown("g");
-      } else if (keyCode == 104 || keyCode == 72) {
-          keyDown("h");
-      } else if (keyCode == 106 || keyCode == 74) {
-          keyDown("j");
-      } else if (keyCode == 107 || keyCode == 75) {
-          keyDown("k");
-      } else if (keyCode == 108 || keyCode == 76) {
-          keyDown("l");
-      } else if (keyCode == 59 || keyCode == 186) {
-          keyDown("sc");
-      }
-  });
-</script>
-
-
 <%
   @show_keyboard_shortcuts = true
   # Use enhanced JudgementHelper to generate rating buttons with scorer labels
@@ -173,7 +24,7 @@
 
 %>
 
-<%= form_for(judgement, url: url_for_form) do |form| %>
+<%= form_for(judgement, url: url_for_form, data: { controller: "judgement-rating", action: "keydown@document->judgement-rating#keydown turbo:submit-end->judgement-rating#cancel turbo:before-cache@document->judgement-rating#cancel" }) do |form| %>
   <%= render "shared/error_messages", record: judgement, subject: "judgement" %>
 
   <% if judgement.user_id != @current_user.id %>
@@ -246,14 +97,14 @@
             %>
             <td class="padded">
 
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+b["key"][:name].to_s+"\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
+              <%= button_tag b["label"], type: 'button', data: { action: "judgement-rating#rate", judgement_rating_target: "button", judgement_rating_rating_param: b["value"], judgement_rating_key_param: b["key"][:name] }, style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-#{b["key"][:name]}" %>
             </td>
           <% end %>
         </tr>
         <tr>
           <td><i class="bi-keyboard"></i></td>
           <% @rating_buttons.each do |b| %>
-              <td class="keyboard-shortcuts-td"><span class="<%= judgement.rating == b["value"].to_i ? 'fw-bold text-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
+              <td class="keyboard-shortcuts-td"><span data-judgement-rating-target="shortcut" data-key="<%= b["key"][:name] %>" class="<%= judgement.rating == b["value"].to_i ? 'fw-bold text-black' : '' %>" id=<%= "span-for-" + b["key"][:name].to_s %>><%= b["key"][:display_name]%></span></td>
           <% end %>
         </tr>
       </table>
@@ -268,7 +119,7 @@
               end
             %>
             <td class="padded">
-              <%= button_tag b["label"], type: 'button', onclick: "rate("+b["value"]+",\""+ b["key"].to_s + "\")", style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
+              <%= button_tag b["label"], type: 'button', data: { action: "judgement-rating#rate", judgement_rating_target: "button", judgement_rating_rating_param: b["value"], judgement_rating_key_param: b["key"] }, style: "background-color: #{b['style']['background-color']}; color: black; border: 1px solid rgba(0,0,0,0.2); font-weight: 500;", class: @button_classes, id:"button-for-"+b["key"].to_s %>
             </td>
           <% end %>
         </tr>
@@ -285,9 +136,9 @@
   </div>
   <% end %>
 
-  <%= form.hidden_field :rating %>
+  <%= form.hidden_field :rating, data: { judgement_rating_target: "rating" } %>
   <%= form.hidden_field :query_doc_pair_id, :value => query_doc_pair.id %>
-  <%= form.submit class: 'd-none'%>
+  <%= form.submit class: 'd-none', data: { judgement_rating_target: "submit" }%>
 
 <% end %>
 

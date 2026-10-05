@@ -20,7 +20,7 @@ module Books
         message = 'Queued up export of book as file.'
       end
 
-      redirect_to @book, notice: message
+      redirect_to @book, notice: message, status: :see_other
     end
   end
 end

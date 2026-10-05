@@ -828,16 +828,60 @@ These apply to all client code: Rails pages and the case page alike. ESLint enfo
 - **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard); the same helpers apply.
 - **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import).
 
+### Turbo navigation
+
+Use Turbo Drive by default on ordinary Rails management and admin pages.
+`application_modern.js` enables Drive; Rails owns navigation URLs and rendered
+HTML, while Stimulus owns behavior and widget lifecycle. Do not add global form
+helpers that opt every form out of Turbo.
+
+Management form actions should use Rails path helpers so they inherit the page's
+protocol. An HTTPS page cannot submit a Turbo fetch to HTTP; keep protocol-changing
+case navigation as a full-page transition. Reverse proxies must forward
+`X-Forwarded-Proto` correctly so Rails generates redirects with the external
+protocol. Do not reintroduce a blanket form opt-out to compensate for an incorrect
+action URL or proxy configuration.
+
+- Successful state-changing HTML submissions redirect with `status: :see_other`
+  (303); validation failures render with `status: :unprocessable_content` (422).
+  `ApplicationResponder` supplies these defaults for `respond_with`.
+- Put `data-turbo-confirm` on the **form** for a destructive submission. With
+  `button_to`, use `form: { data: { turbo_confirm: "…" } }`. Forms that explicitly
+  opt out of Turbo use the `form-confirm` Stimulus controller instead.
+- Use `requestSubmit()` for automatic submissions so validation and Turbo receive
+  the submit event. Initialize widgets in Stimulus `connect()` and release
+  listeners, timers, and widgets in `disconnect()`.
+- Prepare widgets before `turbo:before-cache`: CodeMirror synchronizes its textarea
+  and removes its generated DOM; `page-cache` clears Bootstrap overlays and body
+  scroll locks. Mark one-time flash/animation content `data-turbo-temporary`.
+  Cached previews and history visits reconnect controllers, so initialization must
+  tolerate both. Do not rely on `DOMContentLoaded` for per-page behavior.
+- Hover prefetch is disabled on management/admin layouts because legacy GET routes
+  include state-changing actions. Audit those routes before enabling speculative
+  requests.
+- Keep explicit opt-outs for authentication/session changes, mounted engines, and
+  the AI prompt tester's direct POST-rendered output. Downloads that are fetched
+  by JavaScript continue to use the download helpers. Any new opt-out must have a
+  concrete lifecycle or response reason.
+
 ### Turbo on the case page
 
-The case branch of `app/views/layouts/application.html.erb` loads Turbo through `core_stimulus.js`, but only
-for **Frames and Streams**. `Turbo.session.drive = false` is set there, as it is in
-`application_modern.js` for the rest of the app.
+The case branch of `app/views/layouts/application.html.erb` loads Turbo through
+`core_stimulus.js` for **Frames and Streams**, with `Turbo.session.drive = false`.
+The case workspace and standalone analytics layout also declare
+`<meta name="turbo-visit-control" content="reload">`: visiting either from a
+Drive-enabled page must create a fresh document. Disabling Drive only in the
+incoming bundle does not establish that boundary, because the previous page's
+JavaScript would already be retained.
 
-Keep Drive off on this layout so the case page's client-side runtime retains control of navigation.
-Frames and Streams are unaffected:
-Turbo treats anything inside a `<turbo-frame>` as navigatable regardless of the Drive setting, so
-forms inside a frame still submit and re-render normally.
+Keep full-page navigation for the case workspace until its stores, asynchronous
+searches, and bundle lifecycle support Drive visits. Preserve Solr JSONP's HTTP
+and protocol-switch requirements. Analytics retains its standalone chart and
+clipboard initialization until that lifecycle is migrated.
+
+Frames and Streams remain available on the case workspace. Turbo treats content
+inside a `<turbo-frame>` as navigatable regardless of the Drive setting, unless
+that content explicitly opts out.
 
 Keep interactive regions out of Turbo Frames unless their lifecycle is explicitly supported. When
 server-rendered markup and client-side behavior have to sit together, let the owning Stimulus

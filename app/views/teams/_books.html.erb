@@ -4,7 +4,7 @@
     <div class="mb-3">
       <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :books_q, search_value: @books_q, placeholder: "Filter books by name", small: false, search_label: "Search books" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-          <%= check_box_tag :books_archived, '1', @books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', onchange: 'this.form.submit()' %>
+          <%= check_box_tag :books_archived, '1', @books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>
         </div>
         <%# Preserve other filters when submitting books form %>

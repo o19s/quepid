@@ -36,13 +36,13 @@
       <div class="mb-3">
         <%= form.label :options, class: 'form-label' %>
         <div class="form-text">Additional configuration options as JSON.</div>
-        <%= form.text_area :options, value: format_json(query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :options, value: format_json(query_doc_pair.options), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 
       <div class="mb-3">
         <%= form.label :document_fields, class: 'form-label' %>
         <div class="form-text">Document fields as JSON object.</div>
-        <%= form.text_area :document_fields, value: format_json(query_doc_pair.document_fields), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 200 } %>
+        <%= form.text_area :document_fields, value: format_json(query_doc_pair.document_fields), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 200 } %>
       </div>
 
       <div class="actions">

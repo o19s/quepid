@@ -23,7 +23,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def share_case
@@ -75,7 +75,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Unarchive a search endpoint
@@ -91,7 +91,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Search endpoint #{search_endpoint.fullname} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Archive a case (mark archived and set current_user as owner)
@@ -108,7 +108,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # Unarchive a case
@@ -124,7 +124,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "Case #{kase.case_name} is not associated with this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def index
@@ -191,9 +191,9 @@ class TeamsController < ApplicationController
     @team = Team.new(team_params)
     if @team.save
       @team.members << current_user
-      redirect_to team_path(@team), notice: 'Team created.'
+      redirect_to team_path(@team), notice: 'Team created.', status: :see_other
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -210,13 +210,13 @@ class TeamsController < ApplicationController
       else
         flash[:alert] = "#{user.fullname} is already a member of this team."
       end
-      redirect_to team_path(@team) and return
+      redirect_to team_path(@team), status: :see_other and return
     end
 
     # If the user wasn't found, try to invite them (if signups are enabled)
     unless signup_enabled?
       flash[:alert] = "No user found with email #{email}. Signups are disabled so cannot invite."
-      redirect_to team_path(@team) and return
+      redirect_to team_path(@team), status: :see_other and return
     end
 
     # Create an invited user (Devise Invitable) and add to team
@@ -229,10 +229,10 @@ class TeamsController < ApplicationController
         flash[:alert] = member.errors.full_messages.to_sentence
       end
 
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     rescue ActiveRecord::RecordInvalid => e
       flash[:alert] = "Unable to add member: #{e.record.errors.full_messages.to_sentence}"
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     end
   end
 
@@ -244,7 +244,7 @@ class TeamsController < ApplicationController
       flash[:alert] = @team.errors.full_messages.to_sentence
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   def remove_member
@@ -256,7 +256,7 @@ class TeamsController < ApplicationController
       flash[:alert] = "#{member.fullname} is not a member of this team."
     end
 
-    redirect_to team_path(@team)
+    redirect_to team_path(@team), status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize

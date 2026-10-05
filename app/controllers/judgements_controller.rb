@@ -27,7 +27,7 @@ class JudgementsController < ApplicationController
   end
 
   def skip_judging
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -85,10 +85,10 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
-      redirect_to book_judge_path(@book)
+      redirect_to book_judge_path(@book), status: :see_other
     else
       @query_doc_pair = @judgement.query_doc_pair
-      render action: :new
+      render action: :new, status: :unprocessable_content
     end
   end
 
@@ -97,14 +97,14 @@ class JudgementsController < ApplicationController
     @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   def judge_later
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_judge_later!
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   def update
@@ -112,15 +112,15 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
-      redirect_to book_judge_path(@book)
+      redirect_to book_judge_path(@book), status: :see_other
     else
-      render action: :edit
+      render action: :edit, status: :unprocessable_content
     end
   end
 
   def destroy
     @judgement.destroy
-    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
+    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'.", status: :see_other
   end
 
   private

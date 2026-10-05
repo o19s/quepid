@@ -86,7 +86,9 @@ and assets. Link `core.css` and `json-explorer.css` on the case page; retain
 `core_case.js` (built from `core_stimulus.js`), `core_vendor.js`, `tour.js`, and
 importmap-loaded Bootstrap and Vega in their existing loading order. Load
 `application.css` and `application_modern.js` on management pages. Preserve
-the management-page sidebar and content wrappers, and keep Turbo Drive off.
+the management-page sidebar and content wrappers. Turbo Drive is enabled on
+management/admin pages; retain the case/analytics full-page boundaries described
+in DEVELOPER_GUIDE.md. See `turbo_drive.md` for verification and deferred coverage.
 Initially retain the separate header/footer partials; the case footer stays
 inside the workspace pane where `core/index.html.erb` currently renders it.
 

@@ -9,6 +9,8 @@
   <% if case_page %>
     <%= render 'layouts/case_head' %>
   <% else %>
+  <%# Some legacy GET actions change state; defer speculative visits until those routes are audited. %>
+  <meta name="turbo-prefetch" content="false">
   <meta name="viewport" content="width=device-width,initial-scale=1">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
@@ -85,7 +87,7 @@
       data-core-bootstrap-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
       data-quepid-root-url="<%= quepid_root_url %>">
 <% else %>
-<body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
+<body data-controller="page-cache" data-action="turbo:before-cache@document->page-cache#prepare" class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
 
 <% end %>
 

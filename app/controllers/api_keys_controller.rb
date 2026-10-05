@@ -20,7 +20,7 @@ class ApiKeysController < ApplicationController
   def create
     @api_key = current_user.api_keys.create! token: SecureRandom.hex
 
-    redirect_to profile_path
+    redirect_to profile_path, status: :see_other
 
     # authenticate_with_http_basic do |email, password|
     #  user = User.find_by email: email
@@ -37,6 +37,6 @@ class ApiKeysController < ApplicationController
   def destroy
     @api_key = current_user.api_keys.find(params.expect(:id))
     @api_key.destroy
-    redirect_to profile_path
+    redirect_to profile_path, status: :see_other
   end
 end

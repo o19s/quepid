@@ -41,7 +41,7 @@ class SearchEndpointsController < ApplicationController
 
   def archive
     @search_endpoint.mark_archived!
-    redirect_to search_endpoints_path, notice: 'Search Endpoint was archived.'
+    redirect_to search_endpoints_path, notice: 'Search Endpoint was archived.', status: :see_other
   end
 
   def edit
@@ -72,7 +72,7 @@ class SearchEndpointsController < ApplicationController
 
   def destroy
     @search_endpoint.destroy
-    redirect_to search_endpoints_path, notice: 'Search Endpoint was deleted.'
+    redirect_to search_endpoints_path, notice: 'Search Endpoint was deleted.', status: :see_other
   end
 
   private

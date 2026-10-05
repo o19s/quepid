@@ -12,6 +12,13 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
+  test 'responders render invalid HTML writes with an error status' do
+    assert_no_difference 'SearchEndpoint.count' do
+      post search_endpoints_url, params: { search_endpoint: { name: '' } }
+    end
+    assert_response :unprocessable_content
+  end
+
   test 'create rejects a foreign team' do
     foreign = Team.create!(name: 'Foreign team')
     assert_no_difference 'SearchEndpoint.count' do

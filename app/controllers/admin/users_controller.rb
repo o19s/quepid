@@ -57,9 +57,9 @@ module Admin
           # rubocop:enable Rails/SkipsModelValidations
         end
 
-        redirect_to admin_user_path(@user)
+        redirect_to admin_user_path(@user), status: :see_other
       else
-        render action: :new
+        render action: :new, status: :unprocessable_content
       end
     end
 
@@ -83,10 +83,10 @@ module Admin
           end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 
-          format.html { redirect_to admin_user_path @user }
+          format.html { redirect_to admin_user_path(@user), status: :see_other }
           format.json { render :show, status: :ok, location: edit_admin_user_path(@user) }
         else
-          format.html { render :edit }
+          format.html { render :edit, status: :unprocessable_content }
           format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
@@ -97,12 +97,12 @@ module Admin
     def destroy
       if @user.destroy
         respond_to do |format|
-          format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.' }
+          format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.', status: :see_other }
           format.json { head :no_content }
         end
       else
         respond_to do |format|
-          format.html { render :edit }
+          format.html { render :edit, status: :unprocessable_content }
           format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
@@ -114,7 +114,7 @@ module Admin
         j.save!
       end
 
-      redirect_to admin_user_path @user, notice: 'All judgements assigned to anonymous user.'
+      redirect_to admin_user_path(@user), notice: 'All judgements assigned to anonymous user.', status: :see_other
     end
 
     private

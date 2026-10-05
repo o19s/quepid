@@ -5,7 +5,7 @@
       <div class="mb-3">
         <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :cases_q, search_value: @cases_q, placeholder: "Filter by case name or id", small: true, search_label: "Search" } do %>
           <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-            <%= check_box_tag :cases_archived, '1', @cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', onchange: 'this.form.submit()' %>
+            <%= check_box_tag :cases_archived, '1', @cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
             <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label ms-2' %>
           </div>
           <%# Preserve other filters %>

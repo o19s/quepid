@@ -110,20 +110,6 @@ module ApplicationHelper
     nil
   end
 
-  # Override default form_for to disable Turbo Drive on
-  # Forms.  Maybe should be an ENV variable?
-  # caused by https on front end attempting to make http
-  # call by Turbo Drive and getting mix mode errros
-  # rubocop:disable-next Naming/BlockForwarding
-  def form_for record, options = {}, &block
-    if options[:html].nil?
-      options[:html] = { data: { turbo: false } }
-    elsif options[:html][:data].nil?
-      options[:html][:data] = { turbo: false }
-    end
-    super
-  end
-
   # Match the link to the core case url with the endpoint_url
   # if we have one.  Avoids a swap in the core application.
   def link_to_core_case name, kase, try_number, options = {}

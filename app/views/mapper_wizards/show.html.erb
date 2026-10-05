@@ -111,7 +111,7 @@
                         id="customHeaders"
                         rows="3"
                         data-mapper-wizard-target="customHeaders"
-                        data-codemirror-mode="application/json"
+                        data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="application/json"
                         data-codemirror-line-numbers="true"
                         data-codemirror-height="100"
                         placeholder='{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}'><%= format_json(existing_headers) %></textarea>
@@ -201,7 +201,7 @@
         </div>
         <div class="card-body">
           <textarea data-mapper-wizard-target="numberOfResultsMapper"
-                    data-codemirror-mode="javascript"
+                    data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
                     data-codemirror-line-numbers="true"
                     data-codemirror-height="200"><%= @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}" %></textarea>
           <div class="mt-2">
@@ -239,7 +239,7 @@
         </div>
         <div class="card-body">
           <textarea data-mapper-wizard-target="docsMapper"
-                    data-codemirror-mode="javascript"
+                    data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
                     data-codemirror-line-numbers="true"
                     data-codemirror-height="300"><%= @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}" %></textarea>
           <div class="mt-2">

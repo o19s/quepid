@@ -9,8 +9,8 @@
  * this already-heavy case surface.
  *
  * Turbo is loaded here for Turbo Frames only - the server-rendered case header
- * re-renders its frame on rename. Drive is switched off, as it is for the rest of
- * the app in `application_modern.js`. Frames and Streams still work with Drive
+ * re-renders its frame on rename. Drive is switched off for this workspace;
+ * ordinary Rails pages enable it in `application_modern.js`. Frames and Streams still work with Drive
  * off, because Turbo treats anything inside a <turbo-frame> as navigatable
  * regardless.
  */

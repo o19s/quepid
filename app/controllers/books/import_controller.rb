@@ -45,7 +45,7 @@ module Books
       @book.name = params_to_use[:name].presence || BookImporter::DEFAULT_BOOK_NAME if params_to_use
 
       if queue_import(@book, params_to_use)
-        redirect_to @book, notice: 'Book was successfully created.'
+        redirect_to @book, notice: 'Book was successfully created.', status: :see_other
       else
         render :new, status: :unprocessable_content
       end
@@ -67,7 +67,7 @@ module Books
       params_to_use = strip_book_level_attributes(params_to_use) if params_to_use
 
       if queue_import(@book, params_to_use)
-        redirect_to @book, notice: 'Data was successfully queued for import.'
+        redirect_to @book, notice: 'Data was successfully queued for import.', status: :see_other
       else
         render :edit, status: :unprocessable_content
       end

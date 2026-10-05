@@ -31,7 +31,7 @@
       <div class="mb-3">
         <%= form.label :custom_headers, "Custom Headers", class: 'form-label' %>
         <div class="form-text">Add custom HTTP headers as JSON (e.g., for API keys or authentication tokens).</div>
-        <%= form.text_area :custom_headers, value: format_json(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :custom_headers, value: format_json(search_endpoint.custom_headers), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 
       <div class="mb-3">
@@ -68,7 +68,7 @@
       <div class="mb-3">
         <%= form.label :options, "Options", class: 'form-label' %>
         <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
-        <%= form.text_area :options, value: format_json(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
+        <%= form.text_area :options, value: format_json(search_endpoint.options), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 
       <div class="mb-3">
@@ -89,10 +89,10 @@
             preset, so its mapper code is kept in sync automatically and can't be edited here.
           </div>
           <%= form.text_area :mapper_code, disabled: true,
-                data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600, codemirror_readonly: true } %>
+                data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600, codemirror_readonly: true } %>
         <% else %>
           <div class="form-text">This Javascript is run in the browser to map custom search api responses to what Quepid understands.</div>
-          <%= form.text_area :mapper_code, data: { codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>
+          <%= form.text_area :mapper_code, data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "javascript", codemirror_line_numbers: true, codemirror_height: 600 } %>
         <% end %>
       </div>
 

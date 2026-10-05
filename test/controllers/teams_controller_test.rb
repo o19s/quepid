@@ -9,6 +9,37 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  test 'invalid creation renders validation errors with a Turbo-compatible status' do
+    assert_no_difference 'Team.count' do
+      post teams_path, params: { team: { name: '' } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'form[action=?] input.is-invalid', teams_path
+  end
+
+  test 'successful creation redirects with see other' do
+    post teams_path, params: { team: { name: 'Drive team' } }
+    assert_response :see_other
+    assert_redirected_to team_path(Team.last)
+  end
+
+  test 'management forms stay on HTTPS behind a proxy' do
+    headers = { 'X-Forwarded-Proto' => 'https' }
+    get new_team_path, headers: headers
+    assert_response :success
+    assert_select 'form[action=?]', teams_path do |forms|
+      assert_not_equal 'false', forms.first['data-turbo']
+    end
+
+    post teams_path, params: { team: { name: '' } }, headers: headers
+    assert_response :unprocessable_content
+    assert_select 'form[action=?] input.is-invalid', teams_path
+
+    post teams_path, params: { team: { name: 'HTTPS Drive team' } }, headers: headers
+    assert_response :see_other
+    assert_equal "https://www.example.com#{team_path(Team.last)}", response.location
+  end
+
   describe 'cases search' do
     # `id` is an integer column. Matching it with LIKE made a search for "5"
     # return cases 15, 25 and 51 as well, and is a type error on PostgreSQL.

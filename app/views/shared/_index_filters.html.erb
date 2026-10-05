@@ -25,14 +25,14 @@
       <%= search %>
       <% if local_assigns[:judge_options] %>
         <%= select_tag :user_id, options_for_select([['All Judges', '']] + judge_options, params[:user_id]),
-            class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', onchange: 'this.form.submit()' %>
+            class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
       <% end %>
       <% if local_assigns.fetch(:checkboxes, []).any? %>
         <div class="d-flex align-items-center gap-3">
           <% checkboxes.each do |checkbox| %>
             <div class="form-check form-check-inline mb-0">
               <%= check_box_tag checkbox.fetch(:name), checkbox.fetch(:value), checkbox.fetch(:checked),
-                  class: 'form-check-input', onchange: 'this.form.submit()' %>
+                  class: 'form-check-input', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
               <%= label_tag checkbox.fetch(:name), checkbox.fetch(:label), class: 'form-check-label' %>
             </div>
           <% end %>
@@ -41,7 +41,7 @@
       <% if local_assigns[:team_options] %>
         <% team_select = capture do %>
           <%= select_tag :team_id, options_for_select([['All', '']] + team_options, params[:team_id]),
-              class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', onchange: 'this.form.submit()' %>
+              class: 'form-select form-select-sm', style: 'width: auto; min-width: 140px;', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
         <% end %>
         <% if local_assigns[:team_label] %>
           <div class="col-auto d-flex align-items-center">

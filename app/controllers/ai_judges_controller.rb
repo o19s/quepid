@@ -83,23 +83,23 @@ class AiJudgesController < ApplicationController
     if @ai_judge.save
       @team.members << @ai_judge
       @team.save
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
   def update
     if @ai_judge.update(ai_judge_params)
-      redirect_to team_path(@team)
+      redirect_to team_path(@team), status: :see_other
     else
-      render 'edit'
+      render 'edit', status: :unprocessable_content
     end
   end
 
   def destroy
     @ai_judge.destroy
-    redirect_to team_path(@team) # , notice: 'AI Judge was successfully removed.'
+    redirect_to team_path(@team), status: :see_other # , notice: 'AI Judge was successfully removed.'
   end
 
   private

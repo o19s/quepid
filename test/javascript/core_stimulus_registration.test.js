@@ -24,10 +24,16 @@ describe("core Stimulus registration", () => {
   it("registers every controller referenced by the core surface", () => {
     const coreSources = [
       ...sourceFiles(path.join(repoRoot, "app/views/core")),
-      path.join(repoRoot, "app/views/layouts/application.html.erb"),
       path.join(repoRoot, "app/views/layouts/_case_head.html.erb"),
       path.join(repoRoot, "app/views/layouts/_case_workspace.html.erb")
     ].map(filePath => readFileSync(filePath, "utf8"))
+
+    // The shared layout also contains Rails-only controllers. Inspect its case
+    // body branch rather than treating the management body as core markup.
+    const layout = readFileSync(path.join(repoRoot, "app/views/layouts/application.html.erb"), "utf8")
+    const caseBody = layout.match(/<% if case_page %>\s*(<body[\s\S]*?)<% else %>/)?.[1]
+    expect(caseBody).toBeTruthy()
+    coreSources.push(caseBody)
 
     const used = new Set(coreSources.flatMap(source => [...controllerNamesUsedBy(source)]))
     const registeredSource = readFileSync(path.join(repoRoot, "app/javascript/core_stimulus.js"), "utf8")

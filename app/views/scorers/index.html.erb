@@ -45,10 +45,10 @@
           <div class="col-md-5 d-flex flex-wrap align-items-center gap-2">
             <%= render layout: "shared/index_filters", locals: { url: scorers_path, variant: :inline, search_type: :search, search_value: @q.presence || params[:q], placeholder: "Filter scorers", search_label: "Search" } do %>
               <div class="btn-group ms-2" role="group" aria-label="Scorer type filter">
-                <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', onchange: 'this.form.submit()' %>
+                <%= check_box_tag 'scorer_type[]', 'communal', @scorer_type_list&.include?('communal'), class: 'btn-check', id: 'scorer-type-communal', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
                 <%= label_tag 'scorer-type-communal', 'Communal', class: 'btn btn-outline-secondary btn-sm' %>
 
-                <%= check_box_tag 'scorer_type[]', 'custom', @scorer_type_list&.include?('custom'), class: 'btn-check', id: 'scorer-type-custom', onchange: 'this.form.submit()' %>
+                <%= check_box_tag 'scorer_type[]', 'custom', @scorer_type_list&.include?('custom'), class: 'btn-check', id: 'scorer-type-custom', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
                 <%= label_tag 'scorer-type-custom', 'Custom', class: 'btn btn-outline-secondary btn-sm' %>
               </div>
             <% end %>

@@ -19,6 +19,7 @@ class ScoresController < ApplicationController
   def destroy_multiple
     @case.scores.where(id: params[:score_ids]).destroy_all
     redirect_to case_scores_path(@case, scorer_id: params[:scorer_id]),
+                status: :see_other,
                 notice: 'Selected scores were successfully deleted.'
   end
 end

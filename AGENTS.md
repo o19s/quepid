@@ -14,6 +14,7 @@
 - When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
 - **Complete requested batches, not convenient slices.** When the user says to do the next step in an execution plan, execute the entire first incomplete batch and its acceptance criteria. A preparatory subtask is not completion. Do not present partial work as done, offer a commit message, or move the plan forward until all gates pass. If a concrete blocker prevents completion, record the exact blocker and smallest safe prerequisite in the plan, report that the batch is incomplete, and stop at that boundary.
 - **Work in meaningful batches, not conversational micro-slices.** When the user says “continue”, “do it”, or “do more”, keep working through the current end-to-end batch and its verification gates. Do not stop after one extracted method, helper, or test to ask for another instruction, provide a commit message, or imply completion. Give progress updates at meaningful boundaries; only hand back when the batch is complete, or when a concrete blocker has been recorded and reported.
+- **Never touch the git index.** The user stages their own changes. Do not stage or unstage anything: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index. Files may show up staged without you doing anything, because the editor or the user staged them. Leave them alone and don't comment on what is staged. If you need a file removed, delete it with plain `rm`. If you need to test old code, copy files to the scratchpad and back instead of stashing.
 - **Commit messages must describe the staged patch.** Before proposing a commit message, inspect `git status --short`, `git diff --cached --stat`, and the full `git diff --cached` (including staged renames and deletions); do not infer the commit scope from the latest task or from uncommitted changes.
 - **Run commands inside the existing server container.** Use `docker compose exec app` for the Compose service container, or `docker exec <actual-server-container-name>` for a server started by `bin/docker s` / `q`. For example, run Rails tests in that container rather than starting a new app-run container.
 - Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
@@ -142,7 +143,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 **Stimulus / HTTP** — `DEVELOPER_GUIDE.md` § Stimulus HTTP conventions:
 
-- Server-owned URLs (`data-*-url-value`, `formTarget.action`); `apiFetch` for mutating JSON.
+- Server-owned URLs (`data-*-url-value`, `formTarget.action`, or a `*-url-template-value` with a named placeholder for browser-only ids); JSON through the `api/json` verb helpers (`getJson`/`postJson`/`putJson`/`patchJson`/`deleteJson`), `apiFetch` only for non-JSON. See the guide section.
 - `getQuepidRootUrl()` only when the server cannot pass the URL (e.g. redirect after import).
 
 **Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `app/javascript/test/stimulus_stub.js`.
@@ -168,6 +169,16 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 ## UI changes — screenshots via Playwright MCP (`playwright` server)
 
+If Playwright MCP reports that its browser/profile is already in use, do not
+skip or defer required browser verification solely for that reason. Identify
+the exact automation browser/profile and ask the user for permission to take
+it over, explaining that recovery may interrupt its current automation session.
+After approval, release only that browser session, reconnect Playwright MCP,
+and complete the required verification. Never terminate unrelated browsers or
+delete profile data. Reuse takeover permission within the authorized scope;
+do not ask again for the same recovery. If permission is declined or recovery
+still fails, record the concrete blocker and the remaining verification.
+
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
 Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the flows captured below. Use the actual running server's configured host port when it differs from the example URL.
@@ -182,6 +193,7 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 - **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
     - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
 - **Save** under `.playwright-mcp/<topic>/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `.playwright-mcp/share-case/migration-share-case-modal-after.png`. Topic folders keep this PR’s shots separate from older captures in the screenshot viewer (`yarn screenshots:view` / `node test/playwright/screenshot-viewer-server.mjs`).
+  Use an absolute filename for `browser_take_screenshot` under that directory; relative filenames may resolve against the workspace instead of the configured MCP output directory.
 
 ### Before/after pairs — do not break the working tree
 

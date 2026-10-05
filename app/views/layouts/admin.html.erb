@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="turbo-prefetch" content="false">
     <title>Quepid -- Relevant Search Solved</title>
     <%= favicon_link_tag asset_path "favicon.ico" %>
     <meta name="description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
@@ -13,7 +14,7 @@
     <%= javascript_importmap_tags 'application_modern' %>
 
   </head>
-  <body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
+  <body data-controller="page-cache" data-action="turbo:before-cache@document->page-cache#prepare" class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
     <header>
       <%= render 'layouts/header' %>
     </header>

@@ -25,6 +25,7 @@ export default defineConfig({
       { find: "api/fetch", replacement: path.resolve(repoRoot, "app/javascript/api/fetch.js") },
       { find: "api/http_error", replacement: path.resolve(repoRoot, "app/javascript/api/http_error.js") },
       { find: "api/json", replacement: path.resolve(repoRoot, "app/javascript/api/json.js") },
+      { find: "js-cookie", replacement: path.resolve(repoRoot, "vendor/javascript/js-cookie.js") },
       { find: "modules/editor", replacement: path.resolve(repoRoot, "app/javascript/modules/editor.js") },
       { find: "utils/quepid_root", replacement: path.resolve(repoRoot, "app/javascript/utils/quepid_root.js") },
       { find: "utils/csv", replacement: path.resolve(repoRoot, "app/javascript/utils/csv.js") },

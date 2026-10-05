@@ -46,7 +46,7 @@ class ScorersController < ApplicationController
   def create
     @scorer = Scorer.new(scorer_params.merge(owner: current_user, communal: false))
     if @scorer.save
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer created.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer created.', status: :see_other
     else
       render :new, status: :unprocessable_content
     end
@@ -63,9 +63,9 @@ class ScorersController < ApplicationController
     @scorer.show_scale_labels = @source_scorer.show_scale_labels
 
     if @scorer.save
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer cloned.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer cloned.', status: :see_other
     else
-      redirect_to scorers_path, alert: 'Unable to clone scorer.'
+      redirect_to scorers_path, alert: 'Unable to clone scorer.', status: :see_other
     end
   end
 
@@ -76,14 +76,14 @@ class ScorersController < ApplicationController
 
     unless scorer
       flash[:alert] = 'Scorer not found.'
-      redirect_to scorers_path and return
+      redirect_to scorers_path, status: :see_other and return
     end
 
     # ensure the user has access to this scorer
     allowed_ids = Scorer.for_user(current_user).pluck(:id)
     unless allowed_ids.include?(scorer.id)
       flash[:alert] = 'You cannot select that scorer as default.'
-      redirect_to scorers_path and return
+      redirect_to scorers_path, status: :see_other and return
     end
 
     current_user.default_scorer = scorer
@@ -93,7 +93,7 @@ class ScorersController < ApplicationController
       flash[:alert] = current_user.errors.full_messages.to_sentence
     end
 
-    redirect_to scorers_path
+    redirect_to scorers_path, status: :see_other
   end
 
   def share
@@ -105,7 +105,7 @@ class ScorersController < ApplicationController
     redirect_to scorers_path, status: :see_other
   rescue TeamSharing::AccessDenied
     flash[:alert] = 'You do not have access to that scorer.'
-    redirect_to scorers_path
+    redirect_to scorers_path, status: :see_other
   end
 
   def unshare
@@ -117,17 +117,17 @@ class ScorersController < ApplicationController
     redirect_to scorers_path, status: :see_other
   rescue TeamSharing::AccessDenied
     flash[:alert] = 'You do not have access to that scorer.'
-    redirect_to scorers_path
+    redirect_to scorers_path, status: :see_other
   end
 
   def update
     if @scorer.communal? && !current_user.administrator?
-      redirect_to scorers_path, alert: 'You cannot edit communal scorers.'
+      redirect_to scorers_path, alert: 'You cannot edit communal scorers.', status: :see_other
       return
     end
 
     if @scorer.update(scorer_params)
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -135,12 +135,12 @@ class ScorersController < ApplicationController
 
   def destroy
     if @scorer.communal? && !current_user.administrator?
-      redirect_to scorers_path, alert: 'You cannot delete communal scorers.'
+      redirect_to scorers_path, alert: 'You cannot delete communal scorers.', status: :see_other
       return
     end
 
     @scorer.destroy
-    redirect_to scorers_path, notice: 'Scorer deleted.'
+    redirect_to scorers_path, notice: 'Scorer deleted.', status: :see_other
   end
 
   private
@@ -150,9 +150,9 @@ class ScorersController < ApplicationController
     @sharing_scorer = Scorer.find_by(id: params[:scorer_id])
 
     if !@sharing_team || !@sharing_scorer
-      redirect_to scorers_path, alert: 'Team or scorer not found.'
+      redirect_to scorers_path, alert: 'Team or scorer not found.', status: :see_other
     elsif @sharing_scorer.communal?
-      redirect_to scorers_path, alert: 'Communal scorers are already available to everyone.'
+      redirect_to scorers_path, alert: 'Communal scorers are already available to everyone.', status: :see_other
     end
   end
 

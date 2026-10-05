@@ -69,3 +69,27 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 - [ ] **Steps:** On a management page such as `/cases`, scroll to the footer. Repeat on a short page and on admin/analytics pages where available.
 - **Expected:** A single blue footer follows page content, with the OSC copyright link opening a new tab and the Quepid version displayed. The case footer is covered separately in 16.6; its API/policy/community links and scrolling-pane placement remain specific to that surface.
 - **Edge cases:** Check narrow viewports and a configured version value.
+
+### 15.8 Turbo Drive navigation and lifecycle
+
+- [ ] On Teams, open **Add New** and submit an empty name. Confirm the invalid
+  field renders, then enter a unique name and create the team successfully.
+- [ ] Repeat the form check through HTTPS where a TLS proxy is configured. Confirm
+  both the submission and successful redirect remain HTTPS, without mixed-content
+  errors.
+- [ ] Navigate between Teams, Books and Scorers, then use Back and Forward.
+  Confirm content and active navigation update without accumulating overlays or
+  repeating one-time flash messages.
+- [ ] Open a new scorer, enter code, navigate away and return with Back/Forward.
+  Confirm one editor is present, edits are retained, and submitting uses its value.
+- [ ] On a book, cancel Archive and confirm the book stays active. Check score
+  selection, judging shortcuts (including typing/modal exclusions), and AI judge
+  structured/JSON tabs and provider presets after navigation.
+- [ ] Enter a case from management and return to management. Repeat for standalone
+  analytics. Confirm the case searches normally and the analytics chart renders.
+- **Expected:** Ordinary Rails navigation and forms use Drive. Validation errors
+  retain the form; successful writes redirect. Editors and controllers reconnect
+  cleanly. Case and analytics transitions create fresh documents with their own
+  assets. Mounted tools and authentication keep their intentional opt-outs.
+- **Cleanup:** Delete the disposable team. Use disposable judgements or intercept
+  rating requests when checking shortcuts against a shared seeded book.

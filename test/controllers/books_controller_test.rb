@@ -552,7 +552,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       },
     }
 
-    assert_response :success
+    assert_response :unprocessable_content
     assert_select '#error_explanation', /Scorer must be selected/
     assert_select 'select[name="book[scorer_id]"].is-invalid'
     assert_equal 'Book without a rating scale', assigns(:book).name

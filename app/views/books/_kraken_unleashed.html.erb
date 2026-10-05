@@ -1,26 +1,6 @@
-<div id="successModal" class="modal">
+<div id="successModal" class="modal" data-controller="kraken" data-turbo-temporary data-action="click@document->kraken#close">
   <div class="modal-content">
-    <%= image_tag "kraken.png", id: 'kraken', class: "img-fluid fade-out" %>
-    <button onclick="closeModal()">Close</button>
+    <%= image_tag "kraken.png", id: 'kraken', class: "img-fluid fade-out", data: { action: "animationend->kraken#removeImage" } %>
+    <button type="button" data-action="kraken#close">Close</button>
   </div>
 </div>
-
-<script>
-  // This inline script only re-runs reliably because Turbo.session.drive = false
-  // (see app/javascript/application_modern.js) makes every navigation to this
-  // page a plain full-page load. If Turbo Drive is ever re-enabled here, this
-  // needs to move to a Stimulus controller instead, or it may stop firing (or
-  // fire against stale DOM) on cached/back-forward navigations.
-  document.getElementById('successModal').style.display = 'block';
-  function closeModal() {
-    document.getElementById('successModal').style.display = 'none';
-  }
-  
-  document.addEventListener('click', function(event) {
-    document.getElementById('successModal').style.display = 'none';
-  });
-  
-  document.getElementById('kraken').addEventListener('animationend', function() {
-    this.remove();
-  });
-</script>

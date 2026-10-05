@@ -34,7 +34,7 @@
                 @only_unrated,
                 class: 'form-check-input',
                 id: 'only_unrated',
-                onchange: 'this.form.submit()'
+                data: { controller: "auto-submit", action: "change->auto-submit#submit" }
             %>
             <label class="form-check-label" for="only_unrated">
               Unrated
@@ -50,7 +50,7 @@
                 ),
                 class: 'form-select form-select-sm',
                 style: 'width: auto; min-width: 80px;',
-                onchange: 'this.form.submit()'
+                data: { controller: "auto-submit", action: "change->auto-submit#submit" }
             %>
           </div>
 
@@ -61,7 +61,7 @@
                 @show_explanations,
                 class: 'form-check-input',
                 id: 'show_explanations',
-                onchange: 'this.form.submit()'
+                data: { controller: "auto-submit", action: "change->auto-submit#submit" }
             %>
             <label class="form-check-label" for="show_explanations">
               Show Explanations

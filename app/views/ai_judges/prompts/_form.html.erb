@@ -1,4 +1,5 @@
-<%= form_with url: ai_judge_prompt_path, model: ai_judge, data: { controller: "prompt-form", action: "submit->prompt-form#submit" } do |form| %>
+<%# The prompt tester renders computed, unsaved judgement output directly from POST. %>
+<%= form_with url: ai_judge_prompt_path, model: ai_judge, data: { turbo: false, controller: "prompt-form", action: "submit->prompt-form#submit" } do |form| %>
   <% if ai_judge.errors.any? %>
     <div style="color: red">
       <h2><%= pluralize(ai_judge.errors.count, "error") %> prohibited this Prompt from being saved:</h2>
@@ -84,12 +85,12 @@
 
           <div class="field">
             <%= query_doc_pair_fields.label :document_fields %> <small>JSON</small><br/>
-            <%= query_doc_pair_fields.text_area :document_fields, value: format_json(query_doc_pair_fields.object.document_fields), data: { codemirror_mode: "json", codemirror_height: 400  } %>
+            <%= query_doc_pair_fields.text_area :document_fields, value: format_json(query_doc_pair_fields.object.document_fields), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "json", codemirror_height: 400  } %>
           </div>
 
           <div class="field">
             <%= query_doc_pair_fields.label :options %> <small>JSON</small><br/>
-            <%= query_doc_pair_fields.text_area :options, value: format_json(query_doc_pair_fields.object.options), data: { codemirror_mode: "json", codemirror_height: 200  } %>
+            <%= query_doc_pair_fields.text_area :options, value: format_json(query_doc_pair_fields.object.options), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "json", codemirror_height: 200  } %>
           </div>
 
           <div class="field">

@@ -165,7 +165,7 @@ class BooksController < ApplicationController
     if book_params[:scorer_id].blank?
       @book.errors.add(:scorer_id, 'must be selected')
       @ai_judges = []
-      render :new
+      render :new, status: :unprocessable_content
       return
     end
 
@@ -185,10 +185,10 @@ class BooksController < ApplicationController
         @origin_case.save
       end
 
-      redirect_to @book, notice: 'Book was successfully created.'
+      redirect_to @book, notice: 'Book was successfully created.', status: :see_other
     else
       @ai_judges = []
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -218,17 +218,17 @@ class BooksController < ApplicationController
 
   def destroy
     @book.really_destroy
-    redirect_to books_path, notice: 'Book is deleted'
+    redirect_to books_path, notice: 'Book is deleted', status: :see_other
   end
 
   def archive
     @book.update(archived: true)
-    redirect_to books_path, notice: "Book '#{@book.name}' has been archived."
+    redirect_to books_path, notice: "Book '#{@book.name}' has been archived.", status: :see_other
   end
 
   def unarchive
     @book.update(archived: false)
-    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived."
+    redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived.", status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -248,6 +248,7 @@ class BooksController < ApplicationController
 
     if books.any? { |b| b.scale != @book.scale }
       redirect_to book_path(@book),
+                  status: :see_other,
                   :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
     end
 
@@ -286,9 +287,10 @@ class BooksController < ApplicationController
 
     if @book.save
       UpdateCaseJob.perform_later @book
-      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs."
+      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs.", status: :see_other
     else
       redirect_to book_path(@book),
+                  status: :see_other,
                   :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
     end
   end
@@ -301,7 +303,7 @@ class BooksController < ApplicationController
     number_of_pairs = nil if judge_all
 
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
-    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs."
+    redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs.", status: :see_other
   end
   # rubocop:enable Metrics/AbcSize
   # rubocop:enable Metrics/MethodLength
@@ -323,14 +325,14 @@ class BooksController < ApplicationController
     end
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements."
+    redirect_to book_path(@book), :notice => "Assigned #{assignee.fullname} to ratings and judgements.", status: :see_other
   end
 
   def delete_ratings_by_assignee
     deleted_count = @book.judgements.where(user: @user).delete_all
 
     UpdateCaseJob.perform_later @book
-    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}."
+    redirect_to book_path(@book), :notice => "Deleted #{deleted_count} judgements belonging to #{@user.fullname}.", status: :see_other
   end
 
   def reset_unrateable
@@ -339,6 +341,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Reset unrateable status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
@@ -348,6 +351,7 @@ class BooksController < ApplicationController
     judgements_to_delete.destroy_all
 
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Reset judge later status for #{judgements_count} judgements belonging to #{@user.fullname}."
   end
 
@@ -359,6 +363,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Deleted #{query_doc_pairs_count} query/doc pairs below position #{position}."
   end
 
@@ -374,6 +379,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Mapped #{judgements_to_update_count} judgements to have rating #{rating}."
   end
 
@@ -385,7 +391,7 @@ class BooksController < ApplicationController
     end
 
     if changes.empty?
-      redirect_to book_path(@book), notice: 'No ratings changed.'
+      redirect_to book_path(@book), notice: 'No ratings changed.', status: :see_other
       return
     end
 
@@ -415,6 +421,7 @@ class BooksController < ApplicationController
 
     UpdateCaseJob.perform_later @book
     redirect_to book_path(@book),
+                status: :see_other,
                 :notice => "Remapped #{judgements_updated} judgements and #{case_ratings_updated} case ratings."
   end
 

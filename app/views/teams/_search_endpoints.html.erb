@@ -9,7 +9,7 @@
     <div class="mb-3">
       <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :search_endpoints_q, search_value: @search_endpoints_q, placeholder: "Filter search endpoints by name or URL", small: false, search_label: "Search search endpoints" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-          <%= check_box_tag :search_endpoints_archived, '1', @search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', onchange: 'this.form.submit()' %>
+          <%= check_box_tag :search_endpoints_archived, '1', @search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>
         </div>
         <%# Preserve other filters when submitting search endpoints form %>

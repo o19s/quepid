@@ -13,7 +13,7 @@ module Admin
         end
 
         @user.save
-        redirect_to admin_user_path(@user)
+        redirect_to admin_user_path(@user), status: :see_other
       end
 
       private

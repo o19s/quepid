@@ -255,6 +255,8 @@ export function linterFor(mode) {
  * Create a CodeMirror editor from a textarea
  */
 export function fromTextArea(textarea, options = {}) {
+  const originalDisplay = textarea.style.display
+  let formatTimer
   const wrapper = document.createElement('div');
   textarea.parentNode.insertBefore(wrapper, textarea);
   textarea.style.display = 'none';
@@ -283,7 +285,10 @@ export function fromTextArea(textarea, options = {}) {
     // Additional enhancements
     EditorView.lineWrapping,
     EditorView.updateListener.of(update => {
-      if (update.docChanged) options.onChange?.(update.state.doc.toString())
+      if (update.docChanged) {
+        textarea.value = update.state.doc.toString()
+        options.onChange?.(textarea.value)
+      }
     }),
     EditorState.tabSize.of(2)
   ];
@@ -317,6 +322,15 @@ export function fromTextArea(textarea, options = {}) {
   // Simple API matching what's used in the form
   const editor = {
     view,
+    destroy: () => {
+      clearTimeout(formatTimer)
+      textarea.value = editor.getValue()
+      textarea.form?.removeEventListener("submit", syncTextarea)
+      view.destroy()
+      wrapper.remove()
+      textarea.style.display = originalDisplay
+      delete textarea.editor
+    },
     getValue: () => view.state.doc.toString(),
     // Loading content isn't a user edit, so keep it out of undo history:
     // otherwise Ctrl+Z right after opening would blank the editor.
@@ -379,11 +393,8 @@ export function fromTextArea(textarea, options = {}) {
   textarea.editor = editor;
   
   // Update textarea before form submission
-  if (textarea.form) {
-    textarea.form.addEventListener('submit', () => {
-      textarea.value = editor.getValue();
-    });
-  }
+  const syncTextarea = () => { textarea.value = editor.getValue() }
+  textarea.form?.addEventListener("submit", syncTextarea)
   
   // Automatically format JSON content if in JSON mode
   if (isJsonEditorMode(options.mode) && textarea.value.trim()) {
@@ -391,7 +402,7 @@ export function fromTextArea(textarea, options = {}) {
       // Only format if it's valid JSON
       JSON.parse(textarea.value);
       // Format after a small delay to ensure editor is fully initialized
-      setTimeout(() => editor.formatJSON(), 0);
+      formatTimer = setTimeout(() => editor.formatJSON(), 0)
     } catch (e) {
       // If invalid JSON, don't attempt to format
       console.log("Initial JSON content is invalid, skipping auto-formatting");

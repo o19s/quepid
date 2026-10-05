@@ -40,10 +40,10 @@
     <%# Blazer and Mission Control Jobs are separately mounted engines with their own UI/layout, %>
     <%# so they're linked here for discoverability but won't show this sidebar themselves. %>
     <li class="nav-item">
-      <%= link_to 'SQL Analytics', blazer_path, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
+      <%= link_to 'SQL Analytics', blazer_path, data: { turbo: false }, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
     </li>
     <li class="nav-item">
-      <%= link_to 'Job Manager', mission_control_jobs_path, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
+      <%= link_to 'Job Manager', mission_control_jobs_path, data: { turbo: false }, class: 'nav-link rounded-0 py-2 px-3 border-bottom', target: '_self' %>
     </li>
   </ul>
 </div>

@@ -26,14 +26,14 @@ module Admin
       assert_not_equal 1.day.ago.to_date, announcement.expiration_date
     end
 
-    test 'update with a valid date range saves and re-renders edit' do
+    test 'update with a valid date range redirects back to the edit preview' do
       patch :update, params: {
         id:           announcement,
         announcement: { publish_date: Date.current, expiration_date: 2.days.from_now.to_date },
       }
 
-      assert_response :success
-      assert_template :edit
+      assert_response :see_other
+      assert_redirected_to edit_admin_announcement_path(announcement)
 
       announcement.reload
       assert_equal 2.days.from_now.to_date, announcement.expiration_date

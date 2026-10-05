@@ -105,3 +105,27 @@ describe("editor modes", () => {
     editor.view.destroy()
   })
 })
+
+describe("editor lifecycle", () => {
+  it("synchronizes edits immediately and removes the widget, timer and form listener on teardown", () => {
+    vi.useFakeTimers()
+    const form = document.createElement("form")
+    const textarea = document.createElement("textarea")
+    textarea.value = '{"size":3}'
+    form.append(textarea)
+    const editor = fromTextArea(textarea, { mode: "json" })
+    editor.setValue('{"size":4}')
+    expect(textarea.value).toBe('{"size":4}')
+    const getValue = vi.spyOn(editor, "getValue")
+    editor.destroy()
+    getValue.mockClear()
+    form.dispatchEvent(new Event("submit"))
+    vi.runAllTimers()
+    expect(getValue).not.toHaveBeenCalled()
+    expect(form.querySelector(".cm-editor")).toBeNull()
+    expect(textarea.editor).toBeUndefined()
+    expect(textarea.style.display).toBe("")
+    expect(textarea.value).toBe('{"size":4}')
+    vi.useRealTimers()
+  })
+})

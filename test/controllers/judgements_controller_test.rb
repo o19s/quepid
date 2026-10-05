@@ -144,7 +144,7 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
         post book_judgements_url(jbm_book), params: { judgement: { query_doc_pair_id: qdp.id, rating: '' } }
       end
 
-      assert_response :success
+      assert_response :unprocessable_content
       assert_equal qdp, assigns(:query_doc_pair)
     end
 
@@ -165,7 +165,7 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
 
       patch book_judgement_url(jbm_book, existing), params: { judgement: { rating: '' } }
 
-      assert_response :success
+      assert_response :unprocessable_content
       assert_equal 0, existing.reload.rating
     end
 

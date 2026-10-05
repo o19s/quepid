@@ -117,7 +117,7 @@
         <% end %>
       </li>
       <li>
-        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Notebooks', 'data-bs-tooltip-title-value':'Notebooks' do %>
+        <%= link_to "#{root_path}notebooks/lab/index.html", target: '_blank', rel: 'noopener noreferrer', class: "nav-link py-3 border-bottom rounded-0", data: { turbo: false }, 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Notebooks', 'data-bs-tooltip-title-value':'Notebooks' do %>
           <i
             class="bi bi-journal-medical"
             aria-hidden="true"

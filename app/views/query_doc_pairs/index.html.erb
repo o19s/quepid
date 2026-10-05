@@ -34,7 +34,7 @@
               @include_judgement_count,
               class: 'form-check-input',
               id: 'include_judgement_count',
-              onchange: 'this.form.submit()'
+              data: { controller: "auto-submit", action: "change->auto-submit#submit" }
           %>
           <label class="form-check-label" for="include_judgement_count">Include Judgement Count</label>
         </div>

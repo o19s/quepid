@@ -7,7 +7,7 @@ class ProfilesController < ApplicationController
     respond_to do |format|
       if current_user.update user_params
         Analytics::Tracker.track_user_updated_profile_event current_user
-        format.html { redirect_to profile_path, notice: 'Profile updated successfully.' }
+        format.html { redirect_to profile_path, notice: 'Profile updated successfully.', status: :see_other }
         format.json { render :show, status: :ok, location: current_user }
       else
         format.html { render :show, status: :unprocessable_content, locals: { active_error_section: :profile } }

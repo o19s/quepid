@@ -29,6 +29,7 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'body[data-core-bootstrap-query-list-sortable-value=?]', Rails.application.config.query_list_sortable.to_s
       assert_select 'body[data-quepid-root-url]'
       assert_select 'head base', 1
+      assert_select 'meta[name="turbo-visit-control"][content="reload"]', 1
       assert_select 'body.d-flex', 0
       assert_select '#main-content .pane_main footer', 1
       assert_select '.sidebar', 0

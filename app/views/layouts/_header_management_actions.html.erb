@@ -1,7 +1,7 @@
 <div class="d-grid gap-2">
   <% if cases_menu %>
-    <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary", data: { turbo: false } %>
-    <%= link_to 'Create a case', case_new_path, class: 'btn btn-success', data: { turbo: false } %>
+    <%= link_to "View all cases", cases_path, class: "btn btn-outline-secondary" %>
+    <%= link_to 'Create a case', case_new_path, class: 'btn btn-success' %>
   <% else %>
     <%= link_to "View all books", books_path, class: "btn btn-outline-secondary" %>
     <%= link_to 'Create a book', new_book_path, class: 'btn btn-success' %>
