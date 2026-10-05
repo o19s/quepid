@@ -263,12 +263,11 @@ function createCoreCapabilities(
       setTryNo: (value) => configurationRuntime.setTryNo(value)
     },
     user: {
-      loadCurrent: () => userRuntime.loadCurrent()
+      initialize: (data) => userRuntime.initialize(data)
     },
     case: {
       selected: () => caseRuntime.selected(),
-      load: (caseNo) => caseRuntime.load(caseNo),
-      select: (value) => caseRuntime.select(value),
+      initialize: (data) => caseRuntime.initialize(data),
       trackLastViewedAt: (caseNo) => caseRuntime.trackLastViewedAt(caseNo)
     },
     settings: {

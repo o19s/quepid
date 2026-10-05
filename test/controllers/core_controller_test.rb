@@ -109,6 +109,35 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'body[data-core-bootstrap-try-no-value="999999"]'
     end
 
+    test 'embeds authorized API data without graph scores or duplicate endpoint objects' do
+      kase = cases(:one)
+      get :index, params: { id: kase.id, try_number: tries(:one).try_number }
+
+      data = JSON.parse(css_select('body').first['data-core-bootstrap-initial-value'])
+      assert_equal users(:doug).id, data.dig('user', 'id')
+      assert_equal users(:doug).completed_case_wizard, data.dig('user', 'completed_case_wizard')
+      assert_equal kase.id, data.dig('case', 'case_id')
+      assert_equal kase.tries.pluck(:try_number).sort, data.dig('case', 'tries').pluck('try_number').sort
+      assert_not data['case'].key?('last_score')
+      assert_not data['case'].key?('scores')
+      initial_try = data.dig('case', 'tries').find { |item| item['try_number'] == tries(:one).try_number }
+      assert_equal tries(:one).field_spec, initial_try['field_spec']
+      assert_equal tries(:one).search_endpoint.endpoint_url, initial_try['search_url']
+      assert_not initial_try.key?('search_endpoint')
+      assert_includes response.headers['Cache-Control'], 'no-store'
+      assert_includes response.headers['Cache-Control'], 'private'
+    end
+
+    test 'escapes initial data inside its attribute while retaining the original values' do
+      name = %q[</script><script>alert("x")</script>&'<>]
+      cases(:one).update!(case_name: name)
+      get :index, params: { id: cases(:one).id }
+
+      data = JSON.parse(css_select('body').first['data-core-bootstrap-initial-value'])
+      assert_equal name, data.dig('case', 'case_name')
+      assert_select 'script', text: 'alert("x")', count: 0
+    end
+
     test 'renders the base URL for sub-path deployments' do
       original_root = ENV.fetch('RAILS_RELATIVE_URL_ROOT', nil)
       ENV['RAILS_RELATIVE_URL_ROOT'] = '/quepid'

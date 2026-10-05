@@ -80,6 +80,7 @@
 <body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
       data-core-bootstrap-case-toolbar-outlet="#case-actions"
       data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
+      data-core-bootstrap-initial-value="<%= String.new(render(partial: 'core/bootstrap', formats: [:json])) %>"
       data-snapshot-bridge-snapshots-url-value="<%= api_case_snapshots_path(@case) if @case %>"
       <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
       data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"

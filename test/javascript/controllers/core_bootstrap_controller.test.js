@@ -30,10 +30,9 @@ describe("CoreBootstrapController", () => {
               setCaseNo: vi.fn(),
               setTryNo: vi.fn()
             },
-            user: { loadCurrent: vi.fn().mockResolvedValue({ id: 7 }) },
+            user: { initialize: vi.fn().mockReturnValue({ id: 7 }) },
             case: {
-              load: vi.fn().mockResolvedValue({ tries: [], lastTry: 1 }),
-              select: vi.fn(),
+              initialize: vi.fn().mockReturnValue({ tries: [], lastTry: 1 }),
               trackLastViewedAt: vi.fn(),
               fetchDropdownCases: vi.fn()
             },
@@ -65,7 +64,7 @@ describe("CoreBootstrapController", () => {
 
   const core = () => window.quepidSearch.caseRuntime.bootstrap.core
 
-  async function bootstrapCase(caseNo = 2) {
+  async function bootstrapCase(caseNo = 2, initialCaseNo = caseNo) {
     const flash = { show: vi.fn(), hide: vi.fn() }
     setCoreFlashForTest(flash)
     const failed = vi.fn()
@@ -73,6 +72,7 @@ describe("CoreBootstrapController", () => {
     document.addEventListener("core-bootstrap:failed", failed)
     const controller = Object.create(CoreBootstrapController.prototype)
     controller.caseNoValue = caseNo
+    controller.initialValue = { user: { id: 7 }, case: { case_id: initialCaseNo, tries: [], last_try_number: 1 } }
     controller.tryNoValue = 1
     controller.communalScorersOnlyValue = "false"
     controller.queryListSortableValue = "true"
@@ -86,6 +86,7 @@ describe("CoreBootstrapController", () => {
   it("resets the shared window diff store, not the imported fallback singleton", async () => {
     const controller = Object.create(CoreBootstrapController.prototype)
     controller.caseNoValue = 2
+    controller.initialValue = { user: { id: 7 }, case: { case_id: 2, tries: [], last_try_number: 1 } }
     controller.tryNoValue = 1
     controller.communalScorersOnlyValue = "false"
     controller.queryListSortableValue = "true"
@@ -95,7 +96,7 @@ describe("CoreBootstrapController", () => {
     expect(window.quepidStore.diff.reset).toHaveBeenCalledOnce()
     expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
     expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.caseRuntime.bootstrap.core.user.loadCurrent).toHaveBeenCalledOnce()
+    expect(window.quepidSearch.caseRuntime.bootstrap.core.user.initialize).toHaveBeenCalledWith({ id: 7 })
   })
 
   it("marks the workspace ready, clears old errors, and reports a successful search", async () => {
@@ -108,6 +109,16 @@ describe("CoreBootstrapController", () => {
     expect(flash.hide).toHaveBeenCalledWith("search-error")
     expect(core().case.trackLastViewedAt).toHaveBeenCalledWith(2)
     expect(flash.show).toHaveBeenCalledWith("success", "All queries finished successfully!")
+  })
+
+  it("rejects mismatched page data before selecting a case or starting searches", async () => {
+    const { flash, failed, ready } = await bootstrapCase(2, 3)
+
+    expect(core().case.initialize).not.toHaveBeenCalled()
+    expect(window.quepidSearch.queryCommands.searchAll).not.toHaveBeenCalled()
+    expect(failed).toHaveBeenCalledOnce()
+    expect(ready).not.toHaveBeenCalled()
+    expect(flash.show).toHaveBeenCalledWith("error", "Could not load the case 2 due to: Initial workspace data does not match the selected case", "search-error")
   })
 
   it("flashes the search error when some queries fail after loading", async () => {
@@ -141,9 +152,9 @@ describe("CoreBootstrapController", () => {
 
   it.each([
     [
-      "the case can't be loaded",
-      () => core().case.load.mockResolvedValue(undefined),
-      ["error", expect.stringMatching(/^Could not retrieve case 2\. Confirm that the case has been shared/), "search-error"]
+      "initial case data cannot be initialized",
+      () => core().case.initialize.mockImplementation(() => { throw new Error("Invalid initial case data") }),
+      ["error", "Could not load the case 2 due to: Invalid initial case data", "search-error"]
     ],
     [
       "the try doesn't exist",
@@ -161,7 +172,7 @@ describe("CoreBootstrapController", () => {
     ],
     [
       "anything else goes wrong",
-      () => core().case.load.mockRejectedValue(new Error("boom")),
+      () => core().case.initialize.mockImplementation(() => { throw new Error("boom") }),
       ["error", "Could not load the case 2 due to: boom", "search-error"]
     ]
   ])("explains the failure when %s", async (_label, arrange, flashArgs) => {
@@ -183,4 +194,3 @@ describe("CoreBootstrapController", () => {
     expect(ready).toHaveBeenCalledOnce()
   })
 })
-

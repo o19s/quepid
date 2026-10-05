@@ -61,6 +61,21 @@ describe("case runtime", () => {
     document.removeEventListener("quepid:case-selected", selected)
   })
 
+  it("initializes the selected record from page data and reconciles later API refreshes", async () => {
+    const request = vi.fn().mockResolvedValue(response({ case_id: 7, case_name: "Refreshed", book_id: 8 }))
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
+
+    const initial = runtime.initialize({ case_id: 7, case_name: "Page", book_id: 3, tries: [{ try_number: 2 }] })
+
+    expect(initial).toMatchObject({ caseNo: 7, caseName: "Page", bookId: 3, tries: [{ try_number: 2 }] })
+    expect(runtime.selected()).toBe(initial)
+    expect(request).not.toHaveBeenCalled()
+    await runtime.read(7)
+    expect(runtime.selected()).toBe(initial)
+    expect(initial).toMatchObject({ caseName: "Refreshed", bookId: 8 })
+  })
+
   it("deletes a case, clearing the selection only when it was the deleted case", async () => {
     const request = vi.fn().mockResolvedValue(response({}, 204))
     vi.stubGlobal("fetch", request)

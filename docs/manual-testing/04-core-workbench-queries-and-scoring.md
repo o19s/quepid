@@ -206,12 +206,15 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 
 - [ ] **Steps:**
   1. Navigate directly to `/case/:id/try/:try_number` for an existing case. Confirm the workbench boots (header, toolbar, query list) with no console errors.
+     In the Network panel, confirm bootstrap does not GET `/api/users/current` or `/api/cases/:id`: the initial user/case data comes from the authorized Rails page. Queries, scorers and other independently owned data still load through APIs.
   2. From the header's **Relevancy Cases** dropdown, click a different case. Confirm the browser does a full page navigation (URL changes, page reloads) to that case's workbench, which then boots correctly.
   3. Navigate to bare `/case` (no id). Confirm it loads your most recent non-archived case's workbench rather than a "Not Found" page.
   4. Navigate to a path Rails doesn't route at all (e.g. `/case/x/y/z/garbage`). Confirm you get Rails' own 404 rather than a client-side application shell.
   5. Hard-reload an existing case, expand a query and immediately open **Set Options**. Confirm it shows that query's current options; cancel, then filter/sort the list and collapse the query. Confirm the controls work without another bootstrap or duplicate actions.
 - **Expected:** Navigation loads the workbench (or a real 404) via a normal server-rendered page load — case/try switching is no longer an in-page SPA transition.
 - **Edge cases:**
+  - [ ] Navigate to an existing case with a nonexistent try number. Confirm a visible try-not-existing error and a hidden toolbar; returning to a valid try must boot normally. Missing or inaccessible case IDs must return Rails 404 without embedded workspace data.
+  - [ ] Force customer-engine searches to fail. Confirm the booted toolbar remains usable and the search error is visible; remove the failure and reload to confirm successful recovery.
   - [ ] On a disposable case with two tries, delete the latest try through `DELETE /api/cases/:id/tries/:n`, then reload `/case/:id`. Confirm the remaining try boots and rerunning searches saves a score. Deleting the only remaining try must return 400 and leave the case usable.
   - [ ] Switch try via "revert to last try" or a Settings-tab save that changes the selected try — confirm this also does a full navigation to the new try's URL.
   - [ ] A logged-in user with zero cases hitting bare `/case` sees the "You don't have any Cases created in Quepid" flash instead of a blank or broken page.

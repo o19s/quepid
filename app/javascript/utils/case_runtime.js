@@ -79,6 +79,9 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
 
   return {
     read,
+    initialize(data) {
+      return this.select(parseCase(data))
+    },
     async load(caseNo) {
       return parseCase(await read(caseNo))
     },

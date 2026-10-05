@@ -30,8 +30,14 @@ capabilities from explicit dependencies. `utils/core_capability_access.js` and
 `utils/core_capabilities_runtime.js` expose the complete groups to controllers;
 bootstrap loads case data without installing methods into a shared registry.
 
-`controllers/core_bootstrap_controller.js` loads the user, case and selected try,
-then starts searching. The live-query owner returns its query capabilities,
+`controllers/core_bootstrap_controller.js` initializes the user and selected case
+from the page's `data-core-bootstrap-initial-value`, selects the requested try,
+then loads queries/scorers and starts searching. `core/_bootstrap.json.jbuilder`
+reuses API serializers, retaining all tries for tuning/history while excluding
+graph scores and duplicate endpoint objects. The attribute is HTML-escaped and
+the authorized page response is private with `no-store`, because try settings
+include endpoint credentials. Later fresh case/user reads still use JSON APIs.
+The live-query owner returns its query capabilities,
 commands, lifecycle operations and targeted-search adapter. `QueryCollectionStore`
 retains the live Query objects and owns display order, expansion and rated-only
 preferences. Its snapshots are derived on read; `QueryDocumentsStore` retains

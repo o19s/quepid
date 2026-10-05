@@ -8,6 +8,20 @@ describe("user runtime", () => {
     vi.unstubAllGlobals()
   })
 
+  it("initializes page data without a request and retains fresh API reads", async () => {
+    const request = vi.fn().mockResolvedValue(response({ id: 7, default_scorer_id: 4 }))
+    vi.stubGlobal("fetch", request)
+    const runtime = createUserRuntime()
+
+    const initial = runtime.initialize({ id: 7, default_scorer_id: 3, completed_case_wizard: false })
+
+    expect(initial.defaultScorerId).toBe(3)
+    expect(initial.completedCaseWizard).toBe(false)
+    expect(runtime.current()).toBe(initial)
+    expect(request).not.toHaveBeenCalled()
+    expect((await runtime.loadCurrent()).defaultScorerId).toBe(4)
+  })
+
   it("loads and normalizes the current user", async () => {
     const request = vi.fn().mockResolvedValue(response({
       id: 7,

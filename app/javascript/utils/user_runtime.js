@@ -18,6 +18,11 @@ export function createUserRuntime() {
       return currentUser
     },
 
+    initialize(data) {
+      currentUser = normalizeUser(data)
+      return currentUser
+    },
+
     loadCurrent() {
       return getJson("api/users/current").then((data) => {
         currentUser = normalizeUser(data)

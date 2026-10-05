@@ -11,6 +11,7 @@ export default class extends Controller {
   static values = {
     caseNo: Number,
     tryNo: Number,
+    initial: Object,
     communalScorersOnly: String,
     queryListSortable: String
   }
@@ -37,7 +38,7 @@ export default class extends Controller {
       configuration.setQueryListSortable(this.queryListSortableValue)
       configuration.setCaseNo(caseNo)
       configuration.setTryNo(Number.isNaN(tryNo) ? null : tryNo)
-      await user.loadCurrent()
+      user.initialize(this.initialValue.user)
       const initialCaseNo = navigation.currentCaseNo()
 
       const caseChanged = () => !isSameId(initialCaseNo, caseNo)
@@ -58,46 +59,45 @@ export default class extends Controller {
       }
 
       runtime.queryCapabilities.resetSearchPromise()
-      await caseCapability.load(caseNo).then(async acase => {
-        if (acase === undefined) throw new Error(`Could not retrieve case ${caseNo}. Confirm that the case has been shared with you via a team you are a member of!`)
+      if (!isSameId(this.initialValue.case?.case_id, caseNo)) {
+        throw new Error("Initial workspace data does not match the selected case")
+      }
+      const acase = caseCapability.initialize(this.initialValue.case)
+      settings.setCaseTries(acase.tries)
+      if (Number.isNaN(tryNo)) tryNo = acase.lastTry
+      settings.setCurrentTry(tryNo)
 
-        caseCapability.select(acase)
-        settings.setCaseTries(acase.tries)
-        if (Number.isNaN(tryNo)) tryNo = acase.lastTry
-        settings.setCurrentTry(tryNo)
+      if (!settings.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
+      if (settings.editable().proxyRequests !== true && navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)) {
+        const currentSettings = settings.editable()
+        const message = `You have specified a search engine url that is on a different protocol ( <code>${navigation.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${navigation.createSearchEndpointLink(currentSettings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
+        throw new Error(`Blocked Request: mixed-content. ${message}`)
+      }
 
-        if (!settings.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
-        if (settings.editable().proxyRequests !== true && navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)) {
-          const currentSettings = settings.editable()
-          const message = `You have specified a search engine url that is on a different protocol ( <code>${navigation.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${navigation.createSearchEndpointLink(currentSettings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
-          throw new Error(`Blocked Request: mixed-content. ${message}`)
+      const newSettings = settings.editable()
+      if (caseChanged() || searchEngineChanged()) {
+        if (caseChanged()) {
+          comparisonStore.reset()
+          docCache.empty()
         }
+        comparisonStore.disable()
+        docCache.invalidate()
+      }
 
-        const newSettings = settings.editable()
-        if (caseChanged() || searchEngineChanged()) {
-          if (caseChanged()) {
-            comparisonStore.reset()
-            docCache.empty()
-          }
-          comparisonStore.disable()
-          docCache.invalidate()
-        }
-
-        await docCache.update(newSettings)
+      await docCache.update(newSettings)
       await runtime.queryCapabilities.changeSettings(caseNo, newSettings)
-        coreFlash.hide()
-        coreFlash.hide("search-error")
-        caseCapability.trackLastViewedAt(caseNo)
-        this.ready({ caseNo, tryNo })
+      coreFlash.hide()
+      coreFlash.hide("search-error")
+      caseCapability.trackLastViewedAt(caseNo)
+      this.ready({ caseNo, tryNo })
 
-        runtime.queryCommands.searchAll().then(
-          () => coreFlash.show("success", "All queries finished successfully!"),
-          error => {
-            coreFlash.show("error", "Some queries failed to resolve!")
-            coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")
-          }
-        )
-      })
+      runtime.queryCommands.searchAll().then(
+        () => coreFlash.show("success", "All queries finished successfully!"),
+        error => {
+          coreFlash.show("error", "Some queries failed to resolve!")
+          coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")
+        }
+      )
     } catch (error) {
       this.handleBootstrapError(error)
       this.fail(error)
@@ -108,8 +108,6 @@ export default class extends Controller {
     const message = error?.message || String(error)
     if (message.startsWith("Blocked Request")) {
         coreFlash.show("error", message, "search-error", { html: true })
-    } else if (message.startsWith("Could not retrieve case")) {
-        coreFlash.show("error", message, "search-error")
     } else if (message.startsWith("try number")) {
         coreFlash.show("error", `Could not load case ${this.caseNoValue} due to ${message}`, "search-error")
     } else if (message !== "No case selected") {

@@ -7,6 +7,8 @@ class CoreController < ApplicationController
   before_action :populate_from_params, except: :new
 
   def index
+    # The initial workspace data includes user-scoped endpoint credentials.
+    response.cache_control.replace(private: true, no_store: true)
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
   end
 
