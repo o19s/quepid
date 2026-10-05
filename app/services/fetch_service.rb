@@ -342,25 +342,19 @@ class FetchService
     response
   end
 
-  # Substitutes #$query## wherever it appears in a string value - not just when the whole
-  # value equals it, since some POST-body templates (e.g. Vespa's YQL: 'select * from movies
-  # where title contains "#$query##"') embed the placeholder inside a longer string rather
-  # than using it as a standalone value like ES's {"query": "#$query##"} does. The block form
-  # of gsub (not a plain replacement string) avoids Ruby treating a literal "\1"-style
-  # sequence in query_text as a backreference.
-  def replace_values data, query_text
-    if data.is_a?(Hash)
-      data.each do |key, value|
-        if value.is_a?(String)
-          data[key] = value.gsub('#$query##') { query_text }
-        elsif value.is_a?(Hash) || value.is_a?(Array)
-          replace_values(value, query_text)
-        end
-      end
-    elsif data.is_a?(Array)
-      data.each { |item| replace_values(item, query_text) }
-    end
-    data
+  # Fills the template's #$...## placeholders the way the browser does (QueryTemplate):
+  # #$query## anywhere in a string value -- some POST-body templates, e.g. Vespa's YQL
+  # 'select * from movies where title contains "#$query##"', embed it in a longer string --
+  # plus #$keywordN## and #$qOption.x## from the query's and try's options, so a template
+  # using the query's vector (#$qOption.query_vec##) works in background runs too.
+  # Replacements are literal text, never regex backreferences.
+  def replace_values data, query_text, q_option = {}
+    QueryTemplate.hydrate(data, QueryTemplate.parameters(query_text, q_option))
+  end
+
+  # What the browser passes as qOption: the try's options with the query's on top.
+  def q_option_for atry, query
+    atry.options.merge(query.options_hash)
   end
 
   # rubocop:disable Metrics/MethodLength
@@ -493,7 +487,7 @@ class FetchService
   end
 
   def execute_get_request endpoint, atry, query
-    params = build_get_params(atry.args, query)
+    params = build_get_params(atry.args, query, q_option_for(atry, query))
     params = add_engine_specific_params(endpoint, atry, params)
     @http_client.get(params: params)
   end
@@ -542,12 +536,15 @@ class FetchService
     add_elasticsearch_params(atry, params)
   end
 
-  def build_get_params args, query
+  # A query string has no arrays or objects, so a value filled in whole (say a vector)
+  # is printed the way the browser's URL building prints it.
+  def build_get_params args, query, q_option = {}
+    parameters = QueryTemplate.parameters(query.query_text, q_option)
     params = {}
     args.each do |key, values|
       values.each do |val|
-        processed_val = val.gsub('#$query##', query.query_text)
-        params[key] = processed_val
+        filled = QueryTemplate.hydrate(val, parameters)
+        params[key] = filled.is_a?(String) ? filled : QueryTemplate.js_string(filled)
       end
     end
     params
@@ -555,12 +552,11 @@ class FetchService
 
   def execute_body_request method, _endpoint, atry, query
     # need to deal with number_of_rows here
-    body = prepare_request_body(atry.args, query)
+    body = prepare_request_body(atry.args, query, q_option_for(atry, query))
     @http_client.public_send(method, body: body)
   end
 
-  def prepare_request_body args, query
-    processed_args = replace_values(args, query.query_text)
-    processed_args.to_json
+  def prepare_request_body args, query, q_option = {}
+    replace_values(args, query.query_text, q_option).to_json
   end
 end

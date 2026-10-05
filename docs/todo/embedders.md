@@ -1,6 +1,6 @@
 # Embedders (query vectorizing service) plan
 
-Proposed 2026-10-05. **Phases 1–3 are implemented** (branch `embedders`); phase 4 is not started. Phase 3 deviations from this plan are noted in its section.
+Proposed 2026-10-05. **Phases 1–4 are implemented** (branch `embedders`). Phase 3 deviations from this plan are noted in its section.
 
 An **embedder** is a team-shareable connection to an external API that turns text into a vector (OpenAI, Voyage, Ollama, any OpenAI-compatible server such as vLLM/TEI). A case can point at one embedder, the same way it points at a scorer; every query in that case is then vectorized and the vector is stored in `queries.options.query_vec`, where search templates can already reach it as `#$qOption.query_vec##`.
 
@@ -208,6 +208,8 @@ Because the book carries no vectors, a case created from a book starts without `
 Books have no embedder (see Phase 2). Vectorizing the book's query/doc pairs is out of scope unless something consumes those vectors.
 
 ## Phase 4 — Using the vector in search
+
+*Implemented:* `QueryTemplate` (a port of splainer-search's `queryTemplateSvc#hydrate`) fills every placeholder for `FetchService` -- `#$query##`, `#$keywordN##` and `#$qOption.x##` from the try's options merged with the query's, as the browser does. `test/fixtures/files/query_template_cases.json` is run through both the real splainer-search code (Vitest) and the Ruby port (Minitest), so they can't drift. User docs: `docs/vector_search.md`.
 
 - **Browser (splainer-search):** `queriesSvc.js` already merges `query.options` into `searcherOptions.qOption`, and `queryTemplateSvc` resolves `#$qOption.query_vec##`. In JSON bodies a value that is exactly `"#$qOption.query_vec##"` is replaced by the raw array, which is what ES/OpenSearch `knn.query_vector` needs. For Solr `{!knn f=vec topK=10}[#$qOption.query_vec##]` the array is stringified as comma-separated numbers, so the template supplies the brackets. Document both in the search endpoint help and add a Vitest/Karma check.
 - **Background evaluation — gap to close:** `FetchService#replace_values` and `#build_get_params` substitute only `#$query##`. Nightly runs and `RunCaseEvaluationJob` would send the literal placeholder. Extend them to resolve `#$qOption.<path>##` from the merged case/query options, with the same "whole-string placeholder → raw JSON value" rule as the JS. This is required for parity; without it vector cases score differently in the background than in the browser.

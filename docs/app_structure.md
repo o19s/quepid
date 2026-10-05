@@ -34,6 +34,8 @@ This is the basic structure of the app and should get you started.
 ## Long running/async processes
 We have a number of long running processes, like exporting/importing files, running a Case, or judging a Book with a LLM.  In all of these we use ActiveJob, which lets us run processes in the background.   The state is stored in the database via SolidQueue.   Websockets are used to communicate with the front end.
 
+Vectorising a case's queries is one of them: `VectorizeCaseQueriesJob` uses `QueryVectorizer` to call the case's `Embedder` through one of the `app/services/embedder_adapters/` (one per API dialect, chosen by `EmbedderProvider`), and `QueryVectorStatus` decides which queries need it. The core case page has no ActionCable, so it polls `api/cases/:case_id/embedders` for progress instead of using websockets. Background evaluation (`FetchService`) fills query templates with `QueryTemplate`, the Ruby port of the browser's placeholder rules. See `docs/vector_search.md`.
+
 ## HTTPS / HTTP
 
 Quepid runs on HTTPS where possible, however interacting via JSONP with Solr means that if Solr is under HTTP, then the Quepid page needs to be under HTTP as well.   We configure `ssl_options` to ensure that Quepid is under HTTPS for all pages except the main `/` or `CoreController` page, which is HTTP.
