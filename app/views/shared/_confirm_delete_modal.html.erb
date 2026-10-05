@@ -1,0 +1,19 @@
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true"
+     data-controller="confirm-delete-dialog"
+     data-action="show.bs.modal->confirm-delete-dialog#transition shown.bs.modal->confirm-delete-dialog#transition hide.bs.modal->confirm-delete-dialog#transition hidden.bs.modal->confirm-delete-dialog#transition hidden.bs.modal->confirm-delete-dialog#clear turbo:before-cache@document->confirm-delete-dialog#clear">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-delete-message" data-confirm-delete-dialog-target="message"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger confirm-delete-confirm" data-action="confirm-delete-dialog#confirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>

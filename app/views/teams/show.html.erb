@@ -176,6 +176,7 @@
                         title="Remove member"
                         aria-label="Remove member"
                         data-controller="confirm-delete"
+                        data-confirm-delete-confirm-delete-dialog-outlet="#confirmDeleteModal"
                         data-action="click->confirm-delete#open"
                         data-confirm-delete-url-value="<%= member_team_path(@team, member_id: member.id) %>"
                         data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"

@@ -196,10 +196,10 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/utils/csv.js", "test/javascript/controllers/import_snapshot_controller.test.js", "test/javascript/utils/csv.test.js", "app/views/shared/_import_snapshot_modal.html.erb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/snapshot_import.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-10-04T16:22:30Z
+        last_run: 2026-10-05T22:25:20Z
         result: pass
-        notes: "Covered live on /cases: with Archived checked, scratch case 330 shows a green 'Unarchive case' icon; 'Unarchive ...?' Confirm flashes 'Case ... unarchived.' (archived=false); archiving scratch case 328 from its row ('Archive ...?' Confirm) flashes 'Case ... archived.' and removes it from the active list (archived=true, owner 3). Not covered live: archiving a team-only case to observe ownership transfer, stale-id 'Case not found.'"
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
+        notes: "Representative MCP sample: archive prompt/cancel, confirmed archive and unarchive of case 260; inspected matching before/after viewport pairs in .playwright-mcp/best-practices. Case restored to active. Team buttons and full management sweep deferred."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb"]
       "3.6":
         title: "Share a case from the list"
         last_run: 2026-10-04T16:18:10Z
@@ -650,10 +650,10 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb"]
       "10.5":
         title: "Combine (merge) books"
-        last_run: 2026-10-01T01:57:04Z
-        result: pass
-        notes: "Covered live: Settings lists the other books with rated-pair counts and disables the 0-rated book; picking a book with a different scale (0-3 vs 0-1) is refused with an alert ('One of the books chosen doesn't have a scale matching [0, 1]' - it does not name the book as the script says); merging an imported book into an empty one gave 'Combined 8 query/doc pairs.' with 14 judgements carried over. Not covered: averaging across users beyond a spot check."
-        paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb"]
+        last_run: 2026-10-05T22:26:10Z
+        result: pass_with_fixes
+        notes: "Representative MCP sample: scale mismatch leaves target empty; successful merge persists one pair and judgement. Inspected matching viewport pairs in .playwright-mcp/best-practices; disposable books removed. Missing-source browser request returns 404 instead of the original 500 (Turbo retains Settings); inaccessible-source rejection and atomic rollback covered by Rails tests; multi-source averaging deferred live. Corrected unsupported mismatch-copy expectation: pre-Angular-removal b2478bd7 books_controller.rb:242-244 already states the target scale, not a source name (historical source inspection, not live replay)."
+        paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/services/book_combiner.rb", "app/models/book.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/views/books/edit.html.erb"]
       "10.6a":
         title: "Assign anonymous judgements/ratings to a user"
         last_run: 2026-10-01T01:57:04Z
@@ -840,10 +840,10 @@ parts:
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb", "app/views/admin/users/index.csv.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.4":
         title: "User show page & Pulse activity"
-        last_run: 2026-09-25T15:56:27Z
+        last_run: 2026-10-05T22:23:35Z
         result: pass
-        notes: "Re-verified via Playwright MCP: Pulse section and all 6 stat headings (Cases viewed/scored/created, Queries created, Books created, Judgements created) present; Lock/Unlock button also visible here (see 14.5)."
-        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb", "app/controllers/admin/users/pulses_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
+        notes: "Representative MCP sample: six Pulse charts render; all six Vega views finalize on Turbo navigation to Users and render again on Back, with no page errors. Inspected matching visible-chart viewport pair in .playwright-mcp/best-practices. Tooltip interactions and pending-invite state deferred live; late fetch/embed cleanup covered by Vitest."
+        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb", "app/controllers/admin/users/pulses_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb", "app/javascript/controllers/user_activity_controller.js"]
       "14.5":
         title: "Lock / unlock a user"
         last_run: 2026-09-15T18:43:00Z
@@ -942,10 +942,10 @@ parts:
 
       "15.8":
         title: "Turbo Drive navigation and lifecycle"
-        last_run: 2026-10-05T15:09:25Z
+        last_run: 2026-10-05T22:23:35Z
         result: pass_with_fixes
-        notes: "Representative MCP sample: management navigation/history, team validation 422 and create 303 with retained JS environment, editor value/one instance on Back/Forward, archive and score deletion cancellation, score selection, AI provider and structured/JSON tabs, and judging typing exclusion/shortcut with intercepted POST (no judgement persisted). Case 219 searches complete and analytics 6 chart renders across fresh-document boundaries; management Drive resumes on return. Inspected before/after screenshots under .playwright-mcp/turbo-drive; judging selects random documents, so copy differs. HTTPS nginx sample posts and redirects on HTTPS with retained Turbo session; temporary teams deleted. Deferred: exhaustive management/admin CRUD, persisted judging, consent with fresh cookies, and deployment-specific TLS/JSONP endpoints."
-        paths: ["app/javascript/application_modern.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/page_cache_controller.js", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/consent_toast_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/score_selection_controller.js", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/kraken_controller.js", "app/javascript/modules/editor.js", "app/helpers/application_helper.rb", "app/controllers/teams_controller.rb", "app/controllers/application_controller.rb", "app/responders/application_responder.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/judgements/_form.html.erb", "app/views/scores/index.html.erb", "app/views/ai_judges/_form.html.erb", "test/playwright/turbo_drive.spec.ts"]
+        notes: "Focused MCP lifecycle sample: navigate during confirmation opening, return on Back and reopen; one modal/backdrop and no page errors after transition-safe disposal. Six Pulse views finalize on navigation and render on Back. Case archive/cancel/unarchive screenshots inspected in .playwright-mcp/best-practices. Other editor, judging, HTTPS and management CRUD flows deferred this sample; prior broader evidence remains in .playwright-mcp/turbo-drive."
+        paths: ["app/javascript/application_modern.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/page_cache_controller.js", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/consent_toast_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/score_selection_controller.js", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/kraken_controller.js", "app/javascript/modules/editor.js", "app/helpers/application_helper.rb", "app/controllers/teams_controller.rb", "app/controllers/application_controller.rb", "app/responders/application_responder.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/judgements/_form.html.erb", "app/views/scores/index.html.erb", "app/views/ai_judges/_form.html.erb", "test/playwright/turbo_drive.spec.ts", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb", "app/javascript/controllers/user_activity_controller.js"]
 
   "16":
     file: 16-cross-cutting-bs5-responsive-and-accessibility.md

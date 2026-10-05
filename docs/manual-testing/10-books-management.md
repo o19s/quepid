@@ -64,8 +64,10 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   2. Select one or more source books that have rated pairs (books with 0 rated pairs should be disabled/unselectable), click **Merge these Books into this Book**.
 - **Expected:** Notice "Combined N query/doc pairs." Query/doc pairs and averaged ratings (averaged per-user across the two books) appear in the target book.
 - **Edge cases:**
-  - [ ] Choose a source book whose scale doesn't match the target's — expect an alert naming the mismatched book, and no merge performed.
+  - [ ] Choose a source book whose scale doesn't match the target's — expect an alert stating the target scale, and no merge performed.
   - [ ] Confirm a book with 0 rated pairs truly can't be selected via the UI (disabled checkbox), not just discouraged.
+  - [ ] Submit an inaccessible or missing source id — expect a scoped 404 and no pairs or judgements merged, including from other selected sources.
+  - [ ] Force a pair, judgement or final book validation failure — expect an error alert and all merge writes rolled back; no merge update jobs should be enqueued.
 
 ### 10.6a Assign anonymous judgements/ratings to a user
 

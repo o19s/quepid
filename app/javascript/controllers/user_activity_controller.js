@@ -13,7 +13,15 @@ export default class UserActivityController extends Controller {
     this.initializeHeatmap()
   }
 
+  disconnect() {
+    this.load = null
+    this.view?.finalize()
+    this.view = null
+  }
+
   async initializeHeatmap() {
+    const load = {}
+    this.load = load
     // Calculate date range (last 12 months)
     const now = new Date()
     const tomorrow = new Date(now)
@@ -21,6 +29,7 @@ export default class UserActivityController extends Controller {
     const startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1)
 
     const data = await this.fetchData(startDate, tomorrow)
+    if (this.load !== load) return
     if (data === null) {
       this.showLoadError()
       return
@@ -28,7 +37,9 @@ export default class UserActivityController extends Controller {
     const filledData = this.fillDateRange(startDate, tomorrow, data)
 
     try {
-      await vegaEmbed(this.element, this.buildSpec(filledData), { actions: false, renderer: 'svg' })
+      const { view } = await vegaEmbed(this.element, this.buildSpec(filledData), { actions: false, renderer: 'svg' })
+      if (this.load === load) this.view = view
+      else view?.finalize()
     } catch (error) {
       console.error('Error rendering activity heatmap:', error)
     }

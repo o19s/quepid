@@ -303,6 +303,34 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
   end
 
+  describe 'combining books' do
+    test 'combine rejects an inaccessible source before merging accessible ones' do
+      login_user_for_integration_test user
+      inaccessible = Book.create!(name: 'Private', scale: book.scale)
+
+      assert_no_enqueued_jobs only: [ UpdateCaseJob, UpdateCaseRatingsJob ] do
+        assert_no_difference [ 'QueryDocPair.count', 'Judgement.count' ] do
+          patch combine_book_path(book), params: { book_ids: { james_bond_movies.id.to_s => '1', inaccessible.id.to_s => '1' } }
+        end
+      end
+      assert_response :not_found
+    end
+
+    test 'combine reports validation failure and does not enqueue the final update' do
+      login_user_for_integration_test user
+      invalid = james_bond_movies.query_doc_pairs.create!(query_text: 'Later invalid pair', doc_id: 'invalid')
+      invalid.update_columns(query_text: '')
+
+      assert_no_enqueued_jobs only: [ UpdateCaseJob, UpdateCaseRatingsJob ] do
+        assert_no_difference [ 'QueryDocPair.count', 'Judgement.count' ] do
+          patch combine_book_path(book), params: { book_ids: { james_bond_movies.id.to_s => '1' } }
+        end
+      end
+      assert_redirected_to book_path(book)
+      assert_match(/Could not merge due to errors:.*Query text/, flash[:alert])
+    end
+  end
+
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
   let(:single_rater_book2) { books(:book_of_comedy_films) }
 

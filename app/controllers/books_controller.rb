@@ -231,68 +231,26 @@ class BooksController < ApplicationController
     redirect_to books_path(archived: true), notice: "Book '#{@book.name}' has been unarchived.", status: :see_other
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/CyclomaticComplexity
-  # rubocop:disable Metrics/PerceivedComplexity
   def combine
     book_ids = params[:book_ids].select { |_key, value| '1' == value }.keys.map(&:to_i)
 
-    query_doc_pair_count = 0
+    books_by_id = current_user.books_involved_with.where(id: book_ids).index_by(&:id)
+    raise ActiveRecord::RecordNotFound unless books_by_id.size == book_ids.uniq.size
 
-    books = []
-    book_ids.each do |book_id|
-      book_to_merge = current_user.books_involved_with.where(id: book_id).first
-      books << book_to_merge
-    end
+    # The order matters when several source books contain ratings for the same user.
+    combiner = BookCombiner.new(@book, book_ids.map { |id| books_by_id.fetch(id) })
+    query_doc_pair_count = combiner.combine
 
-    if books.any? { |b| b.scale != @book.scale }
-      redirect_to book_path(@book),
-                  status: :see_other,
-                  :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}" and return
-    end
-
-    books.each do |book_to_merge|
-      book_to_merge.query_doc_pairs.each do |qdp|
-        query_doc_pair = @book.find_or_create_query_doc_pair query_text: qdp.query_text,
-                                                             doc_id:     qdp.doc_id
-
-        # copy over the document fields if our source is newer than our target.
-        # if qdp.updated_at > query_doc_pair.updated_at or query_doc_pair.document_fields.blank?
-        query_doc_pair.document_fields = qdp.document_fields
-        # end
-
-        # copy over the position if our source has a position and our target doesn't.
-        query_doc_pair.position = qdp.position if query_doc_pair.position.nil? && !qdp.position.nil?
-
-        qdp.judgements.includes([ :user ]).rateable.each do |j|
-          judgement = query_doc_pair.judgements.find_or_initialize_by(user: j.user)
-
-          judgement.rating = if judgement.rating
-                               (judgement.rating + j.rating) / 2
-                             else
-                               j.rating
-                             end
-
-          judgement.rating = judgement.rating.round unless @book.support_implicit_judgements
-
-          judgement.save
-        end
-        query_doc_pair_count += 1
-
-        # This .save seems required though I don't know why.'
-        query_doc_pair.save
-      end
-    end
-
-    if @book.save
-      UpdateCaseJob.perform_later @book
-      redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs.", status: :see_other
-    else
-      redirect_to book_path(@book),
-                  status: :see_other,
-                  :alert => "Could not merge due to errors: #{@book.errors.full_messages.to_sentence}. #{query_doc_pair_count} query/doc pairs."
-    end
+    UpdateCaseJob.perform_later @book
+    redirect_to book_path(@book), :notice => "Combined #{query_doc_pair_count} query/doc pairs.", status: :see_other
+  rescue BookCombiner::ScaleMismatch
+    redirect_to book_path(@book),
+                status: :see_other,
+                :alert => "One of the books chosen doesn't have a scale matching #{@book.scale}"
+  rescue ActiveRecord::RecordInvalid => e
+    redirect_to book_path(@book),
+                status: :see_other,
+                :alert => "Could not merge due to errors: #{e.record.errors.full_messages.to_sentence}. #{combiner.query_doc_pair_count} query/doc pairs."
   end
 
   def run_judge_judy
@@ -305,10 +263,6 @@ class BooksController < ApplicationController
     RunJudgeJudyJob.perform_later(@book, ai_judge, number_of_pairs)
     redirect_to book_path(@book), flash: { kraken_unleashed: judge_all }, :notice => "AI Judge #{ai_judge.name} will start evaluating query/doc pairs.", status: :see_other
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-  # rubocop:enable Metrics/PerceivedComplexity
 
   def assign_anonymous
     # assignee = @book.team.members.find_by(id: params[:assignee_id])

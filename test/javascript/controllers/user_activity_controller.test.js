@@ -114,6 +114,52 @@ describe("UserActivityController", () => {
   })
 
   describe("initializeHeatmap", () => {
+    it("finalizes the Vega view on disconnect", async () => {
+      const view = { finalize: vi.fn() }
+      vi.stubGlobal("vegaEmbed", vi.fn().mockResolvedValue({ view }))
+      const controller = buildController()
+      controller.fetchData = vi.fn().mockResolvedValue([])
+      await controller.initializeHeatmap()
+      controller.disconnect()
+      controller.disconnect()
+      expect(view.finalize).toHaveBeenCalledOnce()
+    })
+
+    it("does not render a fetch that finishes after disconnect", async () => {
+      let finish
+      const controller = buildController()
+      controller.fetchData = () => new Promise(resolve => { finish = resolve })
+      const embed = vi.fn()
+      vi.stubGlobal("vegaEmbed", embed)
+      const pending = controller.initializeHeatmap()
+      controller.disconnect()
+      finish(null)
+      await pending
+      expect(embed).not.toHaveBeenCalled()
+      expect(controller.element.textContent).toBe("")
+    })
+
+    it("finalizes a late Vega result without replacing the reconnected view", async () => {
+      let finish
+      const oldView = { finalize: vi.fn() }
+      const newView = { finalize: vi.fn() }
+      const embed = vi.fn()
+        .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+        .mockResolvedValueOnce({ view: newView })
+      vi.stubGlobal("vegaEmbed", embed)
+      const controller = buildController()
+      controller.fetchData = vi.fn().mockResolvedValue([])
+      const pending = controller.initializeHeatmap()
+      await Promise.resolve()
+      controller.disconnect()
+      await controller.initializeHeatmap()
+      finish({ view: oldView })
+      await pending
+      expect(oldView.finalize).toHaveBeenCalledOnce()
+      expect(newView.finalize).not.toHaveBeenCalled()
+      expect(controller.view).toBe(newView)
+    })
+
     it("renders the heatmap with vegaEmbed into the element", async () => {
       const vegaEmbed = vi.fn().mockResolvedValue({})
       vi.stubGlobal("vegaEmbed", vegaEmbed)
