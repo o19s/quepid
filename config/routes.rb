@@ -94,6 +94,18 @@ Rails.application.routes.draw do
 
   resources :ai_judges
 
+  # embedder_id is a real id or the literal 'new', like ai_judge_id above: a test
+  # runs the form's current values in memory and needs no saved embedder.
+  scope 'embedders' do
+    post ':embedder_id/test', to: 'embedders/tests#create', as: :embedder_test
+  end
+
+  resources :embedders do
+    member do
+      get 'clone'
+    end
+  end
+
   # Cloning starts from a specific team's context (the team page's "Clone"
   # action) and posts the new judge back through that same team, so it's
   # created with that team pre-selected/shared rather than owner-only.
@@ -315,6 +327,7 @@ Rails.application.routes.draw do
       end
 
       resources :search_endpoints, except: [ :new, :edit ]
+      resources :embedders, except: [ :new, :edit ]
       resources :mapper_based_search_engines, only: [ :index ]
       resources :scorers, except: [ :new, :edit ]
 
@@ -326,6 +339,7 @@ Rails.application.routes.draw do
         resources :cases,   only: [ :index, :create, :destroy ], controller: :team_cases
         resources :books,   only: [ :index ], controller: :team_books
         resources :search_endpoints, only: [ :index ]
+        resources :embedders, only: [ :index ]
       end
 
       # Imports

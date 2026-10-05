@@ -1,0 +1,155 @@
+<%# locals: (embedder:, form:) %>
+<%# A saved embedder (or the one being cloned) is tested with its saved key when the key
+    field is left blank -- see Embedders::TestsController. %>
+<% key_source = embedder.persisted? ? embedder : @clone_of %>
+<% provider = embedder.provider_definition %>
+<div class="card"
+     data-controller="embedder-form"
+     data-embedder-form-presets-value="<%= EmbedderProvider.presets.to_json %>"
+     data-embedder-form-test-url-value="<%= embedder_test_path(key_source&.id || 'new') %>">
+  <div class="card-header">
+    <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder</h5>
+  </div>
+  <div class="card-body">
+    <% if embedder.errors.any? %>
+      <div class="alert alert-danger">
+        <p class="mb-1"><%= pluralize(embedder.errors.count, 'error') %> prohibited this embedder from being saved:</p>
+        <ul class="mb-0">
+          <% embedder.errors.each do |error| %>
+            <li><%= error.full_message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <%= hidden_field_tag :clone_of, @clone_of.id if @clone_of %>
+
+    <div class="row">
+      <div class="col-md-7">
+        <div class="row mb-3">
+          <%= form.label :name, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.text_field :name, class: 'form-control' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :provider, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.select :provider, EmbedderProvider.select_options, {},
+                  class: 'form-select',
+                  data: { embedder_form_target: 'provider', action: 'change->embedder-form#changeProvider' } %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :service_url, 'URL', class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.url_field :service_url, class: 'form-control', data: { embedder_form_target: 'serviceUrl' } %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :model, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.text_field :model, class: 'form-control', data: { embedder_form_target: 'model' } %>
+          </div>
+        </div>
+
+        <div class="row mb-3" data-embedder-form-target="apiKeyRow">
+          <%= form.label :api_key, 'API key', class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%# Never rendered back: blank keeps the saved key. %>
+            <%= form.password_field :api_key, value: nil, autocomplete: 'off', class: 'form-control',
+                  placeholder: key_source&.api_key.present? ? 'Saved — leave blank to keep it' : '' %>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :truncation, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.select :truncation,
+                  [ [ 'None (full vector)', 'none' ],
+                    [ 'Native (provider returns N dimensions)', 'native' ],
+                    [ 'Client-side (keep first N, re-normalize)', 'client' ] ], {},
+                  class: 'form-select',
+                  data: { embedder_form_target: 'truncation', action: 'change->embedder-form#refresh' } %>
+            <div class="form-text" data-embedder-form-target="truncationHint"></div>
+          </div>
+        </div>
+
+        <div class="row mb-3" data-embedder-form-target="dimensionsRow">
+          <%= form.label :dimensions, class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-9">
+            <%= form.number_field :dimensions, min: 1, class: 'form-control', data: { embedder_form_target: 'dimensions' } %>
+            <div class="form-text" data-embedder-form-target="dimensionsHint"></div>
+          </div>
+        </div>
+
+        <div data-embedder-form-target="instructionFields">
+          <div class="row mb-3">
+            <%= form.label :instruction, class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-9">
+              <%= form.textarea :instruction, rows: 2, class: 'form-control',
+                    placeholder: 'Given a web search query, retrieve relevant passages that answer the query' %>
+              <div class="form-text">
+                For instruction-following models such as Qwen3-Embedding. Leave blank to send the query as is.
+              </div>
+            </div>
+          </div>
+
+          <div class="row mb-3">
+            <%= form.label :input_template, class: 'col-sm-3 col-form-label' %>
+            <div class="col-sm-9">
+              <%= form.textarea :input_template, rows: 2, class: 'form-control font-monospace',
+                    placeholder: EmbedderProvider::DEFAULT_INPUT_TEMPLATE %>
+              <div class="form-text">
+                What is actually sent: <code>{query}</code> is replaced by the query text and
+                <code>{instruction}</code> by the instruction above. Blank uses the placeholder when an
+                instruction is set.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <%= form.label :timeout, 'Timeout (s)', class: 'col-sm-3 col-form-label' %>
+          <div class="col-sm-3">
+            <%= form.number_field :timeout, min: 1, max: 600, class: 'form-control' %>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <%= render 'shared/team_picker', form: form, label: 'Teams to Share this Embedder With',
+                help_text: "Embedders are usable by anyone on a team they're shared with, and calls are made with this embedder's key. Leave unchecked to keep it private to you." %>
+        </div>
+      </div>
+
+      <div class="col-md-5">
+        <div class="fw-semibold mb-2">Provider notes</div>
+        <div class="alert alert-info small" data-embedder-form-target="help"><%== provider&.help_html %></div>
+      </div>
+    </div>
+
+    <hr>
+
+    <h5>Test</h5>
+    <p class="text-muted small">Embeds a sample query with the settings above, saved or not.</p>
+    <div class="row g-2 align-items-center mb-3">
+      <div class="col-sm-6">
+        <input type="text" class="form-control" value="star wars" aria-label="Sample query"
+               data-embedder-form-target="testText">
+      </div>
+      <div class="col-auto">
+        <button type="button" class="btn btn-primary" data-embedder-form-target="testButton"
+                data-action="click->embedder-form#test">Test</button>
+      </div>
+    </div>
+    <div data-embedder-form-target="testResult" aria-live="polite"></div>
+  </div>
+
+  <div class="card-footer">
+    <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
+    <%= link_to 'Back to Embedders', embedders_path, class: 'btn btn-outline-secondary float-end' %>
+  </div>
+</div>

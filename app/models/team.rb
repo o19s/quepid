@@ -36,6 +36,9 @@ class Team < ApplicationRecord
   has_and_belongs_to_many :books,
                           join_table: 'teams_books'
 
+  has_and_belongs_to_many :embedders,
+                          join_table: 'teams_embedders'
+
   # rubocop:enable Rails/HasAndBelongsToMany
 
   # Validations

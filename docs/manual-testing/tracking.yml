@@ -811,9 +811,9 @@ parts:
     scenarios:
       "15.1":
         title: "Left icon sidebar"
-        last_run: 2026-09-27T23:02:00Z
-        result: pass_with_fixes
-        notes: "Re-verified via Playwright MCP this pass on the Home dashboard, and found/fixed a new bug in two tries: on any short-content page, the sidebar stopped at the bottom of the main content instead of reaching the footer, and the avatar/profile-dropdown (pushed to the bottom of the sidebar's own flex column via mb-auto on the nav <ul>) sat right after the last icon with a large dead gap below it down to the footer. First attempt (flex-grow-1 on .container-fluid + h-100 on .row) got the sidebar's background to visually reach the footer, but the avatar stayed stuck above a gap — h-100 (a percentage height) doesn't reliably resolve against a parent whose height only comes from flex-grow, so .row silently kept its content-driven height and mb-auto had no extra space to distribute. Fixed by replacing the percentage-height with a pure flex-grow chain: .container-fluid is now itself `d-flex flex-column`, and .row is `flex-grow-1` (not h-100) — matching the pattern already documented and used in admin.html.erb for the identical reason. Verified via getBoundingClientRect that the avatar dropdown's bottom edge exactly equals the footer's top edge (0px gap) both on the short Home dashboard and after injecting 2000px of filler into main (the row grows to fit taller content exactly as before, no clipping/overlap). Did not re-test tooltip hover behavior or active-state highlighting this pass; prior pass (2026-09-15) fixed sidebar icon tooltips never appearing on hover (dead BS5 tooltip-init script in _sidebar.html.erb, replaced with the existing bs-tooltip Stimulus controller) and confirmed active-state highlighting/click-navigation for all 7 icons — neither touched by this pass's change."
+        last_run: 2026-10-05T18:45:00Z
+        result: pass
+        notes: "Re-checked after adding the Embedders entry (custom [::] SVG icon, between AI Judges and Scorers): screenshots show it highlighted white on blue on /embedders and cornflower blue like its neighbours on /search_endpoints, and the link navigates to /embedders. Sidebar height/avatar placement looked unchanged in the screenshots but was not measured; tooltip hover not re-tested."
         paths: ["app/views/layouts/_sidebar.html.erb", "app/views/layouts/application.html.erb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
@@ -885,3 +885,18 @@ parts:
         result: pass
         notes: "New scenario, verified via Playwright MCP against case 10 (single query, so naturally short content): before the fix, footer.js's #footer-copy clone sat in .pane_main's normal scroll flow, so the footer landed wherever the query list ended rather than at the viewport bottom. Fixed by pinning #footer-copy with position:fixed;bottom:0 (core-additions.css) and having footer.js set .pane_main's padding-bottom to the clone's height (recalculated on resize too). Verified flush-to-bottom at 1400x900 and at a squeezed 1400x400 viewport, and verified via injected filler content that padding-bottom keeps scrolled content from being hidden behind the fixed footer. Did not test against a real case with enough queries to naturally overflow .pane_main (none existed in this environment's seed data) — used synthetic DOM content instead."
         paths: ["app/assets/javascripts/footer.js", "app/assets/stylesheets/core-additions.css", "app/views/layouts/core.html.erb"]
+  "17":
+    file: 17-embedders.md
+    scenarios:
+      "17.1":
+        title: "Create an embedder and test it"
+        last_run: 2026-10-05T18:40:00Z
+        result: pass
+        notes: "New scenario, driven with a Playwright script against localhost:3000. Checked: OpenAI shows key and hides instruction fields; switching to Ollama filled the configured URL, hid the key and showed Instruction/Input template; Ollama all-minilm with native 128 dims and an instruction tested live (128 dimensions, instruction template in the sent text) and saved. Voyage with 300 dims showed the allowed-sizes error. Not covered: live OpenAI/Voyage/OpenAI-compatible calls (no keys/servers here; covered by WebMock tests), client-side truncation live, a failing provider live."
+        paths: ["app/controllers/embedders_controller.rb", "app/controllers/embedders/tests_controller.rb", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
+      "17.2":
+        title: "Edit, clone, share and delete an embedder"
+        last_run: 2026-10-05T18:40:00Z
+        result: pass
+        notes: "Partially driven: re-ran Test on the saved embedder's edit page with a blank key field (worked), and the list page renders it with owner/teams/dimensions. Clone keeping the key, blank-key update, team sharing and delete are covered by controller tests but were not clicked through in the browser this pass."
+        paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb"]
