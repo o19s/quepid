@@ -1,3 +1,4 @@
+import { endpointSettings } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
@@ -292,20 +293,12 @@ export default class extends Controller {
   updateEndpoint(event) {
     const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.target.value))
     if (!endpoint) return
-    const customHeaders = endpoint.customHeaders && typeof endpoint.customHeaders === "object" ? JSON.stringify(endpoint.customHeaders, null, 2) : endpoint.customHeaders
-    const endpointSettings = {
-      searchEndpointId: endpoint.id,
-      searchEngine: endpoint.searchEngine,
-      searchUrl: endpoint.endpointUrl,
-      apiMethod: endpoint.apiMethod,
-      customHeaders,
-      proxyRequests: endpoint.proxyRequests,
-      basicAuthCredential: endpoint.basicAuthCredential,
-      mapperCode: endpoint.mapperCode,
+    const selectedEndpointSettings = {
+      ...endpointSettings(endpoint),
       mapperBasedSearchEngineId: endpoint.mapperBasedSearchEngineId
     }
-    Object.assign(this.settings, endpointSettings)
-    Object.assign(this.settings.selectedTry, { ...endpointSettings, endpointName: endpoint.name })
+    Object.assign(this.settings, selectedEndpointSettings)
+    Object.assign(this.settings.selectedTry, { ...selectedEndpointSettings, endpointName: endpoint.name })
     this.refresh()
   }
 

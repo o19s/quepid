@@ -386,6 +386,19 @@ describe("TuneRelevanceController", () => {
       expect(settings.selectedTry).toMatchObject({ searchEngine: "es", endpointName: "Prod", proxyRequests: true })
     })
 
+    it.each([undefined, null, ""])("copies absent endpoint method %s without wizard defaults", apiMethod => {
+      const { controller, settings } = mount()
+      controller.searchEndpoints = [{ id: 9, apiMethod, customHeaders: null, mapperBasedSearchEngineId: "vespa" }]
+      const queryParams = settings.selectedTry.queryParams
+      vi.spyOn(controller, "refresh").mockImplementation(() => {})
+      controller.updateEndpoint({ target: { value: "9" } })
+      expect(settings.apiMethod).toBe(apiMethod)
+      expect(settings.selectedTry.apiMethod).toBe(apiMethod)
+      expect(settings.selectedTry.customHeaders).toBeNull()
+      expect(settings.selectedTry.mapperBasedSearchEngineId).toBe("vespa")
+      expect(settings.selectedTry.queryParams).toBe(queryParams)
+    })
+
     it("ignores a selection that matches no endpoint", () => {
       const { controller, settings } = mount()
       controller.searchEndpoints = [endpoint]

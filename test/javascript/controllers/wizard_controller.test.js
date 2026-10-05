@@ -501,6 +501,15 @@ describe("WizardController", () => {
       expect(controller.settings.queryParams).toBe("q=#$query##")
     })
 
+    it.each([undefined, null, ""])("retains wizard defaults for absent endpoint method %s", apiMethod => {
+      const controller = mount({ step: STEPS.endpoint })
+      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", mapperBasedSearchEngineId: "vespa", apiMethod, customHeaders: null, testQuery: "q=#$query##" }]
+      controller.capability.settings.pick.mockReturnValue({ apiMethod: "POST", queryParams: "preset query", titleField: "title" })
+      controller.selectEndpoint({ target: { value: "4" } })
+      expect(controller.capability.settings.pick).toHaveBeenCalledWith("vespa", undefined)
+      expect(controller.settings).toMatchObject({ apiMethod: "POST", queryParams: "preset query", searchEnginePreset: "vespa", customHeaders: null, titleField: "title" })
+    })
+
     it("ignores an unknown endpoint id", () => {
       const controller = mount({ step: STEPS.endpoint })
       const before = controller.settings

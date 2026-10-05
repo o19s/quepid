@@ -66,6 +66,7 @@ export default defineConfig({
       { find: "utils/diff_results", replacement: path.resolve(repoRoot, "app/javascript/utils/diff_results.js") },
       { find: "utils/query_state", replacement: path.resolve(repoRoot, "app/javascript/utils/query_state.js") },
       { find: "utils/qgraph", replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js") },
+      { find: "utils/endpoint_settings", replacement: path.resolve(repoRoot, "app/javascript/utils/endpoint_settings.js") },
       { find: "utils/tune_relevance", replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js") },
       { find: "utils/core_capabilities_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capabilities_runtime.js") },
       { find: "utils/store_subscription", replacement: path.resolve(repoRoot, "app/javascript/utils/store_subscription.js") },

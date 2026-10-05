@@ -1,3 +1,4 @@
+import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
@@ -171,22 +172,13 @@ export default class extends Controller {
     if (!endpoint) return
     const searchEnginePreset = endpoint.mapperBasedSearchEngineId || endpoint.searchEngine
     const defaults = this.capability.settings.pick(searchEnginePreset, endpoint.endpointUrl)
-    const customHeaders = typeof endpoint.customHeaders === "object" && endpoint.customHeaders !== null
-      ? JSON.stringify(endpoint.customHeaders, null, 2)
-      : endpoint.customHeaders
     this.settings = {
       ...this.settings,
       ...defaults,
-      searchEndpointId: endpoint.id,
-      searchEngine: endpoint.searchEngine,
+      ...endpointSettings(endpoint),
       searchEnginePreset,
-      searchUrl: endpoint.endpointUrl,
       apiMethod: endpoint.apiMethod || defaults.apiMethod,
-      proxyRequests: endpoint.proxyRequests,
-      basicAuthCredential: endpoint.basicAuthCredential,
-      mapperCode: endpoint.mapperCode,
       testQuery: endpoint.testQuery,
-      customHeaders,
       queryParams: endpoint.searchEngine === "searchapi"
         ? defaults.queryParams || (endpoint.testQuery?.includes("#$query##") ? endpoint.testQuery : "")
         : defaults.queryParams || ""
@@ -446,7 +438,7 @@ export default class extends Controller {
     if (this.hasCustomHeadersTarget) {
       const customHeaders = this.settings?.customHeaders
       this.customHeadersTarget.value = customHeaders && customHeaders !== "null" && typeof customHeaders === "object"
-        ? JSON.stringify(this.settings.customHeaders, null, 2)
+        ? formatEndpointHeaders(customHeaders)
         : customHeaders === "null" ? "" : customHeaders || ""
     }
     if (this.hasProxyRequestsTarget) this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
