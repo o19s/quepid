@@ -1,6 +1,19 @@
 import { Controller } from "@hotwired/stimulus"
 
 /**
+ * Whether a stream would replace an element with one rendered earlier.
+ * @param {HTMLElement} stream the <turbo-stream> about to render
+ * @returns {boolean}
+ */
+function isStale(stream) {
+  const current = document.getElementById(stream.getAttribute("target"))
+  const incoming = stream.templateContent?.firstElementChild
+  const shown = Number(current?.dataset.renderedAt)
+  const arriving = Number(incoming?.dataset.renderedAt)
+  return Boolean(shown && arriving && arriving < shown)
+}
+
+/**
  * Drops a Turbo Stream "replace" that is older than what the page already
  * shows. Turbo renders each stream after the next repaint -- an animation
  * frame while the page is visible, an event-loop tick while it is hidden --
@@ -10,31 +23,29 @@ import { Controller } from "@hotwired/stimulus"
  * reordering happens in between.
  */
 export default class extends Controller {
+  /** Starts watching streams on the page. */
   connect() {
     this.guard = this.guard.bind(this)
     document.addEventListener("turbo:before-stream-render", this.guard)
   }
 
+  /** Stops watching. */
   disconnect() {
     document.removeEventListener("turbo:before-stream-render", this.guard)
   }
 
+  /**
+   * Wraps a replace's render so it checks staleness when Turbo renders it.
+   * @param {CustomEvent} event turbo:before-stream-render
+   */
   guard(event) {
     const stream = event.target
     if (stream.getAttribute("action") !== "replace") return
 
     const render = event.detail.render
     event.detail.render = async (streamElement) => {
-      if (this.stale(streamElement)) return
+      if (isStale(streamElement)) return
       await render(streamElement)
     }
-  }
-
-  stale(stream) {
-    const current = document.getElementById(stream.getAttribute("target"))
-    const incoming = stream.templateContent?.firstElementChild
-    const shown = Number(current?.dataset.renderedAt)
-    const arriving = Number(incoming?.dataset.renderedAt)
-    return Boolean(shown && arriving && arriving < shown)
   }
 }
