@@ -6,6 +6,7 @@ describe("QueryDocumentsStore", () => {
 
   beforeEach(() => {
     store = new QueryDocumentsStore()
+    for (const queryId of [1, 2, 4, 5, 8, 12]) store.collection.upsert({ queryId })
   })
 
   it("publishes plain snapshots for current and rated documents", () => {
@@ -112,11 +113,11 @@ describe("QueryDocumentsStore", () => {
 
   it.each([
     ["replaceQuery", (s) => s.replaceQuery(1, {})],
-    ["updateQueryState for a known query", (s) => { s.replaceQuery(1, {}); s.updateQueryState(1, { expanded: true }) }],
-    ["updateQueryState for a pending query", (s) => s.updateQueryState(5, { expanded: true })],
+    ["updateQueryState for a known query", (s) => { s.replaceQuery(1, {}); s.collection.setExpanded(1, true) }],
+    ["updateQueryState for a pending query", (s) => s.collection.setExpanded(5, true)],
     ["setCaseDiffs", (s) => s.setCaseDiffs([{ name: "A" }])],
-    ["setShowOnlyRated", (s) => s.setShowOnlyRated(true)],
-    ["collapseAll", (s) => s.collapseAll()]
+    ["setShowOnlyRated", (s) => s.collection.setShowOnlyRated(true)],
+    ["collapseAll", (s) => s.collection.collapseAll()]
   ])("notifies subscribers after %s", (_label, mutate) => {
     const changed = vi.fn()
     store.addEventListener("change", changed)
@@ -125,6 +126,35 @@ describe("QueryDocumentsStore", () => {
 
     expect(changed).toHaveBeenCalled()
     expect(changed.mock.calls.at(-1)[0].detail).toEqual(expect.objectContaining({ queries: expect.any(Object) }))
+  })
+
+  it.each([
+    ["upsert", s => s.collection.upsert({ queryId: "2", numFound: 9 })],
+    ["remove", s => s.collection.remove("2")],
+    ["setExpanded", s => s.collection.setExpanded("2", true)]
+  ])("scopes collection %s notifications to the affected query", (_label, mutate) => {
+    store.replaceQuery(1, { docs: [] })
+    store.replaceQuery(2, { docs: [] })
+    const changes = []
+    store.addEventListener("change", event => changes.push(event.detail))
+
+    mutate(store)
+
+    expect(changes).toHaveLength(1)
+    expect(changes[0]).toEqual(store.snapshot(2))
+  })
+
+  it.each([
+    ["rated-only", s => s.collection.setShowOnlyRated(true)],
+    ["collapse-all", s => s.collection.collapseAll()],
+    ["replace", s => s.collection.replace({ caseId: 1, queries: [{ queryId: 1 }] })]
+  ])("keeps %s notifications collection-wide", (_label, mutate) => {
+    const changed = vi.fn()
+    store.addEventListener("change", changed)
+
+    mutate(store)
+
+    expect(changed.mock.calls.at(-1)[0].detail.queryId).toBeNull()
   })
 
   it("publishes a reset event", () => {
@@ -187,7 +217,8 @@ describe("QueryDocumentsStore", () => {
 
   it("preserves display state when a search refreshes documents", () => {
     store.replaceQuery(8, { docs: [{ id: "first" }] })
-    store.updateQueryState(8, { expanded: true, resultsView: 2 })
+    store.collection.setExpanded(8, true)
+    store.updateQueryState(8, { resultsView: 2 })
 
     store.replaceQuery(8, { docs: [{ id: "second" }] })
 
@@ -195,7 +226,9 @@ describe("QueryDocumentsStore", () => {
   })
 
   it("preserves an early display-state update until documents arrive", () => {
-    store.updateQueryState(8, { expanded: true })
+    store.collection.remove(8)
+    store.collection.setExpanded(8, true)
+    store.collection.upsert({ queryId: 8 })
     store.replaceQuery(8, { docs: [{ id: "first" }] })
 
     expect(store.query(8).expanded).toBe(true)
@@ -205,7 +238,7 @@ describe("QueryDocumentsStore", () => {
     store.replaceQuery(1, { docs: [] })
     store.replaceQuery(2, { docs: [] })
 
-    store.setShowOnlyRated(true)
+    store.collection.setShowOnlyRated(true)
 
     expect(store.query(1).showOnlyRated).toBe(true)
     expect(store.query(2).showOnlyRated).toBe(true)
@@ -229,12 +262,55 @@ describe("QueryDocumentsStore", () => {
   })
 
   it("collapses every query", () => {
-    store.replaceQuery(1, { docs: [], expanded: true })
-    store.replaceQuery(2, { docs: [], expanded: true })
+    store.replaceQuery(1, { docs: [] })
+    store.collection.setExpanded(1, true)
+    store.replaceQuery(2, { docs: [] })
+    store.collection.setExpanded(2, true)
 
-    store.collapseAll()
+    store.collection.collapseAll()
 
     expect(store.query(1).expanded).toBe(false)
     expect(store.query(2).expanded).toBe(false)
   })
+  it("reads score and search transitions from the live query without another document publication", () => {
+    const query = {
+      queryId: 8,
+      numFound: 10,
+      errorText: "",
+      state: () => query.errorText ? "error" : "loaded",
+      currentScore: { score: 0, allRated: false, countMissingRatings: 2 }
+    }
+    store.collection.upsert(query)
+    store.replaceQuery(8, { docs: [{ id: "first" }] })
+    const before = store.query(8)
+    expect(before).toMatchObject({ numFound: 10, allRated: false, missingRatings: 2, queryState: "loaded" })
+
+    query.currentScore = { score: 1, allRated: true, countMissingRatings: 0 }
+    query.numFound = 12
+    store.collection.upsert(query)
+    expect(store.query(8)).toMatchObject({ numFound: 12, allRated: true, missingRatings: 0 })
+    expect(before.missingRatings).toBe(2)
+
+    query.errorText = "engine unavailable"
+    store.collection.upsert(query)
+    expect(store.query(8)).toMatchObject({ errorText: "engine unavailable", queryState: "error" })
+  })
+
+  it("keeps an early collapse authoritative when documents arrive and the query is republished", () => {
+    store.collection.setExpanded(8, true)
+    store.collection.collapseAll()
+    store.replaceQuery(8, { docs: [{ id: "first" }] })
+    store.collection.upsert({ queryId: 8 })
+    expect(store.query(8).expanded).toBe(false)
+
+    store.collection.setExpanded(8, true)
+    store.collection.remove(8)
+    expect(store.query(8)).toBeNull()
+    expect(store.snapshot().queries[8]).toBeUndefined()
+    store.collection.upsert({ queryId: 8 })
+    expect(store.query(8)).toBeNull()
+    store.replaceQuery(8)
+    expect(store.query(8).expanded).toBe(false)
+  })
+
 })

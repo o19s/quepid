@@ -34,21 +34,23 @@ export function createLiveQueryCollectionRuntime({
 
   function addQueriesFromResponse(data = {}, caseId) {
     const newQueries = []
+    const liveQueries = []
     if (Array.isArray(data.display_order)) {
       applyDisplayOrder(data.display_order)
     }
 
     ;(data.queries || []).forEach((queryWithRatings) => {
-      if (queryWithRatings.deleted === "true") return
+      if (queryWithRatings.deleted === "true" || queryWithRatings.deleted === true) return
 
-      const queryId = queryWithRatings.query_id
-      const query = createQuery({ ...queryWithRatings, queryId })
+      const query = createQuery(queryWithRatings)
+      const queryId = query.queryId
       createDiff(query)
       registerQuery(queryId, query)
       newQueries.push(queryId)
+      liveQueries.push(query)
     })
 
-    replaceStore(caseId, data)
+    replaceStore({ caseId, displayOrder: data.display_order, queries: liveQueries })
     return newQueries
   }
 

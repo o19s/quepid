@@ -766,31 +766,48 @@ A shared concern is appropriate only where accessible/owned scopes, archive
 behavior, duplicate handling, and responses have the same contract. Preserve
 those scopes and boolean semantics during extraction.
 
-### [MIGRATION-FOLLOWUP] P2 I3 C3 — Consolidate mutable query-state ownership
+### [MIGRATION-FOLLOWUP] P2 I3 C3 — Consolidate mutable query-state ownership — completed
 
-Each query's state exists as the live Query object plus three projections of it.
-The live-query runtime owner (`live_query_runtime_owner.js`) also keeps some of
-the same flags in its own variables.
+API query fields are normalized once by `live_query_factory.js`; bootstrap
+publishes the resulting live queries rather than remapping raw API rows.
+`QueryCollectionStore` owns live queries, display order, expansion and rated-only
+preferences, and derives its plain snapshots on read. `QueryDocumentsStore`
+keeps normalized document projections and reads shared query status, score
+completeness, missing-rating counts and display preferences from the collection.
+The command bridge routes collapse-all once through the runtime. The runtime no
+longer keeps separate order or rated-only variables. Workspace capabilities still
+come from the explicit `core_workspace_runtime.js` dependency boundary.
 
-| State | Where it lives |
-| --- | --- |
-| Score, `allRated`, missing-rating count | live Query, `QueryCollectionStore` snapshot, `QueryDocumentsStore` read model, `CaseScoreStore.queryScores` |
-| `numFound`, `errorText`, query state | live Query, collection snapshot, documents read model |
-| Expanded / collapse-all | both stores (each has `collapseAll`), plus a pending-state map in the documents store |
-| Show only rated | owner variable, documents store, `getListState()` |
-| Display order | owner variable and collection store; `queryArray()` picks one by store status |
+`CaseScoreStore` deliberately retains the completed scoring projection: case
+aggregates, persistence and graphs consume one atomic full scoring result,
+including during in-flight searches and diff-only rescoring.
 
-The API query payload is also mapped from snake_case to camelCase twice: once in
-`live_query_factory.js`, and again through `querySnapshot`'s
-`query.queryText ?? query.query_text` fallbacks.
+Verification: full Vitest suite (1,433 tests), ESLint and scoped Prettier checks;
+regression tests cover rating/rescore consistency across live queries and all
+three projections, early expand/collapse, republishing, removal, reset and order.
+Authorized browser sample: cases 219 and 6, expanded/collapsed results, score and
+missing-rating badges, Solr rated-only results, name ordering, document rating
+and restoration, and forced search errors. Before/after screenshots were inspected
+under `.playwright-mcp/query-state/`. Review follow-up scopes single-query change
+notifications and verifies that an unrelated publication preserves an open rating
+popover in a snapshot comparison; inspected screenshot pairs are under
+`.playwright-mcp/query-notifications/`. Deferred: broader imports, full snapshot/diff,
+manual drag persistence, bulk editing and other search engines.
 
-**Fix direction:** consolidate mutable ownership incrementally; keep useful
-read projections instead of assuming every store must merge. Remove duplicate
-snake_case mapping first. If one live-query owner and projection replaces the
-copies, verify scores, `allRated`, missing-rating counts and expansion state.
-The workspace now constructs its capabilities through `core_workspace_runtime.js`;
-keep that explicit dependency boundary while consolidating state. Layout
-consolidation is not a prerequisite.
+### [PREEXISTING] P2 — Search failures abandon queued queries
+
+When the first ten concurrent searches reject, `query_service.js#pAll` exits all
+workers before remaining queries start. Those queries have neither scores nor
+errors, so the progress banner stays visible. Preserve bounded concurrency and
+rate limiting while allowing the queue to settle and explicitly report failures.
+Add coverage for a failing batch larger than the concurrency limit.
+
+Observed on both sides of the query-state refactor. Pre-deangularization main
+commit `ed5c17ea`, `app/assets/javascripts/services/queriesSvc.js:1231–1268`, has
+the same unguarded worker `await promise`; `controllers/queriesCtrl.js:488–504`
+uses unscored queries for progress. This is historical source evidence, not a
+live historical replay. The forced-error sample verified row errors and unchanged
+batch behavior; it did not establish successful completion of that failed batch.
 
 ### [MIGRATION-FOLLOWUP] P2 I2 C2 — Rated-document lookup duplication
 

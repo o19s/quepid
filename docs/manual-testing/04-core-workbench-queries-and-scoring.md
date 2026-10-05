@@ -230,6 +230,9 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 - **Expected:** Filtering, sorting, and collapse are handled without a page reload; the list returns to its full state after clearing the filter and no query remains expanded after **Collapse all**.
 - **Edge cases:**
   - [ ] Reorder queries when manual sorting is enabled and confirm the order persists after reload.
+  - [ ] Expand a query while results are still loading, then click **Collapse all**.
+    Confirm it stays collapsed when results arrive. Expand again, collapse, and
+    filter/sort away and back; confirm neither the row nor its results reopen.
 
 ### 4.20 Query-list sorting, pagination & "Show only rated"
 

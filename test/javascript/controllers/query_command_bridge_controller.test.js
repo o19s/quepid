@@ -66,7 +66,7 @@ describe("query_command_bridge_controller", () => {
     expect(window.quepidSearch.queryCommands.paginateQuery).toHaveBeenCalledWith(4, true)
   })
 
-  it("routes collection commands and keeps both stores in sync on collapse", () => {
+  it("routes collapse once through the query owner", () => {
     controller.connect()
 
     controller.routeCollectionCommand({ command: "toggle-show-only-rated" })
@@ -74,8 +74,8 @@ describe("query_command_bridge_controller", () => {
 
     expect(window.quepidSearch.queryCommands.toggleShowOnlyRated).toHaveBeenCalledOnce()
     expect(window.quepidSearch.queryCommands.collapseAll).toHaveBeenCalledOnce()
-    expect(collectionStore.collapseAll).toHaveBeenCalledOnce()
-    expect(documentsStore.collapseAll).toHaveBeenCalledOnce()
+    expect(collectionStore.collapseAll).not.toHaveBeenCalled()
+    expect(documentsStore.collapseAll).not.toHaveBeenCalled()
   })
 
   it("keeps live queries synchronized after Stimulus-owned mutations", () => {

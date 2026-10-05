@@ -48,6 +48,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
   7. Click **Clear Comparison View** to disable all diffs at once.
 - **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
 - **Edge cases:**
+  - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.
   - [ ] While fetching snapshot data, confirm the "Fetching snapshot data..." progress text shows and the footer buttons are disabled meanwhile.

@@ -1,3 +1,5 @@
+import { QueryCollectionStore, queryCollectionStore } from "stores/query_collection_store"
+
 /**
  * Observable read model for the documents in each expanded query.
  *
@@ -6,50 +8,46 @@
  * controller scopes without changing the live search contract.
  */
 export class QueryDocumentsStore extends EventTarget {
-  constructor() {
+  constructor({ queries = new QueryCollectionStore() } = {}) {
     super()
+    this.collection = queries
     this.reset()
+    // These projections share the collection's page lifetime. A preference or
+    // live-query publication must also notify expanded-results subscribers.
+    // Keep single-query changes scoped so other comparison controls stay mounted.
+    this.collection.addEventListener("change", event => {
+      this._queries.forEach((_query, key) => {
+        if (!this.collection.liveQuery(key)) this._queries.delete(key)
+      })
+      this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(event.detail.queryId) }))
+    })
+    this.collection.addEventListener("reset", () => this.reset())
   }
 
   reset() {
-    this._showOnlyRated = false
     this._queries = new Map()
     this._caseDiffs = []
-    this._pendingQueryState = new Map()
     this._caseSummary = { allRated: false }
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
   }
 
   replaceQuery(queryId, { docs = [], ratedDocs = [], ...state } = {}) {
     const previous = this._queries.get(String(queryId)) || {}
-    const pending = this._pendingQueryState.get(String(queryId)) || {}
     this._queries.set(String(queryId), {
       ...previous,
-      ...pending,
       queryId: Number(queryId),
-      showOnlyRated: this._showOnlyRated,
       ...state,
       docs: docs.map(doc => snapshotDocument(doc, state)),
       ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state)),
       diffs: snapshotDiffs(state.diffs, state)
     })
-    this._pendingQueryState.delete(String(queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
   }
 
   updateQueryState(queryId, state = {}) {
-    const current = this._queries.get(String(queryId))
-    if (!current) {
-      const key = String(queryId)
-      this._pendingQueryState.set(key, {
-        ...(this._pendingQueryState.get(key) || {}),
-        ...state
-      })
-      this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
-      return
-    }
-
-    this._queries.set(String(queryId), { ...current, ...state })
+    const key = String(queryId)
+    const current = this._queries.get(key) || { queryId: Number(queryId), docs: [], ratedDocs: [] }
+    this._queries.set(key, { ...current, ...state })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
   }
 
@@ -68,21 +66,6 @@ export class QueryDocumentsStore extends EventTarget {
 
   setCaseSummary(summary = {}) {
     this._caseSummary = { ...this._caseSummary, ...summary }
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
-  }
-
-  setShowOnlyRated(showOnlyRated) {
-    this._showOnlyRated = Boolean(showOnlyRated)
-    this._queries.forEach((query, queryId) => {
-      this._queries.set(queryId, { ...query, showOnlyRated: this._showOnlyRated })
-    })
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
-  }
-
-  collapseAll() {
-    this._queries.forEach((query, queryId) => {
-      this._queries.set(queryId, { ...query, expanded: false })
-    })
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
@@ -114,14 +97,29 @@ export class QueryDocumentsStore extends EventTarget {
   }
 
   query(queryId) {
-    return this._queries.get(String(queryId)) ?? null
+    const documents = this._queries.get(String(queryId))
+    const query = this.collection.query(queryId)
+    if (!documents || !query) return null
+
+    return {
+      ...documents,
+      queryText: query.queryText,
+      numFound: query.numFound,
+      ratedDocsFound: query.ratedDocsFound,
+      errorText: query.errorText,
+      queryState: query.state,
+      allRated: query.currentScore?.allRated ?? false,
+      missingRatings: query.currentScore?.countMissingRatings ?? null,
+      expanded: query.expanded === true,
+      showOnlyRated: this.collection.showOnlyRated
+    }
   }
 
   snapshot(queryId) {
-    const queries = Object.fromEntries(this._queries)
+    const queries = Object.fromEntries([...this._queries.keys()].map(key => [key, this.query(key)]).filter(([_key, query]) => query))
     return {
       queryId: queryId == null ? null : Number(queryId),
-      showOnlyRated: this._showOnlyRated,
+      showOnlyRated: this.collection.showOnlyRated,
       query: queryId == null ? null : queries[String(queryId)] ?? null,
       queries,
       caseDiffs: this._caseDiffs.map((searcher) => ({ ...searcher, score: { ...searcher.score } })),
@@ -199,4 +197,4 @@ function snapshotDiffs(diffs, state = {}) {
 }
 
 // One case workspace per page load. Case/try changes are full navigations.
-export const queryDocumentsStore = new QueryDocumentsStore()
+export const queryDocumentsStore = new QueryDocumentsStore({ queries: queryCollectionStore })

@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { copyText } from "utils/clipboard"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
+import { QueryCollectionStore } from "stores/query_collection_store"
+import { QueryDocumentsStore } from "stores/query_documents_store"
 import SearchResultsController from "controllers/search_results_controller"
 import { loadViewTemplate } from "../support/view_template"
 
@@ -101,6 +103,35 @@ describe("SearchResultsController", () => {
     expect(controller.diffResultsTarget.querySelector('[data-doc-id="snapshot"]')).not.toBeNull()
     expect(controller.diffResultsTarget.querySelector(".diff-actions a").textContent)
       .toBe("Browse 1 Current Results on Solr")
+  })
+
+  it("preserves comparison controls when another live query changes", () => {
+    const { controller, snapshot } = controllerFor({ results: false })
+    const queries = new QueryCollectionStore()
+    queries.upsert({ queryId: 1, queryText: "meetings", numFound: 1, state: () => "loaded" })
+    queries.upsert({ queryId: 2, queryText: "other" })
+    queries.setExpanded(1, true)
+    const documents = new QueryDocumentsStore({ queries })
+    documents.replaceQuery(1, snapshot)
+    controller.store = documents
+    controller.render()
+    documents.addEventListener("change", event => controller.renderFromStore(event.detail))
+    const comparison = controller.diffResultsTarget.firstChild
+
+    queries.upsert({ queryId: 2, queryText: "other", numFound: 9 })
+    queries.setExpanded(2, true)
+    queries.remove(2)
+
+    expect(controller.diffResultsTarget.firstChild).toBe(comparison)
+
+    queries.upsert({ queryId: 1, queryText: "meetings", numFound: 7, state: () => "loaded" })
+    expect(controller.diffResultsTarget.firstChild).not.toBe(comparison)
+    expect(controller.diffResultsTarget.textContent).toContain("Browse 7 Current Results")
+
+    queries.setShowOnlyRated(true)
+    expect(controller.diffResultsTarget.querySelector('[data-doc-id="rated"]')).not.toBeNull()
+    queries.collapseAll()
+    expect(controller.contentTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("renders a snapshot document that matches the current result without a difference class", () => {

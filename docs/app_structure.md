@@ -32,8 +32,13 @@ bootstrap loads case data without installing methods into a shared registry.
 
 `controllers/core_bootstrap_controller.js` loads the user, case and selected try,
 then starts searching. The live-query owner returns its query capabilities,
-commands, lifecycle operations and targeted-search adapter. Query stores retain
-their existing live objects and read projections. `utils/case_runtime.js` owns
+commands, lifecycle operations and targeted-search adapter. `QueryCollectionStore`
+retains the live Query objects and owns display order, expansion and rated-only
+preferences. Its snapshots are derived on read; `QueryDocumentsStore` retains
+normalized document projections and reads shared query status, scores and display
+preferences from that collection. API query fields are normalized once by
+`live_query_factory.js`. `CaseScoreStore` retains the atomically completed scoring
+result for case aggregates, persistence and graph consumers. `utils/case_runtime.js` owns
 the selected case record; `coreWorkspace.caseState` reads it directly. Query and
 book events keep their existing contracts. Controllers own DOM interaction, and
 static page and modal structure remains in Rails ERB partials.

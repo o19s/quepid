@@ -33,14 +33,8 @@ describe("query document read model", () => {
     })
 
     expect(state).toMatchObject({
-      queryText: "title",
-      numFound: 4,
-      ratedDocsFound: 1,
       paginationSupported: true,
-      missingRatings: 3,
-      allRated: false,
       maxDocScore: 9,
-      queryState: "loaded",
       version: 12,
       diffs: { searchers: [] }
     })

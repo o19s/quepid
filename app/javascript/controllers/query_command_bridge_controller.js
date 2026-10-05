@@ -44,8 +44,6 @@ export default class extends Controller {
     if (command === "toggle-show-only-rated") queryCommands?.toggleShowOnlyRated?.()
     if (command === "collapse-all") {
       queryCommands?.collapseAll?.()
-      this.collectionStore.collapseAll()
-      this.documentsStore.collapseAll()
     }
   }
 

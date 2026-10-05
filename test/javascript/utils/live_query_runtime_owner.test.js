@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
+import { QueryDocumentsStore } from "stores/query_documents_store"
+import { CaseScoreStore } from "stores/case_score_store"
 import { QueryCollectionStore } from "stores/query_collection_store"
 
 function buildOwner({
@@ -55,16 +57,8 @@ const jsonResponse = (data) => ({
 })
 
 function buildStores() {
-  return {
-    queries: new QueryCollectionStore(),
-    documents: {
-      setShowOnlyRated: vi.fn(),
-      updateQueryState: vi.fn(),
-      collapseAll: vi.fn(),
-      reset: vi.fn(),
-      replaceQuery: vi.fn()
-    }
-  }
+  const queries = new QueryCollectionStore()
+  return { queries, documents: new QueryDocumentsStore({ queries }), scoring: new CaseScoreStore() }
 }
 
 describe("createLiveQueryRuntimeOwner", () => {
@@ -140,7 +134,7 @@ describe("createLiveQueryRuntimeOwner", () => {
 
     search.queryCommands.toggleShowOnlyRated()
 
-    expect(stores.documents.setShowOnlyRated).toHaveBeenCalledWith(true)
+    expect(stores.documents.snapshot().showOnlyRated).toBe(true)
     expect(refreshRatedDocs).toHaveBeenCalledOnce()
     expect(refreshRatedDocs).toHaveBeenCalledWith(2)
     expect(search.queryCapabilities.getListState().showOnlyRated).toBe(true)
@@ -148,7 +142,7 @@ describe("createLiveQueryRuntimeOwner", () => {
 
     refreshRatedDocs.mockClear()
     search.queryCommands.toggleShowOnlyRated()
-    expect(stores.documents.setShowOnlyRated).toHaveBeenLastCalledWith(false)
+    expect(stores.documents.snapshot().showOnlyRated).toBe(false)
     expect(refreshRatedDocs).not.toHaveBeenCalled()
     document.removeEventListener("queries-state:changed", stateChanged)
   })
@@ -161,7 +155,8 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(search.queryCommands.toggleQuery(99)).toBe(false)
     expect(search.queryCommands.toggleQuery(1)).toBe(true)
     expect(stores.queries.query(1).expanded).toBe(true)
-    expect(stores.documents.updateQueryState).toHaveBeenCalledWith(1, { expanded: true })
+    stores.documents.replaceQuery(1)
+    expect(stores.documents.query(1).expanded).toBe(true)
 
     search.queryCommands.toggleQuery(1)
     expect(stores.queries.query(1).expanded).toBe(false)
@@ -169,7 +164,7 @@ describe("createLiveQueryRuntimeOwner", () => {
 
   async function addQuery() {
     const stores = buildStores()
-    stores.scoring = { setLatestScoreInfo: vi.fn(), markRatingChanged: vi.fn(), addEventListener: vi.fn() }
+    vi.spyOn(stores.scoring, "setLatestScoreInfo")
     const searcher = {
       type: "solr",
       docs: [{ id: "d1" }, { id: "d2" }],
@@ -178,6 +173,7 @@ describe("createLiveQueryRuntimeOwner", () => {
       search: vi.fn(() => Promise.resolve())
     }
     const scorer = { score: vi.fn(() => 0.5), maxScore: () => 1, getColors: () => ({}) }
+    vi.spyOn(stores.documents, "replaceQuery")
     const search = buildOwner({ store: stores, searcher, scorer })
     const settings = {
       searchEngine: "solr",
@@ -283,4 +279,40 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(stores.queries.status).toBe("idle")
     expect(search.queryCapabilities.getQuery(7)).toBeNull()
   })
+  it("uses the collection order before and after bootstrap and clears preferences on reset", () => {
+    const stores = buildStores()
+    const search = buildOwner({ store: stores })
+    stores.queries.upsert({ queryId: 1 })
+    stores.queries.upsert({ queryId: 2 })
+    search.queryCapabilities.setDisplayOrder([2, 1])
+    expect(search.queryCapabilities.getQueryArray().map(query => query.queryId)).toEqual([2, 1])
+    stores.queries.setExpanded(1, true)
+    stores.documents.replaceQuery(1)
+    search.queryCommands.collapseAll()
+    expect(stores.queries.query(1).expanded).toBe(false)
+    expect(stores.documents.query(1).expanded).toBe(false)
+    stores.queries.setShowOnlyRated(true)
+    search.queryCapabilities.resetQueryState()
+    expect(search.queryCapabilities.getListState().showOnlyRated).toBe(false)
+    expect(stores.documents.snapshot().queries).toEqual({})
+    expect(search.queryCapabilities.getQueryArray()).toEqual([])
+  })
+
+  it("keeps live, collection, document and completed case scores consistent after a rating", async () => {
+    const { stores, search } = await addQuery()
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(jsonResponse({}))))
+    const query = search.queryCapabilities.getQuery(5)
+    expect(stores.documents.query(5)).toMatchObject({ allRated: false, missingRatings: 2 })
+    const completed = stores.scoring.queryScore(5)
+    expect(completed).toMatchObject({ score: 0.5, allRated: false, countMissingRatings: 2 })
+
+    await query.ratingsStore.rateBulkDocuments(["d1", "d2"], 1)
+    await vi.waitFor(() => expect(stores.scoring.queryScore(5).allRated).toBe(true))
+    expect(query.currentScore).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
+    expect(stores.queries.query(5).currentScore).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
+    expect(stores.documents.query(5)).toMatchObject({ allRated: true, missingRatings: 0 })
+    expect(stores.scoring.queryScore(5)).toMatchObject({ score: 0.5, allRated: true, countMissingRatings: 0 })
+    expect(completed.allRated).toBe(false)
+  })
+
 })

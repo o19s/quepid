@@ -19,8 +19,8 @@ describe("QueryCollectionStore", () => {
       caseId: 7,
       displayOrder: [2, 1],
       queries: [
-        { query_id: 1, query_text: "first", information_need: "one" },
-        { query_id: 2, query_text: "second", information_need: "two" }
+        { queryId: 1, queryText: "first", informationNeed: "one" },
+        { queryId: 2, queryText: "second", informationNeed: "two" }
       ]
     })
 
@@ -30,14 +30,14 @@ describe("QueryCollectionStore", () => {
     expect(changes).toHaveLength(2)
   })
 
-  it("normalizes the bootstrap API response at the collection boundary", () => {
+  it("accepts normalized live queries at the collection boundary", () => {
     store.beginBootstrap(7)
-    store.replaceFromResponse(7, {
-      display_order: [2, 1],
+    store.replace({ caseId: 7,
+      displayOrder: [2, 1],
       queries: [
-        { query_id: 1, query_text: "first" },
-        { query_id: 2, query_text: "second" },
-        { query_id: 3, query_text: "deleted", deleted: "true" }
+        { queryId: 1, queryText: "first" },
+        { queryId: 2, queryText: "second" },
+        { queryId: 3, queryText: "deleted", deleted: "true" }
       ]
     })
 
@@ -59,17 +59,19 @@ describe("QueryCollectionStore", () => {
     expect(store.query(1)).toBeNull()
   })
 
-  it("filters deleted bootstrap rows without exposing mutable input objects", () => {
-    const query = { query_id: 1, query_text: "live" }
+  it("filters deleted rows and builds fresh projections from the live input", () => {
+    const query = { queryId: 1, queryText: "live" }
     store.replace({
       caseId: 7,
       displayOrder: [1, 2],
-      queries: [query, { query_id: 2, query_text: "gone", deleted: "true" }]
+      queries: [query, { queryId: 2, queryText: "gone", deleted: "true" }]
     })
 
-    query.query_text = "changed outside the store"
+    const snapshot = store.query(1)
+    query.queryText = "changed outside the store"
     expect(store.orderedQueryIds()).toEqual([1])
-    expect(store.query(1).queryText).toBe("live")
+    expect(snapshot.queryText).toBe("live")
+    expect(store.query(1).queryText).toBe("changed outside the store")
   })
 
   it("publishes the read-only display model from a live query without leaking methods", () => {
@@ -114,7 +116,7 @@ describe("QueryCollectionStore", () => {
 
   it("publishes the modified time the Modified sort orders by", () => {
     store.upsert({ queryId: 4, queryText: "live", modifiedAt: "2026-10-04T15:33:47.000Z" })
-    store.upsert({ queryId: 5, query_text: "api", modified_at: "2026-10-04T15:31:33.000Z" })
+    store.upsert({ queryId: 5, queryText: "api", modifiedAt: "2026-10-04T15:31:33.000Z" })
 
     expect(store.query(4).modifiedAt).toBe("2026-10-04T15:33:47.000Z")
     expect(store.query(5).modifiedAt).toBe("2026-10-04T15:31:33.000Z")
@@ -221,7 +223,7 @@ describe("QueryCollectionStore", () => {
 
   it.each([
     ["beginBootstrap", (s) => s.beginBootstrap(3)],
-    ["replace", (s) => s.replace({ caseId: 3, queries: [{ query_id: 1 }] })],
+    ["replace", (s) => s.replace({ caseId: 3, queries: [{ queryId: 1 }] })],
     ["upsert", (s) => s.upsert({ queryId: 1 })],
     ["remove", (s) => { s.upsert({ queryId: 1 }); s.remove(1) }],
     ["setDisplayOrder", (s) => s.setDisplayOrder([2, 1])],
@@ -237,7 +239,7 @@ describe("QueryCollectionStore", () => {
     mutate(store)
 
     expect(changed).toHaveBeenCalled()
-    expect(changed.mock.calls.at(-1)[0].detail).toEqual(store.snapshot())
+    expect(changed.mock.calls.at(-1)[0].detail).toEqual(expect.objectContaining(store.snapshot()))
   })
 
   it("keeps live queries across a bootstrap replace, dropping ones the response omits", () => {
@@ -248,17 +250,17 @@ describe("QueryCollectionStore", () => {
 
     expect(store.liveQueries()).toEqual({ 1: first, 2: second })
 
-    store.replaceFromResponse(7, {
-      display_order: [1],
-      queries: [{ query_id: 1, query_text: "snapshot" }]
+    store.replace({ caseId: 7,
+      displayOrder: [1],
+      queries: [first]
     })
 
     expect(store.liveQueries()).toEqual({ 1: first })
-    expect(store.query(1).queryText).toBe("snapshot")
+    expect(store.query(1).queryText).toBe("live")
 
     store.clearLiveQueries()
     expect(store.liveQueries()).toEqual({})
-    expect(store.query(1)).not.toBeNull()
+    expect(store.query(1)).toBeNull()
   })
 
   it("does not publish an upsert made with publish: false, or one without a query id", () => {

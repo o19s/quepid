@@ -21,7 +21,7 @@ function runtimeFor(overrides = {}) {
 
 describe("createLiveQueryCollectionRuntime", () => {
   it("registers live queries, creates diffs, and publishes the store snapshot", () => {
-    const createQuery = vi.fn(data => ({ id: data.queryId }))
+    const createQuery = vi.fn(data => ({ queryId: data.query_id }))
     const createDiff = vi.fn()
     const registerQuery = vi.fn()
     const replaceStore = vi.fn()
@@ -36,11 +36,11 @@ describe("createLiveQueryCollectionRuntime", () => {
       ]
     }, 9)).toEqual([4])
 
-    expect(createQuery).toHaveBeenCalledWith({ query_id: 4, query_text: "star wars", queryId: 4 })
-    expect(createDiff).toHaveBeenCalledWith({ id: 4 })
-    expect(registerQuery).toHaveBeenCalledWith(4, { id: 4 })
+    expect(createQuery).toHaveBeenCalledWith({ query_id: 4, query_text: "star wars" })
+    expect(createDiff).toHaveBeenCalledWith({ queryId: 4 })
+    expect(registerQuery).toHaveBeenCalledWith(4, { queryId: 4 })
     expect(applyDisplayOrder).toHaveBeenCalledWith([4])
-    expect(replaceStore).toHaveBeenCalledWith(9, expect.any(Object))
+    expect(replaceStore).toHaveBeenCalledWith({ caseId: 9, displayOrder: [4], queries: [{ queryId: 4 }] })
   })
 
   it("keeps stale bootstrap responses from replacing the active collection", async () => {

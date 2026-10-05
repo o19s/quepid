@@ -53,7 +53,13 @@ const TARGETS = [
 
 function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) {
   const store = new QueryDocumentsStore()
-  Object.entries(queries).forEach(([id, state]) => store.replaceQuery(id, state))
+  Object.entries(queries).forEach(([id, state]) => {
+    store.collection.upsert({
+      queryId: Number(id),
+      currentScore: { score: 0, countMissingRatings: state.missingRatings, allRated: state.allRated }
+    })
+    store.replaceQuery(id, state)
+  })
   setCoreStoresForTest({ documents: store })
   setCoreCapabilitiesForTest({ caseState, queryLifecycle })
   const controller = Object.create(FrogReportController.prototype)

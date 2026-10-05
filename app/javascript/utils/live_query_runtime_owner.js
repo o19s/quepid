@@ -71,9 +71,7 @@ export function createLiveQueryRuntimeOwner({
 
   let caseNo = -1
   let currSettings = {}
-  let showOnlyRated = false
   let isBootstrapping = false
-  let displayOrder = []
 
   // Keyed by the mapper_code string itself, so a re-eval is only ever skipped for the
   // exact same code (editing a mapper - or switching to a different mapper-based try -
@@ -88,7 +86,7 @@ export function createLiveQueryRuntimeOwner({
   const bookSyncRuntime = createBookSyncRuntime({ logger })
 
   const getCaseNo = () => caseNo
-  const getShowOnlyRated = () => showOnlyRated
+  const getShowOnlyRated = () => queryCollectionStore.showOnlyRated
   const getLiveQueries = () => queryCollectionStore.liveQueries()
   const getLiveQuery = (queryId) => queryCollectionStore.liveQuery(queryId)
   const getFieldSpec = () => currSettings.createFieldSpec()
@@ -220,8 +218,7 @@ export function createLiveQueryRuntimeOwner({
     clearQueries: () => clearLiveQueries(),
     registerQuery: (queryId, query) => registerQuery(queryId, query, { publish: false }),
     applyDisplayOrder,
-    replaceStore: (collectionCaseId, data) =>
-      queryCollectionStore.replaceFromResponse(collectionCaseId, data),
+    replaceStore: (collection) => queryCollectionStore.replace(collection),
     beginStoreBootstrap: (caseId) => queryCollectionStore.beginBootstrap(caseId),
     markStoreError: (response) => queryCollectionStore.markError(response),
     setBootstrapping: (value) => {
@@ -284,7 +281,6 @@ export function createLiveQueryRuntimeOwner({
 
   function reset() {
     clearLiveQueries({ resetStore: true })
-    showOnlyRated = false
     isBootstrapping = false
     if (queryDocumentsStore) {
       queryDocumentsStore.reset()
@@ -320,7 +316,7 @@ export function createLiveQueryRuntimeOwner({
       settings: applicableSettings,
       selectedTry: applicableSettings.selectedTry || {},
       ratingScale: ratingScale || {},
-      diffs: buildDiffReadModel(query, { showOnlyRated }),
+      diffs: buildDiffReadModel(query, { showOnlyRated: getShowOnlyRated() }),
       documentUrlFor: function (doc) {
         return documentUrlFor(doc, {
           settings: applicableSettings,
@@ -328,8 +324,8 @@ export function createLiveQueryRuntimeOwner({
         })
       }
     })
-    queryDocumentsStore.replaceQuery(query.queryId, readModel)
     queryCollectionStore.upsert(query)
+    queryDocumentsStore.replaceQuery(query.queryId, readModel)
   }
 
   // Explicit command adapter for the Stimulus expanded-results renderer.
@@ -342,11 +338,6 @@ export function createLiveQueryRuntimeOwner({
     const currentQuery = queryCollectionStore.query(queryId)
     const expanded = !(currentQuery && currentQuery.expanded === true)
     queryCollectionStore.setExpanded(queryId, expanded)
-    if (queryDocumentsStore) {
-      queryDocumentsStore.updateQueryState(queryId, {
-        expanded: expanded
-      })
-    }
     return true
   }
 
@@ -452,13 +443,9 @@ export function createLiveQueryRuntimeOwner({
   }
 
   function toggleShowOnlyRated() {
-    showOnlyRated = !showOnlyRated
+    queryCollectionStore.setShowOnlyRated(!getShowOnlyRated())
 
-    if (queryDocumentsStore) {
-      queryDocumentsStore.setShowOnlyRated(showOnlyRated)
-    }
-
-    if (showOnlyRated) {
+    if (getShowOnlyRated()) {
       Object.values(getLiveQueries()).forEach(function (query) {
         if (!query.ratingsReady) {
           queryCapabilities.refreshRatedDocs(query.queryId)
@@ -564,20 +551,10 @@ export function createLiveQueryRuntimeOwner({
   // get the full list of queries sorted by create/manual order
   // only call this when our version() changes
   function queryArray() {
-    if (queryCollectionStore.status === "ready") {
-      // Keep the existing defaultCaseOrder contract while taking the order
-      // itself from the store. The existing orderBy contract and any other
-      // consumers still rely on this field being refreshed on each read.
-      return orderedQueries(queryCollectionStore.orderedQueryIds(), getLiveQueries())
-    }
-    return orderedQueries(displayOrder, getLiveQueries())
+    return orderedQueries(queryCollectionStore.orderedQueryIds(), getLiveQueries())
   }
 
-  // Temporary adapter for the Stimulus reorder controller. The controller
-  // owns the PUT; the runtime keeps the live display order in sync until the
-  // query store becomes authoritative.
   function applyDisplayOrder(nextDisplayOrder) {
-    displayOrder = nextDisplayOrder
     queryCollectionStore.setDisplayOrder(nextDisplayOrder)
   }
 
@@ -626,7 +603,7 @@ export function createLiveQueryRuntimeOwner({
           selectedTry.searchEngine === "static"
             ? "Adding queries is not supported"
             : "Add a query to this case",
-        showOnlyRated,
+        showOnlyRated: getShowOnlyRated(),
         // Match the query-list controller's showOnlyRatedUnsupported state: while the case is
         // still loading, no selected try means the capability is unknown,
         // not unsupported.
@@ -669,7 +646,7 @@ export function createLiveQueryRuntimeOwner({
     toggleShowOnlyRated,
     searchAll,
     collapseAll: function () {
-      if (queryDocumentsStore) queryDocumentsStore.collapseAll()
+      queryCollectionStore.collapseAll()
     }
   }
   const queryLifecycle = {

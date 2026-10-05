@@ -3,7 +3,7 @@ import { isSameId } from "utils/record_identity"
 /**
  * Observable read model for the case query collection.
  *
- * This store owns the live Query objects, their collection snapshot, and
+ * This store owns the live Query objects, their read projection, and
  * display order. The snapshot API keeps Stimulus independent from the live
  * search and scoring model.
  */
@@ -19,8 +19,8 @@ export class QueryCollectionStore extends EventTarget {
     this._searchGeneration = (this._searchGeneration ?? 0) + 1
     this._searchStatus = "idle"
     this._searchError = null
+    this._showOnlyRated = false
     this._displayOrder = []
-    this._queries = new Map()
     this._liveQueries = new Map()
     this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("reset", { detail: this.snapshot() }))
@@ -33,7 +33,6 @@ export class QueryCollectionStore extends EventTarget {
     this._searchStatus = "idle"
     this._searchError = null
     this._displayOrder = []
-    this._queries = new Map()
     this._liveQueries = new Map()
     this._expandedQueries = new Map()
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
@@ -43,34 +42,15 @@ export class QueryCollectionStore extends EventTarget {
     this._caseId = Number(caseId)
     this._displayOrder = displayOrder.map(Number)
     const nextQueries = queries.filter(query => query.deleted !== true && query.deleted !== "true")
-    const currentLiveQueries = this._liveQueries
-    this._queries = new Map(
-      nextQueries.map(query => [String(this.queryId(query)), this.querySnapshot(query)])
-    )
     this._liveQueries = new Map(
-      nextQueries
-        .map(query => String(this.queryId(query)))
-        .filter(queryId => currentLiveQueries.has(queryId))
-        .map(queryId => [queryId, currentLiveQueries.get(queryId)])
+      nextQueries.map(query => [String(query.queryId), query])
     )
-    this._queries.forEach((query, queryId) => {
-      if (this._expandedQueries.has(queryId)) {
-        this._queries.set(queryId, {
-          ...query,
-          expanded: this._expandedQueries.get(queryId)
-        })
-      }
+    const knownIds = new Set(this._liveQueries.keys())
+    this._expandedQueries.forEach((_value, key) => {
+      if (!knownIds.has(key)) this._expandedQueries.delete(key)
     })
     this._status = "ready"
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
-  }
-
-  replaceFromResponse(caseId, response = {}) {
-    this.replace({
-      caseId,
-      displayOrder: response.display_order,
-      queries: response.queries
-    })
   }
 
   markError(error) {
@@ -113,17 +93,16 @@ export class QueryCollectionStore extends EventTarget {
 
     const key = String(queryId)
     this._liveQueries.set(key, query)
-    this._queries.set(key, this.querySnapshot(query))
     if (!this._displayOrder.includes(Number(queryId))) this._displayOrder.push(Number(queryId))
     this._status = "ready"
-    if (publish) this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    if (publish) this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
   }
 
   remove(queryId) {
     this._liveQueries.delete(String(queryId))
-    this._queries.delete(String(queryId))
+    this._expandedQueries.delete(String(queryId))
     this._displayOrder = this._displayOrder.filter(id => !isSameId(id, queryId))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
   }
 
   setDisplayOrder(displayOrder = []) {
@@ -135,18 +114,22 @@ export class QueryCollectionStore extends EventTarget {
     const key = String(queryId)
     const value = Boolean(expanded)
     this._expandedQueries.set(key, value)
-    const query = this._queries.get(key)
-    if (query) this._queries.set(key, { ...query, expanded: value })
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
   }
 
   collapseAll() {
     this._expandedQueries.forEach((_expanded, queryId) => {
       this._expandedQueries.set(queryId, false)
     })
-    this._queries.forEach((query, queryId) => {
-      this._queries.set(queryId, { ...query, expanded: false })
-    })
+    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+  }
+
+  get showOnlyRated() {
+    return this._showOnlyRated
+  }
+
+  setShowOnlyRated(value) {
+    this._showOnlyRated = Boolean(value)
     this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
   }
 
@@ -181,7 +164,8 @@ export class QueryCollectionStore extends EventTarget {
   }
 
   query(queryId) {
-    return this._queries.get(String(queryId)) ?? null
+    const query = this.liveQuery(queryId)
+    return query ? this.querySnapshot(query) : null
   }
 
   liveQuery(queryId) {
@@ -198,13 +182,13 @@ export class QueryCollectionStore extends EventTarget {
   }
 
   get size() {
-    return this._queries.size
+    return this._liveQueries.size
   }
 
   orderedQueryIds() {
-    const knownIds = new Set(this._queries.keys())
+    const knownIds = new Set(this._liveQueries.keys())
     const ordered = this._displayOrder.filter(id => knownIds.has(String(id)))
-    const missing = [...this._queries.keys()]
+    const missing = [...this._liveQueries.keys()]
       .filter(id => !ordered.some(orderedId => String(orderedId) === id))
       .map(Number)
     return [...ordered, ...missing]
@@ -218,13 +202,14 @@ export class QueryCollectionStore extends EventTarget {
         status: this._searchStatus,
         error: this._searchError
       },
+      showOnlyRated: this.showOnlyRated,
       displayOrder: [...this._displayOrder],
-      queries: Object.fromEntries(this._queries)
+      queries: Object.fromEntries([...this._liveQueries].map(([key, query]) => [key, this.querySnapshot(query)]))
     }
   }
 
   queryId(query) {
-    return query.queryId ?? query.query_id
+    return query.queryId
   }
 
   querySnapshot(query) {
@@ -235,15 +220,15 @@ export class QueryCollectionStore extends EventTarget {
     const queryState = typeof query.state === "function" ? query.state() : query.state
     const snapshot = {
       queryId,
-      caseNo: query.caseNo ?? query.case_no ?? this._caseId,
-      queryText: query.queryText ?? query.query_text ?? "",
-      informationNeed: query.informationNeed ?? query.information_need ?? "",
-      modified: query.modified ?? query.updated_at ?? null,
-      modifiedAt: query.modifiedAt ?? query.modified_at ?? null,
-      created: query.created ?? query.created_at ?? null,
-      numFound: query.numFound ?? query.num_found,
-      ratedDocsFound: query.ratedDocsFound ?? query.rated_docs_found,
-      errorText: query.errorText ?? query.error_text,
+      caseNo: query.caseNo ?? this._caseId,
+      queryText: query.queryText ?? "",
+      informationNeed: query.informationNeed ?? "",
+      modified: query.modified ?? null,
+      modifiedAt: query.modifiedAt ?? null,
+      created: query.created ?? null,
+      numFound: query.numFound,
+      ratedDocsFound: query.ratedDocsFound,
+      errorText: query.errorText,
       lastScore: query.lastScore ?? currentScore.score,
       currentScore: currentScore.score === undefined ? undefined : {
         score: currentScore.score,
@@ -259,7 +244,7 @@ export class QueryCollectionStore extends EventTarget {
       supportsTemplate: typeof searcher?.isTemplateCall === "function",
       diffs: query.diffs ? true : undefined
     }
-    if (this._expandedQueries.has(String(queryId))) snapshot.expanded = this._expandedQueries.get(String(queryId))
+    snapshot.expanded = this._expandedQueries.get(String(queryId)) ?? false
     return snapshot
   }
 }

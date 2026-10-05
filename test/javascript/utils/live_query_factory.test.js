@@ -27,16 +27,19 @@ describe("live query factory", () => {
     const { factory, RatingsStore, createModel, getQueryState } = setup()
 
     const query = factory.create({
-      queryId: 3,
+      query_id: 3,
       query_text: "star wars",
       ratings: { doc1: 2 },
       options: { field: "title" },
-      modified_at: "2026-01-01"
+      modified_at: "2026-01-01",
+      created_at: "2025-12-01"
     })
 
     expect(query.queryId).toBe(3)
     expect(query.caseNo).toBe(7)
     expect(query.queryText).toBe("star wars")
+    expect(query.created).toBe("2025-12-01")
+    expect(query.modifiedAt).toBe("2026-01-01")
     expect(query.ratings).toEqual({ doc1: 2 })
     expect(query.docs).toEqual([])
     expect(query.ratedDocs).toEqual([])

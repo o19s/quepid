@@ -14,10 +14,8 @@ export function buildQueryDocumentsState({
   documentUrlFor = () => null
 }) {
   const fieldSpec = typeof query.fieldSpec === "function" ? query.fieldSpec() : {}
-  const currentScore = query.currentScore || {}
 
   return {
-    queryText: query.queryText,
     fieldSpec: {
       fields: (fieldSpec.fields || []).slice(),
       id: fieldSpec.id,
@@ -25,27 +23,21 @@ export function buildQueryDocumentsState({
     },
     docs: query.docs,
     ratedDocs: query.ratedDocs,
-    numFound: query.numFound,
-    ratedDocsFound: query.ratedDocsFound,
     ratedDocsUnsupported: query.ratedDocsUnsupported,
     paginationSupported:
       selectedTry.searchEngine !== "searchapi" ||
       selectedTry.mapperBasedSearchEngineSupportsPagination === true,
     // 2 = results, 3 = snapshot diff (main switched whenever query.diffs was set).
     resultsView: diffs?.searchers?.length ? 3 : 2,
-    errorText: query.errorText,
     depthOfRating: query.depthOfRating,
     ratingScale,
     queryRating: query.rating,
-    missingRatings: currentScore.countMissingRatings ?? null,
-    allRated: currentScore.allRated ?? false,
     maxDocScore: typeof query.maxDocScore === "function" ? query.maxDocScore() : null,
     browseUrl: typeof query.browseUrl === "function" ? query.browseUrl() : null,
     searchEngine: settings.searchEngine,
     apiMethod: settings.apiMethod,
     mapperBasedSearchEngineName: settings.mapperBasedSearchEngineName,
     browseHeaders: browseHeaders(settings),
-    queryState: typeof query.state === "function" ? query.state() : null,
     documentUrlFor,
     version: typeof query.version === "function" ? query.version() : null,
     diffs

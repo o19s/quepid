@@ -29,8 +29,9 @@ export class CaseScoreStore extends EventTarget {
 
   /**
    * Called by the live-query runtime (`utils/live_query_runtime_owner.js`)
-   * after a full `scoreAll()`, with the same object it keeps as
-   * `latestScoreInfo`. Replaces all query scores atomically and fires one
+   * after a full `scoreAll()`. This completed scoring projection is used for
+   * case persistence and aggregates, independently of in-flight searches.
+   * Replaces all query scores atomically and fires one
    * "change" event followed by "scoring-complete".
    */
   setLatestScoreInfo({ allRated, score, queries }) {
