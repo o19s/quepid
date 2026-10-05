@@ -1,5 +1,14 @@
 # Changelog
 
+## 8.7.1 -- 2026-10-05
+
+AI Judges can now "see" images!  Plus some small improvements.
+
+* **AI Judges can now see images:** a chat-based AI Judge can send the case's/document's thumbnail image to the LLM alongside the query and document, with a per-judge "Judge with images" switch for text-only models and providers (Ollama, TypeSafe Jev) that don't support images. https://github.com/o19s/quepid/pull/1822 by @frutik.
+* **Faster case listing page:** the case listing no longer loads every score blindly, speeding up the page for books with a lot of history. https://github.com/o19s/quepid/pull/1823 by @epugh.
+* **Fixed key=value query params:** engines using a bare query param (like Vespa's YQL) now correctly handle explicit `key=value` parameter lists, instead of only JSON or fully bare text.
+* **Docker image now labeled for Kamal:** `Dockerfile.prod` adds a `service="quepid"` label, which [Kamal](https://kamal-deploy.org/) requires before it will deploy an image it didn't build itself.
+
 ## 8.7.0 -- 2026-10-02
 
 This release makes Quepid easier to run on your own, adds more search engine options, and brings a richer workflow for creating AI Judges and tracking judgement progress.
