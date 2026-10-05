@@ -36,9 +36,6 @@
   "app/javascript/controllers/pane_controller.js": {
     "documentListener": 2
   },
-  "app/javascript/controllers/pick_scorer_core_controller.js": {
-    "innerHTML": 4
-  },
   "app/javascript/controllers/qgraph_controller.js": {
     "documentListener": 2
   },

@@ -91,7 +91,7 @@ async function gotoCase(page: Page, caseId: number) {
 }
 
 test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-core', () => {
-  test('select scorer saves via API and closes the modal', async ({ page }) => {
+  test('select scorer retries a failed save, persists and reopens selected', async ({ page }) => {
     const caseId = await createDisposableCase(page, 'Pick-Scorer');
     pickScorerCaseId = caseId;
 
@@ -105,6 +105,17 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     const option = modal.locator('.list-group-item').first();
     await expect(option).toBeVisible({ timeout: 10_000 });
     await option.click();
+    const scorerName = (await option.textContent())!.trim();
+
+    await page.route(`**/api/cases/${caseId}/scorers/*`, route => route.fulfill({
+      status: 422,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Scorer save rejected for retry test' })
+    }), { times: 1 });
+    await modal.getByRole('button', { name: 'Select Scorer', exact: true }).click();
+    await expect(modal.locator('[data-pick-scorer-core-target="alert"]')).toContainText('Scorer save rejected for retry test');
+    await expect(modal.getByRole('button', { name: 'Select Scorer', exact: true })).toBeEnabled();
+    await expect(modal.locator('.list-group-item.active')).toHaveText(scorerName);
 
     const saved = page.waitForResponse(
       (response) =>
@@ -116,6 +127,9 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     const response = await saved;
     expect(response.ok()).toBeTruthy();
     await expect(modal).toBeHidden({ timeout: 10_000 });
+    await page.reload();
+    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
+    await expect(modal.locator('.list-group-item.active')).toHaveText(scorerName);
   });
 
   test('take snapshot creates via bridge and lists in compare picker', async ({ page }) => {

@@ -1,0 +1,8 @@
+<%# Static scorer row cloned and populated by pick-scorer-core. Keep this
+    partial free of ERB tags other than comments so unit tests use the same markup. %>
+<template data-pick-scorer-core-target="itemTemplate">
+  <li class="list-group-item"
+      data-slot="name"
+      data-pick-scorer-core-target="item"
+      data-action="click->pick-scorer-core#selectScorer"></li>
+</template>

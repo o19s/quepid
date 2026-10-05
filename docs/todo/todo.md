@@ -111,6 +111,11 @@ wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
 
+The broader proposed sequence for replacing the remaining SPA responsibilities
+is in [Rails/Hotwire workspace plan](rails_hotwire_workspace_plan.md). It starts
+with the endpoint-design decision below and preserves browser search and instant
+scoring while moving persisted UI and navigation into Rails/Hotwire.
+
 `pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
 (snapshot selects), and possibly `judgements_core` and `export_case_core`
 build lists from JSON in JS. They could become partials loaded through lazy

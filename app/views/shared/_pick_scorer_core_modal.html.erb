@@ -13,6 +13,7 @@
 <% end %>
 
 <% modal_body = capture do %>
+  <%= render "core/scorer_list_template" %>
   <div class="alert d-none" role="alert" data-pick-scorer-core-target="alert"></div>
   <div class="alert alert-warning d-none" role="alert" data-pick-scorer-core-target="warning">
     The scorer <span data-pick-scorer-core-target="warningName"></span> used by this case is NOT shared via a team with you, so if you switch away from it you won't have access to it again.

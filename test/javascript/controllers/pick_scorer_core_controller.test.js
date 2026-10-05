@@ -1,4 +1,5 @@
 import { buildControllerFixture } from "../support/controller_fixture"
+import { viewTemplateTargets } from "../support/view_template"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import PickScorerCoreController from "controllers/pick_scorer_core_controller"
@@ -16,6 +17,7 @@ function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(PickScorerCoreController, {
     overrides: { identifier: "pick-scorer-core" },
     targets: {
+      ...viewTemplateTargets("app/views/core/_scorer_list_template.html.erb", "pick-scorer-core"),
       title: document.createElement("h5"),
       alert: document.createElement("div"),
       warning: document.createElement("div"),
@@ -56,6 +58,21 @@ describe("PickScorerCoreController", () => {
     controller._refreshListActive()
     expect(scorer.classList.contains("active")).toBe(true)
     expect(unrelated.classList.contains("active")).toBe(true)
+  })
+
+  it("renders scorer names as text using the shipped row action", () => {
+    const controller = buildModalController()
+    const name = '<img src=x onerror="alert(1)">'
+    const item = controller._listItem({ scorer_id: 8, name })
+
+    expect(item.textContent).toBe(name)
+    expect(item.querySelector("img")).toBeNull()
+    expect(item.dataset.action).toBe("click->pick-scorer-core#selectScorer")
+    controller.userScorers = [{ scorer_id: 8, name }]
+    controller.communalScorers = []
+    controller._renderLists()
+    controller._renderLists()
+    expect(controller.customListTarget.children).toHaveLength(1)
   })
 
   beforeEach(() => {

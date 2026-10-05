@@ -150,6 +150,7 @@ class CoreControllerTest < ActionController::TestCase
         assert_select "#query-container template[data-queries-list-target='#{name}']", 1
       end
       assert_select "template[data-annotations-target='itemTemplate']", 1
+      assert_select "#pickScorerModal template[data-pick-scorer-core-target='itemTemplate']", 1
       assert_select '#query-container[data-queries-list-query-url-template-value=?]',
                     "/api/cases/#{kase.id}/queries/__QUERY_ID__"
       assert_select '#query-container[data-queries-list-notes-url-template-value=?]',

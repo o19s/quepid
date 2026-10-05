@@ -16,6 +16,7 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 export default class extends CoreModalControllerBase {
   static targets = [
     "item",
+    "itemTemplate",
     "title",
     "alert",
     "warning",
@@ -106,8 +107,8 @@ export default class extends CoreModalControllerBase {
   }
 
   async _loadScorers() {
-    if (this.hasCommunalListTarget) this.communalListTarget.innerHTML = ""
-    if (this.hasCustomListTarget) this.customListTarget.innerHTML = ""
+    if (this.hasCommunalListTarget) this.communalListTarget.replaceChildren()
+    if (this.hasCustomListTarget) this.customListTarget.replaceChildren()
 
     try {
       const data = await getJson(this.scorersUrlValue)
@@ -151,22 +152,18 @@ export default class extends CoreModalControllerBase {
 
   _renderLists() {
     if (this.hasCommunalListTarget) {
-      this.communalListTarget.innerHTML = ""
-      this.communalScorers.forEach((scorer) => {
-        this.communalListTarget.appendChild(this._listItem(scorer))
-      })
+      this.communalListTarget.replaceChildren(
+        ...this.communalScorers.map((scorer) => this._listItem(scorer))
+      )
     }
 
     const showCustom = !this.communalScorersOnlyValue
     this.toggleVisible("customSection", showCustom)
     if (this.hasCustomListTarget) {
       this.toggleVisible("customList", showCustom)
-      this.customListTarget.innerHTML = ""
-      if (showCustom) {
-        this.userScorers.forEach((scorer) => {
-          this.customListTarget.appendChild(this._listItem(scorer))
-        })
-      }
+      this.customListTarget.replaceChildren(
+        ...(showCustom ? this.userScorers.map((scorer) => this._listItem(scorer)) : [])
+      )
     }
     if (this.hasCustomEmptyTarget) {
       this.customEmptyTarget.classList.toggle(
@@ -177,12 +174,9 @@ export default class extends CoreModalControllerBase {
   }
 
   _listItem(scorer) {
-    const li = document.createElement("li")
-    li.className = "list-group-item"
+    const li = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
     li.textContent = scorer.name
-    li.dataset.pickScorerCoreTarget = "item"
     li.dataset.pickScorerCoreScorerIdParam = String(scorer.scorer_id)
-    li.dataset.action = "click->pick-scorer-core#selectScorer"
     return li
   }
 

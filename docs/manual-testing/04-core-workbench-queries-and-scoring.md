@@ -92,7 +92,7 @@ Before testing individual features, get oriented:
 
 ### 4.8 Select a scorer for the case
 
-Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); after save the live-query runtime rescored the active queries.
+Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); its rows are cloned from a Rails-rendered template and loaded/saved through JSON APIs. After save the live-query runtime rescores the active queries.
 
 - [ ] **Steps:**
   1. Click **Select scorer** in the case toolbar.
@@ -102,6 +102,8 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 - **Expected:** Case score recalculates using the new scorer; the scorer name in the header updates.
 - **Edge cases:**
   - [ ] When the case's current scorer is not in your accessible lists, confirm the warning that "you won't have access to it again" if you switch away from it.
+  - [ ] Force a scorer-save failure: the modal stays open, shows the server error and retains the selected row; retry succeeds and closes the modal.
+  - [ ] Reload and reopen the modal: the saved scorer remains selected.
 
 ### 4.9 Missing Documents finder
 
