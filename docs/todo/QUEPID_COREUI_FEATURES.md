@@ -4,7 +4,7 @@
 >
 > The query evaluation page is the heart of Quepid and is where search engineers spend most of their time. This document enumerates its functionality, interaction model, and technical complexity.
 >
-> **Implementation:** AngularJS has been removed. The page is server-rendered by `core.html.erb` and driven by Stimulus controllers (registered in [`core_stimulus.js`](../../app/javascript/core_stimulus.js), 50 of them) on top of plain ES modules in `app/javascript/utils/`, `stores/` and `api/`. `core-bootstrap` loads the case and starts the searches; the `live_query_*` modules own query state, search execution and scoring; `scorer_runtime.js` runs scorer code.
+> **Implementation:** AngularJS has been removed. The page is server-rendered by the case branch of `application.html.erb` (`_case_head` / `_case_workspace`) and driven by Stimulus controllers (registered in [`core_stimulus.js`](../../app/javascript/core_stimulus.js), 50 of them) on top of plain ES modules in `app/javascript/utils/`, `stores/` and `api/`. `core-bootstrap` loads the case and starts the searches; the `live_query_*` modules own query state, search execution and scoring; `scorer_runtime.js` runs scorer code.
 
 ---
 
@@ -1076,7 +1076,7 @@ Scorer selection (`pick-scorer-core` Stimulus modal) loads lists via `api/scorer
 ### Bootstrapping Sequence
 
 ```
-core.html.erb renders /case/{caseNo}/try/{tryNo} with a core-bootstrap element
+The case branch of application.html.erb renders /case/{caseNo}/try/{tryNo} with a core-bootstrap element
     ↓
 core-bootstrap controller → bootstrap()
     ↓

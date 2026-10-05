@@ -168,7 +168,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 ## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)
 
-- The core case UI (`app/views/layouts/core.html.erb`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
+- The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
 - **`app/javascript/core_vendor.js`** and the core Stimulus/runtime bundle provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
 - The rest of the UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
 - **Root `font-size` and rem-based BS5 defaults.** `core-additions.css` sets **`html { font-size: 87.5% }`** on `core` (1rem = 14px, Bootstrap 3's base), so every rem-based BS5 default renders smaller than upstream.
@@ -209,7 +209,7 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 
 - Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
 - To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild the core bundle (`yarn build:core`), capture, then **restore + rebuild in the same session** before anything else.
-- **Never leave the repo on HEAD/old sources** after a before capture — verify the current markup and bundles before finishing.
+- **Never leave the repo on HEAD/old sources** after a before capture — verify the current markup and bundles before finishing. When restoring files, refresh their modification times so Rails reloads cached templates and importmap configuration; verify the rendered module import matches the restored pin.
 - Use the relevant Playwright screenshot spec and `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
 - No viewer tooling, inventory docs, or unrelated edits while the tree is mid-flip.
 

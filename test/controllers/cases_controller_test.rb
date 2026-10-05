@@ -41,7 +41,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
       assert(hrefs.any? { |href| href.match?(%r{/application[.-]}) })
       assert_not(hrefs.any? { |href| href.match?(%r{/(core|json-explorer)[.-]}) })
     end
-    assert_select 'script[type="module"]', text: /import "application_modern"/
+    assert_select 'script[type="module"]', text: /import "application"/
     assert_not(css_select('script[src]').any? { |script| script['src'].match?(%r{/(core_case|core_vendor|tour)[.-]}) })
   ensure
     ENV['RAILS_RELATIVE_URL_ROOT'] = original_root

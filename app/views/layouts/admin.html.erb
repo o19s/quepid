@@ -11,7 +11,7 @@
     <%= stylesheet_link_tag 'admin', media: 'all', 'data-turbo-track': 'reload' %>
     <%= csrf_meta_tags %>
 
-    <%= javascript_importmap_tags 'application_modern' %>
+    <%= javascript_importmap_tags 'application' %>
 
   </head>
   <body data-controller="page-cache" data-action="turbo:before-cache@document->page-cache#prepare" class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">

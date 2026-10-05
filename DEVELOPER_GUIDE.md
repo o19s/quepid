@@ -482,7 +482,7 @@ While running the application, you can debug the JavaScript using your favorite 
 
 The core case bundles (`core_case.js`, `core_vendor.js`) and the other entries under `app/assets/builds/` are built by esbuild with source maps, so browser dev tools show the original files under `app/javascript/`. With `bin/docker s`, Foreman keeps the bundles rebuilt as you save (see `Procfile.dev`); hard-refresh the page to pick up changes. Run `yarn build:core` only if the watchers are not running.
 
-Pages that use the importmap (`application_modern.js`) load `app/javascript/` modules unbundled.
+Pages that use the importmap (`application.js`) load `app/javascript/` modules unbundled.
 
 ### Debugging Splainer and other NPM packages
 
@@ -803,7 +803,7 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 The core interactive application is Rails + Stimulus with a module-owned case runtime. **`splainer-search`** is **`3.x` from npm** (see root `package.json`).
 The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
+For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
 
 ### Stimulus HTTP conventions
 
@@ -831,7 +831,7 @@ These apply to all client code: Rails pages and the case page alike. ESLint enfo
 ### Turbo navigation
 
 Use Turbo Drive by default on ordinary Rails management and admin pages.
-`application_modern.js` enables Drive; Rails owns navigation URLs and rendered
+`application.js` enables Drive; Rails owns navigation URLs and rendered
 HTML, while Stimulus owns behavior and widget lifecycle. Do not add global form
 helpers that opt every form out of Turbo.
 

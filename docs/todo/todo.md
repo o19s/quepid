@@ -70,7 +70,7 @@ builds for their own data-API/consumer reasons; revisit them separately.
 
 AngularJS removal is complete; remaining work concerns ownership, lifecycle and
 optional simplification. Ordinary management/admin pages now enable Turbo Drive
-through `application_modern.js`. The case workspace uses the shared Rails layout
+through `application.js`. The case workspace uses the shared Rails layout
 but keeps a separate bundle with Drive disabled and a destination reload boundary;
 standalone analytics also forces a fresh document. Frames and Streams remain
 available on the case page. Shared layout/header markup does not make runtime

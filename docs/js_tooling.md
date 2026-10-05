@@ -5,7 +5,7 @@ Quepid has a modern JavaScript tree plus a small set of classic compatibility sc
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
 | `app/javascript/tour.js` | Classic script still loaded by the core layout | **ESLint + Prettier (enforced)** | Browser/manual coverage |
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only; classic core scripts above are also Prettier-enforced) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only; classic core scripts above are also Prettier-enforced) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
 | `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
@@ -24,7 +24,7 @@ Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and 
 That tree includes:
 
 - `app/javascript/controllers/`, `api/`, `utils/`, `modules/`
-- Entry bundles: `application.js`, `application_modern.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
+- Entry bundles: `application.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
 
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 

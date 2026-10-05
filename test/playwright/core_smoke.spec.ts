@@ -7,7 +7,7 @@ import {
   gotoCase,
 } from './case_helpers';
 
-// Golden-path smoke suite for the core case UI (core.html.erb).
+// Golden-path smoke suite for the core case UI (case branch of application.html.erb).
 // Each test ends in a baseline screenshot so the BS3 -> BS5 migration's
 // per-template PRs have a regression net for "invisible-but-present"
 // failures (CLAUDE.md trap #5: popover element exists, aria-describedby set,

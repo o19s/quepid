@@ -2,7 +2,7 @@
 
 # Pin npm packages by running ./bin/importmap
 
-pin 'application_modern'
+pin 'application'
 pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js'
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
@@ -20,7 +20,7 @@ pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
 # Shared entry point that loads the three above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (analytics and Rails pages) can load just this.
+# application.js (analytics and Rails pages) can load just this.
 pin 'vega_globals'
 
 pin 'ahoy', to: 'ahoy.js'
@@ -32,7 +32,7 @@ pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.8
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 # Shared entry point that loads the two above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (the core case bundle) can load just this.
+# application.js (the core case bundle) can load just this.
 pin 'bootstrap_globals'
 
 # CodeMirror 6 packages

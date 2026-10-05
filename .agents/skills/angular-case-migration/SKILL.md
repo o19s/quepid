@@ -38,7 +38,7 @@ Quepid had **different share-case (and similar) UX on different surfaces** befor
 
 | Surface | Layout | Pre-migration share-case UI (example) | Transport |
 |---------|--------|----------------------------------------|-----------|
-| **Core case** `/case/:id` toolbar | `core.html.erb` | Angular `$quepidModal`: `list-group`, conditional sections, one footer action | `teamSvc` API, stay on page |
+| **Core case** `/case/:id` toolbar | `application.html.erb` case branch (`_case_head` / `_case_workspace`) | Angular `$quepidModal`: `list-group`, conditional sections, one footer action | `teamSvc` API, stay on page |
 | **Rails pages** cases index, teams | `application` | Rails `_share_case_modal` + Stimulus: `<select>`, always-visible "Already shared with", two disabled footer buttons | form POST, redirect |
 
 Other features may have the same split: **core Angular** vs **Rails Stimulus twin**. Inventory both; never assume one partial is the source of truth for all surfaces.

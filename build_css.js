@@ -123,7 +123,7 @@ function buildAdminCSS() {
   ]);
 }
 
-// Standalone stylesheets linked from core.html.erb (not folded into core.css).
+// Standalone stylesheets linked from layouts/_case_head.html.erb (not folded into core.css).
 function copyLinkedStylesheets() {
   console.log('Copying linked stylesheets...');
 

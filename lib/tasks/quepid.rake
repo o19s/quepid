@@ -113,10 +113,11 @@ namespace :test do
       'stryker.config.mjs',
       'build_css.js',
       'audit_css.js',
+      'esbuild.config.js',
       'vitest.config.js',
       'lib',
       'db/scorers',
-      'db/mapper_based_search_engines',
+      'db/mapper_based_search_engines'
     ]
     eslint_success = system(eslint.to_s, *eslint_paths, chdir: Rails.root.to_s)
 

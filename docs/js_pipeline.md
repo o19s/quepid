@@ -11,9 +11,13 @@ Quepid serves JavaScript through two mechanisms. Which one a page uses depends o
 
 | Layout | Pages | JavaScript loaded |
 |--------|-------|-------------------|
-| `application.html.erb`, `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application_modern` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
-| `core.html.erb` | The case page (`/case/:id`) | Importmap for `vega_globals` and `bootstrap_globals`, then bundles `core_vendor.js` and `core_case.js`, then classic script `tour.js` |
+| `application.html.erb` (non-case branch), `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
+| `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads bundles `core_vendor.js` and `core_case.js`, then classic script `tour.js` |
 | `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then bundle `analytics.js` |
+
+### Rails entry point
+
+- **`application.js`** is the live importmap entry. It is pinned in `config/importmap.rb`, loaded by `javascript_importmap_tags 'application'` in `application.html.erb` and `admin.html.erb`, and starts Turbo, Stimulus, local-time, ahoy and the globals. The case branch of `application.html.erb` deliberately does not load it.
 
 The case page is bundled because it depends on legacy UMD vendor libraries that need to be exposed as `window` globals, which esbuild handles in `core_vendor.js`.
 
