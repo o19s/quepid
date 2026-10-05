@@ -39,11 +39,11 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          <th>Text</th>
+          <th><%= sort_link(@q, :text, 'Text') %></th>
           <th>Author</th>
-          <th>Created</th>
-          <th>Publishes</th>
-          <th>Expires</th>
+          <th><%= sort_link(@q, :created_at, 'Created') %></th>
+          <th><%= sort_link(@q, :publish_date, 'Publishes') %></th>
+          <th><%= sort_link(@q, :expiration_date, 'Expires') %></th>
           <th>Views</th>
           <th></th>
         </tr>

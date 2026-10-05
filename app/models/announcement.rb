@@ -26,10 +26,11 @@ class Announcement < ApplicationRecord
   validates :expiration_date, presence: true
   validate :publish_date_not_after_expiration_date
 
-  # Ransack (used by admin/announcements#index's search box) requires every
-  # searchable attribute to be allowlisted - keep this to what's used today.
+  # Ransack (used by admin/announcements#index's search box and sortable
+  # column headers) requires every searchable/sortable attribute to be
+  # allowlisted - keep this to what's used today.
   def self.ransackable_attributes _auth_object = nil
-    %w[text_downcase]
+    %w[text_downcase text publish_date expiration_date created_at updated_at]
   end
 
   def self.ransackable_associations _auth_object = nil

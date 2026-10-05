@@ -11,7 +11,12 @@ module Admin
       ransack_params[:text_downcase_cont] = ransack_params[:text_downcase_cont].downcase if ransack_params[:text_downcase_cont].present?
 
       @q = Announcement.ransack(ransack_params)
-      @pagy, @announcements = pagy(@q.result.order(updated_at: :desc))
+      # Default sort when the user hasn't clicked a column header yet (sort_link
+      # in the view drives @q.sorts from here on - a hardcoded .order would
+      # fight with that once a column is clicked).
+      @q.sorts = 'updated_at desc' if @q.sorts.empty?
+
+      @pagy, @announcements = pagy(@q.result)
     end
 
     def new
