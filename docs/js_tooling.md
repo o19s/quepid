@@ -108,7 +108,7 @@ bin/docker r yarn test:unit:watch     # watch mode
 bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 ```
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
+Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
 
 ### Controller test fixtures
 
@@ -138,7 +138,7 @@ Mutation testing checks whether Vitest specs actually fail when the code they co
 - Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
 - Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
 - Default scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. `stores/` and nearly every controller also have specs, so run them on demand with `--mutate` (see below) rather than widening the default, which would make a full run much slower.
-- Controller specs use the Stimulus stub (`app/javascript/test/stimulus_stub.js`) and call methods directly, so Stimulus never runs `connect()`/`disconnect()`, resolves targets/values from markup, or wires `data-action`. Lifecycle code shows up as `NoCoverage` unless the spec calls it itself; Playwright covers the wiring. Judge a controller by its actions and error paths, not its overall score.
+- Controller specs use the Stimulus stub (`test/javascript/support/stimulus_stub.js`) and call methods directly, so Stimulus never runs `connect()`/`disconnect()`, resolves targets/values from markup, or wires `data-action`. Lifecycle code shows up as `NoCoverage` unless the spec calls it itself; Playwright covers the wiring. Judge a controller by its actions and error paths, not its overall score.
 - The classic core scripts are out of scope for mutation testing; browser verification covers their DOM and global-script behavior.
 
 ```bash

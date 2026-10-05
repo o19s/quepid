@@ -161,8 +161,7 @@ all browser modules, adding HTML endpoints or enabling case-page Turbo Drive.
 ## Execution record
 
 **2026-10-05: batches 1 and 2 complete for the scorer-selection pilot; batch 3
-complete for page-supplied bootstrap data.** Batch 4 remains incomplete; only its
-approved save-error/retry and pending-submission fix is retained.
+complete for page-supplied bootstrap data; batch 4 complete for Tune Relevance.**
 The existing restriction on parallel HTML endpoints
 does not block this plan.
 

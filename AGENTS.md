@@ -156,7 +156,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 - Server-owned URLs (`data-*-url-value`, `formTarget.action`, or a `*-url-template-value` with a named placeholder for browser-only ids); JSON through the `api/json` verb helpers (`getJson`/`postJson`/`putJson`/`patchJson`/`deleteJson`), `apiFetch` only for non-JSON. See the guide section.
 - `getQuepidRootUrl()` only when the server cannot pass the URL (e.g. redirect after import).
 
-**Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `app/javascript/test/stimulus_stub.js`.
+**Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `test/javascript/support/stimulus_stub.js`.
 
 **Playwright** (`test/playwright/*.ts`) — TypeScript; not governed by `.prettierrc.json`.
 
