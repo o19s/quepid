@@ -24,6 +24,12 @@
 
     <%= hidden_field_tag :clone_of, @clone_of.id if @clone_of %>
 
+    <div class="alert alert-light border small">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      Query vectors are only comparable with document vectors made the same way: use the
+      <strong>model</strong> and <strong>truncation</strong> your search index's vectors were created with.
+    </div>
+
     <div class="row">
       <div class="col-md-7">
         <div class="row mb-3">
@@ -53,6 +59,10 @@
           <%= form.label :model, class: 'col-sm-3 col-form-label' %>
           <div class="col-sm-9">
             <%= form.text_field :model, class: 'form-control', data: { embedder_form_target: 'model' } %>
+            <div class="form-text">
+              The model your documents were embedded with. Vectors from different models live in different
+              spaces, so a mismatch gives meaningless scores rather than an error.
+            </div>
           </div>
         </div>
 
@@ -75,6 +85,11 @@
                     [ 'Client-side (keep first N, re-normalize)', 'client' ] ], {},
                   class: 'form-select',
                   data: { embedder_form_target: 'truncation', action: 'change->embedder-form#refresh' } %>
+            <div class="form-text">
+              Match how the index's vectors were sized: their dimension count, and whether they were shortened
+              by the provider (native) or cut and re-normalized afterwards (client-side). Search engines reject
+              a query vector of the wrong size.
+            </div>
             <div class="form-text" data-embedder-form-target="truncationHint"></div>
           </div>
         </div>
