@@ -19,6 +19,11 @@ export default class extends CoreModalControllerBase {
     this.editor = fromTextArea(this.editorTarget, { mode: "json", height: 400 })
   }
 
+  disconnect() {
+    this.editor?.destroy()
+    this.editor = null
+  }
+
   // Opened from a query row's "Set Options" button; the row carries the query id, and the
   // options are read from the live query so they are current, not as of the row's render.
   openFor(button) {

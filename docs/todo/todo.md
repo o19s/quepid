@@ -1055,27 +1055,6 @@ its caller. Test timezone-boundary timestamps, invalid dates, and unusual years;
 manual year slicing and Intl formatting are not universally equivalent.
 Keep full-year snapshot labels and activity tooltip formatting distinct.
 
-### [MIGRATION-FOLLOWUP] P2 I1 C1 — Use the shared CodeMirror disposal contract in case controllers
-
-`modules/editor.js#fromTextArea` now exposes `editor.destroy()`: it cancels the
-initial-format timer, synchronizes the textarea, removes the form-submit
-listener, destroys the view/wrapper, restores textarea visibility and releases
-`textarea.editor`. The management `codemirror` controller uses it on disconnect
-and `turbo:before-cache`; global editor auto-initialization has been removed.
-The adapter teardown is covered in `test/javascript/modules/editor.test.js`.
-
-**Remaining:** `tune_relevance_controller.js#disconnect` and
-`missing_documents_controller.js#disconnect` still call only
-`editor.view.destroy()`. `query_options_core_controller.js` creates an editor
-on connect but has no disconnect hook. Those paths bypass some or all of the
-adapter's cleanup and can leave generated DOM or callbacks behind on remount.
-
-**Fix direction:** use the existing adapter destroy method and clear each
-controller's reference; do not introduce another disposal API. Verify repeated
-connect/disconnect without duplicate editors, wrappers or submit listeners,
-including pending initial formatting. Case modal hide is not necessarily a
-Stimulus disconnect, and the case workspace still uses full-page navigation;
-management Drive enablement alone does not establish a browser leak here.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Small utility cleanups
 

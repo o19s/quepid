@@ -49,7 +49,8 @@ export default class extends Controller {
 
   disconnect() {
     if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
-    this.editor?.view?.destroy()
+    this.editor?.destroy()
+    this.editor = null
   }
 
   loadCapabilities() {

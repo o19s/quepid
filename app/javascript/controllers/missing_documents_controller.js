@@ -38,7 +38,8 @@ export default class extends Controller {
   }
 
   disconnect() {
-    this.editor?.view?.destroy()
+    this.editor?.destroy()
+    this.editor = null
   }
 
   renderShell() {

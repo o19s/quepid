@@ -236,9 +236,9 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-05T16:11:11Z
+        last_run: 2026-10-05T17:18:19Z
         result: pass
-        notes: "Covered live: Query Options before/after on case 6, plus a mocked successful save and reopen on case 219 confirming options reach its live query. Not covered live: persistence, invalid JSON and pending-save races."
+        notes: "Covered live: ES case 2 Query Options open/cancel/reopen, three actual Stimulus remounts with one editor after each reconnect and wrapper/reference cleanup on disconnect; inspected before/after screenshots. Not covered live: saving, rescoring, invalid JSON or save failures."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.6":
         title: "Rate a document"
@@ -260,15 +260,15 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-10-04T15:54:10Z
+        last_run: 2026-10-05T17:18:19Z
         result: pass
-        notes: "Covered live on Solr case 598, query meetings: the finder textarea prefills 'q=meetings&magicBoost=31&bq=title:meeting^##dueBoost##' and the knob is substituted at search time (bq=title:meeting^3); q=beach shows '57 matching documents.' and the persistent 'Changing ratings will affect the query score.'; finder Score All rates only its 5 results (Reset to All Rated Docs then reads 'There are 8 ratings for your original query meetings.', up from 3); a single doc rates 1 to 0 and RESET shows '--'; Escape closes. Not covered live: ES JSON editor, no-results message."
+        notes: "Covered live: ES case 2 Missing Documents JSON editor prefill, three actual Stimulus remounts with wrapper/reference cleanup and one editor after each reconnect, repeated close/reopen removing the dynamic modal; inspected before/after screenshots. Not covered live: searching, rating, reset, other engines or errors."
         paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-10-04T21:15:04Z
-        result: pass_with_fixes
-        notes: "Sampled drawer drag beyond the left edge at 1280px: main stays 230px and drawer stays inside the workbench; resizing to 600px reclamps the drawer to 514px (workbench retains its documented horizontal scroll). Inspected before/after and resize screenshots. Deferred: sandbox editing/rerun and other tabs."
+        last_run: 2026-10-05T17:18:19Z
+        result: pass
+        notes: "Covered live: ES case 2 Query Sandbox open/close and three actual Stimulus remounts, with wrapper/reference cleanup and one editor after each reconnect; inspected before/after screenshots (after capture includes the search-completion toast). Not covered live: editing/rerunning, other tabs, resizing, TLS or static-engine states."
         paths: ["app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
