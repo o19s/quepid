@@ -1,9 +1,9 @@
 /**
- * Slim Stimulus entry for the core case layout (`core.html.erb`).
+ * Slim Stimulus entry for the case branch of the shared Rails layout.
  * This entry is bundled as `core_case.js` by esbuild; it is intentionally
  * separate from the importmap entry used by Rails pages.
  *
- * Registers only the controllers `core.html.erb` actually renders, instead of
+ * Registers only the controllers the case page actually renders, instead of
  * `controllers/index.js`'s `eagerLoadControllersFrom` (which would import every
  * pinned controller, Rails-only ones like `confetti_controller.js` included) on
  * this already-heavy case surface.

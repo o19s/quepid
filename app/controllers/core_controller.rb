@@ -2,6 +2,7 @@
 
 # This hosts the main case application that runs in the client.
 class CoreController < ApplicationController
+  layout 'application'
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
 

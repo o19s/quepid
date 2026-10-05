@@ -17,6 +17,54 @@ class CoreControllerTest < ActionController::TestCase
       assert_response :success
     end
 
+    test 'preserves the case shell and exclusive asset entries' do
+      get :index, params: { id: cases(:one).id, try_number: tries(:one).try_number }
+
+      assert_response :success
+      assert_select 'body[data-controller="snapshot-bridge core-bootstrap query-command-bridge"]'
+      assert_select 'body[data-core-bootstrap-case-no-value=?]', cases(:one).id.to_s
+      assert_select 'body[data-core-bootstrap-try-no-value=?]', tries(:one).try_number.to_s
+      assert_select 'body[data-core-bootstrap-case-toolbar-outlet="#case-actions"]'
+      assert_select 'body[data-core-bootstrap-communal-scorers-only-value=?]', Rails.application.config.communal_scorers_only.to_s
+      assert_select 'body[data-core-bootstrap-query-list-sortable-value=?]', Rails.application.config.query_list_sortable.to_s
+      assert_select 'body[data-quepid-root-url]'
+      assert_select 'head base', 1
+      assert_select 'body.d-flex', 0
+      assert_select '#main-content .pane_main footer', 1
+      assert_select '.sidebar', 0
+      assert_select 'body > #shareCaseModal', 1
+      assert_select 'link[rel="stylesheet"]' do |links|
+        hrefs = links.map { |link| link['href'] }
+        assert(hrefs.any? { |href| href.match?(%r{/core[.-]}) })
+        assert(hrefs.any? { |href| href.match?(%r{/json-explorer[.-]}) })
+        assert_not(hrefs.any? { |href| href.match?(%r{/application[.-]}) })
+      end
+      scripts = css_select('script[src]').map { |script| script['src'] }
+      entries = scripts.filter_map { |src| src[%r{/(core_vendor|core_case|tour)[.-]}, 1] }
+      assert_equal %w[core_vendor core_case tour], entries
+      assert_select 'script[type="module"]', text: /import "vega_globals"/
+      assert_select 'script[type="module"]', text: /import "bootstrap_globals"/
+      assert_select 'script[type="module"]', text: /import "application_modern"/, count: 0
+    end
+
+    test 'preserves an explicitly missing try in the body bootstrap data' do
+      get :index, params: { id: cases(:one).id, try_number: 999_999 }
+
+      assert_response :success
+      assert_select 'body[data-core-bootstrap-try-no-value="999999"]'
+    end
+
+    test 'renders the base URL for sub-path deployments' do
+      original_root = ENV.fetch('RAILS_RELATIVE_URL_ROOT', nil)
+      ENV['RAILS_RELATIVE_URL_ROOT'] = '/quepid'
+
+      get :index, params: { id: cases(:one).id }
+
+      assert_select 'head base[href="/quepid/"]', 1
+    ensure
+      ENV['RAILS_RELATIVE_URL_ROOT'] = original_root
+    end
+
     test 'creates a case and redirects to its first try when starting a new case' do
       assert_difference 'Case.count', 1 do
         get :new

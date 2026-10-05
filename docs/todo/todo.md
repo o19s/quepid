@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-04
+**Last updated:** 2026-10-05
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -73,28 +73,26 @@ comments); what remains is mostly structure. Audited 2026-10-03 on
 outlet-vs-event rule, pitfalls, what stays manual by design) are in
 `docs/archived/stimulus_turbo_retrofit_completed.md`.
 
-### [MIGRATION] P2 I3 C3 — Merge the case page into the main app
+### [MIGRATION] P2 I3 C2 — Merge the case page into the main Rails layout — completed
 
-The case page (`/case/:id`) is still its own app: its own layout
-(`layouts/core.html.erb`), header and footer (`layouts/_header_core_app.html.erb`,
-`_footer_core_app.html.erb`), esbuild IIFE bundles (`core_case.js`, built from `core_stimulus.js`, and
-`core_vendor.js`, alongside importmap-loaded Bootstrap and Vega; other pages
-use the importmap for their application controllers), and CSS layer
-(`core-additions.css` ~635 lines, `bootstrap5-compat.css` ~552 lines). Steps:
+Completed 2026-10-05: `CoreController` explicitly selects `application`; the
+layout branches by controller, with case head/workspace partials. The redundant
+core layout is removed. Separate stylesheets, runtime entries, headers and
+footers remain intentional. No SSL or protocol-switch code changed.
 
-1. Merge `_header_core_app.html.erb` into `_header.html.erb`, rendering the
-   case-specific parts (case name, try, score) only on a case. Same for the footer.
-2. Render the case page in `application.html.erb`, linking the `core` CSS
-   bundle there instead of `application`. Move the `core_stimulus.js` entry onto the importmap
-   at the same time; that needs pins for `sortablejs` and `splainer-search/wired.js`
-   (the package ships only an IIFE `dist`).
-3. Rename the `_core` twins (11 `controllers/*_core_controller.js`, 10
-   `shared/_*_core_modal.html.erb`). Only `share_case` has a non-core
-   counterpart; for the rest the suffix just means "lives on the case page".
-   Don't rename before steps 1–2; it's churn on its own.
+Render the case page through `application.html.erb` with an explicit case-page
+branch for its body controller attributes, full-width workspace, modal shells,
+and assets. Link `core.css` and `json-explorer.css` on the case page; retain
+`core_case.js` (built from `core_stimulus.js`), `core_vendor.js`, `tour.js`, and
+importmap-loaded Bootstrap and Vega in their existing loading order. Load
+`application.css` and `application_modern.js` on management pages. Preserve
+the management-page sidebar and content wrappers, and keep Turbo Drive off.
+Initially retain the separate header/footer partials; the case footer stays
+inside the workspace pane where `core/index.html.erb` currently renders it.
 
 Preserve the `<base href>` rendered by `layouts/_head_common.html.erb`: relative
 URLs and `utils/html.js` URL validation rely on it for sub-path deployments.
+Preserve Solr JSONP's HTTP requirements and existing protocol-switch behavior.
 
 **Bootstrap 3 look (decided 2026-10-03): keep it, scoped to the case page.**
 `html { font-size: 87.5% }`, the BS3 brand blue `#337ab7` (`--q-brand-blue`),
@@ -106,6 +104,85 @@ identical everywhere: many rules are global (`html`, `:root`, `a`, `.modal`,
 `.tooltip`, `.popover`), modals and popovers attach to `<body>`, and the root
 font size cannot be scoped below `<html>`.
 
+**Acceptance:** Rails rendering checks cover case-only assets and body data,
+management-page assets/sidebar, and the base URL. Drive a representative browser
+sample covering case bootstrap, header dropdowns, a toolbar modal, drawer/footer
+scrolling, and a management page. Inspect matched before/after screenshots;
+record sampled and deferred coverage in this item and update only manual-tracker
+scenarios actually exercised. Remove the redundant core layout only after these
+gates pass.
+
+**Verification (2026-10-05):** 21 Rails controller tests / 147 assertions pass,
+including exclusive case/management assets, case body configuration and missing
+try, management sidebar/wrappers, pane footer/modal placement, script order and
+nonempty `/quepid/` base URLs on both surfaces. ESLint and the case bundle build
+pass; Ruby style checked for the controller and rendering tests.
+
+Playwright MCP sample on the running port-3000 server: static case 219 boots
+with 20 queries; Cases/Books/account dropdowns; share modal open/close;
+Tune Relevance open/close and pane/footer scrolling; case rename through a Turbo
+Frame followed by restoration; missing-try error; management `/cases`.
+All ten matched viewport screenshot pairs were opened and inspected under
+`.playwright-mcp/layout-merge/`. Layout, assets and sampled behavior are preserved;
+transient search notifications were aligned for comparison. Updated only scenarios
+3.1, 4.1, 4.17, 4.24 and 6.5 with actual sample coverage; moved obsolete layout
+path mappings without changing other verification timestamps.
+
+Deferred: remaining toolbar mutations/modals, try rename, drawer drag/narrow-screen
+coverage, management filtering/pagination, cross-case navigation, wizard,
+HTTPS/Solr JSONP protocol replay and a browser deployment below a sub-path.
+These are outside this representative batch; sub-path base rendering is tested.
+
+### [MIGRATION] P2 I2 C2 — Consolidate case and management header/footer markup
+
+After the layout batch, consolidate matching markup from
+`layouts/_header_core_app.html.erb` and `_header.html.erb`, and from the two
+footer partials. Use explicit surface branches or small shared partials where
+the behavior differs. Preserve the case header's active counts, wizard-launch
+button, case-derived book-creation parameters, dropdown endpoints, and navigation
+behavior. The case name, try and score remain in the workspace header. Preserve
+each footer's links, appearance and placement, including the case footer's
+position inside the scrolling workspace pane. This is reuse without a redesign.
+
+**Acceptance:** render checks preserve both surfaces' links and parameters;
+inspect before/after screenshots for desktop and collapsed navigation, both
+dropdowns, and both footers. Exercise wizard launch and book-creation navigation
+on the case page, plus management-page navigation. Record sampled/deferred
+manual coverage and update affected tracker paths when partials move.
+
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Evaluate moving the case JavaScript entry onto importmap
+
+Independent of the layout/header merge. The installed `splainer-search` 3.3.0
+ships ESM sources (`wired.js` and its dependency tree) as well as IIFE dist
+bundles; it is not IIFE-only. Inventory the full browser dependency graph,
+including `sortablejs`, `splainer-search/wired.js`, and transitive dependencies,
+before choosing pins or an ESM bundle boundary. Retaining esbuild for the heavy
+case workspace is acceptable if importmap adds complexity without a useful gain.
+
+Preserve one Stimulus application, one Turbo instance, and one initialization of
+the case runtime. Do not load both `application_modern.js` and the existing case
+bundle without resolving overlapping initialization. Audit vendor globals and
+script order before removing or replacing either bundle.
+
+**Acceptance:** record the loading decision and dependency inventory. If changing
+loading, pass relevant unit tests, lint and builds, then verify search, rating and
+score updates, sorting, modal/drawer behavior, and case-to-management navigation
+with inspected before/after screenshots. Record sampled/deferred manual coverage.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Rename case-only `_core` controllers and modal partials
+
+After the layout and header/footer batches, inventory `controllers/*_core_controller.js`
+and `shared/_*_core_modal.html.erb` and remove suffixes that only mean "lives on
+the case page". Keep distinct names for features with different per-surface
+behavior, notably `share-case` and `share-case-core`. Asset-loader changes are
+not a prerequisite. Rename references together across registration, ERB actions,
+outlets, tests, docs and manual-tracker paths; avoid standalone cosmetic churn.
+
+**Acceptance:** search for stale references, pass affected unit/rendering tests,
+lint and builds, and browser-smoke the renamed controllers' connections and
+outlets. Record sampled/deferred coverage and retain inspected screenshots for
+the sampled interactions.
+
 ### [MIGRATION] P2 I2 C3 — Replace the `quepid_search.js` service locator
 
 `app/javascript/quepid_search.js` is a shared module-level object standing in
@@ -113,7 +190,8 @@ for Angular's dependency injection: its `queryCapabilities` slots start `null`
 and are filled at startup by the runtime owner. Shared case state stays in sync
 through page-wide events such as `quepid:case-selected` and
 `judgements:book-settings-saved` in `core_runtime.js`. Independent of the layout
-merge; pairs naturally with the live-query owner simplification above.
+merge; pairs naturally with the mutable query-state ownership item in the
+consolidated DRY review.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Move remaining `utils/` DOM lifecycles into controllers (retrofit Track E)
 
@@ -167,6 +245,16 @@ inject fakes into production modules. Replace those injection seams with
 store/capability accessors as production boundaries unless their consumers are
 also deliberately redesigned. The flash `Proxy` exists solely for overrides
 and can become a plain object once its specs mock the module.
+
+Settle the controller-facing flash API in this same scope (former JS DRY J14).
+Some controllers use `coreFlash.show`; Annotations, Judgements and Export
+import `showFlash` directly, bypassing the override-aware Proxy. Choose one
+public convention after migrating the relevant test injection seams.
+Keep `utils/flash.js` as the event implementation and preserve target selection,
+structured search-error parts and the explicit HTML option. Inline status
+messages remain a distinct UI contract.
+
+---
 
 ### [MIGRATION-FOLLOWUP] P2 I0 C1 — The core_smoke rating test hangs when the first result is unrated
 
@@ -399,6 +487,20 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 **Fix direction:** Add an `inclusion` validation on `Judgement` for required ratings (preserve `rating_not_required?` for unrateable/judge-later rows), scoped to `query_doc_pair.book.scale`, conditioned `unless: -> { query_doc_pair&.book&.support_implicit_judgements? }` (safe-navigate — `query_doc_pair` is a required `belongs_to` but its own presence validation runs independently, so a blank `query_doc_pair` must not blow up this lambda with a `NoMethodError`) so the two legitimate continuous-rating paths above stay unaffected. Change `JudgementFromRatingJob` to `save` + handle a validation failure instead of `save!` (a case rating can legitimately be off-scale for an explicit-only book). Retire the job-local check in `run_judge_judy_job.rb` in favor of the model validation (catch the failure, call `mark_unrateable`).
 
+Also audit coercion and aggregation across rating writers (former DRY #15).
+`BooksController#combine` and `RatingsManager` round unless the book supports
+implicit judgements; bulk judging, the judgements API, `JudgementFromRatingJob`
+and `LlmService` do not all apply that rule. `combine` uses a pairwise mean,
+while `RatingsManager#calculate_rating_from_judgements` uses a different
+aggregation rule. Decide intended semantics before centralizing coercion in
+`Judgement`; check bulk writers that bypass callbacks and preserve legitimate
+continuous ratings. Changing rounding or aggregation changes stored ratings
+and scores, so keep it separate from behavior-preserving cleanup.
+
+The explicit `unrateable`/`judge_later` resets in `BulkJudgeController#save`
+are redundant: `Judgement#rating=` already clears both for a non-nil rating.
+Removing just those resets is a separate small no-op cleanup.
+
 ---
 
 ### [PREEXISTING] P2 I1 C3 — `BooksController#combine` collapses anonymous judgements into one averaged row
@@ -536,6 +638,14 @@ that redirects to the teams page with a flash. This differs from the default
 requests. Decide whether inaccessible or missing team resources should remain a
 redirect, become a 404 (or 403), and apply the chosen policy consistently.
 
+Apply the same policy review to the five `set_book` variants in
+`CurrentBookManager`, `BooksController`, `Books::ImportController`,
+`Api::V1::BooksController` and `AiJudges::PromptsController`: missing or
+inaccessible books currently yield a 404, redirect, or nil `@book`.
+A shared scoped lookup is optional (P3 I1 C1); preserve each surface's response
+contract unless deliberately changing it. Sharing lookup alone need not make
+HTML redirects and API 404s identical.
+
 ---
 
 ## [PREEXISTING] P3 — Security & consistency
@@ -600,6 +710,13 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 Jobs set status strings before working and clear them only on success, so a failure can leave a book permanently busy and leave uploaded blobs in place. Several import paths use `find_or_create_by` plus later updates, vulnerable to duplicate work from retries or concurrent requests. Related to the anonymous-judgement re-import entry above.
 
 **Fix direction:** `ensure`/failure transitions for status and blob cleanup; deliberate retry/discard policy; idempotency via unique constraints or an explicit import identity. Test a failed job followed by retry, and a duplicate submission.
+
+The shared lifecycle scope also includes `ExportBookJob` and
+`Book#queue_job`: queueing sets “queued”, each job sets “started”, and each
+clears status only on success. Consider one `book.run_job(operation) { … }`
+boundary. Define failed/retry status and blob retention before using `ensure`;
+blindly clearing everything could hide failed work or prevent retries.
+Status cleanup alone does not change scoring inputs.
 
 ---
 
@@ -671,3 +788,510 @@ Candidates for extraction into smaller methods or services:
 - `[PREEXISTING]` P3 I3 C3 — `RatingsImporter`
 - `[PREEXISTING]` P3 I2 C3 — `MapperWizardsController`
 - `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `BooksController` / `HomeController`
+
+---
+
+## [MIGRATION-FOLLOWUP] Consolidated DRY review
+
+Consolidated from the 2026-10-04 general and JavaScript DRY reviews.
+Retain scoring inputs, calculations, persistence, serialization, request order,
+import failure policies and each surface's UI contract when simplifying.
+Similarity alone does not justify a shared behavior. Ratings are estimates;
+no LOC reduction has been measured. Imported DRY provenance is provisional
+unless an entry records historical evidence; `[MIGRATION-FOLLOWUP]` denotes
+cleanup, not a confirmed regression.
+
+Fix concrete bugs before expanding abstractions. Low-risk fragments include
+removing duplicate field mapping, extracting identical field-spec parsing,
+and sharing the Document Finder's equivalent reset/pagination branches.
+Merging stores rewires score publication; compare the case UI before/after.
+Changing rated-result ranking, stored ratings, scoring aggregation, engine
+filters or request escaping is an intentional behavior change with its own
+verification. Keep frontend and background scoring aligned.
+
+### [PREEXISTING] P3 I2 C2 — Controller index filtering — deferred
+
+Review ownership and filtering semantics independently before extracting a
+concern. The team filter currently uses `joins` (Cases), `includes` plus a hash
+`where` (Books), and a subquery (SearchEndpoints). SearchEndpoints parses
+`archived` with `bool.deserialize`; the others use `deserialize_bool_param`.
+
+A shared concern is appropriate only where accessible/owned scopes, archive
+behavior, duplicate handling, and responses have the same contract. Preserve
+those scopes and boolean semantics during extraction.
+
+### [MIGRATION-FOLLOWUP] P2 I3 C3 — Consolidate mutable query-state ownership
+
+Each query's state exists as the live Query object plus three projections of it.
+The live-query runtime owner (`live_query_runtime_owner.js`) also keeps some of
+the same flags in its own variables.
+
+| State | Where it lives |
+| --- | --- |
+| Score, `allRated`, missing-rating count | live Query, `QueryCollectionStore` snapshot, `QueryDocumentsStore` read model, `CaseScoreStore.queryScores` |
+| `numFound`, `errorText`, query state | live Query, collection snapshot, documents read model |
+| Expanded / collapse-all | both stores (each has `collapseAll`), plus a pending-state map in the documents store |
+| Show only rated | owner variable, documents store, `getListState()` |
+| Display order | owner variable and collection store; `queryArray()` picks one by store status |
+
+The API query payload is also mapped from snake_case to camelCase twice: once in
+`live_query_factory.js`, and again through `querySnapshot`'s
+`query.queryText ?? query.query_text` fallbacks.
+
+**Fix direction:** consolidate mutable ownership incrementally; keep useful
+read projections instead of assuming every store must merge. Remove duplicate
+snake_case mapping first. If one live-query owner and projection replaces the
+copies, verify scores, `allRated`, missing-rating counts and expansion state.
+Coordinate with the service-locator item above; layout consolidation is not a
+prerequisite.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C2 — Rated-document lookup duplication
+
+"Fetch the docs this query has rated" has three implementations with different
+strategies:
+
+- `query_runtime.js#refreshRatedDocs`: the `filterToRated` searcher option.
+  `buildSearcherRequest` wraps the ES query in `bool: { should: query, filter }`
+  or adds a Solr `fq`, so the original query still ranks the results.
+- `createTargetedSearchAdapter#resetToRated`: replaces the ES `queryDsl` with
+  the filter outright, strips template args by hand, and uses Solr
+  `explainOther`.
+- The adapter's `paginate` default-list branch: repeats the `resetToRated`
+  engine branches, including the ES template stripping, nearly line for line.
+
+Rating is also written twice: `live_query_commands.js#rateDocument`/`rateAll` go
+through `ratingsStore`, while `adapter.rate`/`rateAll` call the doc's
+`rate`/`rateBulk`.
+
+**Decide first:** should "Show only rated" and the Document Finder's rated list
+rank the same way? Then use one rated-search builder for all three paths.
+
+Sharing the equivalent `resetToRated`/default-list pagination branches can
+preserve behavior. Merging all builders or rating-write paths needs the ranking
+and persistence decisions first.
+
+### [PREEXISTING] P2 I2 C2 — Align client and server scoring inputs and aggregation
+
+The scorer code is shared (MiniRacer runs it on the server), but the code around
+it is not, and the two sides disagree:
+
+| Rule | Case page (JS) | Server (`FetchService`, `JavascriptScorer`) |
+| --- | --- | --- |
+| Best-docs ratings | `parseInt`, so 2.5 becomes 2 (`ratings_store.js#bestDocs`) | `to_f`, kept as float |
+| Case score with nothing scored | `'--'` | `0.0` |
+| `all_rated` | computed | `nil` |
+| NaN query score | shown as blank | stored as 0 |
+| Rounding | none | `smart_round` to 2 places |
+
+Ratings are `float` in the schema, and averaged judgements produce non-integers.
+So a case can score differently in the UI and in a background evaluation.
+
+**Fix:** move input assembly (`bestDocs`) and case aggregation into the shared
+scorer module so both sides run the same code.
+
+### [PREEXISTING] P2 I1 C2 — Server search request building duplicates and drifts
+
+Inside `FetchService`:
+
+- `#$query##` is substituted twice. `build_get_params` uses
+  `gsub(string, string)`, so `\0` or `\1` in the query text is treated as a
+  backreference. `replace_values` uses the safe block form.
+- `build_get_params` assigns `params[key] = val` in a loop, so repeated Solr
+  params such as `fq` keep only the last value.
+- `escape_query` is never applied on the server, while the client honors it.
+- `field_spec` is parsed in `FetchService#add_solr_params` and again in
+  `Try#id_from_field_spec`.
+
+This backlog accepts keeping response parsing in both Ruby and JS. Request
+building is different: it drifts from the client and is buggy.
+
+**Fix:** one substitution helper, a small `FieldSpec` value object on `Try`, and
+multi-valued GET params.
+
+Identical field-spec parsing can be extracted without changing scores.
+Substitution, multi-valued filters and server escaping fixes change fetched
+results and background scores; verify them separately.
+
+### [PREEXISTING] P3 I1 C1 — Rating-color consistency
+
+- `scorer_runtime.js#scaleToColors`: an hsl gradient across the scorer's scale.
+- `scoring.js`: a fixed 1–10 palette (`DEFAULT_RATING_SCALE`), used when a
+  result has no scale.
+- `JudgementHelper`: `calculate_hsl_color` ports the gradient (but rounds the
+  hue), and `calculate_button_class` sets a `btn-*` color class on the same
+  button.
+
+**Fix:** one gradient rule; render the Rails judging buttons from the same scale
+colors.
+
+Visual consistency only: Rails currently rounds hues, and changing `btn-*`
+classes changes appearance. Cross-language sharing is worthwhile only if it
+reduces complexity; preserve scale semantics.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C2 — Search-engine rule boundaries — deferred
+
+`utils/search_engines.js` is meant to be the one place for engine checks, but
+most of the rules are written out somewhere else:
+
+- **"Store document fields in the snapshot"** (`static || !supportsLookupById`)
+  is written three times: `snapshot_bridge_controller.js:57`,
+  `snapshot_hydration.js:11` and `snapshot_hydration.js:75`.
+- **`["solr", "es", "os"]`** is hardcoded four times, with different meanings:
+  `rated_docs.js:9`, `query_runtime.js:344`, `settings_catalog_runtime.js:182`
+  (`supportsEscapeQuery`) and `live_query_runtime_owner.js:683`.
+- **`usesJsonQueryParams`** lives in `search_endpoint_runtime.js:41`, and
+  `tune_relevance_controller.js:319` adds its own Search API "starts with `{`"
+  exception on top.
+- **Too many layers:** pure checks pass through two or three runtime layers.
+  `isEsLikeEngine` becomes `isEsOrOsEngine` and then `isEsOrOs`, which is wired
+  up twice in `core_capabilities_runtime.js` (lines 182 and 225).
+- **Engine names:** `browse_query.js:1` has its own engine display name instead
+  of using `searchEngineLabel`.
+
+**Defer the full consolidation.** Safe fragments may include reusing display
+labels and removing redundant pass-throughs while preserving the exact
+predicate. Do not merge engine sets with different meanings or alter lookup,
+escaping, query DSL, or snapshot-field rules.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C1 — Refresh-ratings orchestration — deferred
+
+`frog_report_controller.js#refresh` (line 143) and
+`judgements_core_controller.js#_refreshRatings` (line 432) both fill in
+`__BACKGROUND__`, use the same "run in the background at 50 or more queries"
+rule, send a PUT, then either reload the queries or redirect.
+
+| | `frog_report` | `judgements_core` |
+| --- | --- | --- |
+| Threshold | hardcoded `50` | `BACKGROUND_QUERY_THRESHOLD` |
+| Reload | calls `queryLifecycle.refreshQueries` | dispatches `judgements:queries-need-reload` |
+| Redirect | immediate, no notice | 500ms, with `?notice=` |
+| Error text | `` `${status} ${statusText}` `` | `serverMessage(...)` |
+
+There are also two event names for one action:
+`judgements:queries-need-reload` and `imports:queries-need-reload` both go to
+the same handler (`live_query_events.js:91-92`).
+
+**Defer.** These flows alter scoring inputs and differ in stale-response
+handling, reload completion, errors, and redirects. Extracting only the threshold
+and PUT offers little reduction. Keep the existing reload event contracts.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C2 — Snapshot CSV import contracts — deferred
+
+| Caller | On failure |
+| --- | --- |
+| `import_snapshot_controller.js#importSnapshots` (line 127) | keeps going, counts failures, then throws |
+| `import_ratings_core_controller.js#importSnapshots` (line 136) | stops at the first failure |
+| `snapshot_import.js#importSnapshotsToCase` (line 45, used by the wizard) | stops at the first failure |
+
+Each one also builds its import URL differently.
+
+The snapshot column list is written three times: the excluded-fields list in
+`snapshot_import.js`, `expectedHeaders` in `import_snapshot`, and
+`REQUIRED_HEADERS.snapshots` in `import_ratings_core`. "Required headers present,
+no parse errors, not empty" validation exists three times with different
+messages (the third is `wizard_contracts.js#validateStaticHeaders`).
+
+**Defer upload-loop consolidation.** Preserve each caller's continue/stop
+policy, payloads, order, and error messages. Shared column constants may be a
+small safe cleanup after checking that the lists serve the same purpose;
+choosing one failure or validation policy is a behavior change.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C0 — Server-owned URLs and template replacement — deferred
+
+Fourteen controllers fill server-passed URL templates with
+`.replaceAll("__CASE_ID__", …)`. Some wrap the value in `String()`, none
+encode it, and nothing catches a placeholder that was never filled. Separately,
+about 80 call sites build `api/...` paths on the client, which the
+DEVELOPER_GUIDE discourages.
+
+**Defer as proposed.** Encoding values and throwing for unresolved placeholders
+add behavior. A replacement-only helper could preserve the contract but offers
+limited LOC savings. Moving client URLs to Rails ownership is a separate task.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Request-generation abstractions — deferred
+
+There are seven versions: `qscore_case_controller` (`diffRefreshGeneration`),
+`judgements_core_controller` (`openGeneration`), `query_collection_store`
+(`_searchGeneration`), `live_query_collection`, `case_runtime`, `query_runtime`
+(`ratingsGeneration`), and the `AbortController` in
+`team_member_autocomplete_controller`.
+
+**Defer.** These counters govern request races and invalidation; AbortController
+also cancels work. A shared token helper saves few lines and must not replace
+caller-specific cancellation or stale-response rules.
+
+### [MIGRATION-FOLLOWUP] P2 I1 C1 — Clipboard feedback and fallback contracts
+
+There are four versions of "copy, then swap the button label for a moment":
+`query_explain_controller.js:68`, `invite_controller.js:33`,
+`mapper_wizard_controller.js:446` and `browse_query_controller.js:44`.
+
+- **Bug:** `mapper_wizard` calls `navigator.clipboard` directly and skips the
+  plain-HTTP fallback in `utils/clipboard`, so copying fails on deployments
+  served over plain HTTP.
+- `browse_query` never puts its label back and never reports a failed copy.
+
+**Optional narrow scope:** share repeated feedback plumbing while preserving
+each caller's labels, icons, restoration delay, status messages, and errors.
+Do not impose one feedback policy on all four callers.
+
+The mapper HTTP fallback and Browse label restoration/error reporting are
+separate behavior fixes, outside a strict behavior-preserving refactor.
+
+Mapper Wizard's direct clipboard call is `[PREEXISTING]` (present in
+`be9b319a:app/javascript/controllers/mapper_wizard_controller.js`). Fix that
+fallback independently of optional feedback consolidation; verify plain HTTP.
+Browse feedback provenance has not been classified against the baseline.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C0 — Success-and-redirect helpers — deferred
+
+There are five versions with different delays: `import_case_controller.js:55`
+and `import_snapshot_controller.js:112` (1500ms), `clone_case_core_controller.js:138`
+(1000ms), `judgements_core_controller.js:478` (500ms), and
+`frog_report_controller.js:163` (none).
+
+**Defer.** One delay changes the current contract. A helper preserving each
+caller's delay, URL, notice, and navigation method saves very little.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Busy-state helpers — deferred
+
+There are about six versions: `CoreModalControllerBase#setLoading`/`setProgress`,
+`import_form_controller_base.js#setLoading`, `add_query_controller`,
+`missing_documents_controller`, `team_member_autocomplete_controller` (which
+uses `style.display` instead of `d-none`), and `mapper_wizard_controller`,
+which swaps the button's `innerHTML`.
+
+**Defer a universal helper.** Disabled controls, spinner classes, visibility,
+and HTML replacement have different contracts. Consolidate only demonstrably
+identical operations; leave modal-level progress bars and distinct state
+transitions alone.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C1 — Choose explicit error-message policies
+
+`utils/error_message.js:8` provides `errorMessage`; `:32` provides
+`serverMessage`. `query_lifecycle_controller.js:60` uses the former, whereas
+`share_case_core_controller.js:317,357`, `judgements_core_controller.js:307`,
+and `import_ratings_core_controller.js:201` use `error.message || fallback`.
+Mapper Wizard interpolates `error.message` directly in several catch blocks
+(`mapper_wizard_controller.js:149,205,366,431`). Frog Report additionally
+rewrites an `HttpError`'s message before displaying it (`:164`).
+
+**Fix direction:** explicitly choose an error policy at each
+boundary: contextual server errors via `serverMessage`, unknown rejection
+shapes via `errorMessage`, structured search errors via `flashErrorMessage`.
+Reuse the appropriate existing helper rather than add another extractor.
+Replacing `error.message || fallback` with `errorMessage` expands accepted
+rejection shapes; replacing it with `serverMessage` also changes the fallback
+for body-less HTTP failures. Treat those as intentional changes with focused
+tests, not mechanically equivalent substitutions. Preserve fixed generic
+messages and editor parse diagnostics. In `import_ratings_core_controller`,
+`error.data?.message || serverMessage(...)` deliberately prefers `data.message`
+when both `message` and `error` exist, while `serverMessage` and `HttpError`
+prefer `data.error`. The existing import-ratings test pins that distinction;
+keep the fallback unless a change deliberately preserves that precedence.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Snapshot short-date formatting
+
+Export uses `formatShortDate` (`export_case_core_controller.js:181`), defined
+in `utils/case_csv.js:61` with local date components. Diff constructs the same
+ordinary month/day/two-digit-year display using `toLocaleDateString`
+(`diff_core_controller.js:235`). Diff also resolves three alternative time
+fields and suppresses missing/invalid dates; the export formatter has no such
+guard. Snapshot models use full-year locale dates, with an explicit `en-US`
+override from `snapshot_bridge_controller.js:80,86`.
+
+**Fix direction:** share the short-date operation after checking
+valid-date equivalence, ideally from a neutral date utility rather than making
+Diff depend on CSV serialization. Keep Diff's guards and field fallbacks in
+its caller. Test timezone-boundary timestamps, invalid dates, and unusual years;
+manual year slicing and Intl formatting are not universally equivalent.
+Keep full-year snapshot labels and activity tooltip formatting distinct.
+
+### [MIGRATION-FOLLOWUP] P2 I2 C1 — CodeMirror disposal contract
+
+Tuning destroys its editor view on disconnect
+(`tune_relevance_controller.js:49,51`); Query Options creates one on connect
+(`query_options_core_controller.js:16,19`) without a disconnect hook.
+The common factory also attaches an anonymous form-submit listener and stores
+`textarea.editor` (`modules/editor.js`, following `formatJSON`). It does not
+expose an adapter-level disposal method that owns those resources.
+
+**Fix direction:** give the editor adapter one explicit destroy
+contract and use it from both controllers. Have that contract remove its form
+listener and release its textarea reference as well as destroy the view.
+Verify disconnect/reconnect and repeated mounting without duplicate editors
+or callbacks. This is a lifecycle fix candidate, not a confirmed browser leak;
+ordinary modal hide is not necessarily a Stimulus disconnect.
+
+Include Missing Documents and auto-initialized editors in the ownership audit.
+Dispose the wrapper and pending initial-format timer as well as the view,
+listener and textarea reference where applicable.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C1 — Small utility cleanups
+
+- JSON cloning is repeated in `settings_runtime.js`, `settings_catalog_runtime.js`
+  and `query_service.js`. `snapshot_model.js` preserves prototypes intentionally;
+  keep that operation separate. Extraction offers little reduction.
+- Explain parsing is repeated in `snapshot_searcher.js` and `snapshot_model.js`;
+  preserve parse failures rather than silently accepting invalid explains.
+- Remaining ID comparisons in Wizard, sharing, collection and scorer selection
+  can use `isSameId` only after proving equivalence. Numeric scorer comparisons
+  behave differently from string comparisons; do not mechanically replace them.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C0 — Direct Bootstrap modal wrappers — deferred
+
+Former J12: wrapping lookup/show/hide made call sites longer without removing
+instance lookup. Keep direct calls; do not expand helpers solely for this cleanup.
+Preserve silent no-op behavior when Bootstrap is absent and the existing error
+when Bootstrap exists but Modal is missing. Existing screenshot pairs and actual
+verification timestamps remain in the manual-testing tracker.
+
+### Review boundaries
+
+Do not unify sequential import upload loops or their stop/continue policies.
+Avoid changing `pAll`'s rate-limited starts and bounded concurrency for style.
+Book-sync scheduling needs the separate correctness fix below; it is not an
+example of interchangeable parallel work. CSV parsing consumes lookahead and
+advances its index intentionally. Prefer loop constructs according to intent,
+not uniform syntax.
+
+Keep autocomplete's server filtering separate from endpoint suggestions'
+client filtering; rating popovers and downloads already have shared helpers.
+Keep Rails/core sharing twins separate until the case-layout merge. Ruby and
+JS response parsers and CSV formula escaping serve distinct execution/export
+contracts; keep them aligned rather than merging them. Similar jbuilder
+partials have separate export/API contracts. The small Thor ratings/snapshot
+generators do not justify abstraction solely for copied lines.
+
+## [MIGRATION-FOLLOWUP] JavaScript correctness findings
+
+Reviewed 2026-10-05. The five focused suites for bulk judging, Query Options,
+book sync, the editor and Missing Documents passed (49 tests), but omit the
+cross-row and overlapping-request cases below. Read-only source reproductions
+with mocked APIs confirmed the bulk explanation, options-context, book-rank
+and failed-search cleanup failures. These were not browser passes.
+Historical comparisons below use source at `be9b319a`, not a live historical
+replay. A followup marker with unclassified provenance does not establish a
+migration regression.
+
+### [MIGRATION] P1 I0 C2 — Query Options save completion can target a different query
+
+**Location:** `app/javascript/controllers/query_options_core_controller.js#save`,
+`app/javascript/utils/live_query_events.js#optionsSaved`.
+
+Save A, dismiss the modal, and open B before A's PUT finishes. The completion
+reads the mutable `this.queryId`, dispatching B's ID with A's options. The event
+consumer updates B's live options and recalculates scores, while the server
+saved A. Completion also closes B's newly opened modal.
+
+**Fix direction:** capture the request's query ID/URL and options before awaiting;
+use an open-generation guard for UI effects. Still apply a successful save to
+its original live query. Test reopening B during A's pending success/failure.
+
+**Provenance:** the baseline Angular Query Options controller retained its own
+`ctrl.query` and opened a distinct modal instance per prompt; it did not reuse
+the mutable ID in the shared Stimulus modal.
+
+### [PREEXISTING] P1 I0 C1 — Bulk judging drops cross-row explanation edits
+
+**Location:** `app/javascript/controllers/bulk_judgement_controller.js#saveExplanation`.
+
+One debounce timer serves the entire multi-row controller. Editing B within a
+second of A cancels A's pending write, leaving its visible explanation unsaved.
+
+**Fix direction:** key pending saves by query-document pair; preserve independent
+row edits and define disconnect/navigation behavior explicitly. Test two rows
+edited inside the debounce window and cleanup of all pending timers.
+
+**Provenance:** the same single `saveTimeout` exists in the baseline controller.
+
+### [PREEXISTING] P1 I0 C2 — Book auto-sync renumbers newly discovered documents
+
+**Location:** `app/javascript/utils/book_sync.js#sync`, `buildQueryDocPairsPayload`.
+
+The sync cache filters out already-sent documents before payload construction
+assigns `index + 1`. After A has synced, results `[A, B]` send B at position 1
+instead of 2. `PopulateBookJob#fix_duplicate_positions` can consequently clear
+A's position, changing rank-depth judging coverage.
+
+**Fix direction:** carry original result positions through cache filtering.
+Test mixed synced/unsynced documents and persistence through the population job.
+
+**Provenance:** baseline `queriesSvc.js#syncToBook` similarly filters
+first; `bookSvc.js#updateQueryDocPairs` numbers the filtered list.
+
+### [MIGRATION-FOLLOWUP] P1 I0 C2 — Book auto-sync batches conflict with queued population
+
+**Location:** `app/javascript/utils/book_sync.js#sync`,
+`app/controllers/api/v1/books/populate_controller.rb#update`, `Book#queue_job`.
+
+More than 100 queries produce concurrent population requests for one book.
+The first queues a job and marks the book busy; additional requests can receive
+409. The client logs failures and clears their cache entries but resolves the
+sync without retrying them, so a completed search can leave the book incomplete.
+
+**Fix direction:** coordinate submission with job completion, or submit one
+server-managed payload. Awaiting each HTTP response alone is insufficient:
+204 acknowledges queueing, not completion. Surface partial failure and test
+101+ queries against the queued-job contract and a retry path.
+
+**Provenance:** parallel client batching predates the migration; the baseline
+population endpoint did not have the current conflict guard. The introduction
+of that contract mismatch has not been classified against migration history.
+
+### [PREEXISTING] P2 I0 C1 — Clearing an explanation-only judgement is not persisted
+
+**Location:** `app/javascript/controllers/bulk_judgement_controller.js#saveExplanation`.
+
+When no rating is selected and explanation text becomes empty, the callback
+skips the request. An existing explanation therefore returns after reload.
+The server can accept an explicit empty explanation.
+
+**Fix direction:** distinguish an untouched empty field from clearing previously
+saved content. Test saving text, clearing it, and reloading its persisted value;
+preserve zero-valued ratings and the untouched-empty case.
+
+**Provenance:** the same empty-input early return exists in the baseline controller.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — Failed Missing Documents operations leave controls busy
+
+**Location:** `app/javascript/controllers/missing_documents_controller.js#run`.
+
+A rejected search/reset/pagination operation bypasses spinner removal and
+re-enabling Search, leaving the modal stuck without contextual error feedback.
+
+**Fix direction:** restore controls in `finally`, report failures, and guard
+post-await rendering after disconnect. Cover rejected operations and successful
+retry. This controller's failure has been reproduced with a mock; whether the
+old Document Finder had an equivalent failure remains unclassified.
+
+### [PREEXISTING] P2 I0 C1 — Tune Relevance does not handle its save promise
+
+**Location:** `app/javascript/controllers/tune_relevance_controller.js#save`,
+`app/javascript/utils/settings_runtime.js#save`.
+
+The controller neither awaits nor returns the save promise, handles rejection,
+nor disables submission. Network/server failures have no contextual feedback;
+repeated clicks can create multiple tries.
+
+**Fix direction:** await the save, disable submission while pending, report the
+failure and restore controls appropriately. Test failure/retry and double-click
+submission while preserving navigation and drawer handoff on success.
+
+**Provenance:** baseline `controllers/settings.js#submit` also discards
+`settingsSvc.save`; the service handles success without a rejection handler.
+
+## [PREEXISTING] Background refresh counts
+
+### [PREEXISTING] P2 I0 C1 — UpdateCaseJob reports inconsistent creation totals
+
+**Location:** `app/jobs/update_case_job.rb#perform`.
+
+`@counts['ratings_created'] = + service.ratings_created` assigns rather than
+adds. `queries_created` adds the reused RatingsManager's cumulative totals
+again for every case, double-counting earlier work. Both patterns exist at
+`be9b319a`.
+
+**Fix direction:** accumulate per-case deltas or report the service's final
+cumulative totals consistently. Test multiple cases with different creation
+counts. This changes refresh API counts, not ratings or score calculations.

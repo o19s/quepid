@@ -1,0 +1,20 @@
+<%= render 'layouts/header_core_app', kase: @case %>
+
+<div id="main-content">
+  <%= yield %>
+</div>
+
+<%= render 'shared/share_case_core_modal' %>
+<%= render 'shared/delete_case_options_core_modal' %>
+<%= render 'shared/clone_case_core_modal' %>
+<%= render 'shared/export_case_core_modal' %>
+<%= render 'shared/pick_scorer_core_modal' %>
+<%= render 'shared/take_snapshot_core_modal' %>
+<%= render 'shared/judgements_core_modal' %>
+<%= render 'core/diff_modal', kase: @case %>
+<%= render 'shared/move_query_core_modal' %>
+<%= render 'shared/dynamic_modal_templates' %>
+
+<%= javascript_include_tag 'core_vendor' %>
+<%= javascript_include_tag 'core_case' %>
+<%= javascript_include_tag 'tour' %>

@@ -22,6 +22,32 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
                   '/api/cases/__CASE_ID__/snapshots/imports'
   end
 
+  test 'preserves the management shell and exclusive asset entry under a base URL' do
+    original_root = ENV.fetch('RAILS_RELATIVE_URL_ROOT', nil)
+    ENV['RAILS_RELATIVE_URL_ROOT'] = '/quepid'
+    Bullet.enable = false
+    get cases_url
+
+    assert_response :success
+    assert_select 'head base[href="/quepid/"]', 1
+    assert_select 'body.d-flex.flex-column.min-vh-100', 1
+    assert_select '.container-fluid .row .sidebar', 1
+    assert_select 'main.col-md-10', 1
+    assert_select 'body > footer', 1
+    assert_select 'body[data-core-bootstrap-case-no-value]', 0
+    assert_select '#main-content', 0
+    assert_select 'link[rel="stylesheet"]' do |links|
+      hrefs = links.map { |link| link['href'] }
+      assert(hrefs.any? { |href| href.match?(%r{/application[.-]}) })
+      assert_not(hrefs.any? { |href| href.match?(%r{/(core|json-explorer)[.-]}) })
+    end
+    assert_select 'script[type="module"]', text: /import "application_modern"/
+    assert_not(css_select('script[src]').any? { |script| script['src'].match?(%r{/(core_case|core_vendor|tour)[.-]}) })
+  ensure
+    ENV['RAILS_RELATIVE_URL_ROOT'] = original_root
+    Bullet.enable = true
+  end
+
   test 'destroy permanently deletes a case the user owns and redirects to the cases listing' do
     kase = cases(:queries_case)
 

@@ -1,3 +1,4 @@
+<% case_page = controller_name == "core" %>
 <!DOCTYPE html>
 <html lang="en">
 <% if content_for?(:debug_info) %>
@@ -5,6 +6,9 @@
 <% end %>
 <head>
   <%= render 'layouts/head_common' %>
+  <% if case_page %>
+    <%= render 'layouts/case_head' %>
+  <% else %>
   <meta name="viewport" content="width=device-width,initial-scale=1">
 	<meta name="apple-mobile-web-app-capable" content="yes">
 	<meta name="mobile-web-app-capable" content="yes">
@@ -67,10 +71,27 @@
   <%= javascript_importmap_tags 'application_modern' %>
   <%= debugbar_head  if defined? Debugbar %>
 
+  <% end %>
 </head>
 
+<% if case_page %>
+<body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
+      data-core-bootstrap-case-toolbar-outlet="#case-actions"
+      data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
+      data-snapshot-bridge-snapshots-url-value="<%= api_case_snapshots_path(@case) if @case %>"
+      <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
+      data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"
+      data-core-bootstrap-communal-scorers-only-value="<%= Rails.application.config.communal_scorers_only %>"
+      data-core-bootstrap-query-list-sortable-value="<%= Rails.application.config.query_list_sortable %>"
+      data-quepid-root-url="<%= quepid_root_url %>">
+<% else %>
 <body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
 
+<% end %>
+
+<% if case_page %>
+  <%= render 'layouts/case_workspace' %>
+<% else %>
 <%= render 'layouts/header' %>
 
 <div class="container-fluid flex-shrink-0">
@@ -90,5 +111,6 @@
 <%= render 'layouts/footer' %>
 
 <%= debugbar_body if defined? Debugbar %>
+<% end %>
 </body>
 </html>
