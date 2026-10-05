@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
-import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
 import { createSnapshotModel } from "utils/snapshot_model"
 
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
@@ -49,6 +48,17 @@ describe("SnapshotBridgeController", () => {
       }
     }
     window.quepidSearch = {
+      caseRuntime: {
+        snapshots: {
+          capability: {
+            settings: { editable: () => ({}), supportsLookupById: () => true },
+            navigation: { rootUrl: () => "/", caseNo: () => 1 },
+            fieldSpec: { create: services.fieldSpecSvc.createFieldSpec },
+            documents: { explain: services.normalDocsSvc.explainDoc }
+          },
+          docCache: services.docCache
+        }
+      },
       docCache: services.docCache,
       snapshotRegistry: {},
       queryCapabilities: {
@@ -69,7 +79,6 @@ describe("SnapshotBridgeController", () => {
   afterEach(() => {
     delete window.quepidStore
     delete window.quepidSearch
-    resetCoreServiceCache()
     vi.restoreAllMocks()
   })
 

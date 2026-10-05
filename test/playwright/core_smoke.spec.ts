@@ -187,6 +187,34 @@ test.describe('core layout golden paths', () => {
     await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
   });
 
+  test('query capabilities survive reload and options saves update the live owner once', async ({ page }) => {
+    let saves = 0;
+    await page.route('**/api/**/queries/*/options', async route => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      saves += 1;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+    });
+
+    await gotoCase(page);
+    await page.reload();
+    await expandFirstQuery(page);
+    await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
+    const modal = page.locator('.modal.show');
+    await modal.locator('.cm-content').fill('{"workspace_probe": 17}');
+    await modal.getByRole('button', { name: 'Set Options', exact: true }).click();
+    await expect(modal).toHaveCount(0);
+    await expect(page.getByText('Query options saved successfully.', { exact: true })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
+    await expect(modal.locator('.cm-content')).toContainText('workspace_probe');
+    expect(saves).toBe(1);
+    await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.reload();
+    await expandFirstQuery(page);
+    await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
+    await expect(modal.locator('.cm-content')).not.toContainText('workspace_probe');
+  });
+
   test('move query modal is Stimulus-owned and submits through the query API seam', async ({ page }) => {
     let moveRequest: { url: string; body: string } | undefined;
     await page.route('**/api/cases/*/queries/*', async route => {

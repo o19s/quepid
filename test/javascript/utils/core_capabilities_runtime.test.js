@@ -1,18 +1,16 @@
+import { createNativeFramework } from "utils/core_workspace_runtime"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   getBootstrapCapabilities,
   getSnapshotCapabilities,
   getTuneRelevanceCapabilities,
-  getWizardCapabilities,
-  createNativeFramework,
-  resetCoreServiceCache
+  getWizardCapabilities
 } from "utils/core_capabilities_runtime"
 
 describe("core runtime capabilities", () => {
   afterEach(() => {
     delete window.quepidSearch
     document.body.innerHTML = ""
-    resetCoreServiceCache()
     vi.restoreAllMocks()
   })
 
@@ -43,8 +41,7 @@ describe("core runtime capabilities", () => {
 
     expect(capabilities).toEqual(expect.objectContaining({
       core: expect.any(Object),
-      docCache: expect.any(Object),
-      liveQuery: expect.any(Object)
+      docCache: expect.any(Object)
     }))
     expect(capabilities.core).toEqual(expect.objectContaining({
       configuration: expect.any(Object),
@@ -54,11 +51,7 @@ describe("core runtime capabilities", () => {
       navigation: expect.any(Object)
     }))
     expect(capabilities.core).not.toHaveProperty("scoring")
-    expect(capabilities.liveQuery).toEqual({
-      create: expect.any(Function),
-      framework: expect.any(Object),
-      domain: expect.any(Object)
-    })
+    expect(capabilities).not.toHaveProperty("liveQuery")
   })
 
   it.each([

@@ -49,7 +49,7 @@ function copySettings(value) {
 }
 
 /**
- * Creates the live-query runtime and installs its capabilities on `search`.
+ * Creates the live-query runtime from explicit dependencies and returns its capabilities.
  * The bootstrap boundary supplies the framework (scheduling, logging), the case
  * domain (settings, scorer, navigation), splainer-search, and the stores.
  *
@@ -57,9 +57,16 @@ function copySettings(value) {
  * further down (`liveQueryCommandsRuntime`) only run after construction
  * finishes.
  */
-export function createLiveQueryRuntimeOwner({ framework, domain, search, store }) {
+export function createLiveQueryRuntimeOwner({
+  framework,
+  domain,
+  splainerSearch,
+  snapshotRegistry,
+  store,
+  eventTarget = document
+}) {
   const { searchSvc, normalDocsSvc, esExplainExtractorSvc, solrExplainExtractorSvc } =
-    search.splainerSearch || {}
+    splainerSearch
   const logger = framework.logger
 
   let caseNo = -1
@@ -249,6 +256,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   })
 
   createLiveQueryEventsRuntime({
+    eventTarget,
     scoringStore: store.scoring,
     getCaseNo,
     getQuery: getLiveQuery,
@@ -383,7 +391,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   function createSearcherFromSnapshot(snapshotId, query, settings) {
     return createSnapshotSearcherFromRegistry({
       snapshotId: snapshotId,
-      snapshots: search.snapshotRegistry,
+      snapshots: snapshotRegistry,
       query: query,
       settings: settings,
       createRateableDoc: (doc) => createRateableDoc(query, doc),
@@ -453,7 +461,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     if (showOnlyRated) {
       Object.values(getLiveQueries()).forEach(function (query) {
         if (!query.ratingsReady) {
-          search.queryCapabilities.refreshRatedDocs(query.queryId)
+          queryCapabilities.refreshRatedDocs(query.queryId)
         }
       })
     }
@@ -609,7 +617,7 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     return liveQueryCollectionRuntime.searchablePromise()
   }
 
-  Object.assign(search.queryCapabilities, {
+  const queryCapabilities = {
     getListState: function () {
       const selectedTry = domain.settings.applicable() || {}
       return {
@@ -652,8 +660,8 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
         })
       })
     }
-  })
-  Object.assign(search.queryCommands, {
+  }
+  const queryCommands = {
     rateDocument: liveQueryCommandsRuntime.rateDocument,
     rateAll: liveQueryCommandsRuntime.rateAll,
     toggleQuery,
@@ -663,14 +671,14 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     collapseAll: function () {
       if (queryDocumentsStore) queryDocumentsStore.collapseAll()
     }
-  })
-  Object.assign(search.queryLifecycle, {
+  }
+  const queryLifecycle = {
     prepareQueries: liveQueryLifecycleRuntime.prepareQueries,
     commitQueries: liveQueryLifecycleRuntime.commitQueries,
     commitPersistedQueries: liveQueryLifecycleRuntime.commitPersistedQueries,
     refreshQueries: liveQueryLifecycleRuntime.refreshQueries
-  })
-  search.targetedSearch = function (queryId) {
+  }
+  function targetedSearch(queryId) {
     const query = getLiveQuery(queryId)
     if (!query) return null
 
@@ -693,5 +701,5 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
     })
   }
 
-  return search
+  return { queryCapabilities, queryCommands, queryLifecycle, targetedSearch }
 }

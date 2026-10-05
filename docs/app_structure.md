@@ -23,10 +23,20 @@ Start with the relevant Rails view under `app/views/` and the Stimulus controlle
 `app/javascript/controllers/`. Shared case-page behavior lives in plain modules under
 `app/javascript/utils/`, `app/javascript/stores/`, and `app/javascript/api/`.
 
-The main entry to a case page is bootstrapped by
-`app/javascript/controllers/core_bootstrap_controller.js`. The live-query runtime modules
-own query state, search execution, scoring, and updates; controllers own page behavior and
-DOM interaction. Static page and modal structure remains in Rails ERB partials.
+`app/javascript/core_runtime.js` constructs one workspace per document through
+`utils/core_workspace_runtime.js`, before Stimulus starts. The factory builds
+settings, navigation, scorer, document cache, snapshot registry and live-query
+capabilities from explicit dependencies. `utils/core_capability_access.js` and
+`utils/core_capabilities_runtime.js` expose the complete groups to controllers;
+bootstrap loads case data without installing methods into a shared registry.
+
+`controllers/core_bootstrap_controller.js` loads the user, case and selected try,
+then starts searching. The live-query owner returns its query capabilities,
+commands, lifecycle operations and targeted-search adapter. Query stores retain
+their existing live objects and read projections. `utils/case_runtime.js` owns
+the selected case record; `coreWorkspace.caseState` reads it directly. Query and
+book events keep their existing contracts. Controllers own DOM interaction, and
+static page and modal structure remains in Rails ERB partials.
 
 This is the basic structure of the app and should get you started.
 

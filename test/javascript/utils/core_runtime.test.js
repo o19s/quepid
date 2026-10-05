@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest"
-import { quepidSearch } from "core_runtime"
+import { coreWorkspace } from "core_runtime"
 import { caseRuntime } from "utils/case_runtime"
 
 describe("core runtime case state", () => {
@@ -8,10 +8,10 @@ describe("core runtime case state", () => {
   it("reads the selected record rather than copying its event payload", () => {
     const value = { caseNo: 7, caseName: "Books", bookId: 12, bookName: "Catalog" }
     caseRuntime.select(value)
-    expect(quepidSearch.caseState).toBe(value)
+    expect(coreWorkspace.caseState).toBe(value)
     value.bookId = null
-    expect(quepidSearch.caseState.bookId).toBeNull()
+    expect(coreWorkspace.caseState.bookId).toBeNull()
     caseRuntime.reset()
-    expect(quepidSearch.caseState.caseNo).toBeNull()
+    expect(coreWorkspace.caseState.caseNo).toBeNull()
   })
 })

@@ -3,7 +3,11 @@ import QueryLifecycleController from "controllers/query_lifecycle_controller"
 import * as queryLifecycle from "utils/query_lifecycle"
 import { SearchError } from "utils/search_error"
 
-vi.mock("utils/query_lifecycle", () => ({ persistQuery: vi.fn(), persistQueries: vi.fn() }))
+vi.mock("utils/query_lifecycle", async (importOriginal) => ({
+  ...await importOriginal(),
+  persistQuery: vi.fn(),
+  persistQueries: vi.fn()
+}))
 
 function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQueries }) {
   const element = document.createElement("div")

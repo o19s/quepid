@@ -27,10 +27,6 @@ export default class extends Controller {
       const runtime = getCoreCapabilities()
       this.capabilities = await getBootstrapCapabilities()
 
-      if (this.capabilities.liveQuery?.create && runtime.splainerSearch?.searchSvc) {
-        this.capabilities.liveQuery.create({ search: runtime, store: stores })
-      }
-
       const { configuration, user, case: caseCapability, settings, navigation } = this.capabilities.core
       const { docCache } = this.capabilities
       const comparisonStore = stores.diff

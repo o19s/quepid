@@ -937,7 +937,7 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | Event | `detail` | Emitter | Listeners |
 | --- | --- | --- | --- |
 | `core-bootstrap:failed` | `{ error }` | `core-bootstrap` | none in the app (Playwright and tests read it) |
-| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | none; `quepidSearch.caseState` reads the selected record directly |
+| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | none; `coreWorkspace.caseState` reads the selected record directly |
 | `quepid:case-renamed` | `{ caseNo, caseName }` | `utils/case_runtime` | `case-toolbar` |
 | `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
 | `quepid:case-team-changed` | `{ action, caseNo, team: { id, name } }` | `share-case-core` | none in the app (tested only) |
@@ -985,7 +985,7 @@ Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:com
 **Selected case ownership**
 
 `utils/case_runtime` owns the selected case record and book settings.
-`quepidSearch.caseState` is a compatibility read of that record. Judgements and
+`coreWorkspace.caseState` reads that record directly. Judgements and
 CSV exports use fresh reads through the owner with Rails-provided URLs; concurrent
 reads of the same URL share only their in-flight request. Responses from a prior
 selection or superseded request cannot update the current record. A successful

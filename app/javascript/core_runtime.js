@@ -1,10 +1,11 @@
-import quepidSearch from "quepid_search"
 import quepidStore from "quepid_store"
 import { createSplainerSearchRuntime } from "utils/splainer_search_runtime"
+import { createCoreWorkspaceRuntime } from "utils/core_workspace_runtime"
 
-const splainerSearch = createSplainerSearchRuntime()
+// One complete workspace per document, constructed before Stimulus starts.
+const coreWorkspace = createCoreWorkspaceRuntime({
+  splainerSearch: createSplainerSearchRuntime().services,
+  store: quepidStore
+})
 
-quepidSearch.splainerSearch = splainerSearch.services
-quepidSearch.docResolverSvc = splainerSearch.docResolverSvc
-
-export { quepidSearch, quepidStore }
+export { coreWorkspace, quepidStore }

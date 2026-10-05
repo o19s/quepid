@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import quepidSearch from "quepid_search"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { QueryCollectionStore } from "stores/query_collection_store"
 
@@ -11,16 +10,17 @@ function buildOwner({
   scorer = { getColors: () => [] },
   bootstrapScorer = vi.fn()
 } = {}) {
-  window.quepidSearch = quepidSearch
-  quepidSearch.splainerSearch = {
+  const splainerSearch = {
     searchSvc: { createSearcher: vi.fn(() => searcher) },
     normalDocsSvc: { createNormalDoc: vi.fn((_spec, doc) => ({ ...doc })), explainDoc: vi.fn() },
     esExplainExtractorSvc: { docsWithExplainOther: vi.fn() },
     solrExplainExtractorSvc: { docsWithExplainOther: vi.fn() }
   }
 
-  createLiveQueryRuntimeOwner({
-    search: quepidSearch,
+  const runtime = createLiveQueryRuntimeOwner({
+    splainerSearch,
+    snapshotRegistry: {},
+    eventTarget: new EventTarget(),
     store: { scoring: new EventTarget(), ...store },
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
@@ -44,7 +44,7 @@ function buildOwner({
     }
   })
 
-  return window.quepidSearch
+  return { ...runtime, splainerSearch }
 }
 
 const jsonResponse = (data) => ({
@@ -71,12 +71,9 @@ describe("createLiveQueryRuntimeOwner", () => {
   afterEach(() => {
     vi.unstubAllGlobals()
     delete window.quepidStore
-    delete quepidSearch.splainerSearch
-    window.quepidSearch = quepidSearch
-    quepidSearch.queryCapabilities.getCaseNo = null
   })
 
-  it("installs the live-query boundary from explicit service dependencies", () => {
+  it("returns the live-query boundary from explicit service dependencies", () => {
     const search = buildOwner({ store: window.quepidStore })
 
     expect(search.queryCapabilities.getCaseNo()).toBe(-1)
@@ -206,7 +203,7 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(committed).toEqual({})
     const query = search.queryCapabilities.getQuery(5)
     expect(query.queryText).toBe("star wars")
-    expect(quepidSearch.splainerSearch.searchSvc.createSearcher).toHaveBeenCalledWith(
+    expect(search.splainerSearch.searchSvc.createSearcher).toHaveBeenCalledWith(
       { id: "id" }, "http://solr/select", expect.anything(), "star wars", expect.anything(), "solr"
     )
     expect(query.linkUrl).toBe("http://solr/select?q=star")

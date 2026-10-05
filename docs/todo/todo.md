@@ -29,11 +29,12 @@ Choose by priority first, then favor higher impact and lower complexity within
 a priority tier. For example, `P2 I3 C1` offers more simplification for less risk
 than `P2 I1 C3`. Group ratings summarize scope; nested items have their own estimates.
 
-Source audit: 2026-10-04 against `9a9a7974` and the working tree. This audit
-checked implementations and existing tests/verification records; it did not
-rerun browser flows or tests. Historical observations below are retained only
-where the current source still supports the unresolved issue. Browser coverage
-and actual verification timestamps live in `docs/manual-testing/tracking.yml`.
+Source audit: 2026-10-05 against `4bf88e5b` and the working tree. This review
+checked current implementations, recent changes and existing tests/verification
+records; it did not rerun browser flows or tests. Historical observations below
+are retained only where the current source still supports the unresolved issue.
+Browser coverage and actual verification timestamps live in
+`docs/manual-testing/tracking.yml`.
 Line numbers may drift — re-check cited files before fixing.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
@@ -67,137 +68,20 @@ builds for their own data-API/consumer reasons; revisit them separately.
 
 ## [MIGRATION-FOLLOWUP] Angular remnants, Stimulus/Turbo retrofit, and frontend DRY
 
-No Angular code is left (no `ng-*`, `$scope`, or Angular packages outside
-comments); what remains is mostly structure. Audited 2026-10-03 on
-`angular-phase-10`. Completed retrofit work and standing guidance (constraints,
-outlet-vs-event rule, pitfalls, what stays manual by design) are in
+AngularJS removal is complete; remaining work concerns ownership, lifecycle and
+optional simplification. Ordinary management/admin pages now enable Turbo Drive
+through `application_modern.js`. The case workspace uses the shared Rails layout
+but keeps a separate bundle with Drive disabled and a destination reload boundary;
+standalone analytics also forces a fresh document. Frames and Streams remain
+available on the case page. Shared layout/header markup does not make runtime
+lifecycle or per-surface behavior interchangeable.
+
+Follow [DEVELOPER_GUIDE.md — Turbo navigation](../../DEVELOPER_GUIDE.md#turbo-navigation)
+and [Turbo on the case page](../../DEVELOPER_GUIDE.md#turbo-on-the-case-page)
+for the current contracts. Actual Drive verification and deferred coverage are in
+[turbo_drive.md](turbo_drive.md) and manual scenario 15.8. Existing retrofit
+constraints and historical work are in
 `docs/archived/stimulus_turbo_retrofit_completed.md`.
-
-### [MIGRATION] P2 I3 C2 — Merge the case page into the main Rails layout — completed
-
-Completed 2026-10-05: `CoreController` explicitly selects `application`; the
-layout branches by controller, with case head/workspace partials. The redundant
-core layout is removed. Separate stylesheets, runtime entries, headers and
-footers remain intentional. No SSL or protocol-switch code changed.
-
-Render the case page through `application.html.erb` with an explicit case-page
-branch for its body controller attributes, full-width workspace, modal shells,
-and assets. Link `core.css` and `json-explorer.css` on the case page; retain
-`core_case.js` (built from `core_stimulus.js`), `core_vendor.js`, `tour.js`, and
-importmap-loaded Bootstrap and Vega in their existing loading order. Load
-`application.css` and `application_modern.js` on management pages. Preserve
-the management-page sidebar and content wrappers. Turbo Drive is enabled on
-management/admin pages; retain the case/analytics full-page boundaries described
-in DEVELOPER_GUIDE.md. See `turbo_drive.md` for verification and deferred coverage.
-Initially retain the separate header/footer partials; the case footer stays
-inside the workspace pane where `core/index.html.erb` currently renders it.
-
-Preserve the `<base href>` rendered by `layouts/_head_common.html.erb`: relative
-URLs and `utils/html.js` URL validation rely on it for sub-path deployments.
-Preserve Solr JSONP's HTTP requirements and existing protocol-switch behavior.
-
-**Bootstrap 3 look (decided 2026-10-03): keep it, scoped to the case page.**
-`html { font-size: 87.5% }`, the BS3 brand blue `#337ab7` (`--q-brand-blue`),
-the BS3 `<pre>` box and modal shadow, and compatibility rules in
-`bootstrap5-compat.css`, `core-additions.css` and `misc.css` are a design choice.
-`build_css.js` builds `core.css` as a complete bundle that only the case page
-links. Do not prefix the compat selectors unless the shared header must look
-identical everywhere: many rules are global (`html`, `:root`, `a`, `.modal`,
-`.tooltip`, `.popover`), modals and popovers attach to `<body>`, and the root
-font size cannot be scoped below `<html>`.
-
-**Acceptance:** Rails rendering checks cover case-only assets and body data,
-management-page assets/sidebar, and the base URL. Drive a representative browser
-sample covering case bootstrap, header dropdowns, a toolbar modal, drawer/footer
-scrolling, and a management page. Inspect matched before/after screenshots;
-record sampled and deferred coverage in this item and update only manual-tracker
-scenarios actually exercised. Remove the redundant core layout only after these
-gates pass.
-
-**Verification (2026-10-05):** 21 Rails controller tests / 147 assertions pass,
-including exclusive case/management assets, case body configuration and missing
-try, management sidebar/wrappers, pane footer/modal placement, script order and
-nonempty `/quepid/` base URLs on both surfaces. ESLint and the case bundle build
-pass; Ruby style checked for the controller and rendering tests.
-
-Playwright MCP sample on the running port-3000 server: static case 219 boots
-with 20 queries; Cases/Books/account dropdowns; share modal open/close;
-Tune Relevance open/close and pane/footer scrolling; case rename through a Turbo
-Frame followed by restoration; missing-try error; management `/cases`.
-All ten matched viewport screenshot pairs were opened and inspected under
-`.playwright-mcp/layout-merge/`. Layout, assets and sampled behavior are preserved;
-transient search notifications were aligned for comparison. Updated only scenarios
-3.1, 4.1, 4.17, 4.24 and 6.5 with actual sample coverage; moved obsolete layout
-path mappings without changing other verification timestamps.
-
-Deferred: remaining toolbar mutations/modals, try rename, drawer drag/narrow-screen
-coverage, management filtering/pagination, cross-case navigation, wizard,
-HTTPS/Solr JSONP protocol replay and a browser deployment below a sub-path.
-These are outside this representative batch; sub-path base rendering is tested.
-
-### [MIGRATION] P2 I2 C2 — Consolidate case and management header/footer markup — Done
-
-After the layout batch, consolidate matching markup from
-`layouts/_header_core_app.html.erb` and `_header.html.erb`, and from the two
-footer partials. Use explicit surface branches or small shared partials where
-the behavior differs. Preserve the case header's active counts, wizard-launch
-button, case-derived book-creation parameters, dropdown endpoints, and navigation
-behavior. The case name, try and score remain in the workspace header. Preserve
-each footer's links, appearance and placement, including the case footer's
-position inside the scrolling workspace pane. This is reuse without a redesign.
-
-**Acceptance:** render checks preserve both surfaces' links and parameters;
-inspect before/after screenshots for desktop and collapsed navigation, both
-dropdowns, and both footers. Exercise wizard launch and book-creation navigation
-on the case page, plus management-page navigation. Record sampled/deferred
-manual coverage and update affected tracker paths when partials move.
-
-**Implementation / verification (2026-10-05):** Shared
-`layouts/_header_navigation.html.erb` and `_header_help_links.html.erb` own
-matching navigation markup. Small surface shells retain their existing brand,
-collapse and account-menu structure. Surface-specific dropdown actions live in
-`_header_core_actions.html.erb` and `_header_management_actions.html.erb`.
-The structurally different footers remain separate: `_footer.html.erb` for
-management and `_footer_core_app.html.erb` for cases, both sharing
-`shared/_osc_copyright.html.erb`. Application, admin and analytics render the
-management footer; `core/index` renders its footer inside `.pane_main`.
-
-| Contract | Case page | Management pages |
-| --- | --- | --- |
-| Recent frames | `cases_core` / `books_core`, hard navigation | `cases` / `books`, existing Turbo frame links |
-| Creation | Wizard launcher; book scorer/team/origin parameters | Existing creation links, no case book context |
-| Header | Active counts; name/try/score stay in workspace | Existing navigation and flash region |
-| Footer | Copyright, optional policies, API, Slack; scrolling pane | Blue copyright/version footer after content |
-
-38 Rails tests / 267 assertions pass, including dropdown endpoints, active
-counts, wizard URL, book parameters, configured footer policies, shared links,
-footer placement, and admin/analytics rendering. Ruby style passes. Focused
-Playwright coverage passes (three behavior tests plus authentication), covering
-desktop/narrow navigation, case-to-book navigation and wizard launch, with
-`afterAll` cleanup of created cases. No runtime JS or CSS changed.
-
-Playwright MCP sample: both surfaces at 1280x900 and 768x900; collapsed/expanded
-navigation, Cases/Books/account menus, and both footers. All 14 matched pairs
-under `.playwright-mcp/header-footer/` were opened and inspected, and are
-pixel-identical. Case 6 book navigation preserves scorer/team/origin parameters;
-the case header launches Welcome on a new disposable case (deleted, API 204).
-Management Teams, Scorers and View all books navigation pass. Tracker entries
-3.2, 15.2, 15.4, 16.2 and 16.6 record this partial sample; 15.7 adds management
-footer coverage. Shared partial path mappings were updated without changing
-other scenarios' verification timestamps.
-
-The component extraction was rechecked with the same 38 Rails tests / 267
-assertions and focused Playwright suite, all passing. Fresh 14-pair screenshots
-under `.playwright-mcp/header-footer-components/` were opened and inspected;
-all are pixel-identical. Shared navigation is 48 lines; case actions are 25
-lines and management actions nine. Separate footers retain shared copyright
-reuse. Tracker paths follow the extracted action partials and restored case
-footer; only scenarios sampled through MCP receive new verification timestamps.
-
-Deferred: full wizard completion/errors, book saving, zero-item dropdowns,
-every recent-link/account action, non-admin access replay, 375px and other
-modal reflow, narrow/drawer-open footers, live configured policies,
-HTTPS/Solr JSONP and browser sub-path deployment. No functionality was redesigned.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Evaluate moving the case JavaScript entry onto importmap
 
@@ -220,7 +104,7 @@ with inspected before/after screenshots. Record sampled/deferred manual coverage
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Rename case-only `_core` controllers and modal partials
 
-After the layout and header/footer batches, inventory `controllers/*_core_controller.js`
+Inventory `controllers/*_core_controller.js`
 and `shared/_*_core_modal.html.erb` and remove suffixes that only mean "lives on
 the case page". Keep distinct names for features with different per-surface
 behavior, notably `share-case` and `share-case-core`. Asset-loader changes are
@@ -232,23 +116,16 @@ lint and builds, and browser-smoke the renamed controllers' connections and
 outlets. Record sampled/deferred coverage and retain inspected screenshots for
 the sampled interactions.
 
-### [MIGRATION] P2 I2 C3 — Replace the `quepid_search.js` service locator
-
-`app/javascript/quepid_search.js` is a shared module-level object standing in
-for Angular's dependency injection: its `queryCapabilities` slots start `null`
-and are filled at startup by the runtime owner. Shared case state stays in sync
-through page-wide events such as `quepid:case-selected` and
-`judgements:book-settings-saved` in `core_runtime.js`. Independent of the layout
-merge; pairs naturally with the mutable query-state ownership item in the
-consolidated DRY review.
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Move remaining `utils/` DOM lifecycles into controllers (retrofit Track E)
 
 `dynamic_modal.js`, `detailed_document_modal.js`, `destructive_form.js` and
 `status_message.js` still manage DOM state or events outside Stimulus. Static
 modal shells already live in `shared/_dynamic_modal_templates.html.erb`; preserve
 that Rails-owned markup and consider moving the remaining lifecycle/behavior
-into controllers or controller mixins. Leave thin Bootstrap
+into controllers or controller mixins. Management caching now has a
+`page-cache` controller; reuse its existing boundary where relevant. The case
+workspace still navigates as a full page, so its destructive-form helper is not
+a reason to add global Turbo opt-outs or convert every submission. Leave thin Bootstrap
 wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
@@ -261,10 +138,13 @@ posts could be answered with Turbo Streams. The annotations list
 (`annotations_controller.js`) is the cleanest candidate: it is entirely
 server-owned, so a lazy frame plus Turbo Stream answers to create, edit and
 delete would remove its client-side rendering (it would still dispatch
-`annotations:changed` for `qgraph`). **Blocked:** parallel HTML
-endpoints for the case page are not wanted for now. If that changes, pilot
-`pick_scorer_core` or annotations and prove selection and the edit modal work
-inside a lazy frame first.
+`annotations:changed` for `qgraph`).
+
+**Blocked by the endpoint-design decision:** parallel HTML endpoints for the
+case page are not wanted for now. Enabling Drive on management pages does not
+lift that constraint; case Frames/Streams already work with Drive disabled. If
+that changes, pilot `pick_scorer_core` or annotations and prove selection and the
+edit modal work inside a lazy frame first.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
 
@@ -305,22 +185,35 @@ messages remain a distinct UI contract.
 
 ---
 
-### [MIGRATION-FOLLOWUP] P2 I0 C1 — The core_smoke rating test hangs when the first result is unrated
-
-`core_smoke.spec.ts` "rating updates the query score, case score, and rating
-badge" resets the first result's rating, then waits for the result list to
-rebuild (`watchResultsRebuilds`). On static case 219 that result has no
-rating, so the reset changes nothing, the list never rebuilds, and the test
-hits its 30s timeout. Resolve the settle promise after a quiet period even when
-no mutation arrives, or skip the reset when the result is unrated.
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs
 
 `test/javascript/support/controller_fixture.js` (see
-`docs/js_tooling.md#controller-test-fixtures`) is used by 20 controller specs.
+`docs/js_tooling.md#controller-test-fixtures`) is already used by many
+controller specs.
 Adopt it in smaller specs when touched. Separately, mounting real Stimulus
 against real markup would catch ERB target/action drift the fixture can't;
 use it for new specs and convert old ones when touched, not big-bang.
+
+### [PREEXISTING] P2 I0 C2 — Audit GET mutations before enabling Turbo prefetch
+
+Management/admin layouts explicitly disable hover prefetch with
+`<meta name="turbo-prefetch" content="false">`. Keep that guard while auditing
+`config/routes.rb` and the actions behind GET links. Confirmed mutations include
+`JudgementsController#judge_later` (persists a judgement) and
+`SessionsController#destroy` (`GET /logout`). The search-endpoint clone GET only
+prepares an unsaved form; scorer cloning already uses POST. Audit the actual
+side effects rather than converting every route named `clone`. Judging selection also advances a session counter on
+GET; account for that when deciding which destinations can be prefetched.
+
+**Fix direction:** move persistent mutations to POST/PATCH/DELETE with
+server-owned form URLs, appropriate confirmation and 303 redirects. Preserve
+explicit session opt-outs. Audit other GET side effects and protect intentionally
+non-prefetchable destinations before considering removal of the global guard.
+Test that GET/hover causes no persistent mutation, deliberate submissions run
+once, and Drive/history navigation preserves the intended judging flow.
+Drive enablement is complete; prefetch remains a separate decision. The
+judge-later and logout GET routes also exist in the `be9b319a` baseline
+(source comparison, not a live historical replay).
 
 ### [PREEXISTING] P3 I0 C2 — Identify API endpoints only the Angular client used
 
@@ -572,7 +465,7 @@ The merge loop upserts each source judgement with `query_doc_pair.judgements.fin
 
 An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix each import `build`s a new row (the alternative — `find_or_initialize_by(user: nil)` — collapsed all of them into one, which was worse). The accepted cost is documented in the code and in `docs/manual-testing/10-books-management.md`. What makes it more than cosmetic: `RatingsManager#calculate_rating_from_judgements` averages 1-2 judgements but takes the **min of the top 3** at 3 or more, so duplication can move a rating a user never re-judged — `[3.0, 0.0]` → 1.5 becomes `[3.0, 3.0, 0.0]` → 0.0. Pinned by `test/services/book_importer_test.rb`'s "re-importing anonymous judgements duplicates them and moves the computed case rating".
 
-**Reached by** the ordinary export → re-import path, since `_judgements.json.jbuilder` emits `user_email` only `if judgement.user`, so exported anonymous rows come back identity-less; also by a Mission Control retry of a failed `ImportBookJob` (no `retry_on`, and `book.import_file.purge` runs *after* `service.import`), and plausibly by a double-submitted import form.
+**Reached by** the ordinary export → re-import path, since `_judgements.json.jbuilder` emits `user_email` only `if judgement.user`, so exported anonymous rows come back identity-less; also by a Mission Control retry of a failed `ImportBookJob` (no job-local `retry_on`; `DeferredPayload.consume` retains the upload on failure and purges it only after the import block succeeds), and plausibly by a double-submitted import form.
 
 **Fix direction:** Needs a product call, same as the `combine` entry above. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
 
@@ -604,9 +497,13 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 **Observed:** Submitting `/teams/new` with a blank name, or a name another team already uses, re-renders the form with no message. (Rename on the team page does show "Name can't be blank".)
 
-**Cause:** `app/views/teams/new.html.erb` doesn't render `@team.errors`, and `TeamsController#create` renders `:new` without `status: :unprocessable_content`.
+**Remaining cause:** `app/views/teams/new.html.erb` still doesn't render
+`@team.errors`. `TeamsController#create` now returns 422 on failure, so Turbo
+can display the invalid form, but users still receive no validation message.
 
-**Fix direction:** Render the shared error-messages partial on `teams/new` and return 422 on failure.
+**Fix direction:** Render the shared error-messages partial on `teams/new`.
+Cover blank and duplicate names with rendering assertions and a Drive submission
+that keeps the entered value and displays the validation message.
 
 ---
 
@@ -891,8 +788,9 @@ The API query payload is also mapped from snake_case to camelCase twice: once in
 read projections instead of assuming every store must merge. Remove duplicate
 snake_case mapping first. If one live-query owner and projection replaces the
 copies, verify scores, `allRated`, missing-rating counts and expansion state.
-Coordinate with the service-locator item above; layout consolidation is not a
-prerequisite.
+The workspace now constructs its capabilities through `core_workspace_runtime.js`;
+keep that explicit dependency boundary while consolidating state. Layout
+consolidation is not a prerequisite.
 
 ### [MIGRATION-FOLLOWUP] P2 I2 C2 — Rated-document lookup duplication
 
@@ -1156,25 +1054,27 @@ its caller. Test timezone-boundary timestamps, invalid dates, and unusual years;
 manual year slicing and Intl formatting are not universally equivalent.
 Keep full-year snapshot labels and activity tooltip formatting distinct.
 
-### [MIGRATION-FOLLOWUP] P2 I2 C1 — CodeMirror disposal contract
+### [MIGRATION-FOLLOWUP] P2 I1 C1 — Use the shared CodeMirror disposal contract in case controllers
 
-Tuning destroys its editor view on disconnect
-(`tune_relevance_controller.js:49,51`); Query Options creates one on connect
-(`query_options_core_controller.js:16,19`) without a disconnect hook.
-The common factory also attaches an anonymous form-submit listener and stores
-`textarea.editor` (`modules/editor.js`, following `formatJSON`). It does not
-expose an adapter-level disposal method that owns those resources.
+`modules/editor.js#fromTextArea` now exposes `editor.destroy()`: it cancels the
+initial-format timer, synchronizes the textarea, removes the form-submit
+listener, destroys the view/wrapper, restores textarea visibility and releases
+`textarea.editor`. The management `codemirror` controller uses it on disconnect
+and `turbo:before-cache`; global editor auto-initialization has been removed.
+The adapter teardown is covered in `test/javascript/modules/editor.test.js`.
 
-**Fix direction:** give the editor adapter one explicit destroy
-contract and use it from both controllers. Have that contract remove its form
-listener and release its textarea reference as well as destroy the view.
-Verify disconnect/reconnect and repeated mounting without duplicate editors
-or callbacks. This is a lifecycle fix candidate, not a confirmed browser leak;
-ordinary modal hide is not necessarily a Stimulus disconnect.
+**Remaining:** `tune_relevance_controller.js#disconnect` and
+`missing_documents_controller.js#disconnect` still call only
+`editor.view.destroy()`. `query_options_core_controller.js` creates an editor
+on connect but has no disconnect hook. Those paths bypass some or all of the
+adapter's cleanup and can leave generated DOM or callbacks behind on remount.
 
-Include Missing Documents and auto-initialized editors in the ownership audit.
-Dispose the wrapper and pending initial-format timer as well as the view,
-listener and textarea reference where applicable.
+**Fix direction:** use the existing adapter destroy method and clear each
+controller's reference; do not introduce another disposal API. Verify repeated
+connect/disconnect without duplicate editors, wrappers or submit listeners,
+including pending initial formatting. Case modal hide is not necessarily a
+Stimulus disconnect, and the case workspace still uses full-page navigation;
+management Drive enablement alone does not establish a browser leak here.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Small utility cleanups
 
@@ -1206,7 +1106,8 @@ not uniform syntax.
 
 Keep autocomplete's server filtering separate from endpoint suggestions'
 client filtering; rating popovers and downloads already have shared helpers.
-Keep Rails/core sharing twins separate until the case-layout merge. Ruby and
+Keep Rails/core sharing twins separate where their behavior differs, even with
+the shared layout and header markup. Ruby and
 JS response parsers and CSV formula escaping serve distinct execution/export
 contracts; keep them aligned rather than merging them. Similar jbuilder
 partials have separate export/API contracts. The small Thor ratings/snapshot
@@ -1250,7 +1151,11 @@ second of A cancels A's pending write, leaving its visible explanation unsaved.
 
 **Fix direction:** key pending saves by query-document pair; preserve independent
 row edits and define disconnect/navigation behavior explicitly. Test two rows
-edited inside the debounce window and cleanup of all pending timers.
+edited inside the debounce window and cleanup of all pending timers. With Drive
+now enabled on the bulk-judging page, also cover navigating away and returning:
+`disconnect()` currently cancels a pending edit rather than persisting it. Decide
+whether to flush or block navigation with unsaved edits; do not imply that
+history restoration proves the text was saved.
 
 **Provenance:** the same single `saveTimeout` exists in the baseline controller.
 

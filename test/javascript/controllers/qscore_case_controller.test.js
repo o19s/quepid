@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreCaseController from "controllers/qscore_case_controller"
 import { CaseScoreStore } from "stores/case_score_store"
 import { diffStateStore } from "stores/diff_state_store"
-import { resetCoreServiceCache } from "utils/core_capabilities_runtime"
 import { buildCaseDiffScores } from "utils/diff_scores"
 
 vi.mock("utils/diff_scores", () => ({ buildCaseDiffScores: vi.fn() }))
@@ -52,7 +51,6 @@ describe("QscoreCaseController", () => {
     delete window.quepidStore
     delete window.quepidSearch
     diffStateStore.reset()
-    resetCoreServiceCache()
     vi.unstubAllGlobals()
   })
 

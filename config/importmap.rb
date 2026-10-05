@@ -6,7 +6,6 @@ pin 'application_modern'
 pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js'
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
-pin 'quepid_search', to: 'quepid_search.js'
 pin 'quepid_store', to: 'quepid_store.js'
 pin 'core_runtime', to: 'core_runtime.js'
 pin_all_from 'app/javascript/controllers', under: 'controllers'
