@@ -1,0 +1,58 @@
+<% title = capture do %>
+  <i class="bi bi-book"></i> <%= book_title @book %>
+<% end %>
+<%= page_header title %>
+<%= turbo_stream_from @run.broadcast_channel %>
+
+<%= render 'books/tabs', book: @book %>
+
+<% judge_name = @run.judge.name %>
+<% reference_name = calibration_judge_name(@run.reference) %>
+
+<div class="d-flex justify-content-between align-items-start mt-3 mb-2 gap-3 flex-wrap">
+  <div>
+    <%= link_to book_calibrations_path(@book), class: 'small' do %>
+      <i class="bi bi-arrow-left" aria-hidden="true"></i> All calibrations
+    <% end %>
+    <h3 class="mb-0 mt-1"><%= judge_name %> <span class="text-muted fw-normal">vs</span> <%= reference_name %></h3>
+    <div class="text-muted small">
+      <%= pluralize(@sample.size, 'pair') %> · <%= @run.reference.ai_judge? ? 'AI' : 'human' %> reference ·
+      started <%= time_ago_in_words(@run.created_at) %> ago
+      <% if @run.created_by %>by <%= @run.created_by.fullname %><% end %>
+    </div>
+    <% if (settings = calibration_settings(@run)).present? %>
+      <div class="small"><span class="text-muted"><%= judge_name %> measured with:</span> <%= settings %></div>
+    <% end %>
+  </div>
+</div>
+
+<%= render 'about_toggle' %>
+
+<%= render 'progress', run: @run %>
+
+<% if @run.stale? %>
+  <div class="alert alert-warning py-2 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+    <div>
+      <i class="bi bi-sliders" aria-hidden="true"></i>
+      This run used settings that aren't <%= judge_name %>'s saved ones<% if (changes = @run.changes_since_judge).any? %> (<%= changes.to_sentence %>)<% end %>.
+      Its figures describe the judge with these settings.
+    </div>
+    <%= button_to "Apply these settings to #{judge_name}", apply_settings_book_calibration_path(@book, @run), method: :patch,
+                  class: 'btn btn-sm btn-warning',
+                  form: { data: { turbo_confirm: "Change #{judge_name}'s saved prompt and settings to this run's? Real judging will use them." } } %>
+  </div>
+<% end %>
+<% if (changed = @sample.reference_changes_count).positive? %>
+  <div class="alert alert-light border py-2 small">
+    <%= reference_name %> has changed or removed <%= pluralize(changed, 'rating') %> in this sample since it was drawn.
+    The comparison uses the ratings as they were.
+  </div>
+<% end %>
+
+<details class="mb-3">
+  <summary class="small"><%= @run.judge_snapshot['judge_options']&.dig('llm_provider') == 'typesafe_jev' ? 'Instructions' : 'Prompt' %> this run used</summary>
+  <pre class="small bg-light border rounded p-2 mt-2 mb-0" style="white-space: pre-wrap;"><%= @run.judge_snapshot['system_prompt'].presence || '(none)' %></pre>
+</details>
+
+<%= render 'results', run: @run, cell: @cell %>
+<%= render 'rerun_modal', run: @run %>

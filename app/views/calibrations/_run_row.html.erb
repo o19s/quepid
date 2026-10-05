@@ -1,0 +1,21 @@
+<%# locals: (run:) %>
+<% agreement = run.agreement unless run.active? %>
+<tr id="calibration-run-<%= run.id %>">
+  <td>
+    <%= link_to run.judge.name, book_calibration_path(run.book, run) %>
+    <% if run.stale? %>
+      <span class="badge text-bg-light border" title="This run's prompt or settings aren't the judge's saved ones">other settings</span>
+    <% end %>
+  </td>
+  <td><%= calibration_judge_name(run.reference) %></td>
+  <td class="text-end"><%= run.sample.size %></td>
+  <td>
+    <%= calibration_status_badge(run) %>
+    <% if run.active? %>
+      <span class="small text-muted ms-1"><%= run.answered_count %> / <%= run.sample.size %></span>
+    <% end %>
+  </td>
+  <td class="text-end"><%= agreement ? calibration_alpha(agreement) : '—' %></td>
+  <td class="text-end"><%= agreement ? calibration_percent(agreement.exact_share) : '—' %></td>
+  <td class="small text-muted"><%= time_ago_in_words(run.created_at) %> ago</td>
+</tr>

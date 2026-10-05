@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_03_153441) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_05_150000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -215,6 +215,58 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_153441) do
     t.index ["book_id", "user_id"], name: "index_books_ai_judges_on_book_id_and_user_id", unique: true
     t.index ["book_id"], name: "index_books_ai_judges_on_book_id"
     t.index ["user_id"], name: "index_books_ai_judges_on_user_id"
+  end
+
+  create_table "calibration_answers", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "calibration_run_id", null: false
+    t.float "confidence"
+    t.datetime "created_at", null: false
+    t.text "explanation"
+    t.bigint "query_doc_pair_id", null: false
+    t.float "rating"
+    t.boolean "unrateable", default: false, null: false
+    t.datetime "updated_at", null: false
+    t.index ["calibration_run_id", "query_doc_pair_id"], name: "index_calibration_answers_unique", unique: true
+    t.index ["query_doc_pair_id"], name: "index_calibration_answers_on_query_doc_pair_id"
+  end
+
+  create_table "calibration_runs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "calibration_sample_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "answers_count", default: 0, null: false
+    t.integer "created_by_id"
+    t.text "error"
+    t.datetime "finished_at"
+    t.integer "judge_id", null: false
+    t.json "judge_snapshot"
+    t.datetime "started_at"
+    t.string "status", default: "queued", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calibration_sample_id"], name: "index_calibration_runs_on_calibration_sample_id"
+    t.index ["created_by_id"], name: "index_calibration_runs_on_created_by_id"
+    t.index ["judge_id"], name: "index_calibration_runs_on_judge_id"
+  end
+
+  create_table "calibration_sample_pairs", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "calibration_sample_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "query_doc_pair_id", null: false
+    t.float "reference_rating", null: false
+    t.datetime "updated_at", null: false
+    t.index ["calibration_sample_id", "query_doc_pair_id"], name: "index_calibration_sample_pairs_unique", unique: true
+    t.index ["query_doc_pair_id"], name: "index_calibration_sample_pairs_on_query_doc_pair_id"
+  end
+
+  create_table "calibration_samples", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "created_by_id"
+    t.integer "pairs_count", default: 0, null: false
+    t.integer "reference_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["book_id"], name: "index_calibration_samples_on_book_id"
+    t.index ["created_by_id"], name: "index_calibration_samples_on_created_by_id"
+    t.index ["reference_id"], name: "index_calibration_samples_on_reference_id"
   end
 
   create_table "case_metadata", id: :integer, charset: "latin1", force: :cascade do |t|
@@ -652,6 +704,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_03_153441) do
   add_foreign_key "annotations", "users"
   add_foreign_key "book_metadata", "books"
   add_foreign_key "books_ai_judges", "books"
+  add_foreign_key "calibration_answers", "calibration_runs", on_delete: :cascade
+  add_foreign_key "calibration_answers", "query_doc_pairs", on_delete: :cascade
+  add_foreign_key "calibration_runs", "calibration_samples", on_delete: :cascade
+  add_foreign_key "calibration_runs", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "calibration_runs", "users", column: "judge_id", on_delete: :cascade
+  add_foreign_key "calibration_sample_pairs", "calibration_samples", on_delete: :cascade
+  add_foreign_key "calibration_sample_pairs", "query_doc_pairs", on_delete: :cascade
+  add_foreign_key "calibration_samples", "books", on_delete: :cascade
+  add_foreign_key "calibration_samples", "users", column: "created_by_id", on_delete: :nullify
+  add_foreign_key "calibration_samples", "users", column: "reference_id", on_delete: :cascade
   add_foreign_key "case_metadata", "cases", name: "case_metadata_ibfk_1"
   add_foreign_key "case_metadata", "users", name: "case_metadata_ibfk_2"
   add_foreign_key "case_scores", "annotations"

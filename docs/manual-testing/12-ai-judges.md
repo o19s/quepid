@@ -98,3 +98,40 @@ A judge whose provider takes image URLs (every one except Ollama and TypeSafe Je
 - **Edge cases:**
   - [ ] A `thumb` that is a relative path (a case whose thumb mapping has no prefix, e.g. `/t/p/w500/abc.jpg`) — confirm judging still works and no image is sent, rather than the provider rejecting the request.
   - [ ] A document with both `image` and `thumb` — `image` is the one sent.
+
+### 12.9 Open the New calibration dialog
+
+A calibration runs an AI judge on a random sample of pairs another judge has rated and compares the two (`docs/todo/judge_calibration.md`). Only the page and its dialog exist so far: **Start** stays disabled until running a calibration is built.
+
+- [ ] **Steps:**
+  1. Open a book that has human judgements (Book of Ratings) and click the **Calibration** tab, next to Overview and Judge Overview.
+  2. Click **New calibration**. Choose an AI judge, then a human under **Compare against**.
+  3. Set **Sample size** to `12`, then to more than the reference rated, then back to `50`.
+  4. Choose an AI judge with fewer than 30 rated pairs under **Compare against**; then choose the same judge in both lists.
+  5. Close the dialog, go to the book overview, and click the ◎ **Calibrate** icon on an AI judge's row in Judge Activity, including an on-call judge.
+- **Expected:**
+  - The page explains calibration (**What it's for**, **How to use it**, **What you get**, and a **Good to know** note), shows "No calibrations on this book yet.", and the **Calibration** tab is active, with no Overview sub-navigation under it.
+  - **Compare against** lists every judge with usable ratings on the book's scale, marked AI or human, with its pair count. Unrateable, judge-later, off-scale and anonymous ratings aren't counted.
+  - Once both judges are chosen: "{n} pairs rated by {reference} on the book's scale.", "Between 30 and {n} pairs." (500 at most), and "This makes {size} calls to {judge}." Choosing a reference with fewer pairs than the sample size lowers the sample size to match.
+  - A size outside the range shows "Pick a sample size between 30 and {n}." and no call count; the field keeps what was typed.
+  - A reference under 30 pairs shows "{reference} has rated only {n} pairs on this book's scale; a calibration needs at least 30."; the same judge in both shows "A judge can't be calibrated against itself."
+  - The shortcut opens the Calibration page with the dialog already open and that judge chosen.
+  - **Start** is enabled only once both judges are chosen and nothing is wrong. **Same pairs as an earlier calibration** is disabled until the book has a calibration.
+
+### 12.10 Run a calibration and read the result
+
+- [ ] **Steps:**
+  1. On Book of Ratings, open **Calibration** → **New calibration**. Calibrate a TypeSafe Jev judge against a human, 50 pairs, and **Start**.
+  2. Watch the run's page while it runs, without reloading.
+  3. When it's done, click a number in the grade-by-grade table, then open **unrateable answers**.
+  4. Click **Tune and run again…**: for the Jev judge lower **Minimum confidence** (e.g. 0.5); for a chat judge (OpenAI) edit the **Prompt**. Start it. While it runs, click **Cancel**, then **Resume**.
+  5. On the new run's page, open **Prompt this run used**, and read **{judge}'s runs on these pairs**. Click **Apply these settings to {judge}**, then open the judge's edit page.
+  6. Edit the judge's prompt, open the first run again, then go back to **Calibration**.
+  7. Start a calibration with **Same pairs as an earlier calibration**.
+- **Expected:**
+  - Only the **Calibration** tab is selected (marked β for beta), and the Overview sub-navigation isn't shown. **What is calibration, and how do I use it?** expands the explanation, on the list and on a run's page. The header says what the judge was measured with (model, and minimum confidence for Jev).
+  - The progress bar counts up live, and the results replace it when the run finishes, still on the run's page.
+  - The headline gives α (or "Not enough pairs compared" with why, when fewer than 30 rateable answers came back), same grade, within one grade, compared and unrateable counts, and which way the judge leans. Clicking a cell lists exactly its pairs, with the judge's explanations.
+  - **Run again** makes a new run on the same pairs with what was entered, without changing the judge: its header says what it was measured with, its page says its settings aren't the judge's saved ones (naming what differs), and **{judge}'s runs on these pairs** lists that judge's runs on the same pairs (not other judges') with their settings and figures, and what changed between them. Cancel stops a run and Resume answers only the pairs it hadn't. **Apply** asks first, then the judge's edit page shows the run's prompt and minimum confidence.
+  - After the prompt edit, the first run is marked stale on its page and on the list.
+  - No judgement, rating or Judge Activity count changes at any point.

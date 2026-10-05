@@ -9,6 +9,11 @@
       <i class="bi bi-person-check text-body"></i> Judge Overview
     <% end %>
   </li>
+  <li class="nav-item">
+    <%= link_to book_calibrations_path(book), class: "nav-link #{'active' if make_active?({controller: 'calibrations'})}", method: :get do %>
+      <i class="bi bi-bullseye text-body"></i> Calibration<sup class="text-primary fw-semibold ms-1" title="Beta: still being built">β</sup>
+    <% end %>
+  </li>
 </ul>
 
 <% if book_overview_family_active? %>

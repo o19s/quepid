@@ -86,6 +86,10 @@ class Book < ApplicationRecord
 
   has_many :cases, dependent: :nullify
 
+  # The database deletes these with the book (and their runs and answers with
+  # them), so no dependent: here.
+  has_many :calibration_samples, inverse_of: :book, dependent: nil
+
   has_many :rated_query_doc_pairs, -> { has_judgements },
            class_name: 'QueryDocPair',
            dependent:  :destroy,
@@ -212,6 +216,11 @@ class Book < ApplicationRecord
     "book_#{id}_judgements"
   end
 
+  # Calibration runs' progress (CalibrationRunJob).
+  def calibrations_broadcast_channel
+    "book_#{id}_calibrations"
+  end
+
   # One row per judge for the book overview's Judge Activity table: every
   # human judge who has judged anything, plus every assigned AI judge (shown
   # even at zero judgements, since being assigned is itself worth showing).
@@ -256,6 +265,24 @@ class Book < ApplicationRecord
 
     { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
       count: activity[:count], actively_judging: actively_judging, auto_run: auto_run }
+  end
+
+  # The judgements a calibration can sample from (docs/todo/judge_calibration.md C2).
+  def calibration_eligible_judgements
+    judgements.rateable
+      .where.not(user_id: nil)
+      .where(rating: scale)
+      .where(query_doc_pair_id: query_doc_pairs_within_rank_depth.select(:id))
+  end
+
+  # The judges a calibration can compare against, each with how many pairs it
+  # could sample: the judge's rateable judgements, on the book's scale, within
+  # rank_depth (docs/todo/judge_calibration.md C2). Anonymous judgements are
+  # left out, since they don't come from one judge. Sorted by name.
+  def calibration_references
+    counts = calibration_eligible_judgements.group(:user_id).count
+    User.where(id: counts.keys).map { |user| { judge: user, eligible_pairs: counts[user.id] } }
+      .sort_by { |reference| reference[:judge].fullname }
   end
 
   # Not proud of this method, but it's the only way I can get the dependent

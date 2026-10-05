@@ -117,6 +117,14 @@ Rails.application.routes.draw do
   resources :books do
     resources :judgements
     resources :ai_judges, except: [ :index ]
+    resources :calibrations, only: [ :index, :create, :show ] do
+      member do
+        patch :cancel
+        patch :resume
+        post :rerun
+        patch :apply_settings
+      end
+    end
     resources :query_doc_pairs do
       resources :judgements
       post 'unrateable' => 'judgements#unrateable'
