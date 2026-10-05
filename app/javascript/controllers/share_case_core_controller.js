@@ -22,6 +22,8 @@ export default class extends CoreModalControllerBase {
     "shareableList",
     "sharedSection",
     "sharedList",
+    "shareableTeamTemplate",
+    "sharedTeamTemplate",
     "caseId",
     "unshareCaseId",
     "teamId",
@@ -144,10 +146,7 @@ export default class extends CoreModalControllerBase {
     if (!this.hasShareableListTarget) return
 
     this.shareableTeams = teams
-    this.renderTeamList(this.shareableListTarget, teams, {
-      className: "list-group-item list-group-item-action",
-      action: "selectShareTeam"
-    })
+    this.renderTeamList(this.shareableListTarget, teams, this.shareableTeamTemplateTarget)
   }
 
   toggleShareSelect(e, team) {
@@ -172,10 +171,7 @@ export default class extends CoreModalControllerBase {
     if (!this.hasSharedListTarget) return
 
     this.renderedSharedTeams = teams
-    this.renderTeamList(this.sharedListTarget, teams, {
-      className: "list-group-item list-group-item-action list-group-item-success",
-      action: "selectSharedTeam"
-    })
+    this.renderTeamList(this.sharedListTarget, teams, this.sharedTeamTemplateTarget)
 
     this.updateUnshareFooter()
   }
@@ -190,17 +186,14 @@ export default class extends CoreModalControllerBase {
     if (team) this.toggleCoreSharedSelect(event, team)
   }
 
-  renderTeamList(target, teams, { className, action }) {
-    target.innerHTML = ""
+  renderTeamList(target, teams, template) {
+    target.replaceChildren()
 
     teams.forEach((team) => {
-      const item = document.createElement("button")
-      item.type = "button"
-      item.className = className
+      const item = template.content.firstElementChild.cloneNode(true)
       item.textContent = team.name || `Team ${team.id}`
       item.dataset.teamId = team.id
       item.dataset.shareCaseCoreTeamIdParam = String(team.id)
-      item.dataset.action = `click->share-case-core#${action}`
       target.appendChild(item)
     })
   }

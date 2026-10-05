@@ -16,6 +16,7 @@ export default class extends CoreModalControllerBase {
     "limit",
     "alert",
     "selections",
+    "selectionTemplate",
     "addButton",
     "warning",
     "processingWarning",
@@ -163,53 +164,23 @@ export default class extends CoreModalControllerBase {
     this.selectionsTarget.replaceChildren()
 
     this.selectionValues.forEach((selected, index) => {
-      const row = document.createElement("div")
-      row.className = "snapshot-selection-row"
-      row.style.marginBottom = "10px"
-      row.style.display = "flex"
-      row.style.alignItems = "center"
-
-      const label = document.createElement("label")
-      label.className = "snapshot-selection-label"
-      label.textContent = `Snapshot ${index + 1}:`
-      label.style.marginRight = "10px"
-      label.style.minWidth = "100px"
-      label.style.fontWeight = "bold"
-
-      const select = document.createElement("select")
-      select.className = "form-select snapshot-selection-select"
+      const row = this.selectionTemplateTarget.content.firstElementChild.cloneNode(true)
+      row.querySelector("[data-slot='label']").textContent = `Snapshot ${index + 1}:`
+      const select = row.querySelector("[data-slot='select']")
       select.dataset.diffCoreIndexParam = String(index)
-      select.style.width = "auto"
-      select.style.minWidth = "200px"
-      select.style.marginRight = "10px"
-      select.dataset.action = "change->diff-core#selectChanged"
-      this.addOption(select, "", "-- Select Snapshot --")
       this.snapshots.forEach((snapshot) => {
         this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), isSameId(selected, snapshot.id))
       })
 
-      const remove = document.createElement("button")
-      remove.type = "button"
-      remove.className = "btn btn-sm btn-danger"
-      if (!selected) remove.classList.add("d-none")
+      const remove = row.querySelector("[data-slot='remove']")
+      const del = row.querySelector("[data-slot='delete']")
       remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
       remove.setAttribute("aria-label", remove.title)
-      remove.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>'
-      remove.dataset.diffCoreIndexParam = String(index)
-      remove.dataset.action = "click->diff-core#removeSelectionAt"
+      for (const button of [remove, del]) {
+        button.classList.toggle("d-none", !selected)
+        button.dataset.diffCoreIndexParam = String(index)
+      }
 
-      const del = document.createElement("button")
-      del.type = "button"
-      del.className = "btn btn-sm btn-danger"
-      if (!selected) del.classList.add("d-none")
-      del.style.marginLeft = "5px"
-      del.title = "Delete this snapshot"
-      del.setAttribute("aria-label", del.title)
-      del.innerHTML = '<i class="bi bi-trash" aria-hidden="true"></i>'
-      del.dataset.diffCoreIndexParam = String(index)
-      del.dataset.action = "click->diff-core#deleteSelectionAt"
-
-      row.append(label, select, remove, del)
       this.selectionsTarget.append(row)
     })
 

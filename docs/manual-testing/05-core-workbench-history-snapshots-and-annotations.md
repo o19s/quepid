@@ -36,7 +36,7 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
 
 ### 5.3 Compare snapshots (diff)
 
-The picker, snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row are Stimulus-owned. The explicit `snapshot-bridge` controller hands hydrated snapshots to the live-query runtime for diff scoring.
+Rails owns the picker row template; Stimulus populates selections and dynamic options. Snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row remain browser-owned. The explicit `snapshot-bridge` controller hands hydrated snapshots to the live-query runtime for diff scoring.
 
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
@@ -49,6 +49,7 @@ The picker, snapshot hydration, diff read renderer, per-query diff score badges,
 - **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
 - **Edge cases:**
   - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
+  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot; reopen to verify persistence.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.
   - [ ] While fetching snapshot data, confirm the "Fetching snapshot data..." progress text shows and the footer buttons are disabled meanwhile.

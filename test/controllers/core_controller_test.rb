@@ -179,6 +179,10 @@ class CoreControllerTest < ActionController::TestCase
         assert_select "#query-container template[data-queries-list-target='#{name}']", 1
       end
       assert_select "template[data-annotations-target='itemTemplate']", 1
+      assert_select "#diffModal template[data-diff-core-target='selectionTemplate']", 1
+      %w[shareableTeamTemplate sharedTeamTemplate].each do |name|
+        assert_select "#shareCaseModal template[data-share-case-core-target='#{name}']", 1
+      end
       assert_select "#pickScorerModal template[data-pick-scorer-core-target='itemTemplate']", 1
       %w[noneTemplate bookTemplate].each do |name|
         assert_select "#judgementsModal template[data-judgements-core-target='#{name}']", 1

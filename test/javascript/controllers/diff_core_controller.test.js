@@ -1,3 +1,4 @@
+import { viewTemplateTargets } from "../support/view_template"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCoreController from "controllers/diff_core_controller"
@@ -23,6 +24,7 @@ function buildController(bridge = buildBridge()) {
   const controller = buildControllerFixture(DiffCoreController, {
     outlets: { snapshotBridge: bridge },
     targets: {
+      ...viewTemplateTargets("app/views/core/_snapshot_selection_template.html.erb", "diff-core"),
       selections: document.createElement("div"),
       title: document.createElement("h5"),
       addButton: document.createElement("button"),
@@ -58,6 +60,16 @@ function buildController(bridge = buildBridge()) {
 }
 
 describe("DiffCoreController", () => {
+  it("inserts snapshot names as text and replaces rows without accumulating options", () => {
+    const controller = buildController()
+    controller.snapshots = [{ id: 2, name: "<img src=x onerror=alert(1)>" }]
+    controller.renderSelections()
+    controller.renderSelections()
+    expect(controller.selectionsTarget.querySelector("img")).toBeNull()
+    expect(controller.selectionsTarget.querySelectorAll("option")).toHaveLength(2)
+    expect(controller.selectionsTarget.textContent).toContain(controller.snapshots[0].name)
+  })
+
   it("routes generated remove and delete buttons using their row parameters", () => {
     const controller = buildController()
     controller.selectionValues = ["2", "3"]

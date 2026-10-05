@@ -14,9 +14,6 @@
   "app/javascript/controllers/confirm_delete_controller.js": {
     "innerHTML": 1
   },
-  "app/javascript/controllers/diff_core_controller.js": {
-    "innerHTML": 2
-  },
   "app/javascript/controllers/export_case_core_controller.js": {
     "innerHTML": 1
   },
@@ -52,8 +49,7 @@
     "innerHTML": 4
   },
   "app/javascript/controllers/share_case_core_controller.js": {
-    "documentListener": 1,
-    "innerHTML": 1
+    "documentListener": 1
   },
   "app/javascript/controllers/share_entity_controller_base.js": {
     "innerHTML": 3

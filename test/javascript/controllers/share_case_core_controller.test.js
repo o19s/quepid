@@ -1,3 +1,4 @@
+import { viewTemplateTargets } from "../support/view_template"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
@@ -12,6 +13,7 @@ function buildController(overrides = {}) {
   const controller = buildControllerFixture(ShareCaseCoreController, {
     overrides: { identifier: "share-case-core" },
     targets: {
+      ...viewTemplateTargets("app/views/shared/_share_case_core_team_templates.html.erb", "share-case-core"),
       title: document.createElement("h5"),
       caseId: { value: "" },
       unshareCaseId: { value: "" },
@@ -68,6 +70,20 @@ const TEAM_PAYLOAD = {
 }
 
 describe("ShareCaseCoreController — modal list UI", () => {
+  it("renders safe team names with distinct shipped actions and replaces old rows", () => {
+    const controller = buildController()
+    const teams = [{ id: 8, name: "<img src=x onerror=alert(1)>" }]
+    controller.applyTeamLists(teams, [])
+    controller.applyTeamLists(teams, [])
+    expect(controller.shareableListTarget.querySelectorAll("button")).toHaveLength(1)
+    expect(controller.shareableListTarget.querySelector("img")).toBeNull()
+    expect(controller.shareableListTarget.textContent).toBe(teams[0].name)
+    expect(controller.shareableListTarget.firstElementChild.dataset.action).toBe("click->share-case-core#selectShareTeam")
+    controller.applyTeamLists(teams, teams)
+    expect(controller.sharedListTarget.firstElementChild.dataset.action).toBe("click->share-case-core#selectSharedTeam")
+    expect(controller.sharedListTarget.firstElementChild.classList.contains("list-group-item-success")).toBe(true)
+  })
+
   // List partition / selection contract (no older unit spec existed).
   beforeEach(() => {
     vi.clearAllMocks()

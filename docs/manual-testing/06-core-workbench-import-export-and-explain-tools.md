@@ -71,8 +71,13 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 
 ### 6.5 Share a case (in-case toolbar)
 
-- [ ] **Steps:** Same flow as Part 3.6, but triggered from inside the workbench via the "Share case" icon. Confirm behavior matches (share/unshare, "already shared with" list, no-teams-yet prompt with a **Create a team** shortcut).
+Rails supplies separate core team-button templates; Stimulus retains JSON mutations
+and stays on the workspace. The management surface in Part 3.6 retains its select/form UI.
+
+- [ ] **Steps:** Open **Share case**, select a shareable team and share; reload and reopen to confirm persistence. Select a shared team and unshare; reload and reopen again.
+- **Expected:** Selection toggles off on a second click and is mutually exclusive across lists. Cancel/reopen resets selection. No-team users see Create a team; users whose teams all share the case see the shared list without the no-teams prompt.
 - **Edge cases:**
+  - [ ] Force team-load failure and close/reopen to retry; force share/unshare failure and retry with selection retained. Check the Judgements modal’s share-case outlet.
   - [ ] Click **Create a team** from inside this modal — confirm it navigates away to `/teams` and that no unsaved workbench state (e.g., an in-progress edit elsewhere on the page) is silently lost.
 
 ### 6.6 Judgements link (connect a case to a Book)
