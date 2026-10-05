@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
 import { putJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { openDynamicModal } from "utils/dynamic_modal"
@@ -52,13 +53,11 @@ export default class extends Controller {
     this.store = getCoreStores().documents
     this.render()
     this.storeChange = () => this.render()
-    this.store.addEventListener("change", this.storeChange)
-    this.store.addEventListener("reset", this.storeChange)
+    this.unsubscribeStore = subscribeToStore(this.store, { change: this.storeChange, reset: this.storeChange })
   }
 
   disconnect() {
-    this.store?.removeEventListener("change", this.storeChange)
-    this.store?.removeEventListener("reset", this.storeChange)
+    this.unsubscribeStore?.()
     this.chartResult?.finalize()
   }
 

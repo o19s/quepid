@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
 import Sortable from "sortablejs"
 import { putJson } from "api/json"
 import { hideTooltipsWithin } from "utils/bs_tooltip"
@@ -38,27 +39,24 @@ export default class extends Controller {
     const stores = getCoreStores()
     this.store = stores.queries
     this.storeChange = () => this.scheduleRender()
-    this.store.addEventListener("change", this.storeChange)
-    this.store.addEventListener("reset", this.storeChange)
     this.searchFailed = event => this.handleSearchFailed(event)
     this.searchSettled = () => this.handleSearchSettled()
-    this.store.addEventListener("search-failed", this.searchFailed)
-    this.store.addEventListener("search-started", this.searchSettled)
+    this.unsubscribeStore = subscribeToStore(this.store, {
+      change: this.storeChange,
+      reset: this.storeChange,
+      "search-failed": this.searchFailed,
+      "search-started": this.searchSettled
+    })
     this.documentStore = stores.documents
     this.documentStoreChange = () => this.scheduleRender()
-    this.documentStore?.addEventListener("change", this.documentStoreChange)
-    this.documentStore?.addEventListener("reset", this.documentStoreChange)
+    this.unsubscribeDocumentStore = this.documentStore && subscribeToStore(this.documentStore, { change: this.documentStoreChange, reset: this.documentStoreChange })
     this.setupSortable()
     this.render()
   }
 
   disconnect() {
-    this.store?.removeEventListener("change", this.storeChange)
-    this.store?.removeEventListener("reset", this.storeChange)
-    this.store?.removeEventListener("search-failed", this.searchFailed)
-    this.store?.removeEventListener("search-started", this.searchSettled)
-    this.documentStore?.removeEventListener("change", this.documentStoreChange)
-    this.documentStore?.removeEventListener("reset", this.documentStoreChange)
+    this.unsubscribeStore?.()
+    this.unsubscribeDocumentStore?.()
     if (this.renderHandle) cancelAnimationFrame(this.renderHandle)
     this.sortable?.destroy()
   }

@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
 import { getCoreStores } from "utils/core_store_access"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
 import { copyText } from "utils/clipboard"
@@ -21,14 +22,12 @@ export default class extends Controller {
   connect() {
     this.store = getCoreStores().documents
     this.storeChange = event => this.renderFromStore(event.detail)
-    this.store.addEventListener("change", this.storeChange)
-    this.store.addEventListener("reset", this.storeChange)
+    this.unsubscribeStore = subscribeToStore(this.store, { change: this.storeChange, reset: this.storeChange })
     this.render()
   }
 
   disconnect() {
-    this.store?.removeEventListener("change", this.storeChange)
-    this.store?.removeEventListener("reset", this.storeChange)
+    this.unsubscribeStore?.()
 
   }
 

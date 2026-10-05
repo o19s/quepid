@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
 import { putJson } from "api/json"
 import { formatScore, scoreToColor } from "utils/scoring"
 import { buildCaseDiffScores } from "utils/diff_scores"
@@ -54,17 +55,17 @@ export default class extends Controller {
   }
 
   connect() {
-    this.store.addEventListener("change", this.onStoreChange)
-    this.store.addEventListener("scoring-complete", this.onScoringComplete)
-    this.store.addEventListener("rating-changed", this.onRatingChanged)
+    this.unsubscribeStore = subscribeToStore(this.store, {
+      change: this.onStoreChange,
+      "scoring-complete": this.onScoringComplete,
+      "rating-changed": this.onRatingChanged
+    })
     this.renderScore()
     this.renderLabel()
   }
 
   disconnect() {
-    this.store.removeEventListener("change", this.onStoreChange)
-    this.store.removeEventListener("scoring-complete", this.onScoringComplete)
-    this.store.removeEventListener("rating-changed", this.onRatingChanged)
+    this.unsubscribeStore?.()
   }
 
   handleDiffsRefreshed(event) {

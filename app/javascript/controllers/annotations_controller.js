@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
 import { deleteJson, getJson, postJson, putJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { showFlash } from "utils/flash"
@@ -20,12 +21,12 @@ export default class extends Controller {
     this.onScoreChange = () => this.updateCreateState()
     this.onEditSubmit = (event) => this.saveEdit(event)
     this.scoringStore = getCoreStores().scoring
-    this.scoringStore?.addEventListener("change", this.onScoreChange)
+    this.unsubscribeScoringStore = this.scoringStore && subscribeToStore(this.scoringStore, { change: this.onScoreChange })
     this.load()
   }
 
   disconnect() {
-    this.scoringStore?.removeEventListener("change", this.onScoreChange)
+    this.unsubscribeScoringStore?.()
     this.editForm?.removeEventListener("submit", this.onEditSubmit)
   }
 

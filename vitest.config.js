@@ -68,6 +68,7 @@ export default defineConfig({
       { find: "utils/qgraph", replacement: path.resolve(repoRoot, "app/javascript/utils/qgraph.js") },
       { find: "utils/tune_relevance", replacement: path.resolve(repoRoot, "app/javascript/utils/tune_relevance.js") },
       { find: "utils/core_capabilities_runtime", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capabilities_runtime.js") },
+      { find: "utils/store_subscription", replacement: path.resolve(repoRoot, "app/javascript/utils/store_subscription.js") },
       { find: "utils/core_store_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js") },
       { find: "utils/core_capability_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js") },
       { find: "utils/core_flash", replacement: path.resolve(repoRoot, "app/javascript/utils/core_flash.js") },
