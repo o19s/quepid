@@ -95,7 +95,7 @@ end
 - `EmbeddersController` with index/new/edit/clone/create/update/destroy, mirroring `AiJudgesController` (team pre-select, `apply_team_ids`).
 - `_form.html.erb` with provider dropdown, preset/help panel, and fields shown/hidden from the registry's `supports_*` flags (one Stimulus controller, `embedder_form_controller.js`).
 - **Test** button → `Embedders::TestController#create`: embeds a sample text, returns dimension count, the first few components, and latency. Works for unsaved embedders (`:embedder_id = 'new'`, same trick as the AI judge wizard routes).
-- Team page: an embedders list next to search endpoints, with share/unshare. *(Not done in phase 1: sharing is done from the embedder form's team checkboxes, and `GET api/v1/teams/:id/embedders` exists.)*
+- Team page: an embedders list next to search endpoints. *(Added after phase 4: the team page lists the team's embedders with how many cases use each, a Create Embedder button with the team pre-selected, and a button to stop sharing one with the team. Sharing with more teams is still done from the embedder form's team checkboxes.)*
 - Nav entry next to AI Judges.
 
 ### API
@@ -226,4 +226,33 @@ Books have no embedder (see Phase 2). Vectorizing the book's query/doc pairs is 
 1. **Single query add:** synchronous vectorization (proposed) or always async plus re-search on broadcast?
 2. **Payload size:** a 3072-dim vector is ~40 KB of JSON per query, and the case page loads every query's options. Acceptable at the start, or cap dimensions / move vectors to a separate `query_vectors` table and inject them into `qOption` server-side?
 3. **Who can use an embedder's key:** any team member who can see the case triggers paid API calls on the owner's key. Is team-sharing enough, or do we need an owner-only "may be used by team" flag?
-4. **Template variables:** should the input template support `{information_need}` besides `{query}`?
+4. **Template variables:** see the `{information_need}` idea below.
+
+## Ideas
+
+### `{information_need}` in the input template
+
+Instruction-following embedding models (Qwen3-Embedding, E5-instruct, GTE) do better when told
+what the user is looking for, and a query's `information_need` is exactly that ("classic science
+fiction movie" for "star wars"). Letting the input template use it would send, for example:
+
+```text
+Instruct: Given a web search query, retrieve relevant passages that answer the query
+Query: star wars ({information_need})
+```
+
+What it would take:
+
+- `Embedder#render_input(text)` becomes `render_input(query)` (or takes the information need
+  as a second argument) and fills `{information_need}` -- empty when the query has none, so the
+  template still reads sensibly.
+- The **text digest** in `query_vec_meta` already covers whatever was sent, so editing a query's
+  information need makes its vector *stale* automatically once the digest includes it; nothing
+  else in `QueryVectorStatus` changes.
+- `Query.vector_statuses_for` would need to pluck `information_need` too.
+- Trigger: changing a query's information need (one at a time, or the information-need CSV
+  import) should enqueue `VectorizeCaseQueriesJob` when the case's embedder uses the variable.
+- The embedder form's Test box would need a second field for a sample information need.
+
+Open question: should a missing information need fall back to the query text, or to nothing?
+

@@ -17,6 +17,7 @@ You'll get much more out of this part with two logged-in accounts — a team own
   2. Click **+ Add New**, enter a Name, click **Create Team**.
   3. Confirm you (the creator) are automatically added as a member.
   4. Open the team, use the **Rename Team** card to rename it, click **Rename**.
+  5. On the team page, check the lists below the member cards: Cases, Books, Search Endpoints, Embedders (Part 17.2), Custom Scorers, and the counts in the header.
 - **Expected:** New team appears in the list; rename updates immediately with flash "Team renamed."
 - **Edge cases:**
   - [ ] Submit a blank team name on create or rename — expect validation error.

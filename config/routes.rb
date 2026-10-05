@@ -180,6 +180,7 @@ Rails.application.routes.draw do
       post 'cases/:case_id/unarchive' => 'teams#unarchive_case', as: :unarchive_case
       post 'search_endpoints/:search_endpoint_id/archive' => 'teams#archive_search_endpoint', as: :archive_search_endpoint
       post 'search_endpoints/:search_endpoint_id/unarchive' => 'teams#unarchive_search_endpoint', as: :unarchive_search_endpoint
+      delete 'embedders/:embedder_id' => 'teams#remove_embedder', as: :embedder
     end
 
     collection do

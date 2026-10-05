@@ -503,9 +503,9 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-09-15T17:02:00Z
+        last_run: 2026-10-05T19:45:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: created 'Manual Test Team 20260915' (creator auto-added as member), then renamed it to 'Manual Test Team Renamed 20260915' via the Rename Team form — flash 'Team renamed.', heading updated immediately. Left the team in place (no delete-team option found in the UI) as harmless test data, same as other pre-existing test fixtures on this instance."
+        notes: "Partial: only browsing re-checked, after adding the Embedders card -- team OSC page rendered members, cases, books, search endpoints, the new Embedders card and scorers, header counts including Embedders, no console errors (before/after shots in .playwright-mcp/team-embedders/). Creating and renaming a team were not re-driven this pass."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
       "9.2":
         title: "Add a team member (existing user)"
@@ -896,10 +896,10 @@ parts:
         paths: ["app/controllers/embedders_controller.rb", "app/controllers/embedders/tests_controller.rb", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
       "17.2":
         title: "Edit, clone, share and delete an embedder"
-        last_run: 2026-10-05T19:10:00Z
+        last_run: 2026-10-05T19:45:00Z
         result: pass
-        notes: "Partially driven: re-ran Test on the saved embedder's edit page with a blank key field (worked), and the list page renders it with owner/teams/dimensions. Clone keeping the key, blank-key update, team sharing and delete are covered by controller tests but were not clicked through in the browser this pass."
-        paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb"]
+        notes: "Partially driven. Team page part (steps 7-8) with a Playwright script on team OSC: the Embedders card listed the shared embedder with provider/model/128/owner/0 Cases and a Create Embedder button; removing it via the confirm dialog showed the notice and emptied the card; header count went to 0. Earlier pass: Test on the saved embedder with a blank key worked. Clone keeping the key, blank-key update and sharing from the form are covered by controller tests but were not clicked through this pass."
+        paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb", "app/views/teams/_embedders.html.erb", "app/controllers/teams_controller.rb"]
       "17.3":
         title: "Pick a case's embedder"
         last_run: 2026-10-05T19:30:00Z

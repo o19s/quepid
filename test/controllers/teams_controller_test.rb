@@ -346,6 +346,45 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe 'embedders' do
+    let(:shared_team) { teams(:shared) }
+    let(:embedder)    { embedders(:openai_small) }
+
+    it 'lists the embedders shared with the team, with how many cases use each' do
+      cases(:shared_with_team).update!(embedder: embedder)
+
+      # The page's cases and books lists trip Bullet on their own (as in 'cases search').
+      Bullet.enable = false
+      get team_path(shared_team)
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'td a', text: embedder.name
+      assert_select 'td a', text: embedders(:private_ollama).name, count: 0
+      assert_select 'span.badge', text: '1 Case'
+      assert_select 'a[href=?]', new_embedder_path(team_id: shared_team.id)
+    end
+
+    it 'stops sharing an embedder with the team, leaving the cases that use it alone' do
+      acase = cases(:shared_with_team)
+      acase.update!(embedder: embedder)
+
+      delete embedder_team_path(shared_team, embedder_id: embedder.id)
+
+      assert_redirected_to team_path(shared_team)
+      assert_not shared_team.reload.embedders.exists?(embedder.id)
+      assert_equal embedder.id, acase.reload.embedder_id
+      assert_match(/no longer shared/, flash[:notice])
+    end
+
+    it 'says so when the embedder is not shared with the team' do
+      delete embedder_team_path(@team, embedder_id: embedder.id)
+
+      assert_redirected_to team_path(@team)
+      assert_match(/not shared with this team/, flash[:alert])
+    end
+  end
+
   describe 'unshare_search_endpoint' do
     it 'unshares a search endpoint the user has access to from one of their teams' do
       shared_team = teams(:shared)
