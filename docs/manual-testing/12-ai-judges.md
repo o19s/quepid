@@ -108,7 +108,7 @@ A calibration runs an AI judge on a random sample of pairs another judge has rat
   2. Click **New calibration**. Choose an AI judge, then a human under **Compare against**.
   3. Set **Sample size** to `12`, then to more than the reference rated, then back to `50`.
   4. Choose an AI judge with fewer than 30 rated pairs under **Compare against**; then choose the same judge in both lists.
-  5. Close the dialog, go to the book overview, and click the ◎ **Calibrate** icon on an AI judge's row in Judge Activity, including an on-call judge.
+  5. Close the dialog, go to the book overview, and click the ◎ **Calibrate** icon on an AI judge's row in Judge Activity (once escalation lands, on an on-call judge too).
 - **Expected:**
   - The page explains calibration (**What it's for**, **How to use it**, **What you get**, and a **Good to know** note), shows "No calibrations on this book yet.", and the **Judge Calibration** tab is active, with no Overview sub-navigation under it.
   - **Compare against** lists every judge with usable ratings on the book's scale, marked AI or human, with its pair count. Unrateable, judge-later, off-scale and anonymous ratings aren't counted.
