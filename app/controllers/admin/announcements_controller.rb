@@ -5,13 +5,13 @@ module Admin
     include Pagy::Method
 
     def index
-      query = Announcement.order(updated_at: :desc)
-      if params[:q].present?
-        query = query.where('LOWER(text) LIKE ?',
-                            "%#{params[:q].to_s.downcase}%")
-      end
+      # text_downcase_cont needs a downcased value - the ransacker downcases
+      # the column (see the ransacker comment on Announcement).
+      ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+      ransack_params[:text_downcase_cont] = ransack_params[:text_downcase_cont].downcase if ransack_params[:text_downcase_cont].present?
 
-      @pagy, @announcements = pagy(query)
+      @q = Announcement.ransack(ransack_params)
+      @pagy, @announcements = pagy(@q.result.order(updated_at: :desc))
     end
 
     def new

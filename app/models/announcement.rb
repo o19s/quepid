@@ -26,6 +26,26 @@ class Announcement < ApplicationRecord
   validates :expiration_date, presence: true
   validate :publish_date_not_after_expiration_date
 
+  # Ransack (used by admin/announcements#index's search box) requires every
+  # searchable attribute to be allowlisted - keep this to what's used today.
+  def self.ransackable_attributes _auth_object = nil
+    %w[text_downcase]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
+  # Plain text_cont would compare case-sensitively on SQLite/PostgreSQL (and
+  # isn't guaranteed case-insensitive on MySQL regardless of this column's
+  # own utf8mb4_unicode_ci collation - this app doesn't rely on adapter-
+  # specific collation behavior for case insensitivity, see User#by_email's
+  # comment). Wraps the column in LOWER() the same way the admin search used
+  # to by hand; the controller downcases the search value to match.
+  ransacker :text_downcase do
+    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:text] ])
+  end
+
   # Ordered by publish_date desc, id desc so the most recently scheduled announcement
   # wins when windows overlap (id as a tiebreaker keeps same-day picks deterministic) -
   # avoids needing a separate "only one active" flag to keep in sync.
