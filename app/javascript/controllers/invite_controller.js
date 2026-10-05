@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { copyText } from "utils/clipboard"
+import { createTemporaryFeedback } from "utils/temporary_feedback"
 
 const FEEDBACK_MS = 1500
 
@@ -12,7 +13,7 @@ export default class extends Controller {
   static values = { link: String }
 
   disconnect() {
-    if (this.feedbackTimer) clearTimeout(this.feedbackTimer)
+    this.feedback?.cancel()
   }
 
   copy(event) {
@@ -33,11 +34,10 @@ export default class extends Controller {
   // Remembers the original label once, so repeated clicks still restore it.
   showFeedback(btn, text) {
     this.originalLabel ??= btn.innerHTML
-    btn.textContent = text
-    if (this.feedbackTimer) clearTimeout(this.feedbackTimer)
-    this.feedbackTimer = setTimeout(() => {
-      btn.innerHTML = this.originalLabel
-      this.feedbackTimer = null
-    }, FEEDBACK_MS)
+    this.feedback ??= createTemporaryFeedback(FEEDBACK_MS)
+    this.feedback.show(
+      () => { btn.textContent = text },
+      () => { btn.innerHTML = this.originalLabel }
+    )
   }
 }

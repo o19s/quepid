@@ -95,4 +95,18 @@ describe("InviteController", () => {
     vi.advanceTimersByTime(1500)
     expect(button.innerHTML).toBe("📋")
   })
+
+  it("cancels restoration on disconnect and keeps the original label on reconnect", () => {
+    vi.useFakeTimers()
+    const controller = buildController()
+    const button = document.createElement("button")
+    button.innerHTML = '<i class="bi bi-clipboard"></i>'
+    controller.showFeedback(button, "Copied")
+    controller.disconnect()
+    vi.advanceTimersByTime(1500)
+    expect(button.textContent).toBe("Copied")
+    controller.showFeedback(button, "Copy failed")
+    vi.advanceTimersByTime(1500)
+    expect(button.innerHTML).toBe('<i class="bi bi-clipboard"></i>')
+  })
 })

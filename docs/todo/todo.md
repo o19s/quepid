@@ -766,34 +766,6 @@ A shared concern is appropriate only where accessible/owned scopes, archive
 behavior, duplicate handling, and responses have the same contract. Preserve
 those scopes and boolean semantics during extraction.
 
-### [MIGRATION-FOLLOWUP] P2 I3 C3 — Consolidate mutable query-state ownership — completed
-
-API query fields are normalized once by `live_query_factory.js`; bootstrap
-publishes the resulting live queries rather than remapping raw API rows.
-`QueryCollectionStore` owns live queries, display order, expansion and rated-only
-preferences, and derives its plain snapshots on read. `QueryDocumentsStore`
-keeps normalized document projections and reads shared query status, score
-completeness, missing-rating counts and display preferences from the collection.
-The command bridge routes collapse-all once through the runtime. The runtime no
-longer keeps separate order or rated-only variables. Workspace capabilities still
-come from the explicit `core_workspace_runtime.js` dependency boundary.
-
-`CaseScoreStore` deliberately retains the completed scoring projection: case
-aggregates, persistence and graphs consume one atomic full scoring result,
-including during in-flight searches and diff-only rescoring.
-
-Verification: full Vitest suite (1,433 tests), ESLint and scoped Prettier checks;
-regression tests cover rating/rescore consistency across live queries and all
-three projections, early expand/collapse, republishing, removal, reset and order.
-Authorized browser sample: cases 219 and 6, expanded/collapsed results, score and
-missing-rating badges, Solr rated-only results, name ordering, document rating
-and restoration, and forced search errors. Before/after screenshots were inspected
-under `.playwright-mcp/query-state/`. Review follow-up scopes single-query change
-notifications and verifies that an unrelated publication preserves an open rating
-popover in a snapshot comparison; inspected screenshot pairs are under
-`.playwright-mcp/query-notifications/`. Deferred: broader imports, full snapshot/diff,
-manual drag persistence, bulk editing and other search engines.
-
 ### [PREEXISTING] P2 — Search failures abandon queued queries
 
 When the first ten concurrent searches reject, `query_service.js#pAll` exits all
@@ -995,9 +967,21 @@ There are four versions of "copy, then swap the button label for a moment":
   served over plain HTTP.
 - `browse_query` never puts its label back and never reports a failed copy.
 
-**Optional narrow scope:** share repeated feedback plumbing while preserving
-each caller's labels, icons, restoration delay, status messages, and errors.
-Do not impose one feedback policy on all four callers.
+**Completed narrow refactor:** `utils/temporary_feedback` shares only Explain
+and Invite's resettable feedback window. Callers retain their labels, icons,
+original-label capture, 2000/1500ms delays, and error handling; Invite still
+cancels restoration on disconnect. Mapper's independent timers and Browse's
+permanent success label remain unchanged. Do not impose one feedback policy
+on all four callers.
+
+Verification: all 1,436 Vitest tests, JS lint, and scoped formatting pass.
+Playwright MCP before/after Explain Params initial, success, forced clipboard
+failure, and restored states captured under `.playwright-mcp/clipboard-feedback/`
+and visually inspected. Deferred browser coverage: Invite (no pending invitation
+copy button on the existing team), other Explain tabs, Mapper, and Browse.
+Invite's success/error/missing-link, repeated-click, and disconnect/reconnect
+contracts are covered by controller tests. Remaining behavior fixes below are
+outside this refactor.
 
 The mapper HTTP fallback and Browse label restoration/error reporting are
 separate behavior fixes, outside a strict behavior-preserving refactor.

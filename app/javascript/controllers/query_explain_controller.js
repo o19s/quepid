@@ -1,5 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { copyText } from "utils/clipboard"
+import { createTemporaryFeedback } from "utils/temporary_feedback"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
 
@@ -67,13 +68,14 @@ export default class extends Controller {
 
     el.querySelectorAll(".query-explain-copy").forEach((button) => {
       const label = [...button.childNodes].map((node) => node.cloneNode(true))
-      let resetTimer = null
+      const feedback = createTemporaryFeedback(COPY_FEEDBACK_MS)
       const showFeedback = (iconClass, text) => {
         const icon = document.createElement("i")
         icon.className = `bi ${iconClass}`
-        button.replaceChildren(icon, ` ${text}`)
-        clearTimeout(resetTimer)
-        resetTimer = setTimeout(() => button.replaceChildren(...label), COPY_FEEDBACK_MS)
+        feedback.show(
+          () => button.replaceChildren(icon, ` ${text}`),
+          () => button.replaceChildren(...label)
+        )
       }
 
       button.addEventListener("click", () => {
