@@ -168,7 +168,7 @@ Computed server-side by one method, `Query#vector_status(embedder)` (embedder = 
 - **Progress is polled, not pushed.** The core case page loads no Turbo/ActionCable, so the case header's Stimulus controller polls `GET api/cases/:case_id/embedders` every 3 s while `vectors.running` is true (a SolidQueue job for the case is queued or running), and hands the statuses to Angular with a `quepid:query-vectors-changed` document event (`queriesSvc.applyVectorStatuses`).
 - **Statuses for the poll read only the metadata** (`Query.vector_statuses_for`, via `AdapterFunctions.json_value`/`json_has_key`), never the vectors themselves. Tested on PostgreSQL and MySQL.
 - **Re-vectorize** is `POST api/cases/:case_id/embedders/vectorize?force=true`, a button in the embedder picker with a status summary.
-- **Not done yet:** collapsing `query_vec` in the Set Options editor; it shows the full array for now.
+- **Decided:** the Set Options editor shows `query_vec` in full, as plain JSON. Hiding it behind a summary, folding it in the editor, or swapping in a placeholder were considered and not done.
 
 ### Service and jobs
 
@@ -193,7 +193,7 @@ Do the single-query case with an explicit call in the controller rather than an 
 
 - The core case page listens on the case channel. When vectorization finishes, reload the affected queries' `options` (`GET .../queries/:id/options`, already exists) and re-run the search for them, because templates using `#$qOption.query_vec##` return nothing useful without a vector.
 - Per query, the status badge from **Vector status per query** above.
-- The options modal: collapse `query_vec` to `[1024 floats]` in the editor so it doesn't open as an unreadable wall of numbers, keep it unchanged on save, and show `query_vec_meta` as is so people can read how the vector was made.
+- The options modal shows `query_vec` and `query_vec_meta` as they are (decided; see *As implemented* above).
 
 ### Books
 
