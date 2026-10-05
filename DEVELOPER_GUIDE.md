@@ -893,7 +893,7 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | Event | `detail` | Emitter | Listeners |
 | --- | --- | --- | --- |
 | `core-bootstrap:failed` | `{ error }` | `core-bootstrap` | none in the app (Playwright and tests read it) |
-| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | `core_runtime.js` (copies detail into `quepidSearch.caseState`; page-lifetime) |
+| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | none; `quepidSearch.caseState` reads the selected record directly |
 | `quepid:case-renamed` | `{ caseNo, caseName }` | `utils/case_runtime` | `case-toolbar` |
 | `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
 | `quepid:case-team-changed` | `{ action, caseNo, team: { id, name } }` | `share-case-core` | none in the app (tested only) |
@@ -901,7 +901,7 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 | `pick-scorer:selected` | `{ caseId, scorer }` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
 | `query-options:saved` | `{ queryId, options }` (no `caseId`: listeners treat it as the current case) | `query-options-core` | `utils/live_query_events` |
 | `judgements:queries-need-reload`, `imports:queries-need-reload` | `{ caseId }` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (reloads only for the current case) |
-| `judgements:book-settings-saved` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `judgements-core` | `utils/live_query_events` (reconfigures book sync), `core_runtime.js` (updates `caseState` book; page-lifetime) |
+| `quepid:case-book-updated` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `utils/case_runtime` (fresh read or successful settings save) | `utils/live_query_events` (reconfigures book sync) |
 | `queries-state:changed` | none | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
 | `query-diffs:refreshed` | `{ success }` | `utils/live_query_runtime_owner` | `qscore-case` |
 | `case-score:persisted` | `{ caseId }` | `qscore-case` | `qgraph` |
@@ -937,6 +937,19 @@ The case page's controllers and module-owned runtime talk to each other with `Cu
 Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang. `wizard-launcher` and `core-bootstrap` are the exceptions: they check `hasWizardOutlet` / `hasCaseToolbarOutlet`, because a page without the wizard modal has nothing to auto-open, and a toolbar that connects after bootstrap reads `window.quepidCoreBootstrap.ready` itself.
 
 Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
+
+**Selected case ownership**
+
+`utils/case_runtime` owns the selected case record and book settings.
+`quepidSearch.caseState` is a compatibility read of that record. Judgements and
+CSV exports use fresh reads through the owner with Rails-provided URLs; concurrent
+reads of the same URL share only their in-flight request. Responses from a prior
+selection or superseded request cannot update the current record. A successful
+book-settings save invalidates older reads and publishes
+`quepid:case-book-updated`; refreshing the selected record publishes the same
+notification so book sync follows externally changed settings too. Navigation
+and query collections retain ids for their own loading lifecycle. Snapshot
+lists have a separate lifecycle.
 
 **Adding or changing an event**
 

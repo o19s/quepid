@@ -28,7 +28,7 @@ import {
   ratingChangedQueryId
 } from "utils/query_state"
 import { fetchQueries } from "utils/query_lifecycle"
-import { getJson } from "api/json"
+import { caseRuntime } from "utils/case_runtime"
 import coreFlash from "utils/core_flash"
 import { errorMessage } from "utils/error_message"
 import { isSameId } from "utils/record_identity"
@@ -579,12 +579,12 @@ export function createLiveQueryRuntimeOwner({ framework, domain, search, store }
   }
 
   function configureBook(newCaseNo) {
-    getJson("api/cases/" + newCaseNo).then((data) => {
-      bookSyncRuntime.configure({
-        caseId: newCaseNo,
-        bookId: data.book_id,
-        autoPopulate: data.auto_populate_book_pairs
-      })
+    const selected = caseRuntime.selected()
+    if (!isSameId(selected?.caseNo, newCaseNo)) return
+    bookSyncRuntime.configure({
+      caseId: newCaseNo,
+      bookId: selected.bookId,
+      autoPopulate: selected.autoPopulateBookPairs
     })
   }
 

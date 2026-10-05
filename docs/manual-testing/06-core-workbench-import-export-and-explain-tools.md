@@ -87,6 +87,8 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   5. Toggle **Book → Case: Judgement Ratings** sync and use its manual **Refresh Ratings** button.
   6. Try **Sync Queries** (pulls in queries missing from the book).
   7. Click **Save** (should only be enabled once something has actually changed).
+  8. Reopen Judgements without reloading the page: the saved book and sync toggles remain selected, and Save is hidden until another change.
+  9. Switch to another case and open Judgements: its own book settings appear. If a settings read/save fails, show the error and allow a retry without replacing the current settings.
 - **Expected:** The case-to-book link is established; sync directions work independently in both directions. Large operations (50+ queries) run as a background job with a redirect and a flash notice rather than blocking the UI.
 - **Edge cases:**
   - [ ] Attempt this on a case with zero team-sharing — confirm the gating message/prompt to share first.

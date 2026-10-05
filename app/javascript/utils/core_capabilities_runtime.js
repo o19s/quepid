@@ -6,7 +6,7 @@ import { createSettingsRuntime } from "utils/settings_runtime"
 import { createUserRuntime } from "utils/user_runtime"
 import { createConfigurationRuntime } from "utils/configuration_runtime"
 import { createNavigationRuntime } from "utils/navigation_runtime"
-import { createCaseRuntime } from "utils/case_runtime"
+import { caseRuntime } from "utils/case_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { getCoreCapabilities } from "utils/core_capability_access"
 
@@ -15,7 +15,6 @@ const searchEndpointRuntime = createSearchEndpointRuntime()
 const settingsCatalog = createSettingsCatalog()
 const configurationRuntime = createConfigurationRuntime()
 const navigationRuntime = createNavigationRuntime()
-const caseRuntime = createCaseRuntime()
 const settingsRuntime = createSettingsRuntime({
   caseNo: () => navigationRuntime.getCaseNo(),
   tryNo: () => navigationRuntime.getTryNo(),
@@ -257,6 +256,7 @@ function createCoreCapabilities(services, userRuntime) {
       loadCurrent: () => userRuntime.loadCurrent()
     },
     case: {
+      selected: () => caseRuntime.selected(),
       load: (caseNo) => caseRuntime.load(caseNo),
       select: (value) => caseRuntime.select(value),
       trackLastViewedAt: (caseNo) => caseRuntime.trackLastViewedAt(caseNo)

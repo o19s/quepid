@@ -331,7 +331,7 @@ describe("JudgementsCoreController", () => {
     it("saves the book link and sync flags, then announces the new settings", async () => {
       apiFetch.mockResolvedValueOnce(ok({ book_name: "Catalog" }))
       const saved = vi.fn()
-      document.addEventListener("judgements:book-settings-saved", saved)
+      document.addEventListener("quepid:case-book-updated", saved)
       const controller = linkedController({ autoPopulateCaseJudgements: true, savedBookId: 2 })
 
       await controller.save({ preventDefault() {} })
@@ -345,7 +345,7 @@ describe("JudgementsCoreController", () => {
       })
       expect(controller.hasUnsavedChanges()).toBe(false)
       expect(showFlash).toHaveBeenCalledWith("success", "Settings saved.")
-      document.removeEventListener("judgements:book-settings-saved", saved)
+      document.removeEventListener("quepid:case-book-updated", saved)
     })
 
     it("turns both sync flags off when the book is unlinked", async () => {

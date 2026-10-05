@@ -89,10 +89,10 @@ describe("live query events runtime", () => {
   it("reconfigures book sync when the active case's book settings are saved", () => {
     const { eventTarget, configureBook } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
       detail: { caseId: 7, bookId: 4, bookName: "Catalog", autoPopulateBookPairs: true }
     }))
-    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
       detail: { caseId: 7, bookId: null, autoPopulateBookPairs: false }
     }))
 
@@ -103,7 +103,7 @@ describe("live query events runtime", () => {
   it("ignores book settings saved for another case", () => {
     const { eventTarget, configureBook } = setup()
 
-    eventTarget.dispatchEvent(new CustomEvent("judgements:book-settings-saved", {
+    eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
       detail: { caseId: 8, bookId: 4, autoPopulateBookPairs: true }
     }))
 

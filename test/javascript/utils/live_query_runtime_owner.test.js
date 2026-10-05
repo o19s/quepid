@@ -277,7 +277,7 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(search.queryCapabilities.getCaseNo()).toBe(2)
     expect(search.queryCapabilities.getQuery(7).queryText).toBe("dune")
     expect(stores.queries.status).toBe("ready")
-    expect(fetch.mock.calls.map(([url]) => String(url))).toContainEqual(
+    expect(fetch.mock.calls.map(([url]) => String(url))).not.toContainEqual(
       expect.stringMatching(/api\/cases\/2$/)
     )
 

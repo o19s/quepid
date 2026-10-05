@@ -198,5 +198,12 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     const response = await saved;
     expect(response.ok()).toBeTruthy();
     await expect(modal).toBeHidden({ timeout: 15_000 });
+
+    // Reopening must read persisted settings and keep the selected-case owner
+    // synchronized, rather than relying on the toolbar's old dataset.
+    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
+    await expect(modal.locator('[data-judgements-core-target="bookList"] .list-group-item.active')).toHaveCount(1);
+    await expect(saveButton).toBeHidden();
   });
 });

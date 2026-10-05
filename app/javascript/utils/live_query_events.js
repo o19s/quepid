@@ -91,7 +91,7 @@ export function createLiveQueryEventsRuntime({
     eventTarget.addEventListener("pick-scorer:selected", scorerSelected)
     eventTarget.addEventListener("judgements:queries-need-reload", queriesNeedReload)
     eventTarget.addEventListener("imports:queries-need-reload", queriesNeedReload)
-    eventTarget.addEventListener("judgements:book-settings-saved", bookSettingsSaved)
+    eventTarget.addEventListener("quepid:case-book-updated", bookSettingsSaved)
   }
 
   return { connect }

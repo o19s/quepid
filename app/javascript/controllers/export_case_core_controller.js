@@ -7,6 +7,7 @@ import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDown
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
 import { getCoreStores } from "utils/core_store_access"
+import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
@@ -216,7 +217,7 @@ export default class extends CoreModalControllerBase {
 
   async _downloadGeneral() {
     const [ caseData, queriesData ] = await Promise.all([
-      getJson(this._url(this.caseUrlTemplateValue)),
+      caseRuntime.read(this.currentCaseId, { url: this._url(this.caseUrlTemplateValue) }),
       getJson(this._url(this.queriesUrlTemplateValue))
     ])
     const csv = buildGeneralCaseCsv(caseData, queriesData.queries || [])
@@ -224,7 +225,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async _downloadDetailed() {
-    const caseData = await getJson(this._url(this.caseUrlTemplateValue))
+    const caseData = await caseRuntime.read(this.currentCaseId, { url: this._url(this.caseUrlTemplateValue) })
     const queries = getCoreStores().documents.snapshot().queries
     const csv = buildDetailedCaseCsv(caseData, queries)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))

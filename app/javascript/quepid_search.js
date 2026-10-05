@@ -1,3 +1,4 @@
+import { caseRuntime } from "utils/case_runtime"
 import { createDocCache } from "utils/doc_cache"
 
 /**
@@ -13,11 +14,10 @@ const quepidSearch = {
     resolver: (...args) => quepidSearch.docResolverSvc.createResolver(...args),
     proxyUrlFor: (searchEndpointId) => quepidSearch.caseRuntime?.bootstrap?.core?.navigation?.proxyUrlFor(searchEndpointId)
   }),
-  caseState: {
-    caseNo: null,
-    caseName: "",
-    bookId: null,
-    bookName: null
+  get caseState() {
+    return caseRuntime.selected() || {
+      caseNo: null, caseName: "", bookId: null, bookName: null
+    }
   },
   // Capability boundary for modern case controllers. Modern code does not
   // depend on the internal query-state implementation.

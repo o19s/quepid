@@ -128,4 +128,148 @@ describe("case runtime", () => {
     document.removeEventListener("quepid:case-renamed", renamed)
     document.removeEventListener("quepid:case-header-stale", stale)
   })
+  it("coalesces concurrent reads but fetches fresh data on the next open", async () => {
+    let finish
+    const request = vi.fn().mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+      .mockResolvedValueOnce(response({ case_id: 7, book_id: 9 }))
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, bookId: 1 })
+    const first = runtime.read(7)
+    const second = runtime.read(7)
+    finish(response({ case_id: 7, book_id: 8 }))
+    await Promise.all([first, second])
+    expect(request).toHaveBeenCalledOnce()
+    expect(runtime.selected().bookId).toBe(8)
+    await runtime.read(7)
+    expect(runtime.selected().bookId).toBe(9)
+    expect(request).toHaveBeenCalledTimes(2)
+  })
+
+  it("does not let a response from a previous selection overwrite the current record", async () => {
+    let finish
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish = resolve })))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7 })
+    const reading = runtime.read(7)
+    runtime.select({ caseNo: 8, bookId: 12 })
+    finish(response({ case_id: 7, book_id: 99 }))
+    await reading
+    expect(runtime.selected()).toEqual({ caseNo: 8, bookId: 12 })
+  })
+
+  it("allows retry after a failed refresh without losing selected settings", async () => {
+    vi.stubGlobal("fetch", vi.fn()
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(response({ case_id: 7, book_id: 9 })))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, bookId: 12 })
+    await expect(runtime.read(7)).rejects.toThrow("offline")
+    expect(runtime.selected().bookId).toBe(12)
+    await runtime.read(7)
+    expect(runtime.selected().bookId).toBe(9)
+  })
+
+  it("saves book settings in the selected record and invalidates an older refresh", async () => {
+    let finish
+    vi.stubGlobal("fetch", vi.fn()
+      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+      .mockResolvedValueOnce(response({ book_name: "New book" })))
+    const runtime = createCaseRuntime()
+    const selected = { caseNo: 7, bookId: 1 }
+    runtime.select(selected)
+    const reading = runtime.read(7)
+    await runtime.saveBookSettings(7, {
+      book_id: 9, auto_populate_book_pairs: true, auto_populate_case_judgements: false
+    })
+    finish(response({ case_id: 7, book_id: 1 }))
+    await reading
+    expect(runtime.selected()).toBe(selected)
+    expect(selected).toMatchObject({
+      bookId: 9, bookName: "New book", autoPopulateBookPairs: true,
+      autoPopulateCaseJudgements: false
+    })
+  })
+
+  it("keeps the newest overlapping refresh and publishes its book settings", async () => {
+    const finish = []
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => finish.push(resolve))))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, bookId: 1 })
+    const updated = vi.fn()
+    document.addEventListener("quepid:case-book-updated", updated)
+    try {
+      const first = runtime.read(7, { url: "api/cases/7?shallow=false" })
+      const second = runtime.read(7)
+      finish[1](response({ case_id: 7, book_id: 9, auto_populate_book_pairs: true }))
+      await second
+      finish[0](response({ case_id: 7, book_id: 1 }))
+      await first
+      expect(runtime.selected().bookId).toBe(9)
+      expect(updated).toHaveBeenCalledOnce()
+      expect(updated.mock.calls[0][0].detail).toMatchObject({ bookId: 9, autoPopulateBookPairs: true })
+    } finally {
+      document.removeEventListener("quepid:case-book-updated", updated)
+    }
+  })
+
+  it("does not publish a save for a previous selection, and preserves settings on failure", async () => {
+    let finish
+    vi.stubGlobal("fetch", vi.fn()
+      .mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+      .mockRejectedValueOnce(new Error("offline")))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, bookId: 1 })
+    const updated = vi.fn()
+    document.addEventListener("quepid:case-book-updated", updated)
+    try {
+      const saving = runtime.saveBookSettings(7, { book_id: 9 })
+      runtime.select({ caseNo: 8, bookId: 12 })
+      finish(response({ book_name: "Old selection" }))
+      await saving
+      expect(updated).not.toHaveBeenCalled()
+      await expect(runtime.saveBookSettings(8, { book_id: 99 })).rejects.toThrow("offline")
+      expect(runtime.selected().bookId).toBe(12)
+    } finally {
+      document.removeEventListener("quepid:case-book-updated", updated)
+    }
+  })
+
+  it.each(["before", "during"])("preserves a Nightly save against a refresh started %s the PUT", async (ordering) => {
+    let finishRead
+    let finishWrite
+    vi.stubGlobal("fetch", vi.fn((_url, options) => new Promise(resolve => {
+      if (options.method === "PUT") finishWrite = resolve
+      else finishRead = resolve
+    })))
+    const runtime = createCaseRuntime()
+    const selected = { caseNo: 7, nightly: false }
+    runtime.select(selected)
+    let reading
+    if (ordering === "before") reading = runtime.read(7)
+    selected.nightly = true
+    const saving = runtime.updateNightly(selected)
+    if (ordering === "during") reading = runtime.read(7)
+    finishRead(response({ case_id: 7, nightly: false }))
+    await reading
+    finishWrite(response())
+    await saving
+    expect(runtime.selected().nightly).toBe(true)
+  })
+
+  it("invalidates a refresh still pending when the Nightly save completes", async () => {
+    let finishRead
+    vi.stubGlobal("fetch", vi.fn()
+      .mockResolvedValueOnce(response())
+      .mockImplementationOnce(() => new Promise(resolve => { finishRead = resolve })))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, nightly: true })
+    const saving = runtime.updateNightly(runtime.selected())
+    const reading = runtime.read(7)
+    await saving
+    finishRead(response({ case_id: 7, nightly: false }))
+    await reading
+    expect(runtime.selected().nightly).toBe(true)
+  })
+
 })

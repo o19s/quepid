@@ -6,6 +6,7 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 import { showFlash } from "utils/flash"
 import { getCoreStores } from "utils/core_store_access"
 import { populateBook } from "utils/book_sync"
+import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
@@ -55,6 +56,7 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
+    this.openGeneration = (this.openGeneration || 0) + 1
     const caseId = btn?.dataset?.judgementsCoreIdValue
     const scorerId = btn?.dataset?.judgementsCoreScorerIdValue
     const bookId = btn?.dataset?.judgementsCoreBookIdValue
@@ -233,12 +235,15 @@ export default class extends CoreModalControllerBase {
   }
 
   async _load() {
+    const generation = this.openGeneration
     this.setLoading(true)
     this._setSectionsVisible({ books: false, noTeams: false, noBooks: false })
 
     try {
       const caseUrl = this.caseUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId)
-      const caseData = await getJson(caseUrl)
+      const caseId = this.currentCaseId
+      const caseData = await caseRuntime.read(caseId, { url: caseUrl })
+      if (this.openGeneration !== generation || !isSameId(this.currentCaseId, caseId)) return
 
       this.teams = Array.isArray(caseData.teams) ? caseData.teams : []
       // Prefer the live API book_id over the trigger attribute — the toolbar
@@ -282,6 +287,7 @@ export default class extends CoreModalControllerBase {
         })
       )
 
+      if (this.openGeneration !== generation) return
       this.books = this._dedupeAndSortBooks(bookLists.flat())
       this.setLoading(false)
 
@@ -295,6 +301,7 @@ export default class extends CoreModalControllerBase {
       this._refreshIntegrationVisibility()
       this._refreshSaveVisibility()
     } catch (error) {
+      if (this.openGeneration !== generation) return
       console.error("judgements-core: load failed", error)
       this.setLoading(false)
       this.showError(error.message || "Unable to load judgements settings.")
@@ -411,23 +418,15 @@ export default class extends CoreModalControllerBase {
       auto_populate_case_judgements: bookId ? this.autoPopulateCaseJudgements : false
     }
 
-    const data = await putJson(url, payload)
+    const caseId = this.currentCaseId
+    const generation = this.openGeneration
+    await caseRuntime.saveBookSettings(caseId, payload, { url })
+    if (this.openGeneration !== generation || !isSameId(this.currentCaseId, caseId)) return
 
     this.savedBookId = bookId
     this.savedAutoPopulateBookPairs = payload.auto_populate_book_pairs
     this.savedAutoPopulateCaseJudgements = payload.auto_populate_case_judgements
 
-    document.dispatchEvent(
-      new CustomEvent("judgements:book-settings-saved", {
-        detail: {
-          caseId: Number(this.currentCaseId),
-          bookId,
-          bookName: data?.book_name || null,
-          autoPopulateBookPairs: payload.auto_populate_book_pairs,
-          autoPopulateCaseJudgements: payload.auto_populate_case_judgements
-        }
-      })
-    )
   }
 
   async _refreshRatings({
