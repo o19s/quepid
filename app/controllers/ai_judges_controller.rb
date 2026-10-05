@@ -21,11 +21,12 @@ class AiJudgesController < ApplicationController
     openai = LlmProvider.find('openai')
     @ai_judge.system_prompt = openai.default_system_prompt
     @ai_judge.judge_options = {
-      llm_provider:    openai.key,
-      llm_service_url: openai.default_service_url,
-      llm_model:       openai.default_model,
-      llm_timeout:     30,
-      llm_api_version: openai.default_api_version,
+      llm_provider:       openai.key,
+      llm_service_url:    openai.default_service_url,
+      llm_model:          openai.default_model,
+      llm_timeout:        30,
+      llm_api_version:    openai.default_api_version,
+      llm_include_images: true,
     }
   end
 

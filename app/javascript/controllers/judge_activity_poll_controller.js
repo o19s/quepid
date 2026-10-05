@@ -1,13 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
 
 // Fallback safety net for BroadcastJudgeActivityJob's live Turbo Stream
-// push.   We are seeing that often it looses it's connection if the job runs and finishes queickly, and then it just pulses forever.
-// if that broadcast is ever missed (a dropped ActionCable connection,
-// a broadcast that fires before this page's subscription is ready, etc.), a
-// row could be left showing as "actively judging" forever with nothing to
-// correct it. While at least one row is actively judging, poll the server
-// periodically and swap in its response - cheap self-healing that doesn't
-// depend on the broadcast arriving at all.
+// push: if a broadcast is ever missed (a dropped ActionCable connection, one
+// that fires before this page's subscription is ready, etc.), a row could be
+// left showing as "actively judging" forever with nothing to correct it.
+// While at least one row is actively judging, poll the server periodically
+// and apply its response - cheap self-healing that doesn't depend on the
+// broadcast arriving at all.
+//
+// The poll response is real Turbo Stream HTML (see
+// BooksController#judge_activity), applied via Turbo's own
+// renderStreamMessage - the same per-cell replace targets the live
+// broadcast uses, so polling can never redraw a judge's sparkline chart
+// any more than a broadcast can.
 //
 // A MutationObserver (rather than only checking on connect) means polling
 // also kicks in if a row becomes active later via a live broadcast, and
@@ -53,11 +58,14 @@ export default class extends Controller {
   }
 
   async poll() {
-    const response = await fetch(this.urlValue, { headers: { Accept: "text/html" } })
+    const knownJudgeIds = [...this.element.querySelectorAll('[id^="judge-row-"]')]
+      .map((row) => row.id.replace("judge-row-", ""))
+      .join(",")
+    const url = `${this.urlValue}?known_judge_ids=${knownJudgeIds}`
+
+    const response = await fetch(url, { headers: { Accept: "text/vnd.turbo-stream.html" } })
     if (!response.ok) return
 
-    // Setting innerHTML triggers the observer above, which re-schedules (or
-    // stops) polling based on the freshly-fetched content.
-    this.element.innerHTML = await response.text()
+    Turbo.renderStreamMessage(await response.text())
   }
 }

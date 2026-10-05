@@ -100,7 +100,7 @@ Cases are a group of queries that you are evaluating and experimenting with.
   
       <tbody>      
         <% @cases.each do |kase| %>
-          <% last_score = kase.last_score %>
+          <% last_score = @last_scores[kase.id] %>
           <tr>
             <td><%= kase.id %></td>
             <td><%= link_to kase.case_name, case_core_path(kase) %></td>

@@ -326,3 +326,105 @@ describe("AiJudgeWizardController provider switching", () => {
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
   })
 })
+
+describe("AiJudgeWizardController include images switch", () => {
+  function switchField(checked) {
+    const field = judgeOptionField("llm_include_images", "true")
+    field.type = "checkbox"
+    field.checked = checked
+    return field
+  }
+
+  it("sends the switch as true or false, not the checkbox's fixed value", () => {
+    const field = switchField(false)
+    const controller = buildController()
+    controller.structuredFieldTargets = [...controller.structuredFieldTargets, field]
+
+    expect(AiJudgeWizardController.prototype.judgeOptions.call(controller).llm_include_images).toBe("false")
+
+    field.checked = true
+    expect(AiJudgeWizardController.prototype.judgeOptions.call(controller).llm_include_images).toBe("true")
+  })
+
+  it("sets the switch from the JSON tab, treating anything but false as on", () => {
+    const field = switchField(true)
+    const element = document.createElement("div")
+    element.appendChild(field)
+    const controller = buildController({ element, hasJsonFieldTarget: true, hasLlmProviderTarget: false })
+
+    controller.jsonFieldTarget = { value: JSON.stringify({ judge_options: { llm_include_images: false } }) }
+    AiJudgeWizardController.prototype.applyJsonToFields.call(controller)
+    expect(field.checked).toBe(false)
+
+    controller.jsonFieldTarget = { value: JSON.stringify({ judge_options: { llm_include_images: "true" } }) }
+    AiJudgeWizardController.prototype.applyJsonToFields.call(controller)
+    expect(field.checked).toBe(true)
+  })
+
+  function imageSupportController(checked) {
+    const field = switchField(checked)
+    const hidden = document.createElement("input")
+    hidden.type = "hidden"
+    hidden.value = "false"
+    const notice = document.createElement("div")
+    notice.style.display = "none"
+    const noticeProvider = document.createElement("span")
+    const controller = buildController({
+      hasIncludeImagesTarget: true,
+      includeImagesTarget: field,
+      hasIncludeImagesHiddenTarget: true,
+      includeImagesHiddenTarget: hidden,
+      hasIncludeImagesNoticeTarget: true,
+      includeImagesNoticeTarget: notice,
+      hasIncludeImagesNoticeProviderTarget: true,
+      includeImagesNoticeProviderTarget: noticeProvider
+    })
+    controller.structuredFieldTargets = [...controller.structuredFieldTargets, field]
+    return { controller, field, hidden, notice, noticeProvider }
+  }
+
+  it("disables the switch for a provider that cannot take images, and says which", () => {
+    const { controller, field, hidden, notice, noticeProvider } = imageSupportController(true)
+
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "Ollama", supports_images: false })
+
+    expect(field.disabled).toBe(true)
+    expect(field.checked).toBe(false)
+    expect(notice.style.display).toBe("")
+    expect(noticeProvider.textContent).toBe("Ollama")
+    // the judge's own choice is still what gets saved
+    expect(hidden.value).toBe("true")
+    expect(AiJudgeWizardController.prototype.judgeOptions.call(controller).llm_include_images).toBe("true")
+  })
+
+  it("restores the judge's own choice on moving back to a provider that takes images", () => {
+    const { controller, field, hidden, notice } = imageSupportController(false)
+
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "TypeSafe Jev", supports_images: false })
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "OpenAI", supports_images: true })
+
+    expect(field.disabled).toBe(false)
+    expect(field.checked).toBe(false)
+    expect(notice.style.display).toBe("none")
+    expect(hidden.value).toBe("false")
+
+    field.checked = true
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "Ollama", supports_images: false })
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "Anthropic", supports_images: true })
+    expect(field.checked).toBe(true)
+  })
+
+  it("keeps a JSON-tab edit as the choice while the provider cannot take images", () => {
+    const { controller, field } = imageSupportController(true)
+    const element = document.createElement("div")
+    element.appendChild(field)
+    Object.assign(controller, { element, hasJsonFieldTarget: true, hasLlmProviderTarget: false })
+
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "Ollama", supports_images: false })
+    controller.jsonFieldTarget = { value: JSON.stringify({ judge_options: { llm_include_images: false } }) }
+    AiJudgeWizardController.prototype.applyJsonToFields.call(controller)
+    AiJudgeWizardController.prototype.applyImageSupport.call(controller, { label: "OpenAI", supports_images: true })
+
+    expect(field.checked).toBe(false)
+  })
+})

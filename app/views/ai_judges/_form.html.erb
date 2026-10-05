@@ -115,11 +115,11 @@
                   owns them -- so nobody has to hand-edit the JSON tab to reach a known setting. %>
               <% specs = LlmProvider.option_field_specs %>
               <% stored = @ai_judge.judge_options.map { |key, value| [ key.to_s, value ] } %>
-              <%# llm_provider is a universal field, not one any provider declares via
-                  option_fields (those are provider-specific extras) - list it explicitly
-                  so its row still renders for a judge_options hash saved before this key
-                  existed, instead of silently vanishing. %>
-              <% candidate_keys = specs.keys | [ 'llm_provider' ] %>
+              <%# llm_provider and llm_include_images are universal fields, not ones any
+                  provider declares via option_fields (those are provider-specific extras) -
+                  list them explicitly so their rows still render for a judge_options hash
+                  saved before these keys existed, instead of silently vanishing. %>
+              <% candidate_keys = specs.keys | %w[llm_provider llm_include_images] %>
               <% unsaved = candidate_keys.reject { |key| stored.any? { |stored_key, _| stored_key == key } } %>
               <% rows = (stored + unsaved.map { |key| [ key, nil ] }).sort_by { |key, _| 'llm_provider' == key ? 0 : 1 } %>
               <% rows.each do |key, value| %>
@@ -128,7 +128,7 @@
                      <%= "data-provider=#{spec[:provider]}".html_safe if spec %>
                      <%= 'data-ai-judge-wizard-target=providerOptionField'.html_safe if spec %>
                      <%= 'style=display:none;'.html_safe if spec %>>
-                  <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.humanize.titleize, class: 'col-sm-5 col-form-label text-nowrap' %>
+                  <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || ('llm_include_images' == key ? 'Judge with images' : key.humanize.titleize), class: 'col-sm-5 col-form-label text-nowrap' %>
                   <div class="col-sm-7">
                     <% if 'llm_provider' == key %>
                       <%= select_tag "user[judge_options][llm_provider]",
@@ -137,6 +137,35 @@
                             class: 'form-select form-select-sm structured-field',
                             data: { ai_judge_wizard_target: "llmProvider structuredField", action: "change->ai-judge-wizard#updateProviderPreset" }
                       %>
+                    <% elsif 'llm_include_images' == key %>
+                      <%# Unset means on: judges saved before this switch always sent images.
+                          The hidden field makes an unchecked box post "false" rather than
+                          nothing, which would read as unset. A provider that cannot take an
+                          image shows the switch disabled and off; the hidden field then posts
+                          the judge's own choice, kept for if it moves to a provider that can. %>
+                      <% wants_images = value.nil? || '' == value || ActiveModel::Type::Boolean.new.cast(value) %>
+                      <% images_supported = provider.nil? || provider.supports_images? %>
+                      <div class="form-check form-switch col-form-label">
+                        <%= hidden_field_tag "user[judge_options][llm_include_images]",
+                              images_supported ? 'false' : wants_images.to_s, id: nil,
+                              data: { ai_judge_wizard_target: "includeImagesHidden structuredField" } %>
+                        <%= check_box_tag "user[judge_options][llm_include_images]", 'true',
+                              images_supported && wants_images,
+                              id: 'judge_options_llm_include_images', class: 'form-check-input structured-field',
+                              role: 'switch', disabled: !images_supported,
+                              data: { ai_judge_wizard_target: "includeImages structuredField",
+                                      unsupported: (!images_supported).to_s, wanted: wants_images.to_s } %>
+                      </div>
+                      <div class="form-text">
+                        Attach the document's image, or its thumbnail if available, to the request as an
+                        image URL. Turn off for text-only models.
+                      </div>
+                      <div class="form-text text-warning-emphasis" data-ai-judge-wizard-target="includeImagesNotice"
+                           <%= 'style=display:none;'.html_safe if images_supported %>>
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span data-ai-judge-wizard-target="includeImagesNoticeProvider"><%= provider&.label %></span>
+                        doesn't support images, so none are sent.
+                      </div>
                     <% else %>
                       <% common_field_attrs = { id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
                            data: { ai_judge_wizard_target: "#{key.camelize(:lower)} structuredField" } } %>

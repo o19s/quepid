@@ -138,6 +138,10 @@ class LlmProvider
   # key => { label:, hint:, ... }, so the form can offer them instead of leaving
   # people to hand-edit JSON.
   attribute :option_fields,         default: -> { {} }
+  # Whether the API takes a document's image as an image URL. The AI Judge form shows
+  # the include-images switch disabled for a provider that does not, and the adapter
+  # never attaches one, whatever the judge's own setting says.
+  attribute :supports_images,       :boolean, default: true
 
   DEFINITIONS = [
     {
@@ -244,9 +248,12 @@ class LlmProvider
     },
     # URL and help text come from config at lookup time -- see runtime_settings.
     {
-      key:           'ollama',
-      label:         'Ollama',
-      default_model: 'qwen3:0.6b',
+      key:             'ollama',
+      label:           'Ollama',
+      default_model:   'qwen3:0.6b',
+      # Its OpenAI-compatible endpoint rejects image URLs ("please use base64 encoded
+      # data instead"), whichever model is behind it.
+      supports_images: false,
     },
     # Jev is a typed "System One" model, not a chat model, so it speaks through its own
     # adapter (LlmJudgeAdapters::Jev; docs/adr/0001). That adapter sends the scale as the
@@ -265,6 +272,7 @@ class LlmProvider
                              'question it is asked. Say what to weigh -- the rating scale, its labels ' \
                              'and the shape of the answer are part of the request already.',
       help_html:             JEV_HELP_HTML,
+      supports_images:       false,
       option_fields:         {
         'jev_min_confidence' => {
           label: 'Minimum confidence',
@@ -345,6 +353,11 @@ class LlmProvider
     adapter.constantize.scale_as_criteria?
   end
 
+  # ActiveModel attributes get no `?` reader of their own.
+  def supports_images?
+    supports_images
+  end
+
   # A provider that is sent the scale as its criteria has nothing to judge against
   # without one, so it can only be run (or previewed) with a scale in hand.
   def needs_scale?
@@ -377,6 +390,8 @@ class LlmProvider
       prompt_hint:       prompt_hint,
       scale_as_criteria: scale_as_criteria?,
       needs_scale:       needs_scale?,
+      label:             label,
+      supports_images:   supports_images?,
     }
   end
 

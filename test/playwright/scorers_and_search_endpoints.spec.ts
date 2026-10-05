@@ -23,7 +23,7 @@ test.describe('scorers management', () => {
 
     // ScorersController#create redirects to edit_scorer_path with a notice.
     await expect(page).toHaveURL(/\/scorers\/\d+\/edit/);
-    await expect(page.locator('#flash')).toContainText('Scorer created.');
+    await expect(page.locator('#flash-messages')).toContainText('Scorer created.');
 
     // Pagination/ordering could push the new scorer off page 1 — filter by
     // name via the index's `q` search param to find it deterministically.
@@ -69,7 +69,7 @@ test.describe('search endpoints management', () => {
     await page.getByRole('button', { name: 'Archive' }).click();
 
     await expect(page).toHaveURL(/\/search_endpoints$/);
-    await expect(page.locator('#flash')).toContainText('Search Endpoint was archived.');
+    await expect(page.locator('#flash-messages')).toContainText('Search Endpoint was archived.');
 
     // Default listing (archived unchecked) must no longer include it.
     await page.goto(`search_endpoints?q=${encodeURIComponent(endpointName)}`);

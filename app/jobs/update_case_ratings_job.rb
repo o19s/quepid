@@ -28,7 +28,10 @@ class UpdateCaseRatingsJob < ApplicationJob
     qdp_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/QueryDocPair/') }
     return false unless qdp_arg
 
-    GlobalID::Locator.locate(qdp_arg['_aj_globalid'])&.book_id == book.id
+    # safely_locate returns nil (rather than raising) for a query_doc_pair
+    # deleted after this job was enqueued (e.g. the book was reset or
+    # re-imported) - it can't target any book anymore.
+    safely_locate(qdp_arg['_aj_globalid'])&.book_id == book.id
   end
   private_class_method :job_targets_book?
 

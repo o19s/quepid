@@ -14,7 +14,19 @@
 	 padding: 20px 15px 0;
  }
  
- /* For the kraken image */
+ /* Overlays flash notices (e.g. "AI Judge ... will start evaluating query/doc
+ * pairs") over the bottom of the page instead of pushing content down -
+ * matches the core page's #flash-messages treatment (core-additions.css).
+ * Bootstrap's own toast z-index, since these are toast-style notifications. */
+#flash-messages {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: var(--bs-toast-zindex, 1090);
+}
+
+/* For the kraken image */
 .fade-out {
   animation: fadeOut 4s;
   animation-fill-mode: forwards;

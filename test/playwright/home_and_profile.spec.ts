@@ -45,7 +45,7 @@ test.describe('profile', () => {
 
       // ProfilesController#update redirects back to profile_path with a notice on success.
       await expect(page).toHaveURL(/\/profile$/);
-      await expect(page.locator('#flash')).toContainText('Profile updated successfully.');
+      await expect(page.locator('#flash-messages')).toContainText('Profile updated successfully.');
       await expect(page.locator('h5.mb-1')).toHaveText(updatedName);
       await expect(page.locator('#user_name')).toHaveValue(updatedName);
     } finally {
@@ -53,7 +53,7 @@ test.describe('profile', () => {
       // shared dev user for the rest of the suite (or other agents' runs).
       await page.locator('#user_name').fill(originalName);
       await page.getByRole('button', { name: 'Update profile', exact: true }).click();
-      await expect(page.locator('#flash')).toContainText('Profile updated successfully.');
+      await expect(page.locator('#flash-messages')).toContainText('Profile updated successfully.');
       await expect(page.locator('#user_name')).toHaveValue(originalName);
     }
   });

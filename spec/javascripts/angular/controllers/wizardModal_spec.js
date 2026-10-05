@@ -269,6 +269,7 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
   var $rootScope, $q, scope;
   var validatorDeferred;
   var nextSpy;
+  var validationSettings;
 
   beforeEach(function () {
     /*global jasmine*/
@@ -280,7 +281,8 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
       $provide.value('WizardHandler', { wizard: function () { return { next: nextSpy, goTo: function () {} }; } });
 
       $provide.value('searchSvc', {
-        createValidator: function () {
+        createValidator: function (settings) {
+          validationSettings = settings;
           return {
             validateUrl: function () { return validatorDeferred.promise; },
             fields:      [],
@@ -318,6 +320,41 @@ describe('Controller: WizardModalCtrl — validating flag lifecycle', function (
       customHeaders:  '',
     }, extra || {});
   }
+
+  it('parses Vespa query-string templates into scalar parameters', function () {
+    primeSearchapi({
+      bareQueryParam: 'yql', testQuery: '',
+      queryParams: 'yql=select * from movies where title contains "#$query##" or cast contains "#$query##" &ranking.profile=bm25'
+    });
+    scope.validate(true);
+    expect(validationSettings.args.yql).toBe('select * from movies where title contains "test" or cast contains "test" ');
+    expect(validationSettings.args['ranking.profile']).toBe('bm25');
+  });
+
+  it('parses parameter lists in Test Query with reordered multiline parameters', function () {
+    primeSearchapi({
+      bareQueryParam: 'yql',
+      testQuery: '  ranking.profile=bm25&\nyql=select * from movies where year >= 2000&hits=10'
+    });
+    scope.validate(true);
+    expect(validationSettings.args.yql).toBe('select * from movies where year >= 2000');
+    expect(validationSettings.args['ranking.profile']).toBe('bm25');
+    expect(validationSettings.args.hits).toBe('10');
+  });
+
+  it('keeps bare Vespa YQL containing equals signs and ampersands intact', function () {
+    var yql = 'select * from movies where year >= 2000 and title contains "A&B"';
+    primeSearchapi({ bareQueryParam: 'yql', testQuery: yql });
+    scope.validate(true);
+    expect(validationSettings.args).toEqual({ yql: yql });
+  });
+
+  it('keeps Vespa JSON parameters intact', function () {
+    var args = { yql: 'select * from movies where true', 'ranking.profile': 'bm25' };
+    primeSearchapi({ bareQueryParam: 'yql', testQuery: JSON.stringify(args) });
+    scope.validate(true);
+    expect(validationSettings.args).toEqual(args);
+  });
 
   it('clears validating when validateUrl() resolves and justValidate=true (ping it)', function () {
     primeSearchapi();

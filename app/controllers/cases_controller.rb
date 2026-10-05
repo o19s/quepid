@@ -35,10 +35,11 @@ class CasesController < ApplicationController
     query = query.with_counts
     # query = query.includes([ :metadata ])
     # query = query.order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
-    query = query.includes(:owner, :teams, scores: :user)
+    query = query.includes(:owner, :teams)
 
     # Paginate results
     @pagy, @cases = pagy(query)
+    @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
 
     # Get user's teams for the share modal
     @user_teams = current_user.teams.order(:name)

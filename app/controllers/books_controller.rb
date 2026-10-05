@@ -73,6 +73,7 @@ class BooksController < ApplicationController
 
     # ── Per-judge activity: last 30 days sparkline + last judged timestamp ────
     @judge_activity = @book.judge_activity_rows
+    mark_refinable! @judge_activity
 
     respond_with(@book)
   end
@@ -81,8 +82,6 @@ class BooksController < ApplicationController
   def export
   end
 
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/MethodLength
   def judge_overview
     # Personal progress
     @total_pairs           = @book.query_doc_pairs_within_rank_depth.count
@@ -113,17 +112,35 @@ class BooksController < ApplicationController
   # BroadcastJudgeActivityJob's live Turbo Stream push - if that broadcast is
   # ever missed (a dropped ActionCable connection, a broadcast that fires
   # before the page's subscription is ready, etc.), a row could otherwise be
-  # left showing as "actively judging" with nothing to correct it. Renders
-  # the exact same partial the broadcast does, so a poll response can safely
-  # replace the table body content in place.
+  # left showing as "actively judging" with nothing to correct it.
+  #
+  # Mirrors the broadcast job's own targets (status/count/last cells, never
+  # the sparkline chart) for rows the poller says it already has, and only
+  # falls back to appending a full row - chart included - for a judge id it
+  # doesn't know about yet (a brand new row it's never rendered before).
   def judge_activity
-    render partial: 'judge_activity_table_body',
-           locals:  { judge_activity: @book.judge_activity_rows, book: @book, flashing_judge_id: nil }
+    known_judge_ids = params[:known_judge_ids].to_s.split(',').to_set(&:to_i)
+    rows = @book.judge_activity_rows
+    mark_refinable! rows
+
+    streams = rows.flat_map do |row|
+      judge_id = row[:judge].id
+
+      if known_judge_ids.include?(judge_id)
+        [
+          turbo_stream.replace("judge-status-#{judge_id}", partial: 'books/judge_status_cell', locals: { row: row, book: @book }),
+          turbo_stream.replace("judge-count-#{judge_id}", partial: 'books/judge_count_cell', locals: { row: row }),
+          turbo_stream.replace("judge-last-#{judge_id}", partial: 'books/judge_last_cell', locals: { row: row })
+        ]
+      else
+        turbo_stream.append('judge-activity-table', partial: 'books/judge_activity_row', locals: { row: row, book: @book })
+      end
+    end
+
+    render turbo_stream: streams
   end
 
   def judgement_stats
-    @moar_judgements_needed = SelectionStrategy.moar_judgements_needed? @book
-
     @rating_distribution_data = rating_distribution_for @book
 
     @leaderboard_data = []
@@ -132,14 +149,9 @@ class BooksController < ApplicationController
     unique_judge_ids = @book.query_doc_pairs.joins(:judgements)
       .distinct.pluck(:user_id)
 
-    @ai_judges = @book.ai_judges
-    assigned_ai_judges = @ai_judges.pluck(:user_id)
+    assigned_ai_judges = @book.ai_judges.pluck(:user_id)
 
-    # A judge that judged this book historically may since have been
-    # unassigned, or belong to a teammate whose team doesn't share the judge
-    # itself even though it shares this book - guard the "Refine Prompt"
-    # link so it isn't shown for a judge the viewer can't actually open.
-    @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id)
+    @refinable_ai_judge_ids = refinable_ai_judge_ids
 
     # On-call judges are listed before they have judged anything, so the
     # book shows who its judges will wake.
@@ -164,18 +176,15 @@ class BooksController < ApplicationController
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
-        judge:          judge,
-        judgements:     @book.judgements.where(user: judge).count,
-        unrateable:     @book.judgements.where(user: judge).where(unrateable: true).count,
-        judge_later:    @book.judgements.where(user: judge).where(judge_later: true).count,
-        can_judge_more: @book.judgements.where(user: judge).count < @book.query_doc_pairs.count,
+        judge:       judge,
+        judgements:  @book.judgements.where(user: judge).count,
+        unrateable:  @book.judgements.where(user: judge).where(unrateable: true).count,
+        judge_later: @book.judgements.where(user: judge).where(judge_later: true).count,
       }
     end
 
     respond_with(@book)
   end
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
 
   def new
     # we actually support passing in starting point configuration for a book
@@ -518,6 +527,24 @@ class BooksController < ApplicationController
   end
 
   private
+
+  # A judge that judged this book historically may since have been
+  # unassigned, or belong to a teammate whose team doesn't share the judge
+  # itself even though it shares this book - guard the "Refine Prompt" link
+  # so it isn't shown for a judge the viewer can't actually open. Memoized:
+  # #show and #judge_activity both need it for the same request.
+  def refinable_ai_judge_ids
+    @refinable_ai_judge_ids ||= AiJudge.for_user(current_user).pluck(:id)
+  end
+
+  # Stamps each judge_activity_rows row with whether *this* viewer can open
+  # it, so _judge_status_cell just reads row[:refinable] instead of every
+  # caller threading the id list through table_body/row partials that never
+  # read it themselves.
+  def mark_refinable! rows
+    ids = refinable_ai_judge_ids
+    rows.each { |row| row[:refinable] = ids.include?(row[:judge].id) }
+  end
 
   # AI judges the given user can access - owned directly, or shared via any
   # of their teams. Called with @book.owner on #show (whose judges are

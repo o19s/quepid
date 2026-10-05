@@ -1,0 +1,8 @@
+<%# locals: (row:) %>
+<td id="judge-last-<%= row[:judge].id %>" class="text-end text-muted small">
+  <% if row[:last_judged_at] %>
+    <%= time_ago_in_words(row[:last_judged_at]) %> ago
+  <% else %>
+    —
+  <% end %>
+</td>

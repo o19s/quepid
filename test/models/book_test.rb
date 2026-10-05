@@ -169,6 +169,44 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'judge_activity_row_for' do
+    let(:book) { books(:james_bond_movies) }
+
+    it 'matches the row judge_activity_rows would compute for the same judge' do
+      book.query_doc_pairs.first.judgements.create!(user: users(:matt), rating: 1)
+
+      row = book.judge_activity_row_for(users(:matt))
+      all_rows_row = book.judge_activity_rows.find { |r| r[:judge] == users(:matt) }
+
+      assert_equal all_rows_row, row
+    end
+
+    it 'is nil for a human judge who has not judged anything in this book' do
+      assert_nil book.judge_activity_row_for(users(:matt))
+    end
+
+    it 'is present for an assigned AI judge even with zero judgements' do
+      star_wars_book = books(:book_of_star_wars_judgements)
+      star_wars_book.ai_judges << users(:judge_judy)
+
+      row = star_wars_book.judge_activity_row_for(users(:judge_judy))
+
+      assert_not_nil row
+      assert_equal 0, row[:count]
+    end
+
+    it 'is present, and on call, for a judge an assigned judge wakes' do
+      star_wars_book = books(:book_of_star_wars_judgements)
+      on_call_judge = AiJudge.create!(name: 'On Call')
+      users(:judge_judy).update!(escalates_to: on_call_judge)
+      star_wars_book.ai_judges << users(:judge_judy)
+
+      assert star_wars_book.judge_activity_row_for(on_call_judge)[:on_call]
+      assert_equal star_wars_book.judge_activity_rows.find { |r| r[:judge] == users(:judge_judy) },
+                   star_wars_book.judge_activity_row_for(users(:judge_judy))
+    end
+  end
+
   describe 'sampling random query doc pairs' do
     let(:user) { users(:random) }
     let(:book) { books(:book_of_star_wars_judgements) }

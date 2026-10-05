@@ -140,6 +140,8 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + Karma + linters)
 * Run back end unit tests: `bin/docker r rails test`
 
+When a development server is running in a one-off container (`bin/docker s` or `bin/docker q`), use `docker compose run --rm --no-deps app [COMMAND]` for additional commands. The `bin/docker r` wrapper passes `--remove-orphans`, which can remove the running server container.
+
 ### Local Setup
 
 This approach lets you run Quepid directly on your machine without Docker. It provides a more native development experience but requires setting up dependencies manually.  It may be faster to work with!

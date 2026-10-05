@@ -238,9 +238,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
     t.datetime "updated_at", precision: nil
     t.integer "user_id"
     t.index ["annotation_id"], name: "index_case_scores_annotation_id", unique: true
+    t.index ["case_id", "updated_at", "created_at", "id"], name: "index_case_scores_on_case_and_latest"
     t.index ["case_id"], name: "index_case_scores_on_case_id"
     t.index ["scorer_id"], name: "index_case_scores_on_scorer_id"
-    t.index ["updated_at", "created_at", "id"], name: "support_last_score"
     t.index ["user_id"], name: "index_case_scores_on_user_id"
   end
 

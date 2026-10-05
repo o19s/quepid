@@ -539,13 +539,27 @@ angular.module('QuepidApp')
             }
           }
           else if ($scope.pendingWizardSettings.bareQueryParam) {
-            // Bare-text authoring mode (e.g. Vespa YQL typed directly instead of JSON) -
-            // Try#searchapi_args wraps this under the engine's own param name
-            // (MapperBasedSearchEngine#bare_query_param) server-side before a real query
-            // ever runs; the wizard's pre-save validation has to do the same wrapping
-            // itself here, or splainer-search sends the bare string with no param name at
-            // all - Vespa (and likely others) then reject the request as having no query.
-            settingsForValidation.args = { [$scope.pendingWizardSettings.bareQueryParam]: settingsForValidation.args };
+            if (/^\s*[\w.-]+=/.test(settingsForValidation.args)) {
+              // Match Try#searchapi_args: preserve parameter lists as an object so
+              // both GET and the AUTO/POST fallback send the same scalar values.
+              var params = Object.create(null);
+              settingsForValidation.args.split(/\r?\n/).map(function(line) {
+                return line.trim();
+              }).join('').split('&').forEach(function(param) {
+                var separator = param.indexOf('=');
+                var key = separator < 0 ? param : param.slice(0, separator);
+                var value = separator < 0 ? null : param.slice(separator + 1);
+                if (Object.prototype.hasOwnProperty.call(params, key)) {
+                  params[key] = [].concat(params[key], value);
+                } else {
+                  params[key] = value;
+                }
+              });
+              settingsForValidation.args = params;
+            } else {
+              // Bare YQL still needs the engine's parameter name, just as in Try#searchapi_args.
+              settingsForValidation.args = { [$scope.pendingWizardSettings.bareQueryParam]: settingsForValidation.args };
+            }
           }
 
           try {

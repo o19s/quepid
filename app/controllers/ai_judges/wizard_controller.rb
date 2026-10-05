@@ -86,7 +86,7 @@ module AiJudges
     # confidence floor), so the preview runs with what the form would save.
     def judge_options_params
       params.fetch(:judge_options, {})
-        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version,
+        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images,
                 *LlmProvider.option_keys)
     end
   end
