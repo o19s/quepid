@@ -16,6 +16,14 @@ function fixture(Controller, kind) {
     Object.defineProperty(instance, "queryParamsTarget", {
       get: () => instance.element.querySelector("textarea")
     })
+    for (const target of ["spinner", "status", "searchButton", "resetButton", "next"]) {
+      Object.defineProperty(instance, `${target}Target`, {
+        get: () => instance.element.querySelector(`[data-missing-documents-target="${target}"]`)
+      })
+      Object.defineProperty(instance, `has${target[0].toUpperCase()}${target.slice(1)}Target`, {
+        get: () => Boolean(instance[`${target}Target`])
+      })
+    }
     getCoreCapabilities.mockReturnValue({ targetedSearch: () => ({
       usesQueryParamsEditor: true,
       settings: { searchEngine: "es" },

@@ -45,6 +45,8 @@ export default defineConfig({
       { find: "utils/status_message", replacement: path.resolve(repoRoot, "app/javascript/utils/status_message.js") },
       { find: "utils/destructive_form", replacement: path.resolve(repoRoot, "app/javascript/utils/destructive_form.js") },
       { find: "utils/case_csv", replacement: path.resolve(repoRoot, "app/javascript/utils/case_csv.js") },
+      { find: "utils/date_format", replacement: path.resolve(repoRoot, "app/javascript/utils/date_format.js") },
+      { find: "utils/parse_explain", replacement: path.resolve(repoRoot, "app/javascript/utils/parse_explain.js") },
       { find: "utils/download_file", replacement: path.resolve(repoRoot, "app/javascript/utils/download_file.js") },
       { find: "utils/flash", replacement: path.resolve(repoRoot, "app/javascript/utils/flash.js") },
       { find: "utils/error_message", replacement: path.resolve(repoRoot, "app/javascript/utils/error_message.js") },

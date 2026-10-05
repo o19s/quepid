@@ -83,25 +83,6 @@ for the current contracts. Actual Drive verification and deferred coverage are i
 constraints and historical work are in
 `docs/archived/stimulus_turbo_retrofit_completed.md`.
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Evaluate moving the case JavaScript entry onto importmap
-
-Independent of the layout/header merge. The installed `splainer-search` 3.3.0
-ships ESM sources (`wired.js` and its dependency tree) as well as IIFE dist
-bundles; it is not IIFE-only. Inventory the full browser dependency graph,
-including `sortablejs`, `splainer-search/wired.js`, and transitive dependencies,
-before choosing pins or an ESM bundle boundary. Retaining esbuild for the heavy
-case workspace is acceptable if importmap adds complexity without a useful gain.
-
-Preserve one Stimulus application, one Turbo instance, and one initialization of
-the case runtime. Do not load both `application_modern.js` and the existing case
-bundle without resolving overlapping initialization. Audit vendor globals and
-script order before removing or replacing either bundle.
-
-**Acceptance:** record the loading decision and dependency inventory. If changing
-loading, pass relevant unit tests, lint and builds, then verify search, rating and
-score updates, sorting, modal/drawer behavior, and case-to-management navigation
-with inspected before/after screenshots. Record sampled/deferred manual coverage.
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Rename case-only `_core` controllers and modal partials
 
 Inventory `controllers/*_core_controller.js`
@@ -145,25 +126,6 @@ case page are not wanted for now. Enabling Drive on management pages does not
 lift that constraint; case Frames/Streams already work with Drive disabled. If
 that changes, pilot `pick_scorer_core` or annotations and prove selection and the
 edit modal work inside a lazy frame first.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C1 — Close retrofit manual-verification gaps
-
-Custom scorer creation (8.3), book creation (10.2) and the non-admin scorer
-edit branch (8.4) are now verified live. The templated ES query branches were
-sampled on the ES demo cluster, which has a stored `tmdb-title-search-template`.
-To reproduce, give a try on an ES case the query params
-`{"id": "tmdb-title-search-template", "params": {"search_query": "#$query##"}}`.
-Search goes through `/_search/template` and Explain Query → Query Template
-renders the `/_render/template` output. A forced render failure shows "Unable
-to render the query template.", and a plain query shows "This is not a
-templated query." A background rerun of that try (4.12) queued
-`RunCaseEvaluationJob`, which completed its fetch snapshot. Creating a book from
-an unshared case's Judgements modal (6.6) saved the case-sync toggles. 4.12, 6.6
-and 6.7 are still due for their other branches and were not re-stamped.
-
-Still unsampled: 6.6's sync toggles on an already-linked book and the 50+ query
-background redirect; 10.3's AI judge, upload and multi-team permission
-branches; 17.2/17.3 job pacing and concurrency; 4.16's blank save.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace test-override shims with `vi.mock`
 
@@ -214,27 +176,6 @@ once, and Drive/history navigation preserves the intended judging flow.
 Drive enablement is complete; prefetch remains a separate decision. The
 judge-later and logout GET routes also exist in the `be9b319a` baseline
 (source comparison, not a live historical replay).
-
-### [PREEXISTING] P3 I0 C2 — Identify API endpoints only the Angular client used
-
-Compare historical Angular consumers with current routes and callers. The API
-is also public (scripts, notebooks), so an endpoint the UI no longer calls is
-not necessarily dead. Only worth doing alongside an API
-review.
-
----
-
-## [PREEXISTING] P0 — Product bugs
-
-### [PREEXISTING] P0 I1 C3 — Try delete orphans scores
-
-**Observed:** Scores keep a stale `try_id` after the try is deleted. (The `PUT /api/cases/:id/scores` 500 on an orphaned `last_score` is fixed — `same_score_source?` now treats a nil try as a different source.)
-
-**Cause:** No cascade/nullify from try → scores (`case_scores.try_id` has no FK).
-
-**Fix direction:** Cascade or nullify scores on try destroy.
-
----
 
 ## [PREEXISTING] P0 — Security
 
@@ -357,12 +298,6 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P1 I2 C3 — Authenticate the Cable connection for job progress
-
-**Remaining:** `ApplicationCable::Connection` still needs session authentication. Signed stream isolation does not revoke an already copied subscription token when its holder logs out.
-
----
-
 ## [PREEXISTING] P2 — Security
 
 ### [PREEXISTING] P2 I0 C0 — Password reset enumerates accounts
@@ -402,16 +337,6 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 **Observed:** Adding a query shows it at the bottom of a Manual-sorted list, but after a reload (or anything that re-bootstraps the case, such as Rerun My Searches! creating a new try) it is at the top. The `create` response's `display_order` lists the new id last, while `index` lists it first. The `Case#queries` scope orders `arranged_at IS NULL DESC`, so a new, unarranged query sorts first in the database, and `create` builds `display_order` from the association it just built on, which appears to put the in-memory record last. Reproduced 2026-10-04 on case 598. The controller is unchanged from `main`, and the `be9b319a` Angular client also applied the `create` response's `display_order`, so this predates the migration (source evidence only, not replayed).
 
 **Fix direction:** Reload the association (`@case.queries.reload`) before building `display_order` in `create`, and add a controller test that `create` and `index` return the same order.
-
----
-
-### [PREEXISTING] P3 I0 C1 — Book Import tab reports "Invalid JSON" when no file is chosen
-
-**Location:** `app/controllers/books/import_controller.rb` (`load_import_params`)
-
-**Observed:** On an existing book's Import tab, submitting **Import Query Doc Pairs** with no file shows "Invalid JSON file: Unable to process the provided data structure. undefined method '[]' for nil" instead of "You must select the file to be imported first." That form has no other `book[...]` field, so `params[:book]` is nil and `params[:book][:import_file]` raises into the generic `StandardError` rescue. The judgements form and new-book import carry `book[force_create_users]`, so they show the right message. Reproduced 2026-10-04 on book 33; the same lookup exists at `be9b319a`.
-
-**Fix direction:** Read the file with `params.dig(:book, :import_file)` and add a controller test that submits the pairs form without a file.
 
 ---
 
@@ -490,20 +415,6 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 **Cause:** `import_snapshot_controller.js` posts the raw string as `created_at`; the server's time parsing reads `NN/NN/NN` as year/month/day. The Angular importer passed the string through the same way.
 
 **Fix direction:** Parse `Snapshot Time` explicitly (document the accepted formats, e.g. ISO 8601 and `MM/DD/YY HH:MM`) and reject unparseable values with a row-numbered error instead of storing a wrong date. Fix the sample in the modal to an unambiguous format.
-
----
-
-### [PREEXISTING] P2 I0 C1 — New-team form shows no validation errors
-
-**Observed:** Submitting `/teams/new` with a blank name, or a name another team already uses, re-renders the form with no message. (Rename on the team page does show "Name can't be blank".)
-
-**Remaining cause:** `app/views/teams/new.html.erb` still doesn't render
-`@team.errors`. `TeamsController#create` now returns 422 on failure, so Turbo
-can display the invalid form, but users still receive no validation message.
-
-**Fix direction:** Render the shared error-messages partial on `teams/new`.
-Cover blank and duplicate names with rendering assertions and a Drive submission
-that keeps the entered value and displays the validation message.
 
 ---
 
@@ -594,16 +505,6 @@ HTML redirects and API 404s identical.
 
 ---
 
-## [PREEXISTING] P3 — Security & consistency
-
-### [PREEXISTING] P3 I0 C2 — Public tries visualization also answers on the numeric case ID
-
-**Observed:** While a case is public, `/analytics/tries_visualization/<numeric id>` loads for anonymous users, not just the `public_id` URL the clipboard link hands out. Making the case private again revokes both.
-
-**Fix direction:** Decide whether anonymous access should require the `public_id`; if so, only accept the numeric ID for authenticated users with access to the case.
-
----
-
 ## [PREEXISTING] P3 — Code quality
 
 ### [PREEXISTING] P3 I0 C1 — Unsafe integer coercion in snapshot search
@@ -680,16 +581,6 @@ Measure both list endpoints with query-count tests, then load only the latest
 score and its user per case. Avoid loading every historical score merely to
 render one badge; Bullet is available in development/test.
 
-### [PREEXISTING] P2 I1 C2 — API serializer query amplification
-
-`app/views/api/v1/users/_user.json.jbuilder:12-13` runs two relation counts per user; `app/views/api/v1/cases/_case.json.jbuilder:13-51` repeatedly traverses `last_score`, owner, book, teams, tries, and sampled scores. These become N+1s on index endpoints, especially team/case listings; `app/controllers/api/v1/cases_controller.rb:192` includes `owner` and `book` and preloads `tries`, `teams` and `cases_teams`,
-but does not preload the score paths. `queries_count` already uses a selected
-count when available; preserve that optimization.
-
-**Fix direction:** Endpoint-specific query objects, or preload/count exactly what each serializer needs. Add query-count tests for representative index responses, not just response-shape tests.
-
----
-
 ## [PREEXISTING] Backend duplication
 
 The same feature is built several times, and most copies have already drifted
@@ -738,22 +629,6 @@ Candidates for extraction into smaller methods or services:
 ---
 
 ## [MIGRATION-FOLLOWUP] Consolidated DRY review
-
-Consolidated from the 2026-10-04 general and JavaScript DRY reviews.
-Retain scoring inputs, calculations, persistence, serialization, request order,
-import failure policies and each surface's UI contract when simplifying.
-Similarity alone does not justify a shared behavior. Ratings are estimates;
-no LOC reduction has been measured. Imported DRY provenance is provisional
-unless an entry records historical evidence; `[MIGRATION-FOLLOWUP]` denotes
-cleanup, not a confirmed regression.
-
-Fix concrete bugs before expanding abstractions. Low-risk fragments include
-removing duplicate field mapping, extracting identical field-spec parsing,
-and sharing the Document Finder's equivalent reset/pagination branches.
-Merging stores rewires score publication; compare the case UI before/after.
-Changing rated-result ranking, stored ratings, scoring aggregation, engine
-filters or request escaping is an intentional behavior change with its own
-verification. Keep frontend and background scoring aligned.
 
 ### [PREEXISTING] P3 I2 C2 — Controller index filtering — deferred
 
@@ -974,15 +849,6 @@ cancels restoration on disconnect. Mapper's independent timers and Browse's
 permanent success label remain unchanged. Do not impose one feedback policy
 on all four callers.
 
-Verification: all 1,436 Vitest tests, JS lint, and scoped formatting pass.
-Playwright MCP before/after Explain Params initial, success, forced clipboard
-failure, and restored states captured under `.playwright-mcp/clipboard-feedback/`
-and visually inspected. Deferred browser coverage: Invite (no pending invitation
-copy button on the existing team), other Explain tabs, Mapper, and Browse.
-Invite's success/error/missing-link, repeated-click, and disconnect/reconnect
-contracts are covered by controller tests. Remaining behavior fixes below are
-outside this refactor.
-
 The mapper HTTP fallback and Browse label restoration/error reporting are
 separate behavior fixes, outside a strict behavior-preserving refactor.
 
@@ -1038,35 +904,6 @@ when both `message` and `error` exist, while `serverMessage` and `HttpError`
 prefer `data.error`. The existing import-ratings test pins that distinction;
 keep the fallback unless a change deliberately preserves that precedence.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C1 — Snapshot short-date formatting
-
-Export uses `formatShortDate` (`export_case_core_controller.js:181`), defined
-in `utils/case_csv.js:61` with local date components. Diff constructs the same
-ordinary month/day/two-digit-year display using `toLocaleDateString`
-(`diff_core_controller.js:235`). Diff also resolves three alternative time
-fields and suppresses missing/invalid dates; the export formatter has no such
-guard. Snapshot models use full-year locale dates, with an explicit `en-US`
-override from `snapshot_bridge_controller.js:80,86`.
-
-**Fix direction:** share the short-date operation after checking
-valid-date equivalence, ideally from a neutral date utility rather than making
-Diff depend on CSV serialization. Keep Diff's guards and field fallbacks in
-its caller. Test timezone-boundary timestamps, invalid dates, and unusual years;
-manual year slicing and Intl formatting are not universally equivalent.
-Keep full-year snapshot labels and activity tooltip formatting distinct.
-
-
-### [MIGRATION-FOLLOWUP] P3 I1 C1 — Small utility cleanups
-
-- JSON cloning is repeated in `settings_runtime.js`, `settings_catalog_runtime.js`
-  and `query_service.js`. `snapshot_model.js` preserves prototypes intentionally;
-  keep that operation separate. Extraction offers little reduction.
-- Explain parsing is repeated in `snapshot_searcher.js` and `snapshot_model.js`;
-  preserve parse failures rather than silently accepting invalid explains.
-- Remaining ID comparisons in Wizard, sharing, collection and scorer selection
-  can use `isSameId` only after proving equivalence. Numeric scorer comparisons
-  behave differently from string comparisons; do not mechanically replace them.
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C0 — Direct Bootstrap modal wrappers — deferred
 
 Former J12: wrapping lookup/show/hide made call sites longer without removing
@@ -1103,24 +940,6 @@ and failed-search cleanup failures. These were not browser passes.
 Historical comparisons below use source at `be9b319a`, not a live historical
 replay. A followup marker with unclassified provenance does not establish a
 migration regression.
-
-### [MIGRATION] P1 I0 C2 — Query Options save completion can target a different query
-
-**Location:** `app/javascript/controllers/query_options_core_controller.js#save`,
-`app/javascript/utils/live_query_events.js#optionsSaved`.
-
-Save A, dismiss the modal, and open B before A's PUT finishes. The completion
-reads the mutable `this.queryId`, dispatching B's ID with A's options. The event
-consumer updates B's live options and recalculates scores, while the server
-saved A. Completion also closes B's newly opened modal.
-
-**Fix direction:** capture the request's query ID/URL and options before awaiting;
-use an open-generation guard for UI effects. Still apply a successful save to
-its original live query. Test reopening B during A's pending success/failure.
-
-**Provenance:** the baseline Angular Query Options controller retained its own
-`ctrl.query` and opened a distinct modal instance per prompt; it did not reuse
-the mutable ID in the shared Stimulus modal.
 
 ### [PREEXISTING] P1 I0 C1 — Bulk judging drops cross-row explanation edits
 
@@ -1186,18 +1005,6 @@ saved content. Test saving text, clearing it, and reloading its persisted value;
 preserve zero-valued ratings and the untouched-empty case.
 
 **Provenance:** the same empty-input early return exists in the baseline controller.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C1 — Failed Missing Documents operations leave controls busy
-
-**Location:** `app/javascript/controllers/missing_documents_controller.js#run`.
-
-A rejected search/reset/pagination operation bypasses spinner removal and
-re-enabling Search, leaving the modal stuck without contextual error feedback.
-
-**Fix direction:** restore controls in `finally`, report failures, and guard
-post-await rendering after disconnect. Cover rejected operations and successful
-retry. This controller's failure has been reproduced with a mock; whether the
-old Document Finder had an equivalent failure remains unclassified.
 
 ### [PREEXISTING] P2 I0 C1 — Tune Relevance does not handle its save promise
 

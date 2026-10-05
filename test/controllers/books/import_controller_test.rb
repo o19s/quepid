@@ -44,6 +44,16 @@ module Books
       assert_redirected_to book_path(Book.last)
     end
 
+    test 'pairs import without a book parameter requests a file and queues no import' do
+      book = Book.create!(name: 'Missing upload', owner: user)
+      assert_no_enqueued_jobs only: ImportBookJob do
+        patch books_import_url(book)
+      end
+      assert_response :unprocessable_content
+      assert_match(/You must select the file to be imported first/, response.body)
+      assert_no_match(/Invalid JSON/, response.body)
+    end
+
     test 'should import a valid ZIP file containing a JSON file' do
       zip_upload = Rack::Test::UploadedFile.new(@zip_file.path, 'application/zip')
 

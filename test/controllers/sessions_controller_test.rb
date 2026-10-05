@@ -3,6 +3,19 @@
 require 'test_helper'
 
 class SessionsControllerTest < ActionController::TestCase
+  include ActionCable::TestHelper
+
+  test 'logout disconnects active Cable connections without reconnecting' do
+    user = users(:doug)
+    session[:current_user_id] = user.id
+    remote = ActionCable.server.remote_connections.where(current_user: user)
+    assert_broadcast_on(remote.send(:internal_channel), { type: 'disconnect', reconnect: false }) do
+      delete :destroy
+    end
+
+    assert_nil session[:current_user_id]
+  end
+
   test 'should create session for valid user' do
     post :create, params: { user: { email: 'doug@example.com', password: 'password' }, format: :json }
     assert_response :success

@@ -1,4 +1,5 @@
 import { isSameId } from "utils/record_identity"
+import { parseExplain as defaultParseExplain } from "utils/parse_explain"
 
 /**
  * Snapshot data model.
@@ -11,7 +12,7 @@ export function createSnapshotModel({
   params,
   getDoc,
   explainDoc,
-  parseExplain = (explain) => (typeof explain === "string" ? JSON.parse(explain) : explain),
+  parseExplain = defaultParseExplain,
   formatDate = (time) => new Date(time).toLocaleDateString(),
   log = () => {}
 }) {

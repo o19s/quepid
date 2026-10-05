@@ -128,7 +128,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   2. Separately, upload an `all_judgements` payload (using `email` to attribute judgements to a user, and optionally a nested `query_doc_pair` object instead of an id).
 - **Expected:** Pairs/judgements are created or updated once the background job completes.
 - **Edge cases:**
-  - [ ] Same JSON-validity and missing-file edge cases as 10.7 apply here too.
+  - [ ] Same JSON-validity edge cases as 10.7 apply here too. Submit each upload form without a file: both must show "You must select the file to be imported first." and queue no import.
   - [ ] Anonymous (`user_email`-less) judgements stay separate and unattributed on both upload forms — see 10.7's anonymous-judgement edge case.
 
 ### 10.9 Export a book

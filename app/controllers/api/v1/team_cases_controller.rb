@@ -7,7 +7,10 @@ module Api
       before_action :set_team, only: [ :index, :create, :destroy ]
 
       def index
-        @cases = @team.cases
+        @cases = @team.cases.with_counts.preload(:owner, :book, :teams,
+                                                 tries: [ :curator_variables, :search_endpoint ])
+        LatestCaseScores.preload(@cases)
+        @sampled_case_scores = CaseScoreSamples.load(@cases)
         respond_with @cases
       end
 

@@ -236,10 +236,10 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-05T17:18:19Z
-        result: pass
-        notes: "Covered live: ES case 2 Query Options open/cancel/reopen, three actual Stimulus remounts with one editor after each reconnect and wrapper/reference cleanup on disconnect; inspected before/after screenshots. Not covered live: saving, rescoring, invalid JSON or save failures."
-        paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
+        last_run: 2026-10-05T17:58:03Z
+        result: pass_with_fixes
+        notes: "Covered live on case 6: delayed options PUT for A while reopening B; before emitted B's ID and a stale success flash, after emitted A's ID and left B's JSON/modal intact. Matched screenshots inspected; checked-in E2E also covers delayed 500. Not covered live: normal persistence/rescoring and invalid JSON."
+        paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js"]
       "4.6":
         title: "Rate a document"
         last_run: 2026-10-05T16:37:21Z
@@ -260,10 +260,10 @@ parts:
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-10-05T17:18:19Z
-        result: pass
-        notes: "Covered live: ES case 2 Missing Documents JSON editor prefill, three actual Stimulus remounts with wrapper/reference cleanup and one editor after each reconnect, repeated close/reopen removing the dynamic modal; inspected before/after screenshots. Not covered live: searching, rating, reset, other engines or errors."
-        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js"]
+        last_run: 2026-10-05T18:13:13Z
+        result: pass_with_fixes
+        notes: "Covered live on case 6: simulated rejected search restores Search and hides the spinner, shows a contextual error, and successful retry clears it. Before/after and retry screenshots inspected; fixed persistent red status styling found during screenshot QA. E2E also covers rejected reset/pagination and retry. Not covered live: real engine outages, paging results, rating or other engines."
+        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
         last_run: 2026-10-05T17:18:19Z
@@ -372,10 +372,10 @@ parts:
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-10-05T16:53:38Z
-        result: pass_with_fixes
-        notes: "Covered live: case 6 snapshot picker and applying the first snapshot; inspected matched before/after comparison views and score badges. Review fix: opened the absence document rating popover, republished another live query through the collection, and confirmed the original comparison DOM and popover remain mounted. Before/after pairs inspected in .playwright-mcp/query-notifications/. Not covered live: multiple snapshots, duplicates, deletion and failed hydration."
-        paths: ["app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js"]
+        last_run: 2026-10-05T18:06:23Z
+        result: pass
+        notes: "Covered live on static case 219: opened Compare Your Search Results and selected the dated E2E Static Results snapshot; ordinary (9/23/26) short date unchanged in inspected before/after screenshots. Not covered live: applying comparison, overlays or scores; invalid/timezone/unusual-year dates covered by Vitest."
+        paths: ["app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "app/javascript/utils/parse_explain.js", "test/javascript/utils/date_format.test.js", "test/javascript/utils/parse_explain.test.js"]
       "5.4":
         title: "Annotations"
         last_run: 2026-10-04T21:15:04Z
@@ -394,10 +394,10 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-10-05T00:49:00Z
+        last_run: 2026-10-05T18:06:44Z
         result: pass
-        notes: "Case ownership sample: opened Export on case 6; General and Detailed produced CSV blobs with expected headers and case filenames. Matched export screenshots inspected. MCP browser reset collecting a native download; captured blob contents instead, so OS download delivery was not verified. Other formats and historical TREC snapshot defect not repeated."
-        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js"]
+        notes: "Covered live on static case 219: opened Export and selected Snapshot with dated E2E Static Results; ordinary (9/23/26) short date unchanged in inspected before/after screenshots. Not covered live: downloads and other export formats; date edge cases covered by Vitest."
+        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "test/javascript/utils/date_format.test.js"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
         last_run: 2026-10-04T22:31:57Z
@@ -586,10 +586,10 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-10-04T23:21:51Z
-        result: pass
-        notes: "Sampled via Playwright MCP: My Teams auto-submits; all four team resource search forms submit and preserve every other query and archived filter. Inspected matching list and team resource viewport before/after pairs. Deferred: team creation/rename, archive toggles on the team forms, pagination, and broader responsive sweep."
-        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
+        last_run: 2026-10-05T18:01:26Z
+        result: pass_with_fixes
+        notes: "Covered live: blank and duplicate OSC new-team submissions through Turbo Drive display validation errors; duplicate input is retained. Matched screenshots inspected; no team was created. Not covered live: successful create, rename, resource lists or complete team lifecycle."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts"]
       "9.2":
         title: "Add a team member (existing user)"
         last_run: 2026-10-04T23:44:08Z
@@ -692,10 +692,10 @@ parts:
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/new.html.erb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb"]
       "10.8":
         title: "Import additional data into an existing book"
-        last_run: 2026-10-04T18:51:20Z
-        result: pass
-        notes: "Covered live on book 33's Import tab: a query_doc_pairs payload with a new query_text/doc_id flashes 'Data was successfully queued for import.' and adds the pair (3 pairs); an all_judgements payload using email plus a nested query_doc_pair attributes one judgement to user 3 and keeps the email-less one anonymous; invalid JSON on the judgements form shows the 10.7 parse error. FOUND (pre-existing, not fixed): submitting the pairs form with no file shows \"Invalid JSON file: ... undefined method '[]' for nil\" instead of 'You must select the file...', because that form sends no params[:book]; same lookup at be9b319a. Logged in docs/todo/todo.md."
-        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb"]
+        last_run: 2026-10-05T17:57:13Z
+        result: pass_with_fixes
+        notes: "Covered live on book 33: submitting the pairs upload without choosing a file shows the missing-file message instead of Invalid JSON; no import queued. Matched screenshots inspected. Not covered live: successful imports, judgements upload or ZIP files; both missing-file forms covered by Rails tests."
+        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb", "test/playwright/todo_fixes.spec.ts"]
       "10.9":
         title: "Export a book"
         last_run: 2026-09-25T15:58:46Z
@@ -879,7 +879,7 @@ parts:
         last_run: 2026-10-01T03:12:00Z
         result: pass
         notes: "Covered live via Playwright MCP: clicked Run Test Background Job, saw the queued flash, and confirmed the live countdown changed from 26 to 15 iterations."
-        paths: ["app/controllers/admin/websocket_tester_controller.rb", "app/views/admin/websocket_tester/index.html.erb", "app/views/admin/websocket_tester/_notification.turbo_stream.erb"]
+        paths: ["app/controllers/admin/websocket_tester_controller.rb", "app/views/admin/websocket_tester/index.html.erb", "app/views/admin/websocket_tester/_notification.turbo_stream.erb", "app/channels/application_cable/connection.rb", "app/controllers/concerns/authentication/current_user_manager.rb"]
       "14.11":
         title: "Mounted engines (Job Manager, SQL Analytics)"
         last_run: 2026-10-04T15:21:30Z
@@ -1003,7 +1003,7 @@ parts:
         last_run: 2026-10-04T18:58:45Z
         result: pass
         notes: "Covered live on case 470: enabling Evaluate Nightly shows the header repeat icon immediately, and it and the checkbox persist across reload; Rerun My Searches Now in the Background lands on the dashboard, which shows 'Run Case Job has completed.', and the case's last score is fresh (18:58:38); disabling removes the icon (nightly false). Not covered live: empty-case job, duplicate concurrent requests."
-        paths: ["app/controllers/cases_controller.rb", "app/jobs/", "app/models/case.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/case_runtime.js", "app/javascript/controllers/case_header_controller.js", "config/recurring.yml", "app/javascript/api/json.js", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/cases_controller.rb", "app/jobs/", "app/models/case.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/case_runtime.js", "app/javascript/controllers/case_header_controller.js", "config/recurring.yml", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/channels/application_cable/connection.rb", "app/controllers/concerns/authentication/current_user_manager.rb"]
       "17.3":
         title: "Search-endpoint request throttling"
         last_run: 2026-10-04T18:58:05Z
@@ -1015,7 +1015,7 @@ parts:
         last_run: 2026-10-04T15:22:06Z
         result: pass
         notes: "Covered live as oscMember: generated a PAT on Profile; GET /api/cases/6.json with Bearer -> 200 JSON, token absent from body; no token -> 404; bogus token -> 401; realisticactivity's unshared case 472 -> 404 'Case not found!'; destroyed the token in the UI (confirm dialog) -> same request 401."
-        paths: ["app/controllers/api/", "app/controllers/concerns/api_key_authenticatable.rb", "app/models/api_key.rb", "config/initializers/oas_rails.rb", "config/routes.rb"]
+        paths: ["app/controllers/api/", "app/controllers/concerns/api_key_authenticatable.rb", "app/models/api_key.rb", "config/initializers/oas_rails.rb", "config/routes.rb", "app/services/latest_case_scores.rb", "test/services/latest_case_scores_test.rb"]
       "17.5":
         title: "External score ingestion"
         last_run: 2026-10-01T15:40:28Z

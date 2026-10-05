@@ -1,3 +1,5 @@
+import { parseExplain } from "utils/parse_explain"
+
 /**
  * Searcher-compatible access to results captured in a snapshot.
  *
@@ -60,7 +62,7 @@ export function createSnapshotSearcher({
 
     const rateableDoc = createRateableDoc(doc)
     rateableDoc.ratedOnly = doc.rated_only ? doc.rated_only : false
-    const explain = typeof doc.explain === "string" ? JSON.parse(doc.explain) : doc.explain
+    const explain = parseExplain(doc.explain)
     searcher.docs.push(explainDoc(rateableDoc, explain))
   })
 

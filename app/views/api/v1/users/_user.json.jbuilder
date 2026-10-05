@@ -9,5 +9,5 @@ json.ai_judge        user.ai_judge?
 json.administrator   user.administrator
 json.default_scorer_id user.default_scorer_id
 
-json.cases_involved_with_count user.cases_involved_with.count
-json.teams_involved_with_count user.teams.count
+json.cases_involved_with_count user.has_attribute?(:cases_involved_with_count) ? user.cases_involved_with_count : user.cases_involved_with.count
+json.teams_involved_with_count user.has_attribute?(:teams_involved_with_count) ? user.teams_involved_with_count : user.teams.count

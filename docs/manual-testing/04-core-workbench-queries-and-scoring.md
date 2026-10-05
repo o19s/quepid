@@ -68,6 +68,7 @@ Before testing individual features, get oriented:
 - **Edge cases:**
   - [ ] Enter invalid JSON, click Set Options — confirm the flash "Please provide a valid JSON object." appears and the modal does **not** close or save.
   - [ ] Force a save failure (e.g., simulate a network error) — confirm the flash "Unable to save query options." appears rather than a success message.
+  - [ ] Delay query A's save, dismiss the modal, and open query B. A successful completion updates only A's live options; B's modal stays open with its own JSON. A failed completion must not flash an error for B or alter B's Save button.
 
 ### 4.6 Rate a document
 
@@ -110,6 +111,9 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   3. Rate the found document inline.
   4. Click **Reset to All Rated Docs**.
 - **Expected:** Search returns matching documents with a count message (or a "no results" message); ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."
+- **Edge cases:**
+  - [ ] Reject a search, reset, or next-page request — expect a contextual "Unable to … Please try again." message, a hidden spinner, and usable controls. Retry successfully and confirm the error clears. A failed reset keeps the edited query parameters.
+  - [ ] Dismiss while a request is pending — completion must not render into the detached modal. Reopening creates a usable finder.
 
 ### 4.10 Tune Relevance drawer — Query tab (Query Sandbox)
 

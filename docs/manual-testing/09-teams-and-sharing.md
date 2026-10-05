@@ -20,9 +20,9 @@ You'll get much more out of this part with two logged-in accounts — a team own
   5. In the Cases, Books, Search Endpoints, and Custom Scorers sections, set a search filter. Set the archived filters for cases, books, and endpoints, then submit each search form in turn. Confirm each submission retains the other sections' query and archived filters.
 - **Expected:** New team appears in the list; rename updates immediately with flash "Team renamed."
 - **Edge cases:**
-  - [ ] Submit a blank team name on create or rename — expect validation error.
+  - [ ] Submit a blank team name on create or rename — expect the visible "Name can't be blank" validation error.
   - [ ] Rename to a name identical to the current one — should be a harmless no-op.
-  - [ ] Create two teams with the same name (if allowed) — confirm no confusing collision in the UI.
+  - [ ] Submit an existing team name on create — expect "Name has already been taken", retain the entered name, and create no team.
 
 ### 9.2 Add a team member (existing user)
 

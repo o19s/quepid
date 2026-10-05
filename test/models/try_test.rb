@@ -31,6 +31,24 @@
 require 'test_helper'
 
 class TryTest < ActiveSupport::TestCase
+  test 'deleting a try preserves its score history without a dangling try reference' do
+    original_try = tries(:one)
+    annotation = Annotation.create!(user: users(:doug), message: 'Historical note')
+    score = original_try.case.scores.create!(try: original_try, user: users(:doug), score: 0.5, annotation: annotation)
+    other_try = original_try.case.tries.create!
+    other_score = original_try.case.scores.create!(try: other_try, score: 0.7)
+
+    assert_no_difference 'Score.count' do
+      original_try.destroy!
+    end
+
+    assert_nil score.reload.try_id
+    assert_nil score.try
+    assert_equal annotation, score.annotation
+    assert_predicate score, :valid?
+    assert_equal other_try.id, other_score.reload.try_id
+  end
+
   describe 'Curator Vars' do
     test 'adds curator vars to try' do
       try = tries(:try_without_curator_vars)

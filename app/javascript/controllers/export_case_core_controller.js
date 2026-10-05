@@ -3,7 +3,8 @@ import { apiFetch } from "api/fetch"
 import { getJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { showFlash } from "utils/flash"
-import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName, formatShortDate } from "utils/case_csv"
+import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName } from "utils/case_csv"
+import { formatShortDate } from "utils/date_format"
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
 import { getCoreStores } from "utils/core_store_access"
@@ -178,7 +179,8 @@ export default class extends CoreModalControllerBase {
         snapshots.forEach((snapshot) => {
           const option = document.createElement("option")
           option.value = String(snapshot.id)
-          option.textContent = `(${formatShortDate(snapshot.time)}) ${snapshot.name}`
+          const date = formatShortDate(snapshot.time)
+          option.textContent = date ? `(${date}) ${snapshot.name}` : snapshot.name
           select.appendChild(option)
         })
       })

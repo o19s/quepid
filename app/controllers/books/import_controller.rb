@@ -76,7 +76,7 @@ module Books
     private
 
     def load_import_params book
-      uploaded_file = params[:book][:import_file]
+      uploaded_file = params.dig(:book, :import_file)
       if uploaded_file.nil?
         book.errors.add(:base, 'You must select the file to be imported first.')
         return nil

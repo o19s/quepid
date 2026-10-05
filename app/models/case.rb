@@ -70,6 +70,13 @@ class Case < ApplicationRecord
              dependent:  :destroy,
              inverse_of: :case
 
+  # List endpoints use LatestCaseScores to restrict preloads to one row per case.
+  # The scores association owns deletion; this association only reads the latest row.
+  # rubocop:disable-next Rails/HasManyOrHasOneDependent
+  has_one :latest_score, -> {
+    order(updated_at: :desc, created_at: :desc, id: :desc)
+  }, class_name: 'Score', inverse_of: :case
+
   has_many   :snapshots,
              dependent: :destroy
 
@@ -185,6 +192,8 @@ class Case < ApplicationRecord
   end
 
   def last_score
+    return latest_score if association(:latest_score).loaded?
+
     scores.last_one
     # scores.last
     # scores.first

@@ -123,6 +123,7 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 - **Edge cases:**
   - [ ] Run a case with no queries and confirm the background job completes cleanly.
   - [ ] Confirm a second background request does not create duplicate concurrent work or corrupt the case state.
+  - [ ] Confirm a signed-in session can open the progress Cable connection, while an anonymous, deleted-user, or locked-user session is rejected. Sign out and confirm existing connections for that user receive a disconnect without automatic reconnect. Rejection for deleted/locked users can be covered by connection tests without changing shared seed accounts.
 
 ### 17.3 Search-endpoint request throttling
 

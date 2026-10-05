@@ -50,6 +50,21 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
+  scope :with_api_counts, -> {
+    select(<<~SQL.squish)
+      users.*,
+      (SELECT COUNT(*) FROM cases
+       WHERE cases.owner_id = users.id OR EXISTS (
+         SELECT 1 FROM teams_cases
+         INNER JOIN teams_members ON teams_members.team_id = teams_cases.team_id
+         WHERE teams_cases.case_id = cases.id AND teams_members.member_id = users.id
+       )) AS cases_involved_with_count,
+      (SELECT COUNT(*) FROM teams
+       INNER JOIN teams_members ON teams_members.team_id = teams.id
+       WHERE teams_members.member_id = users.id) AS teams_involved_with_count
+    SQL
+  }
+
   # Encrypted attributes
   encrypts :llm_key, deterministic: false
 

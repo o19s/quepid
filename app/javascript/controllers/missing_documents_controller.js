@@ -4,6 +4,7 @@ import { snapshotDocument } from "stores/query_documents_store"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { isEsLikeEngine, searchEngineLabel } from "utils/search_engines"
 import { fromTextArea } from "modules/editor"
+import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
   static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName"]
@@ -23,10 +24,12 @@ export default class extends Controller {
 
   connect() {
     if (!this.isModalRoot) return
+    this.disconnected = false
+    this.lifecycle = {}
     this.adapter = getCoreCapabilities().targetedSearch?.(this.queryIdValue)
     if (!this.adapter) return
     this.renderShell()
-    this.adapter.resetToRated().then(() => this.render())
+    this.run(() => this.adapter.resetToRated(), "load rated documents")
   }
 
   get isModalRoot() {
@@ -38,6 +41,9 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.disconnected = true
+    this.lifecycle = null
+    this.busy = false
     this.editor?.destroy()
     this.editor = null
   }
@@ -145,26 +151,56 @@ export default class extends Controller {
 
   async search(event) {
     event.preventDefault()
-    await this.run(() => this.adapter.search(this.queryParams))
+    await this.run(() => this.adapter.search(this.queryParams), "search for documents")
   }
 
   async reset() {
-    await this.run(() => this.adapter.resetToRated())
-    this.setQueryParams(this.adapter.initialQueryParams() || "")
+    const lifecycle = this.lifecycle
+    const reset = await this.run(() => this.adapter.resetToRated(), "load rated documents")
+    if (reset && !this.disconnected && lifecycle === this.lifecycle) {
+      this.setQueryParams(this.adapter.initialQueryParams() || "")
+    }
   }
 
   async paginate(event) {
     event.preventDefault()
-    await this.run(() => this.adapter.paginate())
+    await this.run(() => this.adapter.paginate(), "load the next page")
   }
 
-  async run(operation) {
+  async run(operation, action = "load documents") {
+    if (this.busy || this.disconnected) return false
+    const lifecycle = this.lifecycle
+    this.busy = true
     this.spinnerTarget.classList.remove("d-none")
-    this.searchButtonTarget?.setAttribute("disabled", "disabled")
-    await operation()
-    this.spinnerTarget.classList.add("d-none")
-    this.searchButtonTarget?.removeAttribute("disabled")
-    this.render()
+    this.setControlsDisabled(true)
+    try {
+      await operation()
+      if (this.disconnected || lifecycle !== this.lifecycle) return false
+      this.render()
+      return true
+    } catch (error) {
+      if (this.disconnected || lifecycle !== this.lifecycle) return false
+      console.error("missing-documents: operation failed", error)
+      const message = document.createElement("div")
+      showStatusMessage(message, {
+        message: `Unable to ${action}. Please try again.`,
+        className: "alert alert-danger"
+      })
+      this.statusTarget.replaceChildren(message)
+      return false
+    } finally {
+      if (!this.disconnected && lifecycle === this.lifecycle) {
+        this.busy = false
+        this.spinnerTarget.classList.add("d-none")
+        this.setControlsDisabled(false)
+      }
+    }
+  }
+
+  setControlsDisabled(disabled) {
+    if (this.hasSearchButtonTarget) this.searchButtonTarget.disabled = disabled
+    if (this.hasResetButtonTarget) this.resetButtonTarget.disabled = disabled || this.adapter.defaultList
+    if (this.hasNextTarget) this.nextTarget.disabled = disabled
   }
 
   async rate(event) {
@@ -177,7 +213,7 @@ export default class extends Controller {
         await this.adapter.rateAll(rating)
       }
     } finally {
-      this.render()
+      if (!this.disconnected) this.render()
     }
   }
 

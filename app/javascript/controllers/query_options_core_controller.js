@@ -20,6 +20,7 @@ export default class extends CoreModalControllerBase {
   }
 
   disconnect() {
+    this.openGeneration = (this.openGeneration || 0) + 1
     this.editor?.destroy()
     this.editor = null
   }
@@ -27,6 +28,7 @@ export default class extends CoreModalControllerBase {
   // Opened from a query row's "Set Options" button; the row carries the query id, and the
   // options are read from the live query so they are current, not as of the row's render.
   openFor(button) {
+    this.openGeneration = (this.openGeneration || 0) + 1
     this.queryId = button?.closest("[data-query-id]")?.dataset.queryId || ""
     this.saveUrl = this.queryId ? this.saveUrlTemplateValue.replaceAll("__QUERY_ID__", this.queryId) : ""
     const options = getCoreCapabilities().queryCapabilities?.getQuery?.(this.queryId)?.options
@@ -39,6 +41,10 @@ export default class extends CoreModalControllerBase {
   async save(event) {
     event.preventDefault()
     if (!this.editor || !this.saveUrl) return
+    const generation = this.openGeneration
+    if (this.savingGeneration === generation && this.saving) return
+    const queryId = this.queryId
+    const saveUrl = this.saveUrl
 
     const value = this.editor.getValue()
     let options
@@ -50,19 +56,25 @@ export default class extends CoreModalControllerBase {
     }
 
     if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = true
+    this.saving = true
+    this.savingGeneration = generation
 
     try {
-      await putJson(this.saveUrl, { query: { options } })
+      await putJson(saveUrl, { query: { options } })
 
       document.dispatchEvent(new CustomEvent("query-options:saved", {
-        detail: { queryId: this.queryId, options }
+        detail: { queryId, options }
       }))
+      if (generation !== this.openGeneration) return
       coreFlash.show("success", "Query options saved successfully.")
       this.hide()
     } catch (error) {
       console.error("query-options-core: save failed", error)
+      if (generation !== this.openGeneration) return
       coreFlash.show("error", "Unable to save query options.")
       if (this.hasSaveButtonTarget) this.saveButtonTarget.disabled = false
+    } finally {
+      if (this.savingGeneration === generation) this.saving = false
     }
   }
 }

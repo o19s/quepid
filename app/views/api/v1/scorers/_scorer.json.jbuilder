@@ -15,7 +15,7 @@ unless export
   json.show_scale_labels scorer.show_scale_labels
   json.scale_with_labels scorer.scale_with_labels
 
-  teams = scorer.teams.find_all { |t| current_user.teams.all.include?(t) }
+  teams = scorer.teams.find_all { |t| current_user.teams.to_a.include?(t) }
   json.teams teams do |team|
     json.id         team.id
     json.name       team.name

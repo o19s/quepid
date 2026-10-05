@@ -4,12 +4,13 @@ shallow ||= false
 
 json.id             team.id
 json.name           team.name
-json.cases_count    team.cases.not_archived.size
-json.members_count  team.members.size
+active_cases = team.cases.loaded? ? team.cases.reject(&:archived?) : team.cases.not_archived
+json.cases_count    active_cases.size
+json.members_count  team.has_attribute?(:members_count) ? team.members_count : team.members.size
 
 # Listing of individual cases and scorers is required to support the sharing of cases and scores in the core app
 json.cases do
-  json.array! team.cases.not_archived, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_queries: true, no_scores: true, no_teams: true, no_tries: true }
+  json.array! active_cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_queries: true, no_scores: true, no_teams: true, no_tries: true }
 end
 
 json.scorers do

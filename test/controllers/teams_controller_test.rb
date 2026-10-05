@@ -15,6 +15,14 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :unprocessable_content
     assert_select 'form[action=?] input.is-invalid', teams_path
+    assert_select '#error_explanation', /Name can't be blank/
+  end
+
+  test 'duplicate team names display the validation error and retain the entered name' do
+    post teams_path, params: { team: { name: @team.name } }
+    assert_response :unprocessable_content
+    assert_select '#error_explanation', /Name has already been taken/
+    assert_select 'input[name=?][value=?]', 'team[name]', @team.name
   end
 
   test 'successful creation redirects with see other' do

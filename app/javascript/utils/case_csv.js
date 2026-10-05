@@ -5,6 +5,8 @@
  * are already published into `queryDocumentsStore`.
  */
 
+import { formatShortDate } from "utils/date_format"
+
 const EOL = "\r\n"
 const TEXT_DELIMITER = '"'
 const LEADING_CHARS_NEEDING_ESCAPE = ["=", "@", "+", "-"]
@@ -55,13 +57,6 @@ function mergeFieldNames(existing, names) {
     if (!merged.includes(name)) merged.push(name)
   })
   return merged
-}
-
-// Snapshot display dates use the short month/day/year format.
-export function formatShortDate(dateString) {
-  const date = new Date(dateString)
-  const year = String(date.getFullYear()).slice(-2)
-  return `${date.getMonth() + 1}/${date.getDate()}/${year}`
 }
 
 /**
@@ -181,7 +176,8 @@ export function buildDetailedCaseCsv(caseData, queries) {
  */
 export function buildSnapshotCsv(caseId, snapshotData) {
   const docsByQuery = snapshotData.docs || {}
-  const snapshotName = `(${formatShortDate(snapshotData.time)}) ${snapshotData.name}`
+  const date = formatShortDate(snapshotData.time)
+  const snapshotName = date ? `(${date}) ${snapshotData.name}` : snapshotData.name
 
   let fields = []
   Object.values(docsByQuery).forEach((docs) => {

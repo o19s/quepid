@@ -1,4 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
+import { formatShortDate } from "utils/date_format"
 import { getJson } from "api/json"
 import { isSameId } from "utils/record_identity"
 
@@ -236,9 +237,8 @@ export default class extends CoreModalControllerBase {
     const time = snapshot.time || snapshot.created_at || snapshot.created_time
     if (!time) return name
 
-    const date = new Date(time)
-    if (Number.isNaN(date.getTime())) return name
-    return `(${date.toLocaleDateString("en-US", { month: "numeric", day: "numeric", year: "2-digit" })}) ${name}`
+    const date = formatShortDate(time)
+    return date ? `(${date}) ${name}` : name
   }
 
   async callBridge(request, errorMessage) {

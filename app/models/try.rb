@@ -57,6 +57,8 @@ class Try < ApplicationRecord
   has_many   :snapshots,
              dependent: :nullify
 
+  has_many :scores, dependent: :nullify, inverse_of: :try
+
   # Callbacks
   before_create :set_defaults
 

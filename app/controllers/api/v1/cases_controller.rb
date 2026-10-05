@@ -25,6 +25,7 @@ module Api
                    fetch_active_cases
                  end
 
+        LatestCaseScores.preload(@cases) unless @no_scores
         respond_with @cases
       end
 
@@ -164,7 +165,8 @@ module Api
       def fetch_archived_cases
         @no_tries = true
         @no_teams = false
-        Case.where(archived: true, owner_id: current_user.id).all.with_counts
+        Case.where(archived: true, owner_id: current_user.id).with_counts
+          .preload(:owner, :book, :teams)
       end
 
       def fetch_active_cases
@@ -188,7 +190,7 @@ module Api
         @no_teams = false
         @no_scores = false
 
-        base_query.includes(:owner, :book).preload(:tries, :teams, :cases_teams)
+        base_query.includes(:owner, :book).preload(:teams)
           .left_outer_joins(:metadata) # this is slow!
           .select('cases.*, case_metadata.last_viewed_at')
           # base_query already ends in .order(:updated_at) - .order here would just append to

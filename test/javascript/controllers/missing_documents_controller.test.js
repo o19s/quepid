@@ -57,6 +57,51 @@ function adapter(overrides = {}) {
 }
 
 describe("MissingDocumentsController", () => {
+  it.each(["search", "reset", "paginate"])("restores controls after rejected %s and allows retry", async (action) => {
+    const method = action === "reset" ? "resetToRated" : action
+    const operation = vi.fn().mockRejectedValueOnce(new Error("Search engine unavailable")).mockResolvedValueOnce(undefined)
+    const controller = buildController(adapter({ [method]: operation }))
+    controller.queryParamsTarget.value = "q=custom"
+
+    await controller[action]({ preventDefault: vi.fn() })
+
+    expect(controller.spinnerTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.searchButtonTarget.disabled).toBe(false)
+    expect(controller.resetButtonTarget.disabled).toBe(false)
+    expect(controller.nextTarget.disabled).toBe(false)
+    expect(controller.statusTarget.textContent).toContain("Please try again")
+    if (action === "reset") expect(controller.queryParamsTarget.value).toBe("q=custom")
+
+    await controller[action]({ preventDefault: vi.fn() })
+    expect(operation).toHaveBeenCalledTimes(2)
+    expect(controller.statusTarget.textContent).not.toContain("Please try again")
+    expect(controller.statusTarget.classList.contains("alert-danger")).toBe(false)
+  })
+
+  it.each([true, false])("does not render a detached modal after a pending operation succeeds: %s", async (success) => {
+    const controller = buildController(adapter())
+    let finish
+    let fail
+    const render = vi.spyOn(controller, "render")
+    const pending = controller.run(() => new Promise((resolve, reject) => { finish = resolve; fail = reject }))
+    controller.disconnect()
+    if (success) finish()
+    else fail(new Error("Disconnected"))
+    await pending
+    expect(render).not.toHaveBeenCalled()
+    expect(controller.statusTarget.textContent).toBe("")
+  })
+
+  it("prevents overlapping operations", async () => {
+    const controller = buildController(adapter())
+    let finish
+    const pending = controller.run(() => new Promise(resolve => { finish = resolve }))
+    const other = vi.fn()
+    await controller.run(other)
+    expect(other).not.toHaveBeenCalled()
+    finish()
+    await pending
+  })
   it("renders the empty-search state", () => {
     const controller = buildController(adapter({ lastQuery: "title:missing" }))
     controller.render()

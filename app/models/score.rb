@@ -37,7 +37,7 @@ class Score < ApplicationRecord
   # Associations
   belongs_to :case, touch: true
   belongs_to :user, optional: true
-  belongs_to :try
+  belongs_to :try, optional: true # Historical scores survive deletion of their try.
   belongs_to :annotation, optional: true
   belongs_to :scorer, optional: true # optional for legacy reasons, we have old data.
 

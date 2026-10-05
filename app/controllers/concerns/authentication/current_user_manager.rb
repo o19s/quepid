@@ -56,6 +56,8 @@ module Authentication
     end
 
     def clear_user_session
+      user_id = current_user&.id || session[:current_user_id]
+      ActionCable.server.remote_connections.where(current_user: User.find_by(id: user_id)).disconnect(reconnect: false) if user_id
       @current_user             = nil
       session[:current_user_id] = nil
     end
