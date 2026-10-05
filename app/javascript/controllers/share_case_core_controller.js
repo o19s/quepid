@@ -48,7 +48,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async openFor(btn) {
-    const caseId = btn?.dataset?.shareCaseCoreIdValue
+    const caseId = this.triggerValue(btn, "id")
     const caseName = caseNameFromHeader()
 
     if (this.hasCaseIdTarget) this.caseIdTarget.value = caseId || ""

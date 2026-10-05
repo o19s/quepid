@@ -30,7 +30,7 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
-    const caseId = btn?.dataset?.deleteCaseOptionsCoreIdValue
+    const caseId = this.triggerValue(btn, "id")
     const caseName = caseNameFromHeader()
 
     this.currentCaseId = caseId || ""

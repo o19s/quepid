@@ -10,6 +10,7 @@ vi.mock("api/fetch", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(CloneCaseCoreController, {
+    overrides: { identifier: "clone-case-core" },
     targets: {
       title: document.createElement("h5"),
       alert: document.createElement("div"),

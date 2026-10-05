@@ -22,6 +22,7 @@ function buildDescription(action) {
 
 function buildModalController(overrides = {}) {
   const controller = Object.create(DeleteCaseOptionsCoreController.prototype)
+  controller.identifier = "delete-case-options-core"
   controller.element = document.createElement("div")
   controller.archiveUrlTemplateValue = "/cases/__CASE_ID__/archive"
   controller.destroyUrlTemplateValue = "/cases/__CASE_ID__"

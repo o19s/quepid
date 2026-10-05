@@ -57,12 +57,12 @@ export default class extends CoreModalControllerBase {
 
   openFor(btn) {
     this.openGeneration = (this.openGeneration || 0) + 1
-    const caseId = btn?.dataset?.judgementsCoreIdValue
-    const scorerId = btn?.dataset?.judgementsCoreScorerIdValue
-    const bookId = btn?.dataset?.judgementsCoreBookIdValue
-    const queriesCount = btn?.dataset?.judgementsCoreQueriesCountValue
-    const autoPairs = btn?.dataset?.judgementsCoreAutoPopulateBookPairsValue
-    const autoJudgements = btn?.dataset?.judgementsCoreAutoPopulateCaseJudgementsValue
+    const caseId = this.triggerValue(btn, "id")
+    const scorerId = this.triggerValue(btn, "scorerId")
+    const bookId = this.triggerValue(btn, "bookId")
+    const queriesCount = this.triggerValue(btn, "queriesCount")
+    const autoPairs = this.triggerValue(btn, "autoPopulateBookPairs")
+    const autoJudgements = this.triggerValue(btn, "autoPopulateCaseJudgements")
 
     this.currentCaseId = caseId || ""
     this.scorerId = scorerId || ""

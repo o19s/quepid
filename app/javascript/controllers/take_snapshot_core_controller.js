@@ -27,10 +27,10 @@ export default class extends CoreModalControllerBase {
   static values = { engineLabels: Object }
 
   openFor(btn) {
-    const caseId = btn?.dataset?.takeSnapshotCoreIdValue
-    const fieldSpec = btn?.dataset?.takeSnapshotCoreFieldSpecValue || ""
-    const searchEngine = btn?.dataset?.takeSnapshotCoreSearchEngineValue || ""
-    const mapperName = btn?.dataset?.takeSnapshotCoreMapperEngineNameValue || ""
+    const caseId = this.triggerValue(btn, "id")
+    const fieldSpec = this.triggerValue(btn, "fieldSpec") || ""
+    const searchEngine = this.triggerValue(btn, "searchEngine") || ""
+    const mapperName = this.triggerValue(btn, "mapperEngineName") || ""
 
     this.currentCaseId = caseId || ""
     this.searchEngine = searchEngine

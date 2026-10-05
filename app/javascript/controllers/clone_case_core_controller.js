@@ -36,9 +36,9 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
-    const caseId = btn?.dataset?.cloneCaseCoreIdValue
+    const caseId = this.triggerValue(btn, "id")
     const caseName = caseNameFromHeader()
-    const lastTry = btn?.dataset?.cloneCaseCoreLastTryValue
+    const lastTry = this.triggerValue(btn, "lastTry")
 
     this.currentCaseId = caseId || ""
     this.newCaseName = ""

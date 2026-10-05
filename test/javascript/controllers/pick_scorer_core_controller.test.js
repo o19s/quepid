@@ -14,6 +14,7 @@ vi.mock("utils/bs_modal", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(PickScorerCoreController, {
+    overrides: { identifier: "pick-scorer-core" },
     targets: {
       title: document.createElement("h5"),
       alert: document.createElement("div"),

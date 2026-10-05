@@ -9,6 +9,7 @@ vi.mock("utils/bs_modal", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(TakeSnapshotCoreController, {
+    overrides: { identifier: "take-snapshot-core" },
     outlets: { snapshotBridge: { create: vi.fn(async () => {}) } },
     targets: {
       title: document.createElement("h5"),

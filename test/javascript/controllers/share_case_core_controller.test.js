@@ -10,6 +10,7 @@ vi.mock("api/fetch", () => ({
 
 function buildController(overrides = {}) {
   const controller = buildControllerFixture(ShareCaseCoreController, {
+    overrides: { identifier: "share-case-core" },
     targets: {
       title: document.createElement("h5"),
       caseId: { value: "" },

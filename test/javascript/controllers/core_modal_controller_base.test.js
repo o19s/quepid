@@ -8,6 +8,38 @@ function buildController() {
   return controller
 }
 
+describe("CoreModalControllerBase triggerValue", () => {
+  it.each(["take-snapshot-core", "judgements-core", "delete-case-options-core"])(
+    "uses the %s identifier and camelCase field name",
+    (identifier) => {
+      const controller = buildController()
+      controller.identifier = identifier
+      const trigger = document.createElement("button")
+      trigger.setAttribute(`data-${identifier}-field-spec-value`, "id:id title:title")
+
+      expect(controller.triggerValue(trigger, "fieldSpec")).toBe("id:id title:title")
+    }
+  )
+
+  it.each(["", "false", "0", "001", '{"id":1}', "  raw text  "])(
+    "preserves the raw string %j",
+    (value) => {
+      const controller = buildController()
+      controller.identifier = "take-snapshot-core"
+      const trigger = { dataset: { takeSnapshotCoreFieldSpecValue: value } }
+
+      expect(controller.triggerValue(trigger, "fieldSpec")).toBe(value)
+    }
+  )
+
+  it.each([null, undefined, {}, { dataset: {} }])("returns undefined for missing data on %j", (trigger) => {
+    const controller = buildController()
+    controller.identifier = "take-snapshot-core"
+
+    expect(controller.triggerValue(trigger, "fieldSpec")).toBeUndefined()
+  })
+})
+
 describe("CoreModalControllerBase alert helpers", () => {
   it("renders alert messages as text and applies the requested variant", () => {
     const controller = buildController()

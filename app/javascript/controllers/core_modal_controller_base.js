@@ -19,6 +19,13 @@ import { getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
  * Subclasses with an "alert" target get `showAlert`/`clearAlert` for free.
  */
 export default class extends Controller {
+  // Read raw trigger data; callers own parsing and defaults.
+  triggerValue(trigger, name) {
+    const prefix = this.identifier.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
+    const key = `${prefix}${name[0].toUpperCase()}${name.slice(1)}Value`
+    return trigger?.dataset?.[key]
+  }
+
   show(trigger) {
     showBsModal(getOrCreateBsModal(this.element), trigger)
   }

@@ -64,9 +64,9 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
-    const caseId = btn?.dataset?.exportCaseCoreIdValue
+    const caseId = this.triggerValue(btn, "id")
     const caseName = caseNameFromHeader()
-    const supportsDetailedExport = btn?.dataset?.exportCaseCoreSupportsDetailedExportValue !== "false"
+    const supportsDetailedExport = this.triggerValue(btn, "supportsDetailedExport") !== "false"
 
     this.currentCaseId = caseId || ""
     this.currentCaseName = caseName || ""

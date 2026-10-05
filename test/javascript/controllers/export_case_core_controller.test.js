@@ -21,6 +21,7 @@ vi.mock("utils/download_file", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(ExportCaseCoreController, {
+    overrides: { identifier: "export-case-core" },
     targets: {
       title: document.createElement("h5"),
       submitButton: document.createElement("button"),

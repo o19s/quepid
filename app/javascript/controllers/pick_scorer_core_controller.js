@@ -35,9 +35,9 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
-    const caseId = btn?.dataset?.pickScorerCoreIdValue
-    const currentScorerId = btn?.dataset?.pickScorerCoreCurrentScorerIdValue
-    const currentScorerName = btn?.dataset?.pickScorerCoreCurrentScorerNameValue
+    const caseId = this.triggerValue(btn, "id")
+    const currentScorerId = this.triggerValue(btn, "currentScorerId")
+    const currentScorerName = this.triggerValue(btn, "currentScorerName")
 
     this.currentCaseId = caseId || ""
     this.selectedScorer = null

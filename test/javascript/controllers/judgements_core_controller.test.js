@@ -19,6 +19,7 @@ vi.mock("utils/flash", () => ({
 
 function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(JudgementsCoreController, {
+    overrides: { identifier: "judgements-core" },
     targets: {
       title: document.createElement("h5"),
       loading: document.createElement("div"),
