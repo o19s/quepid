@@ -19,7 +19,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 
 ### 14.2 Admin Home dashboard
 
-- [ ] **Steps:** Log in as an admin, go to `/admin`. Confirm three cards: **Managing Quepid** (Users, Announcements), **Analytics** (SQL Analytics), **Background Jobs** (Job Manager, Websocket Tester).
+- [ ] **Steps:** Log in as an admin, go to `/admin`. Confirm three cards: **Managing Quepid** (Users, Announcements), **Analytics** (SQL Analytics), **Background Jobs & Performance Monitoring** (Job Manager, Websocket Tester, Rails Pulse).
 - **Expected:** All links navigate to their respective tools without error.
 
 ### 14.3 User management — list & search
@@ -110,13 +110,14 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - **Edge cases:**
   - [ ] If the countdown never appears, this indicates an ActionCable/Redis/adapter misconfiguration in this environment — that's exactly what this page exists to surface, so treat a missing countdown as an infrastructure bug to report, not a UI bug.
 
-### 14.11 Mounted engines (Job Manager, SQL Analytics)
+### 14.11 Mounted engines (Job Manager, SQL Analytics, Rails Pulse)
 
 - [ ] **Steps:**
   1. As an admin, open **Job Manager** (MissionControl::Jobs) from the Admin Home — confirm it loads and shows background job queues/status.
   2. Open **SQL Analytics** (Blazer) — confirm it loads and can run a basic query.
-  3. As a **non-admin**, attempt to reach both directly by URL (`/admin/jobs`, `/admin/blazer`) — confirm access is denied.
-- **Expected:** Both tools are reachable only by admins; a deep dive into their internal functionality is out of scope for this guide (they're third-party engines), but confirm they at least load without erroring and are properly access-gated.
+  3. Open **Rails Pulse** — confirm its setup screen or dashboard loads.
+  4. As a **non-admin**, attempt to reach all three directly by URL (`/admin/jobs`, `/admin/blazer`, `/admin/rails_pulse`) — confirm access is denied with 404 responses. Repeat Rails Pulse without signing in and at `/admin/rails_pulse/requests`.
+- **Expected:** All three tools are reachable only by admins. Rails Pulse follows upstream's authentication defaults: the route gates all environments, with an additional engine authorization predicate outside development/test.
 
 ### 14.12 Create a user (admin)
 
@@ -130,3 +131,15 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   - [ ] Duplicate email or blank email — form re-renders with validation errors, no user created.
   - [ ] Password/confirmation mismatch — validation error.
   - [ ] Delete the test users afterward (Part 14.8) so seed data stays clean.
+
+### 14.13 Rails Pulse monitoring
+
+- [ ] **Steps:**
+  1. Visit ordinary Quepid pages, then open Admin > Rails Pulse as an administrator.
+  2. If the setup screen says summaries are pending, wait for the hourly summary or run `rails runner 'RailsPulse::SummaryJob.perform_now(Time.current.beginning_of_hour)'` in the existing server container.
+  3. Confirm dashboard charts render. Open Requests and inspect a request's duration, response status, normalized SQL and operation timeline.
+  4. Run the Websocket Tester job (14.10), then open Pulse's Jobs page and inspect its completion status and duration.
+- **Expected:** Requests and background jobs are recorded without changing their behavior. Pulse's own dashboard requests are excluded. Raw SQL and job arguments remain uncaptured, matching upstream; summary and cleanup jobs run on the upstream hourly/daily schedules.
+- **Edge cases:**
+  - [ ] Verify a failed job remains failed and appears in monitoring.
+  - [ ] Verify cleanup removes expired monitoring data while retaining recent data in an isolated database.

@@ -872,9 +872,9 @@ parts:
         paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb"]
       "14.2":
         title: "Admin Home dashboard"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-06T19:19:49Z
         result: pass
-        notes: "Covered live: three admin cards and Users/Announcements/Websocket/Job Manager/SQL Analytics links loaded."
+        notes: "Covered live: three admin cards including Rails Pulse, full-page Pulse entry, dashboard/request details and existing engine links. Inspected matched admin-baseline screenshots (old template replay on current runtime). Users/Announcements navigation not repeated in this sample."
         paths: ["app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb"]
       "14.3":
         title: "User management — list & search"
@@ -925,17 +925,24 @@ parts:
         notes: "Covered live: queued tester, live iteration countdown and completion message received over Cable. Before/after screenshots inspected. ApplicationResponder failure was stale worker autoload paths after new responder directory; existing container restarted, fresh worker completed job. Development restart rule documented; no broadcast-code change."
         paths: ["app/controllers/admin/websocket_tester_controller.rb", "app/views/admin/websocket_tester/index.html.erb", "app/views/admin/websocket_tester/_notification.turbo_stream.erb", "app/channels/application_cable/connection.rb", "app/controllers/concerns/authentication/current_user_manager.rb"]
       "14.11":
-        title: "Mounted engines (Job Manager, SQL Analytics)"
-        last_run: 2026-10-05T23:56:39Z
+        title: "Mounted engines (Job Manager, SQL Analytics, Rails Pulse)"
+        last_run: 2026-10-06T19:21:50Z
         result: pass
-        notes: "Covered live: admin Job Manager queues/failures and SQL Analytics loaded; non-admin direct engine URLs returned 404. Not covered live: SQL query execution."
-        paths: ["config/routes.rb"]
+        notes: "Admin Job Manager, SQL Analytics and Rails Pulse loaded. Confirmed non-admin OSC member receives 404 from all three and Pulse Requests; anonymous Pulse also 404. Engine predicate tested separately with production authentication enabled. SQL execution and every deep route deferred."
+        paths: ["config/routes.rb", "config/initializers/rails_pulse.rb", "app/views/admin/home/index.html.erb"]
       "14.12":
         title: "Create a user (admin)"
         last_run: 2026-10-05T23:56:39Z
         result: pass
         notes: "Covered live: admin created plain-password fixture 50 with name/company; mismatch validation rejected first submit; separate login succeeded. Not covered live: pre-encrypted password, blank/duplicate email and create-time admin flag."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/new.html.erb", "app/views/admin/users/_form.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
+
+      "14.13":
+        title: "Rails Pulse monitoring"
+        last_run: 2026-10-06T19:21:50Z
+        result: pass
+        notes: "Live sample: setup screen, dashboard charts, real admin request timeline/normalized SQL, real Solid Queue tester success (31s) and Job detail. Generated initial hour/day summaries explicitly; recurring tasks registered. Job failure and retention covered by Rails tests, not live browser; long-term production volume and all filters deferred. Screenshots inspected under upstream-pulse."
+        paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "config/initializers/postgresql_schema_compatibility.rb"]
 
   "15":
     file: 15-global-navigation-and-notebooks.md

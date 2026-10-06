@@ -110,6 +110,9 @@ module Api
       def select_count(&)
         count = 0
         callback = lambda do |_name, _start, _finish, _id, payload|
+          # Measure serializer reads separately from Pulse's bookkeeping.
+          next if payload[:sql].match?(/\b(?:FROM|JOIN)\s+[`"]?rails_pulse_/i)
+
           count += 1 if 'SCHEMA' != payload[:name] && payload[:sql].match?(/\ASELECT/i)
         end
         ActiveSupport::Notifications.subscribed(callback, 'sql.active_record', &)

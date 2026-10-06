@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 # db/schema.rb is dumped from MySQL and carries MySQL-only column options.
-# PostgreSQL rejects two of them, so relax it here the same way
+# PostgreSQL rejects some of them, so relax it here the same way
 # sqlite3_schema_compatibility.rb does for SQLite.
 #
-# Only two shims are needed. Notably NOT needed, despite looking like problems:
+# Notably NOT needed, despite looking like problems:
 #   * index `length: 191` (MySQL prefix indexes) - silently ignored by the
 #     PostgreSQL adapter, and PostgreSQL has no 767-byte index limit to work
 #     around in the first place.
@@ -23,6 +23,22 @@ require 'active_record/connection_adapters/postgresql_adapter'
 # column options outright with `ArgumentError: Unknown key: :size`.
 ActiveRecord::ConnectionAdapters::PostgreSQL::TableDefinition.prepend(
   Module.new do
+    # MySQL dumps Pulse's null-action uniqueness as a backtick-quoted expression.
+    # PostgreSQL uses the equivalent partial index, as in Pulse's own installer.
+    def index columns, **options
+      return super(:path, **options.merge(where: 'controller_action IS NULL')) if
+        'index_rails_pulse_routes_on_path_without_action' == options[:name] && columns.is_a?(String)
+
+      super
+    end
+
+    # Preserve Pulse's operation-owner check using PostgreSQL identifier quoting.
+    def check_constraint expression, **options
+      expression = expression.tr('`', '"') if 'rails_pulse_operations_request_or_job_run' == options[:name]
+
+      super
+    end
+
     private
 
     def valid_column_definition_options

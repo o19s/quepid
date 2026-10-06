@@ -1230,6 +1230,23 @@ Adapter-specific behavior:
 
 # QA
 
+## Rails Pulse
+
+Administrators can open **Admin > Rails Pulse** (`/admin/rails_pulse`) to inspect
+requests, normalized SQL, background jobs and exceptions. Monitoring uses the
+application database. Upstream defaults are retained, including disabled raw-SQL
+and job-argument capture, hourly summaries and daily cleanup with 30-day retention
+and per-table record caps. The route requires an administrator in every environment;
+the engine also authorizes administrators outside development/test.
+
+Deployments must run the regular Rails migrations before restarting web and worker
+processes. A new installation shows a setup screen until requests and summaries
+exist. For an immediate development summary, run
+`rails runner 'RailsPulse::SummaryJob.perform_now(Time.current.beginning_of_hour)'`
+in the existing server container.
+
+## Staging deployment
+
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
 is run on successful commits to `main`.
 
