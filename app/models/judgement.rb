@@ -27,6 +27,16 @@ class Judgement < ApplicationRecord
   belongs_to :query_doc_pair
   belongs_to :user, optional: true
 
+  # Ransack (used by JudgementsController#index's generic search fallback and
+  # sortable column headers) - keep this to what's used today.
+  def self.ransackable_attributes _auth_object = nil
+    %w[id rating explanation created_at updated_at query_doc_pair_id]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[query_doc_pair]
+  end
+
   validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }, unless: -> { user_id.nil? }
   validates :rating,
             presence: true, unless: :rating_not_required?

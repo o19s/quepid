@@ -28,10 +28,11 @@ class QueryDocPair < ApplicationRecord
   belongs_to :book
   has_many :judgements, dependent: :destroy, autosave: true
 
-  # Ransack (used by QueryDocPairsController#index's search box and sortable
-  # column headers) - keep this to what's used today.
+  # Ransack (used by QueryDocPairsController#index's search box, and by
+  # JudgementsController#index's generic search fallback via the
+  # query_doc_pair association) - keep this to what's used today.
   def self.ransackable_attributes _auth_object = nil
-    %w[id query_text position doc_id document_fields created_at updated_at]
+    %w[id query_text position doc_id document_fields information_need created_at updated_at]
   end
 
   def self.ransackable_associations _auth_object = nil

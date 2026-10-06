@@ -19,7 +19,7 @@
 
         <!-- Search input with fixed width -->
         <div class="input-group" style="max-width: 340px;">
-          <%= text_field_tag :q, params[:q],
+          <%= text_field_tag :search, params[:search],
               class: 'form-control form-control-sm',
               placeholder: 'Filter by query, doc id, or explanation',
               id: 'q'
@@ -86,22 +86,22 @@
       <thead>
         <tr>
           <th>Query</th>
-          <th>Query Doc ID</th>   
+          <th>Query Doc ID</th>
           <th>Doc ID</th>
-          <th>ID</th>
+          <th><%= sort_link(@q, :id, 'ID') %></th>
           <% unless @compact %>
             <th>Document fields</th>
           <% end %>
-          <th>Rating</th>
+          <th><%= sort_link(@q, :rating, 'Rating') %></th>
           <% unless @compact %>
             <th>Unrateable</th>
             <th>Judge Later</th>
           <% end %>
           <th>Rater</th>
           <% unless @compact %>
-            <th>Explanation</th>
-            <th>Created At</th>
-            <th>Updated At</th>      
+            <th><%= sort_link(@q, :explanation, 'Explanation') %></th>
+            <th><%= sort_link(@q, :created_at, 'Created At') %></th>
+            <th><%= sort_link(@q, :updated_at, 'Updated At') %></th>
           <% end %>
     
         </tr>
