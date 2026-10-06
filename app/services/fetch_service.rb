@@ -81,7 +81,7 @@ class FetchService
 
     response['hits']['hits'].each_with_index do |doc_json, index|
       doc = {}
-      doc[:_id] = doc_json['_id']
+      doc[:id] = doc_json['_id']
       unless explain_json.nil?
         explain = explain_json[doc_json['id']]
         doc[:explain] = explain.to_json if explain.present?

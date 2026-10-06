@@ -392,19 +392,6 @@ snapshot name and API reason in the alert, and distinguish partial success.
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
 
-### [PREEXISTING] P1 I1 C2 — Elasticsearch/OpenSearch document IDs are not persisted
-
-**Location:** `app/services/fetch_service.rb:75-100,118-125`
-
-The Elasticsearch/OpenSearch extractor stores the backend identifier as
-`doc[:_id]`, while snapshot persistence reads `doc[:id]`. Results from these
-engines can therefore create `SnapshotDoc` rows with a blank document ID,
-breaking later judgement, snapshot comparison, and document identity behavior.
-
-**Fix direction:** Normalize the extractor to the same `:id` contract used by
-Solr and Search API results, then add an extractor-to-`SnapshotDoc` regression
-test for both Elasticsearch and OpenSearch.
-
 ### [PREEXISTING] P1 I1 C3 — Mapper wizard function extraction is not lexical-aware
 
 **Location:** `app/services/mapper_wizard_service.rb:265-296`
@@ -441,24 +428,6 @@ text, so `resolved_api_method` can select the wrong request method.
 **Fix direction:** Strip surrounding whitespace for dispatch (while preserving
 the original payload), and add tests for leading/trailing whitespace.
 
-## [PREEXISTING] P2 — Error handling consistency
-
-### [PREEXISTING] P2 I1 C2 — Missing team resources redirect instead of using the app-wide 404
-
-`TeamsController` has a controller-wide `rescue_from ActiveRecord::RecordNotFound`
-that redirects to the teams page with a flash. This differs from the default
-`ApplicationController` behavior, which renders the styled 404 for HTML
-requests. Decide whether inaccessible or missing team resources should remain a
-redirect, become a 404 (or 403), and apply the chosen policy consistently.
-
-Apply the same policy review to the five `set_book` variants in
-`CurrentBookManager`, `BooksController`, `Books::ImportController`,
-`Api::V1::BooksController` and `AiJudges::PromptsController`: missing or
-inaccessible books currently yield a 404, redirect, or nil `@book`.
-A shared scoped lookup is optional (P3 I1 C1); preserve each surface's response
-contract unless deliberately changing it. Sharing lookup alone need not make
-HTML redirects and API 404s identical.
-
 ---
 
 ## [PREEXISTING] P3 — Code quality
@@ -468,16 +437,6 @@ HTML redirects and API 404s identical.
 **Location:** `app/controllers/api/v1/snapshots/search_controller.rb:45-46`
 
 `params[:rows].to_i` / `params[:start].to_i` without validation; non-numeric strings coerce to `0`.
-
----
-
-### [PREEXISTING] P3 I0 C1 — Predicate method naming
-
-**Location:** `app/models/selection_strategy.rb`
-
-Rename `user_has_judged_all_available_pairs?` → `user_judged_all_available_pairs?` (style-only; project convention — see `credentials?` vs `has_credentials?` in AGENTS.md, already followed by `HttpClientService#credentials?`).
-
-**Also found:** `every_query_doc_pair_has_three_judgements?` (same file, line 56) has the same `has_` prefix. Different grammatical shape though — it's "has N of a noun" (a count check), not "has verbed" (where the participle alone already reads as a fine predicate, as in `judged`). Dropping `has_` here reads badly (`every_query_doc_pair_three_judgements?`); it would need a rephrase (e.g. `every_query_doc_pair_judged_three_times?`) rather than a straight deletion. Worth a call when touching this file rather than bundling blindly with the first rename.
 
 ---
 
@@ -543,20 +502,6 @@ The same feature is built several times, and most copies have already drifted
 apart, so behavior depends on which path ran. Where copies differ, decide which
 behavior is correct before consolidating and call it out in the PR. One pattern
 per PR; keep this out of in-flight feature branches.
-
-### [PREEXISTING] P3 I1 C2 — `Archivable` model concern
-
-`Case` and `SearchEndpoint` define `mark_archived`/`mark_archived!`; `Book`
-defines `archive!` but `BooksController` calls `update(archived: true)`
-directly. `not_archived` includes `nil` on `Case` but not on `SearchEndpoint`.
-Case archive/unarchive actions are copied between `CasesController` and
-`TeamsController`. One concern with `archive!`, `unarchive!`, `archived`,
-`not_archived` fixes naming and scope semantics. The redundant analytics
-availability guards were removed in the analytics-layer cleanup.
-
-Not worth acting on: search-response parsing exists in Ruby
-(`FetchService#extract_docs_*`) and JS (splainer-search) because evaluations run
-server-side; keep them in step rather than merging.
 
 ---
 
@@ -872,15 +817,6 @@ partials have separate export/API contracts. The small Thor ratings/snapshot
 generators do not justify abstraction solely for copied lines.
 
 ## [MIGRATION-FOLLOWUP] JavaScript correctness findings
-
-Reviewed 2026-10-05. The five focused suites for bulk judging, Query Options,
-book sync, the editor and Missing Documents passed (49 tests), but omit the
-cross-row and overlapping-request cases below. Read-only source reproductions
-with mocked APIs confirmed the bulk explanation, options-context, book-rank
-and failed-search cleanup failures. These were not browser passes.
-Historical comparisons below use source at `be9b319a`, not a live historical
-replay. A followup marker with unclassified provenance does not establish a
-migration regression.
 
 ### [PREEXISTING] P1 I0 C1 — Bulk judging drops cross-row explanation edits
 

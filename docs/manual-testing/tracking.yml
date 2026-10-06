@@ -1053,7 +1053,7 @@ parts:
         title: "Search-engine provider compatibility smoke test"
         last_run: 2026-10-06T00:08:55Z
         result: blocked
-        notes: "Covered live: Solr endpoint/case returned live results and supported inspect/rate; Search API mapper fetched public Solr and mapped two docs. Blocked: no real ES/OpenSearch/Vectara/Elastic Cloud test endpoint or credentials supplied. Not covered live: Search API attached-case workflow/provider auth failures."
+        notes: "Covered live: Solr endpoint/case returned live results and supported inspect/rate; Search API mapper fetched public Solr and mapped two docs. Blocked: no real ES/OpenSearch/Vectara/Elastic Cloud test endpoint or credentials supplied. Not covered live: Search API attached-case workflow/provider auth failures. Automated coverage added for ES/OpenSearch extraction through persisted SnapshotDoc IDs, including conflicting _source.id; live provider verification remains blocked pending a test endpoint."
         paths: ["app/models/search_endpoint.rb", "app/controllers/search_endpoints_controller.rb", "app/services/fetch_service.rb", "app/services/mapper_wizard_service.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/search_endpoints/", "app/views/mapper_wizards/", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "17.10":
         title: "Deployment configuration smoke test"

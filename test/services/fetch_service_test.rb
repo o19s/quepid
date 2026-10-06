@@ -265,6 +265,32 @@ class FetchServiceTest < ActiveSupport::TestCase
       end
     end
 
+    %w[es os].each do |engine|
+      it "persists backend document IDs from #{engine} results" do
+        fetch_service = FetchService.new options
+        fetch_service.begin(acase, atry)
+        response_body = {
+          hits: {
+            hits: [
+              { _id: 'backend-1', _source: { id: 'source-1', title: 'First result' } },
+              { _id: 'backend-2', _source: { title: 'Second result' } }
+            ],
+          },
+        }.to_json
+
+        docs = fetch_service.public_send("extract_docs_from_response_body_for_#{engine}", response_body)
+        snapshot_query = fetch_service.store_query_results(first_query, docs, 200, response_body)
+        persisted_docs = snapshot_query.reload.snapshot_docs.order(:position).to_a
+
+        assert_equal %w[backend-1 backend-2], persisted_docs.map(&:doc_id)
+        assert_equal [ 1, 2 ], persisted_docs.map(&:position)
+        assert_equal({ 'id' => 'source-1', 'title' => 'First result' }, JSON.parse(persisted_docs.first.fields))
+        assert_equal({ 'title' => 'Second result' }, JSON.parse(persisted_docs.second.fields))
+        assert_equal 2, snapshot_query.number_of_results
+        assert_equal 200, snapshot_query.response_status
+      end
+    end
+
     it 'returns the exact row and web request for each repeated query run' do
       fetch_service = FetchService.new(options.merge(track_web_requests: true))
       fetch_service.begin(acase, atry)
@@ -489,7 +515,7 @@ class FetchServiceTest < ActiveSupport::TestCase
       assert_equal 2, docs.count
 
       doc = docs.first
-      assert_equal 'l_1', doc[:_id]
+      assert_equal 'l_1', doc[:id]
       assert_nil doc[:explain]
       # assert_nothing_raised { JSON.parse(doc[:explain]) }
 
