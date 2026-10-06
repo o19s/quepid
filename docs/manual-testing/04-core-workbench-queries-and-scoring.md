@@ -78,7 +78,7 @@ Before testing individual features, get oriented:
   3. Click a rating-scale value.
   4. Reload the page and confirm it persisted.
   5. Reopen the popover and click **RESET**.
-- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to unrated.
+- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the visible **Unrated** state. Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
 - **Edge cases:**
   - [ ] Rate a document that can't be uniquely identified (missing/duplicate doc id) — confirm the "This document can't be uniquely identified..." banner appears instead of a rating control.
   - [ ] Rate documents until you reach the scorer's "depth of rating" cutoff — confirm the "Results above are counted in scoring" note appears at the right rank.
@@ -88,7 +88,7 @@ Before testing individual features, get oriented:
 - [ ] **Steps:**
   1. On a brand-new case, confirm the case score badge shows `?` or `--` before any query has been scored.
   2. Run searches / rate documents, confirm the case score badge and each query's score badge update with a sensible color (low score vs. high score should look visually distinct).
-- **Expected:** Badge color scale looks sane at both ends of the range; badges update live as ratings change.
+- **Expected:** Badge color scale looks sane at both ends of the range; badges update live as ratings change. Numeric live and snapshot scores show their maximum (e.g. `0.75` / `of 1.00`); pending, unrated and zero-result scores also show **Not scored**, **Unrated** or **No results**, so color is supplemental.
 
 ### 4.8 Select a scorer for the case
 
@@ -249,7 +249,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 
 - [ ] **Steps:**
   1. With a case of more than 15 queries, confirm the list is paginated 15 per page with working page controls.
-  2. Click each sort link in turn — **Manual, Name, Modified, Score, Errors** — and click the active one again to flip direction. Confirm ordering: Name alphabetical; Modified/Score/Errors newest/highest/errored first; the URL records `sort=`.
+  2. Tab to each sort button in turn and activate it with Enter/Space — **Manual, Name, Modified, Score, Errors** — and click the active one again to flip direction. Confirm ordering: Name alphabetical; Modified/Score/Errors newest/highest/errored first; the URL records `sort=`.
   3. Rate a document in a low-scoring query, click Modified — confirm that query moves to the top. Trigger an error (e.g. break the endpoint URL) and confirm Errors groups failing queries together.
   4. On page 2 with **Manual** sort, drag a query to a new position; reload.
   5. Click **Show only rated**. Expand a query and confirm only rated documents are listed and the result count switches to the rated count; click again to restore.

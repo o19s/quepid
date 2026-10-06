@@ -208,9 +208,11 @@ export function createRatingControl(rating, scale) {
   container.dataset.controller = "rating-popover"
   container.dataset.ratingPopoverScaleValue = JSON.stringify(scale)
 
-  const trigger = document.createElement("span")
+  const trigger = document.createElement("button")
+  trigger.type = "button"
   trigger.className = "btn"
-  trigger.textContent = `${rating} `
+  trigger.textContent = rating === "--" ? "Unrated " : `${rating} `
+  trigger.setAttribute("aria-label", rating === "--" ? "Rate document: Unrated" : `Change rating: ${rating}`)
   trigger.style.backgroundColor = ratingColor(rating, scale)
 
   const icon = document.createElement("i")

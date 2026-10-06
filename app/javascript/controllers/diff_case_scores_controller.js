@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
-import { formatScore, scoreToColor } from "utils/scoring"
+import { formatScore, scoreToColor, renderScoreState } from "utils/scoring"
 import { getCoreStores } from "utils/core_store_access"
 
 /**
@@ -45,6 +45,7 @@ export default class extends Controller {
       label.textContent = searcher.name || "Snapshot"
 
       rating.append(value, label)
+      renderScoreState(rating, score, searcher.score?.maxScore || 1)
       badge.append(rating)
       this.element.append(badge)
     })

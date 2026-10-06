@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
 import { putJson } from "api/json"
-import { formatScore, scoreToColor } from "utils/scoring"
+import { formatScore, scoreToColor, renderScoreState } from "utils/scoring"
 import { buildCaseDiffScores } from "utils/diff_scores"
 import { diffStateStore } from "stores/diff_state_store"
 import { getCoreStores } from "utils/core_store_access"
@@ -94,6 +94,7 @@ export default class extends Controller {
 
     this.element.style.backgroundColor = scoreToColor(score, maxScore)
     this.valueTarget.textContent = formatScore(score)
+    renderScoreState(this.element, score, maxScore)
   }
 
   persistScore(snapshot) {

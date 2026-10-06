@@ -46,14 +46,6 @@ Worker or equivalent browser isolation. The batch path already uses the shared
 scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
 aligned when adding isolation.
 
-### [PREEXISTING] P2 I0 C2 — Accessibility - LATER
-
-Score and rating controls still convey state by color alone; add text or icons so state is not color-only, and cover it with the relevant Playwright scenario.
-
-axe-core flags two unlabeled `<select>`s as critical (`select-name`): the API snapshot picker in the Export modal (`shared/_export_case_core_modal.html.erb`) and each snapshot picker in Compare Snapshots (`diff_core_controller.js` builds a `<label>` that isn't tied to its select). Both were unlabeled on `main` too. Associate the labels (`for`/`id` or `aria-label`). The same scan reports `heading-order` in the Export, Compare Snapshots and Judgements modals (scenario 16.4).
-
-The query-list sort controls (Manual, Name, Modified, Score, Errors) are `<a>` elements without `href`, so they can't be reached with the keyboard. Make them buttons. Not compared against `main`.
-
 ---
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals

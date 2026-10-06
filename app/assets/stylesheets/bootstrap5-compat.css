@@ -536,7 +536,10 @@ header .dropdown-toggle .bi {
 }
 
 .single-rating .btn {
-	width: 60px;
+	min-width: 60px;
+	white-space: nowrap;
+	font-size: 12px;
+	padding-inline: 6px;
 	box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
 	color: #FFF;
 	text-shadow: 0 0 6px rgba(0,0,0,0.25);

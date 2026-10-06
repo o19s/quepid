@@ -118,7 +118,7 @@
     <%= link_to "Annotations", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "annotationsLink" } %>,
     <%= link_to "Scores", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "scoresLink" } %>,
     <%= link_to "Ratings", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "ratingsLink" } %>, or a Snapshot
-    <select class="form-select d-inline-block w-auto"
+    <select aria-label="API snapshot" class="form-select d-inline-block w-auto"
             data-export-case-core-target="apiSnapshotSelect" data-action="change->export-case-core#selectApiSnapshot"></select>
     <span class="d-none" data-export-case-core-target="apiSnapshotWrapper">
       <%= link_to "here", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "apiSnapshotLink" } %>
@@ -139,7 +139,7 @@
   </div>
 <% end %>
 
-<%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", dialog_class: "modal-lg",
+<%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", title_tag: :h2, title_class: "h5", dialog_class: "modal-lg",
                                  data: {
                                    controller: "export-case-core",
                                    action: "show.bs.modal->export-case-core#open",

@@ -86,7 +86,7 @@
 
   <div class="d-none" data-judgements-core-target="integration">
     <hr>
-    <h4>Case Integration</h4>
+    <h3 class="h4">Case Integration</h3>
 
     <div class="card">
       <div class="card-body">
@@ -176,7 +176,7 @@
   <div class="text-danger d-none" data-judgements-core-target="error"></div>
 <% end %>
 
-<%= render "shared/modal_shell", id: "judgementsModal", title: "Judgements",
+<%= render "shared/modal_shell", id: "judgementsModal", title: "Judgements", title_tag: :h2, title_class: "h5",
                                  dialog_class: "modal-lg",
                                  data: {
                                    controller: "judgements-core",

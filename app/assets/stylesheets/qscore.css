@@ -195,3 +195,9 @@ qscore-query.diff-score .overall-rating {
     border-bottom: none;
   }
 }
+
+.score-state {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
+}

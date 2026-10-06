@@ -1,6 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
-import { formatScore, scoreToColor } from "utils/scoring"
+import { formatScore, scoreToColor, renderScoreState } from "utils/scoring"
 import { getCoreStores } from "utils/core_store_access"
 
 export default class extends Controller {
@@ -27,5 +27,6 @@ export default class extends Controller {
     const maxScore = searcher?.score?.maxScore || 1
     this.element.style.backgroundColor = scoreToColor(score, maxScore)
     if (this.hasValueTarget) this.valueTarget.textContent = formatScore(score)
+    renderScoreState(this.element, score, maxScore)
   }
 }

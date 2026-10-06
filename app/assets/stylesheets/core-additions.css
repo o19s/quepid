@@ -281,6 +281,10 @@ header .dropdown-item:focus {
  * nothing else resets it, adding ~14px of unwanted space below the rating
  * buttons inside the "Score All" popover. */
 .ratingContainer ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  list-style: none;
   margin: 0;
   padding: 0;
 }

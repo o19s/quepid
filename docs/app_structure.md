@@ -56,6 +56,36 @@ controllers populate JSON data and selection state while retaining existing muta
 owners. Snapshot hydration/scoring stays in the bridge and stores; management sharing
 retains its separate Rails select/form surface.
 
+#### Live-query ownership map
+
+`createLiveQueryRuntimeOwner` (`utils/live_query_runtime_owner.js`) is the only
+place these modules are wired together. Controllers reach it through the
+workspace's `queryCapabilities`, `queryCommands`, `queryLifecycle` and
+`targetedSearch` groups; they do not import the modules below directly.
+
+| Concern | Module (`app/javascript/…`) | Owns |
+| --- | --- | --- |
+| Owner | `utils/live_query_runtime_owner.js` | Wiring in dependency order, per-case state (case number, settings, bootstrapping), the returned capability groups. |
+| Factory | `utils/live_query_factory.js` | The one normalized shape of a live Query, for bootstrapped and newly created queries. |
+| Commands | `utils/live_query_commands.js` | Rate document/all, paginate, refresh rated docs; sequencing and scheduling per query. |
+| Lifecycle | `utils/live_query_lifecycle.js` | Prepare, commit (single/bulk), commit persisted, refresh queries. |
+| Collection | `utils/live_query_collection.js` | Bootstrap, stale-request handling and publishing fetched queries to the store. |
+| Documents | `utils/live_query_documents.js` | Per-query reset/error/result transitions and publication of document state. |
+| Read models | `utils/live_query_read_models.js` | Pure projections: rateable doc lists, document URLs, snapshot diff columns. |
+| Events | `utils/live_query_events.js` | Subscribes on the event target and scoring store (see below); the only inbound event bridge. |
+| Stores | `stores/query_collection_store.js`, `query_documents_store.js`, `case_score_store.js` | Collection: live Query objects, order, expansion, rated-only. Documents: normalized projections reading status/scores from the collection. Case score: the atomically completed scoring result. |
+
+Lifecycle: the owner is built once per document by `createCoreWorkspaceRuntime`,
+before Stimulus starts. `core_bootstrap_controller` then calls
+`queryCapabilities.bootstrapQueries`, which clears and repopulates the
+collection store. Changing the case or try calls `resetQueryState`/`clearQueries`.
+
+Events consumed (from `live_query_events.js`): `rating-changed` (scoring store),
+`query-options:saved`, `pick-scorer:selected`, `judgements:queries-need-reload`,
+`imports:queries-need-reload`, `quepid:case-book-updated`. Events emitted by the
+owner: `queries-state:changed` and `query-diffs:refreshed`. Add new behavior to
+the module that owns that concern rather than a new facade or directory.
+
 `settings_runtime.js` owns tries and selection. Tune Relevance receives a flat form:
 query, curator and endpoint edits share the selected try; scalar form fields stay
 local and reset on successful history mutations. Its Stimulus controller awaits

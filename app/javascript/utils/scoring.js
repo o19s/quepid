@@ -166,3 +166,22 @@ export function averageScore(scores) {
   }
   return numericScores.reduce((sum, score) => sum + score, 0) / numericScores.length
 }
+
+/** Visible text conveying the score state and scale without its background color. */
+export function scoreStateText(score, maxScore) {
+  if (score === "?" || score == null) return "Not scored"
+  if (score === "--") return "Unrated"
+  if (score === "zsr") return "No results"
+  if (typeof score !== "number" || !Number.isFinite(score)) return "Unavailable"
+  return `of ${formatScore(maxScore)}`
+}
+
+export function renderScoreState(element, score, maxScore) {
+  let state = element.querySelector(".score-state")
+  if (!state) {
+    state = document.createElement("span")
+    state.className = "score-state"
+    element.appendChild(state)
+  }
+  state.textContent = scoreStateText(score, maxScore)
+}

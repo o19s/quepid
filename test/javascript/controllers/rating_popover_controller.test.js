@@ -52,8 +52,10 @@ describe("RatingPopoverController", () => {
 
     const items = options.body.querySelectorAll(".ratingNum")
     expect(items).toHaveLength(2)
+    expect(items[0].tagName).toBe("BUTTON")
+    expect(items[0].type).toBe("button")
     expect(items[0].textContent).toContain("1")
-    expect(items[1].querySelector("div").textContent).toBe("Relevant")
+    expect(items[1].querySelector(".d-block").textContent).toBe("Relevant")
     expect(options.body.querySelector(".reset")).not.toBeNull()
   })
 

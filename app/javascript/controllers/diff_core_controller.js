@@ -165,8 +165,11 @@ export default class extends CoreModalControllerBase {
 
     this.selectionValues.forEach((selected, index) => {
       const row = this.selectionTemplateTarget.content.firstElementChild.cloneNode(true)
-      row.querySelector("[data-slot='label']").textContent = `Snapshot ${index + 1}:`
+      const label = row.querySelector("[data-slot='label']")
+      label.textContent = `Snapshot ${index + 1}:`
       const select = row.querySelector("[data-slot='select']")
+      select.id = `${this.element.id}-snapshot-${index}`
+      label.htmlFor = select.id
       select.dataset.diffCoreIndexParam = String(index)
       this.snapshots.forEach((snapshot) => {
         this.addOption(select, String(snapshot.id), this.snapshotName(snapshot), isSameId(selected, snapshot.id))

@@ -40,26 +40,33 @@ export default class extends Controller {
 
     Object.keys(this.scaleValue).forEach((rating) => {
       const entry = this.scaleValue[rating] || {}
-      const item = document.createElement("li")
+      const row = document.createElement("li")
+      const item = document.createElement("button")
+      item.type = "button"
       item.className = "btn btn-sm ratingNum"
       item.style.backgroundColor = entry.color || ""
       item.textContent = rating
 
       if (entry.showScaleLabels === true) {
-        const label = document.createElement("div")
+        const label = document.createElement("span")
+        label.className = "d-block"
         label.textContent = entry.label
         item.appendChild(label)
       }
 
       item.addEventListener("click", () => this.rate(rating))
-      list.appendChild(item)
+      row.appendChild(item)
+      list.appendChild(row)
     })
 
-    const reset = document.createElement("span")
+    const reset = document.createElement("button")
+    reset.type = "button"
     reset.className = "btn btn-outline-secondary btn-sm reset"
     reset.textContent = "RESET"
     reset.addEventListener("click", () => this.reset())
-    list.appendChild(reset)
+    const resetRow = document.createElement("li")
+    resetRow.appendChild(reset)
+    list.appendChild(resetRow)
 
     container.appendChild(list)
     return container

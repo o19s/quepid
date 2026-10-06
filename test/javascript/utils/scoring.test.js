@@ -180,3 +180,26 @@ describe("scoring", () => {
     })
   })
 })
+
+// The displayed scale/status is independent of color and does not change scoring.
+describe("scoreStateText", () => {
+  it("describes pending and empty score states", async () => {
+    const { scoreStateText } = await import("utils/scoring")
+    expect(scoreStateText("?", 1)).toBe("Not scored")
+    expect(scoreStateText(null, 1)).toBe("Not scored")
+    expect(scoreStateText("--", 1)).toBe("Unrated")
+    expect(scoreStateText("zsr", 1)).toBe("No results")
+    expect(scoreStateText(NaN, 1)).toBe("Unavailable")
+  })
+
+  it("exposes the scorer's maximum for numeric scores", async () => {
+    const { scoreStateText, renderScoreState } = await import("utils/scoring")
+    expect(scoreStateText(0, 1)).toBe("of 1.00")
+    const badge = document.createElement("div")
+    renderScoreState(badge, 75, 100)
+    expect(badge.textContent).toBe("of 100.00")
+    renderScoreState(badge, "--", 100)
+    expect(badge.querySelectorAll(".score-state")).toHaveLength(1)
+    expect(badge.textContent).toBe("Unrated")
+  })
+})

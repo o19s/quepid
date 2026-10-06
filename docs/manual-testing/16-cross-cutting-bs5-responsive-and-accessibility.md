@@ -19,6 +19,7 @@ Every rating badge, and various icon buttons throughout the app, use BS5 popover
   4. Repeat for at least one tooltip (e.g., hover a sidebar icon, Part 15.1) and one other popover-driven control elsewhere in the app (e.g., a share modal's info icon, if any).
 - **Expected:** `display` is not `none`, `opacity` is `1` (or transitioning toward it, not stuck at `0`), no unexpected `transform: scale(0)`/`translate` pushing it off-screen, and `font-size` looks proportionate to surrounding text (not collapsed to a tiny fixed px value from a legacy `small { font-size: 11px }`-style leak).
 - **Edge cases:**
+  - [ ] Open a longer custom rating scale with labels at 1280×900 and 768×900. Confirm choices wrap within the popover and the final value and **RESET** remain visible and reachable.
   - [ ] Confirm the popover/tooltip is visible **on first click/hover**, not just after a second interaction (a common symptom of an early-layer CSS rule winning over the intended BS5 one).
   - [ ] Check this at both the default viewport and the narrow viewport (16.2) — some of these bugs only manifest once BS5's responsive font-size (RFS) scaling kicks in.
 
@@ -52,7 +53,7 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
   3. Separately, without any tooling: tab through the modal's controls using only the keyboard — confirm focus is trapped inside the modal (doesn't escape to background content), every interactive element is reachable, and pressing **Escape** closes the modal.
 - **Expected:** No critical/serious structural or ARIA violations reported (ignore pure color-contrast complaints against the current theme — that's a known, separate concern, not part of this check). Keyboard focus behaves correctly.
 - **Edge cases:**
-  - [ ] Repeat for at least one other frequently-used modal (Compare Snapshots, Import, Export, Judgements) since modal markup isn't perfectly uniform across the app.
+  - [ ] Repeat for Export, Compare Snapshots and Judgements: scan `select-name` and `heading-order` at every severity. Export's API picker is named **API snapshot**; each Compare picker is associated with its numbered Snapshot label, including added rows. Modal titles are level 2 and section headings level 3. Also sample Import when changing its markup.
 
 ### 16.5 General visual sanity sweep after any CSS/JS change
 

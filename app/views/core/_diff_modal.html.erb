@@ -2,7 +2,7 @@
   <div data-diff-core-target="alert" class="alert d-none"></div>
   <p>Select 1–<span data-diff-core-target="limit"></span> snapshots to compare against your current search results</p>
   <div class="snapshot-selection-container">
-    <h4>Select Snapshots:</h4>
+    <h3 class="h4">Select Snapshots:</h3>
     <div data-diff-core-target="selections"></div>
     <%= render "core/snapshot_selection_template" %>
     <button type="button" class="btn btn-sm btn-success" data-diff-core-target="addButton" data-action="diff-core#addSelection">
@@ -32,7 +32,7 @@
   </button>
 <% end %>
 
-<%= render "shared/modal_shell", id: "diffModal", title: "Compare Your Search Results",
+<%= render "shared/modal_shell", id: "diffModal", title: "Compare Your Search Results", title_tag: :h2, title_class: "h5",
                                  data: {
                                    controller: "diff-core",
                                    action: "show.bs.modal->diff-core#open",
