@@ -39,6 +39,16 @@ class Query < ApplicationRecord
   has_many :snapshot_queries,
            dependent: :destroy
 
+  # Ransack needs this so Rating's query_query_text_cont (RatingsController
+  # #index's search box) can reach this column through the association.
+  def self.ransackable_attributes _auth_object = nil
+    %w[query_text]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   # Concerns
 
   # Validations
