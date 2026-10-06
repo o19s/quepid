@@ -62,6 +62,16 @@ class Book < ApplicationRecord
   belongs_to :owner,
              class_name: 'User', optional: true
 
+  # Ransack (used by BooksController#index's search/filters and sortable
+  # column headers) - keep this to what's used today.
+  def self.ransackable_attributes _auth_object = nil
+    %w[id name archived created_at updated_at]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[teams]
+  end
+
   # belongs_to :ai_judge,
   #           class_name: 'User', optional: true
   #
@@ -73,8 +83,8 @@ class Book < ApplicationRecord
 
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
-  has_many   :judgements,
-             through: :query_doc_pairs
+  has_many :judgements,
+           through: :query_doc_pairs
 
   # Deduplicating by id rather than SELECT DISTINCT over every user column: a
   # judge appears once per judgement, but `users` carries a json options

@@ -20,33 +20,12 @@ class BooksController < ApplicationController
   # we use the scorer_id to pluck the scale etc for real use.
 
   def index
+    @q = current_user.books_involved_with.includes([ :teams ]).ransack(books_ransack_params)
+    @q.sorts = 'updated_at desc' if @q.sorts.empty?
+
     # with_counts adds a `book.query_doc_pairs_count` field, which avoids loading
     # all query_doc_pairs and makes bullet happy.
-    query = current_user.books_involved_with.includes([ :teams ]).with_counts
-
-    # Filter by archived status
-    archived = deserialize_bool_param(params[:archived])
-    query = if archived
-              query.archived
-            else
-              query.active
-            end
-
-    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
-
-    if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-
-      # `includes([:teams])` alone won't JOIN teams for a raw SQL condition (only a
-      # hash condition like `where(teams: {...})` makes Rails switch to eager_load),
-      # so match on ids first - same pattern as ForUserScope and CasesController#index.
-      matching_ids = Book.left_joins(:teams)
-        .where('LOWER(books.name) LIKE ? OR LOWER(teams.name) LIKE ?', q, q)
-        .reselect(:id).distinct
-      query = query.where(id: matching_ids)
-    end
-
-    @pagy, @books = pagy(query)
+    @pagy, @books = pagy(@q.result.with_counts)
   end
 
   def show
@@ -513,6 +492,18 @@ class BooksController < ApplicationController
   end
 
   private
+
+  # params[:q] carries both sort_link's q[s]=... and the free-text search
+  # (q[name_or_teams_name_cont] - an association search, a first-class
+  # Ransack feature needing no custom ransacker, unlike the old hand-written
+  # left_joins(:teams)/matching-ids dance). archived replaces the old
+  # archived/active scopes (both were already just where(archived: true/false)).
+  def books_ransack_params
+    ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+    ransack_params[:archived_eq] = deserialize_bool_param(params[:archived])
+    ransack_params[:teams_id_eq] = params[:team_id] if params[:team_id].present?
+    ransack_params
+  end
 
   # A judge that judged this book historically may since have been
   # unassigned, or belong to a teammate whose team doesn't share the judge
