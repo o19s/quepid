@@ -37,12 +37,14 @@ class Announcement < ApplicationRecord
     []
   end
 
-  # Plain text_cont would compare case-sensitively on SQLite/PostgreSQL (and
-  # isn't guaranteed case-insensitive on MySQL regardless of this column's
-  # own utf8mb4_unicode_ci collation - this app doesn't rely on adapter-
-  # specific collation behavior for case insensitivity, see User#by_email's
-  # comment). Wraps the column in LOWER() the same way the admin search used
-  # to by hand; the controller downcases the search value to match.
+  # Plain text_cont would compare case-sensitively on PostgreSQL (LIKE is
+  # case-sensitive there by default) and isn't guaranteed case-insensitive on
+  # MySQL regardless of this column's own utf8mb4_unicode_ci collation - this
+  # app doesn't rely on adapter-specific collation behavior for case
+  # insensitivity (see User#by_email's comment; SQLite's LIKE is actually
+  # already case-insensitive for ASCII, but that's moot once Postgres needs
+  # this anyway). Wraps the column in LOWER() the same way the admin search
+  # used to by hand; the controller downcases the search value to match.
   ransacker :text_downcase do
     Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:text] ])
   end

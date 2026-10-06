@@ -245,11 +245,14 @@ class User < ApplicationRecord
     []
   end
 
-  # Plain name_or_email_cont would compare case-sensitively on PostgreSQL/
-  # SQLite (and isn't guaranteed case-insensitive on MySQL either - see the
-  # by_email comment above). These wrap each column in LOWER() the same way
-  # the admin search used to by hand; the controller downcases the search
-  # value to match.
+  # Plain name_or_email_cont would compare case-sensitively on PostgreSQL
+  # (LIKE is case-sensitive there by default) and isn't guaranteed case-
+  # insensitive on MySQL either, since it depends on the column's collation
+  # rather than anything this app controls directly (see the by_email
+  # comment above - SQLite's LIKE is actually already case-insensitive for
+  # ASCII, unlike its `=`, but that's moot once Postgres needs this anyway).
+  # These wrap each column in LOWER() the same way the admin search used to
+  # by hand; the controller downcases the search value to match.
   ransacker :name_downcase do
     Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
   end

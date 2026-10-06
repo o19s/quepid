@@ -66,8 +66,12 @@ class SearchEndpoint < ApplicationRecord
   end
 
   # Plain name_cont/endpoint_url_cont would compare case-sensitively on
-  # SQLite/PostgreSQL. Wraps each column in LOWER() the same way the index
-  # search used to by hand; the controller downcases the search value to match.
+  # PostgreSQL (LIKE is case-sensitive there by default) and isn't guaranteed
+  # case-insensitive on MySQL either, since that depends on collation rather
+  # than anything this app controls (SQLite's LIKE is actually already case-
+  # insensitive for ASCII, but that's moot once Postgres needs this anyway).
+  # Wraps each column in LOWER() the same way the index search used to by
+  # hand; the controller downcases the search value to match.
   ransacker :name_downcase do
     Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
   end
