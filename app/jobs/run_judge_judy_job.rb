@@ -81,6 +81,7 @@ class RunJudgeJudyJob < ApplicationJob
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = LlmService.new judge.llm_key, judge.judge_options
+    scale = JudgeScale.for(book)
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
@@ -91,9 +92,9 @@ class RunJudgeJudyJob < ApplicationJob
 
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
-      llm_service.perform_safe_judgement(judgement, book: book)
+      llm_service.perform_safe_judgement(judgement, scale: scale)
 
-      mark_unrateable_if_invalid(judgement, book)
+      JudgementFinalizer.call(judgement, scale: scale)
 
       judgement.save!
       counter += 1
@@ -114,22 +115,6 @@ class RunJudgeJudyJob < ApplicationJob
   def cancellation_requested?
     arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)
     arguments.nil? || arguments['quepid_cancelled']
-  end
-
-  def mark_unrateable_if_invalid judgement, book
-    if judgement.rating.blank?
-      # if we don't have a rating, let's assume it's not rateable and mark it so.
-      judgement.mark_unrateable
-    elsif book.scale.present? && book.scale.map(&:to_f).exclude?(judgement.rating.to_f)
-      # the LLM returned a rating outside this book's configured scale -- a
-      # human judge could never produce this (the judging UI only offers
-      # buttons for the book's actual scale values), so don't trust it, but
-      # keep the raw value visible for review rather than silently dropping it.
-      # (A book with no scale configured at all is left alone here -- there's
-      # nothing to validate against, so its rating passes through as-is.)
-      judgement.explanation = "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, outside this book's scale #{book.scale.inspect}]".strip
-      judgement.mark_unrateable
-    end
   end
 
   def broadcast_judging_detail book, judge, counter, total_pairs, judgement

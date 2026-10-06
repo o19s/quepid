@@ -782,10 +782,10 @@ parts:
     scenarios:
       "12.1":
         title: "Create an owned or team-shared AI Judge"
-        last_run: 2026-10-06T16:22:42Z
+        last_run: 2026-10-06T18:01:58Z
         result: pass
-        notes: "Covered live: blank-name validation retained sharing, private keyless Ollama creation, sharing save/reload; inspected configure and save-error pairs. E2E covers active JSON configuration and 303/422. Deferred: full provider/custom-override matrix."
-        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb"]
+        notes: "Latest MCP sample: created private Jev judge, confidence configuration, provider switches and save/reload; registry/help/read-only controls inspected. Existing wizard E2E and ownership Rails regressions passed. Team/cross-account browser matrix deferred."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
         last_run: 2026-10-06T16:30:17Z
@@ -800,23 +800,23 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/models/ai_judge.rb", "app/models/book.rb", "app/models/concerns/for_user_scope.rb", "app/helpers/books_helper.rb", "app/views/books/_form.html.erb", "app/views/books/show.html.erb"]
       "12.4":
         title: "Test & Refine an AI Judge's prompt"
-        last_run: 2026-10-06T16:22:37Z
+        last_run: 2026-10-06T18:01:58Z
         result: pass
-        notes: "Covered live: wizard sample, malformed document JSON recovery, actual keyless Ollama prompt returned rating 3/explanation; tested draft values and explicit save/reload. Inspected JSON-error/live-response screenshots. E2E covers provider failure/retry, JSON config and unsaved prompt reload; Rails covers no persistence/private document access/empty books/scale. Deferred: account matrix and legacy prompt UI."
-        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb"]
+        notes: "Latest MCP sample: book-scoped Jev on [1,3,5], criteria/response, confidence rejection, 401 recovery, 429 then success (two provider requests); actual keyless Ollama returned zero. Jev used a local HTTP fixture through real Rails transport, not live TypeSafe. Inspected screenshots. Legacy routes covered by Rails; wider provider/account browser matrix deferred."
+        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
         last_run: 2026-10-06T17:36:08Z
         result: pass_with_fixes
         notes: "Latest approved MCP sample: bounded manual launch, automatic continuation for new pairs, all-pairs launch, cancellation with one pending response saving and stable count afterward; conflicting restart creates no overlap. Book Activity E2E covers failure/retry and linked-rating refresh. Broader providers and zero-work live variants deferred."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb", "app/controllers/books_controller.rb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judging_modal.html.erb", "app/views/books/_judging_activity_detail.html.erb", "app/views/books/_cancel_judging_button.html.erb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/selection_strategy.rb"]
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb", "app/controllers/books_controller.rb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judging_modal.html.erb", "app/views/books/_judging_activity_detail.html.erb", "app/views/books/_cancel_judging_button.html.erb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/selection_strategy.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
 
       "12.6":
         title: "AI Judge image options"
-        last_run: 2026-10-06T15:29:00Z
+        last_run: 2026-10-06T18:01:58Z
         result: pass
-        notes: "Covered live: default checked, off/on saved and reopened, Ollama disabled; inspected screenshots and deleted fixture judge. Not covered live: paid-provider image judgement; prompt payload and JSON-tab state covered by automated tests."
-        paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb", "app/models/ai_judge.rb"]
+        notes: "MCP: default on, text-only disabled/off notices, off/on choices saved and reloaded through Ollama/Jev then restored on OpenAI; inspected screenshots. JSON/image shared state and thumbnail precedence covered by automated tests. Paid-provider image judgements deferred."
+        paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb", "app/models/ai_judge.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
 
       "12.7":
         title: "Judge ownership and document access"
@@ -831,6 +831,13 @@ parts:
         result: pass_with_fixes
         notes: "Covered MCP sample with held local provider: bounded manual run plus two new pairs queued one automatic continuation; all five eligible pairs judged. Cancellation retained the lock, conflicting restart created no second run, current response saved once, count then stayed six and status became idle. Inspected screenshots. Book Activity E2E also passed rank-limited auto-run, provider failure/retry and linked-rating refresh. Deferred: broader providers, cross-account and unrelated book flows."
         paths: ["app/controllers/books_controller.rb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/jobs/update_case_ratings_job.rb", "app/jobs/judgement_from_rating_job.rb", "app/javascript/utils/book_sync.js", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judging_modal.html.erb", "db/migrate/20260914010000_add_rank_depth_to_books.rb", "db/migrate/20260914010100_add_auto_run_to_books_ai_judges.rb"]
+
+      "12.9":
+        title: "TypeSafe Jev and provider acceptance rules"
+        last_run: 2026-10-06T18:02:15Z
+        result: pass
+        notes: "Approved MCP sample: missing-scale gate; book-scoped [1,3,5] criteria/mapping, low confidence, API error and refused-request retry through local HTTP provider; saved confidence, image preferences and real Ollama regression. Screenshots inspected. Rails verifies Jev job persistence/missing answers, preview rejection, adapters/auth and timeout retry limits. Live TypeSafe, all-provider credentials and long-scale browser coverage deferred. Scratch rows/provider removed."
+        paths: ["app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb", "app/models/ai_judge.rb", "app/jobs/run_judge_judy_job.rb", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "config/initializers/customize_quepid.rb"]
 
   "13":
     file: 13-analytics.md

@@ -75,7 +75,6 @@ class AiJudge < User
   end
 
   def judge_options= value
-    self.options ||= {}
-    self.options = options.merge(judge_options: value)
+    self.options = (options || {}).merge('judge_options' => value.to_h.deep_stringify_keys)
   end
 end

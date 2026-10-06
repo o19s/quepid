@@ -1,6 +1,11 @@
+<% option_defaults = LlmService::DEFAULT_OPTIONS.merge(llm_provider: 'openai', llm_api_version: '') %>
 <div class="card" data-controller="ai-judge-form ai-judge-wizard"
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-form-presets-value="<%= LlmProvider.presets.to_json %>"
+     data-ai-judge-form-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>"
+     data-ai-judge-form-option-defaults-value="<%= option_defaults.to_json %>"
+     data-ai-judge-form-has-scale-value="<%= !JudgeScale.for(@book).empty? %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>" data-action="shown.bs.tab->ai-judge-form#syncTab">
   <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
@@ -18,6 +23,10 @@
       </div>
     <% end %>
     <div data-ai-judge-wizard-target="status" class="alert" style="display:none"></div>
+    <% provider = LlmProvider.find(ai_judge.judge_options[:llm_provider]) %>
+    <% scale = JudgeScale.for(@book) %>
+    <% images_supported = provider.nil? || provider.supports_images? %>
+    <% specs = LlmProvider.option_field_specs %>
     <h4><span class="badge bg-primary">1</span> Configure AI Judge</h4>
     <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With', selected_ids: params.dig(:user, :team_ids), help_text: "Leave unchecked to keep this judge private. Team members can use and edit shared judges." %>
     <%= hidden_field_tag :book_id, @book_id if @book_id %>
@@ -35,7 +44,7 @@
         <%= form.text_field :llm_key, class: "form-control" %>
         <div class="form-text">
           This is the key to access your LLM provider's API.
-          Leave blank for providers that do not require a key, such as local Ollama.
+          See the selected provider’s notes for its key requirements.
         </div>
       </div>
     </div>
@@ -51,26 +60,23 @@
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_timeout: 30, llm_api_version: '' }.merge(@ai_judge.judge_options).except(:llm_include_images).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options = option_defaults.merge(@ai_judge.judge_options).except(:llm_include_images).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
         <% sorted_judge_options.each do |key, value| %>
-          <div class="row mb-3">
-            <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
+          <% spec = specs[key.to_s] %>
+          <div class="row mb-3 <%= 'provider-option-field' if spec %>" data-provider="<%= spec&.dig(:provider) %>" <%= 'data-ai-judge-form-target=providerOptionField' if spec %>>
+            <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
               <% if key.to_s == 'llm_provider' %>
                 <%= select_tag "user[judge_options][llm_provider]",
-                      options_for_select([
-                        ['OpenAI',                          'openai'],
-                        ['Azure OpenAI',                    'azure_openai'],
-                        ['Azure AI Foundry',                'azure_ai_foundry'],
-                        ['Azure AI Foundry (Serverless)',    'azure_ai_foundry_serverless'],
-                        ['Azure AI Foundry (Anthropic)',     'azure_ai_foundry_anthropic'],
-                        ['Anthropic',                       'anthropic'],
-                        ['Google Gemini',                   'google_gemini'],
-                        ['Ollama',                          'ollama'],
-                      ], value.to_s),
+                      options_for_select(LlmProvider.select_options, value.to_s),
                       id: 'judge_options_llm_provider',
                       class: 'form-select form-select-sm structured-field', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" }
                 %>
+              <% elsif spec&.dig(:type) == :number %>
+                <%= number_field_tag "user[judge_options][#{key}]", value,
+                      id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
+                      min: spec[:min], max: spec[:max], step: spec[:step], data: { ai_judge_form_target: "structured" } %>
+                <div class="form-text"><%= spec[:hint] %></div>
               <% else %>
                 <%= text_field_tag "user[judge_options][#{key}]", value,
                   id: "judge_options_#{key}",
@@ -85,42 +91,24 @@
           <div class="col-sm-4">
             <% image_setting = @ai_judge.judge_options[:llm_include_images] %>
             <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
-            <%= hidden_field_tag 'user[judge_options][llm_include_images]', 'false', data: { ai_judge_form_target: 'structured' } %>
+            <%= hidden_field_tag 'user[judge_options][llm_include_images]', images_supported ? 'false' : include_images.to_s, data: { ai_judge_form_target: 'structured imagesHidden' } %>
             <div class="form-check">
-              <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images,
+              <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images && images_supported,
                     id: 'judge_options_llm_include_images', class: 'form-check-input',
-                    disabled: !LlmService.image_urls_supported?(@ai_judge.judge_options[:llm_provider]),
-                    data: { ai_judge_form_target: 'structured images' } %>
+                    disabled: !images_supported,
+                    data: { ai_judge_form_target: 'structured images', wanted: include_images.to_s, unsupported: (!images_supported).to_s } %>
               <%= label_tag 'judge_options_llm_include_images', 'Judge with images', class: 'form-check-label' %>
             </div>
-            <div class="form-text">Use the document image or thumbnail URL. Turn off for text-only models. Ollama does not accept image URLs.</div>
+            <div class="form-text">Use the document image or thumbnail URL. Turn off for text-only models.</div>
+            <div class="form-text text-warning-emphasis" data-ai-judge-form-target="imagesNotice" style="display:none">
+              <span data-ai-judge-form-target="imagesNoticeProvider"></span> doesn't support images, so none are sent.
+            </div>
           </div>
         </div>
-        <template data-ai-judge-form-target="preset" data-provider="openai" data-url="https://api.openai.com" data-version="" data-model="gpt-4o">
-      <strong>OpenAI</strong> &mdash; Direct API access.<br><b>URL:</b> <code>https://api.openai.com</code><br><b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br><b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br><b>API Version:</b> Leave blank
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="azure_openai" data-url="https://RESOURCE.openai.azure.com" data-version="" data-model="gpt-4.1">
-      <strong>Azure OpenAI</strong> &mdash; OpenAI models hosted on Azure.<br><b>URL:</b> <code>https://YOUR-RESOURCE.openai.azure.com</code><br><b>Model:</b> Your deployment name, e.g. <code>gpt-4.1</code>, <code>gpt-5.1</code><br><b>Key:</b> Azure resource API key<br><b>API Version:</b> Set to use deployment-based routing (e.g. <code>2024-12-01-preview</code>), or leave blank for <code>/openai/v1/</code> path
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="azure_ai_foundry" data-url="https://RESOURCE.services.ai.azure.com" data-version="2025-01-01-preview" data-model="gpt-4o">
-      <strong>Azure AI Foundry</strong> &mdash; Unified Azure AI endpoint.<br><b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com</code><br><b>Model:</b> Model name, e.g. <code>gpt-4o</code><br><b>Key:</b> Azure AI services key<br><b>API Version:</b> Defaults to <code>2025-01-01-preview</code>
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="azure_ai_foundry_serverless" data-url="https://MODEL-NAME.REGION.models.ai.azure.com" data-version="" data-model="">
-      <strong>Azure AI Foundry (Serverless)</strong> &mdash; Models-as-a-Service pay-per-token endpoint.<br><b>URL:</b> <code>https://MODEL-NAME.REGION.models.ai.azure.com</code><br><b>Model:</b> Model name from the deployment<br><b>Key:</b> Serverless endpoint key<br><b>API Version:</b> Leave blank
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="azure_ai_foundry_anthropic" data-url="https://RESOURCE.services.ai.azure.com/anthropic" data-version="" data-model="claude-3-5-haiku-20241022">
-      <strong>Azure AI Foundry (Anthropic)</strong> &mdash; Claude models via Azure using the native Anthropic Messages API.<br><b>URL:</b> <code>https://YOUR-RESOURCE.services.ai.azure.com/anthropic</code><br><b>Model:</b> e.g. <code>claude-3-5-haiku-20241022</code><br><b>Key:</b> Azure AI services key (sent as <code>x-api-key</code> header)<br><b>API Version:</b> Leave blank (the <code>anthropic-version</code> header is set automatically)
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="anthropic" data-url="https://api.anthropic.com" data-version="" data-model="claude-sonnet-4-5-20250514">
-      <strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br><b>URL:</b> <code>https://api.anthropic.com</code><br><b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br><b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br><b>API Version:</b> Leave blank
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="google_gemini" data-url="https://generativelanguage.googleapis.com/v1beta/openai" data-version="" data-model="gemini-2.0-flash">
-      <strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br><b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br><b>Model:</b> e.g. <code>gemini-2.0-flash</code><br><b>Key:</b> Your Google AI API key<br><b>API Version:</b> Leave blank
-    </template>
-    <template data-ai-judge-form-target="preset" data-provider="ollama" data-url="<%= Rails.configuration.ollama_service_url %>" data-version="" data-model="qwen3:0.6b">
-      <strong>Ollama</strong> &mdash; Local models via the Ollama container.<br><b>URL:</b> <code><%= Rails.configuration.ollama_service_url %></code><br><b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br><b>Key:</b> Leave blank<br><b>API Version:</b> Leave blank
-    </template>
-    <div id="provider-help" data-ai-judge-form-target="help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
+        <% LlmProvider.each do |entry| %>
+          <template data-ai-judge-form-target="preset" data-provider="<%= entry.key %>"><%= entry.help_html.html_safe %></template>
+        <% end %>
+        <div id="provider-help" data-ai-judge-form-target="help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
         </div>
       </div>
       <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
@@ -130,15 +118,22 @@
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
           <%= form.text_area :options, value: @submitted_options || format_json(@ai_judge.options),
-            class: 'form-control json-field', rows: 10, disabled: true, data: { ai_judge_form_target: "json" } %>
+            class: 'form-control json-field', rows: 10, disabled: true, data: { ai_judge_form_target: "json", action: "input->ai-judge-form#jsonChanged" } %>
         </div>
       </div>
     </div>
 
 
     <div class="row mb-3">
-      <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
-      <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>
+      <%= form.label :system_prompt, provider&.prompt_label || 'System prompt', class: 'col-sm-2 col-form-label', data: { ai_judge_form_target: 'systemPromptLabel' } %>
+      <%= form.textarea :system_prompt, class: "form-control", rows: 6, data: { ai_judge_form_target: "systemPrompt", action: "input->ai-judge-form#updateProviderPanels" } %>
+    </div>
+    <div class="form-text" data-ai-judge-form-target="systemPromptHint" style="display:none"></div>
+    <div class="alert alert-warning small" data-ai-judge-form-target="systemPromptWarning" style="display:none">
+      This text is another provider's default, written for a different kind of model.
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->ai-judge-form#useDefaultPrompt">
+        Use <span data-ai-judge-form-target="defaultPromptProvider"></span>'s default
+      </button>
     </div>
     <hr>
 
@@ -195,7 +190,26 @@
           </div>
           <div class="col-md-6">
             <h6>Rating Information</h6>
-            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+            <% unless scale.empty? %>
+              <div class="mb-3">
+                <div data-ai-judge-form-target="criteriaTable" style="display:<%= provider&.scale_as_criteria? ? 'block' : 'none' %>">
+                  <h6>Criteria sent with the question — from <%= link_to @book.name, book_path(@book) %>'s scale</h6>
+                  <table class="table table-sm table-borderless small w-auto"><tbody>
+                    <% scale.values.zip(scale.criteria).each_with_index do |(value, criterion), level| %>
+                      <tr><td>level <%= level %> → rating <strong><%= value %></strong></td><td><%= criterion %></td></tr>
+                    <% end %>
+                  </tbody></table>
+                </div>
+                <div data-ai-judge-form-target="criteriaProse" style="display:<%= provider&.scale_as_criteria? ? 'none' : 'block' %>">
+                  <h6>Rating scale added to the prompt — from <%= link_to @book.name, book_path(@book) %>'s scale</h6>
+                  <p class="small"><%= scale.describe %></p>
+                </div>
+              </div>
+            <% end %>
+            <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= provider&.needs_scale? && scale.empty? ? 'block' : 'none' %>">
+              This provider rates against a book's scale. Open this judge from a book with a scale on its Judgement Stats page (Refine Prompt).
+            </div>
+            <button type="button" class="btn btn-primary" <%= 'disabled' if provider&.needs_scale? && scale.empty? %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
               <div class="spinner-border text-primary" role="status">
@@ -205,6 +219,7 @@
             </div>
 
             <div data-ai-judge-wizard-target="ratingInfo" style="display: none;">
+              <span class="badge bg-warning text-dark" data-ai-judge-wizard-target="unrateable" style="display:none">Unrateable</span>
               <p>LLM Response: <span data-ai-judge-wizard-target="rating"></span></p>
               <p data-ai-judge-wizard-target="explanation"></p>
             </div>

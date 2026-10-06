@@ -11,9 +11,11 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - [ ] **Steps:**
   1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
   2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
-  3. Choose an LLM Provider. Confirm URL/model/API-version presets and provider help; check custom overrides when switching providers.
+  3. Choose an LLM Provider. Confirm registry presets and help, provider-specific options and read-only fields. Switching between chat models and Jev replaces untouched stock prompts while retaining custom instructions.
   4. Enter a key if the provider requires one. Local Ollama can save with a blank key.
   5. Switch between Structured Fields and JSON; confirm only the active representation submits.
+     Remove `jev_min_confidence` in JSON and switch tabs both ways; confirm the old floor is cleared.
+     Omit OpenAI's URL/model/timeout in JSON and repeat; confirm the effective defaults return instead of blank connection settings.
   6. Review the System Prompt, test it as described in 12.4, then Save.
   7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
 - **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
@@ -54,10 +56,11 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   5. Confirm the busy indicator followed by rating/explanation; a zero rating must display.
   6. Reload without Save: judge configuration must revert to the saved values. Run Prompt must not create judges, pairs or judgements.
   7. Save explicitly and reload to verify persistence.
-- **Expected:** Testing uses current form values and the selected book's rating scale. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
+- **Expected:** Testing uses current form values and the selected book's rating scale; missing or off-scale ratings appear as Unrateable, using the same acceptance rules as a judging run. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
 - **Edge cases:**
   - [ ] Malformed Document Fields, Options or provider JSON produces a recoverable error; correct it and retry.
   - [ ] A provider failure re-enables Run Prompt and retains input for retry.
+  - [ ] Without a book scale, change `llm_provider` directly in JSON between Jev and OpenAI; confirm Run Prompt is disabled only for Jev. Malformed JSON remains runnable to show its recoverable error.
   - [ ] An empty book uses a blank sample. Leaving the page during sampling must not update a disconnected form.
 
 ### 12.5 Trigger a judging run ("Judge Judy")
@@ -80,9 +83,9 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - [ ] **Steps:**
   1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
   2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
-  3. Select Ollama. Confirm the image checkbox is disabled. Switch back to OpenAI and confirm it is enabled.
+  3. Select Ollama or TypeSafe Jev. Confirm the image checkbox is disabled and off, with a provider notice. Switch back to OpenAI and confirm your previous choice returns; save/reload with a text-only provider and repeat.
   4. Switch to the JSON tab and confirm structured inputs are disabled. Set `llm_include_images` to false there, save and reopen.
-- **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama prompts omit image URLs regardless of the option. Text-only document fields remain available.
+- **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama and Jev omit image content regardless of the saved option. Text-only document fields remain available.
 - **Edge cases:**
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
   - [ ] With images disabled, confirm neither URL is sent as image content.
@@ -105,3 +108,14 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   5. Save a first human judgement from another tab. Confirm that human's row appears on the already-open Overview; delete their last judgement and confirm the row disappears. Repeat with a missed subscription to exercise polling recovery.
   6. While a bounded manual run is waiting for a provider response, add new eligible pairs with auto-run enabled. Confirm one automatic continuation waits, the manual run retains its requested limit, and the continuation judges the remaining pairs. During cancellation, a conflicting manual restart must not overlap the pending response.
 - **Expected:** Only one run per book/judge proceeds at a time; conflicting manual launches still discard. Cancellation prevents subsequent iterations and cancels queued continuations; one in-flight provider response may still save, with the lock held until the worker exits. Failed job rows do not leave activity permanently running. Per-cell updates preserve mounted sparklines. Polling recovers missed/removed rows, and synchronization retains the existing no-feedback-loop contract.
+
+### 12.9 TypeSafe Jev and provider acceptance rules
+
+- [ ] **Steps:**
+  1. Select TypeSafe Jev in Create/Edit AI Judge. Confirm Judging instructions, the Minimum confidence number field (0–1), fixed URL/model/version and disabled images.
+  2. Without a book scale, confirm Run Prompt is disabled with guidance to open Refine Prompt from a book. A direct preview request without an accessible scale returns 422 without contacting the provider.
+  3. Open Refine Prompt from a book with a nonstandard scale such as `[1, 3, 5]`. Confirm the displayed criteria and labels match the book. Run a judgement; confirm the fractional provider score maps to a scale value and the explanation records score, confidence and distribution.
+  4. Set a confidence floor above the provider's confidence. Confirm Unrateable with the numeric explanation retained. Save/reload and confirm the confidence setting persists.
+  5. Force a 401 or missing-answer response, then restore success and retry. Force a first 429/529 followed by success; confirm two requests and a usable result. Timeouts must not be retried.
+- **Expected:** Provider selection controls the request dialect. Chat providers keep their existing routing/authentication and image behavior. Jev takes structured text and book criteria; preview remains unsaved, while judging jobs persist accepted or Unrateable judgements.
+- **Coverage note:** Local fixture providers can verify the transport and failure matrix without external keys; distinguish this from a live TypeSafe service run.

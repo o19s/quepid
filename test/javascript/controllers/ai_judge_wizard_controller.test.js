@@ -76,3 +76,15 @@ it("aborts requests on Turbo disconnect and ignores a stale sample", async () =>
   expect(c.abortController.signal.aborted).toBe(true)
   expect(c.queryTextTarget.value).toBe("")
 })
+
+it("shows rejected ratings as Unrateable and clears that state on a successful retry", async () => {
+  const c = fixture()
+  postJson.mockResolvedValue({ rating: null, unrateable: true, explanation: "Low confidence" })
+  await c.runPrompt({ preventDefault() {} })
+  expect(c.unrateableTarget.style.display).toBe("")
+  expect(c.ratingTarget.textContent).toBe("")
+  postJson.mockResolvedValue({ rating: 0, unrateable: false, explanation: "Accepted zero" })
+  await c.runPrompt({ preventDefault() {} })
+  expect(c.unrateableTarget.style.display).toBe("none")
+  expect(c.ratingTarget.textContent).toBe("0")
+})

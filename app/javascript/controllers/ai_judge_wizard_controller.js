@@ -5,7 +5,7 @@ import { serverMessage } from "utils/error_message"
 
 // Testing uses the active form values; only the Rails Save submission persists.
 export default class extends Controller {
-  static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation"]
+  static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation", "unrateable"]
   static values = { sampleUrl: String, testUrl: String, existing: Boolean }
 
   connect() {
@@ -90,13 +90,15 @@ export default class extends Controller {
         }
       }, { signal: this.abortController.signal })
       this.ratingTarget.textContent = String(data.rating ?? "")
+      if (this.hasUnrateableTarget) this.unrateableTarget.style.display = data.unrateable ? "" : "none"
       this.explanationTarget.textContent = data.explanation || ""
       this.ratingInfoTarget.style.display = "block"
     } catch (error) {
       if (error.name !== "AbortError") this.showError(error)
     } finally {
       this.running = false
-      this.runPromptButtonTarget.disabled = false
+      const scaleNotice = this.element.querySelector("[data-ai-judge-form-target~=needsScaleNotice]")
+      this.runPromptButtonTarget.disabled = Boolean(scaleNotice && scaleNotice.style.display !== "none")
       this.loadingSpinnerTarget.style.display = "none"
     }
   }

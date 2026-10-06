@@ -34,6 +34,15 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
+      scale = JudgeScale.for(@book)
+      provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
+      if provider&.needs_scale? && scale.empty?
+        error = "#{provider.label} rates against a book's scale, so it can only be tested from a book that has one: " \
+                "open this judge from the book's Judgement Stats page (Refine Prompt)."
+        render json: { error: error }, status: :unprocessable_content
+        return
+      end
+
       query_doc_pair = QueryDocPair.new(query_doc_pair_params)
       # Form posts document_fields/options as JSON strings; .new doesn't run
       # validations, so the JsonFormatValidator hasn't parsed them into Hashes
@@ -52,9 +61,10 @@ module AiJudges
 
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
-      llm_service.perform_safe_judgement judgement, book: @book
+      llm_service.perform_safe_judgement judgement, scale: scale
+      JudgementFinalizer.call judgement, scale: scale
 
-      render json: { rating: judgement.rating, explanation: judgement.explanation }
+      render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }
     end
 
     private
@@ -70,7 +80,8 @@ module AiJudges
 
     def judge_options_params
       params.fetch(:judge_options, ActionController::Parameters.new)
-        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images)
+        .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images,
+                *LlmProvider.option_keys)
     end
   end
 end
