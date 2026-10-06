@@ -1,8 +1,19 @@
+import coreFlash from "utils/core_flash"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { hideBsModal } from "utils/bs_modal"
 import MoveQueryCoreController from "controllers/move_query_core_controller"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -61,12 +72,12 @@ describe("MoveQueryCoreController", () => {
         ]
       })
     })
-    window.quepidDom = { flash: { show: vi.fn() } }
+    Object.assign(coreFlash, { show: vi.fn() })
   })
 
   afterEach(() => {
-    delete window.quepidDom
-    delete window.quepidSearch
+
+    testCapabilities = undefined
     vi.restoreAllMocks()
   })
 
@@ -104,8 +115,8 @@ describe("MoveQueryCoreController", () => {
     const detail = { caseId: 4, queryId: 12, targetCaseId: 8 }
     expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith(detail)
     expect(controller.dispatch).toHaveBeenCalledWith("completed", { detail })
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Query moved successfully!")
-    expect(window.quepidDom.flash.show).not.toHaveBeenCalledWith("error", expect.anything())
+    expect(coreFlash.show).toHaveBeenCalledWith("success", "Query moved successfully!")
+    expect(coreFlash.show).not.toHaveBeenCalledWith("error", expect.anything())
     expect(hideBsModal).toHaveBeenCalledOnce()
   })
 
@@ -121,7 +132,7 @@ describe("MoveQueryCoreController", () => {
     expect(controller.submitButtonTarget.disabled).toBe(false)
     expect(controller.queryCommandBridgeOutlet.queryRemoved).not.toHaveBeenCalled()
     expect(controller.dispatch).not.toHaveBeenCalled()
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to move query.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to move query.")
   })
 
   it("reports missing query identity without submitting", async () => {
@@ -132,6 +143,6 @@ describe("MoveQueryCoreController", () => {
 
     await controller.submit({ preventDefault: vi.fn() })
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to move query.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to move query.")
   })
 })

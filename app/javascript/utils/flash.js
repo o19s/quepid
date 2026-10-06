@@ -1,7 +1,7 @@
 /**
  * Dispatches `document`-level flash events for the core case UI's Stimulus
  * `flash` controller (see `controllers/flash_controller.js`). Core controllers
- * import these helpers (or `utils/core_flash`) rather than reaching through `window`.
+ * use `coreFlash.show/hide` from `utils/core_flash`; this module owns event delivery.
  */
 
 /**

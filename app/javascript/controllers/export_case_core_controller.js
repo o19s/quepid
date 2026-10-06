@@ -2,7 +2,7 @@ import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { apiFetch } from "api/fetch"
 import { getJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { showFlash } from "utils/flash"
+import coreFlash from "utils/core_flash"
 import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDownloadFileName } from "utils/case_csv"
 import { formatShortDate } from "utils/date_format"
 import { downloadBlob } from "utils/download_file"
@@ -125,7 +125,7 @@ export default class extends CoreModalControllerBase {
       await this._performExport()
     } catch (error) {
       console.error("export-case-core: export failed", error)
-      showFlash("error", "Export failed. Please try again.")
+      coreFlash.show("error", "Export failed. Please try again.")
     }
   }
 

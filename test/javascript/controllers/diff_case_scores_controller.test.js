@@ -1,7 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
 import { QueryDocumentsStore } from "stores/query_documents_store"
-import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
+
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
 
 describe("DiffCaseScoresController", () => {
   let element
@@ -10,11 +13,11 @@ describe("DiffCaseScoresController", () => {
   beforeEach(() => {
     element = document.createElement("div")
     store = new QueryDocumentsStore()
-    setCoreStoresForTest({ documents: store })
+    testStores = { documents: store }
   })
 
   afterEach(() => {
-    resetCoreStoresForTest()
+    testStores = undefined
   })
 
   it("renders case-level snapshot scores from the document store", () => {

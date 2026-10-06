@@ -2,6 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import QgraphController from "controllers/qgraph_controller"
 
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 
 const scores = [
@@ -53,7 +57,7 @@ describe("QgraphController", () => {
     })
     scoringStore = new EventTarget()
     scoringStore.caseScore = { maxScore: 50 }
-    window.quepidStore = { scoring: scoringStore }
+    testStores = { scoring: scoringStore }
     apiFetch.mockImplementation(async url => {
       if (url.includes("scores")) return json({ scores })
       return json({ annotations: [{ message: "tuned", updated_at: "2026-01-02T00:00:00Z" }] })

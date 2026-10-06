@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import AddQueryController from "controllers/add_query_controller"
-import { resetCoreCapabilitiesForTest, setCoreCapabilitiesForTest } from "utils/core_test_overrides"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
 
 function controllerFor({ canAddQueriesValue = true, text = "" } = {}) {
   const element = document.createElement("form")
@@ -69,16 +72,16 @@ describe("add_query_controller", () => {
 
   it("refreshes capability state without clearing the typed query", () => {
     const { controller } = controllerFor({ text: "unfinished query" })
-    setCoreCapabilitiesForTest({ queryCapabilities: {
+    testCapabilities = { queryCapabilities: {
       getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
-    } })
+    } }
     try {
       controller.refreshQueryState()
       expect(controller.submitTarget.disabled).toBe(true)
       expect(controller.inputTarget.placeholder).toBe("Queries are unavailable")
       expect(controller.inputTarget.value).toBe("unfinished query")
     } finally {
-      resetCoreCapabilitiesForTest()
+      testCapabilities = undefined
     }
   })
 

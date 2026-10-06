@@ -1,5 +1,13 @@
 import { createNativeFramework } from "utils/core_workspace_runtime"
 import { afterEach, describe, expect, it, vi } from "vitest"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", async importOriginal => {
+  const original = await importOriginal()
+  return { getCoreCapabilities: () => testCapabilities || original.getCoreCapabilities() }
+})
+
 import {
   getBootstrapCapabilities,
   getSnapshotCapabilities,
@@ -9,7 +17,7 @@ import {
 
 describe("core runtime capabilities", () => {
   afterEach(() => {
-    delete window.quepidSearch
+    testCapabilities = undefined
     document.body.innerHTML = ""
     vi.restoreAllMocks()
   })
@@ -31,7 +39,7 @@ describe("core runtime capabilities", () => {
       fieldSpecSvc: {},
       normalDocsSvc: {}
     }
-    window.quepidSearch = { caseRuntime: { snapshots: services } }
+    testCapabilities = { caseRuntime: { snapshots: services } }
 
     await expect(getSnapshotCapabilities()).resolves.toBe(services)
   })
@@ -58,7 +66,7 @@ describe("core runtime capabilities", () => {
     ["wizard", getWizardCapabilities]
   ])("exposes the %s capability through the case runtime namespace", async (name, getter) => {
     const capability = { marker: name }
-    window.quepidSearch = { caseRuntime: { [name]: capability } }
+    testCapabilities = { caseRuntime: { [name]: capability } }
 
     await expect(getter()).resolves.toBe(capability)
   })

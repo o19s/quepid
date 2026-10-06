@@ -1,6 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryCommandBridgeController from "controllers/query_command_bridge_controller"
 
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
 function store() {
   return {
     addEventListener: vi.fn(),
@@ -19,8 +27,8 @@ describe("query_command_bridge_controller", () => {
     documentsStore = store()
     controller = new QueryCommandBridgeController()
     controller.element = document.createElement("body")
-    window.quepidStore = { queries: collectionStore, documents: documentsStore }
-    window.quepidSearch = {
+    testStores = { queries: collectionStore, documents: documentsStore }
+    testCapabilities = {
       queryCapabilities: {
         reconcileQueryRemoval: vi.fn(),
         getCaseNo: vi.fn(() => 7)
@@ -60,10 +68,10 @@ describe("query_command_bridge_controller", () => {
     controller.routeDocumentCommand({ command: "toggle-query", queryId: 4 })
     controller.routeDocumentCommand({ command: "paginate-query", queryId: 4, ratedOnly: true })
 
-    expect(window.quepidSearch.queryCommands.rateDocument).toHaveBeenCalledWith(4, "doc-1", 2)
-    expect(window.quepidSearch.queryCommands.rateAll).toHaveBeenCalledWith(4, 3)
-    expect(window.quepidSearch.queryCommands.toggleQuery).toHaveBeenCalledWith(4)
-    expect(window.quepidSearch.queryCommands.paginateQuery).toHaveBeenCalledWith(4, true)
+    expect(testCapabilities.queryCommands.rateDocument).toHaveBeenCalledWith(4, "doc-1", 2)
+    expect(testCapabilities.queryCommands.rateAll).toHaveBeenCalledWith(4, 3)
+    expect(testCapabilities.queryCommands.toggleQuery).toHaveBeenCalledWith(4)
+    expect(testCapabilities.queryCommands.paginateQuery).toHaveBeenCalledWith(4, true)
   })
 
   it("routes collapse once through the query owner", () => {
@@ -72,8 +80,8 @@ describe("query_command_bridge_controller", () => {
     controller.routeCollectionCommand({ command: "toggle-show-only-rated" })
     controller.routeCollectionCommand({ command: "collapse-all" })
 
-    expect(window.quepidSearch.queryCommands.toggleShowOnlyRated).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.queryCommands.collapseAll).toHaveBeenCalledOnce()
+    expect(testCapabilities.queryCommands.toggleShowOnlyRated).toHaveBeenCalledOnce()
+    expect(testCapabilities.queryCommands.collapseAll).toHaveBeenCalledOnce()
     expect(collectionStore.collapseAll).not.toHaveBeenCalled()
     expect(documentsStore.collapseAll).not.toHaveBeenCalled()
   })
@@ -86,8 +94,8 @@ describe("query_command_bridge_controller", () => {
     controller.queryRemoved({ caseId: 8, queryId: 6 })
     controller.queryRemoved({ caseId: 7 })
 
-    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, true)
-    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
-    expect(window.quepidSearch.queryCapabilities.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
+    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(1, 4, true)
+    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenNthCalledWith(2, 5, true)
+    expect(testCapabilities.queryCapabilities.reconcileQueryRemoval).toHaveBeenCalledTimes(2)
   })
 })

@@ -125,6 +125,10 @@ resolve ERB targets, or wire actions. Call lifecycle methods explicitly when
 needed; browser tests cover the markup wiring. Leave small fixtures alone when
 using the builder would add more ceremony than it removes.
 
+Controller specs mock `utils/core_store_access`, `utils/core_capability_access`,
+and `utils/core_flash` with `vi.mock` when substituting workspace dependencies.
+Keep fakes local to the spec; production modules have no test injection hooks.
+
 ### PR policy
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.

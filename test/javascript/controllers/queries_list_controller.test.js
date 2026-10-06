@@ -1,15 +1,25 @@
-import { describe, expect, it, vi } from "vitest"
+import coreFlash from "utils/core_flash"
+import { describe, expect, it, vi, beforeEach } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 import { QueryCollectionStore } from "stores/query_collection_store"
 import { QueryDocumentsStore } from "stores/query_documents_store"
 import { SearchError } from "utils/search_error"
 import { loadViewTemplate } from "../support/view_template"
+import { apiFetch } from "api/fetch"
+
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
 }))
-
-import { apiFetch } from "api/fetch"
 
 // A new row as renderQueryCollection builds it: the shell, then its values.
 function renderRow(controller, row, query, rank, expanded = controller.queryExpanded(query)) {
@@ -139,7 +149,6 @@ describe("queries_list_controller", () => {
 
     expect(controller.orderedLiveQueries().map(query => query.queryId)).toEqual([1])
   })
-
 
   it("preserves manual order and renders pagination controls", () => {
     const { controller } = controllerFor()
@@ -373,7 +382,7 @@ describe("queries_list_controller", () => {
     const remove = vi.spyOn(store, "remove")
     const documentStore = new QueryDocumentsStore()
     const removeQuery = vi.spyOn(documentStore, "removeQuery")
-    window.quepidStore = { queries: store, documents: documentStore }
+    testStores = { queries: store, documents: documentStore }
     controller.scheduleRender = vi.fn()
     controller.connect()
 
@@ -384,7 +393,7 @@ describe("queries_list_controller", () => {
     expect(remove).toHaveBeenCalledWith(7)
     expect(removeQuery).toHaveBeenCalledWith(7)
     controller.disconnect()
-    delete window.quepidStore
+    testStores = undefined
   })
 
   it("serves query-explain the store's latest explain data", () => {
@@ -438,76 +447,76 @@ describe("queries_list_controller", () => {
   it("subscribes to the live collection store and flashes a sticky search-error on search-failed", () => {
     const { controller } = controllerFor()
     const store = new QueryCollectionStore()
-    window.quepidStore = { queries: store }
-    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    testStores = { queries: store }
+    Object.assign(coreFlash, { show: vi.fn(), hide: vi.fn() })
 
     controller.connect()
     const generation = store.beginSearch()
     store.failSearch(new Error("Solr is unreachable"), generation)
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Solr is unreachable", "search-error")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Solr is unreachable", "search-error")
 
     controller.disconnect()
-    delete window.quepidStore
-    delete window.quepidDom
+    testStores = undefined
+
   })
 
   it("clears the sticky search-error flash once the store reports a new search starting", () => {
     const { controller } = controllerFor()
     const store = new QueryCollectionStore()
-    window.quepidStore = { queries: store }
-    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    testStores = { queries: store }
+    Object.assign(coreFlash, { show: vi.fn(), hide: vi.fn() })
 
     controller.connect()
     store.beginSearch()
 
-    expect(window.quepidDom.flash.hide).toHaveBeenCalledWith("search-error")
+    expect(coreFlash.hide).toHaveBeenCalledWith("search-error")
 
     controller.disconnect()
-    delete window.quepidStore
-    delete window.quepidDom
+    testStores = undefined
+
   })
 
   it("stops reacting to the collection store's search events after disconnect", () => {
     const { controller } = controllerFor()
     const store = new QueryCollectionStore()
-    window.quepidStore = { queries: store }
-    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    testStores = { queries: store }
+    Object.assign(coreFlash, { show: vi.fn(), hide: vi.fn() })
 
     controller.connect()
     controller.disconnect()
     const generation = store.beginSearch()
     store.failSearch(new Error("too late"), generation)
 
-    expect(window.quepidDom.flash.show).not.toHaveBeenCalled()
+    expect(coreFlash.show).not.toHaveBeenCalled()
 
-    delete window.quepidStore
-    delete window.quepidDom
+    testStores = undefined
+
   })
 
   it("passes a translated search error through intact so the flash can render its links", () => {
     const { controller } = controllerFor()
-    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    Object.assign(coreFlash, { show: vi.fn(), hide: vi.fn() })
     const error = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
 
     controller.handleSearchFailed({ detail: { error } })
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", error, "search-error")
-    delete window.quepidDom
+    expect(coreFlash.show).toHaveBeenCalledWith("error", error, "search-error")
+
   })
 
   it("falls back to a generic message when the search error has no message", () => {
     const { controller } = controllerFor()
-    window.quepidDom = { flash: { show: vi.fn(), hide: vi.fn() } }
+    Object.assign(coreFlash, { show: vi.fn(), hide: vi.fn() })
 
     controller.handleSearchFailed({ detail: { error: {} } })
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith(
+    expect(coreFlash.show).toHaveBeenCalledWith(
       "error",
       "Search failed. Some queries may not have updated.",
       "search-error"
     )
-    delete window.quepidDom
+
   })
 
   it("bridges drag start while reorder persistence owns drag end", () => {
@@ -584,15 +593,15 @@ describe("queries_list_controller", () => {
       <li data-query-id="12"></li>
     `
     apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
-    window.quepidDom = { flash: { show: vi.fn() } }
+    Object.assign(coreFlash, { show: vi.fn() })
 
     controller.dragStart()
     controller.listTarget.append(controller.listTarget.firstElementChild)
     await controller.dragEnd({ oldIndex: 0, newIndex: 1 })
 
     expect([...controller.listTarget.children].map(item => item.dataset.queryId)).toEqual(["11", "12"])
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to reorder queries.")
-    delete window.quepidDom
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to reorder queries.")
+
   })
 
   it("renders hostile query text, info need, and state as inert data attributes", () => {
@@ -609,4 +618,3 @@ describe("queries_list_controller", () => {
     expect(row.querySelector('[data-query-row-target="query"]').dataset.bsTooltipTitleValue).toBe(`Info Need: ${evil}`)
   })
 })
-

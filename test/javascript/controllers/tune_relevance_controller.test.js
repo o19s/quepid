@@ -1,6 +1,13 @@
+import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 vi.mock("utils/core_capabilities_runtime", () => ({
   getTuneRelevanceCapabilities: vi.fn()
@@ -153,7 +160,7 @@ const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 describe("TuneRelevanceController", () => {
   beforeEach(() => {
     flash = { show: vi.fn(), hide: vi.fn() }
-    window.quepidDom = { flash }
+    Object.assign(coreFlash, flash)
     // happy-dom does not implement the Option constructor
     vi.stubGlobal("Option", function Option(text, value) {
       return Object.assign(document.createElement("option"), { textContent: text, value })

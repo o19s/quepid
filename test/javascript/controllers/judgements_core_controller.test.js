@@ -3,7 +3,7 @@ import { viewTemplateTargets } from "../support/view_template"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import JudgementsCoreController from "controllers/judgements_core_controller"
-import { showFlash } from "utils/flash"
+import coreFlash from "utils/core_flash"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
@@ -14,8 +14,8 @@ vi.mock("utils/bs_modal", () => ({
   hideBsModal: vi.fn()
 }))
 
-vi.mock("utils/flash", () => ({
-  showFlash: vi.fn()
+vi.mock("utils/core_flash", () => ({
+  default: { show: vi.fn(), hide: vi.fn() }
 }))
 
 function buildModalController(overrides = {}) {
@@ -269,8 +269,7 @@ describe("JudgementsCoreController", () => {
     trigger.dataset.judgementsCoreBookIdValue = "2"
     await controller.openFor(trigger)
 
-    const documentsStore = window.quepidStore?.documents
-      || (await import("stores/query_documents_store")).queryDocumentsStore
+    const documentsStore = (await import("stores/query_documents_store")).queryDocumentsStore
     documentsStore.replaceQuery(1, {
       queryText: "search",
       docs: [{ id: "doc-1", title: "Document" }]
@@ -365,7 +364,7 @@ describe("JudgementsCoreController", () => {
         caseId: 42, bookId: 2, bookName: "Catalog", autoPopulateBookPairs: true, autoPopulateCaseJudgements: true
       })
       expect(controller.hasUnsavedChanges()).toBe(false)
-      expect(showFlash).toHaveBeenCalledWith("success", "Settings saved.")
+      expect(coreFlash.show).toHaveBeenCalledWith("success", "Settings saved.")
       document.removeEventListener("quepid:case-book-updated", saved)
     })
 
@@ -389,7 +388,7 @@ describe("JudgementsCoreController", () => {
       await controller.save({ preventDefault() {} })
 
       expect(apiFetch.mock.calls[1][0]).toBe("/api/books/5/cases/42/refresh?create_missing_queries=false&process_in_background=false")
-      expect(showFlash).toHaveBeenCalledWith("success", "Settings saved. Ratings have been refreshed.")
+      expect(coreFlash.show).toHaveBeenCalledWith("success", "Settings saved. Ratings have been refreshed.")
       expect(reload).toHaveBeenCalledOnce()
       document.removeEventListener("judgements:queries-need-reload", reload)
     })
@@ -417,7 +416,7 @@ describe("JudgementsCoreController", () => {
       await linkedController()[action]({ preventDefault() {} })
 
       expect(apiFetch.mock.calls[0][0]).toBe(`/api/books/2/cases/42/refresh?create_missing_queries=${createMissing}&process_in_background=false`)
-      expect(showFlash).toHaveBeenCalledWith("success", message)
+      expect(coreFlash.show).toHaveBeenCalledWith("success", message)
       expect(reload.mock.calls[0][0].detail).toEqual({ caseId: 42 })
       document.removeEventListener("judgements:queries-need-reload", reload)
     })
@@ -436,7 +435,7 @@ describe("JudgementsCoreController", () => {
 
         const background = "Missing queries are being synced from book in the background."
         expect(apiFetch.mock.calls[0][0]).toContain("process_in_background=true")
-        expect(showFlash).toHaveBeenCalledWith("success", background)
+        expect(coreFlash.show).toHaveBeenCalledWith("success", background)
         expect(reload).not.toHaveBeenCalled()
         vi.advanceTimersByTime(500)
         expect(window.location.href).toBe(`https://quepid.test/?notice=${encodeURIComponent(background)}`)
@@ -458,7 +457,7 @@ describe("JudgementsCoreController", () => {
       resolveRefresh({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
       await pending
 
-      expect(showFlash).not.toHaveBeenCalled()
+      expect(coreFlash.show).not.toHaveBeenCalled()
       expect(controller.errorTarget.textContent).not.toContain("stale")
     })
 

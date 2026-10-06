@@ -2,6 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import { createSnapshotModel } from "utils/snapshot_model"
 
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
 const api = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
 vi.mock("api/fetch", () => api)
@@ -47,7 +55,7 @@ describe("SnapshotBridgeController", () => {
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
       }
     }
-    window.quepidSearch = {
+    testCapabilities = {
       caseRuntime: {
         snapshots: {
           capability: {
@@ -66,7 +74,7 @@ describe("SnapshotBridgeController", () => {
         getQueryArray: services.queries.queryArray
       }
     }
-    window.quepidStore = {
+    testStores = {
       diff: {
         selections: vi.fn().mockReturnValue(["7"]),
         enable: vi.fn(),
@@ -77,15 +85,15 @@ describe("SnapshotBridgeController", () => {
   })
 
   afterEach(() => {
-    delete window.quepidStore
-    delete window.quepidSearch
+    testStores = undefined
+    testCapabilities = undefined
     vi.restoreAllMocks()
   })
 
   it("clears comparisons and resolves once diffs refresh", async () => {
     await controller.clear()
 
-    expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
+    expect(testStores.diff.disable).toHaveBeenCalledOnce()
     expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
@@ -95,9 +103,9 @@ describe("SnapshotBridgeController", () => {
     expect(snapshotApi.fetchSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots/7")
     expect(snapshotHydration.registerAndHydrateSnapshots).toHaveBeenCalledWith(expect.objectContaining({
       snapshots: [{ id: 7 }],
-      registry: window.quepidSearch?.snapshotRegistry
+      registry: testCapabilities?.snapshotRegistry
     }))
-    expect(window.quepidStore.diff.enable).toHaveBeenCalledWith(["7"])
+    expect(testStores.diff.enable).toHaveBeenCalledWith(["7"])
     expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
@@ -105,8 +113,8 @@ describe("SnapshotBridgeController", () => {
     await controller.delete({ snapshotId: "7", snapshotsUrl: "api/cases/1/snapshots" })
 
     expect(snapshotApi.deleteSnapshot).toHaveBeenCalledWith("api/cases/1/snapshots", "7")
-    expect(window.quepidSearch.snapshotRegistry["7"]).toBeUndefined()
-    expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
+    expect(testCapabilities.snapshotRegistry["7"]).toBeUndefined()
+    expect(testStores.diff.disable).toHaveBeenCalledOnce()
     expect(services.queries.refreshAllDiffs).toHaveBeenCalledOnce()
   })
 
@@ -126,7 +134,7 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("uses the snapshot-scoped cache for static engines", async () => {
-    window.quepidSearch.caseRuntime = {
+    testCapabilities.caseRuntime = {
       snapshots: {
         capability: {
           settings: {
@@ -187,7 +195,7 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("creates a snapshot from the live query collection", async () => {
-    window.quepidSearch.caseRuntime = {
+    testCapabilities.caseRuntime = {
       snapshots: {
         capability: {
           settings: {
@@ -224,7 +232,7 @@ describe("SnapshotBridgeController", () => {
   })
 
   it("refuses to snapshot a different case", async () => {
-    window.quepidSearch.caseRuntime = {
+    testCapabilities.caseRuntime = {
       snapshots: {
         capability: { navigation: { caseNo: () => 1 } },
         docCache: services.docCache

@@ -1,17 +1,31 @@
+import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
-import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
 import { SearchError } from "utils/search_error"
+
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 describe("CoreBootstrapController", () => {
   beforeEach(() => {
-    window.quepidStore = {
+    testStores = {
       diff: {
         reset: vi.fn(),
         disable: vi.fn()
       }
     }
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         resetQueryState: vi.fn(),
         resetQuery: vi.fn(),
@@ -50,17 +64,17 @@ describe("CoreBootstrapController", () => {
   })
 
   afterEach(() => {
-    delete window.quepidStore
-    delete window.quepidSearch
+    testStores = undefined
+    testCapabilities = undefined
     delete window.quepidCoreBootstrap
-    resetCoreFlashForTest()
+
   })
 
-  const core = () => window.quepidSearch.caseRuntime.bootstrap.core
+  const core = () => testCapabilities.caseRuntime.bootstrap.core
 
   async function bootstrapCase(caseNo = 2, initialCaseNo = caseNo) {
     const flash = { show: vi.fn(), hide: vi.fn() }
-    setCoreFlashForTest(flash)
+    Object.assign(coreFlash, flash)
     const failed = vi.fn()
     const ready = vi.fn()
     document.addEventListener("core-bootstrap:failed", failed)
@@ -75,7 +89,7 @@ describe("CoreBootstrapController", () => {
     return { flash, failed, ready }
   }
 
-  it("resets the shared window diff store, not the imported fallback singleton", async () => {
+  it("resets the shared diff store through the store accessor", async () => {
     const controller = Object.create(CoreBootstrapController.prototype)
     controller.caseNoValue = 2
     controller.initialValue = { user: { id: 7 }, case: { case_id: 2, tries: [], last_try_number: 1 } }
@@ -83,10 +97,10 @@ describe("CoreBootstrapController", () => {
 
     await controller.bootstrap()
 
-    expect(window.quepidStore.diff.reset).toHaveBeenCalledOnce()
-    expect(window.quepidStore.diff.disable).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
-    expect(window.quepidSearch.caseRuntime.bootstrap.core.user.initialize).toHaveBeenCalledWith({ id: 7 })
+    expect(testStores.diff.reset).toHaveBeenCalledOnce()
+    expect(testStores.diff.disable).toHaveBeenCalledOnce()
+    expect(testCapabilities.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
+    expect(testCapabilities.caseRuntime.bootstrap.core.user.initialize).toHaveBeenCalledWith({ id: 7 })
   })
 
   it("marks the workspace ready, clears old errors, and reports a successful search", async () => {
@@ -105,14 +119,14 @@ describe("CoreBootstrapController", () => {
     const { flash, failed, ready } = await bootstrapCase(2, 3)
 
     expect(core().case.initialize).not.toHaveBeenCalled()
-    expect(window.quepidSearch.queryCommands.searchAll).not.toHaveBeenCalled()
+    expect(testCapabilities.queryCommands.searchAll).not.toHaveBeenCalled()
     expect(failed).toHaveBeenCalledOnce()
     expect(ready).not.toHaveBeenCalled()
     expect(flash.show).toHaveBeenCalledWith("error", "Could not load the case 2 due to: Initial workspace data does not match the selected case", "search-error")
   })
 
   it("flashes the search error when some queries fail after loading", async () => {
-    window.quepidSearch.queryCommands.searchAll.mockRejectedValue("engine down")
+    testCapabilities.queryCommands.searchAll.mockRejectedValue("engine down")
 
     const { flash } = await bootstrapCase()
     await new Promise((resolve) => setTimeout(resolve))
@@ -123,7 +137,7 @@ describe("CoreBootstrapController", () => {
 
   it("passes a translated search error through intact so the flash can render its links", async () => {
     const error = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
-    window.quepidSearch.queryCommands.searchAll.mockRejectedValue(error)
+    testCapabilities.queryCommands.searchAll.mockRejectedValue(error)
 
     const { flash } = await bootstrapCase()
     await new Promise((resolve) => setTimeout(resolve))

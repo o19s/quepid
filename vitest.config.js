@@ -17,7 +17,6 @@ export default defineConfig({
     environment: "happy-dom",
     include: ["test/javascript/**/*.test.js"],
     globals: false,
-    setupFiles: ["test/javascript/setup.js"],
   },
   resolve: {
     alias: [
@@ -77,7 +76,6 @@ export default defineConfig({
       { find: "utils/core_store_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_store_access.js") },
       { find: "utils/core_capability_access", replacement: path.resolve(repoRoot, "app/javascript/utils/core_capability_access.js") },
       { find: "utils/core_flash", replacement: path.resolve(repoRoot, "app/javascript/utils/core_flash.js") },
-      { find: "utils/core_test_overrides", replacement: path.resolve(repoRoot, "app/javascript/utils/core_test_overrides.js") },
       { find: "core_runtime", replacement: path.resolve(repoRoot, "app/javascript/core_runtime.js") },
       { find: "quepid_store", replacement: path.resolve(repoRoot, "app/javascript/quepid_store.js") },
       { find: "utils/editor_mode", replacement: path.resolve(repoRoot, "app/javascript/utils/editor_mode.js") },

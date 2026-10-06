@@ -3,7 +3,7 @@ import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { getJson, putJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
-import { showFlash } from "utils/flash"
+import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
 import { populateBook } from "utils/book_sync"
 import { caseRuntime } from "utils/case_runtime"
@@ -159,7 +159,7 @@ export default class extends CoreModalControllerBase {
         return
       }
 
-      showFlash("success", "Settings saved.")
+      coreFlash.show("success", "Settings saved.")
       this.hide()
       this.setBusy(false)
     } catch (error) {
@@ -183,7 +183,7 @@ export default class extends CoreModalControllerBase {
       await populateBook({ bookId, caseId: Number(caseId), queries })
       if (!isSameId(this.currentCaseId, caseId)) return
       this.setProgress(false)
-      showFlash("success", "Updating Book with Query Doc Pairs.")
+      coreFlash.show("success", "Updating Book with Query Doc Pairs.")
       this.hide()
       this.setBusy(false)
     } catch (error) {
@@ -445,7 +445,7 @@ export default class extends CoreModalControllerBase {
     this.setProgress(false)
 
     const message = processInBackground ? backgroundMessage : successMessage
-    if (message) showFlash("success", message)
+    if (message) coreFlash.show("success", message)
 
     if (closeWithReload && !processInBackground) {
       document.dispatchEvent(

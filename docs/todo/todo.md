@@ -124,24 +124,6 @@ lift that constraint; case Frames/Streams already work with Drive disabled. If
 that changes, pilot `pick_scorer_core` or annotations and prove selection and the
 edit modal work inside a lazy frame first.
 
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace test-override shims with `vi.mock`
-
-`core_test_overrides.js` and the test-override branches in
-`core_store_access.js`, `core_capability_access.js` and `core_flash.js` let specs
-inject fakes into production modules. Replace those injection seams with
-`vi.mock` when touching the specs; many specs already use it. Keep the named
-store/capability accessors as production boundaries unless their consumers are
-also deliberately redesigned. The flash `Proxy` exists solely for overrides
-and can become a plain object once its specs mock the module.
-
-Settle the controller-facing flash API in this same scope (former JS DRY J14).
-Some controllers use `coreFlash.show`; Annotations, Judgements and Export
-import `showFlash` directly, bypassing the override-aware Proxy. Choose one
-public convention after migrating the relevant test injection seams.
-Keep `utils/flash.js` as the event implementation and preserve target selection,
-structured search-error parts and the explicit HTML option. Inline status
-messages remain a distinct UI contract.
-
 ---
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs

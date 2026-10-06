@@ -1,7 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryUnratedBadgeController from "controllers/query_unrated_badge_controller"
 import { CaseScoreStore } from "stores/case_score_store"
-import { resetCoreStoresForTest, setCoreStoresForTest } from "utils/core_test_overrides"
+
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
 
 /**
  * Per-query "unrated results" frog badge, driven by the score store. Follows the
@@ -29,12 +32,12 @@ describe("QueryUnratedBadgeController", () => {
     document.body.appendChild(element)
 
     store = new CaseScoreStore()
-    setCoreStoresForTest({ scoring: store })
+    testStores = { scoring: store }
   })
 
   afterEach(() => {
     element.remove()
-    resetCoreStoresForTest()
+    testStores = undefined
   })
 
   it("stays hidden before the store has any data", () => {

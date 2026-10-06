@@ -6,7 +6,7 @@ import { viewTemplateTargets } from "../support/view_template"
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => ({ show: vi.fn(), hide: vi.fn() })) }))
-vi.mock("utils/flash", () => ({ showFlash: vi.fn() }))
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 
 function buildController() {
   const element = document.createElement("div")

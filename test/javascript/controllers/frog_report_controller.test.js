@@ -1,14 +1,21 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import coreFlash from "utils/core_flash"
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest"
 import FrogReportController, { buildFrogReportStats } from "controllers/frog_report_controller"
 import { QueryDocumentsStore } from "stores/query_documents_store"
-import {
-  resetCoreCapabilitiesForTest,
-  resetCoreFlashForTest,
-  resetCoreStoresForTest,
-  setCoreCapabilitiesForTest,
-  setCoreFlashForTest,
-  setCoreStoresForTest
-} from "utils/core_test_overrides"
+
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 describe("buildFrogReportStats", () => {
   it("counts results, ratings, and missing ratings from document snapshots", () => {
@@ -60,8 +67,8 @@ function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) 
     })
     store.replaceQuery(id, state)
   })
-  setCoreStoresForTest({ documents: store })
-  setCoreCapabilitiesForTest({ caseState, queryLifecycle })
+  testStores = { documents: store }
+  testCapabilities = { caseState, queryLifecycle }
   const controller = Object.create(FrogReportController.prototype)
   controller.element = document.createElement("div")
   TARGETS.forEach((name) => {
@@ -76,9 +83,9 @@ function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) 
 
 describe("FrogReportController", () => {
   afterEach(() => {
-    resetCoreCapabilitiesForTest()
-    resetCoreStoresForTest()
-    resetCoreFlashForTest()
+    testCapabilities = undefined
+    testStores = undefined
+
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     delete window.vegaEmbed
@@ -139,7 +146,7 @@ describe("FrogReportController", () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
     const refreshQueries = vi.fn(() => Promise.resolve())
     const flash = { show: vi.fn() }
-    setCoreFlashForTest(flash)
+    Object.assign(coreFlash, flash)
     const controller = buildController({ queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
     controller.refreshUrlTemplateValue = "books/__BOOK_ID__/cases/9/refresh?background=__BACKGROUND__"
 
@@ -156,7 +163,7 @@ describe("FrogReportController", () => {
     vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
     const assign = vi.spyOn(window.location, "assign").mockImplementation(() => {})
     const refreshQueries = vi.fn()
-    setCoreFlashForTest({ show: vi.fn() })
+    Object.assign(coreFlash, { show: vi.fn() })
     const queries = Object.fromEntries(Array.from({ length: 50 }, (_, i) => [i + 1, {}]))
     const controller = buildController({ queries, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries } })
     controller.refreshUrlTemplateValue = "refresh?background=__BACKGROUND__"
@@ -218,7 +225,7 @@ describe("FrogReportController", () => {
     vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { complete = resolve })))
     const refreshQueries = vi.fn().mockResolvedValue()
     const flash = { show: vi.fn() }
-    setCoreFlashForTest(flash)
+    Object.assign(coreFlash, flash)
     const controller = buildController({
       queries: { 1: {} }, caseState: { bookId: 3, caseNo: 9 }, queryLifecycle: { refreshQueries }
     })

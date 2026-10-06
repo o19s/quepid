@@ -1,6 +1,12 @@
+import coreFlash from "utils/core_flash"
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
 import QueryDeleteController from "controllers/query_delete_controller"
-import { resetCoreFlashForTest, setCoreFlashForTest } from "utils/core_test_overrides"
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 describe("query-delete controller", () => {
   let controller
@@ -44,14 +50,14 @@ describe("query-delete controller", () => {
     controller.element = document.createElement("button")
     controller.element.disabled = false
     const flash = { show: vi.fn() }
-    setCoreFlashForTest(flash)
+    Object.assign(coreFlash, flash)
 
     await controller.remove({ preventDefault: vi.fn() })
 
     expect(controller.dispatch).not.toHaveBeenCalled()
     expect(controller.queryCommandBridgeOutlet.queryRemoved).not.toHaveBeenCalled()
     expect(flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
-    resetCoreFlashForTest()
+
   })
 
   it("deletes with DELETE, disables the button while pending, and tells the live list", async () => {
@@ -87,13 +93,12 @@ describe("query-delete controller", () => {
     expect(window.fetch).not.toHaveBeenCalled()
 
     const flash = { show: vi.fn() }
-    setCoreFlashForTest(flash)
+    Object.assign(coreFlash, flash)
     Object.defineProperty(controller, "deleteUrlValue", { configurable: true, value: "" })
     await controller.deleteQuery()
     expect(window.fetch).not.toHaveBeenCalled()
     expect(controller.element.disabled).toBe(false)
     expect(flash.show).toHaveBeenCalledWith("error", "Unable to delete query.")
-    resetCoreFlashForTest()
+
   })
 })
-

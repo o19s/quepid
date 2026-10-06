@@ -4,6 +4,14 @@ import { CaseScoreStore } from "stores/case_score_store"
 import { diffStateStore } from "stores/diff_state_store"
 import { buildCaseDiffScores } from "utils/diff_scores"
 
+let testStores
+
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
 vi.mock("utils/diff_scores", () => ({ buildCaseDiffScores: vi.fn() }))
 
 /**
@@ -43,13 +51,13 @@ describe("QscoreCaseController", () => {
     document.body.appendChild(element)
 
     store = new CaseScoreStore()
-    window.quepidStore = { scoring: store }
+    testStores = { scoring: store }
   })
 
   afterEach(() => {
     element.remove()
-    delete window.quepidStore
-    delete window.quepidSearch
+    testStores = undefined
+    testCapabilities = undefined
     diffStateStore.reset()
     vi.unstubAllGlobals()
   })
@@ -211,9 +219,9 @@ describe("QscoreCaseController", () => {
       { name: "Snapshot", version: 1, score: { score: 0.75, maxScore: 1 } }
     ])
 
-    window.quepidStore.documents = documentsStore
+    testStores.documents = documentsStore
     diffStateStore.enable(["1"])
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
@@ -236,9 +244,9 @@ describe("QscoreCaseController", () => {
     const query = { diffs: { getSearchers: () => [] } }
     buildCaseDiffScores.mockReturnValue([])
 
-    window.quepidStore.documents = documentsStore
+    testStores.documents = documentsStore
     diffStateStore.enable(["1"])
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
@@ -261,9 +269,9 @@ describe("QscoreCaseController", () => {
     const documentsStore = { setCaseDiffs: vi.fn(), clearCaseDiffs }
     const query = { diffs: { fetch: vi.fn().mockRejectedValue(new Error("diff failed")) } }
 
-    window.quepidStore.documents = documentsStore
+    testStores.documents = documentsStore
     diffStateStore.enable(["1"])
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())
@@ -279,9 +287,9 @@ describe("QscoreCaseController", () => {
     const clearCaseDiffs = vi.fn()
     const documentsStore = { setCaseDiffs: vi.fn(), clearCaseDiffs }
 
-    window.quepidStore.documents = documentsStore
+    testStores.documents = documentsStore
     diffStateStore.enable(["1"])
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         getQueries: () => ({}),
         refreshAllDiffs: vi.fn().mockResolvedValue(undefined)
@@ -309,9 +317,9 @@ describe("QscoreCaseController", () => {
     buildCaseDiffScores.mockReturnValue([{ name: "New", score: {} }])
     const documentsStore = { setCaseDiffs, clearCaseDiffs }
 
-    window.quepidStore.documents = documentsStore
+    testStores.documents = documentsStore
     diffStateStore.enable(["1"])
-    window.quepidSearch = {
+    testCapabilities = {
       queryCapabilities: {
         getQueries: () => ({ 1: query }),
         refreshAllDiffs: vi.fn(() => query.diffs.fetch())

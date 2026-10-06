@@ -1,7 +1,14 @@
+import coreFlash from "utils/core_flash"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueryOptionsCoreController from "controllers/query_options_core_controller"
 import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 vi.mock("api/fetch", () => ({ apiFetch: vi.fn() }))
 vi.mock("modules/editor", () => ({
@@ -32,7 +39,7 @@ function controller() {
 describe("QueryOptionsCoreController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    window.quepidDom = { flash: { show: vi.fn() } }
+    Object.assign(coreFlash, { show: vi.fn() })
     document.body.innerHTML = '<div id="queryOptionsModal"></div>'
   })
 
@@ -43,7 +50,7 @@ describe("QueryOptionsCoreController", () => {
     await instance.save({ preventDefault: vi.fn() })
 
     expect(apiFetch).not.toHaveBeenCalled()
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Please provide a valid JSON object.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Please provide a valid JSON object.")
   })
 
   it("saves options, flashes success, and dispatches the scoring bridge event", async () => {
@@ -61,7 +68,7 @@ describe("QueryOptionsCoreController", () => {
     expect(saved).toHaveBeenCalledWith(expect.objectContaining({
       detail: { queryId: "2", options: { boost: 2 } }
     }))
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Query options saved successfully.")
+    expect(coreFlash.show).toHaveBeenCalledWith("success", "Query options saved successfully.")
     expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
     document.removeEventListener("query-options:saved", saved)
   })
@@ -72,7 +79,7 @@ describe("QueryOptionsCoreController", () => {
 
     await instance.save({ preventDefault: vi.fn() })
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to save query options.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to save query options.")
     expect(instance.saveButtonTarget.disabled).toBe(false)
   })
 
@@ -142,7 +149,7 @@ describe("QueryOptionsCoreController", () => {
       expect(saved).not.toHaveBeenCalled()
     }
     expect(getOrCreateBsModal).not.toHaveBeenCalled()
-    expect(window.quepidDom.flash.show).not.toHaveBeenCalled()
+    expect(coreFlash.show).not.toHaveBeenCalled()
     expect(instance.saveButtonTarget.disabled).toBe(true)
     document.removeEventListener("query-options:saved", saved)
   })

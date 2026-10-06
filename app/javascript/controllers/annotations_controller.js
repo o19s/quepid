@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
 import { deleteJson, getJson, postJson, putJson } from "api/json"
 import { getOrCreateBsModal } from "utils/bs_modal"
-import { showFlash } from "utils/flash"
+import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
 import { formatScore } from "utils/scoring"
 import { isSameId } from "utils/record_identity"
@@ -38,7 +38,7 @@ export default class extends Controller {
     } catch {
       this.annotations = []
       this.render()
-      showFlash("error", "Unable to load annotations.")
+      coreFlash.show("error", "Unable to load annotations.")
     }
   }
 
@@ -48,7 +48,7 @@ export default class extends Controller {
     const score = this.scorePayload()
 
     if (!score) {
-      showFlash("error", "Can't create a new annotation until searches have been run! Please rerun your searches.")
+      coreFlash.show("error", "Can't create a new annotation until searches have been run! Please rerun your searches.")
       return
     }
 
@@ -60,9 +60,9 @@ export default class extends Controller {
       this.messageTarget.value = ""
       this.render()
       this.notifyScoreConsumers()
-      showFlash("success", "New Annotation created successfully!")
+      coreFlash.show("success", "New Annotation created successfully!")
     } catch {
-      showFlash("error", "Unable to create Annotation.")
+      coreFlash.show("error", "Unable to create Annotation.")
     } finally {
       this.updateCreateState()
     }
@@ -106,9 +106,9 @@ export default class extends Controller {
       this.render()
       this.editModalInstance?.hide()
       this.notifyScoreConsumers()
-      showFlash("success", "Annotation updated successfully!")
+      coreFlash.show("success", "Annotation updated successfully!")
     } catch {
-      showFlash("error", "Unable to update Annotation.")
+      coreFlash.show("error", "Unable to update Annotation.")
     } finally {
       editSave.disabled = false
     }
@@ -125,9 +125,9 @@ export default class extends Controller {
       this.annotations = this.annotations.filter((item) => item.id !== annotation.id)
       this.render()
       this.notifyScoreConsumers()
-      showFlash("success", "Annotation deleted successfully!")
+      coreFlash.show("success", "Annotation deleted successfully!")
     } catch {
-      showFlash("error", "Unable to delete Annotation.")
+      coreFlash.show("error", "Unable to delete Annotation.")
     }
   }
 

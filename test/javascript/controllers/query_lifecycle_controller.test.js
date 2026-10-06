@@ -1,7 +1,18 @@
-import { describe, expect, it, vi } from "vitest"
+import coreFlash from "utils/core_flash"
+import { describe, expect, it, vi, beforeEach } from "vitest"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
 import * as queryLifecycle from "utils/query_lifecycle"
 import { SearchError } from "utils/search_error"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
 
 vi.mock("utils/query_lifecycle", async (importOriginal) => ({
   ...await importOriginal(),
@@ -18,10 +29,10 @@ function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQue
   controller.addQueryTarget = element.querySelector("form")
   queryLifecycle.persistQuery.mockImplementation(persistQuery || vi.fn())
   queryLifecycle.persistQueries.mockImplementation(persistQueries || vi.fn())
-  window.quepidSearch = {
+  testCapabilities = {
     queryLifecycle: { prepareQueries, commitQueries }
   }
-  window.quepidDom = { flash: { show: vi.fn() } }
+  Object.assign(coreFlash, { show: vi.fn() })
   return { controller, element }
 }
 
@@ -41,7 +52,7 @@ describe("query_lifecycle_controller", () => {
     expect(prepareQueries).toHaveBeenCalledWith(["star wars", "dune"])
     expect(persistQueries).toHaveBeenCalledWith(undefined, ["star wars", "dune"])
     expect(commitQueries).toHaveBeenCalledWith({ query: {} }, { status: 201, data: {} })
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("success", "Queries added successfully.")
+    expect(coreFlash.show).toHaveBeenCalledWith("success", "Queries added successfully.")
     expect(complete).toHaveBeenCalledOnce()
     expect(complete.mock.calls[0][0].detail).toEqual({ success: true })
   })
@@ -56,8 +67,8 @@ describe("query_lifecycle_controller", () => {
       detail: { queryTexts: ["star wars"] }
     }))
 
-    expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(1, "error", "Your new query had an error!")
-    expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(2, "error", "timeout", "search-error")
+    expect(coreFlash.show).toHaveBeenNthCalledWith(1, "error", "Your new query had an error!")
+    expect(coreFlash.show).toHaveBeenNthCalledWith(2, "error", "timeout", "search-error")
   })
 
   it("passes a translated search error through intact so the flash can render its links", async () => {
@@ -71,7 +82,7 @@ describe("query_lifecycle_controller", () => {
       detail: { queryTexts: ["star wars"] }
     }))
 
-    expect(window.quepidDom.flash.show).toHaveBeenNthCalledWith(2, "error", searchError, "search-error")
+    expect(coreFlash.show).toHaveBeenNthCalledWith(2, "error", searchError, "search-error")
   })
 
   it("reports a bulk search error without duplicating the collection store's own flash", async () => {
@@ -87,8 +98,8 @@ describe("query_lifecycle_controller", () => {
     // svc.searchAll() (the bulk path) already reports this failure through the
     // query collection store's search-failed event, which queries_list_controller.js
     // flashes on the same sticky channel — a second write here would just race it.
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "One (or many) of your new queries had an error!")
-    expect(window.quepidDom.flash.show).not.toHaveBeenCalledWith("error", expect.anything(), "search-error")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "One (or many) of your new queries had an error!")
+    expect(coreFlash.show).not.toHaveBeenCalledWith("error", expect.anything(), "search-error")
   })
 
   it("reports persistence failures and marks the form unsuccessful", async () => {
@@ -103,7 +114,7 @@ describe("query_lifecycle_controller", () => {
       detail: { queryTexts: ["star wars"] }
     }))
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add query.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add query.")
     expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
   })
 
@@ -117,7 +128,7 @@ describe("query_lifecycle_controller", () => {
       detail: { queryTexts: ["star wars", "dune"] }
     }))
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
   })
 
   it("fails cleanly when the adapter is unavailable", async () => {
@@ -129,7 +140,7 @@ describe("query_lifecycle_controller", () => {
       detail: { queryTexts: ["star wars"] }
     }))
 
-    expect(window.quepidDom.flash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
     expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
   })
 })
