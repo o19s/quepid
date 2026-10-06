@@ -172,3 +172,29 @@ import must likewise reject a foreign `team_id` without creating a book.
 For an existing mapper endpoint, submit an invalid API method while changing
 team selections. Confirm the validation error leaves the saved teams and
 endpoint attributes unchanged and retains the wizard state for correction.
+
+### 7.12 Qdrant preset: case creation, search and rated-document lookup
+
+1. Start the case wizard on a disposable case. On Endpoint, choose **Qdrant**
+   under **Create a new endpoint**. Confirm POST, Proxy enabled, a collection-scoped
+   `/points/query` URL, Custom Headers with an `api-key`, and numeric `limit` in
+   the JSON request body. The shipped key is read-only and browser-visible.
+2. Make validation fail (intercept the proxy with a 502), then retry without the
+   interception. Expect a visible error, retained settings, and successful advance
+   to Fields on retry; do not use Skip Validation.
+3. Confirm `id`, `title`, and the additional display fields are prefilled. Add
+   `star wars`, finish, and confirm the saved endpoint is Search API with the
+   Qdrant preset, POST and Proxy retained. Expand the query: titles, overview,
+   cast and thumbnails should render; no next-page control should appear.
+4. Rate a result using the selected scorer's scale. Refresh and confirm the rating
+   persists. Open **Missing Documents**: Already Rated Documents should retrieve
+   that point. Close the dialog and enable **Show only rated**: expect only rated
+   points, with numeric point ids in the outgoing `has_id` filter.
+5. Delete the disposable case and any endpoint created solely for this check;
+   preserve reused endpoints and the account's original onboarding preference.
+
+Additional mapper coverage: UUID point ids stay strings; selecting a payload id
+field uses `match/any` for strings and canonical safe integers, preserving
+leading-zero string keys; more than ten rated
+ids raises the lookup limit. Cover these with mapper tests or a suitable collection.
+See [Qdrant setup and request examples](../endpoints_qdrant.md).

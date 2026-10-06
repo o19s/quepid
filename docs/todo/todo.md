@@ -70,10 +70,7 @@ lifecycle or per-surface behavior interchangeable.
 
 Follow [DEVELOPER_GUIDE.md — Turbo navigation](../../DEVELOPER_GUIDE.md#turbo-navigation)
 and [Turbo on the case page](../../DEVELOPER_GUIDE.md#turbo-on-the-case-page)
-for the current contracts. Actual Drive verification and deferred coverage are in
-[turbo_drive.md](turbo_drive.md) and manual scenario 15.8. Existing retrofit
-constraints and historical work are in
-`docs/archived/stimulus_turbo_retrofit_completed.md`.
+for the current contracts. Actual Drive verification and deferred coverage are in manual scenario 15.8.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Rename case-only `_core` controllers and modal partials
 
@@ -104,7 +101,7 @@ wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
 
 The broader proposed sequence for replacing the remaining SPA responsibilities
-is in [Rails/Hotwire workspace plan](rails_hotwire_workspace_plan.md). It starts
+is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
 with the endpoint-design decision below and preserves browser search and instant
 scoring while moving persisted UI and navigation into Rails/Hotwire.
 
@@ -496,15 +493,6 @@ Measure both list endpoints with query-count tests, then load only the latest
 score and its user per case. Avoid loading every historical score merely to
 render one badge; Bullet is available in development/test.
 
-## [PREEXISTING] Backend duplication
-
-The same feature is built several times, and most copies have already drifted
-apart, so behavior depends on which path ran. Where copies differ, decide which
-behavior is correct before consolidating and call it out in the PR. One pattern
-per PR; keep this out of in-flight feature branches.
-
----
-
 ## [PREEXISTING] RuboCop deferrals
 
 These candidates still carry inline Metrics suppressions. Search the codebase
@@ -728,12 +716,9 @@ There are four versions of "copy, then swap the button label for a moment":
   served over plain HTTP.
 - `browse_query` never puts its label back and never reports a failed copy.
 
-**Completed narrow refactor:** `utils/temporary_feedback` shares only Explain
-and Invite's resettable feedback window. Callers retain their labels, icons,
-original-label capture, 2000/1500ms delays, and error handling; Invite still
-cancels restoration on disconnect. Mapper's independent timers and Browse's
-permanent success label remain unchanged. Do not impose one feedback policy
-on all four callers.
+Do not impose one feedback policy on all four callers; Explain and Invite
+already share `utils/temporary_feedback`, while Mapper's independent timers and
+Browse's permanent success label are intentionally different.
 
 The mapper HTTP fallback and Browse label restoration/error reporting are
 separate behavior fixes, outside a strict behavior-preserving refactor.

@@ -531,6 +531,13 @@ parts:
         notes: "Covered live: public Solr proxy returned results; loopback/localhost, RFC1918, link-local and IPv6fc00::1 all400 disallowed-address; file/ftp/unresolvable400 Invalid proxy URL. Fixed bracketed IPv6 resolution via uri.hostname; inspected before/after screenshots. Not covered live: DNS-to-private hostname, credential attachment."
         paths: ["app/controllers/proxy_controller.rb"]
 
+      "7.12":
+        title: "Qdrant preset: case creation, search and rated-document lookup"
+        last_run: 2026-10-06T15:59:10Z
+        result: pass_with_fixes
+        notes: "Original sample used the live demo for creation/search, rating refresh and point-ID lookup. Review-fix sample used type-sensitive intercepted Qdrant responses: numeric movie_id lookup returned zero before and one after; Missing Documents retrieved the rated payload ID. Inspected numeric-payload before/after and missing-documents screenshots. E2E covers point IDs, numeric payload IDs and leading-zero string IDs; mapper tests cover UUID, unsafe keys and >10 ratings. Scratch records removed and onboarding restored. Dense/self-hosted and live payload-ID collections deferred."
+        paths: ["app/models/mapper_based_search_engine.rb", "db/mapper_based_search_engines/qdrant.js", "public/images/qdrant-icon.png", "public/images/qdrant.png", "docs/endpoints_qdrant.md", "app/javascript/controllers/wizard_controller.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/query_service.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/missing_documents_controller.js"]
+
   "08":
     file: 08-scorers.md
     scenarios:
