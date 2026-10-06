@@ -320,6 +320,41 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'calibration_references' do
+    let(:book) do
+      Book.create!(name: 'Calibration Book', scale: [ 0, 1, 2, 3 ], rank_depth: 2, owner: users(:doug))
+    end
+    let(:pairs) { (1..3).map { |position| book.query_doc_pairs.create!(query_text: 'q', doc_id: "d#{position}", position: position) } }
+
+    it 'counts each named judge\'s rateable, on-scale ratings within rank_depth' do
+      pairs[0].judgements.create!(user: users(:matt), rating: 3)
+      pairs[1].judgements.create!(user: users(:matt), rating: 0)
+      pairs[2].judgements.create!(user: users(:matt), rating: 2) # below rank_depth
+      pairs[0].judgements.create!(user: users(:doug), rating: 1.5) # off the scale
+      pairs[1].judgements.create!(user: users(:doug), rating: 2)
+      pairs[0].judgements.create!(user: users(:judge_judy), unrateable: true)
+      pairs[1].judgements.create!(user: users(:judge_judy), judge_later: true)
+      pairs[0].judgements.create!(user: nil, rating: 1) # anonymous
+
+      counts = book.calibration_references.to_h { |reference| [ reference[:judge], reference[:eligible_pairs] ] }
+
+      assert_equal({ users(:doug) => 1, users(:matt) => 2 }, counts)
+    end
+
+    it 'counts the queries whose whole top list each judge rated' do
+      rate_queries_for_calibration(book, users(:matt), queries: 2, depth: 2)
+      book.query_doc_pairs.find_by(doc_id: 'doc_1_1').judgements.find_by(user: users(:matt)).update!(judge_later: true)
+
+      matt = book.calibration_references.find { |reference| reference[:judge] == users(:matt) }
+
+      assert_equal 1, matt[:complete_queries]
+    end
+
+    it 'is empty when nobody has rated anything' do
+      assert_empty book.calibration_references
+    end
+  end
+
   describe 'query_doc_pairs_within_rank_depth' do
     let(:book) { books(:james_bond_movies) }
 

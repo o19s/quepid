@@ -1,0 +1,96 @@
+<%# locals: (run:, cell: nil) %>
+<%# Rendered by the page and, when the run stops, broadcast by CalibrationRunJob in its place. %>
+<% book = run.book %>
+<% judge_name = run.judge.name %>
+<% reference_name = calibration_judge_name(run.reference) %>
+<%# This judge's tuning history on these pairs: other judges' runs compare something else. %>
+<% sample_runs = run.sample.runs.where(judge_id: run.judge_id).order(:id).to_a %>
+<%# Figures are shown for finished runs only, so only theirs need answers. %>
+<% ActiveRecord::Associations::Preloader.new(records: sample_runs.reject(&:active?), associations: :answers).call %>
+<div id="calibration-results-<%= run.id %>" data-rendered-at="<%= calibration_rendered_at %>">
+<% if run.failed? && run.error.present? %>
+  <div class="alert alert-danger"><strong>The run failed:</strong> <%= run.error.truncate(400) %></div>
+<% end %>
+
+<% if run.active? && run.answered_count.zero? %>
+  <p class="text-muted">The results appear here once <%= judge_name %> has rated the sample.</p>
+<% elsif run.answered_count.positive? %>
+  <% if run.active? %>
+    <p class="text-muted small">Figures so far, over the <%= pluralize(run.answered_count, 'pair') %> answered. They update when the run finishes.</p>
+  <% end %>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <%# Buttons, not links: with Quepid's <base href>, href="#..." navigates to the root. %>
+      <button class="nav-link active" id="pairs-tab-<%= run.id %>" data-bs-toggle="tab" data-bs-target="#pairs-pane-<%= run.id %>"
+              type="button" role="tab" aria-controls="pairs-pane-<%= run.id %>" aria-selected="true">
+        Pairs agreement
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="ranks-tab-<%= run.id %>" data-bs-toggle="tab" data-bs-target="#ranks-pane-<%= run.id %>"
+              type="button" role="tab" aria-controls="ranks-pane-<%= run.id %>" aria-selected="false">
+        Ranks agreement
+      </button>
+    </li>
+  </ul>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="pairs-pane-<%= run.id %>" role="tabpanel" aria-labelledby="pairs-tab-<%= run.id %>" tabindex="0">
+      <%= render 'calibrations/pairs_agreement', run: run, cell: cell %>
+    </div>
+    <div class="tab-pane fade" id="ranks-pane-<%= run.id %>" role="tabpanel" aria-labelledby="ranks-tab-<%= run.id %>" tabindex="0">
+      <%= render 'calibrations/ranks_agreement', run: run %>
+    </div>
+  </div>
+<% end %>
+
+<%# ── Runs on this sample ────────────────────────────────────────────────────── %>
+<% if sample_runs.size > 1 %>
+  <h5 class="mt-2"><%= judge_name %>'s runs on these pairs</h5>
+  <p class="small text-muted mb-2">Each run's settings and how it agreed with <%= reference_name %>, to compare tuning attempts.</p>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead>
+        <tr>
+          <th scope="col">Run</th>
+          <th scope="col">Settings</th>
+          <th scope="col">Changed since the run before</th>
+          <th scope="col">Status</th>
+          <th scope="col" class="text-end">α</th>
+          <th scope="col" class="text-end">Exact</th>
+          <th scope="col" class="text-end">Within one</th>
+          <% if run.sample.by_queries? %><th scope="col" class="text-end">Score shift</th><th scope="col" class="text-end">τ</th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% sample_runs.each_with_index do |sample_run, index| %>
+          <% previous = index.positive? ? sample_runs[index - 1] : nil %>
+          <% figures = sample_run.agreement unless sample_run.active? %>
+          <tr class="<%= 'table-active' if sample_run == run %>">
+            <td><%= link_to "##{index + 1}", book_calibration_path(book, sample_run) %> <span class="small text-muted"><%= time_ago_in_words(sample_run.created_at) %> ago</span></td>
+            <td class="small"><%= calibration_settings(sample_run).presence || '—' %></td>
+            <td class="small">
+              <% if previous.nil? %>
+                <span class="text-muted">—</span>
+              <% elsif (changes = sample_run.changes_since(previous)).any? %>
+                <%= changes.to_sentence %>
+              <% else %>
+                <span class="text-muted">nothing</span>
+              <% end %>
+            </td>
+            <td><%= calibration_status_badge(sample_run) %></td>
+            <td class="text-end"><%= figures ? calibration_alpha(figures) : '—' %></td>
+            <td class="text-end"><%= figures ? calibration_percent(figures.exact_share) : '—' %></td>
+            <td class="text-end"><%= figures ? calibration_percent(figures.within_one_share) : '—' %></td>
+            <% if run.sample.by_queries? %>
+              <% impact = sample_run.score_impact unless sample_run.active? %>
+              <td class="text-end"><%= impact&.mean_absolute_difference ? format('%.2f', impact.mean_absolute_difference) : '—' %></td>
+              <td class="text-end"><%= impact&.kendall_tau ? format('%.2f', impact.kendall_tau) : '—' %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+</div>

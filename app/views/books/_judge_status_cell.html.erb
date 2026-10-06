@@ -41,6 +41,12 @@
           <i class="bi bi-play-fill"></i>
         </button>
       <% end %>
+      <%= link_to book_calibrations_path(book, judge_id: row[:judge].id),
+            class: 'btn btn-outline-secondary btn-sm py-0 px-1',
+            style: 'font-size:0.7rem; line-height:1.4;',
+            title: 'Calibrate' do %>
+        <i class="bi bi-bullseye"></i>
+      <% end %>
       <% if can_refine %>
         <%= link_to edit_ai_judge_path(row[:judge], book_id: book.id),
               class: 'btn btn-outline-secondary btn-sm py-0 px-1',

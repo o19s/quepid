@@ -1,0 +1,150 @@
+<%# locals: (book:, judges:, references:, samples:, preselected_judge_id: nil) %>
+<div class="modal fade" id="new_calibration_modal" tabindex="-1" aria-labelledby="new_calibration_modal_label" aria-hidden="true"
+     data-controller="calibration-dialog"
+     data-calibration-dialog-min-value="<%= CalibrationSample::MIN_SIZE %>"
+     data-calibration-dialog-max-value="<%= CalibrationSample::MAX_SIZE %>"
+     data-calibration-dialog-min-queries-value="<%= CalibrationSample::MIN_QUERIES %>"
+     data-calibration-dialog-max-queries-value="<%= CalibrationSample::MAX_QUERIES %>"
+     data-calibration-dialog-open-value="<%= preselected_judge_id.present? %>">
+  <div class="modal-dialog modal-lg">
+    <%= form_with url: book_calibrations_path(book), scope: :calibration, class: 'modal-content',
+                  data: { calibration_dialog_target: 'form' } do %>
+      <div class="modal-header">
+        <h5 class="modal-title" id="new_calibration_modal_label"><i class="bi bi-bullseye" aria-hidden="true"></i> New calibration</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <label for="calibration_judge_id" class="col-sm-4 col-form-label">Judge to calibrate</label>
+          <div class="col-sm-8">
+            <select id="calibration_judge_id" name="calibration[judge_id]" class="form-select"
+                    data-calibration-dialog-target="judge" data-action="change->calibration-dialog#update">
+              <option value="">Choose an AI judge…</option>
+              <% judges.each do |judge| %>
+                <option value="<%= judge.id %>" data-name="<%= judge.name %>"
+                        <%= 'selected' if judge.id == preselected_judge_id %>>
+                  <%= judge.name %><%= " (#{judge.judge_options[:llm_model]})" if judge.judge_options[:llm_model].present? %>
+                </option>
+              <% end %>
+            </select>
+            <div class="form-text">Any AI judge you can see, whether or not it's assigned to this book.</div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <label for="calibration_reference_id" class="col-sm-4 col-form-label">Compare against</label>
+          <div class="col-sm-8">
+            <select id="calibration_reference_id" name="calibration[reference_id]" class="form-select"
+                    data-calibration-dialog-target="reference" data-action="change->calibration-dialog#update">
+              <option value="">Choose a judge who has rated pairs…</option>
+              <% references.each do |reference| %>
+                <% judge = reference[:judge] %>
+                <%# AI judges go by the name the judge list above uses, not fullname's titlecase. %>
+                <% name = judge.ai_judge? ? judge.name : judge.fullname %>
+                <option value="<%= judge.id %>" data-name="<%= name %>" data-eligible-pairs="<%= reference[:eligible_pairs] %>"
+                        data-complete-queries="<%= reference[:complete_queries] %>">
+                  <%= name %> (<%= judge.ai_judge? ? 'AI' : 'human' %>) — <%= pluralize(reference[:eligible_pairs], 'pair') %>,
+                  <%= pluralize(reference[:complete_queries], 'full query', plural: 'full queries') %>
+                </option>
+              <% end %>
+            </select>
+            <div class="form-text" data-calibration-dialog-target="referenceHint">
+              <% if references.empty? %>
+                Nobody has rated pairs on this book's scale yet, so there's nothing to compare against.
+              <% else %>
+                The sample is drawn at random from the pairs this judge rated on the book's scale.
+              <% end %>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-4 col-form-label pt-0">Sample by</div>
+          <div class="col-sm-8">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="calibration[unit]" id="calibration_unit_queries" value="queries" checked
+                     data-calibration-dialog-target="unitQueries" data-action="change->calibration-dialog#update">
+              <label class="form-check-label" for="calibration_unit_queries">
+                Queries: each query's top <%= CalibrationSample::QUERY_DEPTH %> pairs
+              </label>
+              <div class="form-text mt-0">Shows pair agreement and how each query's score would move (ranks agreement).</div>
+            </div>
+            <div class="form-check mt-1">
+              <input class="form-check-input" type="radio" name="calibration[unit]" id="calibration_unit_pairs" value="pairs"
+                     data-calibration-dialog-target="unitPairs" data-action="change->calibration-dialog#update">
+              <label class="form-check-label" for="calibration_unit_pairs">Pairs, from anywhere in the book</label>
+              <div class="form-text mt-0">Pair agreement only. Use it when the reference rated scattered pairs, not whole top lists.</div>
+            </div>
+            <div class="form-text text-warning-emphasis d-none" data-calibration-dialog-target="unitHint"></div>
+          </div>
+        </div>
+
+        <div class="row mb-3" data-calibration-dialog-target="queryRow">
+          <label for="calibration_query_count" class="col-sm-4 col-form-label">Queries</label>
+          <div class="col-sm-8">
+            <input type="number" id="calibration_query_count" name="calibration[query_count]" class="form-control"
+                   value="<%= CalibrationSample::DEFAULT_QUERIES %>"
+                   min="<%= CalibrationSample::MIN_QUERIES %>" max="<%= CalibrationSample::MAX_QUERIES %>"
+                   data-calibration-dialog-target="queryCount" data-action="input->calibration-dialog#update">
+            <div class="form-text" data-calibration-dialog-target="queryHint">
+              Between <%= CalibrationSample::MIN_QUERIES %> and <%= CalibrationSample::MAX_QUERIES %> queries; 20 or more says more.
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3 d-none" data-calibration-dialog-target="sizeRow">
+          <label for="calibration_sample_size" class="col-sm-4 col-form-label">Sample size</label>
+          <div class="col-sm-8">
+            <input type="number" id="calibration_sample_size" name="calibration[sample_size]" class="form-control"
+                   value="<%= CalibrationSample::DEFAULT_SIZE %>"
+                   min="<%= CalibrationSample::MIN_SIZE %>" max="<%= CalibrationSample::MAX_SIZE %>"
+                   data-calibration-dialog-target="sampleSize" data-action="input->calibration-dialog#update">
+            <div class="form-text" data-calibration-dialog-target="sampleHint">
+              Between <%= CalibrationSample::MIN_SIZE %> and <%= CalibrationSample::MAX_SIZE %> pairs.
+            </div>
+          </div>
+        </div>
+
+        <div class="row mb-3">
+          <div class="col-sm-4 col-form-label pt-0">Which ones</div>
+          <div class="col-sm-8">
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="calibration[pairs]" id="calibration_pairs_new" value="new" checked
+                     data-calibration-dialog-target="pairsNew" data-action="change->calibration-dialog#update">
+              <label class="form-check-label" for="calibration_pairs_new">New random sample</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="calibration[pairs]" id="calibration_pairs_same" value="same"
+                     <%= 'disabled' if samples.empty? %>
+                     data-calibration-dialog-target="pairsSame" data-action="change->calibration-dialog#update">
+              <label class="form-check-label <%= 'text-muted' if samples.empty? %>" for="calibration_pairs_same">
+                Same pairs as an earlier calibration<%= ' — none on this book yet' if samples.empty? %>
+              </label>
+            </div>
+            <% if samples.any? %>
+              <select name="calibration[sample_id]" class="form-select mt-2" aria-label="Earlier calibration's pairs" disabled
+                      data-calibration-dialog-target="sample" data-action="change->calibration-dialog#update">
+                <option value="">Choose whose pairs to reuse…</option>
+                <% samples.each do |sample| %>
+                  <% reference_name = sample.reference.ai_judge? ? sample.reference.name : sample.reference.fullname %>
+                  <option value="<%= sample.id %>" data-reference-id="<%= sample.reference_id %>"
+                          data-reference-name="<%= reference_name %>" data-size="<%= sample.size %>"
+                          data-description="<%= sample.description %>">
+                    <% calibrated = sample.runs.map { |sample_run| sample_run.judge.name }.uniq %>
+                    <%= sample.description %> rated by <%= reference_name %><% if calibrated.any? %> · calibrated <%= calibrated.to_sentence %><% end %> · <%= time_ago_in_words(sample.created_at) %> ago
+                  </option>
+                <% end %>
+              </select>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="alert alert-warning d-none" role="alert" data-calibration-dialog-target="problem"></div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <span class="text-muted" data-calibration-dialog-target="summary"></span>
+        <button type="submit" class="btn btn-primary" disabled data-calibration-dialog-target="submitButton">Start</button>
+      </div>
+    <% end %>
+  </div>
+</div>
