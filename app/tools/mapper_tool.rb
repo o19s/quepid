@@ -4,8 +4,8 @@ require 'v8_mapper_executor'
 
 class MapperTool < RubyLLM::Tool
   description 'Executes JavaScript mapper functions against HTML content using the V8MapperExecutor class'
-  param :javascript_code, desc: 'JavaScript code containing numberOfResultsMapper and docsMapper functions'
-  param :html_content, desc: 'HTML content to be processed by the JavaScript functions'
+  parameter :javascript_code, description: 'JavaScript code containing numberOfResultsMapper and docsMapper functions'
+  parameter :html_content, description: 'HTML content to be processed by the JavaScript functions'
 
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/CyclomaticComplexity
