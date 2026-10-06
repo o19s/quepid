@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
@@ -42,8 +43,6 @@ function controllerFor(values = {}) {
     <ul data-queries-list-target="list"></ul>
     ${loadViewTemplate("app/views/core/_query_list_templates.html.erb")}
   `
-  const controller = new QueriesListController(element)
-  controller.element = element
   const state = {
     showOnlyRatedValue: false,
     showOnlyRatedUnsupportedValue: false,
@@ -55,29 +54,23 @@ function controllerFor(values = {}) {
     notesUrlTemplateValue: "api/cases/4/queries/__QUERY_ID__/notes",
     ...values
   }
-  Object.keys(state).forEach(key => {
-    Object.defineProperty(controller, key, { configurable: true, writable: true, value: state[key] })
+  const targetNames = [
+    "ratedCheckbox", "ratedLabel", "filter", "sortLink", "manualSortLink",
+    "sortIcon", "manualHelp", "list", "rowTemplate", "searchResultsTemplate",
+    "paginationTemplate", "diffScoreTemplate"
+  ]
+  const controller = buildControllerFixture(QueriesListController, {
+    element,
+    targets: Object.fromEntries(targetNames.map(name => [
+      name, [...element.querySelectorAll(`[data-queries-list-target="${name}"]`)]
+    ])),
+    values: Object.fromEntries(Object.entries(state).map(([key, value]) => [key.replace(/Value$/, ""), value])),
+    overrides: {
+      dispatch: (name, options = {}) => {
+        element.dispatchEvent(new CustomEvent(`queries-list:${name}`, { bubbles: true, detail: options.detail }))
+      }
+    }
   })
-  controller.dispatch = (name, options = {}) => {
-    element.dispatchEvent(new CustomEvent(`queries-list:${name}`, { bubbles: true, detail: options.detail }))
-  }
-  controller.ratedCheckboxTarget = element.querySelector('[data-queries-list-target="ratedCheckbox"]')
-  controller.hasRatedCheckboxTarget = true
-  controller.ratedLabelTarget = element.querySelector('[data-queries-list-target="ratedLabel"]')
-  controller.hasRatedLabelTarget = true
-  controller.filterTarget = element.querySelector('[data-queries-list-target="filter"]')
-  controller.hasFilterTarget = true
-  controller.sortLinkTargets = [...element.querySelectorAll('[data-queries-list-target="sortLink"]')]
-  controller.manualSortLinkTarget = element.querySelector('[data-queries-list-target="manualSortLink"]')
-  controller.hasManualSortLinkTarget = true
-  controller.sortIconTargets = [...element.querySelectorAll('[data-queries-list-target="sortIcon"]')]
-  controller.manualHelpTarget = element.querySelector('[data-queries-list-target="manualHelp"]')
-  controller.hasManualHelpTarget = true
-  controller.listTarget = element.querySelector('[data-queries-list-target="list"]')
-  controller.hasListTarget = true
-  for (const name of ["rowTemplate", "searchResultsTemplate", "paginationTemplate", "diffScoreTemplate"]) {
-    controller[`${name}Target`] = element.querySelector(`[data-queries-list-target="${name}"]`)
-  }
   controller.render()
   return { controller, element }
 }

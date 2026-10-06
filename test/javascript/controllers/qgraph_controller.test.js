@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import QgraphController from "controllers/qgraph_controller"
@@ -28,14 +29,18 @@ function mount({ width = 200, height = 50 } = {}) {
   element.appendChild(container)
   document.body.appendChild(element)
 
-  const controller = Object.create(QgraphController.prototype)
-  controller.element = element
-  controller.caseIdValue = 5
-  controller.hasContainerTarget = true
-  controller.containerTarget = container
-  controller.scoresUrlValue = "/api/cases/5/scores"
-  controller.annotationsUrlValue = "/api/cases/5/annotations"
-  controller.maxScoreValue = 100
+  const controller = buildControllerFixture(QgraphController, {
+    element,
+    targets: {
+      container
+    },
+    values: {
+      caseId: 5,
+      scoresUrl: "/api/cases/5/scores",
+      annotationsUrl: "/api/cases/5/annotations",
+      maxScore: 100
+    }
+  })
   mounted.push(controller)
   return { controller, element, container }
 }

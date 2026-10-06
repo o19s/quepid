@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it } from "vitest"
 import QueryRowController from "controllers/query_row_controller"
 
@@ -17,17 +18,20 @@ describe("QueryRowController", () => {
         <i data-query-row-target="toggle"></i>
       </div>
     `
-    controller = Object.create(QueryRowController.prototype)
-    controller.element = document.body.firstElementChild
-    controller.hasTextTarget = true
-    controller.hasQueryTarget = true
-    controller.hasImageTarget = true
-    controller.hasResultCountTarget = true
-    controller.hasResultLabelTarget = true
-    controller.hasQuerqyTarget = true
-    controller.hasHeaderTarget = true
-    controller.hasToggleTarget = true
-    controller.hasStateValue = true
+    controller = buildControllerFixture(QueryRowController, {
+      element: document.body.firstElementChild,
+      overrides: {
+        hasTextTarget: true,
+        hasQueryTarget: true,
+        hasImageTarget: true,
+        hasResultCountTarget: true,
+        hasResultLabelTarget: true,
+        hasQuerqyTarget: true,
+        hasHeaderTarget: true,
+        hasToggleTarget: true,
+        hasStateValue: true
+      }
+    })
     controller.queryTarget = controller.element.querySelector('[data-query-row-target="query"]')
     controller.imageTarget = controller.element.querySelector('[data-query-row-target="image"]')
     controller.textTarget = controller.element.querySelector('[data-query-row-target="text"]')

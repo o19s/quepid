@@ -1,10 +1,14 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import FlashController from "controllers/flash_controller"
 
 function buildController({ channel = "main", duration = 5000 } = {}) {
-  const controller = Object.create(FlashController.prototype)
-  controller.element = document.createElement("div")
-  controller.messageTarget = document.createElement("span")
+  const controller = buildControllerFixture(FlashController, {
+    element: document.createElement("div"),
+    targets: {
+      message: document.createElement("span")
+    }
+  })
   controller.element.appendChild(controller.messageTarget)
   controller.channelValue = channel
   controller.durationValue = duration

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { copyText } from "utils/clipboard"
 import { openDetailedDocumentModal } from "utils/detailed_document_modal"
@@ -20,28 +21,21 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
   // The shipped expanded-query shell, plus the per-document template the results clone.
   document.body.innerHTML = loadViewTemplate(TEMPLATES)
   const element = document.body.querySelector('[data-queries-list-target="searchResultsTemplate"]').content.firstElementChild.cloneNode(true)
-  const controller = Object.create(SearchResultsController.prototype)
-  controller.element = element
-  controller.contentTarget = element.querySelector('[data-search-results-target="content"]')
-  controller.resultsTarget = element.querySelector('[data-search-results-target="results"]')
-  controller.diffResultsTarget = element.querySelector('[data-search-results-target="diffResults"]')
-  controller.scoreAllTarget = element.querySelector('[data-search-results-target="scoreAll"]')
-  controller.errorTarget = element.querySelector('[data-search-results-target="error"]')
-  controller.footerTarget = element.querySelector('[data-search-results-target="footer"]')
-  controller.nextPageTarget = element.querySelector('[data-search-results-target="nextPage"]')
-  controller.depthNoteTarget = element.querySelector('[data-search-results-target="depthNote"]')
-  controller.depthValueTarget = element.querySelector('[data-search-results-target="depthValue"]')
-  controller.ratedNoteTarget = element.querySelector('[data-search-results-target="ratedNote"]')
-  controller.hasContentTarget = true
-  controller.hasResultsTarget = true
-  controller.hasDiffResultsTarget = true
-  controller.hasScoreAllTarget = true
-  controller.hasErrorTarget = true
-  controller.hasFooterTarget = true
-  controller.hasNextPageTarget = true
-  controller.hasDepthNoteTarget = true
-  controller.hasDepthValueTarget = true
-  controller.hasRatedNoteTarget = true
+  const controller = buildControllerFixture(SearchResultsController, {
+    element,
+    targets: {
+      content: element.querySelector('[data-search-results-target="content"]'),
+      results: element.querySelector('[data-search-results-target="results"]'),
+      diffResults: element.querySelector('[data-search-results-target="diffResults"]'),
+      scoreAll: element.querySelector('[data-search-results-target="scoreAll"]'),
+      error: element.querySelector('[data-search-results-target="error"]'),
+      footer: element.querySelector('[data-search-results-target="footer"]'),
+      nextPage: element.querySelector('[data-search-results-target="nextPage"]'),
+      depthNote: element.querySelector('[data-search-results-target="depthNote"]'),
+      depthValue: element.querySelector('[data-search-results-target="depthValue"]'),
+      ratedNote: element.querySelector('[data-search-results-target="ratedNote"]')
+    }
+  })
   const snapshot = {
     queryId: 1,
     queryText: "meetings",

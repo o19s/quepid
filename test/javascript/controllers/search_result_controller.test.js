@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import SearchResultController from "controllers/search_result_controller"
 import { loadViewTemplate } from "../support/view_template"
@@ -6,14 +7,14 @@ function buildController(documentSnapshot, querySnapshot = {}) {
   const element = document.createElement("search-result")
   element.setAttribute("rank", "2")
   document.body.appendChild(element)
-  const controller = Object.create(SearchResultController.prototype)
-  controller.element = element
+  const controller = buildControllerFixture(SearchResultController, {
+    element,
+    targets: { content: document.createElement("div") },
+    values: { explainView: "" }
+  })
   element.__searchResultDocument = documentSnapshot
   element.__searchResultQuery = querySnapshot
-  controller.hasContentTarget = true
-  controller.contentTarget = document.createElement("div")
   element.appendChild(controller.contentTarget)
-  controller.explainViewValue = ""
   return controller
 }
 

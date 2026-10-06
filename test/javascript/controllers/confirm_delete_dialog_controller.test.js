@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { submitDestructiveForm } from "utils/destructive_form"
@@ -8,9 +9,12 @@ vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn() }))
 
 const request = { url: "/cases/5", method: "patch", message: "Archive this case?" }
 function buildController() {
-  const controller = Object.create(ConfirmDeleteDialogController.prototype)
-  controller.element = document.createElement("div")
-  controller.messageTarget = document.createElement("p")
+  const controller = buildControllerFixture(ConfirmDeleteDialogController, {
+    element: document.createElement("div"),
+    targets: {
+      message: document.createElement("p")
+    }
+  })
   return controller
 }
 

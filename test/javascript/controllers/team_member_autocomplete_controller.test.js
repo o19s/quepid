@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import TeamMemberAutocompleteController from "controllers/team_member_autocomplete_controller"
 
@@ -10,15 +11,22 @@ function buildController({ spinner = true } = {}) {
   element.append(input, suggestions, spinnerTarget)
   document.body.appendChild(element)
 
-  const controller = Object.create(TeamMemberAutocompleteController.prototype)
-  controller.element = element
-  controller.inputTarget = input
-  controller.suggestionsTarget = suggestions
-  controller.hasSpinnerTarget = spinner
-  controller.spinnerTarget = spinnerTarget
-  controller.urlValue = "/teams/3/suggest_members"
-  controller.minLengthValue = 2
-  controller.debounceDelayValue = 300
+  const controller = buildControllerFixture(TeamMemberAutocompleteController, {
+    element,
+    targets: {
+      input,
+      suggestions,
+      spinner: spinnerTarget
+    },
+    values: {
+      url: "/teams/3/suggest_members",
+      minLength: 2,
+      debounceDelay: 300
+    },
+    overrides: {
+      hasSpinnerTarget: spinner
+    }
+  })
   controller.connect()
   return controller
 }

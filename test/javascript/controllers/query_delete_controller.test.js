@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
 import QueryDeleteController from "controllers/query_delete_controller"
@@ -12,13 +13,12 @@ describe("query-delete controller", () => {
   let controller
 
   beforeEach(() => {
-    controller = new QueryDeleteController(document.createElement("button"))
-    controller.element = document.createElement("button")
-    Object.defineProperty(controller, "queryIdValue", { configurable: true, value: 42 })
-    Object.defineProperty(controller, "hasDeleteUrlValue", { configurable: true, value: true })
-    Object.defineProperty(controller, "deleteUrlValue", { configurable: true, value: "api/cases/1/queries/42" })
-    controller.dispatch = vi.fn()
-    controller.queryCommandBridgeOutlet = { queryRemoved: vi.fn() }
+    controller = buildControllerFixture(QueryDeleteController, {
+      element: document.createElement("button"),
+      values: { queryId: 42, deleteUrl: "api/cases/1/queries/42" },
+      outlets: { queryCommandBridge: { queryRemoved: vi.fn() } },
+      overrides: { dispatch: vi.fn() }
+    })
     window.confirm = vi.fn()
     window.fetch = vi.fn()
   })

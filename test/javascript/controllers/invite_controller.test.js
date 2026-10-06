@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("utils/clipboard", () => ({
@@ -8,8 +9,11 @@ import InviteController from "controllers/invite_controller"
 import { copyText } from "utils/clipboard"
 
 function buildController(link = "https://example.com/invite/abc") {
-  const controller = Object.create(InviteController.prototype)
-  controller.linkValue = link
+  const controller = buildControllerFixture(InviteController, {
+    values: {
+      link
+    }
+  })
   return controller
 }
 

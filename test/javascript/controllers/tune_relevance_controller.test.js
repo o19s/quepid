@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
@@ -102,20 +103,17 @@ function mount(settingsOverrides) {
     <div data-tune-panel="curator"></div>
     <div data-tune-panel="history"></div>
     <button data-tune-relevance-target="action" data-action="click->tune-relevance#save"></button>`
+  const targets = {
+    tab: [...element.querySelectorAll("[data-tune-relevance-tab-param]")],
+    panel: [...element.querySelectorAll("[data-tune-panel]")],
+    action: [...element.querySelectorAll('[data-tune-relevance-target="action"]')],
+    sectionBody: []
+  }
+  targets.saveButton = targets.action[0]
   const target = (name, node) => {
-    const key = name.charAt(0).toUpperCase() + name.slice(1)
-    controller[`has${key}Target`] = true
-    controller[`${name}Target`] = node
+    targets[name] = node
     element.appendChild(node)
   }
-  const controller = Object.create(TuneRelevanceController.prototype)
-  controller.element = element
-  controller.tabTargets = [...element.querySelectorAll("[data-tune-relevance-tab-param]")]
-  controller.panelTargets = [...element.querySelectorAll("[data-tune-panel]")]
-  controller.actionTargets = [...element.querySelectorAll('[data-tune-relevance-target="action"]')]
-  controller.sectionBodyTargets = []
-  controller.hasSaveButtonTarget = true
-  controller.saveButtonTarget = controller.actionTargets[0]
 
   target("fieldSpec", Object.assign(document.createElement("input"), { value: "" }))
   target("numberOfRows", Object.assign(document.createElement("input"), { value: "10" }))
@@ -147,10 +145,11 @@ function mount(settingsOverrides) {
   target("tryDelete", document.createElement("button"))
 
   const { capability, settings } = makeCapability(settingsOverrides)
-  controller.capability = capability
-  controller.settings = settings
-  controller.tab = "developer"
-  controller.searchEndpoints = []
+  const controller = buildControllerFixture(TuneRelevanceController, {
+    element,
+    targets,
+    overrides: { capability, settings, tab: "developer", searchEndpoints: [] }
+  })
   return { controller, capability, settings, element }
 }
 

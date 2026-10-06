@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import BsPopoverController from "controllers/bs_popover_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 const handle = {
   setTitle: vi.fn(),
@@ -14,15 +15,17 @@ vi.mock("utils/bs_popover", () => ({
 import { createBsPopover } from "utils/bs_popover"
 
 function buildController(element) {
-  const controller = Object.create(BsPopoverController.prototype)
-  controller.element = element
-  controller.titleValue = ""
-  controller.contentValue = "Close the results pane"
-  controller.triggerValue = "click"
-  controller.placementValue = "top"
-  controller.htmlValue = false
-  controller.delayValue = undefined
-  return controller
+  return buildControllerFixture(BsPopoverController, {
+    element,
+    values: {
+      title: "",
+      content: "Close the results pane",
+      trigger: "click",
+      placement: "top",
+      html: false,
+      delay: undefined
+    }
+  })
 }
 
 describe("BsPopoverController", () => {

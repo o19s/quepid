@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import { createSnapshotModel } from "utils/snapshot_model"
@@ -29,7 +30,7 @@ vi.mock("utils/snapshot_hydration", () => snapshotHydration)
 vi.mock("utils/snapshot_model", () => ({ createSnapshotModel: vi.fn() }))
 
 function buildController(services) {
-  const controller = Object.create(SnapshotBridgeController.prototype)
+  const controller = buildControllerFixture(SnapshotBridgeController)
   return controller
 }
 

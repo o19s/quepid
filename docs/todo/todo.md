@@ -126,15 +126,6 @@ edit modal work inside a lazy frame first.
 
 ---
 
-### [MIGRATION-FOLLOWUP] P3 I1 C1 — Adopt the shared controller fixture in remaining specs
-
-`test/javascript/support/controller_fixture.js` (see
-`docs/js_tooling.md#controller-test-fixtures`) is already used by many
-controller specs.
-Adopt it in smaller specs when touched. Separately, mounting real Stimulus
-against real markup would catch ERB target/action drift the fixture can't;
-use it for new specs and convert old ones when touched, not big-bang.
-
 ### [PREEXISTING] P2 I0 C2 — Audit GET mutations before enabling Turbo prefetch
 
 Management/admin layouts explicitly disable hover prefetch with

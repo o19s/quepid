@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import WizardController from "controllers/wizard_controller"
 import { getOrCreateBsModal } from "utils/bs_modal"
@@ -52,24 +53,27 @@ function makeCapability() {
 
 function mount({ step = 0, settings = {} } = {}) {
   const element = document.createElement("div")
-  const controller = Object.create(WizardController.prototype)
-  controller.element = element
-  controller.connected = true
-  controller.stepTargets = Array.from({ length: 6 }, () => element.appendChild(document.createElement("div")))
-  controller.trackerTargets = Array.from({ length: 6 }, () => element.appendChild(document.createElement("button")))
-  controller.continueButtonTargets = [element.appendChild(document.createElement("button"))]
-  controller.tlsProtocolTargets = []
-  controller.searchEndpoints = []
-  controller.mapperEngines = []
-  controller.newQueries = []
-  controller.staticRows = []
-  controller.stepIndex = step
-  controller.loaded = true
-  controller.capability = makeCapability()
-  controller.settings = { searchEngine: "solr", searchUrl: "http://solr", caseName: "My Case", ...settings }
-  const alert = document.createElement("div")
-  controller.hasAlertTarget = true
-  controller.alertTarget = alert
+  const controller = buildControllerFixture(WizardController, {
+    element,
+    targets: {
+      step: Array.from({ length: 6 }, () => element.appendChild(document.createElement("div"))),
+      tracker: Array.from({ length: 6 }, () => element.appendChild(document.createElement("button"))),
+      continueButton: [element.appendChild(document.createElement("button"))],
+      tlsProtocol: [],
+      alert: document.createElement("div")
+    },
+    overrides: {
+      connected: true,
+      searchEndpoints: [],
+      mapperEngines: [],
+      newQueries: [],
+      staticRows: [],
+      stepIndex: step,
+      loaded: true,
+      capability: makeCapability(),
+      settings: { searchEngine: "solr", searchUrl: "http://solr", caseName: "My Case", ...settings }
+    }
+  })
   return controller
 }
 

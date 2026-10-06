@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it } from "vitest"
 import ScorerScaleController from "controllers/scorer_scale_controller"
 
@@ -9,12 +10,13 @@ function mount() {
     <input type="radio" name="scale_preset" value="custom">
     <input type="text" data-target="list">
     <div data-target="labels"></div>`
-  const controller = Object.create(ScorerScaleController.prototype)
-  controller.element = element
-  controller.hasScaleListTarget = true
-  controller.scaleListTarget = element.querySelector('[data-target="list"]')
-  controller.hasScaleLabelsTarget = true
-  controller.scaleLabelsTarget = element.querySelector('[data-target="labels"]')
+  const controller = buildControllerFixture(ScorerScaleController, {
+    element,
+    targets: {
+      scaleList: element.querySelector('[data-target="list"]'),
+      scaleLabels: element.querySelector('[data-target="labels"]')
+    }
+  })
   return { controller, element }
 }
 

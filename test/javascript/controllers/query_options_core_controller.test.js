@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueryOptionsCoreController from "controllers/query_options_core_controller"
@@ -26,13 +27,17 @@ vi.mock("utils/bs_modal", () => ({
 }))
 
 function controller() {
-  const instance = Object.create(QueryOptionsCoreController.prototype)
-  instance.element = document.createElement("div")
-  instance.editor = { getValue: vi.fn(() => '{"boost": 2}'), setValue: vi.fn() }
-  instance.hasSaveButtonTarget = true
-  instance.saveButtonTarget = { disabled: false }
-  instance.saveUrl = "api/cases/1/queries/2/options"
-  instance.queryId = "2"
+  const instance = buildControllerFixture(QueryOptionsCoreController, {
+    element: document.createElement("div"),
+    targets: {
+      saveButton: { disabled: false }
+    },
+    overrides: {
+      editor: { getValue: vi.fn(() => '{"boost": 2}'), setValue: vi.fn() },
+      saveUrl: "api/cases/1/queries/2/options",
+      queryId: "2"
+    }
+  })
   return instance
 }
 

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreQueryController from "controllers/qscore_query_controller"
 import { CaseScoreStore } from "stores/case_score_store"
@@ -12,10 +13,15 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
  * primary "current query score" usage in searchResults.html. The component's
  */
 function buildController(element, { queryId = "1" } = {}) {
-  const controller = Object.create(QscoreQueryController.prototype)
-  controller.element = element
-  controller.valueTarget = element.querySelector('[data-qscore-query-target="value"]')
-  controller.queryIdValue = queryId
+  const controller = buildControllerFixture(QscoreQueryController, {
+    element,
+    targets: {
+      value: element.querySelector('[data-qscore-query-target="value"]')
+    },
+    values: {
+      queryId
+    }
+  })
   return controller
 }
 

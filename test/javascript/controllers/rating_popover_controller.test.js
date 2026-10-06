@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import RatingPopoverController from "controllers/rating_popover_controller"
 
@@ -19,10 +20,13 @@ const SCALE = {
 }
 
 function buildController(element) {
-  const controller = Object.create(RatingPopoverController.prototype)
-  controller.element = element
-  controller.scaleValue = SCALE
-  controller.placementValue = "right"
+  const controller = buildControllerFixture(RatingPopoverController, {
+    element,
+    values: {
+      scale: SCALE,
+      placement: "right"
+    }
+  })
   return controller
 }
 

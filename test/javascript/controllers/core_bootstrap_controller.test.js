@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
@@ -78,22 +79,29 @@ describe("CoreBootstrapController", () => {
     const failed = vi.fn()
     const ready = vi.fn()
     document.addEventListener("core-bootstrap:failed", failed)
-    const controller = Object.create(CoreBootstrapController.prototype)
-    controller.caseNoValue = caseNo
-    controller.initialValue = { user: { id: 7 }, case: { case_id: initialCaseNo, tries: [], last_try_number: 1 } }
-    controller.tryNoValue = 1
-    controller.caseToolbarOutlet = { showActions: ready }
-    controller.hasCaseToolbarOutlet = true
+    const controller = buildControllerFixture(CoreBootstrapController, {
+      values: {
+        caseNo,
+        initial: { user: { id: 7 }, case: { case_id: initialCaseNo, tries: [], last_try_number: 1 } },
+        tryNo: 1
+      },
+      outlets: {
+        caseToolbar: { showActions: ready }
+      }
+    })
     await controller.bootstrap()
     document.removeEventListener("core-bootstrap:failed", failed)
     return { flash, failed, ready }
   }
 
   it("resets the shared diff store through the store accessor", async () => {
-    const controller = Object.create(CoreBootstrapController.prototype)
-    controller.caseNoValue = 2
-    controller.initialValue = { user: { id: 7 }, case: { case_id: 2, tries: [], last_try_number: 1 } }
-    controller.tryNoValue = 1
+    const controller = buildControllerFixture(CoreBootstrapController, {
+      values: {
+        caseNo: 2,
+        initial: { user: { id: 7 }, case: { case_id: 2, tries: [], last_try_number: 1 } },
+        tryNo: 1
+      }
+    })
 
     await controller.bootstrap()
 

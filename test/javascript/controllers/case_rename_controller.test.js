@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it } from "vitest"
 import CaseRenameController from "controllers/case_rename_controller"
 
@@ -23,16 +24,16 @@ function buildController({ withTry = true } = {}) {
 
   element.append(caseDisplay, caseForm, caseInput, caseSubmit)
 
-  const controller = Object.create(CaseRenameController.prototype)
-  controller.element = element
-  controller.caseDisplayTarget = caseDisplay
-  controller.caseFormTarget = caseForm
-  controller.caseInputTarget = caseInput
-  controller.caseSubmitTarget = caseSubmit
-  controller.hasCaseDisplayTarget = true
-  controller.hasCaseFormTarget = true
-  controller.hasCaseInputTarget = true
-  controller.hasCaseSubmitTarget = true
+  const targets = {
+    caseDisplay,
+    caseForm,
+    caseInput,
+    caseSubmit,
+    tryDisplay: null,
+    tryForm: null,
+    tryInput: null,
+    trySubmit: null
+  }
 
   if (withTry) {
     const tryDisplay = document.createElement("span")
@@ -47,23 +48,11 @@ function buildController({ withTry = true } = {}) {
 
     element.append(tryDisplay, tryForm, tryInput, trySubmit)
 
-    controller.tryDisplayTarget = tryDisplay
-    controller.tryFormTarget = tryForm
-    controller.tryInputTarget = tryInput
-    controller.trySubmitTarget = trySubmit
-    controller.hasTryDisplayTarget = true
-    controller.hasTryFormTarget = true
-    controller.hasTryInputTarget = true
-    controller.hasTrySubmitTarget = true
-  } else {
-    controller.hasTryDisplayTarget = false
-    controller.hasTryFormTarget = false
-    controller.hasTryInputTarget = false
-    controller.hasTrySubmitTarget = false
+    Object.assign(targets, { tryDisplay, tryForm, tryInput, trySubmit })
   }
 
   document.body.appendChild(element)
-  return controller
+  return buildControllerFixture(CaseRenameController, { element, targets })
 }
 
 describe("CaseRenameController", () => {

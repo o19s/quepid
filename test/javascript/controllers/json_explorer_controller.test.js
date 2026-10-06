@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import JsonExplorerController from "controllers/json_explorer_controller"
 
@@ -8,9 +9,12 @@ vi.mock("utils/json_explorer", () => ({
 import { renderJsonExplorer } from "utils/json_explorer"
 
 function buildController(element, json) {
-  const controller = Object.create(JsonExplorerController.prototype)
-  controller.element = element
-  controller.jsonValue = json
+  const controller = buildControllerFixture(JsonExplorerController, {
+    element,
+    values: {
+      json
+    }
+  })
   return controller
 }
 

@@ -182,10 +182,13 @@ describe("ImportCaseController validation and errors", () => {
   })
 
   it("toggles the button label, spinner, and disabled state while loading", () => {
-    const controller = Object.create(ImportCaseController.prototype)
-    controller.submitButtonTarget = document.createElement("button")
-    controller.submitTextTarget = document.createElement("span")
-    controller.spinnerTarget = document.createElement("span")
+    const controller = buildControllerFixture(ImportCaseController, {
+      targets: {
+        submitButton: document.createElement("button"),
+        submitText: document.createElement("span"),
+        spinner: document.createElement("span")
+      }
+    })
     controller.spinnerTarget.classList.add("d-none")
 
     controller.setLoading(true)

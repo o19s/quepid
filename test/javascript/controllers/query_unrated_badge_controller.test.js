@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryUnratedBadgeController from "controllers/query_unrated_badge_controller"
 import { CaseScoreStore } from "stores/case_score_store"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 let testStores
 
@@ -11,11 +12,11 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
  * same store-subscriber pattern as the qscore badges (`qscore_query_controller.test.js`).
  */
 function buildController(element, { queryId = "1" } = {}) {
-  const controller = Object.create(QueryUnratedBadgeController.prototype)
-  controller.element = element
-  controller.countTarget = element.querySelector('[data-query-unrated-badge-target="count"]')
-  controller.queryIdValue = queryId
-  return controller
+  return buildControllerFixture(QueryUnratedBadgeController, {
+    element,
+    targets: { count: element.querySelector('[data-query-unrated-badge-target="count"]') },
+    values: { queryId }
+  })
 }
 
 describe("QueryUnratedBadgeController", () => {

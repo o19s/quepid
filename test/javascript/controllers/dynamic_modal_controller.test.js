@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DynamicModalController from "controllers/dynamic_modal_controller"
 import { openDynamicModal } from "utils/dynamic_modal"
@@ -5,8 +6,9 @@ import { openDynamicModal } from "utils/dynamic_modal"
 let instance
 function owner() {
   const modal = openDynamicModal({ html: "<p>Content</p>" })
-  const controller = Object.create(DynamicModalController.prototype)
-  controller.element = modal.element
+  const controller = buildControllerFixture(DynamicModalController, {
+    element: modal.element
+  })
   controller.connect()
   return { ...modal, controller }
 }
@@ -82,8 +84,9 @@ describe("DynamicModalController", () => {
   it("honors disposal requested before Stimulus connects", () => {
     const modal = openDynamicModal({ html: "<p>Content</p>" })
     modal.dispose()
-    const controller = Object.create(DynamicModalController.prototype)
-    controller.element = modal.element
+    const controller = buildControllerFixture(DynamicModalController, {
+      element: modal.element
+    })
     controller.connect()
     expect(instance.show).not.toHaveBeenCalled()
     expect(instance.dispose).toHaveBeenCalledOnce()

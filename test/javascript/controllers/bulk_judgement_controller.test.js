@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import BulkJudgementController from "controllers/bulk_judgement_controller"
@@ -21,10 +22,13 @@ function mount() {
       <span id="status_${QDP}"></span>
     </div>`
   document.body.appendChild(element)
-  const controller = Object.create(BulkJudgementController.prototype)
-  controller.element = element
-  controller.saveUrlValue = "books/3/judge/bulk/save"
-  controller.deleteUrlValue = "books/3/judge/bulk/delete"
+  const controller = buildControllerFixture(BulkJudgementController, {
+    element,
+    values: {
+      saveUrl: "books/3/judge/bulk/save",
+      deleteUrl: "books/3/judge/bulk/delete"
+    }
+  })
   controller.connect()
   return { controller, element }
 }

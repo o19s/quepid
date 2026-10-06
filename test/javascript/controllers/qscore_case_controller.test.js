@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QscoreCaseController from "controllers/qscore_case_controller"
 import { CaseScoreStore } from "stores/case_score_store"
@@ -20,10 +21,13 @@ vi.mock("utils/diff_scores", () => ({ buildCaseDiffScores: vi.fn() }))
  * qscore_query_controller.test.js.
  */
 function buildController(element, { caseId = 1, scoreLabel = "AP@10" } = {}) {
-  const controller = Object.create(QscoreCaseController.prototype)
-  controller.element = element
-  controller.valueTarget = element.querySelector('[data-qscore-case-target="value"]')
-  controller.labelTarget = element.querySelector('[data-qscore-case-target="label"]')
+  const controller = buildControllerFixture(QscoreCaseController, {
+    element,
+    targets: {
+      value: element.querySelector('[data-qscore-case-target="value"]'),
+      label: element.querySelector('[data-qscore-case-target="label"]')
+    }
+  })
   controller.hasLabelTarget = !!controller.labelTarget
   controller.caseIdValue = caseId
   controller.scoreLabelValue = scoreLabel

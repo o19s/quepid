@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DynamicModalController from "controllers/dynamic_modal_controller"
 import { openDynamicModal as cloneModal } from "utils/dynamic_modal"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 // Drive the modal's Stimulus lifecycle explicitly; the browser connects it
 // after the caller has populated the cloned shell.
 function openDynamicModal(options) {
   const handle = cloneModal(options)
-  const controller = Object.create(DynamicModalController.prototype)
-  controller.element = handle.element
+  const controller = buildControllerFixture(DynamicModalController, { element: handle.element })
   controller.connect()
   handle.controller = controller
   return handle

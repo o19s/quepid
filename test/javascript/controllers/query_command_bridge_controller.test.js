@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import QueryCommandBridgeController from "controllers/query_command_bridge_controller"
 
@@ -25,8 +26,9 @@ describe("query_command_bridge_controller", () => {
   beforeEach(() => {
     collectionStore = store()
     documentsStore = store()
-    controller = new QueryCommandBridgeController()
-    controller.element = document.createElement("body")
+    controller = buildControllerFixture(QueryCommandBridgeController, {
+      element: document.createElement("body")
+    })
     testStores = { queries: collectionStore, documents: documentsStore }
     testCapabilities = {
       queryCapabilities: {

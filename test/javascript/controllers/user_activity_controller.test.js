@@ -1,11 +1,15 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import UserActivityController from "controllers/user_activity_controller"
 
 function buildController() {
-  const controller = Object.create(UserActivityController.prototype)
-  controller.element = document.createElement("div")
-  controller.urlValue = "/admin/users/1/pulse?data=scores"
-  controller.labelValue = "Scores"
+  const controller = buildControllerFixture(UserActivityController, {
+    element: document.createElement("div"),
+    values: {
+      url: "/admin/users/1/pulse?data=scores",
+      label: "Scores"
+    }
+  })
   return controller
 }
 

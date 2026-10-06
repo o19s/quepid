@@ -14,8 +14,11 @@ describe("ImportSnapshotController sendSnapshotToAPI", () => {
   })
 
   it("fills the CSV row's case into the server's import URL template", async () => {
-    const controller = Object.create(ImportSnapshotController.prototype)
-    controller.importsUrlTemplateValue = "/quepid/api/cases/__CASE_ID__/snapshots/imports"
+    const controller = buildControllerFixture(ImportSnapshotController, {
+      values: {
+        importsUrlTemplate: "/quepid/api/cases/__CASE_ID__/snapshots/imports"
+      }
+    })
     apiFetch.mockResolvedValue({
       async text() {
         return JSON.stringify(await this.json()) || ""
@@ -35,8 +38,11 @@ describe("ImportSnapshotController sendSnapshotToAPI", () => {
 
 describe("ImportSnapshotController importSnapshots", () => {
   it("groups rows into a queries hash keyed by query text, not an array", async () => {
-    const controller = Object.create(ImportSnapshotController.prototype)
-    controller.sendSnapshotToAPI = vi.fn().mockResolvedValue({})
+    const controller = buildControllerFixture(ImportSnapshotController, {
+      overrides: {
+        sendSnapshotToAPI: vi.fn().mockResolvedValue({})
+      }
+    })
 
     const rows = [
       { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc1", "Doc Position": "1" },
@@ -60,7 +66,7 @@ describe("ImportSnapshotController importSnapshots", () => {
   })
 
   it("sends multiple snapshots for the same case sequentially, not concurrently", async () => {
-    const controller = Object.create(ImportSnapshotController.prototype)
+    const controller = buildControllerFixture(ImportSnapshotController)
 
     let inFlight = 0
     let concurrentCallsSeen = 0
@@ -84,10 +90,13 @@ describe("ImportSnapshotController importSnapshots", () => {
   })
 
   it("counts failures without aborting remaining snapshots, and still throws", async () => {
-    const controller = Object.create(ImportSnapshotController.prototype)
-    controller.sendSnapshotToAPI = vi.fn()
+    const controller = buildControllerFixture(ImportSnapshotController, {
+      overrides: {
+        sendSnapshotToAPI: vi.fn()
       .mockRejectedValueOnce(new Error("boom"))
       .mockResolvedValueOnce({})
+      }
+    })
 
     const rows = [
       { "Case ID": "4", "Snapshot Name": "Snap A", "Snapshot Time": "2026-09-01T12:00:00Z", "Query Text": "dog", "Doc ID": "doc1", "Doc Position": "1" },

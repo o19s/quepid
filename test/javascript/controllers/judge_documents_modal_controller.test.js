@@ -1,10 +1,14 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it } from "vitest"
 import JudgeDocumentsModalController from "controllers/judge_documents_modal_controller"
 
 function buildController(checked) {
-  const controller = Object.create(JudgeDocumentsModalController.prototype)
-  controller.judgeAllTarget = { checked }
-  controller.submitButtonTarget = { value: "" }
+  const controller = buildControllerFixture(JudgeDocumentsModalController, {
+    targets: {
+      judgeAll: { checked },
+      submitButton: { value: "" }
+    }
+  })
   return controller
 }
 

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { describe, expect, it, vi, beforeEach } from "vitest"
 import QueryLifecycleController from "controllers/query_lifecycle_controller"
@@ -23,10 +24,12 @@ vi.mock("utils/query_lifecycle", async (importOriginal) => ({
 function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQueries }) {
   const element = document.createElement("div")
   element.innerHTML = '<form data-controller="add-query"></form>'
-  const controller = new QueryLifecycleController(element)
-  controller.element = element
-  controller.hasAddQueryTarget = true
-  controller.addQueryTarget = element.querySelector("form")
+  const controller = buildControllerFixture(QueryLifecycleController, {
+    element,
+    targets: {
+      addQuery: element.querySelector("form")
+    }
+  })
   queryLifecycle.persistQuery.mockImplementation(persistQuery || vi.fn())
   queryLifecycle.persistQueries.mockImplementation(persistQueries || vi.fn())
   testCapabilities = {

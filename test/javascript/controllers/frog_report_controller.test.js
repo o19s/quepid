@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { afterEach, describe, expect, it, vi, beforeEach } from "vitest"
 import FrogReportController, { buildFrogReportStats } from "controllers/frog_report_controller"
@@ -69,15 +70,10 @@ function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) 
   })
   testStores = { documents: store }
   testCapabilities = { caseState, queryLifecycle }
-  const controller = Object.create(FrogReportController.prototype)
-  controller.element = document.createElement("div")
-  TARGETS.forEach((name) => {
-    const element = document.createElement("div")
-    controller[`${name}Target`] = element
-    controller[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
+  const controller = buildControllerFixture(FrogReportController, {
+    targets: Object.fromEntries(TARGETS.map(name => [name, document.createElement("div")])),
+    overrides: { lifecycle: {}, store }
   })
-  controller.lifecycle = {}
-  controller.store = store
   return controller
 }
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import TextPasteController from "controllers/text_paste_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 const detach = vi.fn()
 
@@ -10,10 +11,10 @@ vi.mock("utils/text_paste", () => ({
 import { attachTextPaste } from "utils/text_paste"
 
 function buildController(element) {
-  const controller = Object.create(TextPasteController.prototype)
-  controller.element = element
-  controller.dispatch = vi.fn()
-  return controller
+  return buildControllerFixture(TextPasteController, {
+    element,
+    overrides: { dispatch: vi.fn() }
+  })
 }
 
 describe("TextPasteController", () => {

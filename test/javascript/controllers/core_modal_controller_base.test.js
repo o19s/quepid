@@ -1,10 +1,13 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it, vi } from "vitest"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 
 function buildController() {
-  const controller = Object.create(CoreModalControllerBase.prototype)
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
+  const controller = buildControllerFixture(CoreModalControllerBase, {
+    targets: {
+      alert: document.createElement("div")
+    }
+  })
   return controller
 }
 
@@ -62,8 +65,11 @@ describe("CoreModalControllerBase alert helpers", () => {
   })
 
   it("does nothing when the controller has no alert target", () => {
-    const controller = Object.create(CoreModalControllerBase.prototype)
-    controller.hasAlertTarget = false
+    const controller = buildControllerFixture(CoreModalControllerBase, {
+      targets: {
+        alert: null
+      }
+    })
 
     expect(() => controller.showAlert("Message", "danger")).not.toThrow()
     expect(() => controller.clearAlert()).not.toThrow()
@@ -72,9 +78,12 @@ describe("CoreModalControllerBase alert helpers", () => {
 
 describe("CoreModalControllerBase open", () => {
   function buildModal() {
-    const controller = Object.create(CoreModalControllerBase.prototype)
-    controller.element = document.createElement("div")
-    controller.openFor = vi.fn(() => "opened")
+    const controller = buildControllerFixture(CoreModalControllerBase, {
+      element: document.createElement("div"),
+      overrides: {
+        openFor: vi.fn(() => "opened")
+      }
+    })
     return controller
   }
 
@@ -107,7 +116,7 @@ describe("CoreModalControllerBase open", () => {
 
 describe("CoreModalControllerBase modal state", () => {
   it("does not read missing Stimulus targets", () => {
-    const controller = Object.create(CoreModalControllerBase.prototype)
+    const controller = buildControllerFixture(CoreModalControllerBase)
     Object.defineProperty(controller, "progressTarget", {
       get() { throw new Error("Missing target") }
     })

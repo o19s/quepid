@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import ShareEntityControllerBase from "controllers/share_entity_controller_base"
 
@@ -20,14 +21,14 @@ const TARGETS = {
 
 // The modal: every target present unless listed in `without`.
 function buildModal({ without = [] } = {}) {
-  const controller = Object.create(ShareWidgetController.prototype)
-  controller.element = document.createElement("div")
-  controller.identifier = "share-widget"
-  for (const [name, make] of Object.entries(TARGETS)) {
-    const has = !without.includes(name)
-    controller[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = has
-    if (has) controller[`${name}Target`] = make()
-  }
+  const controller = buildControllerFixture(ShareWidgetController, {
+    targets: Object.fromEntries(Object.entries(TARGETS).map(([name, make]) => [
+      name, without.includes(name) ? null : make()
+    ])),
+    overrides: {
+      identifier: "share-widget"
+    }
+  })
   controller.connect()
   return controller
 }

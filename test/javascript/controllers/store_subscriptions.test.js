@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueriesList from "controllers/queries_list_controller"
 import DiffScore from "controllers/diff_score_controller"
@@ -41,17 +42,25 @@ describe("controller store subscription lifecycles", () => {
   ])("%s still supports an absent optional store", (_, Controller) => {
     delete stores.documents
     delete stores.scoring
-    const controller = Object.create(Controller.prototype)
-    controller.render = vi.fn()
-    controller.load = vi.fn()
+    const controller = buildControllerFixture(Controller, {
+      overrides: {
+        render: vi.fn(),
+        load: vi.fn()
+      }
+    })
     expect(() => controller.connect()).not.toThrow()
     expect(() => controller.disconnect()).not.toThrow()
   })
 
   it("does not subscribe the Frog Report launcher", () => {
-    const controller = Object.create(FrogReport.prototype)
-    controller.modalRootValue = false
-    controller.render = vi.fn()
+    const controller = buildControllerFixture(FrogReport, {
+      values: {
+        modalRoot: false
+      },
+      overrides: {
+        render: vi.fn()
+      }
+    })
     controller.connect()
     controller.disconnect()
     expect(stores.documents.addEventListener).not.toHaveBeenCalled()
@@ -59,9 +68,12 @@ describe("controller store subscription lifecycles", () => {
   })
 
   it.each(cases)("%s preserves event lists and cleans up across reconnects", (_, Controller, storeNames, events) => {
-    const controller = Object.create(Controller.prototype)
-    controller.modalRootValue = true
-    controller.element = document.createElement("div")
+    const controller = buildControllerFixture(Controller, {
+      element: document.createElement("div"),
+      values: {
+        modalRoot: true
+      }
+    })
     for (const method of ["render", "renderScore", "renderLabel", "scheduleRender", "syncSortFromUrl", "setupSortable", "load", "updateCreateState", "renderFromStore", "handleSearchFailed", "handleSearchSettled", "persistScore", "refreshCaseDiffScores"]) {
       controller[method] = vi.fn()
     }

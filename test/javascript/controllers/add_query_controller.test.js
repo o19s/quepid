@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import AddQueryController from "controllers/add_query_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 let testCapabilities
 
@@ -12,13 +13,18 @@ function controllerFor({ canAddQueriesValue = true, text = "" } = {}) {
     <input data-add-query-target="submit" type="submit">
     <i data-add-query-target="spinner"></i>
   `
-  const controller = new AddQueryController(element)
-  controller.element = element
-  controller.inputTarget = element.querySelector('[data-add-query-target="input"]')
-  controller.submitTarget = element.querySelector('[data-add-query-target="submit"]')
-  controller.spinnerTarget = element.querySelector('[data-add-query-target="spinner"]')
-  Object.defineProperty(controller, "canAddQueriesValue", { configurable: true, value: canAddQueriesValue })
-  Object.defineProperty(controller, "placeholderValue", { configurable: true, value: "Add a query to this case" })
+  const controller = buildControllerFixture(AddQueryController, {
+    element,
+    targets: {
+      input: element.querySelector('[data-add-query-target="input"]'),
+      submit: element.querySelector('[data-add-query-target="submit"]'),
+      spinner: element.querySelector('[data-add-query-target="spinner"]')
+    },
+    values: {
+      canAddQueries: canAddQueriesValue,
+      placeholder: "Add a query to this case"
+    }
+  })
   controller.inputTarget.value = text
   return { controller, element }
 }

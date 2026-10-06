@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import QueryNotesController from "controllers/query_notes_controller"
@@ -16,11 +17,16 @@ function controllerFor() {
       <textarea data-query-notes-target="notes"></textarea>
     </form>
   `
-  const controller = Object.create(QueryNotesController.prototype)
-  controller.element = element
-  controller.urlValue = "api/cases/1/queries/2/notes"
-  controller.informationNeedTarget = element.querySelector('[data-query-notes-target="informationNeed"]')
-  controller.notesTarget = element.querySelector('[data-query-notes-target="notes"]')
+  const controller = buildControllerFixture(QueryNotesController, {
+    element,
+    targets: {
+      informationNeed: element.querySelector('[data-query-notes-target="informationNeed"]'),
+      notes: element.querySelector('[data-query-notes-target="notes"]')
+    },
+    values: {
+      url: "api/cases/1/queries/2/notes"
+    }
+  })
   return { controller, element }
 }
 

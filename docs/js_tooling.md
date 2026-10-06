@@ -122,8 +122,19 @@ Keep fixture-specific DOM construction and mutations in the spec.
 
 The builder uses the existing Stimulus stub and does not invoke lifecycle hooks,
 resolve ERB targets, or wire actions. Call lifecycle methods explicitly when
-needed; browser tests cover the markup wiring. Leave small fixtures alone when
-using the builder would add more ceremony than it removes.
+needed. Direct-method controller specs use this builder; keep new fixtures on
+the same pattern.
+
+For new markup-wiring specs, mount real Stimulus against the actual view markup;
+convert existing specs. See
+`test/javascript/controllers/add_query_controller_markup.test.js`: its file-local
+mock overrides the Stimulus alias with the installed runtime for both the spec
+and controller. Drive DOM events, wait for connection, then remove the mounted
+scope and wait for disconnection before stopping the application. Static HTML
+from ERB can be loaded directly with a guard against unevaluated ERB tags;
+dynamic ERB and visual behavior still need Rails/browser verification.
+`query_unrated_badge_controller_markup.test.js` also covers real target/value
+resolution and store subscription cleanup using the static query-row template.
 
 Controller specs mock `utils/core_store_access`, `utils/core_capability_access`,
 and `utils/core_flash` with `vi.mock` when substituting workspace dependencies.

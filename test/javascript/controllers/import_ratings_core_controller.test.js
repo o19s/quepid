@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import ImportRatingsCoreController from "controllers/import_ratings_core_controller"
 import { apiFetch } from "api/fetch"
@@ -13,13 +14,18 @@ vi.mock("utils/bs_modal", () => ({
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn() } }))
 
 function controller() {
-  const instance = Object.create(ImportRatingsCoreController.prototype)
-  instance.caseIdValue = 6
-  instance.selectedType = ""
-  instance.contents = {}
-  instance.errors = {}
-  instance.files = {}
-  instance.busy = false
+  const instance = buildControllerFixture(ImportRatingsCoreController, {
+    values: {
+      caseId: 6
+    },
+    overrides: {
+      selectedType: "",
+      contents: {},
+      errors: {},
+      files: {},
+      busy: false
+    }
+  })
   return instance
 }
 
@@ -42,31 +48,25 @@ function modalController() {
     <button data-target="importButton" disabled></button>`
   document.body.appendChild(element)
 
-  const instance = Object.create(ImportRatingsCoreController.prototype)
-  instance.element = element
-  instance.caseIdValue = 6
-  instance.ratingsUrlValue = "/api/import/ratings"
-  instance.informationNeedsUrlValue = "/api/import/queries/information_needs"
-  instance.snapshotsUrlValue = "/api/cases/6/snapshots/imports"
-  const target = (name) => element.querySelector(`[data-target="${name}"]`)
-  for (const name of [
-    "title",
-    "alert",
-    "warning",
-    "clearQueries",
-    "createQueries",
-    "csvPreview",
-    "informationNeedsPreview",
-    "snapshotsPreview",
-    "loading",
-    "importButton"
-  ]) {
-    instance[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
-    instance[`${name}Target`] = target(name)
-  }
-  instance.fileTargets = [...element.querySelectorAll("input[type=file]")]
-  instance.formatTargets = [...element.querySelectorAll("input[type=radio]")]
-  instance.contentTargets = [...element.querySelectorAll('[data-target="content"]')]
+  const targetNames = [
+    "title", "alert", "warning", "clearQueries", "createQueries", "csvPreview",
+    "informationNeedsPreview", "snapshotsPreview", "loading", "importButton"
+  ]
+  const instance = buildControllerFixture(ImportRatingsCoreController, {
+    element,
+    values: {
+      caseId: 6,
+      ratingsUrl: "/api/import/ratings",
+      informationNeedsUrl: "/api/import/queries/information_needs",
+      snapshotsUrl: "/api/cases/6/snapshots/imports"
+    },
+    targets: {
+      ...Object.fromEntries(targetNames.map(name => [name, element.querySelector(`[data-target="${name}"]`)])),
+      file: [...element.querySelectorAll("input[type=file]")],
+      format: [...element.querySelectorAll("input[type=radio]")],
+      content: [...element.querySelectorAll('[data-target="content"]')]
+    }
+  })
   instance.initialize()
   return instance
 }

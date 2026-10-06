@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { loadDynamicModalTemplate } from "../support/view_template"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import TuneRelevanceController from "controllers/tune_relevance_controller"
@@ -8,8 +9,9 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn() }))
 
 function fixture(Controller, kind) {
-  const instance = Object.create(Controller.prototype)
-  instance.element = document.createElement("div")
+  const instance = buildControllerFixture(Controller, {
+    element: document.createElement("div")
+  })
   document.body.append(instance.element)
   if (kind === "missing documents") {
     instance.element.append(loadDynamicModalTemplate("missing-documents-modal-template").content.cloneNode(true))
@@ -101,7 +103,7 @@ describe.each([
   })
 
   it("disconnects safely when no editor was mounted", () => {
-    const instance = Object.create(Controller.prototype)
+    const instance = buildControllerFixture(Controller)
     instance.disconnect()
     expect(instance.editor).toBeNull()
   })

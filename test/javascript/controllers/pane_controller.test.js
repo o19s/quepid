@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import PaneController from "controllers/pane_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 function buildController() {
   const element = document.createElement("div")
@@ -15,12 +16,10 @@ function buildController() {
   element.append(main, slider, east)
   document.body.append(element)
 
-  const controller = Object.create(PaneController.prototype)
-  controller.element = element
-  for (const [name, target] of Object.entries({ main, slider, east })) {
-    controller[`${name}Target`] = target
-    controller[`has${name[0].toUpperCase()}${name.slice(1)}Target`] = true
-  }
+  const controller = buildControllerFixture(PaneController, {
+    element,
+    targets: { main, slider, east }
+  })
   return { controller, element, main, slider, east }
 }
 

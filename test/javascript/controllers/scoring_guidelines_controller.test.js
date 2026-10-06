@@ -1,17 +1,22 @@
 import { describe, expect, it } from "vitest"
 import ScoringGuidelinesController from "controllers/scoring_guidelines_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 const FOUR = "four point guidelines"
 const TWO = "two point guidelines"
 
 function buildController({ text = "", scorerId = "1", lengths = { 1: 4, 2: 2, 3: 3 } } = {}) {
-  const controller = Object.create(ScoringGuidelinesController.prototype)
-  controller.textareaTarget = { value: text }
-  controller.fourPointValue = FOUR
-  controller.twoPointValue = TWO
-  controller.scorerSelectTarget = { value: scorerId }
-  controller.scaleLengthsValue = lengths
-  return controller
+  return buildControllerFixture(ScoringGuidelinesController, {
+    targets: {
+      textarea: { value: text },
+      scorerSelect: { value: scorerId }
+    },
+    values: {
+      fourPoint: FOUR,
+      twoPoint: TWO,
+      scaleLengths: lengths
+    }
+  })
 }
 
 describe("ScoringGuidelinesController#scaleChanged", () => {

@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
 import { QueryDocumentsStore } from "stores/query_documents_store"
@@ -26,8 +27,9 @@ describe("DiffCaseScoresController", () => {
       { name: "Tuned", score: { score: "--", maxScore: 1 } }
     ])
 
-    const controller = Object.create(DiffCaseScoresController.prototype)
-    controller.element = element
+    const controller = buildControllerFixture(DiffCaseScoresController, {
+      element
+    })
     controller.connect()
 
     expect(element.querySelectorAll(".case-score")).toHaveLength(2)
@@ -44,8 +46,9 @@ describe("DiffCaseScoresController", () => {
 
     store.setCaseDiffs([{ name: "Baseline", score: { score: 0.75 } }])
 
-    const controller = Object.create(DiffCaseScoresController.prototype)
-    controller.element = element
+    const controller = buildControllerFixture(DiffCaseScoresController, {
+      element
+    })
     controller.connect()
 
     expect(element.children[0]).toBe(primary)
@@ -54,8 +57,9 @@ describe("DiffCaseScoresController", () => {
   })
 
   it("removes the badges when comparisons are cleared", () => {
-    const controller = Object.create(DiffCaseScoresController.prototype)
-    controller.element = element
+    const controller = buildControllerFixture(DiffCaseScoresController, {
+      element
+    })
     controller.connect()
 
     store.setCaseDiffs([{ name: "Baseline", score: { score: 0.75 } }])
@@ -66,8 +70,9 @@ describe("DiffCaseScoresController", () => {
   })
 
   it("removes the badges when the document store resets", () => {
-    const controller = Object.create(DiffCaseScoresController.prototype)
-    controller.element = element
+    const controller = buildControllerFixture(DiffCaseScoresController, {
+      element
+    })
     controller.connect()
 
     store.setCaseDiffs([{ name: "Baseline", score: { score: 0.75 } }])
@@ -78,8 +83,9 @@ describe("DiffCaseScoresController", () => {
   })
 
   it("unsubscribes on disconnect", () => {
-    const controller = Object.create(DiffCaseScoresController.prototype)
-    controller.element = element
+    const controller = buildControllerFixture(DiffCaseScoresController, {
+      element
+    })
     controller.connect()
     controller.disconnect()
 

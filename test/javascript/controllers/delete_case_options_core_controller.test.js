@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { submitDestructiveForm } from "utils/destructive_form"
 import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
@@ -21,26 +22,31 @@ function buildDescription(action) {
 }
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(DeleteCaseOptionsCoreController.prototype)
-  controller.identifier = "delete-case-options-core"
-  controller.element = document.createElement("div")
-  controller.archiveUrlTemplateValue = "/cases/__CASE_ID__/archive"
-  controller.destroyUrlTemplateValue = "/cases/__CASE_ID__"
-  controller.destroyQueriesUrlTemplateValue = "/cases/__CASE_ID__/queries"
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.optionButtonTargets = [
+  const controller = buildControllerFixture(DeleteCaseOptionsCoreController, {
+    element: document.createElement("div"),
+    targets: {
+      title: document.createElement("h5"),
+      optionButton: [
     buildOptionButton("destroy_queries"),
     buildOptionButton("archive"),
     buildOptionButton("destroy_case")
-  ]
-  controller.descriptionTargets = [
+  ],
+      description: [
     buildDescription("destroy_queries"),
     buildDescription("archive"),
     buildDescription("destroy_case")
-  ]
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
+  ],
+      submitButton: document.createElement("button")
+    },
+    values: {
+      archiveUrlTemplate: "/cases/__CASE_ID__/archive",
+      destroyUrlTemplate: "/cases/__CASE_ID__",
+      destroyQueriesUrlTemplate: "/cases/__CASE_ID__/queries"
+    },
+    overrides: {
+      identifier: "delete-case-options-core"
+    }
+  })
 
   Object.assign(controller, overrides)
   return controller

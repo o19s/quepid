@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { describe, expect, it } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 import { viewTemplateTargets } from "../support/view_template"
@@ -5,14 +6,18 @@ import { viewTemplateTargets } from "../support/view_template"
 const TEMPLATES = "app/views/core/_query_list_templates.html.erb"
 
 function controller() {
-  const instance = Object.create(QueriesListController.prototype)
   const targets = viewTemplateTargets(TEMPLATES, "queries-list")
-  instance.rowTemplateTarget = targets.rowTemplate
-  instance.searchResultsTemplateTarget = targets.searchResultsTemplate
-  instance.diffScoreTemplateTarget = targets.diffScoreTemplate
-  instance.queryUrlTemplateValue = "/api/cases/6/queries/__QUERY_ID__"
-  instance.notesUrlTemplateValue = "/api/cases/6/queries/__QUERY_ID__/notes"
-  return instance
+  return buildControllerFixture(QueriesListController, {
+    targets: {
+      rowTemplate: targets.rowTemplate,
+      searchResultsTemplate: targets.searchResultsTemplate,
+      diffScoreTemplate: targets.diffScoreTemplate
+    },
+    values: {
+      queryUrlTemplate: "/api/cases/6/queries/__QUERY_ID__",
+      notesUrlTemplate: "/api/cases/6/queries/__QUERY_ID__/notes"
+    }
+  })
 }
 
 function searchResults(query) {

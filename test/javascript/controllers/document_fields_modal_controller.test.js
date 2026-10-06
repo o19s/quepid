@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import DocumentFieldsModalController from "controllers/document_fields_modal_controller"
 import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
@@ -8,11 +9,14 @@ vi.mock("utils/bs_modal", () => ({
 }))
 
 function buildController() {
-  const controller = Object.create(DocumentFieldsModalController.prototype)
-  controller.queryTextTarget = document.createElement("span")
-  controller.docIdTarget = document.createElement("span")
-  controller.contentTarget = document.createElement("pre")
-  controller.modalTarget = document.createElement("div")
+  const controller = buildControllerFixture(DocumentFieldsModalController, {
+    targets: {
+      queryText: document.createElement("span"),
+      docId: document.createElement("span"),
+      content: document.createElement("pre"),
+      modal: document.createElement("div")
+    }
+  })
   return controller
 }
 

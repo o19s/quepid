@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import MatchExplainController from "controllers/match_explain_controller"
 
@@ -63,9 +64,12 @@ function baseData(overrides = {}) {
 }
 
 function buildController(element, data) {
-  const controller = Object.create(MatchExplainController.prototype)
-  controller.element = element
-  controller.dataValue = data
+  const controller = buildControllerFixture(MatchExplainController, {
+    element,
+    values: {
+      data
+    }
+  })
   return controller
 }
 
