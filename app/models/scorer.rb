@@ -39,6 +39,15 @@ class Scorer < ApplicationRecord
   has_and_belongs_to_many :teams,
                           join_table: 'teams_scorers'
 
+  # Ransack (used by ScorersController#index's search box).
+  def self.ransackable_attributes _auth_object = nil
+    %w[name communal]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   # Validations
   validates_with ScaleValidator
 

@@ -13,15 +13,11 @@ class ScorersController < ApplicationController
     @scorer_type_list = Array(@scorer_type).compact_blank
 
     # combined scorers: custom (communal = false) first, then communal scorers
-    combined_query = Scorer.for_user(current_user).includes(:owner, :teams)
-    if 1 == @scorer_type_list.size
-      if 'communal' == @scorer_type_list.first
-        combined_query = combined_query.where(communal: true)
-      elsif 'custom' == @scorer_type_list.first
-        combined_query = combined_query.where(communal: false)
-      end
-    end
-    combined_query = combined_query.where('LOWER(scorers.name) LIKE ?', "%#{@q.to_s.downcase}%") if @q.present?
+    ransack_params = {}
+    ransack_params[:communal_eq] = 'communal' == @scorer_type_list.first if 1 == @scorer_type_list.size
+    ransack_params[:name_cont] = @q if @q.present?
+
+    combined_query = Scorer.for_user(current_user).includes(:owner, :teams).ransack(ransack_params).result
     # Order so that communal (true) comes after custom (false)
     combined_query = combined_query.order(Arel.sql('communal ASC, name'))
 
