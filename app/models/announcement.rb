@@ -29,24 +29,17 @@ class Announcement < ApplicationRecord
   # Ransack (used by admin/announcements#index's search box and sortable
   # column headers) requires every searchable/sortable attribute to be
   # allowlisted - keep this to what's used today.
+  #
+  # text_cont relies on plain LIKE/ILIKE already being case-insensitive here:
+  # Postgres gets ILIKE automatically from Ransack's _cont predicate,
+  # SQLite's LIKE is case-insensitive for ASCII by default, and this column
+  # is explicitly utf8mb4_unicode_ci on MySQL. No custom ransacker needed.
   def self.ransackable_attributes _auth_object = nil
-    %w[text_downcase text publish_date expiration_date created_at updated_at]
+    %w[text publish_date expiration_date created_at updated_at]
   end
 
   def self.ransackable_associations _auth_object = nil
     []
-  end
-
-  # Plain text_cont would compare case-sensitively on PostgreSQL (LIKE is
-  # case-sensitive there by default) and isn't guaranteed case-insensitive on
-  # MySQL regardless of this column's own utf8mb4_unicode_ci collation - this
-  # app doesn't rely on adapter-specific collation behavior for case
-  # insensitivity (see User#by_email's comment; SQLite's LIKE is actually
-  # already case-insensitive for ASCII, but that's moot once Postgres needs
-  # this anyway). Wraps the column in LOWER() the same way the admin search
-  # used to by hand; the controller downcases the search value to match.
-  ransacker :text_downcase do
-    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:text] ])
   end
 
   # Ordered by publish_date desc, id desc so the most recently scheduled announcement

@@ -236,29 +236,20 @@ class User < ApplicationRecord
   # deny-by-default so nothing sensitive (password, *_token, llm_key,
   # system_prompt) becomes queryable just by adding a param. Keep this list
   # to what the admin UI actually needs.
+  #
+  # name_or_email_cont relies on plain LIKE/ILIKE already being case-
+  # insensitive here: Postgres gets ILIKE automatically from Ransack's _cont
+  # predicate, SQLite's LIKE is case-insensitive for ASCII by default, and on
+  # MySQL both columns use a _ci collation (latin1_swedish_ci - confirmed via
+  # information_schema.columns, not assumed). No custom ransacker needed,
+  # unlike by_email above (which uses plain `=`, not LIKE, so it can't lean
+  # on any of that).
   def self.ransackable_attributes _auth_object = nil
-    %w[name email administrator created_at type name_downcase email_downcase
-       agreed_time email_marketing num_logins]
+    %w[name email administrator created_at type agreed_time email_marketing num_logins]
   end
 
   def self.ransackable_associations _auth_object = nil
     []
-  end
-
-  # Plain name_or_email_cont would compare case-sensitively on PostgreSQL
-  # (LIKE is case-sensitive there by default) and isn't guaranteed case-
-  # insensitive on MySQL either, since it depends on the column's collation
-  # rather than anything this app controls directly (see the by_email
-  # comment above - SQLite's LIKE is actually already case-insensitive for
-  # ASCII, unlike its `=`, but that's moot once Postgres needs this anyway).
-  # These wrap each column in LOWER() the same way the admin search used to
-  # by hand; the controller downcases the search value to match.
-  ransacker :name_downcase do
-    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
-  end
-
-  ransacker :email_downcase do
-    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:email] ])
   end
 
   def ai_judge?

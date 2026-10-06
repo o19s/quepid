@@ -14,17 +14,8 @@ module Admin
     def index
       @shallow = 'true' == params[:shallow]
 
-      # name_downcase_or_email_downcase_cont needs a downcased value on both
-      # sides of the LIKE - the ransackers downcase the column, this downcases
-      # the search term (see the ransacker comments on User).
-      ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
-      if ransack_params[:name_downcase_or_email_downcase_cont].present?
-        ransack_params[:name_downcase_or_email_downcase_cont] =
-          ransack_params[:name_downcase_or_email_downcase_cont].downcase
-      end
-
       # Exclude AI judges from the admin user list.
-      @q = User.real_users.ransack(ransack_params)
+      @q = User.real_users.ransack(params[:q])
       # Default sort until the user clicks a column header (sort_link in the
       # view drives @q.sorts from here on).
       @q.sorts = 'created_at desc' if @q.sorts.empty?

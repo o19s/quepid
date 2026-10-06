@@ -11,20 +11,14 @@ class SearchEndpointsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @archived = bool.deserialize(params[:archived] || false )
 
-    # The free-text search now lives under the nested q[...] ransack hash
-    # (q[name_downcase_or_endpoint_url_downcase_cont]) rather than a plain
-    # top-level q string - sort_link's links are q[s]=..., and params[:q]
-    # can't be both a Hash (sort) and a String (free text) at once.
-    # name_downcase_or_endpoint_url_downcase_cont needs a downcased value -
-    # the ransackers downcase the columns (see the ransacker comments on
-    # SearchEndpoint). owned isn't a plain column match (the value comes from
-    # current_user, not the request), so it stays a manual filter applied
-    # after ransack rather than a ransack predicate.
+    # The free-text search lives under the nested q[...] ransack hash
+    # (q[name_or_endpoint_url_cont]) rather than a plain top-level q string -
+    # sort_link's links are q[s]=..., and params[:q] can't be both a Hash
+    # (sort) and a String (free text) at once. owned isn't a plain column
+    # match (the value comes from current_user, not the request), so it
+    # stays a manual filter applied after ransack rather than a ransack
+    # predicate.
     ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
-    if ransack_params[:name_downcase_or_endpoint_url_downcase_cont].present?
-      ransack_params[:name_downcase_or_endpoint_url_downcase_cont] =
-        ransack_params[:name_downcase_or_endpoint_url_downcase_cont].downcase
-    end
     ransack_params[:archived_eq] = @archived
     ransack_params[:teams_id_eq] = params[:team_id] if params[:team_id].present?
 

@@ -57,27 +57,18 @@ class SearchEndpoint < ApplicationRecord
   # column headers) requires every searchable/sortable attribute/association
   # allowlisted - keep this to what's used today. basic_auth_credential is
   # encrypted and deliberately excluded.
+  #
+  # name_cont/endpoint_url_cont rely on plain LIKE/ILIKE already being case-
+  # insensitive here: Postgres gets ILIKE automatically from Ransack's _cont
+  # predicate, SQLite's LIKE is case-insensitive for ASCII by default, and
+  # both columns are utf8mb3_general_ci on MySQL (confirmed via
+  # information_schema.columns). No custom ransacker needed.
   def self.ransackable_attributes _auth_object = nil
-    %w[archived name_downcase endpoint_url_downcase name search_engine endpoint_url updated_at]
+    %w[archived name search_engine endpoint_url updated_at]
   end
 
   def self.ransackable_associations _auth_object = nil
     %w[teams]
-  end
-
-  # Plain name_cont/endpoint_url_cont would compare case-sensitively on
-  # PostgreSQL (LIKE is case-sensitive there by default) and isn't guaranteed
-  # case-insensitive on MySQL either, since that depends on collation rather
-  # than anything this app controls (SQLite's LIKE is actually already case-
-  # insensitive for ASCII, but that's moot once Postgres needs this anyway).
-  # Wraps each column in LOWER() the same way the index search used to by
-  # hand; the controller downcases the search value to match.
-  ransacker :name_downcase do
-    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:name] ])
-  end
-
-  ransacker :endpoint_url_downcase do
-    Arel::Nodes::NamedFunction.new('LOWER', [ arel_table[:endpoint_url] ])
   end
 
   after_initialize do |se|

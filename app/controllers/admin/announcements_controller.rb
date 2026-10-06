@@ -5,12 +5,7 @@ module Admin
     include Pagy::Method
 
     def index
-      # text_downcase_cont needs a downcased value - the ransacker downcases
-      # the column (see the ransacker comment on Announcement).
-      ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
-      ransack_params[:text_downcase_cont] = ransack_params[:text_downcase_cont].downcase if ransack_params[:text_downcase_cont].present?
-
-      @q = Announcement.ransack(ransack_params)
+      @q = Announcement.ransack(params[:q])
       # Default sort when the user hasn't clicked a column header yet (sort_link
       # in the view drives @q.sorts from here on - a hardcoded .order would
       # fight with that once a column is clicked).
