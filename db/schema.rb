@@ -281,8 +281,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
     t.boolean "unrateable", default: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
-    t.bigint "escalated_from_id"
-    t.index ["escalated_from_id"], name: "index_judgements_on_escalated_from_id", unique: true
+    t.bigint "escalated_from_judgement_id"
+    t.index ["escalated_from_judgement_id"], name: "index_judgements_on_escalated_from_judgement_id", unique: true
     t.index ["query_doc_pair_id"], name: "index_judgements_on_query_doc_pair_id"
     t.index ["user_id", "query_doc_pair_id"], name: "index_judgements_on_user_id_and_query_doc_pair_id", unique: true
   end
@@ -662,7 +662,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_130000) do
   add_foreign_key "case_scores", "cases", name: "case_scores_ibfk_1"
   add_foreign_key "case_scores", "users", name: "case_scores_ibfk_2"
   add_foreign_key "cases", "users", column: "owner_id", name: "cases_ibfk_1"
-  add_foreign_key "judgements", "judgements", column: "escalated_from_id", on_delete: :nullify
+  add_foreign_key "judgements", "judgements", column: "escalated_from_judgement_id", on_delete: :nullify
   add_foreign_key "judgements", "query_doc_pairs"
   add_foreign_key "mapper_wizard_states", "users"
   add_foreign_key "queries", "cases", name: "queries_ibfk_1"

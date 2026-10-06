@@ -102,7 +102,7 @@ Escalated from Jev (confidence 0.13, below this judge's floor of 0.5).
 This document addresses the query directly...
 ```
 
-The link is also structural: the woken judge's row carries `escalated_from_id` pointing at the
+The link is also structural: the woken judge's row carries `escalated_from_judgement_id` pointing at the
 cheap judge's row. The explanation is for people; the column is for queries — "which ratings came
 from escalation", "which unrateable rows are still waiting for a second opinion". It is also what
 makes D4's enforcement, §4's cap fix and D5's second pass possible.
@@ -123,11 +123,11 @@ carries the escalation link (D2, D4):
 
 ```ruby
 add_reference :users, :escalates_to, type: :integer, foreign_key: { to_table: :users, on_delete: :nullify }
-add_reference :judgements, :escalated_from, foreign_key: { to_table: :judgements }, null: true
+add_reference :judgements, :escalated_from_judgement, foreign_key: { to_table: :judgements }, null: true
 ```
 
 A judge that another judge points at is **on call** (sleeping): `AiJudge#on_call?`, derived from
-`escalated_from`, so there is no separate flag to keep in step. A chain is followed link by link,
+`AiJudge#escalated_from`, so there is no separate flag to keep in step. A chain is followed link by link,
 so `A → B → C` works; the last judge in it has nobody to wake.
 
 *Why per judge:* the cheap judge's punting is a property of the judge (its model and its confidence
@@ -150,10 +150,10 @@ Guarding the places that start a *run* is not enough, because many paths write a
 without a run (§2.2 fact 7). Any new path would be one more door to remember. So the rule lives on
 the model, where every path goes through it:
 
-> A judgement whose user is on call must have `escalated_from` set, and that judgement must be on
+> A judgement whose user is on call must have `escalated_from_judgement` set, and that judgement must be on
 > the same pair, by a different user, and unrateable.
 
-Only the escalation code sets `escalated_from`, so every other path is refused by the same
+Only the escalation code sets `escalated_from_judgement`, so every other path is refused by the same
 validation, including paths that do not exist yet.
 
 Scope of the rule:
@@ -164,7 +164,7 @@ Scope of the rule:
   never saves, so tuning a sleeping judge's prompt keeps working.
 - **Book merge and import carry the pair.** The merge copies only rateable judgements, so it would
   bring the escalated row without the unrateable row it points at, and the validation would refuse
-  it. Copy the two together and re-point `escalated_from` at the copy; the importer does the same
+  it. Copy the two together and re-point `escalated_from_judgement` at the copy; the importer does the same
   from the exported link.
 
 The run-level guards stay, but as UX rather than enforcement — they turn a validation error into a
@@ -197,7 +197,7 @@ immediately builds the next judge's service and judges the same pair. Simple, or
 
 **Two-pass.** Run the cheap judge over the book as today. Then a second run, for the expensive
 judge, selects *only the pairs where judge X's judgement is unrateable and nothing has been
-escalated from it yet* (`escalated_from_id` makes that a plain query), and judges them.
+escalated from it yet* (`escalated_from_judgement_id` makes that a plain query), and judges them.
 
 | | inline | two-pass |
 | --- | --- | --- |
@@ -216,9 +216,9 @@ escalated from it yet* (`escalated_from_id` makes that a plain query), and judge
 **Decided: two-pass, started automatically.** It keeps two-pass's resumability, isolation, own
 progress and own lock, without needing someone to press a second button. As built: when any
 `RunJudgeJudyJob` ends without being cancelled, it queues `RunJudgeJudyJob(book, on_call, nil,
-escalating_from: judge)` if that judge wakes somebody and has unrateable judgements in the book that
+escalating_from_judge: judge)` if that judge wakes somebody and has unrateable judgements in the book that
 nothing has been escalated from (`Judgement.awaiting_escalation`). That run takes those judgements
-in order instead of asking `SelectionStrategy`, writes each answer with `escalated_from` set, and
+in order instead of asking `SelectionStrategy`, writes each answer with `escalated_from_judgement` set, and
 ends the same way — so `A → B → C` follows by itself. There is no budget: the second pass is
 bounded by the number of unrateable answers, which is the cost preview two-pass promised, just not
 shown before it is spent (§5.4).
@@ -299,7 +299,7 @@ Options considered:
 - **count logical judgements: don't count a row that another judgement was escalated from.**
 
 **Picked: the third, and built.** Every escalated row points at exactly one row on the same pair, so
-`SelectionStrategy::JUDGEMENT_COUNT` is `COUNT(judgements.id) - COUNT(judgements.escalated_from_id)`
+`SelectionStrategy::JUDGEMENT_COUNT` is `COUNT(judgements.id) - COUNT(judgements.escalated_from_judgement_id)`
 — no subquery.
 Human judgements never have an escalation child, so "3 judgements" means exactly what it does
 today for human judging; only escalated pairs change, and they count once. Do it in S4, alongside
@@ -324,7 +324,7 @@ narrower consequence: agreement between the cheap judge and a human, measured on
 the easy pairs only, because the hard ones were handed away.
 
 So this is a calibration question, not a new class of risk, and the answer is §5.2's measurement.
-`escalated_from_id` keeps "which ratings came from escalation" a query, for whenever provenance is
+`escalated_from_judgement_id` keeps "which ratings came from escalation" a query, for whenever provenance is
 surfaced (S6).
 
 ### 5.2 Calibration — same scale, different judges
@@ -458,8 +458,8 @@ Every step is deployable on its own and changes nothing until a chain is configu
 order S1, S5, S4, then part of S3 and S6; S2 was skipped in favour of notes in the explanation (D1).
 
 **S1 · The columns.** *Done:* `users.escalates_to_id` with the `AiJudge` associations, `#on_call?`
-and the loop check (D3, D6); `judgements.escalated_from_id` (unique, `on_delete: :nullify`) with
-`Judgement#escalated_from` / `#escalation`.
+and the loop check (D3, D6); `judgements.escalated_from_judgement_id` (unique, `on_delete: :nullify`) with
+`Judgement#escalated_from_judgement` / `#escalation`.
 
 **S2 · `JudgementFinalizer` reports a reason; confidence is persisted.** `.call` returns a small
 result object (`usable?`, `reason`) instead of just the judgement, with the Jev adapter's
@@ -476,7 +476,7 @@ Judge Activity and Judgement Stats show it as on call with no run buttons. *Stil
 *Verify:* model tests for the validation; API, merge and import tests; manual 12.7.
 
 **S4 · Escalation itself** (D5). *Done*, as the second pass described in D5 rather than a separate
-service: `Judgement.awaiting_escalation`, the `escalating_from:` mode of `RunJudgeJudyJob`, and the
+service: `Judgement.awaiting_escalation`, the `escalating_from_judge:` mode of `RunJudgeJudyJob`, and the
 logical judgement count in `SelectionStrategy` (§4). Tested with stubbed providers (escalates, links
 back, follows a chain, skips a pair the on-call judge already judged, escalates each answer once)
 and live on a small book with Jev → an OpenAI judge.
@@ -499,7 +499,7 @@ count as "handed on" where it was escalated (§5.8). Show where ratings came fro
 - A pair the expensive judge has already judged (from an earlier run): skipped, not raised.
 - Budget exhaustion mid-run: the rest of the run completes, unusable answers stay unrateable.
 - A sleeping judge queued before it was put to sleep: the job refuses.
-- Both rows land with the right attribution, the escalated row's `escalated_from` points at the
+- Both rows land with the right attribution, the escalated row's `escalated_from_judgement` points at the
   cheap judge's row, and the escalated explanation names its origin.
 - Every non-escalation path refuses a sleeping judge's judgement: the API `create` with its
   `user_id`, an API `update` that moves a judgement onto it, `JudgementsController#create`, and a

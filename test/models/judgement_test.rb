@@ -4,26 +4,26 @@
 #
 # Table name: judgements
 #
-#  id                :bigint           not null, primary key
-#  explanation       :text(65535)
-#  judge_later       :boolean          default(FALSE)
-#  rating            :float(24)
-#  unrateable        :boolean          default(FALSE)
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  escalated_from_id :bigint
-#  query_doc_pair_id :bigint           not null
-#  user_id           :integer
+#  id                          :bigint           not null, primary key
+#  explanation                 :text(65535)
+#  judge_later                 :boolean          default(FALSE)
+#  rating                      :float(24)
+#  unrateable                  :boolean          default(FALSE)
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  escalated_from_judgement_id :bigint
+#  query_doc_pair_id           :bigint           not null
+#  user_id                     :integer
 #
 # Indexes
 #
-#  index_judgements_on_escalated_from_id              (escalated_from_id) UNIQUE
+#  index_judgements_on_escalated_from_judgement_id    (escalated_from_judgement_id) UNIQUE
 #  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
 #  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
 #
 # Foreign Keys
 #
-#  fk_rails_...  (escalated_from_id => judgements.id) ON DELETE => nullify
+#  fk_rails_...  (escalated_from_judgement_id => judgements.id) ON DELETE => nullify
 #  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
 #
 require 'test_helper'
@@ -154,7 +154,7 @@ class JudgementTest < ActiveSupport::TestCase
 
     it 'gives an escalated judgement its own reason, not the one it quotes from the judge before it' do
       source = pair.judgements.create!(user: ai, unrateable: true)
-      escalated = Judgement.new(query_doc_pair: pair, user: AiJudge.create!(name: 'Backup'), unrateable: true, escalated_from: source,
+      escalated = Judgement.new(query_doc_pair: pair, user: AiJudge.create!(name: 'Backup'), unrateable: true, escalated_from_judgement: source,
                                 explanation: 'Escalated from Robo, whose answer was unrateable: Jev rated 1. [confidence 0.73 is ' \
                                              "below this judge's minimum confidence of 0.8, so it was marked unrateable]\n\n" \
                                              'Mostly relevant. [LLM returned rating 2.0, outside the scale [0, 1]]')

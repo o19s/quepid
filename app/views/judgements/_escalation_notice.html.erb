@@ -23,8 +23,8 @@
     <% end %>
   </div>
 <% end %>
-<% if judgement.escalated_from %>
-  <% source = judgement.escalated_from %>
+<% if judgement.escalated_from_judgement %>
+  <% source = judgement.escalated_from_judgement %>
   <div class="alert alert-info" role="alert" id="escalated-from-notice">
     <i class="bi bi-moon-stars" aria-hidden="true"></i>
     <strong>Escalated:</strong> <%= judgement.user&.fullname %> judged this pair because

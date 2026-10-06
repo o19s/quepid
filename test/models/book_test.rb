@@ -169,6 +169,25 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'working_ai_judge' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+    let(:top) { AiJudge.create!(name: 'Top') }
+
+    it 'finds an assigned judge and an on-call judge, from a param string or an id' do
+      users(:judge_judy).update!(escalates_to: top)
+      book.ai_judges << users(:judge_judy)
+
+      assert_equal users(:judge_judy), book.working_ai_judge(users(:judge_judy).id.to_s)
+      assert_equal top, book.working_ai_judge(top.id.to_s)
+      assert_equal top, book.working_ai_judge(top.id)
+    end
+
+    it 'is nil for a judge that neither works on the book nor is woken by one that does' do
+      assert_nil book.working_ai_judge(top.id)
+      assert_nil book.working_ai_judge(nil)
+    end
+  end
+
   describe 'judge_activity_row_for' do
     let(:book) { books(:james_bond_movies) }
 

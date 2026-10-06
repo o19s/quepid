@@ -9,7 +9,7 @@ module SelectionStrategy
   # not two (docs/todo/escalating_judges.md §4). Every escalated row points
   # at exactly one row on the same pair, so subtracting the escalated rows
   # needs no subquery. Without escalation this is plain COUNT(judgements.id).
-  JUDGEMENT_COUNT = 'COUNT(judgements.id) - COUNT(judgements.escalated_from_id)'
+  JUDGEMENT_COUNT = 'COUNT(judgements.id) - COUNT(judgements.escalated_from_judgement_id)'
 
   # Under the Multiple Raters strategy, we need up to 3 judgements per query/doc pair
   def self.moar_judgements_needed? book

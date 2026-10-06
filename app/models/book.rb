@@ -212,15 +212,10 @@ class Book < ApplicationRecord
     "book_#{id}_judgements"
   end
 
-  # One row per judge for the book overview's Judge Activity table: every
-  # human judge who has judged anything, plus every assigned AI judge (shown
-  # even at zero judgements, since being assigned is itself worth showing).
-  # Shared by the initial page render and the live broadcast (which
-  # re-renders the whole table on every change) so a judge's row is never
-  # missing just because it didn't exist yet when a viewer's page loaded.
   # The judges this book's assigned AI judges wake when unsure, following
-  # each link to the end of its chain. They judge here without being
-  # assigned: the link on the judge is what puts them on call for this book
+  # each link to the end of its chain (A -> B -> C gives B and C). An on-call
+  # judge is never in `ai_judges`: the escalation link on the judge, not an
+  # assignment, is what puts it to work on this book
   # (docs/todo/escalating_judges.md D3).
   def on_call_ai_judges
     found = {}
@@ -233,6 +228,18 @@ class Book < ApplicationRecord
     found.values
   end
 
+  # An AI judge that works on this book, assigned or on call; nil otherwise.
+  def working_ai_judge id
+    ai_judges.find_by(id: id) || on_call_ai_judges.index_by(&:id)[id.to_i]
+  end
+
+  # One row per judge for the book overview's Judge Activity table: every
+  # human judge who has judged anything, plus every assigned or on-call AI
+  # judge (shown even at zero judgements, since being assigned or on call is
+  # itself worth showing).
+  # Shared by the initial page render and the live broadcast (which
+  # re-renders the whole table on every change) so a judge's row is never
+  # missing just because it didn't exist yet when a viewer's page loaded.
   def judge_activity_rows days: 30
     on_call_ids = on_call_ai_judges.map(&:id)
     judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id) + on_call_ids).uniq
@@ -266,7 +273,7 @@ class Book < ApplicationRecord
   # doesn't qualify for a row at all (see judge_activity_rows) - same
   # "shouldn't normally happen" case its caller already falls back on.
   def judge_activity_row_for judge, days: 30
-    on_call = judge.ai_judge? && on_call_ai_judges.any? { |on_call_judge| on_call_judge.id == judge.id }
+    on_call = judge.ai_judge? && on_call_ai_judges.map(&:id).include?(judge.id)
     return nil unless on_call || ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
 
     activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)

@@ -4,26 +4,26 @@
 #
 # Table name: judgements
 #
-#  id                :bigint           not null, primary key
-#  explanation       :text(65535)
-#  judge_later       :boolean          default(FALSE)
-#  rating            :float(24)
-#  unrateable        :boolean          default(FALSE)
-#  created_at        :datetime         not null
-#  updated_at        :datetime         not null
-#  escalated_from_id :bigint
-#  query_doc_pair_id :bigint           not null
-#  user_id           :integer
+#  id                          :bigint           not null, primary key
+#  explanation                 :text(65535)
+#  judge_later                 :boolean          default(FALSE)
+#  rating                      :float(24)
+#  unrateable                  :boolean          default(FALSE)
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  escalated_from_judgement_id :bigint
+#  query_doc_pair_id           :bigint           not null
+#  user_id                     :integer
 #
 # Indexes
 #
-#  index_judgements_on_escalated_from_id              (escalated_from_id) UNIQUE
+#  index_judgements_on_escalated_from_judgement_id    (escalated_from_judgement_id) UNIQUE
 #  index_judgements_on_query_doc_pair_id              (query_doc_pair_id)
 #  index_judgements_on_user_id_and_query_doc_pair_id  (user_id,query_doc_pair_id) UNIQUE
 #
 # Foreign Keys
 #
-#  fk_rails_...  (escalated_from_id => judgements.id) ON DELETE => nullify
+#  fk_rails_...  (escalated_from_judgement_id => judgements.id) ON DELETE => nullify
 #  fk_rails_...  (query_doc_pair_id => query_doc_pairs.id)
 #
 class Judgement < ApplicationRecord
@@ -32,14 +32,14 @@ class Judgement < ApplicationRecord
 
   # Set when an on-call judge made this judgement because another judge's
   # answer on the same pair was unrateable (docs/todo/escalating_judges.md).
-  belongs_to :escalated_from,
+  belongs_to :escalated_from_judgement,
              class_name: 'Judgement',
              optional:   true,
              inverse_of: :escalation
   has_one :escalation,
           class_name:  'Judgement',
-          foreign_key: :escalated_from_id,
-          inverse_of:  :escalated_from,
+          foreign_key: :escalated_from_judgement_id,
+          inverse_of:  :escalated_from_judgement,
           dependent:   :nullify
 
   validates :user_id, :uniqueness => { :scope => :query_doc_pair_id }, unless: -> { user_id.nil? }
@@ -60,7 +60,7 @@ class Judgement < ApplicationRecord
     joins(:query_doc_pair)
       .where(query_doc_pairs: { book_id: book.id })
       .where(user: from, unrateable: true)
-      .where.not(id: Judgement.where.not(escalated_from_id: nil).select(:escalated_from_id))
+      .where.not(id: Judgement.where.not(escalated_from_judgement_id: nil).select(:escalated_from_judgement_id))
       .where.not(query_doc_pair_id: Judgement.where(user: to).select(:query_doc_pair_id))
   end
 
@@ -84,7 +84,7 @@ class Judgement < ApplicationRecord
     # An escalated judgement's explanation opens with a note quoting the
     # judgement it answers (RunJudgeJudyJob#escalation_note); that judge's
     # reason isn't this one's, so read only what follows it.
-    text = text.split("\n\n", 2).last.to_s if escalated_from_id
+    text = text.split("\n\n", 2).last.to_s if escalated_from_judgement_id
     if (floor = text.match(/\[confidence (\S+) is below this judge's minimum confidence of ([^,\]]+)/))
       "its confidence (#{floor[1]}) was below its minimum confidence of #{floor[2]}"
     elsif text.include?('outside the scale')

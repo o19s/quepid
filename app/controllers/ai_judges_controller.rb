@@ -63,8 +63,6 @@ class AiJudgesController < ApplicationController
     end
   end
 
-  # A judge with judgements can't be deleted (User#check_judgements_before_removing!);
-  # say why instead of redirecting as if it had worked.
   def destroy
     if @ai_judge.destroy
       redirect_to ai_judges_path, notice: "AI Judge #{@ai_judge.name} was deleted."

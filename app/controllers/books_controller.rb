@@ -159,7 +159,7 @@ class BooksController < ApplicationController
     stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
     @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
-    stats_judges_for(stats_judges_ids).each do |judge|
+    judges_sorted_by_name(stats_judges_ids).each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -367,9 +367,7 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    # An on-call judge needn't be assigned, so look there too - only to refuse it below.
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first ||
-               @book.on_call_ai_judges.find { |judge| judge.id == params[:ai_judge_id].to_i }
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.'
       return
@@ -392,9 +390,7 @@ class BooksController < ApplicationController
   end
 
   def cancel_judge_judy
-    # An on-call judge runs here without being assigned, so look there too.
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first ||
-               @book.on_call_ai_judges.find { |judge| judge.id == params[:ai_judge_id].to_i }
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.'
       return
@@ -594,19 +590,19 @@ class BooksController < ApplicationController
 
   # The judges behind these ids, sorted by name; ids that no longer resolve
   # to a user collapse into a single nil (anonymous) entry.
-  def stats_judges_for judge_ids
-    stats_judges = []
+  def judges_sorted_by_name judge_ids
+    judges = []
     judge_ids.each do |judge_id|
       begin
         judge = User.find(judge_id) unless judge_id.nil?
       rescue ActiveRecord::RecordNotFound
         judge = nil
       end
-      stats_judges << judge
+      judges << judge
     end
 
-    stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
+    judges = compact_keep_one_nil(judges)
+    judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
   end
 
   def compact_keep_one_nil array

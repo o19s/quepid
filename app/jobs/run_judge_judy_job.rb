@@ -12,6 +12,11 @@ class RunJudgeJudyJob < ApplicationJob
                      key:         ->(book, judge, *) { "run_judge_judy_#{book.id}_#{judge.id}" },
                      on_conflict: :discard
 
+  # How much of the unsure judge's explanation an escalated judgement quotes.
+  # Kept short so the quote doesn't bury the on-call judge's own reasoning,
+  # and so a chain (A -> B -> C) doesn't re-quote every earlier note in full.
+  ESCALATION_NOTE_REASON_LENGTH = 240
+
   # Finds the in-flight (not finished) SolidQueue rows for this job class
   # matching the given book + judge. This is the one place that reaches into
   # SolidQueue's serialized arguments to answer "is this book+judge combo
@@ -74,7 +79,7 @@ class RunJudgeJudyJob < ApplicationJob
   # @param book [Book] The book containing query-doc pairs to judge
   # @param judge [User] The AI judge user performing the ratings
   # @param number_of_pairs [Integer, nil] Number of pairs to judge, nil for all pairs
-  # @param escalating_from [AiJudge, nil] Set for an on-call judge's pass: instead of
+  # @param escalating_from_judge [AiJudge, nil] Set for an on-call judge's pass: instead of
   #   choosing pairs, judge the pairs where this judge's answer was unrateable and
   #   nobody has escalated it yet (docs/todo/escalating_judges.md). Each judgement
   #   made links back to the one it answers.
@@ -84,7 +89,7 @@ class RunJudgeJudyJob < ApplicationJob
   #
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
-  def perform book, judge, number_of_pairs, escalating_from: nil
+  def perform book, judge, number_of_pairs, escalating_from_judge: nil
     counter = 0
     cancelled = false
     total_pairs = book.query_doc_pairs_within_rank_depth.count
@@ -107,7 +112,7 @@ class RunJudgeJudyJob < ApplicationJob
         break
       end
 
-      query_doc_pair, source = next_pair(book, judge, escalating_from)
+      query_doc_pair, source = next_pair_to_judge(book, judge, escalating_from_judge)
       break if query_doc_pair.nil?
 
       judgement = judge_pair(llm_service, scale, query_doc_pair, judge, source)
@@ -136,15 +141,15 @@ class RunJudgeJudyJob < ApplicationJob
 
   # The pair to judge next, and -- on an on-call judge's pass -- the
   # unrateable judgement it answers. nil when there is nothing left.
-  def next_pair book, judge, escalating_from
-    return [ SelectionStrategy.random_query_doc_based_on_strategy(book, judge), nil ] unless escalating_from
+  def next_pair_to_judge book, judge, escalating_from_judge
+    return [ SelectionStrategy.random_query_doc_based_on_strategy(book, judge), nil ] unless escalating_from_judge
 
-    source = Judgement.awaiting_escalation(book, from: escalating_from, to: judge).order(:id).first
+    source = Judgement.awaiting_escalation(book, from: escalating_from_judge, to: judge).order(:id).first
     [ source&.query_doc_pair, source ]
   end
 
   def judge_pair llm_service, scale, query_doc_pair, judge, source
-    judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, escalated_from: source)
+    judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, escalated_from_judgement: source)
     llm_service.perform_safe_judgement(judgement, scale: scale)
     JudgementFinalizer.call(judgement, scale: scale)
     judgement.explanation = "#{escalation_note(source)}#{judgement.explanation}" if source
@@ -162,11 +167,11 @@ class RunJudgeJudyJob < ApplicationJob
     return if on_call.nil?
     return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
 
-    RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from: judge)
+    RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)
   end
 
   def escalation_note source
-    why = source.explanation.presence&.squish&.truncate(240) || 'it gave no rating'
+    why = source.explanation.presence&.squish&.truncate(ESCALATION_NOTE_REASON_LENGTH) || 'it gave no rating'
     "Escalated from #{source.user.name}, whose answer was unrateable: #{why}\n\n"
   end
 

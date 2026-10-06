@@ -159,7 +159,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       source = book.judgements.find_by!(user: judge_judy)
       escalated = book.judgements.find_by!(user: on_call)
       assert source.unrateable
-      assert_equal source, escalated.escalated_from
+      assert_equal source, escalated.escalated_from_judgement
       assert_equal source.query_doc_pair, escalated.query_doc_pair
       assert_in_delta(0.0, escalated.rating)
       assert_match(/\AEscalated from Judge Judy, whose answer was unrateable: BOOM/, escalated.explanation)
@@ -182,7 +182,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
     test 'the second pass is queued for the on-call judge, under its own lock' do
       judge_judy.update!(escalates_to: on_call)
 
-      assert_enqueued_with(job: RunJudgeJudyJob, args: [ book, on_call, nil, { escalating_from: judge_judy } ]) do
+      assert_enqueued_with(job: RunJudgeJudyJob, args: [ book, on_call, nil, { escalating_from_judge: judge_judy } ]) do
         RunJudgeJudyJob.new.perform(book, judge_judy, 1)
       end
     end
@@ -194,7 +194,7 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       Judgement.create!(query_doc_pair: source.query_doc_pair, user: on_call, rating: 1)
 
       assert_no_difference 'Judgement.count' do
-        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from: judge_judy)
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
       end
     end
 
@@ -203,10 +203,10 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       RunJudgeJudyJob.new.perform(book, judge_judy, 2)
 
       assert_difference 'book.judgements.where(user: on_call).count', 2 do
-        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from: judge_judy)
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
       end
       assert_no_difference 'Judgement.count' do
-        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from: judge_judy)
+        RunJudgeJudyJob.new.perform(book, on_call, nil, escalating_from_judge: judge_judy)
       end
     end
 
@@ -222,8 +222,8 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       middle = book.judgements.find_by!(user: unsure_on_call)
       last = book.judgements.find_by!(user: on_call)
       assert middle.unrateable
-      assert_equal book.judgements.find_by!(user: judge_judy), middle.escalated_from
-      assert_equal middle, last.escalated_from
+      assert_equal book.judgements.find_by!(user: judge_judy), middle.escalated_from_judgement
+      assert_equal middle, last.escalated_from_judgement
       assert_in_delta(0.0, last.rating)
     end
   end

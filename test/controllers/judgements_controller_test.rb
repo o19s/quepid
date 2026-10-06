@@ -64,7 +64,7 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
                                 explanation: "Jev rated 1. [confidence 0.64 is below this judge's minimum " \
                                              'confidence of 0.8, so it was marked unrateable]')
       end
-      let(:escalated) { pair.judgements.create!(user: expensive, rating: 1, escalated_from: source) }
+      let(:escalated) { pair.judgements.create!(user: expensive, rating: 1, escalated_from_judgement: source) }
 
       before { escalated }
 

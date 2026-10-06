@@ -315,7 +315,7 @@ class SelectionStrategyTest < ActiveSupport::TestCase
 
     it 'counts a judgement and its escalation as one, so the pair still wants another opinion' do
       source = pair.judgements.create!(user: cheap, unrateable: true)
-      pair.judgements.create!(user: expensive, rating: 1, escalated_from: source)
+      pair.judgements.create!(user: expensive, rating: 1, escalated_from_judgement: source)
       pair.judgements.create!(user: users(:matt), rating: 1)
 
       assert_not SelectionStrategy.every_query_doc_pair_has_three_judgements?(book)
