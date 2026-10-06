@@ -45,3 +45,28 @@ footer {
 .spinner-border {
   animation-duration: 1.5s;
 }
+
+/* Ransack's sort_link column headers (admin/users, admin/announcements,
+ * search_endpoints tables) - the whole label is already the click target
+ * (Ransack wraps it in <a>), so there's nothing to add there. This just
+ * stops it from reading as a blue hyperlink sitting inside a table header:
+ * plain text color/weight at rest, an underline only on hover as the
+ * clickability hint, and a muted up/down-caret icon (configured in
+ * config/initializers/ransack.rb) that only appears on whichever column is
+ * currently sorted - unsorted columns show no icon at all, matching
+ * Ransack's own default (no arrow until a column is actually sorted).
+ */
+.sort_link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sort_link:hover {
+  text-decoration: underline;
+}
+
+.sort_link .bi {
+  opacity: 0.5;
+  font-size: 0.75em;
+  margin-left: 0.25em;
+}
