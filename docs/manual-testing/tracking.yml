@@ -647,16 +647,16 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.3":
         title: "Edit book settings"
-        last_run: 2026-10-05T23:51:55Z
-        result: pass
-        notes: "Covered live: rename, team/AI assignment, rank setting and graded scale/guidelines persisted on reload. Not covered live: hidden multi-team preservation, forged memberships, scale change after ratings, attachment purge."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/helpers/books_helper.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
+        last_run: 2026-10-06T17:07:23Z
+        result: fail
+        notes: "Covered live: assigned judge, auto-run and rank depth persisted, existing settings before/after inspected. Forced empty-name update reproduced the pre-existing @current_ratings nil error in both versions (todo.md); other settings succeed. Deferred: hidden-account matrix and attachment maintenance."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/helpers/books_helper.rb", "app/controllers/concerns/book_scorer_assignment.rb", "app/models/books_ai_judge.rb", "app/models/book.rb"]
       "10.4":
         title: "Book Overview / Show page"
-        last_run: 2026-10-05T23:51:55Z
-        result: pass
-        notes: "Covered live: overview flags/teams/labels/related case, anonymous warning, stuck-import refresh, archive and unarchive native confirmations and list transitions. Not covered live: completed-import refresh (job failed)."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb"]
+        last_run: 2026-10-06T17:36:08Z
+        result: pass_with_fixes
+        notes: "Latest approved MCP sample: Overview live count/status during bounded manual judging, queued automatic continuation and cancellation; screenshots inspected. Earlier redesign coverage retained; archive/import/anonymous and broader management variants deferred."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judge_count_cell.html.erb", "app/views/books/_judge_last_cell.html.erb", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/models/book.rb", "app/assets/stylesheets/judgements.css"]
       "10.5":
         title: "Combine (merge) books"
         last_run: 2026-10-05T22:26:10Z
@@ -712,6 +712,13 @@ parts:
         notes: "Covered live: Export completed, flag cleared, Re-Export/download link displayed; ZIP download200 application/zip421bytes. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no export-code change. Screenshot inspected. CSV covered in earlier pass, not rerun."
         paths: ["app/controllers/books/export_controller.rb", "app/views/books/export.html.erb"]
 
+      "10.10":
+        title: "Judge Overview"
+        last_run: 2026-10-06T17:44:32Z
+        result: pass_with_fixes
+        notes: "Covered MCP sample: rank-limited personal progress corrected from 300% to 100% (one of one eligible pairs), while total contributions and activity retain all three judgements. Inspected before/after screenshots after the final controller save. Deferred: empty/completed book variants and broader navigation/rubric flows."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/models/book.rb", "app/models/selection_strategy.rb"]
+
   "11":
     file: 11-judging-workflows.md
     scenarios:
@@ -753,15 +760,15 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-06T17:07:23Z
         result: pass
-        notes: "Covered live: leaderboard with two humans and AI, distribution chart; reset each human Later/Unrateable count deleted matching flag and removed reset controls. Not covered live: anonymous chart and disabled AI cap state."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb", "app/models/concerns/text_search.rb"]
+        notes: "Covered live: leaderboard/distribution and before/after action placement; removed duplicate launch control, scoped Refine Prompt remains. Deferred: reset buttons and anonymous bucket in this batch."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_judge_status_cell.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
-        last_run: 2026-10-05T23:51:55Z
-        result: pass
-        notes: "Covered live: default unrated grouping, AJAX rating persisted reload, Reset cleared selection, explanation autosave persisted after debounce and became read-only with toggle off, rank cutoff and empty filter state. Not covered live: 25-row pagination, filter-clear links, invalid-rating tampering."
+        last_run: 2026-10-06T17:39:13Z
+        result: pass_with_fixes
+        notes: "Covered MCP sample: book default cutoff on entry, explicit All via the dropdown includes deeper pairs, and default persists on returning; inspected before/after screenshots. Rails also covers unranked pairs. Deferred: rating/reset/explanation, pagination and invalid-save flows in this sample."
         paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.9":
         title: "Query/Doc Pairs management"
@@ -799,10 +806,10 @@ parts:
         paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-10-06T13:36:06Z
+        last_run: 2026-10-06T17:36:08Z
         result: pass_with_fixes
-        notes: "Covered live: bounded two-pair run then Judge All completed remaining pairs, four attributed ratings/explanations persisted; RunJudgeJudyJob and batched sync finished without errors. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no AI-job change. Screenshot inspected. Not covered live: unavailable/out-of-scale model and zero-work variants."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb"]
+        notes: "Latest approved MCP sample: bounded manual launch, automatic continuation for new pairs, all-pairs launch, cancellation with one pending response saving and stable count afterward; conflicting restart creates no overlap. Book Activity E2E covers failure/retry and linked-rating refresh. Broader providers and zero-work live variants deferred."
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb", "app/controllers/books_controller.rb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judging_modal.html.erb", "app/views/books/_judging_activity_detail.html.erb", "app/views/books/_cancel_judging_button.html.erb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/selection_strategy.rb"]
 
       "12.6":
         title: "AI Judge image options"
@@ -817,6 +824,13 @@ parts:
         result: null
         notes: "Deferred cross-account browser matrix under approved sample. Rails verifies private access denial, shared editing, hidden-team retention and requester-scoped document sampling."
         paths: ["app/models/ai_judge.rb", "app/models/user.rb", "app/models/concerns/for_user_scope.rb", "app/controllers/ai_judges_controller.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/books_controller.rb", "db/migrate/20260914204719_add_owner_id_to_users.rb", "db/migrate/20260915163412_backfill_ai_judge_owners.rb", "db/migrate/20260915214546_add_type_to_users.rb"]
+
+      "12.8":
+        title: "Automatic judging, cancellation and live synchronization"
+        last_run: 2026-10-06T17:35:58Z
+        result: pass_with_fixes
+        notes: "Covered MCP sample with held local provider: bounded manual run plus two new pairs queued one automatic continuation; all five eligible pairs judged. Cancellation retained the lock, conflicting restart created no second run, current response saved once, count then stayed six and status became idle. Inspected screenshots. Book Activity E2E also passed rank-limited auto-run, provider failure/retry and linked-rating refresh. Deferred: broader providers, cross-account and unrelated book flows."
+        paths: ["app/controllers/books_controller.rb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/jobs/update_case_ratings_job.rb", "app/jobs/judgement_from_rating_job.rb", "app/javascript/utils/book_sync.js", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judging_modal.html.erb", "db/migrate/20260914010000_add_rank_depth_to_books.rb", "db/migrate/20260914010100_add_auto_run_to_books_ai_judges.rb"]
 
   "13":
     file: 13-analytics.md

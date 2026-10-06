@@ -9,7 +9,7 @@ class BulkJudgeController < ApplicationController
   # rubocop:disable-next Metrics/AbcSize, Metrics/CyclomaticComplexity, Metrics/MethodLength, Metrics/PerceivedComplexity
   def new
     @query_text = params[:query_text]
-    @rank_depth = params[:rank_depth].presence&.to_i
+    @rank_depth = params.key?(:rank_depth) ? params[:rank_depth].presence&.to_i : @book.rank_depth
 
     # Default to showing only unrated items unless explicitly set to false
     @only_unrated = params[:only_unrated].nil? || deserialize_bool_param(params[:only_unrated])
@@ -20,7 +20,7 @@ class BulkJudgeController < ApplicationController
     @available_positions = @book.query_doc_pairs.distinct.pluck(:position).compact.sort
 
     # Get all query_doc_pairs for this query_text
-    query = @book.query_doc_pairs.includes(:judgements)
+    query = @book.query_doc_pairs_within_rank_depth(@rank_depth).includes(:judgements)
 
     # Use LIKE search if query_text is provided to match partial queries
     query = query.search_by(@query_text, :query_text) if @query_text.present?

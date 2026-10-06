@@ -6,4 +6,12 @@ class ApplicationJob < ActiveJob::Base
 
   # GlobalID arguments can disappear between enqueue and execution.
   discard_on ActiveJob::DeserializationError
+  # Same idea as discard_on above, but for callers that need to resolve a
+  # GlobalID mid-method (e.g. scanning other in-flight jobs' arguments) and
+  # treat a since-deleted record as simply "not found" rather than an error.
+  def self.safely_locate globalid
+    GlobalID::Locator.locate(globalid)
+  rescue ActiveRecord::RecordNotFound
+    nil
+  end
 end

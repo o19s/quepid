@@ -138,6 +138,9 @@ Rails.application.routes.draw do
       patch 'unarchive'
       patch 'assign_anonymous'
       patch 'run_judge_judy/:ai_judge_id', action: :run_judge_judy, as: :run_judge_judy
+      patch 'cancel_judge_judy/:ai_judge_id', action: :cancel_judge_judy, as: :cancel_judge_judy
+      get :judge_overview
+      get :judge_activity
       delete 'delete_ratings_by_assignee', action: :delete_ratings_by_assignee, as: :delete_ratings_by_assignee
       delete 'reset_unrateable/:user_id', action: :reset_unrateable, as: :reset_unrateable
       delete 'reset_judge_later/:user_id', action: :reset_judge_later, as: :reset_judge_later

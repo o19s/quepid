@@ -18,7 +18,7 @@ module AvatarHelper
   # @param size [Symbol] the size key (:small, :medium, :big)
   # @param classes [String] additional CSS classes for the wrapper
   # @return [String] HTML-safe string containing the avatar image
-  def avatar_tag user, size: :medium, classes: ''
+  def avatar_tag user, size: :medium, classes: '', id: nil
     return content_tag(:div, '?', class: 'avatar-placeholder') if user.nil?
 
     size_px = avatar_size_in_pixels(size)
@@ -30,12 +30,14 @@ module AvatarHelper
             render_initials_avatar(user, size_px)
           end
 
-    wrap_avatar(img, user, wrapper_classes)
+    wrap_avatar(img, user, wrapper_classes, id)
   end
 
   private
 
   def avatar_size_in_pixels size
+    return size if size.is_a?(Integer)
+
     Profile::SIZES[size] || Profile::SIZES[:medium]
   end
 
@@ -83,8 +85,8 @@ module AvatarHelper
     SVG
   end
 
-  def wrap_avatar img, user, wrapper_classes
-    content_tag(:div, class: wrapper_classes) do
+  def wrap_avatar img, user, wrapper_classes, id
+    content_tag(:div, class: wrapper_classes, id: id) do
       if user.ai_judge?
         img + ai_judge_badge
       else

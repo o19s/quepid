@@ -1,0 +1,24 @@
+<%# locals: (row:, flash_active: false, book: nil) %>
+<tr id="judge-row-<%= row[:judge].id %>">
+  <%= render 'books/judge_status_cell', row: row, flash_active: flash_active, book: book %>
+  <%= render 'books/judge_count_cell', row: row %>
+  <%= render 'books/judge_last_cell', row: row %>
+  <td style="min-width:220px">
+    <%# Always rendered, even at zero judgements - a judge's very first
+        judgement only ever updates judge_count_cell (see
+        broadcast_judge_activity_job.rb), so this div has to already exist
+        to receive it. Mounted once and never re-rendered; Vega-Lite is
+        fine with an empty values array. %>
+    <%# width is explicit (not "auto") because vega-embed sets this element's
+        own display to inline-block, whose auto width is shrink-to-fit - with
+        no content yet, that reads as zero width for the chart's own
+        width: "container" sizing. An explicit percentage still resolves
+        against the td's width (now fixed by the table's column widths)
+        regardless of display. %>
+    <div id="judge-sparkline-<%= row[:judge].id %>"
+         data-controller="judge-sparkline"
+         data-judge-sparkline-color-value="<%= row[:judge].ai_judge? ? '#6610f2' : '#0d6efd' %>"
+         data-judge-sparkline-values-value="<%= row[:sparkline].to_json %>"
+         style="height: 32px; width: 100%;"></div>
+  </td>
+</tr>

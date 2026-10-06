@@ -25,6 +25,7 @@
 #
 class Judgement < ApplicationRecord
   after_commit :sync_case_ratings
+  after_commit :broadcast_judge_activity
 
   belongs_to :query_doc_pair
   belongs_to :user, optional: true
@@ -75,6 +76,11 @@ class Judgement < ApplicationRecord
   end
 
   private
+
+  def broadcast_judge_activity
+    pair = QueryDocPair.find_by(id: query_doc_pair_id)
+    BroadcastJudgeActivityJob.perform_later(pair.book, user) if pair && user
+  end
 
   def sync_case_ratings
     return unless destroyed? || previous_changes.keys.intersect?(%w[rating unrateable judge_later query_doc_pair_id])

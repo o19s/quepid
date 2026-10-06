@@ -898,3 +898,15 @@ again for every case, double-counting earlier work. Both patterns exist at
 **Fix direction:** accumulate per-case deltas or report the service's final
 cumulative totals consistently. Test multiple cases with different creation
 counts. This changes refresh API counts, not ratings or score calculations.
+
+
+### [PREEXISTING] Book Settings invalid update cannot render errors
+
+Bypassing browser required-field validation and submitting an empty name raises
+`NoMethodError` in the ratings-remap section of `books/edit`: `@current_ratings`
+is initialized only in `BooksController#edit`, not the failed-update response.
+Upstream pre-removal `main` at `86e3de9f` retains this contract from `e77dcfb8`;
+this is historical source evidence, not a live historical replay. Batch 3's
+before/after form replay reproduced the same error. Populate the edit-page data
+for invalid updates and verify 422 rendering without changing failed-update
+membership/persistence behavior.

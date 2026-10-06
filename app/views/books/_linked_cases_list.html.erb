@@ -1,0 +1,49 @@
+<%# locals: (book:, cases:) %>
+<% if cases.any? %>
+  <div class="card-body">
+    <div class="d-grid" style="grid-template-columns: 1fr auto 1fr;">
+      <% cases.each_with_index do |kase, index| %>
+        <div class="d-flex align-items-center justify-content-center py-2 <%= 'border-bottom' unless kase == cases.last %>" style="grid-column: 1; grid-row: <%= index + 1 %>;">
+          <div class="text-center">
+            <i class="bi bi-briefcase fs-2 text-body"></i>
+            <div class="fw-semibold"><%= link_to_core_case case_title(kase), kase, kase.last_try_number %></div>
+            <div class="text-muted small">Updated <%= time_ago_in_words(kase.updated_at) %> ago</div>
+          </div>
+        </div>
+        <div class="case-book-divider-cell d-flex align-items-center justify-content-center fs-4"
+             id="case-sync-icon-<%= kase.id %>" style="grid-column: 2; grid-row: <%= index + 1 %>;">
+          <% sends_pairs = kase.auto_populate_book_pairs? %>
+          <% receives_ratings = kase.auto_populate_case_judgements? %>
+          <% populating_book = PopulateBookJob.actively_populating?(book, kase) || JudgementFromRatingJob.actively_populating?(book, kase) %>
+          <% syncing_case = UpdateCaseJob.actively_syncing?(book, kase) || UpdateCaseRatingsJob.actively_syncing?(book, kase) %>
+          <% if sends_pairs && receives_ratings %>
+            <i class="case-book-sync-icon bi bi-arrow-left-right text-success <%= 'icon-pulse' if populating_book || syncing_case %>" title="Sends query/doc pairs to book and receives judgement ratings back"></i>
+          <% elsif sends_pairs %>
+            <i class="case-book-sync-icon bi bi-arrow-right text-success <%= 'icon-pulse' if populating_book %>" title="Sends query/doc pairs to book"></i>
+          <% elsif receives_ratings %>
+            <i class="case-book-sync-icon bi bi-arrow-left text-success <%= 'icon-pulse' if syncing_case %>" title="Receives judgement ratings from book"></i>
+          <% else %>
+            <i class="case-book-sync-icon bi bi-circle text-muted" title="Linked, but no automatic sync"></i>
+          <% end %>
+        </div>
+      <% end %>
+      <div class="d-flex align-items-center justify-content-center ps-4 ms-3"
+           style="grid-column: 3; grid-row: 1 / span <%= cases.size %>; align-self: center;">
+        <div class="text-center text-nowrap">
+          <i class="bi bi-book fs-2 text-body"></i>
+          <div class="fw-semibold"><%= book_title book %></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="card-footer text-muted small d-flex justify-content-between mt-auto">
+    <span><i class="bi bi-arrow-right"></i> Sends pairs</span>
+    <span><i class="bi bi-arrow-left"></i> Receives ratings</span>
+    <span><i class="bi bi-arrow-left-right"></i> Both</span>
+    <span><i class="bi bi-circle"></i> Linked, no auto-sync</span>
+  </div>
+<% else %>
+  <div class="card-body text-muted">
+    No cases linked. Link a case via <a href="<%= edit_book_path(book) %>">Settings</a> or create a book directly from a case.
+  </div>
+<% end %>

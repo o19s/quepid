@@ -63,7 +63,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 ### 12.5 Trigger a judging run ("Judge Judy")
 
 - [ ] **Steps:**
-  1. From Judgement Stats, click **Prepare to Judge!** on the AI judge's row.
+  1. From Overview, click the AI judge's **Judge documents** play button.
   2. In the "Judge Documents" modal, leave the default **Query Doc Pairs to Judge** count (10), click the submit button (labeled "Judge Documents").
   3. Confirm the redirect notice ("AI Judge {name} will start evaluating query/doc pairs.") and watch for live progress notifications on the book pages as the background job runs.
   4. Confirm afterward that up to the requested number of new judgements were created and attributed to the AI judge (fewer if the book ran out of unjudged pairs first).
@@ -73,7 +73,7 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 - **Edge cases:**
   - [ ] Simulate (or naturally trigger) the LLM failing to return a usable rating for a given pair — confirm that specific judgement is marked `unrateable` rather than the whole run erroring out.
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
-  - [ ] Confirm **Prepare to Judge!** is disabled/absent once the AI judge has nothing left to judge, or once the book has already reached its judgements-per-pair cap (cross-reference Part 11.7).
+  - [ ] Confirm a run with no available pairs completes without new judgements; availability follows the book's selection strategy and Rank Depth.
 
 ### 12.6 AI Judge image options
 
@@ -94,3 +94,14 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   2. Share it with a team containing B. Confirm B can use and edit it, while sharing with teams B cannot see survives B's update.
   3. Give A a private book with a distinctive document. As B, request a wizard sample without book context and with A's inaccessible book ID.
 - **Expected:** Samples never expose A's private documents; judge sharing does not grant access to its owner's books. Confirm owned and team-shared access without requiring book and judge team overlap.
+
+### 12.8 Automatic judging, cancellation and live synchronization
+
+- [ ] **Steps:**
+  1. Assign a judge, enable **Auto-run on new pairs**, set Rank Depth to 2, save and reload Settings.
+  2. Keep Overview open and populate three ranked pairs from a linked case. Confirm automatic judging covers only eligible pairs, with live count/status/chart updates and ratings appearing in the linked case.
+  3. Disable auto-run and clear Rank Depth. Add more pairs, run manually, open live progress and confirm **Stop Judging**. Wait for the provider's current response; confirm counts then stop increasing and saved case ratings remain after refresh.
+  4. Force a provider failure. Check the Unrateable judgement's explanation in the non-compact Judgements view. Restore the provider and run again; confirm new successful judgements and synced ratings after refresh.
+  5. Save a first human judgement from another tab. Confirm that human's row appears on the already-open Overview; delete their last judgement and confirm the row disappears. Repeat with a missed subscription to exercise polling recovery.
+  6. While a bounded manual run is waiting for a provider response, add new eligible pairs with auto-run enabled. Confirm one automatic continuation waits, the manual run retains its requested limit, and the continuation judges the remaining pairs. During cancellation, a conflicting manual restart must not overlap the pending response.
+- **Expected:** Only one run per book/judge proceeds at a time; conflicting manual launches still discard. Cancellation prevents subsequent iterations and cancels queued continuations; one in-flight provider response may still save, with the lock held until the worker exits. Failed job rows do not leave activity permanently running. Per-cell updates preserve mounted sparklines. Polling recovers missed/removed rows, and synchronization retains the existing no-feedback-loop contract.

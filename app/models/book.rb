@@ -10,6 +10,7 @@
 #  import_job                  :string(255)
 #  name                        :string(255)
 #  populate_job                :string(255)
+#  rank_depth                  :integer
 #  scale                       :string(255)
 #  scale_with_labels           :text(65535)
 #  scoring_guidelines          :text(65535)
@@ -82,11 +83,8 @@ class Book < ApplicationRecord
   # has_many :users, dependent: :destroy
   # has_many :ai_judges, through: :ai_judges
 
-  # rubocop:disable-next Rails/HasAndBelongsToMany
-  has_and_belongs_to_many :ai_judges,
-                          class_name:              'AiJudge',
-                          join_table:              'books_ai_judges',
-                          association_foreign_key: 'user_id'
+  has_many :books_ai_judges, dependent: :destroy
+  has_many :ai_judges, through: :books_ai_judges, source: :ai_judge
 
   has_many :query_doc_pairs, dependent: :delete_all, autosave: true
 
@@ -184,6 +182,96 @@ class Book < ApplicationRecord
 
   def queries_count
     query_doc_pairs.select(:query_text).distinct.count
+  end
+
+  # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =
+  # higher-ranked) judging and coverage metrics look. A nil depth means
+  # unlimited - matches how position itself is nullable/unranked today.
+  # Defaults to this book's own rank_depth, but callers (e.g. the bulk judging
+  # screen) can pass an explicit depth to override it for one request without
+  # duplicating this filter.
+  def query_doc_pairs_within_rank_depth depth = rank_depth
+    depth.present? ? query_doc_pairs.where(position: ..depth) : query_doc_pairs
+  end
+
+  # Per-judge activity stats (sparkline of daily counts, total count, last
+  # judged timestamp) for the given user ids, in a constant number of queries
+  # regardless of how many judges are asked for. Shared by the book overview
+  # page, the per-judge overview page, and the live activity broadcast so
+  # they can't drift out of sync with each other.
+  def judge_activity_for user_ids, days: 7
+    return {} if user_ids.blank?
+
+    start_date = (days - 1).days.ago.to_date
+    daily_counts = judgements
+      .where(user_id: user_ids)
+      .where(judgements: { updated_at: start_date.beginning_of_day.. })
+      .group(:user_id, Arel.sql('DATE(judgements.updated_at)'))
+      .count
+    totals = judgements.where(user_id: user_ids).group(:user_id).count
+    last_ats = judgements.where(user_id: user_ids).group(:user_id).maximum(:updated_at)
+
+    user_ids.index_with do |uid|
+      sparkline = (days - 1).downto(0).map do |days_ago|
+        date = days_ago.days.ago.to_date
+        # Not %a (weekday name) - repeats and collides once the window exceeds 7 days.
+        { date: date.strftime('%b %-d'), count: daily_counts[[ uid, date ]] || 0 }
+      end
+      { sparkline: sparkline, count: totals[uid] || 0, last_judged_at: last_ats[uid] }
+    end
+  end
+
+  # The Turbo Streams channel the book overview page's Judge Activity table
+  # subscribes to (books/show.html.erb) and every job that broadcasts a
+  # judgement-related update re-renders into. Single source of truth so the
+  # channel name can't drift between the view and its broadcasters.
+  def judgements_broadcast_channel
+    "book_#{id}_judgements"
+  end
+
+  # One row per judge for the book overview's Judge Activity table: every
+  # human judge who has judged anything, plus every assigned AI judge (shown
+  # even at zero judgements, since being assigned is itself worth showing).
+  # Shared by the initial render and periodic reconciliation so missed
+  # broadcasts cannot leave a judge's row missing.
+  def judge_activity_rows days: 30
+    judge_ids = (judgements.where.not(user_id: nil).distinct.pluck(:user_id) + ai_judges.pluck(:id)).uniq
+    return [] if judge_ids.empty?
+
+    actively_judging_ids = RunJudgeJudyJob.actively_judging_user_ids(self).to_set
+    judges_by_id = User.where(id: judge_ids).index_by(&:id)
+    activity = judge_activity_for(judge_ids, days: days)
+    auto_run_ids = books_ai_judges.auto_run.pluck(:user_id).to_set
+
+    rows = judge_ids.filter_map do |uid|
+      judge = judges_by_id[uid]
+      next unless judge
+
+      stats = activity.fetch(uid, { sparkline: [], count: 0, last_judged_at: nil })
+      { judge: judge, sparkline: stats[:sparkline], last_judged_at: stats[:last_judged_at],
+        count: stats[:count], actively_judging: actively_judging_ids.include?(judge.id),
+        auto_run: auto_run_ids.include?(judge.id) }
+    end
+
+    rows.sort_by { |row| row[:judge].fullname }
+  end
+
+  # Same shape as one entry from judge_activity_rows, computed without the
+  # book-wide joins judge_activity_rows needs to build every row at once -
+  # the live per-judgement broadcast (BroadcastJudgeActivityJob) only ever
+  # needs to refresh the one judge who just judged, not reload every judge
+  # on the book to throw away every row but one. Returns nil if that judge
+  # doesn't qualify for a row at all (see judge_activity_rows) - same
+  # "shouldn't normally happen" case its caller already falls back on.
+  def judge_activity_row_for judge, days: 30
+    return nil unless ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
+
+    activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)
+    auto_run = books_ai_judges.where(user_id: judge.id).pick(:auto_run) || false
+    actively_judging = RunJudgeJudyJob.actively_judging_user_ids(self).include?(judge.id)
+
+    { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
+      count: activity[:count], actively_judging: actively_judging, auto_run: auto_run }
   end
 
   # Not proud of this method, but it's the only way I can get the dependent

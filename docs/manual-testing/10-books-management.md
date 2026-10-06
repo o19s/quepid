@@ -4,7 +4,7 @@
 
 A **Book** is Quepid's offline relevance-judgement workflow: a set of query/document pairs (**Query Doc Pairs**) that one or more people (or AI Judges) rate independently (**Judgements**). Judgements can later be synced back into a Case's ratings (Part 6.6). This part covers creating/configuring a book, its danger-zone maintenance tools, and import/export. Judging itself is covered in Part 11; AI Judges in Part 12.
 
-**Where to find it:** `/books`. Every book page shares a tab strip: **Overview, Query/Doc Pairs, Judgement Stats, Judgements, Import, Share book, Export, Settings**.
+**Where to find it:** `/books`. Every book page shares a tab strip: **Overview** and **Judge Overview**. Management pages also show **Judgement Stats, Query/Doc Pairs, Judgements, Import, Share book, Export, Settings**.
 
 ## Test scenarios
 
@@ -35,12 +35,12 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 - [ ] **Steps:**
   1. Open an existing book's **Settings** tab.
-  2. Change Name, add/remove Teams, add/remove **AI Judges Assigned to this Book** checkboxes (see Part 12 for creating an AI Judge first), toggle **Show Rank of Documents when Judging**, toggle **Supports Implicit Judgements**, change **Rating Scale** and **Scoring Guidelines**.
+  2. Change Name, add/remove Teams, add/remove **AI Judges Assigned to this Book** checkboxes (see Part 12 for creating an AI Judge first), set per-judge **Auto-run on new pairs** and **Rank Depth**, toggle **Show Rank of Documents when Judging**, toggle **Supports Implicit Judgements**, change **Rating Scale** and **Scoring Guidelines**.
   3. Save, reload, confirm everything persisted.
 - **Expected:** All settings persist correctly.
 - **Edge cases:**
   - [ ] With an import or export file already attached, check "Delete Import File" / "Delete Export File" and save — confirm the file is purged and the checkbox becomes disabled afterward.
-  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm hidden teams and AI judges are preserved. AI judge checkboxes should only list judges from your own teams that share the book; saving the unchanged visible selection must succeed (best tested with two accounts).
+  - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm hidden teams and AI judges are preserved. AI judge checkboxes list judges you own or that are shared with your teams; hidden assignments and their auto-run flags must survive; saving the unchanged visible selection must succeed (best tested with two accounts).
   - [ ] Change the Rating Scale after judgements already exist on the old scale — confirm existing judgements still display sensibly rather than breaking.
 
   - [ ] Submit a foreign team ID or an inaccessible/human AI judge ID in a create/update request — expect 404, no new book and no changes to existing memberships.
@@ -48,14 +48,14 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 ### 10.4 Book Overview / Show page
 
 - [ ] **Steps:**
-  1. Open a book's **Overview** tab. Confirm it shows: judgements-needed banner, AI judge info or call-to-action, Teams, Scale labels, Show Rank/Implicit Judgements flags, Related Cases, and Associated Files.
+  1. Open a book's **Overview** tab. Confirm Fully Judged (3+ judgements), Not Started and In Progress coverage; AI/human Judge Activity with counts, last-active time and 30-day charts; Linked Cases with sync-direction arrows; Book Settings and Associated Files. Coverage respects Rank Depth and updates on refresh; activity updates live.
   2. Click **Archive**, confirm the dialog, confirm.
   3. From the archived list, reopen it, click **Unarchive**, confirm.
 - **Expected:** Archive/unarchive work with the standard browser confirm dialog; the Archived badge and index-list membership update accordingly.
 - **Edge cases:**
   - [ ] With legacy anonymous judgements present (`user: nil`), confirm the yellow "anonymous judgements" warning banner appears and links toward the Assign Anonymous tool (10.6a).
   - [ ] With an import currently processing, confirm the red in-progress alert + manual **Refresh** link appears, and clicking Refresh updates the pair count once the job finishes.
-  - [ ] Confirm "AI Judges Available" only appears when the book's teams have an unassigned AI judge, and flips to "we have an AI Judge helping" text once one is assigned.
+  - [ ] Confirm unassigned accessible AI judges are offered and assigned judges are shown in activity even with zero judgements. Play opens the bounded/all-pairs modal; Refine Prompt appears only for judges you can edit. Linked-case arrows distinguish sends pairs, receives ratings, both and no auto-sync; running jobs pulse the matching direction.
 
 ### 10.5 Combine (merge) books
 
@@ -142,3 +142,8 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   4. Click Export/Re-Export a second time immediately (before the first job finishes) — confirm it's blocked/disabled rather than queuing a duplicate job.
   5. Follow the "Quepid APIs" link to the OAS docs page.
 - **Expected:** Exactly one export job runs at a time per book; the resulting JSON file is a valid, complete book export (good candidate for reuse as an import template, per Part 10.7).
+
+### 10.10 Judge Overview
+
+- [ ] **Steps:** Open **Judge Overview** before and after contributing a judgement. Check personal progress, remaining available pairs, the book's rubric and your 30-day activity chart. Follow **Start Judging** and **Bulk Judging**.
+- **Expected:** Personal progress and remaining pairs respect Rank Depth and the book's selection strategy; total contributions and the activity chart include the whole book. Completed/empty books disable judging links and explain what remains for other judges. Reload updates personal metrics.

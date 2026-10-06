@@ -9,7 +9,7 @@ export function buildQueryDocPairsPayload(queries) {
           result[field.field] = field.value
           return result
         },
-        { ...(doc.rawFields || {}) }
+        { title: doc.title, ...(doc.rawFields || {}) }
       )
 
       fields.title = doc.title

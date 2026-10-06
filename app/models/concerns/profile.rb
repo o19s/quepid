@@ -28,6 +28,8 @@ module Profile
   private
 
   def size_to_number size
+    return size if size.is_a?(Integer)
+
     SIZES[size]
   end
 end

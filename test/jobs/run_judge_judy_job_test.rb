@@ -96,4 +96,87 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       scaleless_book&.really_destroy
     end
   end
+
+  describe '.actively_judging_user_ids' do
+    test "finds an ai judge's id even though its GlobalID class segment is AiJudge, not User" do
+      SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => book.to_global_id.to_s },
+            { '_aj_globalid' => judge_judy.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+
+      assert_includes RunJudgeJudyJob.actively_judging_user_ids(book), judge_judy.id
+    end
+  end
+
+  describe 'successful judging' do
+    test 'judges pair and broadcasts updates' do
+      assert_difference 'book.judgements.count', 1 do
+        perform_enqueued_jobs do
+          RunJudgeJudyJob.perform_later(book, judge_judy, 1)
+        end
+      end
+
+      judgement = book.judgements.where(user: judge_judy).last
+      assert_not_nil judgement
+      assert_in_delta(0.0, judgement.rating)
+    end
+
+    test 'syncs case ratings per judged pair rather than one bulk update at the end' do
+      assert_no_enqueued_jobs(only: UpdateCaseJob) do
+        assert_enqueued_with(job: UpdateCaseRatingsJob) do
+          RunJudgeJudyJob.new.perform(book, judge_judy, 1)
+        end
+      end
+    end
+  end
+
+  describe 'cancellation' do
+    test 'stops after saving the provider response when cancellation is requested' do
+      job = RunJudgeJudyJob.new(book, judge_judy, nil)
+      SolidQueue::Job.create!(
+        active_job_id: job.job_id,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     job.serialize
+      )
+      stub_request(:post, 'https://api.openai.com/v1/chat/completions').to_return do
+        RunJudgeJudyJob.cancel(book, judge_judy)
+        { status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "Current response"}' } } ] }.to_json,
+          headers: { 'Content-Type' => 'application/json' } }
+      end
+
+      assert_difference 'book.judgements.count', 1 do
+        job.perform(book, judge_judy, nil)
+      end
+      assert_requested :post, 'https://api.openai.com/v1/chat/completions', times: 1
+    end
+
+    test 'a tracked job cancelled before execution makes no provider request' do
+      job = RunJudgeJudyJob.new
+      job.provider_job_id = 999_999_999
+      assert_no_difference 'book.judgements.count' do
+        job.perform(book, judge_judy, nil)
+      end
+      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
+    end
+
+    test 'runs to completion when never tracked by SolidQueue (e.g. inline/test adapter)' do
+      job = RunJudgeJudyJob.new
+      job.job_id = SecureRandom.uuid
+
+      assert_not SolidQueue::Job.exists?(active_job_id: job.job_id)
+
+      assert_difference 'book.judgements.count', 3 do
+        job.perform(book, judge_judy, 3)
+      end
+    end
+  end
 end

@@ -43,4 +43,13 @@ class QueryDocPair < ApplicationRecord
   validates :options, json_format: true, allow_blank: true
 
   scope :has_judgements, -> { joins(:judgements) }
+  after_create_commit :queue_auto_run_ai_judges
+
+  private
+
+  def queue_auto_run_ai_judges
+    book.books_ai_judges.auto_run.find_each do |bai|
+      AutoRunJudgeJudyJob.enqueue_for(bai)
+    end
+  end
 end

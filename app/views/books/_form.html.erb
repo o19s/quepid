@@ -96,13 +96,26 @@
           <div class="collection-check-box">
             <%= b.check_box %>
             <%= b.label %>
+            <div class="form-check ms-4">
+              <%= check_box_tag 'book[auto_run_ai_judge_ids][]', b.value,
+                    book.books_ai_judges.any? { |assignment| assignment.user_id == b.value && assignment.auto_run? },
+                    id: "auto_run_#{b.value}", class: 'form-check-input' %>
+              <%= label_tag "auto_run_#{b.value}", 'Auto-run on new pairs', class: 'form-check-label' %>
+            </div>
           </div>
         <% end %>
+        <%= hidden_field_tag 'book[auto_run_ai_judge_ids][]', '' %>
         <div class="form-text">
           Choose AI judges you own or that are shared with one of your teams.
         </div>
       </div>
 
+
+      <div class="mb-3">
+        <%= form.label :rank_depth, 'Rank Depth', class: 'form-label' %>
+        <%= form.number_field :rank_depth, min: 1, class: 'form-control' %>
+        <div class="form-text">Only judge pairs at this rank or better. Leave blank for no limit.</div>
+      </div>
 
       <div class="mb-3">
         <%= form.label :show_rank, class: 'form-check-label' %>

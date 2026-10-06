@@ -77,7 +77,7 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   4. Click **reset** next to a judge's "Marked Judge Later" count.
 - **Expected:** Each reset deletes just that judge's unrateable (or judge-later) judgements and the count drops to 0; the reset button itself disappears once the count is 0 (since it's only rendered when count > 0).
 - **Edge cases:**
-  - [ ] Confirm the **Prepare to Judge!** button (AI judge rows, Part 12) is disabled when there's nothing left to judge, or when the book has already reached 3 judgements per pair.
+  - [ ] Confirm Refine Prompt is shown only for accessible AI judges. Run controls live on Overview (Part 12.5), while reset controls remain on Judgement Stats.
 
 ### 11.8 Bulk Judge (grid mode)
 
@@ -90,7 +90,7 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   6. Toggle **Show Explanations** on, type into a document's explanation field — confirm it auto-saves (no explicit save button) and persists on reload.
   7. Toggle **Show Explanations** off with existing explanations present — confirm they render read-only rather than vanishing.
   8. Uncheck **Unrated** — confirm already-rated documents also appear, pre-selected.
-  9. Use the **Rank Depth** dropdown to limit to `position <= N`.
+  9. With a book Rank Depth set, confirm it is the initial cutoff. Use the dropdown to limit to `position <= N`, then choose **All** to include deeper and unranked pairs. Return without an explicit cutoff and confirm the book default still applies.
   10. Enter a **query text** filter that matches no queries — confirm the empty state lists active filters with working "clear this filter" quick links.
   11. Page through results (25 per page) if there are enough documents, and confirm grouping-by-query stays correct across the page boundary.
 - **Expected:** All of the above work as described; saving/clearing ratings never triggers a full page reload.

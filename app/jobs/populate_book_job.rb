@@ -17,9 +17,32 @@ class PopulateBookJob < ApplicationJob
                      duration:    30.minutes,
                      on_conflict: :discard
 
+  # Finds the in-flight (not finished) SolidQueue rows for this job class
+  # matching the given book + case. Mirrors RunJudgeJudyJob.active_for -
+  # the Linked Cases card uses this to pulse a case's "sends pairs" arrow
+  # while its Case -> Book sync is actively running.
+  def self.active_for book, kase
+    book_gid = book.to_global_id.to_s
+    kase_gid = kase.to_global_id.to_s
+    SolidQueue::Job
+      .where(class_name: name, finished_at: nil)
+      .where.missing(:failed_execution)
+      .where('arguments LIKE ? AND arguments LIKE ?', "%#{book_gid}%", "%#{kase_gid}%")
+      .select do |job|
+        args = job.arguments['arguments'] || []
+        args.any? { |a| a.is_a?(Hash) && a['_aj_globalid'] == book_gid } &&
+          args.any? { |a| a.is_a?(Hash) && a['_aj_globalid'] == kase_gid }
+      end
+  end
+
+  def self.actively_populating? book, kase
+    active_for(book, kase).any?
+  end
+
   def perform book, kase, blob
     # Using Rails' bulk insert methods for better performance.
 
+    BroadcastLinkedCasesJob.perform_later(book)
     book.update(populate_job: "populate started at #{Time.zone.now}")
     DeferredPayload.consume(blob) do |params|
       book.query_doc_pairs.empty?
@@ -29,12 +52,10 @@ class PopulateBookJob < ApplicationJob
       progress = ProgressBroadcaster.new(book, total)
       params[:query_doc_pairs].each do |pair|
         counter -= 1
-        query_doc_pair = book.find_or_create_query_doc_pair query_text: pair[:query_text],
-                                                            doc_id:     pair[:doc_id]
+        query = kase.queries.find_by(query_text: pair[:query_text])
+        query_doc_pair = pair_for_population(book, pair, query)
         query_doc_pair.position = pair[:position]
         query_doc_pair.document_fields = pair[:document_fields].to_json
-
-        query = kase.queries.find_by(query_text: query_doc_pair.query_text)
 
         if query # the query may no longer exist in the case
 
@@ -75,12 +96,19 @@ class PopulateBookJob < ApplicationJob
         end
 
         progress.advance(counter, query_doc_pair)
+        BroadcastLinkedCasesJob.perform_later(book) if (counter % 25).zero?
       end
 
       fix_duplicate_positions book
 
       book.update!(populate_job: nil)
+      BroadcastLinkedCasesJob.perform_later(book)
     end
+  end
+
+  def pair_for_population book, pair, query
+    attributes = { query_text: pair[:query_text], doc_id: pair[:doc_id] }
+    query ? book.find_or_initialize_query_doc_pair(**attributes) : book.find_or_create_query_doc_pair(**attributes)
   end
 
   def fix_duplicate_positions book
