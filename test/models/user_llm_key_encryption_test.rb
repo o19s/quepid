@@ -4,7 +4,7 @@ require 'test_helper'
 
 class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
   test 'llm_key should be encrypted when saved' do
-    user = User.new(
+    user = AiJudge.new(
       name:          'ai judge',
       email:         'ai_judge@example.com',
       password:      'password123',
@@ -30,7 +30,7 @@ class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
   end
 
   test 'llm_key should be decrypted when loaded' do
-    user = User.create!(
+    user = AiJudge.create!(
       name:          'ai judges',
       email:         'ai_judge2@example.com',
       password:      'password123',
@@ -47,7 +47,7 @@ class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
 
   test 'can query users by llm_key presence' do
     # Create a user with llm_key (AI judge)
-    ai_judge = User.create!(
+    ai_judge = AiJudge.create!(
       name:          'ai judge3',
       email:         'ai_judge3@example.com',
       password:      'password123',
@@ -55,8 +55,8 @@ class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
       system_prompt: 'You are a helpful assistant'
     )
 
-    # Test the only_ai_judges scope
-    ai_judges = User.only_ai_judges
+    # Only AI judges retain provider keys
+    ai_judges = AiJudge.all
     assert_includes ai_judges, ai_judge
     assert_not_includes ai_judges, users(:doug)
   end

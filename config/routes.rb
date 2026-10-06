@@ -88,10 +88,20 @@ Rails.application.routes.draw do
   get '/dropdown/cases_core' => 'dropdown#cases_core'
   get '/dropdown/books_core' => 'dropdown#books_core'
 
+  # ai_judge_id is either a real id or the literal 'new' (mirrors the
+  # mapper_wizard search_endpoint_id pattern above), since testing a prompt
+  # runs entirely in-memory and doesn't require a saved judge.
+  scope 'ai_judges' do
+    get  ':ai_judge_id/sample_query_doc_pair', to: 'ai_judges/wizard#sample_query_doc_pair',
+                                               as: :ai_judge_sample_query_doc_pair
+    post ':ai_judge_id/test_prompt', to: 'ai_judges/wizard#test_prompt', as: :ai_judge_test_prompt
+  end
+
+  resources :ai_judges
+
   resources :teams, only: [] do
     resources :ai_judges, controller: :ai_judges, except: [ :index ]
   end
-
   resources :ai_judges, only: [] do
     resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges
   end

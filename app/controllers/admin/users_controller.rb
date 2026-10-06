@@ -14,7 +14,8 @@ module Admin
     def index
       @shallow = 'true' == params[:shallow]
 
-      query = User.order(created_at: :desc)
+      # Exclude AI judges from the admin user list.
+      query = User.real_users.order(created_at: :desc)
 
       query = query.search_by(params[:q], :name, :email) if params[:q].present?
 

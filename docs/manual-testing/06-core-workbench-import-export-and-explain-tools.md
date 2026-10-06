@@ -86,8 +86,9 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
 
 - [ ] **Steps:**
   1. Click **Judgements** in the case toolbar.
-  2. If the case isn't yet shared with any team, confirm you're prompted to share it or create a team first.
-  3. Pick (or create) a Book from a team the case is shared with.
+  2. On a teamless case, confirm your owned books are available. With no owned books and no teams, confirm the create-book prompt.
+  3. Pick (or create) an owned Book or a Book from a team the case is shared with.
+     A book appearing in both sources must appear only once.
      Confirm None appears first and the saved book precedes other books. View opens
      the book without saving a selection; Cancel discards a changed selection.
   4. Toggle **Case → Book: Query/Doc Pairs** sync and use its manual **Populate Now** button.
@@ -100,8 +101,8 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
       flags are off, integration controls are hidden and Save is hidden on reopen.
 - **Expected:** The case-to-book link is established; sync directions work independently in both directions. Large operations (50+ queries) run as a background job with a redirect and a flash notice rather than blocking the UI.
 - **Edge cases:**
-  - [ ] Attempt this on a case with zero team-sharing — confirm the gating message/prompt to share first.
-  - [ ] A shared team with no books shows Create a book rather than the picker.
+  - [ ] Link an owned book on a case with zero team-sharing; save and reload.
+  - [ ] No books across ownership and case-team sharing shows Create a book rather than the picker.
   - [ ] Force a book-list load failure, then close/reopen to retry; force a save
         failure and retry with the selected book and sync flags retained.
   - [ ] Use **Create a book** and **Judge Documents!** shortcuts — confirm they land you in the right place (Part 10/11).

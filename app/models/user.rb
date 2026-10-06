@@ -30,10 +30,12 @@
 #  reset_password_token        :string(255)
 #  stored_raw_invitation_token :string(255)
 #  system_prompt               :string(4000)
+#  type                        :string(255)
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
 #  invited_by_id               :integer
+#  owner_id                    :integer
 #
 # Indexes
 #
@@ -42,6 +44,8 @@
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
 #  index_users_on_reset_password_token  (reset_password_token) UNIQUE
+#  index_users_on_type                  (type)
+#  index_users_owner_id                 (owner_id)
 #  ix_user_username                     (email) UNIQUE
 #
 # Foreign Keys
@@ -65,7 +69,6 @@ class User < ApplicationRecord
     SQL
   }
 
-  # Encrypted attributes
   encrypts :llm_key, deterministic: false
 
   # Associations
@@ -98,6 +101,12 @@ class User < ApplicationRecord
            foreign_key: :owner_id,
            inverse_of:  :owner,
            dependent:   :destroy
+
+  has_many :owned_ai_judges,
+           class_name:  'AiJudge',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
 
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
@@ -137,9 +146,6 @@ class User < ApplicationRecord
   validates :name,
             length: { maximum: 255 }
 
-  validates :name,
-            presence: true, if: :ai_judge?
-
   # https://davidcel.is/posts/stop-validating-email-addresses-with-regex/
   validates :email,
             presence:   true,
@@ -172,9 +178,6 @@ class User < ApplicationRecord
   validates :agreed,
             acceptance: { message: 'checkbox must be clicked to signify you agree to the terms and conditions.' },
             if:         :terms_and_conditions?
-
-  validates :llm_key, length: { maximum: 255 }, allow_nil: false, presence: true, if: :ai_judge?
-  validates :system_prompt, length: { maximum: 4000 }, allow_nil: true, presence: true, if: :ai_judge?
 
   def terms_and_conditions?
     Rails.application.config.terms_and_conditions_url.present?
@@ -241,14 +244,14 @@ class User < ApplicationRecord
 
   # Scopes
   # default_scope -> { includes(:permissions) }
-  scope :only_ai_judges, -> { where.not(llm_key: nil) }
+  scope :real_users, -> { where(type: [ nil, 'User' ]) }
 
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.
   # Used by promote_to_first_administrator? below to make the first real signup an
   # administrator automatically, so there's always a way in.
   def self.no_real_users_yet?
-    where(llm_key: nil).none?
+    real_users.none?
   end
 
   # Email matching is case insensitive on MySQL only because the users table
@@ -257,12 +260,8 @@ class User < ApplicationRecord
   # don't depend on every stored address already being lowercase.
   scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
 
-  # Lets get STI in and have actual AiJudge and User objects!
-  # Reads the raw column to avoid triggering Active Record encryption, which
-  # would fail (and break unrelated views) if encryption credentials aren't
-  # configured in this environment.
   def ai_judge?
-    !read_attribute_before_type_cast(:llm_key).nil?
+    is_a?(AiJudge)
   end
 
   def num_queries
@@ -341,6 +340,7 @@ class User < ApplicationRecord
   private
 
   def set_defaults
+    self.type ||= 'User'
     # rubocop:disable Style/RedundantSelf
     self.completed_case_wizard = false if completed_case_wizard.nil?
     self.num_logins       = 0 if num_logins.nil?

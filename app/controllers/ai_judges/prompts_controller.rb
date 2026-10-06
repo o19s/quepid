@@ -9,24 +9,20 @@ module AiJudges
     end
 
     def edit
-      @ai_judge = User.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
 
       @query_doc_pair = if @book
                           @book.query_doc_pairs.sample
                         else
-                          # grab any query_doc_pair that the judge has access to
-                          QueryDocPair
-                            .joins(book: { teams: :members })
-                            .where(teams: { teams_members: { member_id: @ai_judge.id } })
-                            .order(Arel.sql(AdapterFunctions.random_function))
-                            .first
+                          QueryDocPair.where(book: Book.for_user(current_user))
+                            .order(Arel.sql(AdapterFunctions.random_function)).first
                         end
 
       @query_doc_pair = QueryDocPair.new if @query_doc_pair.nil?
     end
 
     def update
-      @ai_judge = User.find(params.expect(:ai_judge_id))
+      @ai_judge = AiJudge.for_user(current_user).find(params.expect(:ai_judge_id))
       @ai_judge.update(ai_judge_params)
 
       @query_doc_pair = QueryDocPair.new(query_doc_pair_params)

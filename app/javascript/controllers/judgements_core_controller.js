@@ -52,6 +52,7 @@ export default class extends CoreModalControllerBase {
   static values = {
     caseUrlTemplate: String,
     teamBooksUrlTemplate: String,
+    ownedBooksUrl: String,
     refreshUrlTemplate: String,
     newBookUrlTemplate: String,
     bookUrlTemplate: String,
@@ -274,28 +275,23 @@ export default class extends CoreModalControllerBase {
 
       this._updateCreateBookLinks()
 
-      if (this.teams.length === 0) {
-        this.setLoading(false)
-        this._setSectionsVisible({ noTeams: true })
-        this._refreshIntegrationVisibility()
-        this._refreshSaveVisibility()
-        return
-      }
-
-      const bookLists = await Promise.all(
-        this.teams.map(async (team) => {
+      const bookLists = await Promise.all([
+        getJson(this.ownedBooksUrlValue).then((data) =>
+          Array.isArray(data.all_books) ? data.all_books.map((book) => ({ id: book.book_id, name: book.name })) : []
+        ),
+        ...this.teams.map(async (team) => {
           const url = this.teamBooksUrlTemplateValue.replaceAll(TEAM_ID_PLACEHOLDER, String(team.id))
           const data = await getJson(url)
           return Array.isArray(data.books) ? data.books : []
         })
-      )
+      ])
 
       if (this.openGeneration !== generation) return
       this.books = this._dedupeAndSortBooks(bookLists.flat())
       this.setLoading(false)
 
       if (this.books.length === 0) {
-        this._setSectionsVisible({ noBooks: true })
+        this._setSectionsVisible({ noBooks: true, noTeams: this.teams.length === 0 })
       } else {
         this._setSectionsVisible({ books: true })
         this._renderBooks()

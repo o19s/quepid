@@ -2,53 +2,63 @@
 
 ## Overview
 
-AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a special `User` belonging to a Team, configured with an LLM provider/key/model and a system prompt. Once assigned to a Book, it can be triggered to auto-judge a batch (or all) of the book's unjudged query/doc pairs — a feature nicknamed "Judge Judy."
+AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass with an owner, optional team sharing, provider settings and a system prompt. Assign it to a Book to run automatic judging ("Judge Judy").
 
 ## Test scenarios
 
-### 12.1 Create a per-team AI Judge
+### 12.1 Create an owned or team-shared AI Judge
 
 - [ ] **Steps:**
-  1. From a Team's show page, click **Create AI Judge**.
-  2. Fill in Name and an **LLM Key** (required — help text notes it must be something, even a placeholder like "abc123").
-  3. Choose an **LLM Provider** from the dropdown — try each option in turn: OpenAI, Azure OpenAI, Azure AI Foundry, Azure AI Foundry Serverless, Azure AI Foundry Anthropic, Anthropic, Google Gemini, Ollama.
-  4. For each, confirm the LLM Service URL / Model / API Version fields auto-fill with sensible presets and inline help text updates.
-  5. Toggle between the **Structured Fields** and **JSON** tabs for `judge_options` — confirm they're mutually exclusive (editing one disables the other, not just visually but functionally).
-  6. Review/edit the default **System Prompt** (a canned 0–3 relevance-grading prompt with worked examples).
-  7. Save.
-- **Expected:** Redirects to the Team show page; the new AI judge appears in the members list with a robot indicator and an Edit link.
+  1. Open **AI Judges → Create AI Judge**, or **Create AI Judge** on a Team page (that team starts selected).
+  2. Enter a Name; confirm **Test & Refine** appears. Leave teams unchecked for a private judge, or select teams to share it.
+  3. Choose an LLM Provider. Confirm URL/model/API-version presets and provider help; check custom overrides when switching providers.
+  4. Enter a key if the provider requires one. Local Ollama can save with a blank key.
+  5. Switch between Structured Fields and JSON; confirm only the active representation submits.
+  6. Review the System Prompt, test it as described in 12.4, then Save.
+  7. Reload and confirm name, provider, prompt and sharing persist; the index shows the owner and teams.
+- **Expected:** Top-level Save redirects to the judge form. Legacy nested team submissions return to the team. Successful mutations use Turbo-compatible redirects.
 - **Edge cases:**
-  - [ ] Leave LLM Key blank — confirm what actually happens (this field doubles as part of what distinguishes an AI judge from a human user).
-  - [ ] Switch providers after already filling in custom URL/model values — confirm the preset auto-fill doesn't silently clobber intentional manual overrides in a confusing way.
+  - [ ] Blank name/prompt or malformed configuration JSON returns validation errors, retains entered values and team selections, and creates no judge.
+  - [ ] Keyless judges still appear as AI judges rather than human accounts.
 
 ### 12.2 Edit / delete an AI Judge
 
 - [ ] **Steps:**
-  1. From the team member list, click **Edit** (pencil) on an AI judge.
-  2. Change the system prompt, LLM key, or provider, save.
-  3. Remove the AI judge from the team (same "x" remove-member control as a human member, Part 9.4).
-- **Expected:** Edits persist; removing it drops it from the team like any other member.
+  1. From AI Judges or a team member list, edit an owned or team-shared judge.
+  2. Change its name, prompt or provider; save and reload.
+  3. Change selected teams; confirm only teams visible to you are changed. Existing sharing with other teams remains intact.
+  4. From AI Judges, click Delete. Cancel first, then confirm deletion of a disposable judge without judgements.
+- **Expected:** Edits persist. The confirmation dialog deletes the judge and returns to the index. Removing team membership remains available separately (Part 9.4).
+- **Edge cases:**
+  - [ ] A private judge belonging to another user cannot be viewed, edited or deleted (12.7).
+  - [ ] A judge with existing judgements retains the existing deletion restriction.
 
 ### 12.3 Assign an AI Judge to a Book
 
 - [ ] **Steps:**
-  1. Ensure the AI judge's team also shares the target book (Part 9.5 / Part 10.2/10.3).
-  2. On the Book's **Settings** tab, check the AI judge under "AI Judges Assigned to this Book", save.
-- **Expected:** The Book Overview now shows "We have an AI Judge {name} helping us rate documents." Before assignment, if an eligible-but-unassigned AI judge exists, the Overview instead shows an "Add AI Judge to this Book" call-to-action.
+  1. Open a new Book or an accessible Book's Settings. The book need not share a team with the judge.
+  2. Select an AI judge you own or that is shared with one of your teams.
+  3. Select a Rating Scale when required, save, reopen Settings and confirm the assignment remains checked.
+- **Expected:** Overview shows the assigned judge's helping text. An eligible unassigned judge produces the Add AI Judge call-to-action. Eligibility belongs to the viewer; inaccessible judges are omitted, and existing hidden assignments survive a visible selection update.
+- **Edge cases:**
+  - [ ] Assign your private judge to a teamless owned book or to a book you can edit through team sharing.
+  - [ ] Submitting an inaccessible judge ID is rejected without replacing existing assignments.
 
-### 12.4 Refine an AI Judge's prompt
+### 12.4 Test & Refine an AI Judge's prompt
 
 - [ ] **Steps:**
-  1. From the book's **Judgement Stats** tab, click **Refine Prompt** on the AI judge's row.
-  2. Confirm the left panel pre-loads the current system prompt, and the right panel loads a random query/doc pair from the book (editable: query_text, doc_id, information_need, document_fields JSON, options JSON, notes, position).
-  3. Click **Change Query Doc Pair** — confirm a different random pair loads.
-  4. Edit the system prompt and/or the sample document's fields, click **Run Prompt**.
-  5. Confirm a spinner shows, then the "Rating Information" section displays the LLM's returned rating and explanation.
-  6. Click **Back** to return to Judgement Stats, or **Edit Judge** to go to the full AI judge edit form instead.
-- **Expected:** Run Prompt reliably returns a rating + explanation for the sample pair, letting you iterate on the prompt before running it on the whole book.
+  1. Open Create/Edit AI Judge, or Refine Prompt from a book's Judgement Stats.
+  2. Confirm Test & Refine loads an editable sample pair from an accessible book (the selected book when provided).
+  3. Click Change Query Doc Pair and confirm it loads another sample when available.
+  4. Edit the unsaved prompt, active provider configuration and sample document, then Run Prompt.
+  5. Confirm the busy indicator followed by rating/explanation; a zero rating must display.
+  6. Reload without Save: judge configuration must revert to the saved values. Run Prompt must not create judges, pairs or judgements.
+  7. Save explicitly and reload to verify persistence.
+- **Expected:** Testing uses current form values and the selected book's rating scale. Samples respect the requesting user's book access. Legacy prompt routes remain compatible.
 - **Edge cases:**
-  - [ ] Enter malformed JSON in the Document Fields or Options editors and click Run Prompt — confirm this fails gracefully (no server error page) rather than crashing.
-  - [ ] Run this against a book with **zero** query/doc pairs — confirm a sensible blank/placeholder pair is used instead of erroring.
+  - [ ] Malformed Document Fields, Options or provider JSON produces a recoverable error; correct it and retry.
+  - [ ] A provider failure re-enables Run Prompt and retains input for retry.
+  - [ ] An empty book uses a blank sample. Leaving the page during sampling must not update a disconnected form.
 
 ### 12.5 Trigger a judging run ("Judge Judy")
 
@@ -76,3 +86,11 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
 - **Edge cases:**
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
   - [ ] With images disabled, confirm neither URL is sent as image content.
+
+### 12.7 Judge ownership and document access
+
+- [ ] **Steps:**
+  1. Create a private judge as user A. As unrelated user B, verify it is absent from index/book choices and direct show/edit/update/delete requests fail.
+  2. Share it with a team containing B. Confirm B can use and edit it, while sharing with teams B cannot see survives B's update.
+  3. Give A a private book with a distinctive document. As B, request a wizard sample without book context and with A's inaccessible book ID.
+- **Expected:** Samples never expose A's private documents; judge sharing does not grant access to its owner's books. Confirm owned and team-shared access without requiring book and judge team overlap.

@@ -426,10 +426,10 @@ parts:
         paths: ["app/views/shared/_share_case_core_team_templates.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: linked shared case/book with both sync flags, automatic population and Populate Now completed; four human and four Ollama judgements saved, forward sync updated case ratings. Cleared populate flag confirmed. Earlier responder failure was stale worker autoload paths, resolved by restarting existing container; no job-code change. Not covered live: disconnect, manual Refresh/Sync Queries, failure retry."
-        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/views/core/_judgement_book_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/core_runtime.js"]
+        last_run: 2026-10-06T16:23:53Z
+        result: pass
+        notes: "Covered live: owned book on a teamless case, injected save failure retained selection, retry/save and reload persisted the link with sync off. Inspected book-picker before/after and success/error screenshots. Deferred: sync operations, disconnect and broader team matrix; prior sync coverage remains in history."
+        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/views/core/_judgement_book_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/core_runtime.js", "app/controllers/api/v1/books_controller.rb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
         last_run: 2026-10-05T23:41:52Z
@@ -774,42 +774,49 @@ parts:
     file: 12-ai-judges.md
     scenarios:
       "12.1":
-        title: "Create a per-team AI Judge"
-        last_run: 2026-10-05T23:51:55Z
+        title: "Create an owned or team-shared AI Judge"
+        last_run: 2026-10-06T16:22:42Z
         result: pass
-        notes: "Covered live: created team Ollama judge, visited provider presets, URL/model/key/prompt saved and robot member appeared. Not covered live: blank key/custom override and JSON/structured exclusivity."
-        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js"]
+        notes: "Covered live: blank-name validation retained sharing, private keyless Ollama creation, sharing save/reload; inspected configure and save-error pairs. E2E covers active JSON configuration and 303/422. Deferred: full provider/custom-override matrix."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
-        last_run: 2026-10-05T23:56:39Z
-        result: pass
-        notes: "Covered live: AI judge name/system prompt edit persisted on reload; modal-confirmed removal from team. Not covered live: provider/key replacement."
-        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/edit.html.erb", "app/javascript/controllers/ai_judge_form_controller.js"]
+        last_run: 2026-10-06T16:30:17Z
+        result: pass_with_fixes
+        notes: "Covered live: owned judge edit/share persisted; fixed missing confirmation outlet on new index, inspected failed/successful dialog screenshots and confirmed fixture deletion. Deferred: key replacement, cross-account editing and deletion with judgements; authorization/hidden-team retention covered by Rails tests."
+        paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/edit.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/views/ai_judges/index.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/models/concerns/for_user_scope.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-06T16:29:40Z
         result: pass
-        notes: "Covered live: assigned team AI judge to shared book; persisted settings and overview helping-judge text. Not covered live: unassigned call-to-action."
-        paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb"]
+        notes: "Covered live: assigned owned judge to teamless book after selecting required scale, saved/reopened and checked persistence; inspected Settings screenshot. E2E asserts the saved checkbox. Deferred: overview call-to-action and cross-account matrix; Rails covers owned/shared access and hidden assignments."
+        paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/models/ai_judge.rb", "app/models/book.rb", "app/models/concerns/for_user_scope.rb", "app/helpers/books_helper.rb", "app/views/books/_form.html.erb", "app/views/books/show.html.erb"]
       "12.4":
-        title: "Refine an AI Judge's prompt"
-        last_run: 2026-10-05T23:51:55Z
+        title: "Test & Refine an AI Judge's prompt"
+        last_run: 2026-10-06T16:22:37Z
         result: pass
-        notes: "Covered live: prompt refinement loaded sample pair/current prompt; Ollama Run Prompt returned rating/explanation. Not covered live: malformed JSON, empty book, changing sample and saving modified system prompt."
-        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js"]
+        notes: "Covered live: wizard sample, malformed document JSON recovery, actual keyless Ollama prompt returned rating 3/explanation; tested draft values and explicit save/reload. Inspected JSON-error/live-response screenshots. E2E covers provider failure/retry, JSON config and unsaved prompt reload; Rails covers no persistence/private document access/empty books/scale. Deferred: account matrix and legacy prompt UI."
+        paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
         last_run: 2026-10-06T13:36:06Z
         result: pass_with_fixes
         notes: "Covered live: bounded two-pair run then Judge All completed remaining pairs, four attributed ratings/explanations persisted; RunJudgeJudyJob and batched sync finished without errors. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no AI-job change. Screenshot inspected. Not covered live: unavailable/out-of-scale model and zero-work variants."
-        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb"]
+        paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb"]
 
       "12.6":
         title: "AI Judge image options"
         last_run: 2026-10-06T15:29:00Z
         result: pass
         notes: "Covered live: default checked, off/on saved and reopened, Ollama disabled; inspected screenshots and deleted fixture judge. Not covered live: paid-provider image judgement; prompt payload and JSON-tab state covered by automated tests."
-        paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb"]
+        paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb", "app/models/ai_judge.rb"]
+
+      "12.7":
+        title: "Judge ownership and document access"
+        last_run: null
+        result: null
+        notes: "Deferred cross-account browser matrix under approved sample. Rails verifies private access denial, shared editing, hidden-team retention and requester-scoped document sampling."
+        paths: ["app/models/ai_judge.rb", "app/models/user.rb", "app/models/concerns/for_user_scope.rb", "app/controllers/ai_judges_controller.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/books_controller.rb", "db/migrate/20260914204719_add_owner_id_to_users.rb", "db/migrate/20260915163412_backfill_ai_judge_owners.rb", "db/migrate/20260915214546_add_type_to_users.rb"]
 
   "13":
     file: 13-analytics.md

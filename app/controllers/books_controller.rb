@@ -81,6 +81,7 @@ class BooksController < ApplicationController
 
     @ai_judges = @book.ai_judges
     assigned_ai_judges = @ai_judges.pluck(:user_id)
+    @refinable_ai_judge_ids = accessible_ai_judges.pluck(:id)
 
     stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
 
@@ -134,7 +135,7 @@ class BooksController < ApplicationController
       end
     end
 
-    @ai_judges = []
+    @ai_judges = accessible_ai_judges
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
@@ -147,7 +148,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = accessible_ai_judges.joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = accessible_ai_judges
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -168,7 +169,7 @@ class BooksController < ApplicationController
     # Handle scorer selection
     if book_params[:scorer_id].blank?
       @book.errors.add(:scorer_id, 'must be selected')
-      @ai_judges = []
+      @ai_judges = accessible_ai_judges
       render :new, status: :unprocessable_content
       return
     end
@@ -191,7 +192,7 @@ class BooksController < ApplicationController
 
       redirect_to @book, notice: 'Book was successfully created.', status: :see_other
     else
-      @ai_judges = []
+      @ai_judges = accessible_ai_judges
       render :new, status: :unprocessable_content
     end
   end
@@ -214,7 +215,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = accessible_ai_judges.joins(teams: :books).where(teams_books: { book_id: @book.id })
+    @ai_judges = accessible_ai_judges
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -386,8 +387,7 @@ class BooksController < ApplicationController
   private
 
   def accessible_ai_judges
-    User.only_ai_judges.joins(:teams)
-      .where(teams: { id: current_user.teams.select(:id) }).distinct
+    AiJudge.for_user(current_user)
   end
 
   def assign_book_memberships

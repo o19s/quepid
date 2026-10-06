@@ -13,10 +13,11 @@ module Api
       # @parameter archived(query) [Boolean] Whether or not to return only archived books in the response.
       def index
         archived = deserialize_bool_param(params[:archived])
+        books = deserialize_bool_param(params[:owned]) ? current_user.books : current_user.books_involved_with
         @books = if archived
-                   current_user.books_involved_with.archived
+                   books.archived
                  else
-                   current_user.books_involved_with.active
+                   books.active
                  end
 
         respond_with @books

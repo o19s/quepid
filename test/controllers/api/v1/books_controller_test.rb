@@ -198,3 +198,24 @@ module Api
     end
   end
 end
+
+module Api
+  module V1
+    class BooksControllerTest
+      test 'owned filter includes only directly owned books and retains archive filtering' do
+        owned = Book.create!(name: 'Own active', owner: doug)
+        archived = Book.create!(name: 'Own archived', owner: doug, archived: true)
+        shared = books(:book_of_star_wars_judgements)
+        get :index, params: { owned: 'true' }
+        ids = response.parsed_body['all_books'].pluck('book_id')
+        assert_includes ids, owned.id
+        assert_not_includes ids, shared.id
+        assert_not_includes ids, archived.id
+        get :index, params: { owned: 'true', archived: 'true' }
+        assert_includes response.parsed_body['all_books'].pluck('book_id'), archived.id
+        get :index, params: { owned: 'false' }
+        assert_includes response.parsed_body['all_books'].pluck('book_id'), shared.id
+      end
+    end
+  end
+end

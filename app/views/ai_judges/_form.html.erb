@@ -1,4 +1,7 @@
-<div class="card" data-controller="ai-judge-form" data-action="shown.bs.tab->ai-judge-form#syncTab">
+<div class="card" data-controller="ai-judge-form ai-judge-wizard"
+     data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>" data-action="shown.bs.tab->ai-judge-form#syncTab">
   <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
   </div>
@@ -14,12 +17,15 @@
         </ul>
       </div>
     <% end %>
-    <p class="card-text">Configure the AI Judge with the information Quepid needs.</p>
+    <div data-ai-judge-wizard-target="status" class="alert" style="display:none"></div>
+    <h4><span class="badge bg-primary">1</span> Configure AI Judge</h4>
+    <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With', selected_ids: params.dig(:user, :team_ids), help_text: "Leave unchecked to keep this judge private. Team members can use and edit shared judges." %>
+    <%= hidden_field_tag :book_id, @book_id if @book_id %>
 
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
       <div class="col-sm-4">
-        <%= form.text_field :name, class: "form-control" %>
+        <%= form.text_field :name, class: "form-control", data: { ai_judge_wizard_target: "name", action: "input->ai-judge-wizard#checkReveal" } %>
       </div>
     </div>
 
@@ -29,7 +35,7 @@
         <%= form.text_field :llm_key, class: "form-control" %>
         <div class="form-text">
           This is the key to access your LLM provider's API.
-          It also lets Quepid distingush between AI Judges and regular Users, so you must provide something, even "abc123".
+          Leave blank for providers that do not require a key, such as local Ollama.
         </div>
       </div>
     </div>
@@ -45,7 +51,7 @@
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = @ai_judge.judge_options.except(:llm_include_images).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options = { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_timeout: 30, llm_api_version: '' }.merge(@ai_judge.judge_options).except(:llm_include_images).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
         <% sorted_judge_options.each do |key, value| %>
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
@@ -112,7 +118,7 @@
       <strong>Google Gemini</strong> &mdash; Uses the OpenAI-compatible endpoint.<br><b>URL:</b> <code>https://generativelanguage.googleapis.com/v1beta/openai</code><br><b>Model:</b> e.g. <code>gemini-2.0-flash</code><br><b>Key:</b> Your Google AI API key<br><b>API Version:</b> Leave blank
     </template>
     <template data-ai-judge-form-target="preset" data-provider="ollama" data-url="<%= Rails.configuration.ollama_service_url %>" data-version="" data-model="qwen3:0.6b">
-      <strong>Ollama</strong> &mdash; Local models via the Ollama container.<br><b>URL:</b> <code><%= Rails.configuration.ollama_service_url %></code><br><b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br><b>Key:</b> Any placeholder value (e.g. <code>abc123</code>)<br><b>API Version:</b> Leave blank
+      <strong>Ollama</strong> &mdash; Local models via the Ollama container.<br><b>URL:</b> <code><%= Rails.configuration.ollama_service_url %></code><br><b>Model:</b> e.g. <code>qwen3:0.6b</code>, <code>llama3</code><br><b>Key:</b> Leave blank<br><b>API Version:</b> Leave blank
     </template>
     <div id="provider-help" data-ai-judge-form-target="help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
         </div>
@@ -123,7 +129,7 @@
             This the raw JSON stored as <code>options</code> for the Judge.
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
-          <%= form.text_area :options, value: format_json(@ai_judge.options),
+          <%= form.text_area :options, value: @submitted_options || format_json(@ai_judge.options),
             class: 'form-control json-field', rows: 10, disabled: true, data: { ai_judge_form_target: "json" } %>
         </div>
       </div>
@@ -134,23 +140,82 @@
       <%= form.label :system_prompt, class: 'col-sm-2 col-form-label' %>
       <%= form.textarea :system_prompt, class: "form-control", rows: 6 %>
     </div>
+    <hr>
+
+    <!-- Step 2: Test & Refine -->
+    <div class="mb-4">
+      <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
+
+      <div data-ai-judge-wizard-target="step2" style="display: none;">
+        <p class="text-muted">Run the prompt against a real query/doc pair and see how the judge rates it. Edit the prompt above and run again as many times as you like before saving.</p>
+
+        <div class="row gx-5">
+          <div class="col-md-6">
+            <h6>Query Doc Pair to Evaluate</h6>
+            <div class="d-grid mb-2">
+              <button type="button" class="btn btn-light" data-action="click->ai-judge-wizard#sampleQueryDocPair">Change Query Doc Pair</button>
+            </div>
+
+            <div class="field">
+              <label>Query text</label>
+              <input type="text" class="form-control" data-ai-judge-wizard-target="queryText">
+            </div>
+
+            <div class="field">
+              <label>Doc ID</label>
+              <input type="text" class="form-control" data-ai-judge-wizard-target="docId">
+            </div>
+
+            <div class="field">
+              <label>Information Need</label>
+              <input type="text" class="form-control" data-ai-judge-wizard-target="informationNeed">
+            </div>
+
+            <div class="field">
+              <label>Document Fields</label> <small>JSON</small><br>
+              <textarea class="form-control" data-ai-judge-wizard-target="documentFields"
+                        data-controller="codemirror" data-codemirror-mode="json" data-codemirror-height="300"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Options</label> <small>JSON</small><br>
+              <textarea class="form-control" data-ai-judge-wizard-target="options"
+                        data-controller="codemirror" data-codemirror-mode="json" data-codemirror-height="150"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Notes</label><br>
+              <textarea class="form-control" data-ai-judge-wizard-target="notes"></textarea>
+            </div>
+
+            <div class="field">
+              <label>Position</label>
+              <input type="text" class="form-control" data-ai-judge-wizard-target="position">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <h6>Rating Information</h6>
+            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+
+            <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2">Evaluating with AI Judge...</p>
+            </div>
+
+            <div data-ai-judge-wizard-target="ratingInfo" style="display: none;">
+              <p>LLM Response: <span data-ai-judge-wizard-target="rating"></span></p>
+              <p data-ai-judge-wizard-target="explanation"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="card-footer">
     <%= form.submit 'Save', class: 'btn btn-primary float-start' %>
-    <%= link_to 'Back to Team', team_path(@team), class: "btn btn-outline-secondary float-end" %>
+    <%= link_to 'Back to AI Judges', ai_judges_path, class: "btn btn-outline-secondary float-end" %>
   </div>
 </div>
-
-<style>
-.lint-marker {
-  width: 16px;
-  height: 16px;
-  background-color: red;
-  border-radius: 50%;
-}
-
-.lint-marker.error {
-  background-color: red;
-}
-</style>

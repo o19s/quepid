@@ -47,7 +47,7 @@
 
   <div class="alert alert-info text-center d-none" role="alert" data-judgements-core-target="noTeams">
     <p>
-      Judgements are meant to be shared with a team, so either
+      Create a book of your own below, or
       <a href="#" data-action="click->judgements-core#goToTeamsPage">create a new team</a>
       or
       <a href="#" data-action="click->judgements-core#openShareCase">share case</a> first.
@@ -72,7 +72,7 @@
         <i class="bi bi-question-circle-fill" tabindex="0" role="button" aria-label="Help"
            data-controller="bs-popover" data-bs-popover-trigger-value="hover focus"
            data-bs-popover-placement-value="right"
-           data-bs-popover-content-value="All the Books related to all the Teams this Case has been shared with are listed below.  If you don't see the Book you want, check that you shared the Case with the right Team."></i>
+           data-bs-popover-content-value="Your own Books and the Books shared with this Case's teams are listed below."></i>
       </label>
 
       <ul class="list-group" data-judgements-core-target="bookList"></ul>
@@ -183,6 +183,7 @@
                                    action: "show.bs.modal->judgements-core#open",
                                    judgements_core_share_case_core_outlet: "#shareCaseModal",
                                    judgements_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__"),
+                                   judgements_core_owned_books_url_value: api_books_path(owned: true),
                                    judgements_core_team_books_url_template_value: api_team_books_path(team_id: "__TEAM_ID__"),
                                    judgements_core_refresh_url_template_value: api_book_refresh_path(book_id: "__BOOK_ID__", case_id: "__CASE_ID__", create_missing_queries: "__CREATE_MISSING__", process_in_background: "__BACKGROUND__"),
                                    judgements_core_new_book_url_template_value: new_book_path(scorer_id: "__SCORER_ID__", origin_case_id: "__CASE_ID__"),

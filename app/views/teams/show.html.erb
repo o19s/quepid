@@ -116,7 +116,7 @@
         </style>
         <hr>
         
-        <%= link_to new_team_ai_judge_path(@team), class: 'btn btn-primary btn-sm w-100' do %>
+        <%= link_to new_ai_judge_path(team_id: @team.id), class: 'btn btn-primary btn-sm w-100' do %>
           <i class="bi bi-robot"></i> Create AI Judge
         <% end %>
       </div>
@@ -167,7 +167,7 @@
               <div class="ms-3">
                 
                 <% if member.ai_judge? %>
-                  <%= link_to edit_team_ai_judge_path(@team, member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                  <%= link_to edit_ai_judge_path(member), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                     <i class="bi bi-pencil" aria-hidden="true"></i>
                   <% end %>
                 <% end %>

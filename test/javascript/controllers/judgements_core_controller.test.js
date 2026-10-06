@@ -44,6 +44,7 @@ function buildModalController(overrides = {}) {
     },
     values: {
       caseUrlTemplate: "/api/cases/__CASE_ID__",
+      ownedBooksUrl: "/api/books?owned=true",
       teamBooksUrlTemplate: "/api/teams/__TEAM_ID__/books",
       newBookUrlTemplate: "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__",
       bookUrlTemplate: "books/__BOOK_ID__",
@@ -138,6 +139,7 @@ describe("JudgementsCoreController", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    apiFetch.mockResolvedValue({ ok: true, text: async () => '{"books":[]}' })
   })
 
   afterEach(() => {
@@ -164,6 +166,36 @@ describe("JudgementsCoreController", () => {
     expect(controller.createBookLinkTarget.href).toContain("books/new?scorer_id=7&origin_case_id=42")
   })
 
+  it("merges owned and team books regardless of response order and removes duplicates", async () => {
+    apiFetch.mockImplementation(async (url) => ({
+      ok: true,
+      text: async () => JSON.stringify(url.includes("cases") ? { teams: [{ id: 1 }], book_id: null } :
+        url.includes("owned") ? { all_books: [{ book_id: 7, name: "Owned" }, { book_id: 8, name: "Shared" }] } :
+          { books: [{ id: 8, name: "Shared" }, { id: 9, name: "Team" }] })
+    }))
+    const controller = buildModalController()
+    const trigger = document.createElement("a")
+    trigger.dataset.judgementsCoreIdValue = "42"
+    await controller.openFor(trigger)
+    expect(controller.books.map(book => book.id)).toEqual([7, 8, 9])
+    expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("offers owned books when the case has no team", async () => {
+    apiFetch.mockImplementation(async (url) => ({
+      ok: true,
+      text: async () => JSON.stringify(url.includes("cases") ? { teams: [], book_id: null } :
+        { all_books: [{ book_id: 7, name: "Owned" }] })
+    }))
+    const controller = buildModalController()
+    const trigger = document.createElement("a")
+    trigger.dataset.judgementsCoreIdValue = "42"
+    await controller.openFor(trigger)
+    expect(controller.books).toEqual([{ id: 7, name: "Owned" }])
+    expect(controller.bookPickerTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(true)
+  })
+
   it("lists books with the active book first and tracks unsaved changes", async () => {
     apiFetch
       .mockResolvedValueOnce({
@@ -181,6 +213,7 @@ describe("JudgementsCoreController", () => {
             auto_populate_case_judgements: true
           })
       })
+      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
         async text() {
           return JSON.stringify(await this.json()) || ""
@@ -255,6 +288,7 @@ describe("JudgementsCoreController", () => {
             queries_count: 3
           })
       })
+      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
         async text() {
           return JSON.stringify(await this.json()) || ""
@@ -295,6 +329,7 @@ describe("JudgementsCoreController", () => {
             queries_count: 0
           })
       })
+      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
         async text() {
           return JSON.stringify(await this.json()) || ""
