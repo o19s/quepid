@@ -3,6 +3,16 @@
 require 'test_helper'
 
 class BooksHelperTest < ActionView::TestCase
+  test 'duplicate scales use the same lowest-id representative for options and selection' do
+    user = users(:doug)
+    first = Scorer.create!(owner: user, name: 'First scale', scale: [ 81, 82 ], code: 'pass();')
+    second = Scorer.create!(owner: user, name: 'Second scale', scale: first.scale, code: 'pass();')
+    book = Book.new(scale: second.scale)
+
+    assert_equal first.id, matching_scorer_id_for_book(user, book)
+    assert_equal [ first.id ], scorer_options_for_select(user).select { |_, id| [ first.id, second.id ].include?(id) }.map(&:last)
+  end
+
   describe '#available_ai_judges_for_book' do
     it 'returns empty when book has no teams' do
       # Create a book with no teams for this specific test case

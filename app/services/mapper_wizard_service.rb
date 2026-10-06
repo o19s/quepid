@@ -50,8 +50,9 @@ class MapperWizardService
 
     chat.with_instructions(generation_prompt, replace: true)
 
-    # Truncate HTML if too long to fit in context
-    truncated_html = html_content.length > 50_000 ? html_content[0...50_000] : html_content
+    sample_html = strip_boilerplate(html_content)
+    truncated = sample_html.length > 50_000
+    truncated_html = sample_html[0...50_000]
 
     response = chat.ask(<<~PROMPT)
       Analyze this HTML from a search results page and generate the JavaScript mapper functions.
@@ -64,7 +65,11 @@ class MapperWizardService
       Generate both numberOfResultsMapper and docsMapper functions. Wrap each function in a separate ```javascript code block.
     PROMPT
 
-    extract_functions_from_response(response.content)
+    extract_functions_from_response(response.content).merge(
+      truncated:       truncated,
+      original_length: html_content.length,
+      sent_length:     truncated_html.length
+    )
   rescue StandardError => e
     { success: false, error: "AI generation failed: #{e.message}" }
   end
@@ -114,7 +119,9 @@ class MapperWizardService
 
     chat = RubyLLM.chat(model: 'gpt-4o')
 
-    truncated_html = html_content.length > 30_000 ? html_content[0...30_000] : html_content
+    sample_html = strip_boilerplate(html_content)
+    truncated = sample_html.length > 30_000
+    truncated_html = sample_html[0...30_000]
 
     response = chat.ask(<<~PROMPT)
       You are improving a JavaScript #{mapper_type} function for parsing search results HTML or JSON.
@@ -139,13 +146,7 @@ class MapperWizardService
       Please preserve any console.log or comments.
     PROMPT
 
-    # Extract the improved code
-    code_match = response.content.match(/```(?:javascript|js)?\s*\n(.*?)\n```/m)
-    if code_match
-      { success: true, code: code_match[1].strip }
-    else
-      { success: false, error: 'Could not extract improved code from AI response' }
-    end
+    build_refine_result(response.content, truncated, html_content.length, truncated_html.length)
   rescue StandardError => e
     { success: false, error: "AI refinement failed: #{e.message}" }
   end
@@ -172,6 +173,40 @@ class MapperWizardService
     { success: false, error: 'Request timed out' }
   rescue StandardError => e
     { success: false, error: e.message }
+  end
+
+  def build_refine_result content, truncated, original_length, sent_length
+    code_match = content.match(/```(?:javascript|js)?\s*\n(.*?)\n```/m)
+    if code_match
+      {
+        success:         true,
+        code:            code_match[1].strip,
+        truncated:       truncated,
+        original_length: original_length,
+        sent_length:     sent_length,
+      }
+    else
+      { success: false, error: 'Could not extract improved code from AI response' }
+    end
+  end
+
+  def strip_boilerplate html
+    # JSON APIs may contain markup in string values; preserve their payload exactly.
+    begin
+      JSON.parse(html)
+      return html
+    rescue JSON::ParserError
+      # HTML responses continue below.
+    end
+
+    document = Nokogiri::HTML.fragment(html)
+    document.css('script, style, svg, noscript').each do |node|
+      next if 'script' == node.name && %w[application/ld+json application/json].include?(node['type'].to_s.strip.downcase)
+
+      node.remove
+    end
+    document.xpath('.//comment()').remove
+    document.to_html
   end
 
   def configure_ruby_llm

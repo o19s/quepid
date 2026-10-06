@@ -182,6 +182,17 @@ class TryTest < ActiveSupport::TestCase
         assert_equal({ 'yql' => 'select * from movies where true' }, args)
       end
 
+      test 'Vespa parameter lists preserve scalar values, repeated keys, and curator variables' do
+        try = tries(:one)
+        try.search_endpoint.search_engine = 'searchapi'
+        try.search_endpoint.mapper_based_search_engine_id = 'vespa'
+        try.query_params = "yql=select * from movies where vote_count > ##main_fix_threshold##\n&ranking.profile=bm25&filter=one&filter=two"
+        try.add_curator_vars('main_fix_threshold' => 5)
+
+        assert_equal({ 'yql' => 'select * from movies where vote_count > 5',
+                       'ranking.profile' => 'bm25', 'filter' => %w[one two] }, try.args)
+      end
+
       test 'still uses SolrArgParser for bare text when the endpoint has no mapper-based search engine' do
         try = tries(:one)
         try.search_endpoint.search_engine = 'searchapi'

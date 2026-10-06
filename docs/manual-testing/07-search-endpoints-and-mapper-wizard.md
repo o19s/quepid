@@ -112,12 +112,14 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 - [ ] **Steps:**
   1. Enter an OpenAI API key (masked field; note text confirms it's used only for this request and not stored).
   2. Click **Generate Mappers with AI**.
-- **Expected:** The two code editors in Step 3 (`numberOfResultsMapper`, `docsMapper`) populate with AI-generated JavaScript based on the fetched HTML/JSON.
+- **Expected:** The two code editors in Step 3 (`numberOfResultsMapper`, `docsMapper`) populate with AI-generated JavaScript based on the fetched HTML/JSON. Boilerplate is removed while JSON and structured-data scripts are preserved. If the cleaned sample exceeds 50,000 characters, a warning reports the original and sent sizes and asks you to test the mapper.
 - **Edge cases:**
   - [ ] Try this before completing Step 1 — expect "No HTML content. Fetch HTML first."
   - [ ] Leave the API key blank — expect "OpenAI API key required."
   - [ ] Use an invalid/revoked API key — expect "AI generation failed: ...".
   - [ ] If the model returns a response with no code block, confirm "No JavaScript code found in response" is shown rather than a silent failure.
+
+- [ ] Generate from a long response; confirm the truncation warning remains visible rather than auto-hiding as ordinary success.
 
 ### 7.9 Mapper Wizard — Step 3: Edit, Test & Refine
 
@@ -131,6 +133,8 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Test before ever fetching HTML — expect "HTML content is required".
   - [ ] Refine without an API key — expect "API key required".
   - [ ] If editing an **existing** Search API endpoint's mapper code, confirm both editors pre-populate correctly from its stored `mapper_code`.
+
+- [ ] Refine from a cleaned response longer than 30,000 characters; confirm the truncation warning and test the resulting code.
 
 ### 7.10 Mapper Wizard — Step 4: Save Search Endpoint
 

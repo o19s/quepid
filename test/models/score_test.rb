@@ -18,11 +18,12 @@
 #
 # Indexes
 #
-#  index_case_scores_annotation_id  (annotation_id) UNIQUE
-#  index_case_scores_on_case_id     (case_id)
-#  index_case_scores_on_scorer_id   (scorer_id)
-#  index_case_scores_on_user_id     (user_id)
-#  support_last_score               (updated_at,created_at,id)
+#  index_case_scores_annotation_id       (annotation_id) UNIQUE
+#  index_case_scores_on_case_and_latest  (case_id,updated_at,created_at,id)
+#  index_case_scores_on_case_id          (case_id)
+#  index_case_scores_on_scorer_id        (scorer_id)
+#  index_case_scores_on_user_id          (user_id)
+#  support_last_score                    (updated_at,created_at,id)
 #
 # Foreign Keys
 #
@@ -34,6 +35,24 @@
 require 'test_helper'
 
 class ScoreTest < ActiveSupport::TestCase
+  test 'latest summaries omit history and query payloads with deterministic tie breakers' do
+    kase = cases(:one)
+    kase.scores.delete_all
+    timestamp = Time.utc(2020, 1, 1)
+    kase.scores.create!(score: 0.1, created_at: timestamp, updated_at: timestamp)
+    winner = kase.scores.create!(user: users(:doug), score: 0.8, queries: { 'large' => 'payload' },
+                                 created_at: timestamp, updated_at: timestamp)
+    records = Score.latest_summaries_for_cases([ kase.id, cases(:two).id ]).to_a
+    summary = records.find { |record| record.case_id == kase.id }
+
+    assert_equal winner.id, summary.id
+    assert_in_delta 0.8, summary.score
+    assert_not summary.has_attribute?(:queries)
+    assert_predicate summary.association(:user), :loaded?
+    assert_equal users(:doug), summary.user
+    assert_empty Score.latest_summaries_for_cases([])
+  end
+
   describe 'serialize queries scores' do
     let(:score)               { scores(:score) }
     let(:score_with_queries)  { scores(:score_with_queries) }

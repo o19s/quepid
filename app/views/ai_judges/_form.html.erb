@@ -45,7 +45,7 @@
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = @ai_judge.judge_options.sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options = @ai_judge.judge_options.except(:llm_include_images).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
         <% sorted_judge_options.each do |key, value| %>
           <div class="row mb-3">
             <%= label_tag "judge_options[#{key}]", key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
@@ -74,6 +74,22 @@
             </div>
           </div>
         <% end %>
+        <div class="row mb-3">
+          <div class="col-sm-2">Images</div>
+          <div class="col-sm-4">
+            <% image_setting = @ai_judge.judge_options[:llm_include_images] %>
+            <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
+            <%= hidden_field_tag 'user[judge_options][llm_include_images]', 'false', data: { ai_judge_form_target: 'structured' } %>
+            <div class="form-check">
+              <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images,
+                    id: 'judge_options_llm_include_images', class: 'form-check-input',
+                    disabled: !LlmService.image_urls_supported?(@ai_judge.judge_options[:llm_provider]),
+                    data: { ai_judge_form_target: 'structured images' } %>
+              <%= label_tag 'judge_options_llm_include_images', 'Judge with images', class: 'form-check-label' %>
+            </div>
+            <div class="form-text">Use the document image or thumbnail URL. Turn off for text-only models. Ollama does not accept image URLs.</div>
+          </div>
+        </div>
         <template data-ai-judge-form-target="preset" data-provider="openai" data-url="https://api.openai.com" data-version="" data-model="gpt-4o">
       <strong>OpenAI</strong> &mdash; Direct API access.<br><b>URL:</b> <code>https://api.openai.com</code><br><b>Model:</b> e.g. <code>gpt-4o</code>, <code>gpt-4.1</code><br><b>Key:</b> Your OpenAI API key (starts with <code>sk-</code>)<br><b>API Version:</b> Leave blank
     </template>

@@ -36,6 +36,8 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
   - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/javascript/controllers/wizard_launcher_controller.js`) — this is current behavior, not a one-time trigger.
 
+- [ ] Choose Vespa with POST and a validation query such as `yql=select * from sources * where true&ranking.profile=bm25`; confirm validation sends separate named parameters and advances to Fields. Bare YQL and JSON request bodies should also validate.
+
 ### 3.2b Case wizard: Static CSV endpoint
 
 - [ ] **Steps:**

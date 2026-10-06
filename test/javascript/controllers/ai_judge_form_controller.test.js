@@ -27,3 +27,24 @@ it("restores the active tab and only overwrites provider fields on a provider ch
   expect(url.disabled).toBe(false)
   expect(controller.jsonTarget.disabled).toBe(true)
 })
+
+it("keeps image options disabled for Ollama and JSON editing and restores the saved checkbox state", () => {
+  const images = document.createElement("input")
+  images.type = "checkbox"
+  images.checked = false
+  const provider = document.createElement("select")
+  provider.innerHTML = '<option value="ollama">Ollama</option><option value="openai">OpenAI</option>'
+  const jsonTab = document.createElement("button")
+  const controller = buildControllerFixture(AiJudgeFormController, {
+    targets: { provider, preset: [], help: document.createElement("div"), structured: [images], images, json: document.createElement("textarea"), jsonTab }
+  })
+  controller.connect()
+  expect(images.disabled).toBe(true)
+  provider.value = "openai"
+  controller.syncTab()
+  expect(images.disabled).toBe(false)
+  expect(images.checked).toBe(false)
+  jsonTab.classList.add("active")
+  controller.syncTab()
+  expect(images.disabled).toBe(true)
+})

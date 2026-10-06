@@ -1,3 +1,23 @@
+// Match Try#searchapi_args for engines that also accept bare query text.
+export function searchApiValidationArgs(value, bareQueryParam) {
+  if (!bareQueryParam || value.startsWith("{")) return value
+  if (!/^\s*[\w.-]+=/.test(value)) return { [bareQueryParam]: value }
+
+  const params = Object.create(null)
+  value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .join("")
+    .split("&")
+    .forEach((param) => {
+      const separator = param.indexOf("=")
+      const key = separator < 0 ? param : param.slice(0, separator)
+      const val = separator < 0 ? null : param.slice(separator + 1)
+      params[key] = Object.hasOwn(params, key) ? [].concat(params[key], val) : val
+    })
+  return params
+}
+
 export function parseCustomHeaders(value) {
   if (!value || (typeof value === "string" && !value.trim())) return { valid: true, headers: null }
   if (typeof value === "object") {

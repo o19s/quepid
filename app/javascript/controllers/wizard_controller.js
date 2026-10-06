@@ -15,6 +15,7 @@ import {
   formatWizardSaveError,
   invalidProxyApiMethod,
   parseCustomHeaders,
+  searchApiValidationArgs,
   validateStaticHeaders
 } from "utils/wizard_contracts"
 
@@ -213,7 +214,10 @@ export default class extends Controller {
     settings.searchEngine = normalizeSearchEngine(settings.searchEngine)
     if (settings.searchEngine === "searchapi") {
       const queryParams = settings.queryParams || ""
-      settings.args = settings.testQuery || queryParams.replace(/#\$query##/g, "test")
+      settings.args = searchApiValidationArgs(
+        settings.testQuery || queryParams.replace(/#\$query##/g, "test"),
+        settings.bareQueryParam
+      )
     }
     if (settings.proxyRequests) settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
 

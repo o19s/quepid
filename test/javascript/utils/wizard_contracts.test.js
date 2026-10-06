@@ -6,6 +6,7 @@ import {
   formatWizardSaveError,
   invalidProxyApiMethod,
   parseCustomHeaders,
+  searchApiValidationArgs,
   validateStaticHeaders
 } from "utils/wizard_contracts"
 
@@ -50,5 +51,16 @@ describe("wizard contracts", () => {
     expect(formatValidationError({ status: -1, statusText: "Not Found" })).toBe("Not Found")
     expect(formatValidationError({ status: 0 })).toBe("Quepid could not search this endpoint.")
     expect(formatValidationError(undefined)).toBe("Quepid could not search this endpoint.")
+  })
+})
+
+ it("keeps Search API JSON and generic parameter lists unchanged, and parses Vespa scalar/repeated parameters", () => {
+  expect(searchApiValidationArgs('{"yql":"select * from movies"}', "yql")).toBe('{"yql":"select * from movies"}')
+  expect(searchApiValidationArgs("q=test", null)).toBe("q=test")
+  expect(searchApiValidationArgs("select * from movies", "yql")).toEqual({ yql: "select * from movies" })
+  expect(searchApiValidationArgs('yql=select * where title="test"\n&ranking.profile=bm25&filter=one&filter=two', "yql")).toEqual({
+    yql: 'select * where title="test"',
+    "ranking.profile": "bm25",
+    filter: ["one", "two"]
   })
 })

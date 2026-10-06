@@ -64,3 +64,15 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
   - [ ] Simulate (or naturally trigger) the LLM failing to return a usable rating for a given pair — confirm that specific judgement is marked `unrateable` rather than the whole run erroring out.
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
   - [ ] Confirm **Prepare to Judge!** is disabled/absent once the AI judge has nothing left to judge, or once the book has already reached its judgements-per-pair cap (cross-reference Part 11.7).
+
+### 12.6 AI Judge image options
+
+- [ ] **Steps:**
+  1. Create an OpenAI judge. Confirm **Judge with images** is checked by default.
+  2. Turn it off, save and reopen; then turn it on, save and reopen. Confirm both choices persist.
+  3. Select Ollama. Confirm the image checkbox is disabled. Switch back to OpenAI and confirm it is enabled.
+  4. Switch to the JSON tab and confirm structured inputs are disabled. Set `llm_include_images` to false there, save and reopen.
+- **Expected:** The saved option controls whether absolute HTTP(S) document image or thumbnail URLs enter the judging prompt. Ollama prompts omit image URLs regardless of the option. Text-only document fields remain available.
+- **Edge cases:**
+  - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
+  - [ ] With images disabled, confirm neither URL is sent as image content.

@@ -32,6 +32,36 @@ class LlmServiceTest < ActiveSupport::TestCase
     { type: 'image_url', image_url: { url: USER_PROMPT_IMAGE_URL } }
   ].freeze
 
+  test 'images prefer a valid image then thumbnail and honor the judge switch and provider' do
+    pair = QueryDocPair.new(query_text: 'image query', document_fields: { 'image' => '/relative.png', 'thumb' => 'https://example.com/thumb.png' })
+    assert_equal 'https://example.com/thumb.png', service.make_user_prompt(pair).last.dig(:image_url, :url)
+    pair.document_fields['image'] = 'https://example.com/image.png'
+    assert_equal 'https://example.com/image.png', service.make_user_prompt(pair).last.dig(:image_url, :url)
+    [ false, 'false', '0' ].each do |value|
+      assert_equal 1, LlmService.new('key', llm_include_images: value).make_user_prompt(pair).length
+    end
+    assert_equal 1, LlmService.new('key', llm_provider: 'ollama', llm_include_images: true).make_user_prompt(pair).length
+    pair.document_fields = { 'image' => 'data:image/png;base64,abc', 'thumb' => '/relative.png' }
+    assert_equal 1, service.make_user_prompt(pair).length
+  end
+
+  test 'POST retries refusal responses but does not retry ambiguous timeout failures' do
+    url = 'https://api.openai.com/v1/chat/completions'
+    [ 429, 529 ].each do |status|
+      WebMock.reset_executed_requests!
+      request = stub_request(:post, url).to_return(status: status, body: '{}')
+        .then.to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 1, "explanation": "OK"}' } } ] }.to_json)
+      retry_service = LlmService.new('key')
+      assert_equal 1, retry_service.get_llm_response([], 'prompt')[:judgment]
+      assert_requested request, times: 2
+      remove_request_stub(request)
+    end
+    WebMock.reset_executed_requests!
+    request = stub_request(:post, url).to_raise(Faraday::TimeoutError)
+    assert_raises(Faraday::TimeoutError) { LlmService.new('key').get_llm_response([], 'prompt') }
+    assert_requested request, times: 1
+  end
+
   describe 'Hacking with Scott' do
     test 'can we make it run' do
       user_prompt = USER_PROMPT_COMPOSED

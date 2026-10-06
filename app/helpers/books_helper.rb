@@ -10,7 +10,7 @@ module BooksHelper
     unique_options = []
     seen_combinations = Set.new
 
-    user.scorers_involved_with.pluck(:id, :scale, :scale_with_labels).each do |id, scale, scale_with_labels|
+    user.scorers_involved_with.order(:id).pluck(:id, :scale, :scale_with_labels).each do |id, scale, scale_with_labels|
       combination_key = [ scale, scale_with_labels ]
 
       next if seen_combinations.include?(combination_key)
@@ -31,7 +31,7 @@ module BooksHelper
     return nil if book&.scale.blank?
 
     # Use manual search because find_by doesn't work well with serialized columns
-    matching_scorer = user.scorers_involved_with.find do |scorer|
+    matching_scorer = user.scorers_involved_with.order(:id).find do |scorer|
       scorer.scale == book.scale && scorer.scale_with_labels == book.scale_with_labels
     end
 

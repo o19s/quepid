@@ -62,6 +62,38 @@ module Api
         end
       end
 
+      test 'create persists the selected accessible scorer scale and labels' do
+        scorer = scorers(:valid)
+        scorer.update!(scale_with_labels: { '1' => 'Poor', '4' => 'Excellent' })
+        post :create, params: { book: { name: 'API scale', scorer_id: scorer.id } }
+
+        assert_response :ok
+        created = Book.find(response.parsed_body['book_id'])
+        assert_equal scorer.scale, created.scale
+        assert_equal scorer.scale_with_labels, created.scale_with_labels
+        assert_equal doug, created.owner
+      end
+
+      test 'update applies labels while preserving the existing scale-change guard' do
+        book = books(:james_bond_movies)
+        scorer = quepid_default_scorer
+        scorer.update!(scale_with_labels: { '0' => 'Bad', '1' => 'Good' })
+        patch :update, params: { id: book.id, book: { scorer_id: scorer.id } }
+        assert_response :ok
+        assert_equal scorer.scale_with_labels, book.reload.scale_with_labels
+
+        patch :update, params: { id: book.id, book: { scorer_id: scorers(:valid).id } }
+        assert_response :bad_request
+        assert_equal scorer.scale, book.reload.scale
+      end
+
+      test 'an inaccessible scorer cannot change the scale' do
+        scorer = Scorer.create!(name: 'Private scale', owner: users(:random), code: 'pass();', scale: [ 7, 8 ])
+        post :create, params: { book: { name: 'No private scale', scorer_id: scorer.id } }
+        assert_response :ok
+        assert_empty Book.find(response.parsed_body['book_id']).scale
+      end
+
       describe 'Creating a book' do
         test 'successfully creates a book associated to a team and therefore accessible to user' do
           count     = doug.books_involved_with.count

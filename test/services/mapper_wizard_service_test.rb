@@ -3,6 +3,49 @@
 require 'test_helper'
 
 class MapperWizardServiceTest < ActiveSupport::TestCase
+  test 'mapper samples discard boilerplate, preserve structured scripts and JSON, and report truncation' do
+    service = MapperWizardService.new(api_key: 'test-key')
+    html = "<style>#{'x' * 60_000}</style>" \
+           '<script>noise</script><!-- noise --><svg>noise</svg><noscript>noise</noscript><script TYPE = "application/ld+json">{"title":"Structured result"}</script><main>Search results</main>'
+    sample = service.send(:strip_boilerplate, html)
+    assert_includes sample, 'Structured result'
+    assert_includes sample, 'Search results'
+    assert_not_includes sample, 'noise'
+    assert_not_includes sample, '<style>'
+    json = '{"results":[{"html":"<script>useful</script>"}]}'
+    assert_equal json, service.send(:strip_boilerplate, json)
+
+    prompts = []
+    content = "```javascript\nnumberOfResultsMapper = function(data) { return 1; }\n```\n```javascript\ndocsMapper = function(data) { return []; }\n```"
+    stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+      .with do |request|
+        prompts << request.body
+        true
+      end
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id: 'test', model: 'gpt-4o', choices: [ { message: { role: 'assistant', content: content } } ],
+        usage: { prompt_tokens: 1, completion_tokens: 1 }
+      }.to_json)
+
+    result = service.generate_mappers(html)
+    assert result[:success], "Mapper failed: #{result[:error]}"
+    assert_not result[:truncated]
+    assert_equal html.length, result[:original_length]
+    assert_equal sample.length, result[:sent_length]
+    assert_includes prompts.last, 'Search results'
+
+    long_html = "<main>#{'Result ' * 10_000}</main>"
+    result = service.generate_mappers(long_html)
+    assert result[:success], "Mapper failed: #{result[:error]}"
+    assert result[:truncated]
+    assert_equal 50_000, result[:sent_length]
+
+    result = service.refine_mapper(mapper_type: 'docsMapper', current_code: 'old()', feedback: 'fix', html_content: long_html)
+    assert result[:success], "Mapper failed: #{result[:error]}"
+    assert result[:truncated]
+    assert_equal 30_000, result[:sent_length]
+  end
+
   test 'fetch_html returns error for blank URL' do
     service = MapperWizardService.new
     result = service.fetch_html('')

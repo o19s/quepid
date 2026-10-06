@@ -187,6 +187,10 @@ class Try < ApplicationRecord
       # engines - e.g. Vespa - that also accept bare text.
       JsonArgParser.parse(query_params,
                           curator_vars_map)
+    elsif bare_query_param.present? && query_params.to_s.match?(/\A\s*[\w.-]+=/)
+      SolrArgParser.parse(query_params, curator_vars_map).transform_values do |values|
+        values.one? ? values.first : values
+      end
     elsif bare_query_param.present?
       # The mapper-based search engine (e.g. Vespa) opted into a bare-text authoring mode -
       # a user typed plain query text (e.g. YQL) straight into the Query Sandbox instead of

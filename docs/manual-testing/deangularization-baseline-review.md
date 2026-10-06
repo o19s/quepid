@@ -23,3 +23,11 @@ Baseline: `main` commit `5f53d8f8` (2026-06-23), before the September core deang
 - External scoring: `app/services/case_score_manager.rb`.
 
 Recover historical files with `git show 5f53d8f8:<path>`. A newer `main` source check also retained the relevant empty-knob help, score-manager defect, account confirmation markup, and visualization implementation.
+
+## Upstream fixes verification — 2026-10-06
+
+Applied selected fixes from `origin/main` (`c5344288`) while retaining the current Rails/Stimulus implementation: book scorer assignment and deterministic scale selection, lightweight latest-score summaries and index, Vespa named validation arguments, mapper sample cleanup/truncation feedback, AI image options, deleted-record job handling and refusal retries.
+
+The authorized browser sample covered case listing, book creation/scale persistence, Vespa POST validation, mapper generation success/truncation/error feedback, and AI image-toggle persistence/Ollama disabling. Before/after screenshots under `.playwright-mcp/main-fixes/` were inspected. Vespa and mapper provider responses were intercepted; this verifies browser contracts, not external services. Temporary records were deleted. Full manual coverage, live paid providers and browser refinement remain deferred; mapper refinement, image payloads and retry failures have automated coverage. Scenario timestamps and scope are in `tracking.yml`.
+
+Focused verification: 103 JavaScript tests passed; the Rails batch ran 236 tests with one existing failure in `CasesControllerTest#test_preserves_management_navigation_and_footer_without_case_context` (line 59). It expects a Turbo opt-out on the New Case navigation link. The same failure was reproduced using the original branch controller/view; those sources were restored. This establishes an existing branch test mismatch, not its pre-deangularization provenance. Ruby and JavaScript lint passed, the latest-score migration was applied, and the core case bundle was rebuilt.

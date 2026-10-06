@@ -792,3 +792,15 @@ describe("WizardController", () => {
     expect(modal.show).toHaveBeenCalled()
   })
 })
+
+it("validates Vespa parameter lists and bare YQL using named scalar arguments", async () => {
+  for (const [input, expected] of [
+    ["yql=select * from movies&ranking.profile=bm25", { yql: "select * from movies", "ranking.profile": "bm25" }],
+    ["select * from movies", { yql: "select * from movies" }]
+  ]) {
+    const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "searchapi", bareQueryParam: "yql", queryParams: input, testQuery: input } })
+    controller.capability.search.createValidator.mockReturnValue(passingValidator())
+    await controller.validate()
+    expect(controller.capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining({ args: expected }))
+  }
+})

@@ -2,6 +2,7 @@
 
 class BooksController < ApplicationController
   include Pagy::Method
+  include BookScorerAssignment
   include BooksHelper
 
   before_action :set_book,
@@ -128,7 +129,7 @@ class BooksController < ApplicationController
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
-        @book.scorer_id = scorer.id
+        @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
         @book.scoring_guidelines = @book.default_scoring_guidelines
       end
     end
@@ -395,14 +396,6 @@ class BooksController < ApplicationController
     hidden_judges = @book.ai_judges.where.not(id: available_judges.select(:id)).to_a
     TeamSharing.new(current_user).assign_teams(@book, book_params[:team_ids])
     @book.ai_judges = (hidden_judges + judges).uniq
-  end
-
-  def apply_scorer_to_book book, scorer_id
-    scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
-    if scorer
-      book.scale = scorer.scale
-      book.scale_with_labels = scorer.scale_with_labels
-    end
   end
 
   # This set_book is different because we use :id, not :book_id.

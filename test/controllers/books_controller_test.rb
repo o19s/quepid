@@ -9,6 +9,17 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'new book from a case selects the dropdown representative rather than a duplicate scorer' do
+    login_user_for_integration_test user
+    scorer = Scorer.create!(owner: user, name: 'First unique scale', scale: [ 81, 82 ], code: 'pass();')
+    duplicate = Scorer.create!(owner: user, name: 'Second unique scale', scale: scorer.scale, code: 'pass();')
+    get new_book_path, params: { origin_case_id: cases(:with_scorer).id, scorer_id: duplicate.id }
+
+    assert_response :success
+    assert_select 'select[name="book[scorer_id]"] option[selected][value=?]', scorer.id.to_s
+    assert_select 'select[name="book[scorer_id]"] option[value=?]', duplicate.id.to_s, count: 0
+  end
+
   test 'settings omit hidden judges and save the visible selection without losing hidden assignments' do
     login_user_for_integration_test user
     visible_team = user.teams.first

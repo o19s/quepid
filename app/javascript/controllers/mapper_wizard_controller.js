@@ -196,7 +196,7 @@ export default class extends Controller {
           this.docsMapperTarget.value = data.docs_mapper
         }
 
-        this.showStatus("Mapper functions generated successfully!", "success")
+        this.showMapperSuccess("Mapper functions generated successfully!", data)
         this.step3Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to generate mappers", "error")
@@ -358,7 +358,7 @@ export default class extends Controller {
         } else {
           textarea.value = data.code
         }
-        this.showStatus(`${mapperType} refined successfully!`, "success")
+        this.showMapperSuccess(`${mapperType} refined successfully!`, data)
       } else {
         this.showStatus(data.error || "Refinement failed", "error")
       }
@@ -434,6 +434,17 @@ export default class extends Controller {
     }
   }
 
+  showMapperSuccess(message, data) {
+    if (data.truncated) {
+      this.showStatus(
+        `${message} The HTML sample was truncated from ${data.original_length.toLocaleString()} to ${data.sent_length.toLocaleString()} characters after removing boilerplate. Test the mapper to confirm it finds the results; their markup may be past the cutoff.`,
+        "warning"
+      )
+    } else {
+      this.showStatus(message, "success")
+    }
+  }
+
   // Toggle HTML preview expansion
   toggleHtmlPreview(event) {
     if (this.hasHtmlPreviewTarget) {
@@ -477,7 +488,7 @@ export default class extends Controller {
     this.statusTarget.style.display = "block"
     showStatusMessage(this.statusTarget, {
       message,
-      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`,
+      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'}`,
       // Auto-hide success messages after 5 seconds
       autoHideMs: type === 'success' ? 5000 : undefined,
       onExpire: (el) => { el.style.display = "none" }

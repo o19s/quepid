@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["structured", "json", "jsonTab", "provider", "preset", "help", "url", "version", "model"]
+  static targets = ["structured", "json", "jsonTab", "provider", "preset", "help", "url", "version", "model", "images"]
 
   connect() {
     this.syncTab()
@@ -12,6 +12,7 @@ export default class extends Controller {
     const json = this.jsonTabTarget.classList.contains("active")
     this.jsonTarget.disabled = !json
     this.structuredTargets.forEach(field => { field.disabled = json })
+    this.syncImages()
   }
 
   providerChanged() {
@@ -21,6 +22,14 @@ export default class extends Controller {
     if (this.hasVersionTarget) this.versionTarget.value = preset.dataset.version
     if (this.hasModelTarget) this.modelTarget.value = preset.dataset.model
     this.showHelp()
+    this.syncImages()
+  }
+
+  syncImages() {
+    if (this.hasImagesTarget) {
+      this.imagesTarget.disabled = this.jsonTabTarget.classList.contains("active") ||
+        (this.hasProviderTarget && this.providerTarget.value === "ollama")
+    }
   }
 
   currentPreset() {

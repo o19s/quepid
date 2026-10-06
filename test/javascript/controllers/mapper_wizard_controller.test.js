@@ -315,6 +315,20 @@ describe("MapperWizardController AI generation and refinement", () => {
     })
   }
 
+  it("warns about truncated generation and refinement while applying the returned code", async () => {
+    const docsEditor = editor()
+    const controller = aiController({ docsEditor })
+    apiFetch.mockResolvedValue(jsonResponse({ success: true, docs_mapper: "d()", number_of_results_mapper: "n()", truncated: true, original_length: 90000, sent_length: 50000 }))
+    await controller.generateMappers({ preventDefault: vi.fn() })
+    expect(docsEditor.setValue).toHaveBeenCalledWith("d()")
+    expect(controller.showStatus).toHaveBeenLastCalledWith(expect.stringContaining("90,000 to 50,000"), "warning")
+
+    apiFetch.mockResolvedValue(jsonResponse({ success: true, code: "refined()", truncated: true, original_length: 90000, sent_length: 30000 }))
+    await controller.refineMapper("docsMapper", docsEditor, null, "fix", document.createElement("button"))
+    expect(docsEditor.setValue).toHaveBeenLastCalledWith("refined()")
+    expect(controller.showStatus).toHaveBeenLastCalledWith(expect.stringContaining("90,000 to 30,000"), "warning")
+  })
+
   it("requires an OpenAI key before generating or refining", async () => {
     const controller = aiController({ apiKeyTarget: { value: "   " } })
 

@@ -168,15 +168,15 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-06T15:29:00Z
         result: pass
-        notes: "Covered live: case ID672 search plus team filter returned owned shared case and correct table columns. Not covered live: multi-page case list and unrelated-user isolation."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
+        notes: "Covered live: case list rendered latest score, timestamp and user, including never-run rows; inspected before/after screenshots. Not covered live: combined filters and pagination."
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-05T23:20:41Z
-        result: pass
-        notes: "Covered live: complete Welcome/Name/Endpoint/Fields/Queries/Finish wizard using Static CSV, navigated to try 1 with results. Not covered live: other engines, invalid endpoint/name, automatic tour."
+        last_run: 2026-10-06T15:29:00Z
+        result: pass_with_fixes
+        notes: "Covered live: Vespa POST validation with yql=...&ranking.profile=bm25 advanced to Fields; original wizard failed the same intercepted response contract. Inspected before/after screenshots. Not covered live: complete save, other engines and live Vespa server."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -508,16 +508,16 @@ parts:
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
-        last_run: 2026-10-05T23:31:28Z
-        result: blocked
-        notes: "Covered live: fetched response then Generate Mappers with AI without key displayed Please enter your OpenAI API key. Blocked: successful generation requires a valid OpenAI credential not supplied for this session."
-        paths: ["app/controllers/mapper_wizards_controller.rb"]
+        last_run: 2026-10-06T15:29:00Z
+        result: pass_with_fixes
+        notes: "Covered live: intercepted generation success, truncation warning with counts, and 422 extraction error; inspected before/after screenshots. Not covered live: paid OpenAI call. Service tests cover boilerplate stripping, structured JSON preservation and truncation."
+        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/services/mapper_wizard_service.rb", "app/views/mapper_wizards/show.html.erb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
         last_run: 2026-10-05T23:31:28Z
         result: pass
         notes: "Covered live: hand edited both mapper editors; number mapper returned246, Console Logs contained count, docs mapper returned two documents. Not covered live: AI refinement requires missing OpenAI key; broken-code variant."
-        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb"]
+        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb", "app/services/mapper_wizard_service.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
         last_run: 2026-10-04T23:10:00Z
@@ -634,16 +634,16 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
       "10.2":
         title: "Create a new book"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-06T15:29:00Z
         result: pass
-        notes: "Covered live: blank-name validation, create private and team-shared books with graded scale/guidelines; case-origin creation exposed integration flags and linked case. Not covered live: all toggle combinations."
-        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb"]
+        notes: "Covered live: created private book with graded scale and guidelines, reopened Settings and confirmed representative scale selection and guidelines persisted; inspected screenshots and deleted fixture. Not covered live: validation, case integration and sharing combinations."
+        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.3":
         title: "Edit book settings"
         last_run: 2026-10-05T23:51:55Z
         result: pass
         notes: "Covered live: rename, team/AI assignment, rank setting and graded scale/guidelines persisted on reload. Not covered live: hidden multi-team preservation, forged memberships, scale change after ratings, attachment purge."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb"]
+        paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/helpers/books_helper.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.4":
         title: "Book Overview / Show page"
         last_run: 2026-10-05T23:51:55Z
@@ -796,6 +796,13 @@ parts:
         result: pass_with_fixes
         notes: "Covered live: bounded two-pair run then Judge All completed remaining pairs, four attributed ratings/explanations persisted; RunJudgeJudyJob and batched sync finished without errors. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no AI-job change. Screenshot inspected. Not covered live: unavailable/out-of-scale model and zero-work variants."
         paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb"]
+
+      "12.6":
+        title: "AI Judge image options"
+        last_run: 2026-10-06T15:29:00Z
+        result: pass
+        notes: "Covered live: default checked, off/on saved and reopened, Ollama disabled; inspected screenshots and deleted fixture judge. Not covered live: paid-provider image judgement; prompt payload and JSON-tab state covered by automated tests."
+        paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb"]
 
   "13":
     file: 13-analytics.md
@@ -1024,7 +1031,7 @@ parts:
         last_run: 2026-10-06T00:08:55Z
         result: pass
         notes: "Covered live: generated token, isolated bearer GET case 673 returned JSON/id 673; destroyed token, isolated request returned 401. Anonymous unshared case returned 404. Not covered live: foreign-user token access."
-        paths: ["app/controllers/api/", "app/controllers/concerns/api_key_authenticatable.rb", "app/models/api_key.rb", "config/initializers/oas_rails.rb", "config/routes.rb", "app/services/latest_case_scores.rb", "test/services/latest_case_scores_test.rb"]
+        paths: ["app/controllers/api/", "app/controllers/concerns/api_key_authenticatable.rb", "app/models/api_key.rb", "config/initializers/oas_rails.rb", "config/routes.rb", "app/services/latest_case_scores.rb", "test/services/latest_case_scores_test.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "17.5":
         title: "External score ingestion"
         last_run: 2026-10-06T00:08:55Z

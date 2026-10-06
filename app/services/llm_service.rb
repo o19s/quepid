@@ -15,6 +15,10 @@ class LlmService
   # might follow.
   MAX_SCALE_LABEL_LENGTH = 60
 
+  def self.image_urls_supported? provider
+    'ollama' != provider.to_s
+  end
+
   def initialize llm_key, opts = {}
     default_options = {
       llm_service_url: 'https://api.openai.com',
@@ -76,11 +80,11 @@ class LlmService
       { type: 'text', text: text_prompt }
     ]
 
-    # This is hard coded to `image` and should be any image.
-    # image or thumb ;-(
-    if '' != document_fields['image'].to_s.strip
-      image_url = document_fields['image']
-      prompt << { type: 'image_url', image_url: { url: image_url } }
+    if include_images?
+      image_url = [ document_fields['image'], document_fields['thumb'] ]
+        .map { |value| value.to_s.strip }
+        .find { |value| value.match?(%r{\Ahttps?://}i) }
+      prompt << { type: 'image_url', image_url: { url: image_url } } if image_url
     end
 
     prompt
@@ -143,6 +147,13 @@ class LlmService
     nil
   end
 
+  def include_images?
+    return false unless self.class.image_urls_supported?(@options[:llm_provider])
+
+    value = @options[:llm_include_images]
+    value.nil? || '' == value || ActiveModel::Type::Boolean.new.cast(value)
+  end
+
   def build_connection
     Faraday.new(url: @options[:llm_service_url]) do |f|
       f.request :json
@@ -153,7 +164,8 @@ class LlmService
         interval:            2,
         interval_randomness: 0.5,
         backoff_factor:      2,
-        retry_statuses:      [ 429 ],
+        retry_statuses:      [ 429, 529 ],
+        retry_if:            ->(_env, exception) { exception.is_a?(Faraday::RetriableResponse) },
       }
     end
   end
