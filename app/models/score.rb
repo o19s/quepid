@@ -41,6 +41,18 @@ class Score < ApplicationRecord
   belongs_to :annotation, optional: true
   belongs_to :scorer, optional: true # optional for legacy reasons, we have old data.
 
+  # Ransack (used by ScoresController#index's sortable column headers) -
+  # keep this to the plain columns actually sortable there; Scorer name and
+  # Try number stay as plain (non-sortable) header text since they're
+  # association traversals, not this model's own columns.
+  def self.ransackable_attributes _auth_object = nil
+    %w[score updated_at created_at scorer_id]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   # Validations
 
   serialize :queries, coder: JSON

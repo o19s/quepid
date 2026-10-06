@@ -6,11 +6,11 @@ class ScoresController < ApplicationController
   before_action :set_case
 
   def index
-    query = @case.scores
+    ransack_params = { scorer_id_eq: params[:scorer_id] }
+    @q = @case.scores.ransack(ransack_params)
+    @q.sorts = 'updated_at asc' if @q.sorts.empty?
 
-    query = query.where(scorer_id: params[:scorer_id]) if params[:scorer_id].present?
-
-    @pagy, @scores = pagy(query.order(:updated_at))
+    @pagy, @scores = pagy(@q.result)
 
     scorers = @case.scores.includes([ :scorer ]).map(&:scorer).uniq
     @scorer_options = scorers.map { |scorer| [ scorer.name, scorer.id ] }

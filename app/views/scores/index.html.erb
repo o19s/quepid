@@ -78,11 +78,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <table class="table table-hover table-sm">
       <thead>
         <tr>  
-          <th/>        
+          <th/>
           <th>Scorer</th>
           <th>Try Number</th>
-          <th>Score</th>          
-          <th>Day</th>
+          <th><%= sort_link(@q, :score, 'Score') %></th>
+          <th><%= sort_link(@q, :updated_at, 'Day') %></th>
         </tr>
       </thead>
   
