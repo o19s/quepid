@@ -65,7 +65,7 @@ Rails.application.routes.draw do
   post 'users/signup' => 'users/signups#create'
 
   get 'login' => 'sessions#new'
-  get 'logout' => 'sessions#destroy'
+  delete 'logout' => 'sessions#destroy'
   get 'users/sign_in' => redirect('login') # Devise's conventional path; we use our own sessions controller
 
   resources :sessions, except: [ :edit, :show, :update ]
@@ -113,7 +113,7 @@ Rails.application.routes.draw do
       resources :judgements
       post 'unrateable' => 'judgements#unrateable'
       patch 'unrateable' => 'judgements#unrateable'
-      get 'judge_later' => 'judgements#judge_later'
+      post 'judge_later' => 'judgements#judge_later'
     end
     get 'judge' => 'judgements#new'
     get 'judge/bulk' => 'bulk_judge#new'

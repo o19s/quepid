@@ -6,7 +6,7 @@
   </div>
   
   <div class="float-end">    
-    <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), class: 'btn btn-info m-1', role: 'button' %>
+    <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), data: { turbo_prefetch: false }, class: 'btn btn-info m-1', role: 'button' %>
   </div>
   <div class="card">
     <div class="card-body">

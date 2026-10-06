@@ -57,7 +57,7 @@
       </p>
       
       <div class="d-grid gap-2 d-md-flex">
-        <%= link_to book_judge_path(book), class: 'btn btn-primary', role: 'button' do %>
+        <%= link_to book_judge_path(book), data: { turbo_prefetch: false }, class: 'btn btn-primary', role: 'button' do %>
           <i class="bi bi-lightning-fill"></i> Start with Unjudged Pairs
         <% end %>
         <%= link_to book_judge_bulk_path(book), class: 'btn btn-outline-primary', role: 'button' do %>
@@ -76,7 +76,7 @@
       </p>
       
       <div class="d-grid gap-2 d-md-flex">
-        <%= link_to book_judge_path(book), class: 'btn btn-primary', role: 'button' do %>
+        <%= link_to book_judge_path(book), data: { turbo_prefetch: false }, class: 'btn btn-primary', role: 'button' do %>
           <i class="bi bi-play-circle"></i> Continue Judging
         <% end %>
         <%= link_to book_judge_bulk_path(book), class: 'btn btn-info', role: 'button' do %>

@@ -93,3 +93,19 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
   assets. Mounted tools and authentication keep their intentional opt-outs.
 - **Cleanup:** Delete the disposable team. Use disposable judgements or intercept
   rating requests when checking shortcuts against a shared seeded book.
+
+### 15.9 GET mutation and prefetch safety
+
+- [ ] Confirm management/admin keep `turbo-prefetch=false`.
+- [ ] Hover Judge, milestone resume, Judge Later and logout; confirm no request,
+  judgement, session-counter or authentication change.
+- [ ] GET/HEAD the old Judge Later/logout action URLs; expect 404 with state retained.
+- [ ] Send a GET with `X-Sec-Purpose: prefetch` to judging, core case entry, home,
+  a book and the mapper wizard. Expect 400 with `no-store`; verify no counter,
+  case/settings, announcement, view job or wizard-state change. Repeat using
+  `Sec-Purpose` and `Purpose` headers.
+- [ ] Repeat ordinary navigation to those destinations and confirm their existing
+  deliberate entry effects still occur. See the developer guide's
+  [audit](../../DEVELOPER_GUIDE.md#get-side-effect-audit) for remaining boundaries.
+- **Expected:** Speculative requests stop before controller callbacks. Deliberate
+  Judge Later/logout submissions execute once; history never replays the write.

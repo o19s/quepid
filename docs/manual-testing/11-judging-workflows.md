@@ -27,7 +27,11 @@ This part covers the actual human judging experience: the one-at-a-time judging 
 
 ### 11.3 "I will Judge Later"
 
-- [ ] **Steps:** Click **I will Judge Later**.
+- [ ] **Steps:**
+  1. Hover **I will Judge Later**; confirm no request or judgement is created.
+  2. Click it; confirm one POST to the server-rendered form URL, followed by a 303.
+  3. Reload the audit list and confirm the Later flag persisted; Back/Forward must not submit it again.
+  4. Request the former action URL with GET; confirm 404 and no judgement change.
 - **Expected:** A judgement is created with `judge_later = true` and no rating; you advance to the next pair; it later shows under the "Judge Later" filter in the Judgements list (11.6) and is included in Part 10.6d's bulk-resolve tool.
 
 ### 11.4 "I Can't Tell" (mark unrateable)
@@ -45,8 +49,9 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   1. Judge roughly 50 pairs in one session (or as many as feasible).
   2. On the 50th, confirm a "party time" screen: confetti, a progress bar, a leaderboard chart, and an **"I'm Ready for More!"** button that resumes judging.
   3. Use **Go Back to Previous Query/Doc Pair** to reopen and re-rate the immediately prior pair.
-  4. Click **Quit Judging** — confirm it returns to the Book Overview without losing already-saved judgements.
-  5. If feasible, exhaust all pairs available to the current user — confirm the friendly "You have judged all the documents you can!" message and redirect.
+  4. Use browser Back/Forward; confirm existing judgements remain and no write is replayed. Hover Judge/resume links must not advance the session counter.
+  5. Click **Quit Judging** — confirm it returns to the Book Overview without losing already-saved judgements.
+  6. If feasible, exhaust all pairs available to the current user — confirm the friendly "You have judged all the documents you can!" message and redirect.
 - **Expected:** All of the above behave as described, with no data loss on quit/navigate-away.
 - **Edge cases:**
   - [ ] Re-open a judgement originally made by a **different** user (e.g., via Go Back after someone else judged, or via the Judgements list edit link) — confirm the warning banner "This judgement was made by {fullname}!" appears before you accidentally overwrite someone else's rating.

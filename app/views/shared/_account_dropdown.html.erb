@@ -3,7 +3,7 @@
     supplied per-surface via ApplicationHelper#account_dropdown_divider --
     see that method for why the two surfaces can't share one divider style. %>
 <li><%= link_to 'My profile', profile_path, class: 'dropdown-item' %></li>
-<li><%= link_to 'Log out', logout_path, class: 'dropdown-item', data: { turbo: false } %></li>
+<li><%= button_to 'Log out', logout_path, method: :delete, class: 'dropdown-item', form: { data: { turbo: false } } %></li>
 <%= divider %>
 <li><%= link_to 'API Docs', oas_rails_path, class: 'dropdown-item', data: { turbo: false } %></li>
 <% if current_user.administrator? %>

@@ -185,7 +185,7 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
     test 'judge_later marks the judgement' do
       qdp = query_doc_pairs(:jbm_qdp4)
 
-      get book_query_doc_pair_judge_later_url(jbm_book, qdp)
+      post book_query_doc_pair_judge_later_url(jbm_book, qdp)
 
       assert_redirected_to book_judge_path(jbm_book)
       assert Judgement.find_by(query_doc_pair: qdp, user: user).judge_later

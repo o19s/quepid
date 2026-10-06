@@ -26,6 +26,7 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  prepend_before_action :reject_prefetch
   before_action :set_current_user
   before_action :require_login
   before_action :check_current_user_locked!

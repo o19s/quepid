@@ -41,7 +41,7 @@ class SessionsController < ApplicationController
   def destroy
     clear_user_session
 
-    redirect_to sessions_path
+    redirect_to sessions_path, status: :see_other
   end
 
   private

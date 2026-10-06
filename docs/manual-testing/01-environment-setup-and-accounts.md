@@ -52,7 +52,9 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
   1. Go to `/sessions/new` (or `/`, which redirects there while logged out).
   2. Enter a valid seed account's email/password, click **Sign in**.
   3. Confirm you land on the home dashboard.
-  4. Click **Logout** (or navigate to `/logout`).
+  4. Hover **Log out** in the account menu; confirm the session remains active.
+  5. Click **Log out**; confirm the DELETE form (`POST` with `_method=delete` for the native submission) returns 303 and uses a full-page session boundary. Repeat from management and core.
+  6. Request `/logout` with GET while signed in; confirm 404 and that the session stays active.
 - **Expected:** Successful login lands on `/`; logout clears the session and returns you to the sign-in page.
 - **Edge cases:**
   - [ ] Wrong password → generic error: "Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account." (confirm it does **not** reveal whether the email exists).

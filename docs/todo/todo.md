@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-05
+**Last updated:** 2026-10-06
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -126,26 +126,21 @@ edit modal work inside a lazy frame first.
 
 ---
 
-### [PREEXISTING] P2 I0 C2 — Audit GET mutations before enabling Turbo prefetch
+### [PREEXISTING] P2 I0 C3 — Separate legacy entry effects before any prefetch enablement
 
-Management/admin layouts explicitly disable hover prefetch with
-`<meta name="turbo-prefetch" content="false">`. Keep that guard while auditing
-`config/routes.rb` and the actions behind GET links. Confirmed mutations include
-`JudgementsController#judge_later` (persists a judgement) and
-`SessionsController#destroy` (`GET /logout`). The search-endpoint clone GET only
-prepares an unsaved form; scorer cloning already uses POST. Audit the actual
-side effects rather than converting every route named `clone`. Judging selection also advances a session counter on
-GET; account for that when deciding which destinations can be prefetched.
+The [GET side-effect audit](../../DEVELOPER_GUIDE.md#get-side-effect-audit) moved
+Judge Later/logout to POST/DELETE and protects speculative requests. Keep the
+management/admin meta guard and controller rejection. Prefetch remains a
+separate product decision.
 
-**Fix direction:** move persistent mutations to POST/PATCH/DELETE with
-server-owned form URLs, appropriate confirmation and 303 redirects. Preserve
-explicit session opt-outs. Audit other GET side effects and protect intentionally
-non-prefetchable destinations before considering removal of the global guard.
-Test that GET/hover causes no persistent mutation, deliberate submissions run
-once, and Drive/history navigation preserves the intended judging flow.
-Drive enablement is complete; prefetch remains a separate decision. The
-judge-later and logout GET routes also exist in the `be9b319a` baseline
-(source comparison, not a live historical replay).
+Before relaxing either guard, decouple core case creation and URL-supplied
+settings writes from GET, and move mapper wizard state reset to a deliberate
+submission. Preserve the existing shared-link/bootstrap and fresh-wizard
+contracts; the smallest prerequisite is defining their explicit submission UI.
+Home announcement consumption, book-view tracking, judging session counters,
+authentication callbacks and mounted engines also need destination-specific
+prefetch decisions. Do not change those deliberate-navigation contracts merely
+to enable hover requests.
 
 ## [PREEXISTING] P0 — Security
 

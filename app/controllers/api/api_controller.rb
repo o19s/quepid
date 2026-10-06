@@ -22,6 +22,7 @@ module Api
     protect_from_forgery with: :null_session
 
     prepend_before_action :set_current_user
+    prepend_before_action :reject_prefetch
     before_action :authenticate_with_api_key! # , only: [:index]
     before_action :set_default_response_format
 

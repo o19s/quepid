@@ -58,10 +58,10 @@ parts:
         paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
       "1.2":
         title: "Log in / log out"
-        last_run: 2026-10-05T23:15:46Z
-        result: pass
-        notes: "Covered live: logout, seed login to dashboard, and generic wrong-password response. Not covered live: repeated failures or locked account."
-        paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/"]
+        last_run: 2026-10-06T14:52:17Z
+        result: pass_with_fixes
+        notes: "Covered live: seed sign-in, management/core logout, hover sent no logout request, native POST with DELETE override returned 303 to login; GET /logout returned 404 while the session stayed authenticated. Management/core before-after menus inspected in .playwright-mcp/get-mutations. Not rerun: locked account/repeated failures."
+        paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_sidebar.html.erb", "config/routes.rb"]
       "1.3":
         title: "OAuth login"
         last_run: 2026-09-15
@@ -713,7 +713,7 @@ parts:
         last_run: 2026-10-06T13:36:06Z
         result: pass_with_fixes
         notes: "Covered live: mouse ratings advanced through four cards, persisted four human judgements, linked-case sync completed. Exhausted one-pair and four-pair books returned full Book Overview with completion notice. Fixed frame escape with reload directive and retained flash. Before/after screenshots inspected. Not covered live: rapid duplicate clicks."
-        paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/_form.html.erb", "app/models/judgement.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.2":
         title: "Keyboard-shortcut rating"
         last_run: 2026-10-05T23:51:55Z
@@ -722,10 +722,10 @@ parts:
         paths: ["app/assets/", "app/javascript/controllers/", "app/javascript/api/json.js"]
       "11.3":
         title: "I will Judge Later"
-        last_run: 2026-10-05T23:51:55Z
-        result: pass
-        notes: "Covered live: Judge Later advanced card, audit Later filter showed nil-rated flag; maintenance mapping/reset later cleared it. Not covered live: repeated skip same pair."
-        paths: ["app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
+        last_run: 2026-10-06T14:50:34Z
+        result: pass_with_fixes
+        notes: "Covered live: hover sent no request; one POST returned 303 and advanced within the same JS environment. Disposable book retained exactly one nil-rated Later judgement after reload/history; former GET returned 404. Before-after screenshots inspected; random card text differs. Repeated POST covered by Rails test; fixture removed."
+        paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/_form.html.erb", "config/routes.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.4":
         title: "I Can't Tell (mark unrateable)"
         last_run: 2026-10-05T23:51:55Z
@@ -734,9 +734,9 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb", "app/views/shared/_modal_shell.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: exhausted one-pair and four-pair books redirected to full Overview with friendly notice, saved ratings retained. Fixed frame escape and flash lifetime; controller regression checks normal visit and one-time notice. Before/after screenshots inspected. Earlier navigation checks retained. Not rerun: 50-pair milestone, previous-pair/different-user navigation; other BooksController scenarios deferred this focused repair batch."
+        last_run: 2026-10-06T14:50:34Z
+        result: pass
+        notes: "Covered live: Previous Pair reopened the saved Later pair within the frame; browser Back/Forward sent no writes; Quit returned to Overview with the saved flag retained. Screenshots inspected. Not rerun: 50-request milestone/completion/different-user warning; existing controller milestone tests passed."
         paths: ["app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.6":
         title: "Judgements list (audit view)"
@@ -918,9 +918,9 @@ parts:
         paths: ["config/routes.rb", "app/views/layouts/_header_help_links.html.erb"]
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
-        last_run: 2026-10-06T00:08:55Z
-        result: pass
-        notes: "Covered live: non-admin avatar contained profile/logout/API Docs; admin session had Admin Home/Users/Announcements/Job Manager shortcuts; gating tested separately. Not covered live: every shortcut click."
+        last_run: 2026-10-06T14:52:17Z
+        result: pass_with_fixes
+        notes: "Covered live: management/core account menus retained profile/API/admin shortcuts; logout button submitted a native DELETE override and reached login. Before-after viewport pairs inspected; core background differed during asynchronous scoring. Not rerun: non-admin gating/all shortcut destinations."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.5":
         title: "Cookies static page"
@@ -948,6 +948,13 @@ parts:
         result: pass
         notes: "Covered live: entry rename sample on Teams, empty-name validation, Books navigation and Back retaining the JS environment, and static case 219 loading results with Drive off and only vega/bootstrap importmap entries. Four before/after viewport pairs inspected in .playwright-mcp/application-entry; layout/content match, with a pointer-hover difference on the Books sidebar. Not covered live: admin, analytics, HTTPS, successful writes, editor/judging workflows and a full management sweep; the separate Turbo E2E run covered success, editor history and archive cancellation."
         paths: ["app/javascript/application.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/page_cache_controller.js", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/consent_toast_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/score_selection_controller.js", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/kraken_controller.js", "app/javascript/modules/editor.js", "app/helpers/application_helper.rb", "app/controllers/teams_controller.rb", "app/controllers/application_controller.rb", "app/responders/application_responder.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/judgements/_form.html.erb", "app/views/scores/index.html.erb", "app/views/ai_judges/_form.html.erb", "test/playwright/turbo_drive.spec.ts", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb", "app/javascript/controllers/user_activity_controller.js"]
+
+      "15.9":
+        title: "GET mutation and prefetch safety"
+        last_run: 2026-10-06T14:50:34Z
+        result: pass
+        notes: "Covered live: global meta guard remained false, Judge Later/logout hover sent no request; marked judge prefetch returned 400, old mutation GETs returned 404, session remained active. Controller tests cover HEAD, header variants, counter, case/mapper/announcement and queued-job state. Deferred live: other management/admin destinations, legacy bootstrap and mounted engines."
+        paths: ["config/routes.rb", "app/controllers/application_controller.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/controller_configuration.rb", "app/controllers/core_controller.rb", "app/controllers/home_controller.rb", "app/controllers/mapper_wizards_controller.rb", "app/controllers/concerns/authentication/current_book_manager.rb", "app/controllers/books_controller.rb", "app/controllers/judgements_controller.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/judgements/new.html.erb", "app/views/judgements/_moar_judgements_needed.html.erb", "test/controllers/get_mutations_test.rb"]
 
   "16":
     file: 16-cross-cutting-bs5-responsive-and-accessibility.md

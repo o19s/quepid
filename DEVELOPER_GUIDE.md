@@ -861,12 +861,43 @@ action URL or proxy configuration.
   Cached previews and history visits reconnect controllers, so initialization must
   tolerate both. Do not rely on `DOMContentLoaded` for per-page behavior.
 - Hover prefetch is disabled on management/admin layouts because legacy GET routes
-  include state-changing actions. Audit those routes before enabling speculative
-  requests.
+  retain intentional entry/session effects. Application and API controllers reject
+  requests marked `X-Sec-Purpose`, `Sec-Purpose`, or `Purpose: prefetch` before
+  their callbacks. Keep both guards until a separate prefetch decision; see the
+  [GET side-effect audit](#get-side-effect-audit).
 - Keep explicit opt-outs for authentication/session changes, mounted engines, and
   the AI prompt tester's direct POST-rendered output. Downloads that are fetched
   by JavaScript continue to use the download helpers. Any new opt-out must have a
   concrete lifecycle or response reason.
+
+### GET side-effect audit
+
+Judge Later submits a separate POST form, and logout submits a DELETE form with
+Drive disabled. Both return 303; GET/HEAD cannot invoke these actions. Neither
+requires an extra confirmation: deferring a rating and ending a session retain
+their existing one-click behavior. Search-endpoint clone GET only builds an
+unsaved form; scorer cloning already uses POST.
+
+The remaining destinations require deliberate navigation and remain protected
+by the global prefetch guards:
+
+| Destination | Intentional GET effect / boundary |
+| --- | --- |
+| Judging `new` / `judge`, including `skip_judging` redirects | Random pair selection and session counter; Judge and milestone-resume links explicitly opt out of prefetch. |
+| Core case entry and `/cases/new` | Case creation, legacy URL-supplied case/search settings, protocol analytics; full-page workspace boundary. |
+| Home | Marks the displayed announcement viewed. |
+| Book HTML/API reads using `set_book` | Enqueues view tracking to maintain recent-book ordering. |
+| Mapper wizard entry | Deletes prior persisted wizard state to start fresh. |
+| Authentication callbacks | Session/user/token effects; retain authentication opt-outs. |
+| Proxy and mounted engines | Remote/engine-owned behavior; engine links retain Drive opt-outs and their implementation needs separate review before prefetch enablement. |
+
+Other first-party management/admin GET actions build unsaved forms or read/filter
+records. Case/rating/information-need export GETs serialize data; book export GET
+polls status, while update starts the job. Do not infer mutations from route
+names. The retained entry effects mean ordinary GETs are not universally pure;
+this audit does not authorize enabling prefetch. Regression tests live in
+`test/controllers/get_mutations_test.rb`; actual browser coverage is recorded in
+`docs/manual-testing/tracking.yml`.
 
 ### Turbo on the case page
 
