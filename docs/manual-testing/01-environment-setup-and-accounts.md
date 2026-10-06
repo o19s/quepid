@@ -151,7 +151,8 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - **Edge cases:**
   - [ ] Confirm a case that was shared with a team **survives** the owner's account deletion (verify with a teammate's login) — this is the trickiest behavior to verify and worth explicit testing.
   - [ ] Delete an account that is the sole member of a team — check what happens to that orphaned team.
-  - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm nothing errors for the invitee.
+  - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm deletion succeeds and the invitee can still accept the invitation.
+  - [ ] Try deleting an account with judgements requiring reassignment and a private case — confirm the Danger Zone shows the validation error and the account, case and its queries remain intact.
   - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm deletion succeeds without a foreign-key error and removes the authored annotation. The current `User` association uses `dependent: :destroy`; annotations require a user.
 
 ### 1.10 Transactional emails (invitation & password reset)

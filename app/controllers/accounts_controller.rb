@@ -31,12 +31,19 @@ class AccountsController < ApplicationController
   def destroy
     @user = current_user
 
-    @user.cases.each do |c|
-      c.really_destroy if c.teams.empty?
+    deleted = User.transaction do
+      @user.cases.each do |c|
+        c.really_destroy if c.teams.empty?
+      end
+
+      destroyed = @user.destroy
+      raise ActiveRecord::Rollback unless destroyed
+
+      destroyed
     end
 
     respond_to do |format|
-      if @user.destroy
+      if deleted
         format.html { redirect_to sessions_path, notice: 'Account was deleted' }
         format.json { head :no_content }
       else

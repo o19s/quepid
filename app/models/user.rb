@@ -71,6 +71,12 @@ class User < ApplicationRecord
   # Associations
   has_many :api_keys, dependent: :destroy
 
+  has_many :invitations,
+           class_name:  'User',
+           foreign_key: :invited_by_id,
+           inverse_of:  :invited_by,
+           dependent:   :nullify
+
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
   has_many :cases,

@@ -49,6 +49,9 @@ class BooksController < ApplicationController
   # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def show
+    # Turbo promotes judging completion to a full-page visit; retain its notice for that request.
+    flash.keep if 'query_doc_pair_card' == turbo_frame_request_id
+
     @kraken_unleashed = flash[:kraken_unleashed]
 
     @count_of_anonymous_book_judgements = @book.judgements.where(user: nil).count

@@ -238,18 +238,27 @@ export function buildSearchApiRatedDocsQueryParams(mapperCode, ratedIds, idField
 
 export async function pAll(queue, requestsPerMinute) {
   const results = []
+  let failed = false
+  let firstError
+  const run = async (index) => {
+    try {
+      results[index] = await queue[index]()
+    } catch (error) {
+      if (!failed) firstError = error
+      failed = true
+    }
+  }
 
   if (requestsPerMinute && requestsPerMinute > 0) {
     const minDelayMs = 60000 / requestsPerMinute
 
     for (let index = 0; index < queue.length; index++) {
       if (index > 0) await new Promise((resolve) => setTimeout(resolve, minDelayMs))
-      const promise = queue[index]()
-      await promise
-      results[index] = promise
+      await run(index)
     }
 
-    return Promise.all(results)
+    if (failed) throw firstError
+    return results
   }
 
   const concurrency = 10
@@ -257,14 +266,13 @@ export async function pAll(queue, requestsPerMinute) {
   const worker = async () => {
     while (index < queue.length) {
       const currentIndex = index++
-      const promise = queue[currentIndex]()
-      await promise
-      results[currentIndex] = promise
+      await run(currentIndex)
     }
   }
 
   await Promise.all(Array.from({ length: concurrency }, worker))
-  return Promise.all(results)
+  if (failed) throw firstError
+  return results
 }
 
 /**

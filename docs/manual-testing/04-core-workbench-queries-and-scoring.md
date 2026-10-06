@@ -259,7 +259,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   - [ ] Filter text plus a non-default sort plus page 2 — confirm the page clamps back to a valid page when the filtered set shrinks below it.
   - [ ] "Show only rated" on Solr and ES/OS cases — each should filter via the engine (results contain exactly the rated doc IDs); confirm no error on an engine that can't look up by id.
   - [ ] While a rescore runs, confirm the "Updating Queries" progress banner appears and clears when done.
-  - [ ] With a query whose search fails (e.g. a broken endpoint URL), confirm the banner still reaches N / N and clears instead of stalling.
+  - [ ] With more than ten queries, force every search to fail (e.g. a broken endpoint URL); confirm every query gets an error and the progress banner clears instead of stalling at 10 / N. Repeat with mixed successes and failures, then restore the endpoint and retry successfully.
 
 ### 4.21 Query row states & score badge values
 

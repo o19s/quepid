@@ -239,15 +239,6 @@ user-entered settings.
 
 ---
 
-### [PREEXISTING] P1 I1 C3 — Account deletion fails for users who sent invitations, after deleting their cases
-
-**Observed:** Deleting an account (Profile → Danger Zone) whose user has invited anyone (a pending invitee row with `invited_by_id` pointing at them) returns a 500: `ActiveRecord::InvalidForeignKey` on `fk_rails_ae14a5013f` (`users.invited_by_id → users.id`). The account survives, but its unshared cases are already gone — `AccountsController#destroy` calls `c.really_destroy` for each team-less case *before* `@user.destroy`, outside a transaction.
-
-**Cause:** Nothing nullifies `users.invited_by_id` for invitees, and the case cleanup plus user destroy are not atomic. Same code on `main`.
-
-**Fix direction:** Nullify `invited_by_id` on invitees before destroying the user (e.g. a `has_many :invitations, class_name: 'User', foreign_key: :invited_by_id, dependent: :nullify`), and wrap case cleanup + user destroy in one transaction so a failure leaves the account's data intact. Add a controller test that deletes a user with a pending invitee and an unshared case.
-
----
 
 ## [PREEXISTING] P1 — Security
 
@@ -645,21 +636,6 @@ concern. The team filter currently uses `joins` (Cases), `includes` plus a hash
 A shared concern is appropriate only where accessible/owned scopes, archive
 behavior, duplicate handling, and responses have the same contract. Preserve
 those scopes and boolean semantics during extraction.
-
-### [PREEXISTING] P2 — Search failures abandon queued queries
-
-When the first ten concurrent searches reject, `query_service.js#pAll` exits all
-workers before remaining queries start. Those queries have neither scores nor
-errors, so the progress banner stays visible. Preserve bounded concurrency and
-rate limiting while allowing the queue to settle and explicitly report failures.
-Add coverage for a failing batch larger than the concurrency limit.
-
-Observed on both sides of the query-state refactor. Pre-deangularization main
-commit `ed5c17ea`, `app/assets/javascripts/services/queriesSvc.js:1231–1268`, has
-the same unguarded worker `await promise`; `controllers/queriesCtrl.js:488–504`
-uses unscored queries for progress. This is historical source evidence, not a
-live historical replay. The forced-error sample verified row errors and unchanged
-batch behavior; it did not establish successful completion of that failed batch.
 
 ### [MIGRATION-FOLLOWUP] P2 I2 C2 — Rated-document lookup duplication
 

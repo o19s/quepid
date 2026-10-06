@@ -267,6 +267,69 @@ describe("query service helpers", () => {
     vi.useRealTimers()
   })
 
+  it("drains a failing batch without exceeding ten concurrent tasks or rejecting early", async () => {
+    const error = new Error("search failed")
+    const calls = []
+    const releases = []
+    let active = 0
+    let peak = 0
+    const queue = Array.from({ length: 23 }, (_, index) => async () => {
+      calls.push(index)
+      active++
+      peak = Math.max(peak, active)
+      await new Promise((resolve) => releases.push(resolve))
+      active--
+      if (index < 10) throw error
+      return index
+    })
+    const settled = vi.fn()
+    const batch = pAll(queue, 0).then(settled, (failure) => settled(failure))
+
+    expect(calls).toHaveLength(10)
+    for (let wave = 0; wave < 3; wave++) {
+      expect(settled).not.toHaveBeenCalled()
+      releases.splice(0).forEach((release) => release())
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    }
+    await batch
+
+    expect(calls).toEqual([...Array(23).keys()])
+    expect(peak).toBe(10)
+    expect(active).toBe(0)
+    expect(settled).toHaveBeenCalledExactlyOnceWith(error)
+  })
+
+  it("continues past synchronous throws and reports the failure after draining", async () => {
+    const error = new Error("invalid search")
+    const next = vi.fn(() => 2)
+    await expect(pAll([() => { throw error }, next], 0)).rejects.toBe(error)
+    expect(next).toHaveBeenCalledOnce()
+  })
+
+  it("preserves rate limiting after a failed request", async () => {
+    vi.useFakeTimers()
+    try {
+      const error = new Error("search failed")
+      const calls = []
+      const batch = pAll([
+        async () => { calls.push(Date.now()); throw error },
+        async () => calls.push(Date.now()),
+        async () => calls.push(Date.now())
+      ], 60)
+      const result = expect(batch).rejects.toBe(error)
+
+      await vi.advanceTimersByTimeAsync(999)
+      expect(calls).toHaveLength(1)
+      await vi.advanceTimersByTimeAsync(1)
+      expect(calls).toHaveLength(2)
+      await vi.advanceTimersByTimeAsync(1000)
+      await result
+      expect(calls.map((time) => time - calls[0])).toEqual([0, 1000, 2000])
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   it("runs the live search batch, scores queries, aggregates, and completes the read model", async () => {
     const events = []
     const queries = { first: { id: 1 }, second: { id: 2 } }

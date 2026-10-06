@@ -99,7 +99,7 @@ class ProxyController < ApplicationController
       return
     end
 
-    addresses = Addrinfo.getaddrinfo(uri.host, nil, :UNSPEC, :STREAM).map do |addrinfo|
+    addresses = Addrinfo.getaddrinfo(uri.hostname, nil, :UNSPEC, :STREAM).map do |addrinfo|
       IPAddr.new(addrinfo.ip_address)
     end
 

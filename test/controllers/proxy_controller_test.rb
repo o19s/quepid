@@ -238,6 +238,7 @@ class ProxyControllerTest < ActionDispatch::IntegrationTest
     test 'blocks IPv6 unique-local addresses' do
       get proxy_fetch_url params: { url: 'http://[fc00::1]/' }
       assert_response :bad_request
+      assert_equal 'Proxy URL resolves to a disallowed address', response.parsed_body['proxy_error']
     end
 
     test 'blocks a public hostname that resolves to a private IP' do

@@ -126,6 +126,10 @@ bin/docker server
 
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
 
+Restart the running app container after adding an autoload directory or changing
+initializers. Background workers retain their boot-time configuration and autoload
+paths even when the web process reloads code.
+
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command. You will need Ruby installed.
 You can still use `docker compose` directly, but for the basic stuff you can use the following:
 

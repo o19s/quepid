@@ -206,6 +206,24 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
       assert_equal 'You have judged all the documents you can!', flash[:notice]
     end
 
+    test 'judging completion escapes the card frame and keeps its notice for the full visit' do
+      empty_book = Book.create!(name: 'Nothing To Judge', owner: user, scale: '0,1')
+
+      get book_judge_url(empty_book), headers: { 'Turbo-Frame' => 'query_doc_pair_card' }
+      assert_redirected_to book_path(empty_book)
+      follow_redirect!(headers: { 'Turbo-Frame' => 'query_doc_pair_card' })
+
+      assert_select 'meta[name="turbo-visit-control"][content="reload"]'
+
+      get book_url(empty_book)
+      assert_response :success
+      assert_equal 'You have judged all the documents you can!', flash[:notice]
+      assert_select 'meta[name="turbo-visit-control"][content="reload"]', count: 0
+
+      get book_url(empty_book)
+      assert_nil flash[:notice]
+    end
+
     test 'the 50th judge request in a session shows the leaderboard' do
       49.times do
         get book_judge_url(jbm_book)

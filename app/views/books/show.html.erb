@@ -1,3 +1,4 @@
+<% turbo_page_requires_reload if turbo_frame_request_id == 'query_doc_pair_card' %>
 <%= turbo_stream_from(current_user, :notifications) %>
 
 <%= turbo_frame_tag "modal" %>
