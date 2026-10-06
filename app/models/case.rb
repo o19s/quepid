@@ -79,6 +79,16 @@ class Case < ApplicationRecord
 
   belongs_to :book, optional: true
 
+  # Ransack (used by CasesController#index's search/filters and sortable
+  # column headers) - keep this to what's used today.
+  def self.ransackable_attributes _auth_object = nil
+    %w[id case_name archived created_at updated_at]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[teams]
+  end
+
   # Validations
   validates :case_name, presence: true
   validates :options, json_format: true, allow_blank: true

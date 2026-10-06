@@ -42,7 +42,7 @@ class Team < ApplicationRecord
   # teams_id_eq (see SearchEndpointsController#index) - just enough to
   # identify a team, nothing else.
   def self.ransackable_attributes _auth_object = nil
-    %w[id]
+    %w[id name]
   end
 
   def self.ransackable_associations _auth_object = nil
