@@ -2,9 +2,9 @@
 
 class DownloadPage < RubyLLM::Tool
   description 'Downloads a specific web search results page'
-  param :url, desc: 'Webpage Search Results URL (e.g., https://search.ed.ac.uk/?q=mental)'
-  param :headers, desc: 'Custom HTTP headers as JSON string (e.g., {"X-Api-Key": "secret"})', required: false
-  param :credentials, desc: 'Basic auth credentials in format "username:password"', required: false
+  parameter :url, description: 'Webpage Search Results URL (e.g., https://search.ed.ac.uk/?q=mental)'
+  parameter :headers, description: 'Custom HTTP headers as JSON string (e.g., {"X-Api-Key": "secret"})', required: false
+  parameter :credentials, description: 'Basic auth credentials in format "username:password"', required: false
 
   def execute url:, headers: nil, credentials: nil
     # Validate URL format

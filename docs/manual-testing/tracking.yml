@@ -502,22 +502,22 @@ parts:
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-06T18:28:43Z
         result: pass
-        notes: "Covered live: blank URL produced visible validation; public Solr GET with q=star returned preview of 20,314 characters and exposed subsequent steps. Not covered live: timeout and malformed-header variants."
+        notes: "Covered live: GET of a disposable local JSON endpoint populated the preview and exposed AI generation. Not covered live: POST, timeout, authentication and custom-header variants."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
-        last_run: 2026-10-06T15:29:00Z
-        result: pass_with_fixes
-        notes: "Covered live: intercepted generation success, truncation warning with counts, and 422 extraction error; inspected before/after screenshots. Not covered live: paid OpenAI call. Service tests cover boilerplate stripping, structured JSON preservation and truncation."
-        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/services/mapper_wizard_service.rb", "app/views/mapper_wizards/show.html.erb"]
+        last_run: 2026-10-06T18:28:43Z
+        result: pass
+        notes: "Covered live: real Rails/RubyLLM HTTP calls to a disposable local provider, invalid-key failure/retry and both populated editors before/after v2; screenshot pairs inspected. Not covered live: paid OpenAI, long samples and non-code answers (service regressions cover the latter)."
+        paths: ["Gemfile.lock", "app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/services/mapper_wizard_service.rb", "app/views/mapper_wizards/show.html.erb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-06T18:28:50Z
         result: pass
-        notes: "Covered live: hand edited both mapper editors; number mapper returned246, Console Logs contained count, docs mapper returned two documents. Not covered live: AI refinement requires missing OpenAI key; broken-code variant."
-        paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb", "app/services/mapper_wizard_service.rb"]
+        notes: "Covered live: generated mappers returned count 1 and the sample document through V8; AI refinement populated the docs editor through a local provider before/after v2. Screenshot pairs inspected. Not covered live: paid OpenAI, long refinement, existing-endpoint editing and credential variants."
+        paths: ["Gemfile.lock", "app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb", "app/services/mapper_wizard_service.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
         last_run: 2026-10-04T23:10:00Z

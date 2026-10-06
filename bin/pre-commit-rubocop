@@ -11,6 +11,19 @@ if [[ $# -eq 0 ]]; then
 fi
 
 if docker info >/dev/null 2>&1; then
+  containers=()
+  while IFS= read -r container; do
+    [[ -n "$container" ]] && containers+=("$container")
+  done < <(docker compose ps -a --status running -q app)
+
+  if [[ ${#containers[@]} -gt 1 ]]; then
+    echo "Multiple app containers are running; cannot select one for RuboCop: ${containers[*]}" >&2
+    exit 1
+  fi
+  if [[ ${#containers[@]} -eq 1 ]]; then
+    exec docker exec "${containers[0]}" bundle exec rubocop --force-exclusion "$@"
+  fi
+
   exec bin/docker r bundle exec rubocop --force-exclusion "$@"
 fi
 

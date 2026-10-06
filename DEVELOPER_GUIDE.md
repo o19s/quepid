@@ -296,7 +296,10 @@ bin/docker r rails test:vitest       # same as yarn test:unit
 
 Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/`, `utils/`, and the classic core scripts (`app/javascript/tour.js`) — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
-Hooks prefer Docker when it is available (`bin/docker r`), matching the usual Quepid development workflow.
+Hooks prefer Docker when it is available. RuboCop reuses the running app container
+(including one started by `bin/docker s` / `q`), so it uses that container's installed
+gems. With no running app container, it falls back to `bin/docker r`; the JS hooks
+also use `bin/docker r`.
 
 Enable hooks:
 

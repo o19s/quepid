@@ -3,6 +3,51 @@
 require 'test_helper'
 
 class MapperWizardServiceTest < ActiveSupport::TestCase
+  test 'provider authentication errors retain generation and refinement failure contracts' do
+    stub_request(:post, 'https://api.openai.com/v1/responses')
+      .to_return(status: 401, headers: { 'Content-Type' => 'application/json' }, body: {
+        error: { message: 'Invalid API key', type: 'invalid_request_error', code: 'invalid_api_key' },
+      }.to_json)
+    service = MapperWizardService.new(api_key: 'invalid-key')
+
+    generated = service.generate_mappers('<main>Results</main>')
+    assert_not generated[:success]
+    assert_equal 'AI generation failed: Invalid API key', generated[:error]
+
+    refined = service.refine_mapper(
+      mapper_type:  'docsMapper',
+      current_code: 'docsMapper = function(data) { return []; }',
+      feedback:     'Extract the results',
+      html_content: '<main>Results</main>'
+    )
+    assert_not refined[:success]
+    assert_equal 'AI refinement failed: Invalid API key', refined[:error]
+    assert_requested(:post, 'https://api.openai.com/v1/responses', times: 2)
+  end
+
+  test 'a Responses API answer without code retains extraction errors' do
+    stub_request(:post, 'https://api.openai.com/v1/responses')
+      .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
+        id:     'resp_no_code',
+        model:  'gpt-4o',
+        output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: 'No code available' } ] } ],
+      }.to_json)
+    service = MapperWizardService.new(api_key: 'test-key')
+
+    generated = service.generate_mappers('<main>Results</main>')
+    assert_not generated[:success]
+    assert_equal 'No JavaScript code found in response', generated[:error]
+
+    refined = service.refine_mapper(
+      mapper_type:  'docsMapper',
+      current_code: 'docsMapper = function(data) { return []; }',
+      feedback:     'Extract the results',
+      html_content: '<main>Results</main>'
+    )
+    assert_not refined[:success]
+    assert_equal 'Could not extract improved code from AI response', refined[:error]
+  end
+
   test 'mapper samples discard boilerplate, preserve structured scripts and JSON, and report truncation' do
     service = MapperWizardService.new(api_key: 'test-key')
     html = "<style>#{'x' * 60_000}</style>" \
@@ -17,14 +62,15 @@ class MapperWizardServiceTest < ActiveSupport::TestCase
 
     prompts = []
     content = "```javascript\nnumberOfResultsMapper = function(data) { return 1; }\n```\n```javascript\ndocsMapper = function(data) { return []; }\n```"
-    stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+    stub_request(:post, 'https://api.openai.com/v1/responses')
       .with do |request|
         prompts << request.body
         true
       end
       .to_return(status: 200, headers: { 'Content-Type' => 'application/json' }, body: {
-        id: 'test', model: 'gpt-4o', choices: [ { message: { role: 'assistant', content: content } } ],
-        usage: { prompt_tokens: 1, completion_tokens: 1 }
+        id: 'test', object: 'response', status: 'completed', model: 'gpt-4o',
+        output: [ { type: 'message', role: 'assistant', content: [ { type: 'output_text', text: content } ] } ],
+        usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 }
       }.to_json)
 
     result = service.generate_mappers(html)
