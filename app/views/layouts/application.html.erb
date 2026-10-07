@@ -77,24 +77,28 @@
 
 <%= render 'layouts/header' %>
 
-<%# flex-grow-1 chains down to .row so the sidebar/main column reaches the
-    footer (mt-auto) even on short pages, instead of only matching content
-    height — a plain height:100% on .row wouldn't reliably resolve against a
-    flex-grow-derived parent height. See admin.html.erb's version of this
-    same chain for the fuller explanation (it skips .row entirely since its
-    sidebar/main aren't Bootstrap grid columns). %>
-<div class="container-fluid flex-shrink-0 flex-grow-1 d-flex flex-column">
-  <div class="row flex-grow-1">
+<%# Deliberately d-flex directly on container-fluid, not a nested .row: .row's
+    "> *" rule forces width:100%/flex-shrink:0 on every direct child (assuming
+    Bootstrap grid .col-* children), which fights a fixed-width sidebar + a
+    flex-grow content pane that isn't using grid columns. That mismatch is
+    what let main overlap the sidebar below the md breakpoint: main's old
+    col-md-10/col-lg-11 classes only set a width at their own breakpoint and
+    up, so under md nothing but that universal .row > * rule applied, handing
+    main the row's entire width right underneath the sidebar instead of
+    beside it. flex-grow-1 here (on a flex-column body) lets this reach all
+    the way down to the footer instead of only matching short page content -
+    see admin.html.erb's version of this same chain for the fuller
+    explanation (it skips .row entirely for the same reason). %>
+<div class="container-fluid flex-shrink-0 flex-grow-1 d-flex">
 
-    <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
-      <%= render 'layouts/sidebar' %>
-    <% end %>
+  <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
+    <%= render 'layouts/sidebar' %>
+  <% end %>
 
-    <!-- Begin page content -->
-    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '11' : '12' %> px-md-5">
-      <%= yield %>
-    </main>
-  </div>
+  <!-- Begin page content -->
+  <main class="flex-grow-1 px-md-5" style="min-width: 0;">
+    <%= yield %>
+  </main>
 </div>
 
 <%= render 'layouts/footer' %>
