@@ -17,10 +17,13 @@ module Api
       end
 
       describe 'Updates case score' do
-        test 'return an error if try id is not specified' do
-          put :update, params: { case_id: acase.id, case_score: { score: 1 } }
+        test 'accepts a score without a try, since scores outlive their tries' do
+          assert_difference 'acase.scores.count' do
+            put :update, params: { case_id: acase.id, case_score: { score: 1 } }
+          end
 
-          assert_response :bad_request
+          assert_response :ok
+          assert_nil response.parsed_body['try_id']
         end
 
         test 'returns no content if the score is empty' do

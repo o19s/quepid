@@ -19,18 +19,14 @@ class PublicCaseUrlTest < ActionDispatch::IntegrationTest
     assert_response :ok
 
     # log out of Quepid (which prompts a redirect to log back in)
-    get logout_url
-    assert_response :redirect
+    delete logout_url
+    assert_response :see_other
 
-    # We don't have access to the case as logged out user
-  rescue NoMethodError do
-           get analytics_tries_visualization_url(case_id: kase.id)
-           raise "shouldn't have made it to here"
-         end
-
-    # assert_raises NoMethodError do
-    #  get analytics_tries_visualization_url(case_id: kase.id)
-    # end
+    # We don't have access to a private case as a logged out user
+    private_case = cases(:queries_case)
+    assert_not private_case.public?
+    get analytics_tries_visualization_url(case_id: private_case.id)
+    assert_response :not_found
 
     # Navigate to the case using the encrypted "public" version of the case id
     get analytics_tries_visualization_url(case_id: kase.public_id)

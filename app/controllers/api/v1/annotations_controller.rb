@@ -13,6 +13,8 @@ module Api
       end
 
       def create
+        # Read both param sets up front so a malformed request can't leave a score behind.
+        the_annotation_params = annotation_params
         the_score_params = score_params.merge(
           user_id:    current_user.id,
           created_at: Time.zone.now
@@ -21,7 +23,7 @@ module Api
         @score = @case.scores.build the_score_params
 
         if @score.save
-          @annotation = Annotation.new annotation_params
+          @annotation = Annotation.new the_annotation_params
           @annotation.user  = current_user
           @annotation.score = @score
 

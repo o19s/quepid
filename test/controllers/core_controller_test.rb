@@ -84,7 +84,7 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '.pane_main footer a[href=?][target="_blank"]', oas_rails_path
       assert_select '.pane_main footer a[href="http://www.opensourceconnections.com/slack"][rel="noopener noreferrer"]'
       assert_select '.pane_main footer', text: /For community support and discussion/
-      assert_select '.pane_main footer code', 0
+      assert_select '.pane_main footer code', text: Rails.application.config.quepid_version
     end
 
     test 'preserves configured policy links in the case footer' do

@@ -31,7 +31,7 @@ class SessionsControllerTest < ActionController::TestCase
 
   test 'should not create session for invalid password html' do
     post :create, params: { user: { email: 'doug@example.com', password: 'incorrect' }, format: :html }
-    assert_response :success
+    assert_response :unprocessable_content
 
     assert_template 'sessions/new'
 

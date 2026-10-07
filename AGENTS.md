@@ -80,6 +80,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 ### Rails
 - Run Rails tests via `docker compose exec app rails test`.
+- Before a Rails suite or fixture-loading check, inspect running test processes in the server container. Do not run concurrent suites against the same test database; wait for the existing run or use a disposable database with an explicit `RAILS_ENV=test` and distinct `DB_NAME`, then remove only that database.
 - Scratch Ruby checks that load `test_helper` must explicitly set `RAILS_ENV=test` in the container command and verify it before loading fixtures; the server container inherits `RAILS_ENV=development`.
 
 ### CSS

@@ -17,10 +17,12 @@ module Api
       end
 
       describe '#create' do
-        test 'return an error if try id is not specified' do
-          post :create, params: { case_id: acase.id, score: { score: 1 } }
-
-          assert_response :bad_request
+        test 'rejects a request without annotation params and does not create a score' do
+          assert_no_difference 'acase.scores.count' do
+            assert_raises ActionController::ParameterMissing do
+              post :create, params: { case_id: acase.id, score: { score: 1 } }
+            end
+          end
         end
 
         test 'creates a new score ' do

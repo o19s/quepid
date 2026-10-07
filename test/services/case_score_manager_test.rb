@@ -22,11 +22,21 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       let(:the_case) { cases(:case_without_score) }
 
       test 'raises an error if creation fails' do
-        score_data.delete(:try_number)
+        score_data[:try_number] = 999_999
 
         assert_raises(ActiveRecord::RecordInvalid) do
           service.update score_data
         end
+        assert_not_empty service.errors[:try_number]
+      end
+
+      test 'creates a score without a try when no try_number is given' do
+        score_data.delete(:try_number)
+
+        score = service.update score_data
+
+        assert_predicate score, :persisted?
+        assert_nil score.try_id
       end
     end
 
