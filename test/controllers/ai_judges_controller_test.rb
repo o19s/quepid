@@ -347,7 +347,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       get edit_ai_judge_url(ai_judge)
 
       assert_select '#escalation-help li', 4
-      assert_select '#escalation-help li', text: /Minimum confidence/
+      assert_select '#escalation-help li', text: /Minimum Confidence/
     end
 
     it 'clears the judge to wake when Nobody is picked' do
