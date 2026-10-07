@@ -30,6 +30,7 @@
 
 | Doc | Purpose |
 |-----|---------|
+| [`adr/README.md`](./adr/README.md) | Architecture decisions and provider foundation; deferred batch/escalation proposals |
 | [`js_tooling.md`](./js_tooling.md) | JavaScript tests, linting, formatting, and build commands |
 
 ## Dedup rules (Aug 2026)

@@ -789,9 +789,9 @@ parts:
     scenarios:
       "12.1":
         title: "Create an owned or team-shared AI Judge"
-        last_run: 2026-10-06T18:01:58Z
+        last_run: 2026-10-07T16:21:29Z
         result: pass
-        notes: "Latest MCP sample: created private Jev judge, confidence configuration, provider switches and save/reload; registry/help/read-only controls inspected. Existing wizard E2E and ownership Rails regressions passed. Team/cross-account browser matrix deferred."
+        notes: "Batch 11 MCP sample: confidence removed in JSON stays cleared across both tabs; omitted OpenAI URL/model/timeout restore effective defaults. Saved private text-only judge and reloaded. Inspected interaction-state screenshots; no old-code replay. Earlier creation/sharing coverage remains in the ledger; full team/cross-account matrix deferred."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
@@ -807,9 +807,9 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/models/ai_judge.rb", "app/models/book.rb", "app/models/concerns/for_user_scope.rb", "app/helpers/books_helper.rb", "app/views/books/_form.html.erb", "app/views/books/show.html.erb"]
       "12.4":
         title: "Test & Refine an AI Judge's prompt"
-        last_run: 2026-10-06T18:01:58Z
+        last_run: 2026-10-07T16:21:29Z
         result: pass
-        notes: "Latest MCP sample: book-scoped Jev on [1,3,5], criteria/response, confidence rejection, 401 recovery, 429 then success (two provider requests); actual keyless Ollama returned zero. Jev used a local HTTP fixture through real Rails transport, not live TypeSafe. Inspected screenshots. Legacy routes covered by Rails; wider provider/account browser matrix deferred."
+        notes: "Batch 11 MCP sample without scale: active JSON Jev disables Run Prompt, OpenAI enables it; malformed JSON reports a recoverable error, corrected Ollama configuration returns rating 3 through real transport. Inspected screenshots. Earlier book-scale/Jev fixture acceptance coverage remains in Batch 4; live TypeSafe/paid-provider and broader account matrix deferred."
         paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
@@ -820,9 +820,9 @@ parts:
 
       "12.6":
         title: "AI Judge image options"
-        last_run: 2026-10-06T18:01:58Z
+        last_run: 2026-10-07T16:21:29Z
         result: pass
-        notes: "MCP: default on, text-only disabled/off notices, off/on choices saved and reloaded through Ollama/Jev then restored on OpenAI; inspected screenshots. JSON/image shared state and thumbnail precedence covered by automated tests. Paid-provider image judgements deferred."
+        notes: "Batch 11 MCP sample: off image choice survives Jev/provider switching and Ollama save/reload, then remains off when switched back to OpenAI. Inspected saved/restored screenshots; disposable judge removed. Provider E2E also passed. Earlier on-choice/thumbnail evidence remains in Batch 4; paid-provider image calls deferred."
         paths: ["app/views/ai_judges/_form.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges_controller.rb", "app/models/user.rb", "app/services/llm_service.rb", "app/models/ai_judge.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
 
       "12.7":

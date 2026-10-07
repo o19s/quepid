@@ -5,10 +5,32 @@
 * **Performance monitoring:** administrators can inspect request, query, job and exception performance through Rails Pulse. Monitoring data stays in the application database.
 * **Kamal image compatibility:** the production Docker image includes the `service="quepid"` label.
 
+### 🤖 Create, Test, and Automate AI Judges
+
+AI Judges now have their own place in the navigation. Create a judge, configure its provider, and test and refine its prompt before saving, all in one wizard. Judges belong to an owner and can stay private or be shared with teams; you no longer need a team to use one with your own books.
+
+* **Automatic judging:** opt individual AI Judges into running whenever new query/doc pairs are added to a book. A book-level rank depth lets you focus judging on the top results.
+* **Live progress and cancellation:** follow judging as it happens and cancel an active run. Ratings sync to linked cases as judgements arrive, so completed work is available even if you stop a run early.
+* **TypeSafe Jev support:** a new AI Judge provider uses the book's rating scale and scoring guidelines as evaluation criteria, with a configurable minimum confidence.
+* **More reliable results:** prompt previews and full judging runs apply the same rating validation, and rate-limited provider requests are retried.
+
+### 📚 See Your Book's Progress at a Glance
+
+The redesigned Book Overview brings judgement coverage, live Judge Activity, and Linked Cases together. See what is fully judged, in progress, or still waiting; inspect an individual judge's progress and recent activity; and watch linked-case sync status without refreshing the page.
+
+Judgement Stats now includes a rating distribution chart, making it easier to spot how ratings are spread across your scale. Large books also load faster.
+
+* **AI Judges can now see images:** a chat-based AI Judge can send the case's/document's thumbnail image to the LLM alongside the query and document, with a per-judge "Judge with images" switch for text-only models and providers (Ollama, TypeSafe Jev) that don't support images. https://github.com/o19s/quepid/pull/1822 by @frutik.
+* **Faster case listing page:** the case listing no longer loads every score blindly, speeding up the page for books with a lot of history. https://github.com/o19s/quepid/pull/1823 by @epugh.
+* **Fixed key=value query params:** engines using a bare query param (like Vespa's YQL) now correctly handle explicit `key=value` parameter lists, instead of only JSON or fully bare text.
+* **Qdrant:** a new setup-wizard option connects to Qdrant's collection query API, with support for looking up already-rated documents. A setup guide covers lexical and dense retrieval.
+
+Thanks @davidshq, @frutik, @chuckmeyer, @flaxsearch and @radu-gheorghe for contributing to this release!
+
 Three big things in this release: **Quepid now runs on SQLite or PostgreSQL, not just MySQL**; **Vespa is a fully worked-out example search engine**, backed by a coordinated `splainer-search` refactor and upgrade to 3.2.2; and **the Bootstrap 5 migration crossed the finish line**, alongside two more phases of AngularJS removal. On top of that, a batch of SQL correctness/security hardening from @frutik.
 
 ## 🗄️ SQLite and PostgreSQL Support
-Quepid now runs against three database adapters. SQLite (`DB_ADAPTER=sqlite3`) is the new zero-setup default for solo Search Practitioners who don't need a separate database server — production Docker images fall back to it automatically when no `DATABASE_URL` is set. https://github.com/o19s/quepid/pull/1763 by @epugh. PostgreSQL support followed close behind: a `postgresql_schema_compatibility.rb` shim (mirroring the existing SQLite one), a Docker service, and a CI job. https://github.com/o19s/quepid/pull/1777 by @frutik. Its data now persists at `./volumes/postgres/data` instead of an anonymous Docker volume that a container recreation could silently lose (https://github.com/o19s/quepid/pull/1778 by @frutik), and the sample data seeder is safe to re-run repeatedly against it after a `books_ai_judges` uniqueness bug was fixed in four spots (https://github.com/o19s/quepid/pull/1779 by @frutik).
+Quepid now runs against three database adapters. SQLite (`DB_ADAPTER=sqlite3`) is the new zero-setup default for solo Search Practitioners who don't need a separate database server — production Docker images fall back to it automatically when no `DATABASE_URL` is set. https://github.com/o19s/quepid/pull/1763 by @epugh. PostgreSQL support followed close behind: a `postgresql_schema_compatibility.rb` shim (mirroring the existing SQLite one), a Docker service, and a CI job. https://github.com/o19s/quepid/pull/1777 by @frutik. PostgreSQL 17 data was persisted at `./volumes/postgres/data` instead of an anonymous Docker volume that a container recreation could silently lose (https://github.com/o19s/quepid/pull/1778 by @frutik), and the sample data seeder is safe to re-run repeatedly against it after a `books_ai_judges` uniqueness bug was fixed in four spots (https://github.com/o19s/quepid/pull/1779 by @frutik).
 
 Running Quepid on your laptop with no database server to set up is now just:
 
