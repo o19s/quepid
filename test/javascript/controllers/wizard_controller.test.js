@@ -6,6 +6,7 @@ import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { importSnapshotsToCase } from "utils/snapshot_import"
 import { persistQueries } from "utils/query_lifecycle"
+import { createSettingsRuntime } from "utils/settings_runtime"
 
 const modal = { show: vi.fn(), hide: vi.fn() }
 
@@ -90,6 +91,85 @@ describe("WizardController", () => {
   afterEach(() => {
     vi.restoreAllMocks()
     delete window.confirm
+  })
+
+  describe("universal proxy", () => {
+    it("normalizes Solr presets without changing the default-off behavior", () => {
+      const controller = mount()
+      controller.capability.settings.pick.mockReturnValue({ searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false })
+      controller.applySettings("solr")
+      expect(controller.settings.apiMethod).toBe("JSONP")
+      expect(controller.settings.proxyRequests).toBe(false)
+      controller.proxyRequiredValue = true
+      controller.applySettings("solr")
+      expect(controller.settings.apiMethod).toBe("GET")
+      expect(controller.settings.proxyRequests).toBe(true)
+      controller.settings.apiMethod = "JSONP"
+      controller.forceProxyIfRequired()
+      expect(controller.settings.apiMethod).toBe("GET")
+      expect(controller.tlsMismatch()).toBe(false)
+    })
+
+    it.each([
+      { apiMethod: "JSONP", proxyRequests: false },
+      { apiMethod: "GET", proxyRequests: false },
+      { apiMethod: "JSONP", proxyRequests: true }
+    ])("rejects incompatible existing endpoints before validation or saving: %j", async (transport) => {
+      const controller = mount()
+      controller.proxyRequiredValue = true
+      const endpoint = { id: 7, searchEngine: "solr", endpointUrl: "http://solr", ...transport }
+      controller.searchEndpoints = [endpoint]
+      const originalSettings = { ...controller.settings }
+      controller.selectEndpoint({ target: { value: "7" } })
+      expect(controller.error).toContain("Edit the endpoint first")
+      expect(controller.settings).toEqual(originalSettings)
+      expect(endpoint).toMatchObject(transport)
+
+      // A current try can already reference an incompatible endpoint when the wizard opens.
+      controller.settings = { ...controller.settings, searchEndpointId: 7, apiMethod: "GET", proxyRequests: true }
+      await controller.validate()
+      expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
+      await controller.finish()
+      expect(controller.capability.settings.update).not.toHaveBeenCalled()
+      expect(controller.capability.case.rename).not.toHaveBeenCalled()
+      expect(modal.hide).not.toHaveBeenCalled()
+      expect(controller.saving).toBeFalsy()
+    })
+
+    it("keeps existing endpoint selection unchanged when the flag is off", () => {
+      const controller = mount()
+      controller.searchEndpoints = [{ id: 7, searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false }]
+      controller.selectEndpoint({ target: { value: "7" } })
+      expect(controller.settings).toMatchObject({ searchEndpointId: 7, apiMethod: "JSONP", proxyRequests: false })
+      expect(controller.proxyEndpointError()).toBeNull()
+    })
+
+    it("saves a compatible existing endpoint by its original ID after a rejected selection", async () => {
+      const controller = mount()
+      controller.proxyRequiredValue = true
+      controller.searchEndpoints = [
+        { id: 7, searchEngine: "solr", apiMethod: "JSONP", proxyRequests: false },
+        { id: 8, searchEngine: "solr", endpointUrl: "http://solr", apiMethod: "GET", proxyRequests: true }
+      ]
+      controller.selectEndpoint({ target: { value: "7" } })
+      controller.selectEndpoint({ target: { value: "8" } })
+      expect(controller.error).toBeNull()
+      const runtime = createSettingsRuntime({ caseNo: () => 5, tryNo: () => 1 })
+      runtime.setCaseTries([{ try_number: 1, search_endpoint_id: 8, api_method: "GET", proxy_requests: true }])
+      runtime.setCurrentTry(1)
+      controller.capability.settings.applicable = runtime.applicable
+      controller.capability.settings.update = vi.fn(runtime.update)
+      const request = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("{}"))
+      getCoreCapabilities.mockReturnValue({ queryCapabilities: { changeSettings: vi.fn() } })
+      await controller.finish()
+      expect(controller.capability.settings.update).toHaveBeenCalledWith(expect.objectContaining({
+        searchEndpointId: 8, apiMethod: "GET", proxyRequests: true
+      }))
+      const payload = JSON.parse(request.mock.calls[0][1].body)
+      expect(payload.try.search_endpoint_id).toBe(8)
+      expect(payload).not.toHaveProperty("search_endpoint")
+      expect(modal.hide).toHaveBeenCalledOnce()
+    })
   })
 
   describe("loading", () => {

@@ -105,4 +105,29 @@ describe("snapshot searcher", () => {
     })).toBeNull()
     expect(log).toHaveBeenCalledWith("Snapshot not found: missing")
   })
+  it("filters docs by whether they are rated-only", () => {
+    const searcher = createSnapshotSearcher({
+      snapshot: makeSnapshot(),
+      query,
+      fieldSpec: { id: "id" },
+      createRateableDoc: (doc) => ({ ...doc }),
+      explainDoc: (doc) => doc
+    })
+
+    expect(searcher.getFilteredDocs(true).map((doc) => doc.id)).toEqual(["rated"])
+    expect(searcher.getFilteredDocs(false).map((doc) => doc.id)).toEqual(["unrated"])
+    expect(searcher.getFilteredDocs().map((doc) => doc.id)).toEqual(["unrated"])
+  })
+
+  it("skips null and undefined saved results", () => {
+    const searcher = createSnapshotSearcher({
+      snapshot: makeSnapshot({ getSearchResults: () => [null, undefined, { id: "a", explain: "{}" }] }),
+      query,
+      fieldSpec: { id: "id" },
+      createRateableDoc: (doc) => ({ ...doc }),
+      explainDoc: (doc) => doc
+    })
+    expect(searcher.numFound).toBe(3)
+    expect(searcher.docs.map((doc) => doc.id)).toEqual(["a"])
+  })
 })

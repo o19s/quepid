@@ -85,4 +85,13 @@ describe("RatingsStore", () => {
 
     expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/9/ratings", expect.anything())
   })
+  it("sorts best documents highest first regardless of insertion order", () => {
+    const unordered = new RatingsStore({
+      caseNo: 0,
+      queryId: 1,
+      ratingsDict: { low: 1, high: "9", mid: 5 },
+      onChanged
+    })
+    expect(unordered.bestDocs().map((doc) => doc.id)).toEqual(["high", "mid", "low"])
+  })
 })

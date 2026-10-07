@@ -57,3 +57,24 @@ describe("navigation runtime", () => {
     expect(runtime.getQuepidProxyUrl(7)).toBe("https://quepid.example.test/proxy/fetch?search_endpoint_id=7&url=")
   })
 })
+
+describe("navigation runtime protocol and url helpers", () => {
+  const runtimeAt = (href, protocol) =>
+    createNavigationRuntime({ location: { href, protocol, search: "" }, window: {} })
+
+  it("asks to redirect only when the page and search protocols differ", () => {
+    const https = runtimeAt("https://q.test/case/1", "https:")
+    expect(https.needToRedirectQuepidProtocol("http://search.test")).toBe(true)
+    expect(https.needToRedirectQuepidProtocol("https://search.test")).toBe(false)
+    expect(https.needToRedirectQuepidProtocol("")).toBe(false)
+    const http = runtimeAt("http://q.test/case/1", "http:")
+    expect(http.needToRedirectQuepidProtocol("https://search.test")).toBe(true)
+    expect(http.needToRedirectQuepidProtocol("http://search.test")).toBe(false)
+  })
+
+  it("finds the root url whether or not the location ends in a slash", () => {
+    expect(runtimeAt("https://q.test/sub/case/1/try/2", "https:").getQuepidRootUrl()).toBe("https://q.test/sub")
+    expect(runtimeAt("https://q.test/case/", "https:").getQuepidRootUrl()).toBe("https://q.test")
+    expect(runtimeAt("https://q.test", "https:").getQuepidRootUrl()).toBe("https://q.test")
+  })
+})

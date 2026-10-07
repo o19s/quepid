@@ -54,4 +54,19 @@ describe("snapshot import runtime", () => {
     expect(imported).toEqual([{ id: 9 }])
     expect(fetcher).toHaveBeenCalledWith("/api/cases/7/snapshots/imports", expect.objectContaining({ method: "POST" }))
   })
+  it("posts one snapshot per request with its queries and docs", async () => {
+    const fetcher = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({ snapshots: [] }),
+      text: async () => "{}"
+    }))
+    vi.stubGlobal("fetch", fetcher)
+
+    await importSnapshotsToCase(rows, 7, "")
+
+    const body = JSON.parse(fetcher.mock.calls[0][1].body)
+    expect(body.snapshots).toHaveLength(1)
+    expect(body.snapshots[0].name).toBe("Weekly")
+    expect(body.snapshots[0].queries["star wars"].docs[0].id).toBe("doc-1")
+  })
 })

@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   buildSnapshotLookupSettings,
   mapFieldSpecToSolrFormat,
@@ -109,5 +109,64 @@ describe("snapshot hydration", () => {
     expect(updates.map(({ scope }) => scope)).toEqual([7, 8])
     expect(updates[0].snapshotSettings.searchUrl).toBe("/api/cases/12/snapshots/7/search")
     expect(updates[1].snapshotSettings.searchUrl).toBe("/api/cases/12/snapshots/8/search")
+  })
+  describe("empty settings and cache scoping", () => {
+    const hydrate = (overrides = {}) => {
+      const calls = { addDocIds: [], addScoped: [], updates: [] }
+      const result = registerAndHydrateSnapshots({
+        snapshots: [{ id: 7 }],
+        registry: {},
+        settings: { searchEngine: "solr", fieldSpec: "id:id" },
+        supportsLookupById: () => true,
+        createFieldSpec: (value) => value,
+        rootUrl: "",
+        caseNo: 12,
+        addDocIds: (ids) => calls.addDocIds.push(ids),
+        addScopedDocIds: (ids, scope) => calls.addScoped.push([ids, scope]),
+        clearScopedDocs: () => {},
+        updateDocs: (...args) => {
+          calls.updates.push(args)
+          return Promise.resolve()
+        },
+        createModel: ({ params }) => ({ allDocIds: () => [`doc-${params.id}`] }),
+        getDoc: () => null,
+        explainDoc: (doc) => doc,
+        ...overrides
+      })
+      return { result, calls }
+    }
+
+    it("returns blank or missing settings untouched", () => {
+      const createFieldSpec = vi.fn()
+      const blank = {}
+      expect(buildSnapshotLookupSettings({ settings: blank, supportsLookupById: () => false, createFieldSpec })).toBe(blank)
+      expect(buildSnapshotLookupSettings({ settings: undefined, supportsLookupById: () => false, createFieldSpec })).toBeUndefined()
+      expect(createFieldSpec).not.toHaveBeenCalled()
+    })
+
+    it("does not look documents up when settings are empty or missing", async () => {
+      for (const settings of [{}, null, undefined]) {
+        const { result, calls } = hydrate({ settings })
+        await expect(result.promise).resolves.toBeUndefined()
+        expect(calls.updates).toEqual([])
+        expect(calls.addDocIds).toEqual([])
+      }
+    })
+
+    it("uses the shared cache for engines that can look documents up by id", async () => {
+      const { result, calls } = hydrate()
+      await result.promise
+      expect(calls.addScoped).toEqual([])
+      expect(calls.addDocIds).toEqual([["doc-7"]])
+      expect(calls.updates).toHaveLength(1)
+      expect(calls.updates[0]).toHaveLength(1)
+    })
+
+    it("falls back to a single lookup when there are no snapshots to scope", async () => {
+      const settings = { searchEngine: "static", fieldSpec: "id:id" }
+      const { result, calls } = hydrate({ snapshots: [], settings })
+      await result.promise
+      expect(calls.updates).toEqual([[settings]])
+    })
   })
 })

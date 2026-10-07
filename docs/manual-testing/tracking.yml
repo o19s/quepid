@@ -174,9 +174,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-06T15:29:00Z
-        result: pass_with_fixes
-        notes: "Covered live: Vespa POST validation with yql=...&ranking.profile=bm25 advanced to Fields; original wizard failed the same intercepted response contract. Inspected before/after screenshots. Not covered live: complete save, other engines and live Vespa server."
+        last_run: 2026-10-07T14:56:26Z
+        result: pass
+        notes: "Covered live: Solr forced-proxy wizard failure/retry, real proxy validation, fields/query/Finish and persisted GET/proxy with results; default-off JSONP/switch restored. Screenshots inspected; disposable records removed and onboarding restored. Not covered live: other engines, protocol reload and full account matrix."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -472,9 +472,9 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-10-06T19:58:49Z
+        last_run: 2026-10-07T14:56:26Z
         result: pass
-        notes: "Batch 7 MCP sample: teamless Static File endpoint saved privately; solo form before/after inspected. Other engines and validation matrix deferred; endpoint controller regressions passed."
+        notes: "Covered live: forced-proxy Solr form rejects tampered false with 422, retains fields, then saves true/GET with 303; default-off JSONP/switch restored. Before/after screenshots inspected. Not covered live: full engine/team/credential matrix."
         paths: ["app/views/shared/_team_picker.html.erb", "app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb", "app/views/search_endpoints/new.html.erb", "app/views/search_endpoints/edit.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "7.3":
         title: "View / Edit a Search Endpoint"
@@ -537,6 +537,13 @@ parts:
         result: pass_with_fixes
         notes: "Original sample used the live demo for creation/search, rating refresh and point-ID lookup. Review-fix sample used type-sensitive intercepted Qdrant responses: numeric movie_id lookup returned zero before and one after; Missing Documents retrieved the rated payload ID. Inspected numeric-payload before/after and missing-documents screenshots. E2E covers point IDs, numeric payload IDs and leading-zero string IDs; mapper tests cover UUID, unsafe keys and >10 ratings. Scratch records removed and onboarding restored. Dense/self-hosted and live payload-ID collections deferred."
         paths: ["app/models/mapper_based_search_engine.rb", "db/mapper_based_search_engines/qdrant.js", "public/images/qdrant-icon.png", "public/images/qdrant.png", "docs/endpoints_qdrant.md", "app/javascript/controllers/wizard_controller.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/query_service.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/missing_documents_controller.js"]
+
+      "7.13":
+        title: "Instance-wide required proxy"
+        last_run: 2026-10-07T15:08:08Z
+        result: pass_with_fixes
+        notes: "Earlier sample covered boot warning, Solr form 422/retry/303, wizard proxy failure/retry/Finish and persisted GET/proxy; mapper switch hidden/checked and default-off controls. Review fix: MCP with the controller flag enabled rejected incompatible selection/validation/Finish (zero writes), accepted a compatible endpoint and restored default-off selection; screenshots inspected. Compatible Finish serialization covered by Vitest. Not covered live: compatible existing-endpoint save, mapper save, HTTPS and full engine/account matrix."
+        paths: ["config/initializers/customize_quepid.rb", "app/models/search_endpoint.rb", "app/helpers/application_helper.rb", "app/views/search_endpoints/_form.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/controllers/wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
 
   "08":
     file: 08-scorers.md

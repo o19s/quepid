@@ -159,4 +159,43 @@ describe("buildQueryDocPairsPayload", () => {
     expect(runtime.getSyncCacheStats(7).syncedPairsCount).toBe(1)
     expect(logger.error).toHaveBeenCalledOnce()
   })
+  describe("payload and batching edges", () => {
+    const okFetch = () =>
+      vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null, ok: true, status: 204 }))
+
+    it("keeps raw document fields and only reports a title_field that differs", () => {
+      const pair = (doc) => buildQueryDocPairsPayload([{ queryText: "q", docs: [doc] }])[0].document_fields
+      expect(pair({ id: "a", title: "T", rawFields: { color: "red" } })).toMatchObject({ color: "red", title: "T" })
+      expect(pair({ id: "a", title: "T", rawFields: { title: "T" } })).not.toHaveProperty("title_field")
+      expect(pair({ id: "a", title: "T" })).not.toHaveProperty("title_field")
+      expect(pair({ id: "a", title: "T", rawFields: { title: "Raw" } }).title_field).toBe("Raw")
+    })
+
+    it("forgets synced pairs when either the case or the book changes", async () => {
+      vi.stubGlobal("fetch", okFetch())
+      const runtime = createBookSyncRuntime()
+      const query = { queryText: "search", docs: [{ id: "doc-1" }] }
+      runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+      await runtime.sync([query])
+      expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(1)
+
+      runtime.configure({ caseId: 43, bookId: 7, autoPopulate: true })
+      expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(0)
+    })
+
+    it("does not send empty batches or queries without new docs", async () => {
+      const fetcher = okFetch()
+      vi.stubGlobal("fetch", fetcher)
+      const runtime = createBookSyncRuntime()
+      runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+
+      await runtime.sync([{ queryText: "none", docs: [] }, { queryText: "also none" }])
+      expect(fetcher).not.toHaveBeenCalled()
+
+      const exactly100 = Array.from({ length: 100 }, (_, i) => ({ queryText: `q${i}`, docs: [{ id: "d" }] }))
+      await runtime.sync([...exactly100, { queryText: "empty", docs: [] }])
+      expect(fetcher).toHaveBeenCalledTimes(1)
+      expect(JSON.parse(fetcher.mock.calls[0][1].body).query_doc_pairs).toHaveLength(100)
+    })
+  })
 })

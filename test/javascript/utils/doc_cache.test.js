@@ -37,3 +37,64 @@ describe("createDocCache", () => {
     expect(cache.hasDoc("scoped", "snapshot-1")).toBe(false)
   })
 })
+
+describe("createDocCache resolved docs", () => {
+  const build = () => {
+    const resolver = vi.fn((ids) => ({
+      fetchDocs() {
+        this.docs = ids.map((id) => ({ id }))
+        return Promise.resolve()
+      },
+      docs: []
+    }))
+    return { resolver, cache: createDocCache({ resolver, proxyUrlFor: () => "/p" }) }
+  }
+
+  it("treats null and undefined scope as the shared cache", () => {
+    const { cache } = build()
+    cache.addIds(["a"], null)
+    expect(cache.knowsDoc("a")).toBe(true)
+    expect(cache.knowsDoc("a", undefined)).toBe(true)
+    cache.empty(null)
+    expect(cache.knowsDoc("a")).toBe(false)
+    cache.addIds(["a"])
+    cache.empty()
+    expect(cache.knowsDoc("a")).toBe(false)
+  })
+
+  it("invalidate discards resolved docs so they are fetched again", async () => {
+    const { cache, resolver } = build()
+    cache.addIds(["a"])
+    cache.addIds(["a"], 5)
+    await cache.update({})
+    await cache.update({}, 5)
+    expect(cache.hasDoc("a")).toBe(true)
+
+    cache.invalidate()
+    expect(cache.hasDoc("a")).toBe(false)
+    expect(cache.knowsDoc("a")).toBe(true)
+    expect(cache.hasDoc("a", 5)).toBe(true)
+
+    resolver.mockClear()
+    await cache.update({})
+    expect(resolver).toHaveBeenCalledTimes(1)
+  })
+
+  it("does not refetch docs that are already resolved and keeps them when ids are re-added", async () => {
+    const { cache, resolver } = build()
+    cache.addIds(["a"])
+    await cache.update({})
+    cache.addIds(["a"])
+    expect(cache.hasDoc("a")).toBe(true)
+    resolver.mockClear()
+    await cache.update({})
+    expect(resolver).not.toHaveBeenCalled()
+  })
+
+  it("only adds a proxy url when proxyRequests is true", async () => {
+    const { cache, resolver } = build()
+    cache.addIds(["a"])
+    await cache.update({ proxyRequests: false, searchEndpointId: 1 })
+    expect(resolver.mock.calls[0][1]).not.toHaveProperty("proxyUrl")
+  })
+})

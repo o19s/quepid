@@ -10,7 +10,10 @@ function buildOwner({
   isTrySelected = true,
   searcher,
   scorer = { getColors: () => [] },
-  bootstrapScorer = vi.fn()
+  bootstrapScorer = vi.fn(),
+  editable = {},
+  previewArgs = vi.fn(),
+  proxyUrlFor = vi.fn()
 } = {}) {
   const splainerSearch = {
     searchSvc: { createSearcher: vi.fn(() => searcher) },
@@ -32,17 +35,17 @@ function buildOwner({
     },
     domain: {
       settings: {
-        editable: vi.fn(() => ({})),
+        editable: vi.fn(() => editable),
         applicable: vi.fn(() => ({ ...selectedTry, selectedTry })),
         isTrySelected: vi.fn(() => isTrySelected),
-        previewArgs: vi.fn()
+        previewArgs
       },
       scorer: {
         getDefault: vi.fn(() => scorer),
         select: vi.fn(),
         bootstrap: bootstrapScorer
       },
-      navigation: { proxyUrlFor: vi.fn() }
+      navigation: { proxyUrlFor }
     }
   })
 
@@ -315,4 +318,145 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(completed.allRated).toBe(false)
   })
 
+  describe("query removal and targeted search", () => {
+    const editable = (overrides = {}) => ({
+      searchEngine: "solr",
+      selectedTry: { tryNo: 2, queryParams: "q=#$query##", searchUrl: "http://solr/select" },
+      createFieldSpec: () => ({ id: "id" }),
+      ...overrides
+    })
+    const registered = (extra = {}) => ({
+      queryId: 7,
+      queryText: "star wars",
+      ratingsStore: { createRateableDoc: (doc) => doc },
+      ...extra
+    })
+
+    it("only reconciles removal of ids that are registered", () => {
+      const stores = buildStores()
+      const search = buildOwner({ store: stores })
+      stores.queries.upsert(registered())
+
+      expect(search.queryCapabilities.reconcileQueryRemoval(undefined)).toBe(false)
+      expect(search.queryCapabilities.reconcileQueryRemoval(null)).toBe(false)
+      expect(search.queryCapabilities.reconcileQueryRemoval(99)).toBe(false)
+      expect(search.queryCapabilities.getQuery(7)).toBeTruthy()
+      expect(search.queryCapabilities.reconcileQueryRemoval(7)).toBe(true)
+      expect(search.queryCapabilities.getQuery(7)).toBeFalsy()
+    })
+
+    it("has no targeted search for an unknown query", () => {
+      const search = buildOwner({ store: buildStores(), editable: editable() })
+      expect(search.targetedSearch(404)).toBeNull()
+    })
+
+    it("describes the targeted search from the query and the editable settings", () => {
+      const stores = buildStores()
+      stores.queries.upsert(registered({ ratings: { scale: { 1: "own" } } }))
+      const adapter = buildOwner({ store: stores, editable: editable() }).targetedSearch(7)
+
+      expect(adapter).toMatchObject({ queryId: 7, queryText: "star wars", usesQueryParamsEditor: true, ratingScale: { 1: "own" } })
+      expect(adapter.initialQueryParams()).toBe("q=star wars")
+
+      const staticAdapter = buildOwner({ store: stores, editable: editable({ searchEngine: "static" }) }).targetedSearch(7)
+      expect(staticAdapter.usesQueryParamsEditor).toBe(false)
+      const algolia = buildOwner({ store: stores, editable: editable({ searchEngine: "searchapi" }) }).targetedSearch(7)
+      expect(algolia.usesQueryParamsEditor).toBe(true)
+      const es = buildOwner({ store: stores, editable: editable({ searchEngine: "os" }) }).targetedSearch(7)
+      expect(es.usesQueryParamsEditor).toBe(true)
+      const vectara = buildOwner({ store: stores, editable: editable({ searchEngine: "vectara" }) }).targetedSearch(7)
+      expect(vectara.usesQueryParamsEditor).toBe(false)
+    })
+
+    it("falls back to the scorer's colors, then an empty scale, for the rating scale", () => {
+      const withScorer = (query) => {
+        const stores = buildStores()
+        stores.queries.upsert(query)
+        return buildOwner({ store: stores, editable: editable() }).targetedSearch(7).ratingScale
+      }
+      expect(withScorer(registered({ effectiveScorer: () => ({ getColors: () => ({ 0: "red" }) }) }))).toEqual({ 0: "red" })
+      expect(withScorer(registered({ effectiveScorer: () => ({}) }))).toEqual({})
+      expect(withScorer(registered({ effectiveScorer: () => null }))).toEqual({})
+      expect(withScorer(registered())).toEqual({})
+    })
+
+    it("builds preview searchers with a proxy url only when the settings ask for one", async () => {
+      const run = async (overrides) => {
+        const stores = buildStores()
+        stores.queries.upsert(registered())
+        const searcher = { type: "static", docs: [], numFound: 0, search: vi.fn(() => Promise.resolve()) }
+        const proxyUrlFor = vi.fn(() => "/proxy/9?url=")
+        const previewArgs = vi.fn(() => Promise.resolve({ q: ["x"] }))
+        const search = buildOwner({ store: stores, searcher, previewArgs, proxyUrlFor, editable: editable(overrides) })
+        await search.targetedSearch(7).search("q=x")
+        return { proxyUrlFor, previewArgs, createSearcher: search.splainerSearch.searchSvc.createSearcher }
+      }
+
+      const proxied = await run({ proxyRequests: true, searchEndpointId: 9 })
+      expect(proxied.proxyUrlFor).toHaveBeenCalledWith(9)
+      expect(proxied.createSearcher.mock.calls[0][4].proxyUrl).toBe("/proxy/9?url=")
+      expect(proxied.previewArgs).toHaveBeenCalledWith(2, "q=x")
+
+      for (const overrides of [{ proxyRequests: false }, {}, { proxyRequests: "yes" }]) {
+        const direct = await run(overrides)
+        expect(direct.proxyUrlFor).not.toHaveBeenCalled()
+        expect(direct.createSearcher.mock.calls[0][4].proxyUrl).toBeUndefined()
+      }
+    })
+
+    describe("rated documents for mapper-based engines", () => {
+      const mapperCode =
+        "ratedDocsQueryParamsMapper = function (ids, idField) { return 'ids=' + ids.join(',') + '&f=' + idField }"
+      const searchApi = (selectedTry = {}) =>
+        editable({
+          searchEngine: "searchapi",
+          mapperCode,
+          selectedTry: {
+            tryNo: 3,
+            searchEngine: "searchapi",
+            mapperCode,
+            mapperBasedSearchEngineSupportsRatedDocsLookup: true,
+            ...selectedTry
+          }
+        })
+
+      const run = async ({ settings = searchApi(), previewArgs }) => {
+        const stores = buildStores()
+        stores.queries.upsert(registered({ ratings: { a: 1, b: 2 } }))
+        const searcher = {
+          type: "searchapi",
+          docs: [{ id: "a" }],
+          numFound: 1,
+          search: vi.fn(() => Promise.resolve())
+        }
+        const search = buildOwner({ store: stores, searcher, previewArgs, editable: settings })
+        const adapter = await search.targetedSearch(7).resetToRated()
+        return { adapter, searcher, previewArgs, createSearcher: search.splainerSearch.searchSvc.createSearcher }
+      }
+
+      it("looks up rated docs through the mapper and forces POST", async () => {
+        const previewArgs = vi.fn(() => Promise.resolve({ q: "resolved" }))
+        const { adapter, createSearcher } = await run({ previewArgs })
+
+        expect(previewArgs).toHaveBeenCalledWith(3, "ids=a,b&f=id")
+        const lookupCall = createSearcher.mock.calls[createSearcher.mock.calls.length - 1]
+        expect(lookupCall[2]).toEqual({ q: "resolved" })
+        expect(lookupCall[4].apiMethod).toBe("POST")
+        expect(adapter.docs.map((doc) => doc.id)).toEqual(["a"])
+      })
+
+      it("leaves the list empty when the mapper builds no query or the args cannot be resolved", async () => {
+        const noMapper = vi.fn(() => Promise.resolve({}))
+        const without = await run({ settings: searchApi({ mapperCode: "x = 1" }), previewArgs: noMapper })
+        expect(noMapper).not.toHaveBeenCalled()
+        expect(without.adapter.docs).toEqual([])
+
+        const unresolved = vi.fn(() => Promise.resolve(null))
+        const none = await run({ previewArgs: unresolved })
+        expect(unresolved).toHaveBeenCalled()
+        expect(none.adapter.docs).toEqual([])
+        expect(none.searcher.search).not.toHaveBeenCalled()
+      })
+    })
+  })
 })

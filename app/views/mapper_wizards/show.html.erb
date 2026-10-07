@@ -277,6 +277,10 @@
                  data-mapper-wizard-target="endpointName"
                  value="<%= @search_endpoint.name %>">
         </div>
+        <% if require_proxy_for_all_search_endpoints? %>
+          <input type="checkbox" hidden checked data-mapper-wizard-target="proxyRequests">
+          <div class="col-md-6 form-text">This Quepid instance requires all search requests to be proxied.</div>
+        <% else %>
         <div class="col-md-6">
           <label class="form-label">Options</label>
           <div class="form-check form-switch">
@@ -289,6 +293,7 @@
           </div>
           <div class="form-text">Recommended for avoiding CORS issues with external search APIs.</div>
         </div>
+        <% end %>
       </div>
 
       <% if @current_user.teams.any? %>

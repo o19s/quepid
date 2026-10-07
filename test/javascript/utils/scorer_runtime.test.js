@@ -182,4 +182,137 @@ describe("scorer runtime", () => {
 
     expect(refreshRatedDocs).toHaveBeenCalledWith(7, 25)
   })
+  describe("scale helpers", () => {
+    const scorer = (overrides = {}) => createScorer({ scale: [0, 1], ...overrides })
+
+    it("parses comma separated scales regardless of surrounding whitespace", () => {
+      const s = scorer()
+      expect(s.scaleToArray("1,2,3")).toEqual([1, 2, 3])
+      expect(s.scaleToArray(" 1 ,  2 , 3 ")).toEqual([1, 2, 3])
+    })
+
+    it("maps scale values to hues relative to the range, even for offset scales", () => {
+      const s = scorer()
+      expect(s.scaleToColors([1, 2, 3])).toEqual({
+        1: { color: "hsl(0, 100%, 50%)" },
+        2: { color: "hsl(60, 100%, 50%)" },
+        3: { color: "hsl(120, 100%, 50%)" }
+      })
+      expect(s.scaleToColors("1, 2, 3")[2].color).toBe("hsl(60, 100%, 50%)")
+      expect(s.scaleToColors([4])[4].color).toBe("hsl(0, 100%, 50%)")
+      expect(s.scaleToColors([])).toEqual({})
+      expect(s.scaleToColors(undefined)).toEqual({})
+    })
+
+    it("adds labels to colors only when label display is on and labels exist", () => {
+      const colors = scorer({ scale_with_labels: { 0: "No", 1: "Yes" }, show_scale_labels: true }).getColors()
+      expect(colors[1]).toEqual({ color: "hsl(120, 100%, 50%)", showScaleLabels: true, label: "Yes" })
+      expect(scorer({ scale_with_labels: { 0: "No" }, show_scale_labels: false }).getColors()[0]).toEqual({
+        color: "hsl(0, 100%, 50%)"
+      })
+    })
+
+    it("only shows a label when display is on, labels exist and the value has one", () => {
+      const labelled = { scale_with_labels: { 0: "No" }, show_scale_labels: true }
+      expect(scorer(labelled).showScaleLabel(0)).toBe(true)
+      expect(scorer(labelled).showScaleLabel(1)).toBe(false)
+      expect(scorer({ ...labelled, show_scale_labels: false }).showScaleLabel(0)).toBe(false)
+      expect(scorer({ show_scale_labels: true, scale_with_labels: null }).showScaleLabel(0)).toBe(false)
+    })
+
+    it("fills in blank labels for scale values that lack one", () => {
+      const s = scorer()
+      expect(s.scaleToScaleWithLabels("0, 1,2", null)).toEqual({ 0: "", 1: "", 2: "" })
+      expect(s.scaleToScaleWithLabels("0,1", undefined)).toEqual({ 0: "", 1: "" })
+      expect(s.scaleToScaleWithLabels(["0", "1"], { 1: "Good", 0: null })).toEqual({ 0: "", 1: "Good" })
+      expect(s.scaleToScaleWithLabels("0,,", {})).toEqual({ 0: "" })
+      expect(s.scaleToScaleWithLabels(undefined, null)).toEqual({})
+    })
+  })
+
+  describe("rating math", () => {
+    const s = createScorer({ scale: [0, 1, 2, 3] })
+    const docs = [makeDoc(1), makeDoc(2), makeDoc(3)]
+
+    it("averages only rated docs and returns null when none are rated", () => {
+      expect(s.baseAvg([makeDoc(1), makeDoc(undefined), makeDoc(3)])).toBe(2)
+      expect(s.baseAvg([makeDoc(undefined)])).toBeNull()
+      expect(s.baseAvg([])).toBeNull()
+      expect(s.baseAvg(docs, 2)).toBe(1.5)
+    })
+
+    it("computes edit distance between rating sequences", () => {
+      expect(s.editDistance([1, 2, 3], [1, 2, 3])).toBe(0)
+      expect(s.editDistance([1, 2, 3], [1, 3])).toBe(1)
+      expect(s.editDistance([1, 2, 3], [4, 5, 6])).toBe(3)
+      expect(s.editDistance([1, 2, 3], [1, 2, 3, 4])).toBe(1)
+    })
+
+    it("takes the top N best ratings", () => {
+      const best = [{ rating: 3 }, { rating: 2 }, { rating: 1 }]
+      expect(s.getBestRatings(2, best)).toEqual([3, 2])
+    })
+
+    it("limits both sides to the requested count when measuring distance from best", () => {
+      const best = [{ rating: 3 }, { rating: 2 }, { rating: 1 }]
+      // ratings [1,2] vs best [3,2]
+      expect(s.distanceFromBest(docs, best, 2)).toBe(1)
+      // more best docs than returned docs: pad/limit to the docs seen
+      expect(s.distanceFromBest(docs.slice(0, 1), best, 5)).toBe(s.editDistance([1], [3, 2, 1].slice(0, 3)))
+      expect(s.distanceFromBest(docs, best.slice(0, 1), 3)).toBe(s.editDistance([1, 2, 3], [3, null, null]))
+    })
+  })
+
+  describe("scorer code helpers", () => {
+    const run = (code, { docs = [], ratedDocs = [], best = [], options } = {}) =>
+      createScorer({ scale: [0, 1, 2, 3], code }).runCode({ ratedDocs }, docs.length, docs, best, undefined, options)
+
+    it("bounds doc and rated-doc lookups at the list length", async () => {
+      const docs = [makeDoc(1), makeDoc(2)]
+      const ratedDocs = [{ id: "a" }, { id: "b" }]
+      const result = await run(
+        `setScore([
+          docAt(1).id, String(docAt(2).id), docExistsAt(1), docExistsAt(2),
+          ratedDocAt(1).id, String(ratedDocAt(2).id), ratedDocExistsAt(1), ratedDocExistsAt(2)
+        ].join("|"))`,
+        { docs, ratedDocs }
+      )
+      expect(result).toBe("2|undefined|true|false|b|undefined|true|false")
+    })
+
+    it("iterates at most count docs and rated docs", async () => {
+      const docs = [1, 2, 3, 4, 5].map(makeDoc)
+      const ratedDocs = [1, 2, 3, 4, 5].map((id) => ({ id }))
+      const result = await run(
+        `const seen = []
+         eachDoc(function (d, i) { seen.push("d" + i) }, 2)
+         eachRatedDoc(function (d, i) { seen.push("r" + i) }, 2)
+         setScore(seen.join(","))`,
+        { docs, ratedDocs }
+      )
+      expect(result).toBe("d0,d1,r0,r1")
+    })
+
+    it("gives best docs a getRating without overwriting an existing one", async () => {
+      const result = await run(
+        `const r = []
+         eachDocWithRating(function (d) { r.push(d.getRating()) })
+         setScore(r.join(","))`,
+        { best: [{ rating: 3 }, { rating: 1, getRating: () => 9 }] }
+      )
+      expect(result).toBe("3,9")
+    })
+
+    it("returns null for qOption when no options are supplied", async () => {
+      expect(await run(`setScore(String(qOption("boost")))`)).toBe("null")
+      expect(await run(`setScore(String(qOption("boost")))`, { options: { boost: 2 } })).toBe("2")
+    })
+
+    it("rejects loops of any spacing and accepts loop-free code", async () => {
+      const check = (code) => createScorer({ scale: [0, 1], code }).checkCode()
+      await expect(check("for(var i=0;i<1;i++){}")).rejects.toMatch(/Loops/)
+      await expect(check("while (true) {}")).rejects.toMatch(/Loops/)
+      await expect(check("setScore(1)")).resolves.toBe("Code passes.")
+    })
+  })
 })

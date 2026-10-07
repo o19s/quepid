@@ -421,7 +421,7 @@ These functions are available inside custom scorer code. The default `count` par
 
 | Function | Signature | Description |
 |----------|-----------|-------------|
-| `editDistanceFromBest` | `editDistanceFromBest(count?)` | Levenshtein edit distance between current ranking and ideal ranking (from bestDocs). Returns integer (client-only) |
+| `editDistanceFromBest` | `editDistanceFromBest(count?)` | Edit distance between current ranking and ideal ranking (from bestDocs). Levenshtein-like, but out-of-range cells count as 0, so leading insertions/deletions are undercounted (legacy behavior kept for v1 scores). Returns integer (client-only) |
 | `qOption` | `qOption(key)` | Access per-query option value by key. Returns `null` if not set |
 | `max` | variable | The largest value of the scorer's rating scale (a value, not a function) |
 | `ratedDocAt` / `ratedDocExistsAt` | `ratedDocAt(posn)` / `ratedDocExistsAt(posn)` | Access `query.ratedDocs` by position, mirroring `docAt` / `docExistsAt` |

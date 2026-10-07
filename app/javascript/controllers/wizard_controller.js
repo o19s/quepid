@@ -31,7 +31,7 @@ export default class extends Controller {
     "tlsWarning", "tlsReloadLink", "tlsProtocol", "endpointContinue", "loading"
   ]
 
-  static values = { rootUrl: String, caseNo: String, snapshotSearchUrlTemplate: String }
+  static values = { proxyRequired: Boolean, rootUrl: String, caseNo: String, snapshotSearchUrlTemplate: String }
 
   connect() {
     this.connected = true
@@ -66,6 +66,7 @@ export default class extends Controller {
     const { settings, endpoints, mapper, user } = this.capability
 
     this.settings = { ...settings.editable() }
+    this.forceProxyIfRequired()
     this.settings.searchEnginePreset = this.settings.searchEngine || "solr"
     this.settings.newQueries = []
     this.settings.caseName = this.settings.caseName || "Movies Search"
@@ -104,6 +105,22 @@ export default class extends Controller {
       basicAuthCredential: query.get("basicAuthCredential")
     }
     Object.entries(overrides).forEach(([key, value]) => { if (value) this.settings[key] = value })
+    this.forceProxyIfRequired()
+  }
+
+  forceProxyIfRequired() {
+    if (!this.proxyRequiredValue || !this.settings) return
+    this.settings.proxyRequests = true
+    if (this.settings.apiMethod === "JSONP") this.settings.apiMethod = "GET"
+  }
+
+  proxyEndpointError(endpoint) {
+    if (!this.proxyRequiredValue) return null
+    if (!endpoint && !this.settings?.searchEndpointId) return null
+    endpoint ||= this.searchEndpoints.find((item) => String(item.id) === String(this.settings.searchEndpointId))
+    if (endpoint?.proxyRequests === true && endpoint.apiMethod !== "JSONP") return null
+
+    return "This existing search endpoint must have proxying enabled and use a non-JSONP API method. Edit the endpoint first, or choose a search engine to configure a new endpoint."
   }
 
   tlsMismatch() {
@@ -160,6 +177,7 @@ export default class extends Controller {
     let value = event.target.type === "checkbox" ? event.target.checked : event.target.value
     if (field === "additionalFields") value = value.split(/[\s,]+/).filter(Boolean)
     this.settings[field] = value
+    this.forceProxyIfRequired()
     if (event.target.dataset.wizardField === "searchEnginePreset") {
       this.settings.searchEndpointId = null
       this.applySettings(event.target.value)
@@ -171,6 +189,9 @@ export default class extends Controller {
   selectEndpoint(event) {
     const endpoint = this.searchEndpoints.find((item) => String(item.id) === event.target.value)
     if (!endpoint) return
+    const proxyError = this.proxyEndpointError(endpoint)
+    if (proxyError) return this.fail(proxyError)
+    this.clearValidation()
     const searchEnginePreset = endpoint.mapperBasedSearchEngineId || endpoint.searchEngine
     const defaults = this.capability.settings.pick(searchEnginePreset, endpoint.endpointUrl)
     this.settings = {
@@ -184,6 +205,7 @@ export default class extends Controller {
         ? defaults.queryParams || (endpoint.testQuery?.includes("#$query##") ? endpoint.testQuery : "")
         : defaults.queryParams || ""
     }
+    this.forceProxyIfRequired()
     this.render()
   }
 
@@ -192,6 +214,7 @@ export default class extends Controller {
     if (!settings) return
     const selected = settings.pick(preset || this.settings.searchEngine, url)
     this.settings = { ...this.settings, ...selected, searchEnginePreset: preset || selected.searchEngine }
+    this.forceProxyIfRequired()
     this.settings.queryParams ||= ""
     if (selected.searchEngine === "solr") {
       this.settings.searchUrl = window.location.protocol === "https:" ? selected.secureSearchUrl : selected.insecureSearchUrl
@@ -201,6 +224,8 @@ export default class extends Controller {
 
   async validate(justValidate = false) {
     this.clearValidation()
+    const proxyError = this.proxyEndpointError()
+    if (proxyError) return this.fail(proxyError)
     if (this.tlsMismatch()) return this.render()
     this.setBusy(true)
     if (this.settings.searchEngine === "searchapi" && !this.settings.queryParams?.trim()) return this.fail("Query pattern is required for Search API endpoints.")
@@ -310,6 +335,8 @@ export default class extends Controller {
   async finish(event) {
     event?.preventDefault()
     if (this.saving) return
+    const proxyError = this.proxyEndpointError()
+    if (proxyError) return this.fail(proxyError)
     this.saving = true
     this.render()
     try {

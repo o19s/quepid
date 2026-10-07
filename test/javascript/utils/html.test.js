@@ -58,3 +58,15 @@ describe("sanitizeSnippetHtml", () => {
     )
   })
 })
+
+describe("sanitizeSnippetHtml allowlist", () => {
+  it.each(["a", "b", "em", "i", "mark", "strong"])("keeps <%s> markup", (tag) => {
+    expect(sanitizeSnippetHtml(`<${tag}>x</${tag}>`)).toBe(`<${tag}>x</${tag}>`)
+  })
+
+  it("keeps <br> and flattens everything else to text", () => {
+    expect(sanitizeSnippetHtml("a<br>b")).toBe("a<br>b")
+    expect(sanitizeSnippetHtml("<u>x</u><script>1</script>")).toBe("x1")
+    expect(sanitizeSnippetHtml('<b onclick="x()">y</b>')).toBe("<b>y</b>")
+  })
+})

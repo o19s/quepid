@@ -23,3 +23,17 @@ describe("isSameId", () => {
     expect(isSameId(a, b)).toBe(false)
   })
 })
+
+describe("isSameId missing ids", () => {
+  it("never matches when either side is missing, nor against its string spelling", () => {
+    expect(isSameId(null, 1)).toBe(false)
+    expect(isSameId(1, undefined)).toBe(false)
+    expect(isSameId(undefined, 1)).toBe(false)
+    expect(isSameId("", "")).toBe(false)
+    expect(isSameId(0, "0")).toBe(true)
+    expect(isSameId(null, "null")).toBe(false)
+    expect(isSameId("null", null)).toBe(false)
+    expect(isSameId(undefined, "undefined")).toBe(false)
+    expect(isSameId("undefined", undefined)).toBe(false)
+  })
+})

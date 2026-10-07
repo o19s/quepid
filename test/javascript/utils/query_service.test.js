@@ -390,4 +390,244 @@ describe("query service helpers", () => {
     expect(onSearchFailed).toHaveBeenCalledWith(error, 3)
     expect(onSearchFailed).toHaveBeenCalledOnce()
   })
+  describe("searcher option branches", () => {
+    const build = (settings = {}, extra = {}) =>
+      buildSearcherRequest({
+        settings: {
+          searchEngine: "solr",
+          selectedTry: { args: { q: ["#$query##"] }, jsonQueryParams: false },
+          ...settings
+        },
+        queryText: "books",
+        ...extra
+      })
+
+    it("passes apiMethod only when the settings define one", () => {
+      expect(build({ apiMethod: "POST" }).searcherOptions.apiMethod).toBe("POST")
+      expect(build().searcherOptions).not.toHaveProperty("apiMethod")
+      expect(build({ apiMethod: "POST" }, { options: { forceApiMethod: "GET" } }).searcherOptions.apiMethod).toBe("GET")
+    })
+
+    it("sets the proxy url only when proxyRequests is exactly true", () => {
+      expect(build({ proxyRequests: true }, { proxyUrl: "/proxy" }).searcherOptions.proxyUrl).toBe("/proxy")
+      expect(build({ proxyRequests: false }, { proxyUrl: "/proxy" }).searcherOptions).not.toHaveProperty("proxyUrl")
+      expect(build({}, { proxyUrl: "/proxy" }).searcherOptions).not.toHaveProperty("proxyUrl")
+    })
+
+    it("stringifies object custom headers and leaves strings and null alone", () => {
+      expect(build({ customHeaders: { a: "1" } }).searcherOptions.customHeaders).toBe('{"a":"1"}')
+      expect(build({ customHeaders: '{"a":"1"}' }).searcherOptions.customHeaders).toBe('{"a":"1"}')
+      expect(build({ customHeaders: null }).searcherOptions.customHeaders).toBeNull()
+    })
+
+    it("infers JSON query params for Solr from the shape of args when not explicit", () => {
+      const infer = (args) =>
+        build({ selectedTry: { args } }).solrQueryParamsIsJson
+      expect(infer({ q: ["a"], fq: ["b"] })).toBe(false)
+      expect(infer({ q: ["a"], fq: "b" })).toBe(true)
+      expect(infer({ query: "a" })).toBe(true)
+      expect(build({ selectedTry: { args: { query: "a" }, jsonQueryParams: false } }).solrQueryParamsIsJson).toBe(false)
+    })
+
+    it("adds the rating filter only when filterToRated and a filter are both present", () => {
+      const filtered = (filterToRated, ratingsFilter) =>
+        build({}, { options: { filterToRated }, ratingsFilter }).args
+      expect(filtered(true, "id:1").fq).toEqual(["id:1"])
+      expect(filtered(false, "id:1")).not.toHaveProperty("fq")
+      expect(filtered(true, undefined)).not.toHaveProperty("fq")
+    })
+  })
+
+  describe("createSearcherFromSettings mapper evaluation", () => {
+    const settings = (searchEngine) => ({
+      searchEngine,
+      mapperCode: "code",
+      selectedTry: { args: { q: "x" }, searchUrl: "u" },
+      createFieldSpec: () => ({})
+    })
+    const query = { queryText: "q", options: {}, filterToRatings: vi.fn() }
+
+    it("evaluates mapper code for searchapi engines and applies the mappers", () => {
+      const docsMapper = vi.fn()
+      const evaluateMapper = vi.fn(() => ({ docsMapper }))
+      const createSearcher = vi.fn()
+      createSearcherFromSettings({ settings: settings("searchapi"), query, evaluateMapper, createSearcher })
+      expect(evaluateMapper).toHaveBeenCalledWith("code")
+      expect(createSearcher.mock.calls[0][4].docsMapper).toBe(docsMapper)
+    })
+
+    it("does not evaluate mapper code for other engines", () => {
+      const evaluateMapper = vi.fn(() => ({}))
+      createSearcherFromSettings({ settings: settings("solr"), query, evaluateMapper, createSearcher: vi.fn() })
+      expect(evaluateMapper).not.toHaveBeenCalled()
+    })
+  })
+
+  describe("rate limit boundaries", () => {
+    it("treats zero and negative rates as unlimited, running tasks concurrently", async () => {
+      for (const rate of [0, -5, undefined]) {
+        let running = 0
+        let peak = 0
+        const task = async () => {
+          running += 1
+          peak = Math.max(peak, running)
+          await new Promise((resolve) => setTimeout(resolve, 1))
+          running -= 1
+        }
+        await pAll([task, task, task], rate)
+        expect(peak).toBeGreaterThan(1)
+      }
+    })
+
+    it("logs the rate limit only for positive rates", () => {
+      const run = (requestsPerMinute) => {
+        const logger = { info: vi.fn() }
+        runSearchAll({
+          queries: {},
+          search: vi.fn(),
+          score: vi.fn(),
+          requestsPerMinute,
+          scoreAll: vi.fn(),
+          syncToBook: vi.fn(),
+          logger
+        })
+        return logger.info
+      }
+      expect(run(30)).toHaveBeenCalledWith("Rate limited to 30 requests per minute.")
+      expect(run(0)).not.toHaveBeenCalled()
+      expect(run(-1)).not.toHaveBeenCalled()
+    })
+  })
+})
+
+describe("createSearcherFromSettings mapper evaluation", () => {
+  const settings = (searchEngine) => ({
+    searchEngine,
+    mapperCode: "code",
+    selectedTry: { args: { q: "x" }, searchUrl: "u" },
+    createFieldSpec: () => ({})
+  })
+  const query = { queryText: "q", options: {}, filterToRatings: vi.fn() }
+
+  it("evaluates mapper code for searchapi engines and applies the mappers", () => {
+    const docsMapper = vi.fn()
+    const evaluateMapper = vi.fn(() => ({ docsMapper }))
+    const createSearcher = vi.fn()
+    createSearcherFromSettings({ settings: settings("searchapi"), query, evaluateMapper, createSearcher })
+    expect(evaluateMapper).toHaveBeenCalledWith("code")
+    expect(createSearcher.mock.calls[0][4].docsMapper).toBe(docsMapper)
+  })
+
+  it("does not evaluate mapper code for other engines", () => {
+    const evaluateMapper = vi.fn(() => ({}))
+    createSearcherFromSettings({ settings: settings("solr"), query, evaluateMapper, createSearcher: vi.fn() })
+    expect(evaluateMapper).not.toHaveBeenCalled()
+  })
+})
+
+describe("rate limit boundaries", () => {
+  it("treats zero and negative rates as unlimited, running tasks concurrently", async () => {
+    for (const rate of [0, -5, undefined]) {
+      let running = 0
+      let peak = 0
+      const task = async () => {
+        running += 1
+        peak = Math.max(peak, running)
+        await new Promise((resolve) => setTimeout(resolve, 1))
+        running -= 1
+      }
+      await pAll([task, task, task], rate)
+      expect(peak).toBeGreaterThan(1)
+    }
+  })
+
+  it("logs the rate limit only for positive rates", () => {
+    const run = (requestsPerMinute) => {
+      const logger = { info: vi.fn() }
+      runSearchAll({
+        queries: {},
+        search: vi.fn(),
+        score: vi.fn(),
+        requestsPerMinute,
+        scoreAll: vi.fn(),
+        syncToBook: vi.fn(),
+        logger
+      })
+      return logger.info
+    }
+    expect(run(30)).toHaveBeenCalledWith("Rate limited to 30 requests per minute.")
+    expect(run(0)).not.toHaveBeenCalled()
+    expect(run(-1)).not.toHaveBeenCalled()
+  })
+})
+
+describe("normalizeSearchResults engine dispatch", () => {
+  const run = (type) => {
+    const extractors = { es: vi.fn(() => [{ via: "es" }]), solr: vi.fn(() => [{ via: "solr" }]) }
+    const createNormalDoc = vi.fn(() => ({ via: "normal" }))
+    const result = normalizeSearchResults({
+      searcher: { type, docs: [{}], othersExplained: "oe" },
+      fieldSpec: {},
+      extractors,
+      createNormalDoc,
+      createRateableDoc: (doc) => doc
+    })
+    return { result, extractors, createNormalDoc }
+  }
+
+  it("routes each engine type to its own extractor", () => {
+    expect(run("es").result).toEqual([{ via: "es" }])
+    expect(run("os").result).toEqual([{ via: "es" }])
+    const solr = run("solr")
+    expect(solr.result).toEqual([{ via: "solr" }])
+    expect(solr.extractors.solr).toHaveBeenCalledWith([{}], {}, "oe")
+    expect(solr.extractors.es).not.toHaveBeenCalled()
+    const other = run("static")
+    expect(other.result).toEqual([{ via: "normal" }])
+    expect(other.createNormalDoc).toHaveBeenCalledWith({}, {})
+    expect(other.extractors.solr).not.toHaveBeenCalled()
+  })
+})
+
+describe("pAll error reporting and Solr filter wrapping", () => {
+  it("rejects with the first failure when several tasks fail", async () => {
+    const failing = (message) => async () => {
+      throw new Error(message)
+    }
+    await expect(pAll([failing("first"), failing("second")], 0)).rejects.toThrow("first")
+    vi.useFakeTimers()
+    const promise = pAll([failing("first"), failing("second")], 60000)
+    const assertion = expect(promise).rejects.toThrow("first")
+    await vi.runAllTimersAsync()
+    await assertion
+    vi.useRealTimers()
+  })
+
+  it("wraps an existing single Solr fq value before appending the rating filter", () => {
+    const request = buildSearcherRequest({
+      settings: { searchEngine: "solr", selectedTry: { args: { q: ["a"], fq: "x" }, jsonQueryParams: false } },
+      queryText: "a",
+      options: { filterToRated: true },
+      ratingsFilter: "id:1"
+    })
+    expect(request.args.fq).toEqual(["x", "id:1"])
+    const array = buildSearcherRequest({
+      settings: { searchEngine: "solr", selectedTry: { args: { q: ["a"], fq: ["x"] }, jsonQueryParams: false } },
+      queryText: "a",
+      options: { filterToRated: true },
+      ratingsFilter: "id:1"
+    })
+    expect(array.args.fq).toEqual(["x", "id:1"])
+  })
+
+  it("wraps the query in a bool filter for Elasticsearch-like engines", () => {
+    const request = buildSearcherRequest({
+      settings: { searchEngine: "es", selectedTry: { args: { query: { match_all: {} } } } },
+      queryText: "a",
+      options: { filterToRated: true },
+      ratingsFilter: { ids: [1] },
+      isEsOrOs: true
+    })
+    expect(request.args.query).toEqual({ bool: { should: { match_all: {} }, filter: { ids: [1] } } })
+  })
 })

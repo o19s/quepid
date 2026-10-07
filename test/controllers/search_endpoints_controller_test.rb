@@ -12,6 +12,29 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
+  test 'universal proxy form and server validation retain Turbo success and failure contracts' do
+    original = Rails.application.config.require_proxy_for_all_search_endpoints
+    Rails.application.config.require_proxy_for_all_search_endpoints = true
+    get new_search_endpoint_url
+    assert_select 'input[type=hidden][name="search_endpoint[proxy_requests]"][value=true]'
+    assert_select 'input[type=checkbox][name="search_endpoint[proxy_requests]"]', count: 0
+    assert_select 'option[value=JSONP]', count: 0
+    params = { name: 'Forced proxy', search_engine: 'solr', endpoint_url: 'http://example.com/select', api_method: 'GET', proxy_requests: false }
+    assert_no_difference 'SearchEndpoint.count' do
+      post search_endpoints_url, params: { search_endpoint: params }
+    end
+    assert_response :unprocessable_content
+    assert_includes response.body, 'requires all search requests to be proxied'
+    assert_select 'input[name="search_endpoint[name]"][value="Forced proxy"]'
+    assert_difference 'SearchEndpoint.count', 1 do
+      post search_endpoints_url, params: { search_endpoint: params.merge(proxy_requests: true) }
+    end
+    assert_response :see_other
+    assert_predicate SearchEndpoint.order(:id).last, :proxy_requests?
+  ensure
+    Rails.application.config.require_proxy_for_all_search_endpoints = original
+  end
+
   test 'responders render invalid HTML writes with an error status' do
     assert_no_difference 'SearchEndpoint.count' do
       post search_endpoints_url, params: { search_endpoint: { name: '' } }

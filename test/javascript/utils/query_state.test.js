@@ -94,3 +94,20 @@ describe("query_state", () => {
     })).toEqual({ fromIndex: 0, toIndex: 1, reverse: true })
   })
 })
+
+describe("query state edge cases", () => {
+  it("recognizes image urls by extension, with an optional query string only at the end", () => {
+    expect(isImageUrl("https://x/a.png")).toBe(true)
+    expect(isImageUrl("https://x/a.JPEG?w=100")).toBe(true)
+    expect(isImageUrl("https://x/a.png.html")).toBe(false)
+    expect(isImageUrl("https://x/a.png/more")).toBe(false)
+    expect(isImageUrl(null)).toBe(false)
+  })
+
+  it("reverses only when an item moves up the list", () => {
+    expect(queryDisplayPositions({ oldIndex: 3, newIndex: 1 }).reverse).toBe(true)
+    expect(queryDisplayPositions({ oldIndex: 1, newIndex: 3 }).reverse).toBe(false)
+    expect(queryDisplayPositions({ oldIndex: 2, newIndex: 2 }).reverse).toBe(false)
+    expect(queryDisplayPositions({ oldIndex: 2, newIndex: 2, reverse: true }).reverse).toBe(true)
+  })
+})

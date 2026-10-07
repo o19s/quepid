@@ -91,4 +91,13 @@ describe("parseCsv", () => {
       errors: []
     })
   })
+  it("drops blank lines but keeps delimiter-only rows for validation", () => {
+    const result = parseCsv("a,b\n\n1,2\n,\n")
+    expect(result.rows).toEqual([{ a: "1", b: "2" }, { a: "", b: "" }])
+  })
+
+  it("trims the last value of a file without a trailing newline, quoted or not", () => {
+    expect(parseCsv("a,b\n1, 2 ").rows).toEqual([{ a: "1", b: "2" }])
+    expect(parseCsv('a,b\n1,"2').errors).toEqual(["line 2: unclosed quote."])
+  })
 })

@@ -408,6 +408,12 @@ yarn screenshots:view
 
 Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
 
+### Combined lint check
+
+Run `rails tidy` in the existing server container to check ESLint/Prettier,
+Stylelint and RuboCop without modifying files. Ruby checks cover application
+source directories; generated scratch files under `tmp` are excluded.
+
 ### Rubocop
 
 To check the Ruby syntax:
@@ -1279,6 +1285,18 @@ tools that preserve or backdate file timestamps can hide changes.
 
 See [the manual testing guide](docs/manual-testing/README.md) for scenarios and
 coverage recording.
+
+## Requiring search endpoint proxying
+
+`REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` requires proxying when endpoints
+are created or edited. It defaults to false and is independent of desktop mode.
+Endpoint forms hide the proxy switch and JSONP choice; the case wizard uses GET
+for new Solr drafts because JSONP cannot be proxied. The wizard rejects incompatible
+existing endpoints at selection, validation and Finish; edit them first or configure
+a new endpoint. Startup warns about incompatible
+existing endpoints without changing them. Review those endpoints explicitly;
+this flag does not migrate their settings or prevent their existing direct searches.
+The credential-only proxy setting remains independently configurable.
 
 ## Seed Data
 

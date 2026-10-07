@@ -31,6 +31,33 @@ require 'support/shared_examples/custom_headers_validatable_examples'
 require 'support/shared_examples/json_options_validatable_examples'
 
 class SearchEndpointTest < ActiveSupport::TestCase
+  test 'universal proxy validates new and existing endpoints without mutating saved settings' do
+    original = Rails.application.config.require_proxy_for_all_search_endpoints
+    endpoint = search_endpoints(:first_for_case_with_two_tries)
+    endpoint.update!(proxy_requests: false, api_method: 'GET')
+    Rails.application.config.require_proxy_for_all_search_endpoints = true
+
+    assert_not endpoint.valid?
+    assert_not_empty endpoint.errors[:proxy_requests]
+    assert_not endpoint.reload.proxy_requests?
+    assert_equal 'GET', endpoint.api_method
+    endpoint.proxy_requests = true
+    assert_predicate endpoint, :valid?
+    endpoint.api_method = 'JSONP'
+    assert_not endpoint.valid?
+    assert_not_empty endpoint.errors[:api_method]
+
+    new_endpoint = SearchEndpoint.new(search_engine: 'solr', endpoint_url: 'http://example.com/select', api_method: 'GET')
+    assert_not new_endpoint.valid?
+    new_endpoint.proxy_requests = true
+    assert_predicate new_endpoint, :valid?
+    Rails.application.config.require_proxy_for_all_search_endpoints = false
+    new_endpoint.proxy_requests = false
+    assert_predicate new_endpoint, :valid?
+  ensure
+    Rails.application.config.require_proxy_for_all_search_endpoints = original
+  end
+
   include CustomHeadersValidatableExamples
   include JsonOptionsValidatableExamples
 

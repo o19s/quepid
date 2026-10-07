@@ -129,6 +129,9 @@ export function createScorer(data = {}, { schedule, refreshRatedDocs = () => und
     return avg ? Math.floor(avg * (100 / max)) : null
   }
 
+  // Not true Levenshtein: out-of-range cells count as 0 rather than i+1 / j+1, so
+  // leading insertions/deletions are undercounted. Kept as ported from the Angular
+  // scorer so legacy v1 scores don't change.
   function editDistance(first, second) {
     const matrix = Array.from({ length: first.length }, () => Array(second.length).fill(0))
     const get = (row, column) =>

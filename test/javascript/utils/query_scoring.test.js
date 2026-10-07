@@ -139,3 +139,35 @@ describe("query scoring runtime", () => {
     )
   })
 })
+
+describe("scoreQuery background", () => {
+  const run = (resolved) =>
+    scoreQuery({
+      query: { docs: [], numFound: 0, options: {} },
+      docs: [],
+      ratingsStore: { bestDocs: () => [] },
+      scorer: { score: () => Promise.resolve(resolved), maxScore: () => 1 },
+      depthOfRating: 10
+    })
+
+  it("uses the unscored style only for ? and null scores", async () => {
+    const unscored = { "background-color": "hsl(0, 0%, 0%, 0.5)" }
+    expect((await run("?")).backgroundColor).toEqual(unscored)
+    expect((await run(null)).backgroundColor).toEqual(unscored)
+    expect((await run(0)).backgroundColor).not.toEqual(unscored)
+    expect((await run(0.5)).backgroundColor).not.toEqual(unscored)
+  })
+})
+
+describe("scoreAllQueries allRated", () => {
+  it("is false when any scored query is not fully rated", async () => {
+    const scorable = (queryId, allRated) => ({
+      queryId,
+      queryText: `q${queryId}`,
+      numFound: 1,
+      score: () => Promise.resolve({ score: 1, maxScore: 1, allRated, countMissingRatings: 0 })
+    })
+    expect((await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, true)] })).allRated).toBe(true)
+    expect((await scoreAllQueries({ scorableCollection: [scorable(1, true), scorable(2, false)] })).allRated).toBe(false)
+  })
+})

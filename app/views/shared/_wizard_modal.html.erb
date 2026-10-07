@@ -1,5 +1,6 @@
 <div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
      data-controller="wizard"
+     data-wizard-proxy-required-value="<%= require_proxy_for_all_search_endpoints? %>"
      data-wizard-snapshot-search-url-template-value="<%= api_case_snapshot_search_index_url(@case, '__SNAPSHOT_ID__') if @case %>">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
@@ -39,7 +40,7 @@
           <input class="form-control mt-3" placeholder="Search endpoint URL" data-wizard-target="searchUrl" data-wizard-field="searchUrl" data-action="input->wizard#updateSetting">
           <label class="form-label mt-3" for="wizardApiMethod">API method</label>
           <select id="wizardApiMethod" class="form-select" data-wizard-target="apiMethod" data-wizard-field="apiMethod" data-action="change->wizard#updateSetting">
-            <option value="GET">GET</option><option value="POST">POST</option><option value="JSONP">JSONP</option>
+            <option value="GET">GET</option><option value="POST">POST</option><% unless require_proxy_for_all_search_endpoints? %><option value="JSONP">JSONP</option><% end %>
           </select>
           <input class="form-control mt-3" placeholder="Test query (for Search API)" data-wizard-target="testQuery" data-wizard-field="testQuery" data-action="input->wizard#updateSetting">
           <label class="form-label mt-3" for="wizardQueryParams">Query pattern / request body</label>
@@ -47,7 +48,11 @@
           <textarea class="form-control mt-3" rows="3" placeholder="Custom headers JSON" data-wizard-target="customHeaders" data-wizard-field="customHeaders" data-action="input->wizard#updateSetting"></textarea>
           <label class="form-label mt-3" for="wizardBasicAuth">Basic Authentication</label>
           <input id="wizardBasicAuth" class="form-control" placeholder="username:password" data-wizard-target="basicAuth" data-wizard-field="basicAuthCredential" data-action="input->wizard#updateSetting">
+          <% unless require_proxy_for_all_search_endpoints? %>
           <div class="form-check mt-3"><input id="wizardProxy" class="form-check-input" type="checkbox" data-wizard-target="proxyRequests" data-wizard-field="proxyRequests" data-action="change->wizard#updateSetting"><label class="form-check-label" for="wizardProxy">Proxy requests through Quepid</label></div>
+          <% else %>
+            <p class="form-text mt-3">This Quepid instance requires all search requests to be proxied.</p>
+          <% end %>
           <div class="alert alert-warning mt-3" data-wizard-target="tlsWarning" hidden>
             You have specified a search endpoint url that is on a different protocol ( <code data-wizard-target="tlsProtocol"></code> ) than Quepid is running,
             and this triggers your browser to prevent communication with the search endpoint.<br>

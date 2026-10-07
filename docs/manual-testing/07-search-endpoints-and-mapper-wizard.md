@@ -199,3 +199,25 @@ field uses `match/any` for strings and canonical safe integers, preserving
 leading-zero string keys; more than ten rated
 ids raises the lookup limit. Cover these with mapper tests or a suitable collection.
 See [Qdrant setup and request examples](../endpoints_qdrant.md).
+
+### 7.13 Instance-wide required proxy
+
+- [ ] Enable `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` and restart the existing server.
+  Confirm boot warns about unproxied endpoints without changing saved settings.
+- [ ] Open New/Edit Search Endpoint: proxy toggle and JSONP choice are absent.
+  Save a Solr GET endpoint; verify proxy is true. Tamper the hidden proxy field to
+  false and submit: expect 422, retained fields and a proxy validation message;
+  retry normally and expect a 303 redirect with the saved record.
+- [ ] Open the case wizard with Solr: GET replaces JSONP and no proxy switch appears.
+  Validate an unreachable endpoint, then correct it to the demo URL. Confirm validation
+  uses Quepid's proxy, finish with a query, and verify persisted GET/proxy settings.
+- [ ] Select an existing unproxied or JSONP endpoint: selection is rejected with
+  instructions to edit it first or configure a new endpoint. Validation and Finish
+  also reject an incompatible endpoint already referenced by the current try.
+  Select a proxied GET endpoint and confirm Finish retains its ID. Saved endpoint
+  settings remain unchanged. An existing case's direct searches remain unchanged
+  until its endpoint is explicitly reconfigured; the flag is not a data migration.
+- [ ] Open the standalone Mapper Wizard: no visible proxy switch, and its save
+  submits proxy true. Broader mapper generation/save checks remain in 7.7–7.10.
+- [ ] Restore the flag to false and restart: JSONP and proxy controls return.
+  Remove disposable cases/endpoints and restore account onboarding state.

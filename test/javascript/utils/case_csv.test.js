@@ -146,4 +146,40 @@ describe("formatDownloadFileName", () => {
   it("replaces spaces and colons so the name is filesystem-safe", () => {
     expect(formatDownloadFileName("My Case: general.csv")).toBe("My_Case__general.csv")
   })
+describe("csv edge cases", () => {
+  it("trims string fields", () => {
+    expect(csvField("  hello  ")).toBe("hello")
+  })
+
+  it("includes information need and notes only when present", () => {
+    const caseData = {
+      case_name: "C",
+      case_id: 1,
+      teams: [],
+      last_score: { updated_at: "d", queries: { 1: { score: 1, text: "a" }, 2: { score: 2, text: "b" } } }
+    }
+    const csv = buildGeneralCaseCsv(caseData, [
+      { query_id: 1, information_need: "find dogs", notes: "n1", options: { boost: 2 } },
+      { query_id: 2, information_need: "", notes: "", options: {} }
+    ])
+    const [, first, second] = csv.split("\r\n")
+    expect(first).toContain("find dogs")
+    expect(first).toContain("n1")
+    expect(first).toContain("boost")
+    expect(second).toBe("," + "C,1,b,2,d,,,,")
+  })
+
+  it("prefers the last score's case id in the detailed export", () => {
+    const csv = buildDetailedCaseCsv(
+      { case_name: "C", case_id: 8, teams: [], last_score: { case_id: 99 } },
+      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+    )
+    expect(csv.split("\r\n")[1]).toBe(",C,99,dog")
+    const fallback = buildDetailedCaseCsv(
+      { case_name: "C", case_id: 8, teams: [], last_score: {} },
+      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+    )
+    expect(fallback.split("\r\n")[1]).toBe(",C,8,dog")
+  })
+})
 })

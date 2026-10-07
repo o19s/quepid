@@ -113,6 +113,10 @@ module ApplicationHelper
     nil
   end
 
+  def require_proxy_for_all_search_endpoints?
+    Rails.application.config.require_proxy_for_all_search_endpoints
+  end
+
   def flash_message_data msg_type
     data = { turbo_temporary: true }
     if %w[success notice].include?(msg_type.to_s)
