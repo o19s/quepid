@@ -243,6 +243,10 @@ class BooksController < ApplicationController
     @book = Book.new(book_params.except(:team_ids, :ai_judge_ids, :auto_run_ai_judge_ids))
     @book.owner = current_user
     assign_book_memberships
+    @origin_case = current_user.cases_involved_with.find_by(id: params.dig(:book, :origin_case_id))
+    @link_the_case = deserialize_bool_param(params.dig(:book, :link_the_case))
+    @auto_populate_book_pairs = deserialize_bool_param(params.dig(:book, :auto_populate_book_pairs))
+    @auto_populate_case_judgements = deserialize_bool_param(params.dig(:book, :auto_populate_case_judgements))
 
     # Handle scorer selection
     if book_params[:scorer_id].blank?
@@ -257,15 +261,10 @@ class BooksController < ApplicationController
     if @book.save
       @book.books_ai_judges.each(&:save!)
 
-      if params[:book][:link_the_case]
-        @origin_case = current_user.cases_involved_with.where(id: params[:book][:origin_case_id]).first
+      if @link_the_case
         @origin_case.book = @book
-        @origin_case.auto_populate_book_pairs = deserialize_bool_param(
-          params[:book][:auto_populate_book_pairs]
-        )
-        @origin_case.auto_populate_case_judgements = deserialize_bool_param(
-          params[:book][:auto_populate_case_judgements]
-        )
+        @origin_case.auto_populate_book_pairs = @auto_populate_book_pairs
+        @origin_case.auto_populate_case_judgements = @auto_populate_case_judgements
         @origin_case.save
       end
 

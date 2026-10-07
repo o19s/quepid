@@ -50,7 +50,7 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   2. On the 50th, confirm a "party time" screen: confetti, a progress bar, a leaderboard chart, and an **"I'm Ready for More!"** button that resumes judging.
   3. Use **Go Back to Previous Query/Doc Pair** to reopen and re-rate the immediately prior pair.
   4. Use browser Back/Forward; confirm existing judgements remain and no write is replayed. Hover Judge/resume links must not advance the session counter.
-  5. Click **Quit Judging** — confirm it returns to the Book Overview without losing already-saved judgements.
+  5. Click **Quit Judging** — confirm it returns to your personal Judge Overview without losing already-saved judgements (new, edit and completed judgement screens).
   6. If feasible, exhaust all pairs available to the current user — confirm the friendly "You have judged all the documents you can!" message and redirect.
 - **Expected:** All of the above behave as described, with no data loss on quit/navigate-away.
 - **Edge cases:**
@@ -80,6 +80,8 @@ This part covers the actual human judging experience: the one-at-a-time judging 
   - [ ] Confirm Refine Prompt is shown only for accessible AI judges. Run controls live on Overview (Part 12.5), while reset controls remain on Judgement Stats.
 
 ### 11.8 Bulk Judge (grid mode)
+
+Confirm **Back to Judge Overview** returns to your personal Judge Overview.
 
 - [ ] **Steps:**
   1. From the Judgements tab, click **Bulk Judge**.

@@ -9,6 +9,79 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'unchecked linking creates a book without changing existing case integration' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    origin.update!(book: book, auto_populate_book_pairs: true, auto_populate_case_judgements: false)
+    previous = origin.attributes.slice('book_id', 'auto_populate_book_pairs', 'auto_populate_case_judgements')
+    assert_difference 'Book.count' do
+      post books_path, params: { book: {
+        name: 'Unlinked book', scorer_id: communal_scorer.id, origin_case_id: origin.id,
+        link_the_case: '0', auto_populate_book_pairs: '0', auto_populate_case_judgements: '1'
+      } }
+    end
+    assert_response :see_other
+    assert_equal previous, origin.reload.attributes.slice(*previous.keys)
+  end
+
+  test 'checked linking saves both synchronization choices' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    post books_path, params: { book: {
+      name: 'Linked book', scorer_id: communal_scorer.id, origin_case_id: origin.id,
+      link_the_case: '1', auto_populate_book_pairs: '1', auto_populate_case_judgements: '0'
+    } }
+    assert_response :see_other
+    assert_equal Book.order(:id).last.id, origin.reload.book_id
+    assert_predicate origin, :auto_populate_book_pairs?
+    assert_not origin.auto_populate_case_judgements?
+  end
+
+  test 'invalid creation preserves the case integration and submitted choices' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: {
+        name: 'Retry this book', scorer_id: '', origin_case_id: origin.id, team_ids: [ user.teams.first.id ],
+        link_the_case: '1', auto_populate_book_pairs: '0', auto_populate_case_judgements: '1'
+      } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'input#book_origin_case_id[value=?]', origin.id.to_s
+    assert_select 'input#book_link_the_case[checked]'
+    assert_select 'input#book_auto_populate_book_pairs:not([checked])'
+    assert_select 'input#book_auto_populate_case_judgements[checked]'
+    assert_select 'input[name="book[team_ids][]"][checked][value=?]', user.teams.first.id.to_s
+    assert_select '[data-controller="case-book-synchronization"]'
+  end
+
+  test 'unlinked validation retry retains synchronization choices before relinking' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    previous = origin.attributes.slice('book_id', 'auto_populate_book_pairs', 'auto_populate_case_judgements')
+    submitted = { name: 'Relink after validation', scorer_id: '', origin_case_id: origin.id,
+                  link_the_case: '0', auto_populate_book_pairs: '1', auto_populate_case_judgements: '0' }
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: submitted }
+    end
+    assert_response :unprocessable_content
+    assert_equal previous, origin.reload.attributes.slice(*previous.keys)
+    assert_select 'input#book_link_the_case:not([checked])'
+    assert_select 'input#book_auto_populate_book_pairs[checked]'
+    assert_select 'input#book_auto_populate_case_judgements:not([checked])'
+    %w[auto_populate_book_pairs auto_populate_case_judgements].each do |name|
+      assert_select "input[type=hidden][name='book[#{name}]']", count: 1 do
+        assert_select '[data-case-book-synchronization-target="synchronizationFallback"]'
+      end
+    end
+
+    post books_path, params: { book: submitted.merge(scorer_id: communal_scorer.id, link_the_case: '1') }
+    assert_response :see_other
+    assert_equal Book.order(:id).last.id, origin.reload.book_id
+    assert_predicate origin, :auto_populate_book_pairs?
+    assert_not origin.auto_populate_case_judgements?
+  end
+
   test 'new book from a case selects the dropdown representative rather than a duplicate scorer' do
     login_user_for_integration_test user
     scorer = Scorer.create!(owner: user, name: 'First unique scale', scale: [ 81, 82 ], code: 'pass();')

@@ -134,6 +134,14 @@ describe("ShareEntityControllerBase", () => {
     expect(controller.sharedListTarget.children).toHaveLength(1)
   })
 
+  it("distinguishes having no teams from having shared with every team", () => {
+    const controller = buildModal()
+    controller.openWith({ id: 1, allTeamsJson: "[]", sharedTeamsJson: "[]" })
+    expect(controller.teamSelectTarget.selectedOptions[0].text).toBe("You have no teams yet")
+    expect(controller.teamSelectTarget.disabled).toBe(true)
+    expect(controller.submitButtonTarget.disabled).toBe(true)
+  })
+
   it("disables the team picker when every team already has access", () => {
     const controller = buildModal()
 
@@ -141,7 +149,6 @@ describe("ShareEntityControllerBase", () => {
 
     const options = [...controller.teamSelectTarget.options]
     expect(options.map((option) => [option.value, option.text])).toEqual([
-      ["", "Select a team..."],
       ["", "No other teams to share with"]
     ])
     expect(controller.teamSelectTarget.disabled).toBe(true)

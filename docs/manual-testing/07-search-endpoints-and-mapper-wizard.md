@@ -47,7 +47,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Enter a Basic Auth Credential with no colon — expect "must be in username:password format" error.
   - [ ] Choose API Method = **JSONP** while **Proxy requests** is also enabled — expect an error ("cannot be JSONP when proxy_request is enabled").
   - [ ] If the environment requires proxy with basic auth, enter a Basic Auth Credential with Proxy off — expect a validation error.
-  - [ ] With zero teams of your own, confirm the alert "Search Endpoints are meant to be shared with Teams..." with a **Create a Team** shortcut appears.
+  - [ ] With zero teams, confirm the team picker offers **Create a team** and the endpoint can still be saved privately. With teams, leaving them unchecked keeps the endpoint private.
 
 ### 7.3 View / Edit a Search Endpoint
 

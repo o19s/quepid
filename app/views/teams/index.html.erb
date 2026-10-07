@@ -14,6 +14,14 @@
   </div>
 
   <div class="card-body">
+    <% if @teams.empty? && params[:q].blank? %>
+      <div class="text-center py-4">
+        <p class="mb-3">You're not on any teams yet. Working solo is perfectly fine &mdash; create a team whenever you want to share cases, books, scorers, or AI judges with others.</p>
+        <%= link_to new_team_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Create your first team
+        <% end %>
+      </div>
+    <% else %>
     <div class="table-responsive">
     <table class="table table-hover table-sm">
       <thead>
@@ -36,6 +44,7 @@
       </tbody>
     </table>
     </div>
+    <% end %>
   </div>
   <%= render "shared/index_pagination", pagy: @pagy %>
 </div>

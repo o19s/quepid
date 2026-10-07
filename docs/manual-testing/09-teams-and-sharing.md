@@ -12,6 +12,8 @@ You'll get much more out of this part with two logged-in accounts — a team own
 
 ### 9.1 Create, rename, and browse teams
 
+With zero teams, confirm the solo-use explanation and **Create your first team** link opens the new-team form. A filtered empty result must not claim you have no teams.
+
 - [ ] **Steps:**
   1. Go to `/teams`. Confirm the table shows ID/Name/Members/Cases, a "Filter by name" box, and a "My Teams" checkbox (auto-submits).
   2. Click **+ Add New**, enter a Name, click **Create Team**.
@@ -64,7 +66,7 @@ This same modal pattern appears in two places for each resource type: on the res
   2. Pick a team from "Select a team to share this X with:" (only your own teams appear), click **Share with team**.
   3. Confirm it now appears under "Already shared with:".
   4. Unshare it from the same modal.
-- **Expected:** Both entry points produce identical, consistent results. Repeating an already-done share/unshare shows an informational alert, not an error or duplicate.
+- **Expected:** With no teams, the disabled picker displays "You have no teams yet"; when all teams already have access, it displays "No other teams to share with". Both entry points produce identical, consistent results. Repeating an already-done share/unshare shows an informational alert, not an error or duplicate.
 - **Edge cases:**
   - [ ] Attempt to share a resource you don't have access to — expect "You do not have access to that {case/book/search endpoint/scorer}."
   - [ ] Note: **Scorers** may only support Share (no Unshare control wired into this particular list) — confirm current behavior and flag if unshare is unexpectedly missing.

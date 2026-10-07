@@ -472,10 +472,10 @@ parts:
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-06T19:58:49Z
         result: pass
-        notes: "Covered live: created and saved one disposable endpoint for each of seven engine types, GET and shared team, then Solr JSONP. Not covered live: provider connectivity except Solr/Search API, optional-field validation matrix."
-        paths: ["app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb", "app/views/search_endpoints/new.html.erb", "app/views/search_endpoints/edit.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
+        notes: "Batch 7 MCP sample: teamless Static File endpoint saved privately; solo form before/after inspected. Other engines and validation matrix deferred; endpoint controller regressions passed."
+        paths: ["app/views/shared/_team_picker.html.erb", "app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb", "app/views/search_endpoints/new.html.erb", "app/views/search_endpoints/edit.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "7.3":
         title: "View / Edit a Search Endpoint"
         last_run: 2026-10-05T23:31:28Z
@@ -595,9 +595,9 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-06T20:00:31Z
         result: pass
-        notes: "Covered live: created team, creator membership, rename persisted, team resource tables browsed. Not covered live: cross-section filter retention, blank/duplicate validation."
+        notes: "Batch 7 MCP sample: solo empty state, CTA opened new-team form, filtered empty state omitted solo CTA. Before/after inspected. Create/rename and populated-team filter matrix deferred."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts"]
       "9.2":
         title: "Add a team member (existing user)"
@@ -619,9 +619,9 @@ parts:
         paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
-        last_run: 2026-10-06T00:08:55Z
-        result: pass
-        notes: "Covered live: case/endpoint/scorer index share mutations earlier, team-page book Unshare removed row; Books index Share restored membership. Not covered live: all eight entry-point/resource combinations, duplicate share and inaccessible attempts."
+        last_run: 2026-10-06T20:00:29Z
+        result: pass_with_fixes
+        notes: "Batch 7 MCP sample: Books index no-team/all-shared disabled picker states; screenshot inspection caught hidden reason text, now visible. Before/after inspected. Wider resource/entry-point mutation matrix deferred; shared-base Vitest regressions passed."
         paths: ["app/views/shared/_share_case_modal.html.erb", "app/views/shared/_share_book_modal.html.erb", "app/views/shared/_share_search_endpoint_modal.html.erb", "app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_book_controller.js", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/views/books/_book.html.erb", "app/views/teams/_books.html.erb", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "9.6":
         title: "Archive/unarchive a Case or Search Endpoint from the team page"
@@ -641,10 +641,10 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
       "10.2":
         title: "Create a new book"
-        last_run: 2026-10-06T15:29:00Z
-        result: pass
-        notes: "Covered live: created private book with graded scale and guidelines, reopened Settings and confirmed representative scale selection and guidelines persisted; inspected screenshots and deleted fixture. Not covered live: validation, case integration and sharing combinations."
-        paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
+        last_run: 2026-10-06T21:22:04Z
+        result: pass_with_fixes
+        notes: "P2 MCP sample: mixed sync choices retained through disabled submission, server missing-scale 422 and relinking; corrected retry saved an unlinked book. Before/after screenshots inspected in sync-retry; disposable book removed. Rails covers linked retry persistence and unchanged case state on failure. Earlier Batch 7 covered checked/unchecked creation and teamless save. Blank-name and broader sharing matrix deferred."
+        paths: ["app/javascript/controllers/case_book_synchronization_controller.js", "app/views/shared/_team_picker.html.erb", "app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.3":
         title: "Edit book settings"
         last_run: 2026-10-06T17:07:23Z
@@ -701,10 +701,10 @@ parts:
         paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/new.html.erb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb"]
       "10.8":
         title: "Import additional data into an existing book"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-06T20:01:54Z
         result: pass
-        notes: "Covered live: existing-book pair payload created additional pair and all_judgements payload attributed a rating to invitee 48; confirmed both in lists. Not covered live: malformed/no-file/anonymous variants and notification completion."
-        paths: ["app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb", "test/playwright/todo_fixes.spec.ts"]
+        notes: "Batch 7 MCP sample: book-specific Import title, active Import/tab layout and navigation to Judge Overview; before/after inspected. Upload writes/jobs deferred in this sample; import controller regressions passed."
+        paths: ["app/views/books/_tabs.html.erb", "app/controllers/books/import_controller.rb", "app/services/book_importer.rb", "app/views/books/import/edit.html.erb", "config/routes.rb", "app/services/deferred_payload.rb", "app/services/progress_broadcaster.rb", "app/services/judgement_sync.rb", "test/playwright/todo_fixes.spec.ts"]
       "10.9":
         title: "Export a book"
         last_run: 2026-10-06T13:36:06Z
@@ -748,10 +748,10 @@ parts:
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb", "app/views/shared/_modal_shell.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
-        last_run: 2026-10-06T14:50:34Z
+        last_run: 2026-10-06T19:55:31Z
         result: pass
-        notes: "Covered live: Previous Pair reopened the saved Later pair within the frame; browser Back/Forward sent no writes; Quit returned to Overview with the saved flag retained. Screenshots inspected. Not rerun: 50-request milestone/completion/different-user warning; existing controller milestone tests passed."
-        paths: ["app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
+        notes: "Batch 7 MCP sample: Quit Judging from single-pair screen returned to personal Judge Overview; screenshots inspected. Milestones, edit/show quit and rating writes deferred; judgement controller regressions passed."
+        paths: ["app/views/judgements/new.html.erb", "app/views/judgements/edit.html.erb", "app/views/judgements/show.html.erb", "app/views/books/judge_overview.html.erb", "app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.6":
         title: "Judgements list (audit view)"
         last_run: 2026-10-05T23:51:55Z
@@ -766,9 +766,9 @@ parts:
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_judge_status_cell.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
-        last_run: 2026-10-06T17:39:13Z
-        result: pass_with_fixes
-        notes: "Covered MCP sample: book default cutoff on entry, explicit All via the dropdown includes deeper pairs, and default persists on returning; inspected before/after screenshots. Rails also covers unranked pairs. Deferred: rating/reset/explanation, pagination and invalid-save flows in this sample."
+        last_run: 2026-10-06T19:58:33Z
+        result: pass
+        notes: "Batch 7 MCP sample: bulk grid opened and Back to Judge Overview navigated correctly; before/after inspected. Rating/filter/pagination matrix deferred; bulk controller regressions passed."
         paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.9":
         title: "Query/Doc Pairs management"
@@ -788,9 +788,9 @@ parts:
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
-        last_run: 2026-10-06T16:30:17Z
-        result: pass_with_fixes
-        notes: "Covered live: owned judge edit/share persisted; fixed missing confirmation outlet on new index, inspected failed/successful dialog screenshots and confirmed fixture deletion. Deferred: key replacement, cross-account editing and deletion with judgements; authorization/hidden-team retention covered by Rails tests."
+        last_run: 2026-10-06T19:57:38Z
+        result: pass
+        notes: "Batch 7 MCP sample: owned judge edit saved and displayed update notice; screenshot inspected. Delete/key replacement and cross-account browser matrix deferred; judge controller regressions passed."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/edit.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/views/ai_judges/index.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/models/concerns/for_user_scope.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
@@ -838,6 +838,13 @@ parts:
         result: pass
         notes: "Approved MCP sample: missing-scale gate; book-scoped [1,3,5] criteria/mapping, low confidence, API error and refused-request retry through local HTTP provider; saved confidence, image preferences and real Ollama regression. Screenshots inspected. Rails verifies Jev job persistence/missing answers, preview rejection, adapters/auth and timeout retry limits. Live TypeSafe, all-provider credentials and long-scale browser coverage deferred. Scratch rows/provider removed."
         paths: ["app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb", "app/models/ai_judge.rb", "app/jobs/run_judge_judy_job.rb", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "config/initializers/customize_quepid.rb"]
+
+      "12.10":
+        title: "Clone a team AI Judge"
+        last_run: 2026-10-06T19:53:53Z
+        result: pass
+        notes: "MCP: nested clone opened unsaved; blank-prompt failure retained configuration/team/action, corrected retry created a distinct owned judge with matching key and team. Screenshots inspected. Rails covers no-write GET, unauthorized scopes, exact JSON options, no account/book state and malformed JSON. Cross-account/private-clone browser matrix deferred."
+        paths: ["app/controllers/ai_judges_controller.rb", "config/routes.rb", "app/views/ai_judges/new.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/javascript/controllers/ai_judge_form_controller.js"]
 
   "13":
     file: 13-analytics.md

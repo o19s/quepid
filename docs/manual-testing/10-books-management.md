@@ -27,8 +27,8 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   2. Fill Name, check at least one team to share with, pick a **Rating Scale** (scorer), review/edit the auto-populated **Scoring Guidelines**, save.
 - **Expected:** Redirects to the new book's Overview with "Book was successfully created."
 - **Edge cases:**
-  - [ ] Create a book while belonging to zero teams — confirm the info alert + "Create a team" link appears in the Teams checklist area.
-  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles (Link the Case, Case→Book auto-populate, Book→Case auto-populate) appear and function.
+  - [ ] Create a book while belonging to zero teams — confirm the team picker offers "Create a team" and the book can still be saved privately.
+  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles appear. Uncheck Link the Case: both sync switches disable; recheck it: their choices remain. Save checked and unchecked variants, verifying that unchecked creation preserves the case's existing book/settings. Set different sync choices, uncheck Link the Case and submit without a scale (bypass browser validation to reach the server). Confirm case context and choices survive validation; recheck linking and verify the original choices before correcting the scale and retrying.
   - [ ] Save without checking any team — confirm the book still saves (now effectively private to you) without erroring.
 
 ### 10.3 Edit book settings
@@ -126,7 +126,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 ### 10.8 Import additional data into an existing book
 
 - [ ] **Steps:**
-  1. On an existing book's **Import** tab, upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
+  1. On an existing book's **Import** tab, confirm the heading identifies the book, Import is active and the Overview/Judge Overview tabs navigate correctly. Upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
   2. Separately, upload an `all_judgements` payload (using `email` to attribute judgements to a user, and optionally a nested `query_doc_pair` object instead of an id).
 - **Expected:** Pairs/judgements are created or updated once the background job completes.
 - **Edge cases:**

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
-  before_action :set_team, only: [ :new, :create, :update, :destroy ]
+  before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
   before_action :set_book_id
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
 
@@ -28,6 +28,18 @@ class AiJudgesController < ApplicationController
     }
   end
 
+  def clone
+    source = AiJudge.for_user(current_user).where(id: @team.members.select(:id)).find(params.expect(:id))
+    @ai_judge = current_user.owned_ai_judges.build(
+      name:          "Clone of #{source.name}",
+      llm_key:       source.llm_key,
+      system_prompt: source.system_prompt,
+      judge_options: source.judge_options.deep_dup
+    )
+    @ai_judge.team_ids = [ @team.id ]
+    render :new
+  end
+
   def edit; end
 
   def create
@@ -46,7 +58,7 @@ class AiJudgesController < ApplicationController
     @ai_judge.assign_attributes(ai_judge_params)
     if @ai_judge.errors.empty? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), status: :see_other)
+      redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.', status: :see_other)
     else
       render 'edit', status: :unprocessable_content
     end

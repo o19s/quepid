@@ -11,6 +11,74 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
+  test 'clone opens an unsaved owned configuration with only the originating team' do
+    ai_judge.update!(administrator: true, company: 'Do not copy', reset_password_token: 'source-token')
+    assert_no_difference 'User.count' do
+      get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+    end
+    assert_response :success
+    assert_select 'form[action=?]', team_ai_judges_path(team)
+    assert_select 'input[name="user[name]"][value=?]', "Clone of #{ai_judge.name}"
+    assert_select 'input[name="user[llm_key]"][value=?]', ai_judge.llm_key
+    assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
+    assert_select '[data-ai-judge-wizard-existing-value="false"]'
+    assert_select '[data-ai-judge-wizard-test-url-value*="/new/"]'
+  end
+
+  test 'saving a clone creates a distinct requester-owned judge without account state' do
+    configuration = { name: "Clone of #{ai_judge.name}", llm_key: ai_judge.llm_key,
+                      system_prompt: ai_judge.system_prompt, options: { judge_options: ai_judge.judge_options }.to_json,
+                      team_ids: [ team.id ], administrator: true, reset_password_token: 'source-token' }
+    original = ai_judge.attributes
+    assert_difference 'AiJudge.count' do
+      post team_ai_judges_url(team), params: { user: configuration }
+    end
+    assert_response :see_other
+    assert_redirected_to team_url(team)
+    cloned = AiJudge.order(:id).last
+    assert_equal user, cloned.owner
+    assert_equal ai_judge.llm_key, cloned.llm_key
+    assert_equal ai_judge.system_prompt, cloned.system_prompt
+    assert_equal ai_judge.judge_options, cloned.judge_options
+    assert_equal [ team.id ], cloned.team_ids
+    assert_not cloned.administrator?
+    assert_nil cloned.reset_password_token
+    assert_empty cloned.books
+    assert_equal original, ai_judge.reload.attributes
+  end
+
+  test 'clone rejects an inaccessible team, private source, and source outside the team' do
+    get clone_team_ai_judge_url(team_id: teams(:valid).id, id: ai_judge.id)
+    assert_response :not_found
+    ai_judge.teams.clear
+    get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+    assert_response :not_found
+    ai_judge.update!(owner: user)
+    get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+    assert_response :not_found
+  end
+
+  test 'clone validation failure retains input and the nested create route for retry' do
+    assert_no_difference 'User.count' do
+      post team_ai_judges_url(team), params: { user: {
+        name: 'Retry clone', llm_key: 'retained-key', system_prompt: '', options: '{broken', team_ids: [ team.id ]
+      } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'form[action=?]', team_ai_judges_path(team)
+    assert_select 'input[name="user[name]"][value="Retry clone"]'
+    assert_select 'input[name="user[llm_key]"][value="retained-key"]'
+    assert_select 'textarea[name="user[options]"]', text: '{broken'
+    assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
+  end
+
+  test 'update announces success and retains the team-context redirect' do
+    patch team_ai_judge_url(team, ai_judge), params: { user: { name: 'Updated judge' } }
+    assert_response :see_other
+    assert_redirected_to team_url(team)
+    assert_equal 'AI Judge was successfully updated.', flash[:notice]
+  end
+
   test 'should get new' do
     get new_team_ai_judge_url(team_id: team.id)
     assert_response :success

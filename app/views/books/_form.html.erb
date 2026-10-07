@@ -18,31 +18,21 @@
       </div>
 
       <div class="mb-3">
-        <%= form.label :teams, "Teams to Share this Book With", class: 'form-label' %>
-        <% if @current_user.teams.any? %>
-          <%= form.collection_check_boxes(:team_ids, @current_user.teams, :id, :name) do |b| %>
-            <div class="collection-check-box">
-              <%= b.check_box %>
-              <%= b.label %>
-            </div>
-          <% end %>
-          <div class="form-text">Books are meant to be shared with human raters and relevance engineers, and you do this by picking which teams can use them.</div>
-        <% else %>
-          <div class="alert alert-info" role="alert">
-            <i class="bi bi-info-circle"></i> You don't belong to any teams yet. <%= link_to "Create a team", teams_path %> to share this book with other users.
-          </div>
-        <% end %>
+        <%= render "shared/team_picker", form: form, label: "Teams to Share this Book With",
+              selected_ids: params.dig(:book, :team_ids),
+              help_text: "Leave unchecked to keep this book private. Share with a team so others can judge and manage it." %>
       </div>
 
 
       <% if @origin_case %>
-        <div class="card">
-          <h5 class="card-title">Case Integration</h5>
+        <div class="card" data-controller="case-book-synchronization">
+          <h5 class="card-header">Case Integration</h5>
           <div class="card-body">
             <div class="alert alert-info mb-3" role="alert">
               <i class="bi bi-info-circle"></i>
-              <strong>About Book-Case Synchronization:</strong> Books and Cases can share data bi-directionally.
-              Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings.
+              <strong>About Book-Case Synchronization:</strong> Books and Cases sync data both ways.
+              Query/doc pairs from your Case send to the Book for judging, and Book ratings flow back into your Case.
+              Any ratings made directly in the Case view also sync to the Book.
               <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_out">
                 Learn more <i class="bi bi-arrow-up-right-circle"></i>
               </a>
@@ -52,7 +42,8 @@
               <h6 class="fw-bold">Enable Synchronization</h6>
               <div class="form-check form-switch">
                 <%= form.label :link_the_case, "Link the Case ", class:'form-check-label' %>
-                <%= form.check_box :link_the_case, class:'form-check-input', checked: true %>
+                <%= form.check_box :link_the_case, class:'form-check-input', checked: @link_the_case.nil? ? true : @link_the_case,
+                      data: { case_book_synchronization_target: 'linkTheCase', action: 'change->case-book-synchronization#toggleOptions' } %>
                 <i class="bi bi-briefcase"></i> <%= @origin_case.case_name %> to this book
               </div>
               <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
@@ -63,7 +54,10 @@
               <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
               <div class="form-check form-switch">
                 <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
-                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', checked: book.new_record? %>
+                <%= form.hidden_field :auto_populate_book_pairs, value: '0', id: nil,
+                      data: { case_book_synchronization_target: 'synchronizationFallback' } %>
+                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: @auto_populate_book_pairs.nil? ? book.new_record? : @auto_populate_book_pairs,
+                      data: { case_book_synchronization_target: 'synchronizationOption' } %>
               </div>
               <div class="form-text">
                 <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
@@ -76,7 +70,10 @@
               <h6 class="fw-bold">Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings</h6>
               <div class="form-check form-switch">
                 <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
-                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', checked: true %>
+                <%= form.hidden_field :auto_populate_case_judgements, value: '0', id: nil,
+                      data: { case_book_synchronization_target: 'synchronizationFallback' } %>
+                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: @auto_populate_case_judgements.nil? ? true : @auto_populate_case_judgements,
+                      data: { case_book_synchronization_target: 'synchronizationOption' } %>
               </div>
               <div class="form-text">
                 <strong>On:</strong> Case ratings update immediately as judgements are made.

@@ -1,6 +1,6 @@
 <div class="container centered-form">
   <div class="row mb-3">
-    <%= form_with url: ai_judges_path, model: @ai_judge, scope: :user do |form| %>
+    <%= form_with url: @team ? team_ai_judges_path(@team) : ai_judges_path, model: @ai_judge, scope: :user do |form| %>
       <%= render "form", ai_judge: @ai_judge, form: form %>
     <% end %>
   </div>

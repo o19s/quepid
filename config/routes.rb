@@ -101,7 +101,9 @@ Rails.application.routes.draw do
   resources :ai_judges
 
   resources :teams, only: [] do
-    resources :ai_judges, controller: :ai_judges, except: [ :index ]
+    resources :ai_judges, controller: :ai_judges, except: [ :index ] do
+      get :clone, on: :member
+    end
   end
   resources :ai_judges, only: [] do
     resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges

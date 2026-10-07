@@ -25,6 +25,8 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
 
 ### 12.2 Edit / delete an AI Judge
 
+Successful edits display **AI Judge was successfully updated.**, retaining the existing standalone/team redirect.
+
 - [ ] **Steps:**
   1. From AI Judges or a team member list, edit an owned or team-shared judge.
   2. Change its name, prompt or provider; save and reload.
@@ -119,3 +121,13 @@ AI Judges let an LLM stand in for a human judge. `AiJudge` is a `User` subclass 
   5. Force a 401 or missing-answer response, then restore success and retry. Force a first 429/529 followed by success; confirm two requests and a usable result. Timeouts must not be retried.
 - **Expected:** Provider selection controls the request dialect. Chat providers keep their existing routing/authentication and image behavior. Jev takes structured text and book criteria; preview remains unsaved, while judging jobs persist accepted or Unrateable judgements.
 - **Coverage note:** Local fixture providers can verify the transport and failure matrix without external keys; distinguish this from a live TypeSafe service run.
+
+### 12.10 Clone a team AI Judge
+
+- [ ] **Steps:**
+  1. Open `/teams/:team_id/ai_judges/:id/clone` for a judge shared with your team (the route is supported; no Clone button is provided).
+  2. Confirm the unsaved form has `Clone of {name}`, the original key/prompt/provider settings and only the originating team checked. Opening must not create a judge.
+  3. Clear the system prompt and Save. Confirm validation retains name, key, options, team selection and the nested create action; correct the prompt and retry.
+  4. Confirm the redirect to the team with creation notice. Reopen the new judge and verify settings, requester ownership and a distinct ID; the source is unchanged.
+- **Expected:** Only judge configuration is copied. Account privileges/tokens, book assignments and judgements are not copied; saving uses the existing create contract.
+- **Edge cases:** Inaccessible teams/private judges and sources outside the specified team return 404. Malformed Options JSON retains input for retry. Uncheck the team before Save to make the clone private.
