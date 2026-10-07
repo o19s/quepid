@@ -90,7 +90,7 @@
           <div class="col-sm-10 offset-sm-2 mt-2">
             <div class="alert alert-info small mb-0" id="on-call-notice">
               <i class="bi bi-moon-stars" aria-hidden="true"></i>
-              <strong>On call</strong> for <%= ai_judge.escalated_from.map(&:name).sort.to_sentence %>:
+              <strong>On call</strong> for <%= ai_judge.escalated_from_names %>:
               this judge only rates pairs escalated to it.
             </div>
           </div>

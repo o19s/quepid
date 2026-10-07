@@ -273,7 +273,7 @@ class Book < ApplicationRecord
   # doesn't qualify for a row at all (see judge_activity_rows) - same
   # "shouldn't normally happen" case its caller already falls back on.
   def judge_activity_row_for judge, days: 30
-    on_call = judge.ai_judge? && on_call_ai_judges.map(&:id).include?(judge.id)
+    on_call = judge.ai_judge? && on_call_for?(judge)
     return nil unless on_call || ai_judges.exists?(id: judge.id) || judgements.exists?(user_id: judge.id)
 
     activity = judge_activity_for([ judge.id ], days: days).fetch(judge.id)
@@ -298,6 +298,25 @@ class Book < ApplicationRecord
   end
 
   private
+
+  # Same membership on_call_ai_judges answers (is `judge` reachable from an
+  # assigned judge by following escalates_to links), but walked backward from
+  # this one judge via escalated_from instead of forward from every assigned
+  # judge - judge_activity_row_for calls this once per judgement broadcast
+  # during a bulk AI judging run, so its cost should track this judge's own
+  # (typically shallow) escalation chain, not the whole book's.
+  def on_call_for? judge
+    assigned_ids = ai_judges.pluck(:id).to_set
+    seen = Set.new([ judge.id ])
+    frontier = judge.escalated_from.to_a
+    until frontier.empty?
+      return true if frontier.any? { |j| assigned_ids.include?(j.id) }
+
+      seen.merge(frontier.map(&:id))
+      frontier = frontier.flat_map(&:escalated_from).reject { |j| seen.include?(j.id) }
+    end
+    false
+  end
 
   # Validates that scale values cannot be changed if judgements exist
   # but allows changing scale_with_labels for the same scale

@@ -376,7 +376,7 @@ class BooksController < ApplicationController
     # An on-call judge sleeps until another judge escalates to it; it is
     # woken by the end of that judge's run, never started by hand.
     if ai_judge.on_call?
-      waking = ai_judge.escalated_from.map(&:name).sort.to_sentence
+      waking = ai_judge.escalated_from_names
       redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it."
       return
     end

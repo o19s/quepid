@@ -90,6 +90,12 @@ class AiJudge < User
     escalated_from.any?
   end
 
+  # "Judge A and Judge B", for the "woken by"/"on call for" messaging shown
+  # wherever this judge's on-call status is displayed.
+  def escalated_from_names
+    escalated_from.map(&:name).sort.to_sentence
+  end
+
   # { judge id => name of the judge it wakes } for those of `ids` that wake
   # somebody, in two queries -- for pages that list many judges.
   def self.escalation_target_names ids

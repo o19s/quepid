@@ -144,7 +144,14 @@ class RunJudgeJudyJob < ApplicationJob
   def next_pair_to_judge book, judge, escalating_from_judge
     return [ SelectionStrategy.random_query_doc_based_on_strategy(book, judge), nil ] unless escalating_from_judge
 
-    source = Judgement.awaiting_escalation(book, from: escalating_from_judge, to: judge).order(:id).first
+    # Scoped to every judge that escalates to `judge` (judge.escalated_from),
+    # not just escalating_from_judge - the limits_concurrency lock below is
+    # keyed on (book, judge) alone, so if two source judges wake the same
+    # on-call judge around the same time, only one enqueue wins and the
+    # other is discarded. Since this query re-runs every loop iteration
+    # rather than being computed once, the winning run still picks up the
+    # other source's awaiting escalations instead of silently dropping them.
+    source = Judgement.awaiting_escalation(book, from: judge.escalated_from, to: judge).order(:id).first
     [ source&.query_doc_pair, source ]
   end
 

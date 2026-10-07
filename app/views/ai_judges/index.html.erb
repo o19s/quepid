@@ -32,7 +32,7 @@
                     <span class="text-nowrap"><i class="bi bi-arrow-right" aria-hidden="true"></i> wakes <%= ai_judge.escalates_to.name %></span>
                   <% end %>
                   <% if ai_judge.escalated_from.any? %>
-                    <span class="badge text-bg-info" title="Sleeps until <%= ai_judge.escalated_from.map(&:name).sort.to_sentence %> escalates to it">
+                    <span class="badge text-bg-info" title="Sleeps until <%= ai_judge.escalated_from_names %> escalates to it">
                       <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
                     </span>
                   <% end %>

@@ -110,7 +110,7 @@
                 </small>
               <% end %>
               <% if b.object.on_call? %>
-                <span class="badge text-bg-info ms-1" title="Woken by <%= b.object.escalated_from.map(&:name).sort.to_sentence %>; no need to assign it here">
+                <span class="badge text-bg-info ms-1" title="Woken by <%= b.object.escalated_from_names %>; no need to assign it here">
                   <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
                 </span>
               <% end %>
