@@ -8,7 +8,7 @@
      data-embedder-form-presets-value="<%= EmbedderProvider.presets.to_json %>"
      data-embedder-form-test-url-value="<%= embedder_test_path(key_source&.id || 'new') %>">
   <div class="card-header">
-    <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder</h5>
+    <h5 class="mb-0"><%= render 'embedders/icon' %> Embedder<%= render 'embedders/beta' %></h5>
   </div>
   <div class="card-body">
     <% if embedder.errors.any? %>

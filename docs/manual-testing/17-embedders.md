@@ -2,7 +2,7 @@
 
 ## Overview
 
-An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere, Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like search endpoints. They live at **Embedders** in the left sidebar (the `[::]` icon) and at `/embedders`.
+An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere, Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like search endpoints. They live at **Embedders** in the left sidebar (the `[::]` icon) and at `/embedders`, whose heading is marked β for beta.
 
 For a local run, the Ollama container needs an embedding model: `docker exec ollama ollama pull all-minilm` (small) or `qwen3-embedding:0.6b` (takes instructions).
 

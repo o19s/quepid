@@ -1,10 +1,17 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-  <h1><%= render 'icon' %> Embedders</h1>
+  <h1><%= render 'icon' %> Embedders<%= render 'beta' %></h1>
   <div class="btn-toolbar mb-2 mb-md-0">
     <%= link_to new_embedder_path, class: 'btn btn-success' do %>
       <i class="bi bi-plus-lg" aria-hidden="true"></i> Create Embedder
     <% end %>
   </div>
+</div>
+
+<div class="alert alert-info" role="alert">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere,
+  Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like
+  search endpoints.
 </div>
 
 <div class="card">

@@ -32,6 +32,14 @@ class EmbeddersControllerTest < ActionDispatch::IntegrationTest
     assert_select 'td', text: embedders(:private_ollama).name, count: 0
   end
 
+  test 'index is marked beta and explains what an embedder is' do
+    get embedders_url
+
+    assert_response :success
+    assert_select 'h1 sup', text: 'β'
+    assert_select '.alert-info', text: /turns query text into a vector embedding/
+  end
+
   test 'new renders every provider and the presets' do
     get new_embedder_url(team_id: team.id)
 
