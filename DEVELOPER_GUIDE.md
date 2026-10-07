@@ -118,6 +118,9 @@ docker compose run --rm app bin/rails db:setup
 
 #### 4. Running the app
 
+For a simultaneous pre-Angular-removal / Bootstrap 3 baseline with its own database
+and ports, see [Historical Quepid comparison instance](docs/legacy_comparison.md).
+
 Now fire up Quepid locally at http://localhost:3000 (or the port set by `APP_PORT`):
 
 ```bash

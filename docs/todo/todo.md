@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-07
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -481,17 +481,17 @@ Status cleanup alone does not change scoring inputs.
 
 ## [PREEXISTING] P2 — Performance
 
-### [PREEXISTING] P2 I1 C2 — Case-list latest-score queries bypass eager loading
+### [PREEXISTING] P2 I1 C2 — Team case list latest-score queries bypass eager loading
 
-`CasesController#index` includes `scores: :user`, but `Case#last_score` calls
-`scores.last_one`, whose ordering/limit scope issues a separate lookup per case.
-`cases/index.html.erb` also reads that score's user. The team case list in
-`teams/_cases.html.erb` uses the same method, while `TeamsController#show`
-preloads only owner and teams.
+`Case#last_score` calls `scores.last_one`, whose ordering/limit scope issues a
+separate lookup per case. `teams/_cases.html.erb` (and `home/_case.html.erb`)
+read it per row and its user, while `TeamsController#show` preloads only owner
+and teams. `CasesController#index` already avoids this through
+`Score.latest_summaries_for_cases`; reuse that approach for the team list.
 
-Measure both list endpoints with query-count tests, then load only the latest
-score and its user per case. Avoid loading every historical score merely to
-render one badge; Bullet is available in development/test.
+Measure the endpoint with a query-count test, then load only the latest score and
+its user per case. Avoid loading every historical score merely to render one
+badge; Bullet is available in development/test.
 
 ## [PREEXISTING] RuboCop deferrals
 
@@ -867,22 +867,6 @@ saved content. Test saving text, clearing it, and reloading its persisted value;
 preserve zero-valued ratings and the untouched-empty case.
 
 **Provenance:** the same empty-input early return exists in the baseline controller.
-
-### [PREEXISTING] P2 I0 C1 — Tune Relevance does not handle its save promise
-
-**Location:** `app/javascript/controllers/tune_relevance_controller.js#save`,
-`app/javascript/utils/settings_runtime.js#save`.
-
-The controller neither awaits nor returns the save promise, handles rejection,
-nor disables submission. Network/server failures have no contextual feedback;
-repeated clicks can create multiple tries.
-
-**Fix direction:** await the save, disable submission while pending, report the
-failure and restore controls appropriately. Test failure/retry and double-click
-submission while preserving navigation and drawer handoff on success.
-
-**Provenance:** baseline `controllers/settings.js#submit` also discards
-`settingsSvc.save`; the service handles success without a rejection handler.
 
 ## [PREEXISTING] Background refresh counts
 

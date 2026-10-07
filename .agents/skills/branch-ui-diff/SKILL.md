@@ -13,6 +13,11 @@ description: >-
 
 # Branch UI diff (before/after screenshots)
 
+For comparisons against pre-deangularization / Bootstrap 3 code, use
+[the isolated historical instance](../../../docs/legacy_comparison.md) instead
+of this shared-database workflow. Its schema and runtime are independent; do not
+use the snapshot/restore commands below for historical comparisons.
+
 Proves what a branch actually changed on screen, by running **two Quepid instances at once**
 against the **same backend** (mysql/keycloak/ollama from the live `bin/docker s` stack) — the
 branch's base ref on one port, the current code on another — instead of the older approach of

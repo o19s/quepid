@@ -212,6 +212,10 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 
 ### Before/after pairs — do not break the working tree
 
+- For historical pre-deangularization / Bootstrap 3 comparisons, use the
+  [isolated historical instance](docs/legacy_comparison.md). Keep both servers
+  running and compare equivalent fixtures; do not flip current sources or restore
+  the shared development database for this workflow.
 - Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
 - To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild the core bundle (`yarn build:core`), capture, then **restore + rebuild in the same session** before anything else.
 - Select replay sources against the baseline, including both staged and unstaged changes (for example, `git diff HEAD`); plain `git diff` can omit changed sources. Leave the index untouched.
