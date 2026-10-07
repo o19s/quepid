@@ -250,27 +250,33 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '#judging-criteria p', text: /0 \(labeled "Not Relevant"\)/
     end
 
-    test 'a judge that needs a book cannot be run without one, and lists scales to go test against' do
+    test 'a judge that needs a book cannot be run without one, and offers a scale picker instead' do
       ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"])',
-                    text: /Scales you have access to/
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"]) select'
+      # a plain select navigated via each option's own data-url, not a <form> -
+      # this whole partial already renders inside the page's outer judge-save
+      # form_with, and a nested <form> here would silently submit THAT one
+      # instead (see the view's comment).
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice] form', count: 0
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice] select option[data-url*="scorer_id="]',
+                    minimum: 1
     end
 
-    test 'the scale list is deduplicated across every scorer and book the user has access to' do
+    test 'the scale picker is deduplicated across every scorer the user has access to' do
       # fixtures random_scorer/random_scorer_1/random_scorer_2/case_default_scorer
-      # all give user a [1, 2, 3, 4] scorer scale - a single mention proves
-      # the list is unique, not one entry per scorer/book that shares it.
+      # all give user the same [1, 2, 3, 4] scale - a single option proves the
+      # picker is unique, not one entry per scorer that shares it.
       ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)
 
-      notice = css_select('[data-ai-judge-wizard-target=needsScaleNotice]').text
-      assert_equal 1, notice.scan('1,2,3,4').size
+      options = css_select('[data-ai-judge-wizard-target=needsScaleNotice] select option').map(&:text)
+      assert_equal(1, options.count { |text| text.include?('1,2,3,4') })
     end
 
     test 'a judge that needs a book can be run once it has one' do
@@ -281,6 +287,18 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
       assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
+    end
+
+    test 'a judge that needs a book can also be run against a scorer picked without one' do
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+      scorer = scorers(:random_scorer)
+
+      get edit_ai_judge_url(ai_judge, scorer_id: scorer.id)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
+      assert_select '#judging-criteria', text: /#{Regexp.escape(scorer.name)}/
     end
 
     test 'shows no criteria when there is no book to take them from' do

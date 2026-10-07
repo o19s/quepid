@@ -117,6 +117,18 @@ class JudgeScaleTest < ActiveSupport::TestCase
     assert_nil JudgeScale.for(nil).guidelines
   end
 
+  test 'built from a scorer it reads that scorer s scale and labels, with no guidelines' do
+    scorer = scorers(:random_scorer)
+    scale = JudgeScale.for_scorer(scorer)
+
+    assert_equal scorer.scale, scale.values
+    assert_nil scale.guidelines
+  end
+
+  test 'built from no scorer at all it is simply empty' do
+    assert_predicate JudgeScale.for_scorer(nil), :empty?
+  end
+
   test 'NONE is an empty scale' do
     assert_predicate JudgeScale::NONE, :empty?
   end

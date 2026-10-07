@@ -4,8 +4,9 @@ class AiJudgesController < ApplicationController
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
+  before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
 
-  helper_method :escalation_targets, :available_scales
+  helper_method :escalation_targets
 
   def index
     @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).preload(:escalates_to, :escalated_from).order(:name)
@@ -90,6 +91,16 @@ class AiJudgesController < ApplicationController
     @book = current_user.books_involved_with.where(id: @book_id).first if @book_id.present?
   end
 
+  # Lets "Test & Refine" run against a scorer's scale when there's no book
+  # context - the same scale a book would've copied from one (JudgeScale.for_scorer),
+  # without needing a real book's query/doc pairs. Mutually exclusive with
+  # book_id in practice (the form's scale picker is only shown when there's
+  # no @book), but both are independent params so either can be set.
+  def set_scorer
+    @scorer_id = params[:scorer_id]
+    @scorer = current_user.scorers_involved_with.where(id: @scorer_id).first if @scorer_id.present?
+  end
+
   # Checkboxes suck: only touch teams the current user can actually see, so
   # this can't accidentally unshare the judge from a team the submitting
   # user isn't a member of (BooksController#update's team_ids handling
@@ -123,17 +134,6 @@ class AiJudgesController < ApplicationController
       current = @ai_judge.escalates_to
       current && visible.exclude?(current) ? visible + [ current ] : visible
     end
-  end
-
-  # Every distinct scale in use by a scorer or book the current user has
-  # access to - shown in the "this provider needs a scale to test" notice
-  # (Test & Refine, when there's no book context) so the notice points at
-  # something concrete to go test against instead of just "open a book".
-  # Sorted shortest first, since a shorter scale is the easier one to find.
-  def available_scales
-    @available_scales ||= (
-      current_user.scorers_involved_with.map(&:scale) + current_user.books_involved_with.map(&:scale)
-    ).compact_blank.uniq.sort_by(&:size)
   end
 
   # Only a judge the current user can see may be chosen, the same scope as

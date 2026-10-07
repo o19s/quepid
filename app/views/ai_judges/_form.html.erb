@@ -1,9 +1,13 @@
+<%# A book's own scale if there's a book context, otherwise a scorer's (picked
+    below, in Step 2, when there's no book) - either way, the same scale an
+    actual judging run would be handed. %>
+<% scale = @book ? JudgeScale.for(@book) : JudgeScale.for_scorer(@scorer) %>
 <div class="card"
      data-controller="ai-judge-wizard"
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
-     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id, scorer_id: @scorer_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
-     data-ai-judge-wizard-has-scale-value="<%= JudgeScale.for(@book).present? %>"
+     data-ai-judge-wizard-has-scale-value="<%= scale.present? %>"
      data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
   <div class="card-header">
@@ -273,15 +277,16 @@
           <div class="col-md-6">
             <h6>Rating Information</h6>
 
-            <%# The other half of what gets sent: for a typed model the book's scale IS the
+            <%# The other half of what gets sent: for a typed model the scale IS the
                 question's criteria, so show them here rather than making people guess. %>
-            <% scale = JudgeScale.for(@book) %>
-            <% if @book && scale.present? %>
+            <% scale_source = @book || @scorer %>
+            <% if scale_source && scale.present? %>
+              <% scale_source_link = @book ? link_to(scale_source.name, book_path(@book)) : link_to(scale_source.name, edit_scorer_path(@scorer)) %>
               <div class="mb-3" id="judging-criteria">
                 <div data-ai-judge-wizard-target="criteriaTable" <%= 'style=display:none;'.html_safe unless provider&.scale_as_criteria? %>>
                   <h3 class="h6 mb-1">
                     Criteria sent with the question
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                    <small class="text-muted fw-normal">&mdash; from <%= scale_source_link %>'s scale</small>
                   </h3>
                   <table class="table table-sm table-borderless small mb-1 w-auto">
                     <tbody>
@@ -298,21 +303,36 @@
                 <div data-ai-judge-wizard-target="criteriaProse" <%= 'style=display:none;'.html_safe if provider&.scale_as_criteria? %>>
                   <h3 class="h6 mb-1">
                     Rating scale added to the prompt
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                    <small class="text-muted fw-normal">&mdash; from <%= scale_source_link %>'s scale</small>
                   </h3>
                   <p class="small mb-1"><%= scale.describe %></p>
                 </div>
-                <div class="form-text">Read-only here. Edit the labels in the book's settings to change them.</div>
+                <div class="form-text">
+                  Read-only here. Edit the labels in the <%= @book ? 'book' : 'scorer' %>'s settings to change them.
+                </div>
               </div>
             <% end %>
 
             <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
             <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a scale, so it can only be tested from a book.
-              <% if available_scales.any? %>
-                Scales you have access to: <%= available_scales.map { |s| s.join(',') }.join(' &bull; ').html_safe %>.
-              <% else %>
-                You don't have access to any scorers or books yet.
+              This provider rates against a scale, so it can only be tested from a book - or,
+              to test it without one, pick a rating scale:
+              <% unless @book %>
+                <%# A plain GET select, navigated via onchange reading each option's own
+                    data-url - NOT a <form>, since this whole partial already renders
+                    inside the page's outer judge-save form_with and nested <form>s are
+                    invalid HTML (the browser discards the inner one, so a would-be
+                    form.submit() here actually POSTs the OUTER save form instead -
+                    silently creating/saving a judge just from picking a scale). %>
+                <% picker_path = ai_judge.persisted? ? edit_ai_judge_path(ai_judge) : new_ai_judge_path %>
+                <div class="mt-2" style="max-width: 320px;">
+                  <select class="form-select form-select-sm" onchange="if (this.value) window.location = this.options[this.selectedIndex].dataset.url">
+                    <option value="">Select a rating scale...</option>
+                    <% scorer_options_for_select(current_user).each do |label, id| %>
+                      <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if @scorer_id.to_s == id.to_s %>><%= label %></option>
+                    <% end %>
+                  </select>
+                </div>
               <% end %>
             </div>
 
