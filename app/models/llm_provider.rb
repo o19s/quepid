@@ -97,7 +97,7 @@ class LlmProvider
     judge must be run from a book, and the text below is sent as that
     question's instructions &mdash; not as a system prompt. It writes no prose,
     so the explanation Quepid stores is built from the score, confidence and
-    distribution. Text only &mdash; document images are ignored.
+    distribution.
   HTML
 
   # Filled into the Ollama entry by .all -- see runtime_settings.
@@ -280,10 +280,7 @@ class LlmProvider
           min:   0,
           max:   1,
           step:  0.1,
-          hint:  'Optional, 0 to 1. Jev reports how concentrated its answer is; below this ' \
-                 'the judgement is marked unrateable instead of rated, with the numbers kept ' \
-                 'in the explanation -- and, if this judge wakes another when unsure, handed ' \
-                 'on to it. Leave blank to accept every answer.',
+          hint:  'Optional, 0 to 1.',
         },
       },
     }
@@ -383,7 +380,7 @@ class LlmProvider
       llm_service_url:   default_service_url,
       llm_api_version:   default_api_version,
       llm_model:         default_model,
-      help:              help_html,
+      help:              full_help_html,
       read_only:         read_only_fields,
       system_prompt:     default_system_prompt,
       prompt_label:      prompt_label,
@@ -396,6 +393,32 @@ class LlmProvider
   end
 
   private
+
+  # help_html plus generated notes shared across providers (image support,
+  # and Jev's confidence threshold) - kept out of each DEFINITIONS entry so
+  # they don't have to be hand-copied into every provider's help text, and
+  # out of the form (app/views/ai_judges/_form.html.erb) so the "Judge with
+  # images" switch and Minimum confidence field can stay short captions.
+  def full_help_html
+    [ help_html, images_help_line, confidence_help_line ].compact.join('<br>')
+  end
+
+  def images_help_line
+    if supports_images?
+      '<b>Images:</b> Attached as an image URL unless <b>Judge with images</b> is turned off, for text-only models.'
+    else
+      "<b>Images:</b> #{ERB::Util.html_escape(label)} doesn't support images, so <b>Judge with images</b> is disabled and none are sent."
+    end
+  end
+
+  def confidence_help_line
+    return unless option_fields.key?('jev_min_confidence')
+
+    '<b>Minimum confidence:</b> Jev reports how concentrated its answer is; below this ' \
+      'the judgement is marked unrateable instead of rated, with the numbers kept in the ' \
+      'explanation -- and, if this judge wakes another when unsure, handed on to it. Leave ' \
+      'blank to accept every answer.'
+  end
 
   def normalize text
     text.to_s.gsub(/\r\n?/, "\n").strip

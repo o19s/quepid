@@ -156,14 +156,19 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input#judge_options_llm_include_images[checked]', count: 0
     # the judge's own choice still posts, kept for a provider that can
     assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'true'
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice]:not([style])', text: /Ollama\s+doesn't support images/
+    # the "doesn't support images" explanation lives in Model Configuration
+    # now (LlmProvider#to_preset[:help]), populated client-side from the
+    # presets JSON rather than server-rendered inline under the switch.
+    presets = JSON.parse(css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-presets-value'])
+    assert_includes presets.dig('ollama', 'help'), "doesn't support images"
   end
 
   test 'new shows the include images switch enabled for the default provider' do
     get new_ai_judge_url
 
     assert_select 'input#judge_options_llm_include_images[disabled]', count: 0
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice][style*="display:none"]'
+    presets = JSON.parse(css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-presets-value'])
+    assert_includes presets.dig('openai', 'help'), 'Attached as an image URL'
   end
 
   test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do

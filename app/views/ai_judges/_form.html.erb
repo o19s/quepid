@@ -124,14 +124,7 @@
                                       unsupported: (!images_supported).to_s, wanted: wants_images.to_s } %>
                       </div>
                       <div class="form-text">
-                        Attach the document's image, or its thumbnail if available, to the request as an
-                        image URL. Turn off for text-only models.
-                      </div>
-                      <div class="form-text text-warning-emphasis" data-ai-judge-wizard-target="includeImagesNotice"
-                           <%= 'style=display:none;'.html_safe if images_supported %>>
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <span data-ai-judge-wizard-target="includeImagesNoticeProvider"><%= provider&.label %></span>
-                        doesn't support images, so none are sent.
+                        Attach the document's image or thumbnail. See Model Configuration for details.
                       </div>
                     <% else %>
                       <% common_field_attrs = { id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
