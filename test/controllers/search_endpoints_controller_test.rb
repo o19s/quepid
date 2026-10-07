@@ -159,6 +159,36 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 'bob:newpass', SearchEndpoint.last.basic_auth_credential
   end
 
+  { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
+    test "HTML update preserves credential policy for #{submitted.inspect}" do
+      @search_endpoint.update!(basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
+
+      patch search_endpoint_url(@search_endpoint), params: {
+        search_endpoint: { basic_auth_credential: submitted },
+      }
+
+      assert_redirected_to search_endpoint_url(@search_endpoint)
+      if expected.nil?
+        assert_nil @search_endpoint.reload.basic_auth_credential
+      else
+        assert_equal expected, @search_endpoint.reload.basic_auth_credential
+      end
+    end
+  end
+
+  test 'a blank credential on a clone does not restore the source secret' do
+    @search_endpoint.update!(basic_auth_credential: 'alice:secret', owner: user)
+    post search_endpoints_url, params: {
+      clone_of:        @search_endpoint.id,
+      search_endpoint: {
+        api_method: @search_endpoint.api_method, endpoint_url: @search_endpoint.endpoint_url,
+        search_engine: @search_endpoint.search_engine, basic_auth_credential: ''
+      },
+    }
+    assert_redirected_to search_endpoint_url(SearchEndpoint.last)
+    assert_equal '', SearchEndpoint.last.basic_auth_credential
+  end
+
   test 'should show search_endpoint' do
     # an optimization is suggested that isn't actually needed in real world
     Bullet.enable = false

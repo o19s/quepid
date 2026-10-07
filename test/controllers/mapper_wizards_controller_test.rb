@@ -89,6 +89,46 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     assert_not_includes response.body, 'bob:password'
   end
 
+  { 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
+    test "fetch_html retains credential policy for #{submitted.inspect}" do
+      wizard_state = MapperWizardState.find_or_create_for_user(user)
+      wizard_state.update!(basic_auth_credential: 'alice:secret')
+      request = stub_request(:get, 'https://search.example.com/results')
+      request = request.with(basic_auth: %w[bob newpass]) if submitted.present?
+      request = request.to_return(status: 200, body: '<html>Results</html>')
+
+      post mapper_wizard_fetch_html_url('new'), params: {
+        search_url: 'https://search.example.com/results', basic_auth_credential: submitted
+      }, as: :json
+
+      assert_response :success
+      assert response.parsed_body['success']
+      assert_requested request
+      if expected.nil?
+        assert_nil wizard_state.reload.basic_auth_credential
+      else
+        assert_equal expected, wizard_state.reload.basic_auth_credential
+      end
+    end
+  end
+
+  { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => 'wizard:secret', nil => 'wizard:secret' }.each do |submitted, expected|
+    test "mapper save retains credential policy for #{submitted.inspect}" do
+      search_endpoint.update!(owner: user, basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
+      wizard_state = MapperWizardState.find_or_create_for_user(user)
+      wizard_state.update!(basic_auth_credential: 'wizard:secret')
+
+      post mapper_wizard_save_url(search_endpoint), params: {
+        name: search_endpoint.name, proxy_requests: true, basic_auth_credential: submitted
+      }, as: :json
+
+      assert_response :success
+      assert response.parsed_body['success']
+      assert_equal expected, search_endpoint.reload.basic_auth_credential
+      assert_not MapperWizardState.exists?(wizard_state.id)
+    end
+  end
+
   test 'fetch_html returns error for blank URL' do
     post mapper_wizard_fetch_html_url('new'),
          params: { search_url: '' },

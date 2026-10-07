@@ -195,7 +195,7 @@ class MapperWizardsController < ApplicationController
 
     # Preserve real credential when masked value is submitted unchanged
     if basic_auth_credential.present? && @search_endpoint.persisted? &&
-       basic_auth_credential == @search_endpoint.masked_basic_auth_credential
+       @search_endpoint.matches_masked_basic_auth_credential?(basic_auth_credential)
       basic_auth_credential = @search_endpoint.basic_auth_credential
     end
 

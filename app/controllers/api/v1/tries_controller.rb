@@ -139,7 +139,7 @@ module Api
         attrs = params_hash.to_h.symbolize_keys
 
         credential = attrs[:basic_auth_credential]
-        search_endpoint.basic_auth_credential = credential if credential.present? && credential != search_endpoint.masked_basic_auth_credential
+        search_endpoint.basic_auth_credential = credential if credential.present? && !search_endpoint.matches_masked_basic_auth_credential?(credential)
 
         # A match found via find_or_initialize_for_user's connection-details lookup may
         # reuse an endpoint that was previously tagged with a different (or no) preset,

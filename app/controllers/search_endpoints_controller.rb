@@ -62,7 +62,7 @@ class SearchEndpointsController < ApplicationController
 
     filtered_params = search_endpoint_params.except(:team_ids)
     if filtered_params[:basic_auth_credential].present? &&
-       filtered_params[:basic_auth_credential] == @search_endpoint.masked_basic_auth_credential
+       @search_endpoint.matches_masked_basic_auth_credential?(filtered_params[:basic_auth_credential])
       filtered_params = filtered_params.except(:basic_auth_credential)
     end
 
@@ -83,7 +83,7 @@ class SearchEndpointsController < ApplicationController
     return if params[:clone_of].blank?
 
     source = current_user.search_endpoints_involved_with.find_by(id: params[:clone_of])
-    return if source.nil? || @search_endpoint.basic_auth_credential != source.masked_basic_auth_credential
+    return if source.nil? || !source.matches_masked_basic_auth_credential?(@search_endpoint.basic_auth_credential)
 
     @search_endpoint.basic_auth_credential = source.basic_auth_credential
   end
