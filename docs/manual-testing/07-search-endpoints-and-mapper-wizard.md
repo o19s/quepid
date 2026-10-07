@@ -99,7 +99,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   2. Choose HTTP Method (GET/POST). Enter a Search URL and a Test Query (query-string params for GET, JSON body for POST — hint text should change with the method).
   3. Optionally expand "Advanced Options" and add a Basic Auth Credential and/or Custom HTTP Headers (JSON).
   4. Click **Fetch**.
-- **Expected:** The raw HTML/JSON response is fetched server-side and displayed in a scrollable, expandable, copyable preview pane, with its length shown. Steps 2–3 reveal themselves once this succeeds.
+- **Expected:** Step 2/3 headings are visible from entry; their bodies start hidden for a new endpoint. Fetch displays the raw HTML/JSON in a scrollable, expandable, copyable preview with its length, and reveals Step 2's body. Generation reveals Step 3's body.
 - **Edge cases:**
   - [ ] Leave the URL blank — expect "URL is required".
   - [ ] Enter a non-http(s) URL — expect "Invalid URL format".
@@ -123,6 +123,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 
 ### 7.9 Mapper Wizard — Step 3: Edit, Test & Refine
 
+- [ ] From a fresh wizard, click **No OpenAI key? Write the mapper code by hand instead.** Confirm both Step 2/3 bodies appear and the page scrolls to Step 3, without requiring Fetch or an API key.
 - [ ] **Steps:**
   1. For each of `numberOfResultsMapper` and `docsMapper`: hand-edit the code directly (this is a valid path even without ever using AI).
   2. Click **Test** on each — confirm the Test Result and any `console.log` output ("Console Logs") display.

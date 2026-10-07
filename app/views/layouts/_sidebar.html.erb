@@ -67,22 +67,6 @@
 </style>
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
     <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
-      <li class="nav-item">
-        <a href="#" class="nav-link active py-3 border-bottom rounded-0" aria-current="page" data-controller="bs-tooltip" data-bs-tooltip-placement-value="right" aria-label="Home" data-bs-tooltip-title-value="Home">
-          <svg class="bi pe-none" width="24" height="24" role="img" aria-label="Home"><use xlink:href="#home"></use></svg>
-        </a>
-      </li>
-      <li>
-        <%= link_to ai_judges_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'AI Judges' }, class: "nav-link #{make_active?({path: 'ai_judge'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'AI Judges' do %>
-          <i
-            class="bi bi-robot"
-            aria-hidden="true"
-            title="AI Judges"
-            alt="AI Judges"
-            style="font-size: 1.5rem; color: <%= make_active?({path: 'ai_judge'}) ? 'white' : 'cornflowerblue' %>;"
-          ></i>
-        <% end %>
-      </li>
       <li>
         <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Dashboard', 'data-bs-tooltip-title-value':'Dashboard' do %>
           <i
@@ -146,6 +130,17 @@
             title="Search Endpoints"
             alt="Search Endpoints"
             style="font-size: 1.5rem; color: <%= make_active?({path: 'search_endpoint'}) ? 'white' : 'cornflowerblue' %>;"
+          ></i>
+        <% end %>
+      </li>
+      <li>
+        <%= link_to ai_judges_path, data: { turbo_prefetch: false, controller: 'bs-tooltip', 'bs-tooltip-placement-value': 'right', 'bs-tooltip-title-value': 'AI Judges' }, class: "nav-link #{make_active?({path: 'ai_judge'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'aria-label':'AI Judges' do %>
+          <i
+            class="bi bi-robot"
+            aria-hidden="true"
+            title="AI Judges"
+            alt="AI Judges"
+            style="font-size: 1.5rem; color: <%= make_active?({path: 'ai_judge'}) ? 'white' : 'cornflowerblue' %>;"
           ></i>
         <% end %>
       </li>

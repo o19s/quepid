@@ -8,7 +8,7 @@ This part covers the chrome that surrounds every logged-in page — the left ico
 
 ### 15.1 Left icon sidebar
 
-- [ ] **Steps:** On any logged-in page, confirm the left sidebar shows icons (each with a tooltip on hover) for: Dashboard (home), Relevancy Cases, Judgements (Books), Scorers, Notebooks, Search Endpoints, Teams — plus an avatar dropdown at the bottom with **Create case...**, **Profile**, **Log out**.
+- [ ] **Steps:** On any logged-in page, confirm the left sidebar shows icons (each with a tooltip on hover/focus) for: Dashboard (home), Relevancy Cases, Judgements (Books), Scorers, Notebooks, Search Endpoints, AI Judges, Teams — plus an avatar dropdown at the bottom with **Create case...**, **Profile**, **Log out**. There is no second Home item.
 - **Expected:** Each icon navigates to the correct page; the icon for whichever section you're currently in is visually highlighted (active state).
 - **Edge cases:**
   - [ ] Confirm tooltips appear correctly on hover (this is BS5-tooltip-driven — see Part 16 for known BS3→BS5 tooltip/popover traps).
@@ -67,7 +67,7 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 ### 15.7 Management footer
 
 - [ ] **Steps:** On a management page such as `/cases`, scroll to the footer. Repeat on a short page and on admin/analytics pages where available.
-- **Expected:** A single blue footer follows page content, with the OSC copyright link opening a new tab and the Quepid version displayed. The case footer is covered separately in 16.6; its API/policy/community links and scrolling-pane placement remain specific to that surface.
+- **Expected:** A single light footer follows page content and reaches the viewport bottom on short pages, with the OSC copyright link opening a new tab, Quepid version, configured policy links, API and community-support links. Rails/admin sidebar backgrounds reach the footer; admin Users/Announcements cards fit their content without overlapping it. The case pane footer has its own placement contract in 16.6.
 - **Edge cases:** Check narrow viewports and a configured version value.
 
 ### 15.8 Turbo Drive navigation and lifecycle
@@ -109,3 +109,16 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
   [audit](../../DEVELOPER_GUIDE.md#get-side-effect-audit) for remaining boundaries.
 - **Expected:** Speculative requests stop before controller callbacks. Deliberate
   Judge Later/logout submissions execute once; history never replays the write.
+
+### 15.10 Flash timing and placement
+
+- [ ] On Profile, submit unchanged profile fields for a notice; submit an incorrect current password for an error. Repeat representative success/error states on admin pages.
+- [ ] Rails/admin flashes overlay the viewport bottom without shifting page content. Announcements remain in the header flow. Modal controls remain above the flash layer.
+- [ ] Success/notice remains at three seconds and dismisses after five. Hover or focus the close button for longer than five seconds; leave both hover and focus and confirm a fresh five-second delay. Errors/warnings remain until manually closed or navigation.
+- [ ] Navigate through Turbo and Back; one-time messages do not repeat. Disconnect and reconnect an alert and confirm only one dismissal timer runs.
+- [ ] On core, trigger a main-channel success and a search-error message. Preserve the separate contract: main messages use their existing timer without hover/focus pause; search-error stays until dismissed. Check both layers after resizing and with Tune Relevance open.
+
+### 15.11 Global avatar presentation
+
+- [ ] Inspect avatars rendered by `avatar_tag` with an image and with initials, including an AI judge badge.
+- **Expected:** Both paths are circular, retain their requested pixel size and alternate text, and keep the AI badge visible. The helper wrapper's optional id remains available. Header/Profile images have their separate existing markup.

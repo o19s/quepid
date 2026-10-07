@@ -72,5 +72,5 @@ Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per
   2. Scroll the main case pane to its bottom and inspect the footer.
   3. Open Tune Relevance, then scroll the main pane to its bottom again.
   4. Close the drawer and repeat at 600×900.
-- **Expected:** One footer is rendered at the end of the main case pane, scrolling with the query list. Copyright, configured policy links, API and community-support links retain their content and destinations. Opening the drawer wraps the footer within the narrower pane without duplicating it.
+- **Expected:** One footer stays at the bottom of the main case pane while queries scroll, including on an empty case. Copyright, version, configured policy links, API and community-support links are visible. Opening the drawer wraps the footer within the narrower pane without duplicating it. At the end of the query list, pagination remains above the footer and reachable. Wait for resize to settle before scrolling to the end.
 - **Edge cases:** Existing workbench clipping below its minimum width may also clip footer text; compare with the baseline before attributing this to a footer change. Separately sample an empty case and deployments with configured policy links.

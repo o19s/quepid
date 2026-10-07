@@ -34,15 +34,14 @@
     "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^10.0.0",
     "@playwright/test": "^1.49.0",
-    "@stryker-mutator/core": "10.0.0",
-    "@stryker-mutator/vitest-runner": "10.0.0",
+    "@stryker-mutator/core": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-core-10.0.0.tgz",
+    "@stryker-mutator/vitest-runner": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-vitest-runner-10.0.0.tgz",
     "@types/node": "^24.0.0",
     "chokidar": "5.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.0.0",
     "happy-dom": "^20.0.10",
-    "patch-package": "^8.0.1",
     "prettier": "^3.6.2",
     "purgecss": "^8.0.0",
     "stylelint": "^17.0.0",
@@ -50,7 +49,9 @@
     "vite": "^8.0.0",
     "vitest": "^5.0.0"
   },
-  "resolutions": {},
+  "resolutions": {
+    "@stryker-mutator/api": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-api-10.0.0.tgz"
+  },
   "scripts": {
     "build:core-case": "node esbuild.config.js core-case",
     "build:core-vendor": "node esbuild.config.js core-vendor",
@@ -68,7 +69,7 @@
     "test": "yarn test:unit",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
-    "test:mutation": "patch-package --error-on-fail && stryker run",
+    "test:mutation": "stryker run",
     "test:mutation:compat": "yarn test:mutation test/mutation/vitest_compat.config.mjs",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",

@@ -45,7 +45,7 @@ module AvatarHelper
     image_tag(
       user.avatar_url(size),
       alt:   user.fullname,
-      class: 'rounded',
+      class: 'rounded-circle',
       style: "width:#{size_px}px;height:#{size_px}px;object-fit:cover;"
     )
   end
@@ -59,7 +59,7 @@ module AvatarHelper
     image_tag(
       data_uri,
       alt:   user.fullname,
-      class: 'rounded',
+      class: 'rounded-circle',
       style: "width:#{size_px}px;height:#{size_px}px;object-fit:cover;"
     )
   end

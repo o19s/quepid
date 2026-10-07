@@ -197,7 +197,7 @@ describe("MapperWizardController save", () => {
 })
 
 describe("MapperWizardController showStep3Manually", () => {
-  it("reveals step 3 and scrolls it into view", () => {
+  it("reveals both optional bodies and scrolls step 3 into view", () => {
     const controller = buildController()
     controller.step3Target = document.createElement("div")
     controller.step3Target.style = {}
@@ -207,6 +207,7 @@ describe("MapperWizardController showStep3Manually", () => {
       preventDefault: vi.fn(),
     })
 
+    expect(controller.step2Target.style.display).toBe("block")
     expect(controller.step3Target.style.display).toBe("block")
     expect(controller.step3Target.scrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
@@ -643,4 +644,3 @@ describe("MapperWizardController helpers", () => {
     expect(controller.showStatus).toHaveBeenLastCalledWith("Failed to copy: denied", "error")
   })
 })
-

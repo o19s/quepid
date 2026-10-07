@@ -28,13 +28,13 @@
   </div>
 </nav>
 
-<div id='flash' data-turbo-temporary>
-  <% if @announcement&.persisted? %>
-    <div class="alert alert-light alert-dismissible text-center fade show" role="alert">
+<% if @announcement&.persisted? %>
+    <div class="alert alert-light alert-dismissible text-center fade show" role="alert" data-turbo-temporary>
       <%= @announcement.text.html_safe %>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-  <% end %>
+<% end %>
 
+<div id="flash-messages">
   <%= flash_messages -%>
 </div>

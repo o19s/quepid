@@ -556,6 +556,25 @@ header .dropdown-item:focus {
 
 footer {
   margin-top: 30px;
+  font-size: 14px;
+}
+
+/* Keep the existing pane footer visible without moving or duplicating its DOM. */
+.pane_main {
+  display: flex;
+  flex-direction: column;
+}
+
+.pane_main > * {
+  flex-shrink: 0;
+}
+
+.pane_main > footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  background-color: #fff;
+  z-index: 5;
 }
 
 .matches-popper:hover {

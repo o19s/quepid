@@ -92,13 +92,16 @@ module ApplicationHelper
           :div,
           message,
           class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
-          role:  'alert'
+          role:  'alert',
+          data:  flash_message_data(msg_type)
         ) do
           concat(
             content_tag(
               :button,
-              class: 'btn-close',
-              data:  { 'bs-dismiss': 'alert' }
+              class:        'btn-close',
+              type:         'button',
+              'aria-label': 'Close',
+              data:         { 'bs-dismiss': 'alert' }
             ) do
             end
           )
@@ -108,6 +111,16 @@ module ApplicationHelper
     end
 
     nil
+  end
+
+  def flash_message_data msg_type
+    data = { turbo_temporary: true }
+    if %w[success notice].include?(msg_type.to_s)
+      data[:controller] = 'auto-dismiss'
+      data[:action] = 'mouseenter->auto-dismiss#pause mouseleave->auto-dismiss#schedule ' \
+                      'focusin->auto-dismiss#pause focusout->auto-dismiss#schedule'
+    end
+    data
   end
 
   # Match the link to the core case url with the endpoint_url

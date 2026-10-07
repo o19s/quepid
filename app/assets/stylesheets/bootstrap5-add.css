@@ -11,8 +11,22 @@ body {
   background: url('blue_bg.jpg') top center repeat;
 }
 
-.footer-bar {
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+footer {
+  font-size: 14px;
+}
+
+/* Announcements stay in the page flow; one-time flashes overlay the bottom. */
+#flash-messages {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#flash-messages .alert {
+  pointer-events: auto;
+  margin-bottom: 0;
 }
 
 /*

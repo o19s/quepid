@@ -45,6 +45,7 @@ The home dashboard (`/`) is the landing page after login. It surfaces recent cas
   - Shows the date range of scoring history.
   - Shows a colored delta line: green "X% increase since Y ago" or red "X% decrease since Y ago", based on detected trend changepoints.
   - Shows a small line chart of score over time, with purple vertical markers at any annotation points — hovering a marker shows a tooltip with the annotation's message.
+  - Fits the complete chart, including axes, within its declared 60px height. Resize from desktop to 600px and back; scroll lazy card frames into view before checking chart width.
 - **Edge cases:**
   - [ ] A case with 0, 1, or 2 scores — confirm no trend arrow/delta is shown (changepoint detection requires ≥3 points), and the card doesn't error.
   - [ ] A case whose score was exactly 0 at the detected changepoint — confirm no divide-by-zero/NaN% is displayed.

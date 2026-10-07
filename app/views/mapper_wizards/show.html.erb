@@ -45,7 +45,7 @@
           <input type="url"
                  class="form-control"
                  id="searchUrl"
-                 placeholder="https://opensourceconnections.com/"
+                 placeholder="https://www.opensourceconnections.com/"
                  data-mapper-wizard-target="searchUrl"
                  value="<%= @search_endpoint.endpoint_url %>">
           <div class="form-text">Base URL saved to endpoint.</div>
@@ -64,7 +64,7 @@
       <% existing_test_query = @wizard_state.try(:test_query).presence || @search_endpoint.test_query %>
       <% post_test_query = @search_endpoint.api_method == 'POST' %>
       <% post_placeholder = '{"query": "test", "size": 10}' %>
-      <% get_placeholder = 'q=shirts&rows=10' %>
+      <% get_placeholder = 's=quepid&rows=10' %>
       <div class="row g-3 mt-2">
         <div class="col-12">
           <label for="testQuery" class="form-label">Test Query</label>
@@ -143,27 +143,29 @@
     <hr>
 
     <!-- Step 2: Generate with AI -->
-    <div class="mb-4" data-mapper-wizard-target="step2" style="display: none;">
+    <div class="mb-4">
       <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
-      <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
+      <div data-mapper-wizard-target="step2" style="display: none;">
+        <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
 
-      <div class="row g-3">
-        <div class="col-md-8">
-          <label for="apiKey" class="form-label">OpenAI API Key</label>
-          <input type="password"
-                 class="form-control"
-                 id="apiKey"
-                 placeholder="sk-..."
-                 data-mapper-wizard-target="apiKey">
-          <div class="form-text">Your API key is used only for this request and is not stored.</div>
-        </div>
-        <div class="col-md-4 d-flex align-items-end">
-          <button type="button"
-                  class="btn btn-success w-100"
-                  data-mapper-wizard-target="generateButton"
-                  data-action="click->mapper-wizard#generateMappers">
-            <i class="bi bi-stars"></i> Generate Mappers with AI
-          </button>
+        <div class="row g-3">
+          <div class="col-md-8">
+            <label for="apiKey" class="form-label">OpenAI API Key</label>
+            <input type="password"
+                   class="form-control"
+                   id="apiKey"
+                   placeholder="sk-..."
+                   data-mapper-wizard-target="apiKey">
+            <div class="form-text">Your API key is used only for this request and is not stored.</div>
+          </div>
+          <div class="col-md-4 d-flex align-items-end">
+            <button type="button"
+                    class="btn btn-success w-100"
+                    data-mapper-wizard-target="generateButton"
+                    data-action="click->mapper-wizard#generateMappers">
+              <i class="bi bi-stars"></i> Generate Mappers with AI
+            </button>
+          </div>
         </div>
       </div>
       <p class="mt-2 mb-0">
@@ -176,81 +178,83 @@
     <hr>
 
     <!-- Step 3: Edit, Test, and Refine -->
-    <div class="mb-4" data-mapper-wizard-target="step3" style="display: none;">
+    <div class="mb-4">
       <h4><span class="badge bg-primary">3</span> Edit, Test &amp; Refine</h4>
-      <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
+      <div data-mapper-wizard-target="step3" style="display: none;">
+        <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
 
-      <!-- numberOfResultsMapper -->
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <strong>numberOfResultsMapper</strong>
-          <div class="btn-group btn-group-sm">
-            <button type="button"
-                    class="btn btn-outline-primary"
-                    data-mapper-wizard-target="testNumberButton"
-                    data-action="click->mapper-wizard#testNumberOfResultsMapper">
-              <i class="bi bi-play-fill"></i> Test
-            </button>
-            <button type="button"
-                    class="btn btn-outline-warning"
-                    data-mapper-wizard-target="refineNumberButton"
-                    data-action="click->mapper-wizard#refineNumberOfResultsMapper">
-              <i class="bi bi-stars"></i> Refine with AI
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <textarea data-mapper-wizard-target="numberOfResultsMapper"
-                    data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
-                    data-codemirror-line-numbers="true"
-                    data-codemirror-height="200"><%= @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}" %></textarea>
-          <div class="mt-2">
-            <strong>Test Result:</strong>
-            <div data-mapper-wizard-target="numberOfResultsResult" class="p-2 bg-light border rounded">
-              <em class="text-muted">Click "Test" to see results</em>
+        <!-- numberOfResultsMapper -->
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>numberOfResultsMapper</strong>
+            <div class="btn-group btn-group-sm">
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      data-mapper-wizard-target="testNumberButton"
+                      data-action="click->mapper-wizard#testNumberOfResultsMapper">
+                <i class="bi bi-play-fill"></i> Test
+              </button>
+              <button type="button"
+                      class="btn btn-outline-warning"
+                      data-mapper-wizard-target="refineNumberButton"
+                      data-action="click->mapper-wizard#refineNumberOfResultsMapper">
+                <i class="bi bi-stars"></i> Refine with AI
+              </button>
             </div>
           </div>
-          <div class="mt-2" data-mapper-wizard-target="numberOfResultsLogsContainer" style="display: none;">
-            <strong>Console Logs:</strong>
-            <div data-mapper-wizard-target="numberOfResultsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+          <div class="card-body">
+            <textarea data-mapper-wizard-target="numberOfResultsMapper"
+                      data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
+                      data-codemirror-line-numbers="true"
+                      data-codemirror-height="200"><%= @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}" %></textarea>
+            <div class="mt-2">
+              <strong>Test Result:</strong>
+              <div data-mapper-wizard-target="numberOfResultsResult" class="p-2 bg-light border rounded">
+                <em class="text-muted">Click "Test" to see results</em>
+              </div>
+            </div>
+            <div class="mt-2" data-mapper-wizard-target="numberOfResultsLogsContainer" style="display: none;">
+              <strong>Console Logs:</strong>
+              <div data-mapper-wizard-target="numberOfResultsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- docsMapper -->
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <strong>docsMapper</strong>
-          <div class="btn-group btn-group-sm">
-            <button type="button"
-                    class="btn btn-outline-primary"
-                    data-mapper-wizard-target="testDocsButton"
-                    data-action="click->mapper-wizard#testDocsMapper">
-              <i class="bi bi-play-fill"></i> Test
-            </button>
-            <button type="button"
-                    class="btn btn-outline-warning"
-                    data-mapper-wizard-target="refineDocsButton"
-                    data-action="click->mapper-wizard#refineDocsMapper">
-              <i class="bi bi-stars"></i> Refine with AI
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <textarea data-mapper-wizard-target="docsMapper"
-                    data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
-                    data-codemirror-line-numbers="true"
-                    data-codemirror-height="300"><%= @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}" %></textarea>
-          <div class="mt-2">
-            <strong>Test Result:</strong>
-            <div data-mapper-wizard-target="docsResult" class="p-2 bg-light border rounded" style="max-height: 300px; overflow-y: auto;">
-              <em class="text-muted">Click "Test" to see results</em>
+        <!-- docsMapper -->
+        <div class="card mb-3">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <strong>docsMapper</strong>
+            <div class="btn-group btn-group-sm">
+              <button type="button"
+                      class="btn btn-outline-primary"
+                      data-mapper-wizard-target="testDocsButton"
+                      data-action="click->mapper-wizard#testDocsMapper">
+                <i class="bi bi-play-fill"></i> Test
+              </button>
+              <button type="button"
+                      class="btn btn-outline-warning"
+                      data-mapper-wizard-target="refineDocsButton"
+                      data-action="click->mapper-wizard#refineDocsMapper">
+                <i class="bi bi-stars"></i> Refine with AI
+              </button>
             </div>
           </div>
-          <div class="mt-2" data-mapper-wizard-target="docsLogsContainer" style="display: none;">
-            <strong>Console Logs:</strong>
-            <div data-mapper-wizard-target="docsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+          <div class="card-body">
+            <textarea data-mapper-wizard-target="docsMapper"
+                      data-controller="codemirror" data-action="turbo:before-cache@document->codemirror#teardown" data-codemirror-mode="javascript"
+                      data-codemirror-line-numbers="true"
+                      data-codemirror-height="300"><%= @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}" %></textarea>
+            <div class="mt-2">
+              <strong>Test Result:</strong>
+              <div data-mapper-wizard-target="docsResult" class="p-2 bg-light border rounded" style="max-height: 300px; overflow-y: auto;">
+                <em class="text-muted">Click "Test" to see results</em>
+              </div>
+            </div>
+            <div class="mt-2" data-mapper-wizard-target="docsLogsContainer" style="display: none;">
+              <strong>Console Logs:</strong>
+              <div data-mapper-wizard-target="docsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+              </div>
             </div>
           </div>
         </div>

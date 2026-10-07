@@ -211,6 +211,7 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 
 - Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
 - To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild the core bundle (`yarn build:core`), capture, then **restore + rebuild in the same session** before anything else.
+- Select replay sources against the baseline, including both staged and unstaged changes (for example, `git diff HEAD`); plain `git diff` can omit changed sources. Leave the index untouched.
 - **Never leave the repo on HEAD/old sources** after a before capture — verify the current markup and bundles before finishing. When restoring files, refresh their modification times so Rails reloads cached templates and importmap configuration; verify the rendered module import matches the restored pin.
 - Use the relevant Playwright screenshot spec and `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
 - No viewer tooling, inventory docs, or unrelated edits while the tree is mid-flip.
