@@ -80,12 +80,12 @@
         <div class="col-sm-6">
           <div class="alert alert-info small mb-0" id="escalation-help">
             <div class="mb-2">
-              <strong>Fallback Judge</strong><br>
-              An on-call judge used when the primary judge produces an invalid or missing score.
+              <strong>On-Call Judge</strong><br>
+              Woken when the primary judge produces an invalid or missing score.
             </div>
             <div class="mb-2">
               <strong>Escalation Triggers</strong><br>
-              The pair is marked <strong>unrateable</strong> and escalated to the fallback judge if the
+              The pair is marked <strong>unrateable</strong> and escalated to the on-call judge if the
               primary judge:
               <ul class="mb-1">
                 <li>Returns no rating.</li>
@@ -97,7 +97,7 @@
             </div>
             <div>
               <strong>How It Works</strong><br>
-              The fallback judge remains idle until the primary judge finishes its run. It then processes
+              The on-call judge remains idle until the primary judge finishes its run. It then processes
               all escalated pairs in a separate run. Both ratings remain linked in the system so both
               scores are preserved and visible.
             </div>
