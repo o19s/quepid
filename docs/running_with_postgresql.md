@@ -45,12 +45,12 @@ see [§6](#6-production).
 
 | | |
 | --- | --- |
-| Image | `postgres:17-alpine` |
+| Image | `postgres:18-alpine` |
 | Container | `quepid_postgres` |
 | Host port | `35432` |
 | In-network | `postgres:5432` |
 | User / password | `root` / `password` (`POSTGRES_USER` / `POSTGRES_PASSWORD`) |
-| Data directory | `./volumes/postgres/data` on the host |
+| Data directory | `./volumes/postgres18` on the host |
 
 Credentials on the Rails side come from `.env`'s `DB_USERNAME`, `DB_PASSWORD`
 and `DB_NAME`, which default to `root` / `password` / `quepid` — giving you the
@@ -59,8 +59,10 @@ databases `quepid_development` and `quepid_test`.
 The app service `depends_on` postgres with a `pg_isready` healthcheck, so it
 starts and is waited on with the rest of the stack.
 
-The cluster is bind-mounted to `./volumes/postgres/data`, the same arrangement
-`mysql` uses with `./volumes/mysql/data`; `volumes` is gitignored. A bind mount
+PostgreSQL 18 stores its cluster at `/var/lib/postgresql/18/docker`; the mount
+root is `/var/lib/postgresql`. The cluster is bind-mounted to
+`./volumes/postgres18`, the same arrangement MySQL uses with
+`./volumes/mysql/data`; `volumes` is gitignored. A bind mount
 is not a Docker volume, so the data survives container recreation and
 `docker compose down -v` alike — `bin/setup_docker`'s teardown leaves the cluster
 in place, and `db:reset` is what rebuilds the databases, exactly as on MySQL.
@@ -70,9 +72,49 @@ while the container is down:
 
 ```bash
 docker compose stop postgres
-rm -rf volumes/postgres/data
+rm -rf volumes/postgres18
 docker compose up -d postgres
 ```
+
+## PostgreSQL major-version upgrades
+
+The default Compose service now uses PostgreSQL 18 with a separate
+`./volumes/postgres18` directory. Existing 17 installations in
+`./volumes/postgres/data` must follow this migration before recreating their
+`postgres` service; changing the mount alone does not copy the old data.
+
+Never point a new major-version image at the old data directory or run
+`bin/setup_docker` to migrate an existing database. Rehearse a logical restore
+into a separate cluster first; retain the old cluster and a backup until the
+new deployment is accepted. PostgreSQL 18 images mount `/var/lib/postgresql`
+and store their cluster under `18/docker`; 17 images mount
+`/var/lib/postgresql/data`.
+
+1. Stop application writes for the final backup (a rehearsal can use a live
+   snapshot). Save globals with `pg_dumpall --globals-only` and each application
+   database with `pg_dump --format=custom`. Protect these files: they contain
+   account data and role credentials. Use a client at least as new as the source.
+2. Start `postgres:18-alpine` on a separate port/network alias with a new mount,
+   such as `./volumes/postgres18:/var/lib/postgresql`. Keep
+   `./volumes/postgres/data` and the 17 container intact. Do not mount one cluster
+   into both servers.
+3. Restore globals, accounting explicitly for the bootstrap role that already
+   exists in the new cluster. Create the application databases with their original
+   owners and restore with `pg_restore --exit-on-error`. Fail on SQL errors;
+   do not treat a partially restored database as ready.
+4. Compare every application's table counts, representative records, sequence
+   values, ownership and extensions. Run Quepid's adapter/model/proxy checks
+   against a **separate test database** on 18, then smoke-test the app against
+   the restored application database. Keep `db/schema.rb` authored on MySQL.
+5. Only after those checks pass, schedule cutover, take a fresh backup with writes
+   stopped, repeat the restore and update the Compose image/mount and connection.
+   Keep 17 data and backups. Rollback before new writes means returning to the 17
+   image/mount/connection; after new writes, reconcile those writes explicitly
+   before rolling back to avoid data loss.
+
+Record the source/target versions, backup checksum, restore result, comparison
+and application checks in the execution ledger. A successful empty-cluster boot
+is not a migration rehearsal.
 
 ## 3. First-time setup
 

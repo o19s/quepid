@@ -56,7 +56,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 
 ## Backend
 
-- We are currently using Rails 8.1.4 and Ruby 4.0.6.
+- We are currently using Rails 8.1.4 and Ruby 4.0.7.
 - Tests for Ruby are written in Minitest.
 - Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
 - Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.

@@ -54,14 +54,14 @@ services:
 
   postgres:
     container_name: quepid_postgres
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     ports:
       - 35432:5432
     environment:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=root
     volumes:
-      - ./volumes/postgres/data:/var/lib/postgresql/data
+      - ./volumes/postgres18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 10s
@@ -114,7 +114,7 @@ services:
       OLLAMA_HOST: "0.0.0.0:31434"
 
   nginx:
-    image: nginx:1.31.4-alpine-slim
+    image: nginx:1.31.6-alpine-slim
     container_name: quepid_nginx
     ports:
       - "443:8443"
