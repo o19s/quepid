@@ -1,5 +1,5 @@
-import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders, dynamicRegions, resetCompletedCaseWizard } from './case_helpers';
+import { test, expect } from '@playwright/test';
+import { createDisposableCase, deleteCaseViaApi, dynamicRegions, resetCompletedCaseWizard } from './case_helpers';
 
 /**
  * Full case-creation wizard (Stimulus `wizard` controller /
@@ -38,29 +38,9 @@ import { apiHeaders, dynamicRegions, resetCompletedCaseWizard } from './case_hel
  * core_smoke.spec.ts), and we don't want that to block getting a fresh,
  * safe-to-mutate case id here.
  */
-async function createDisposableCase(page: Page): Promise<number> {
-  await page.goto('cases');
-  await page.waitForSelector('body', { timeout: 15_000 });
-
-  const response = await page.request.post('api/cases', {
-    data: { case_name: `Playwright Wizard Scratch ${Date.now()}` },
-    headers: await apiHeaders(page)
-  });
-  expect(response.ok()).toBeTruthy();
-  const json = await response.json();
-  const caseId = Number(json.case_id);
-  expect(caseId).toBeGreaterThan(0);
-  return caseId;
-}
-
-async function deleteCase(page: Page, caseId: number) {
-  const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
-  expect(response.ok()).toBeTruthy();
-}
-
 test.describe('Case creation wizard', () => {
   test('runs every step and lands back on the newly created case', async ({ page }) => {
-    const caseId = await createDisposableCase(page);
+    const caseId = await createDisposableCase(page, 'Wizard');
     // A previous run that timed out never reached its cleanup, leaving the flag set and the
     // Welcome step skipped; start from the same first-time state every time.
     await resetCompletedCaseWizard(page);
@@ -137,7 +117,7 @@ test.describe('Case creation wizard', () => {
         // Let the page's own score write land first: deleting mid-write fails the
         // case_scores foreign key and returns a 500.
         await page.waitForLoadState('networkidle').catch(() => {});
-        await deleteCase(page, caseId);
+        await deleteCaseViaApi(page, caseId);
       } finally {
         await resetCompletedCaseWizard(page);
       }

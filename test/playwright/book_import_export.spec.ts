@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders } from './case_helpers';
 
 /**
  * Book import/export end-to-end coverage (Books::ImportController /
@@ -37,13 +38,6 @@ function importJson(name: string) {
   };
 }
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' };
-}
-
 /**
  * BooksController#destroy redirects to the books index on success.
  * APIRequestContext follows redirects by default, which for this
@@ -53,7 +47,7 @@ async function apiHeaders(page: Page) {
  */
 async function deleteBook(page: Page, bookId: number) {
   const response = await page.request.delete(`books/${bookId}`, {
-    headers: await apiHeaders(page),
+    headers: await apiHeaders(page, { 'X-Requested-With': 'XMLHttpRequest' }),
     maxRedirects: 0
   });
   expect(response.status()).toBeLessThan(400);

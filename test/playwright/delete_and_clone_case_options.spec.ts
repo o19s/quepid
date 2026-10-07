@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpers';
 
 /**
  * End-to-end coverage for two core-case-toolbar Stimulus controllers that
@@ -18,50 +19,24 @@ import { test, expect, type Page } from '@playwright/test';
  * fixture data.
  */
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
-}
-
-async function createDisposableCase(page: Page, label: string): Promise<number> {
-  await page.goto('cases');
-  await page.waitForSelector('body', { timeout: 15_000 });
-
-  const response = await page.request.post('api/cases', {
-    data: { case_name: `Playwright ${label} Scratch ${Date.now()}` },
-    headers: await apiHeaders(page)
-  });
-  expect(response.ok()).toBeTruthy();
-  const json = await response.json();
-  const caseId = Number(json.case_id);
-  expect(caseId).toBeGreaterThan(0);
-  return caseId;
-}
-
 async function addQuery(page: Page, caseId: number, queryText: string) {
   const response = await page.request.post(`api/cases/${caseId}/queries`, {
     data: { query: { query_text: queryText } },
-    headers: await apiHeaders(page)
+    headers: await apiHeaders(page, { 'Content-Type': 'application/json' })
   });
   expect(response.ok()).toBeTruthy();
 }
 
 async function fetchQueryCount(page: Page, caseId: number): Promise<number> {
-  const response = await page.request.get(`api/cases/${caseId}/queries`, { headers: await apiHeaders(page) });
+  const response = await page.request.get(`api/cases/${caseId}/queries`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   expect(response.ok()).toBeTruthy();
   const json = await response.json();
   return Array.isArray(json.queries) ? json.queries.length : 0;
 }
 
 async function caseExists(page: Page, caseId: number): Promise<boolean> {
-  const response = await page.request.get(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
+  const response = await page.request.get(`api/cases/${caseId}`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   return response.ok();
-}
-
-async function deleteCaseViaApi(page: Page, caseId: number) {
-  await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
 }
 
 async function gotoCase(page: Page, caseId: number) {

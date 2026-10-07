@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpers';
 import { playwrightBaseURL } from './env';
 
 /**
@@ -40,38 +41,8 @@ test.afterAll(async ({ browser }) => {
   }
 });
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
-}
-
-async function createDisposableCase(page: Page, label: string): Promise<number> {
-  await page.goto('cases');
-  await page.waitForSelector('body', { timeout: 15_000 });
-
-  const response = await page.request.post('api/cases', {
-    data: { case_name: `Playwright ${label} Scratch ${Date.now()}` },
-    headers: await apiHeaders(page)
-  });
-  expect(response.ok()).toBeTruthy();
-  const json = await response.json();
-  const caseId = Number(json.case_id);
-  expect(caseId).toBeGreaterThan(0);
-  return caseId;
-}
-
-async function deleteCaseViaApi(page: Page, caseId: number) {
-  const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
-  // Assert like every other cleanup in this suite: a silent failure here
-  // (e.g. an empty CSRF token nulling the session) would let this exact
-  // case leak right back in on the next run with no signal.
-  expect(response.ok()).toBeTruthy();
-}
-
 async function shareCaseWithFirstTeam(page: Page, caseId: number): Promise<number | null> {
-  const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page) });
+  const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   expect(teamsResponse.ok()).toBeTruthy();
   const teams = (await teamsResponse.json()).teams || [];
   if (teams.length === 0) return null;
@@ -79,7 +50,7 @@ async function shareCaseWithFirstTeam(page: Page, caseId: number): Promise<numbe
   const teamId = Number(teams[0].id);
   const share = await page.request.post(`/api/teams/${teamId}/cases`, {
     data: { id: caseId },
-    headers: await apiHeaders(page)
+    headers: await apiHeaders(page, { 'Content-Type': 'application/json' })
   });
   expect(share.ok()).toBeTruthy();
   return teamId;

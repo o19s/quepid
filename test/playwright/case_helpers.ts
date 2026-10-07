@@ -114,11 +114,36 @@ export function expandedCaseScreenshotOpts(page: Page) {
   };
 }
 
-export async function apiHeaders(page: Page) {
+export async function apiHeaders(page: Page, extraHeaders: Record<string, string> = {}): Promise<Record<string, string>> {
   const csrf = await page.evaluate(() =>
     document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
   );
-  return { Accept: 'application/json', 'X-CSRF-Token': csrf };
+  return { Accept: 'application/json', 'X-CSRF-Token': csrf, ...extraHeaders };
+}
+
+/** Create a case on the caller's authenticated, CSRF-bearing document. */
+export async function createCaseViaApi(page: Page, caseName: string): Promise<number> {
+  const response = await page.request.post('api/cases', {
+    data: { case_name: caseName },
+    headers: await apiHeaders(page, { 'Content-Type': 'application/json' })
+  });
+  expect(response.ok()).toBeTruthy();
+  const caseId = Number((await response.json()).case_id);
+  expect(caseId).toBeGreaterThan(0);
+  return caseId;
+}
+
+/** Navigate before reading CSRF; no case-workbench readiness is required. */
+export async function createDisposableCase(page: Page, label: string): Promise<number> {
+  await page.goto('cases');
+  await page.waitForSelector('body', { timeout: 15_000 });
+  return createCaseViaApi(page, `Playwright ${label} Scratch ${Date.now()}`);
+}
+
+/** The caller supplies an authenticated page with a CSRF-producing navigation. */
+export async function deleteCaseViaApi(page: Page, caseId: number): Promise<void> {
+  const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
+  expect(response.ok(), `Case ${caseId} cleanup failed: ${response.status()} ${response.url()}`).toBeTruthy();
 }
 
 /**

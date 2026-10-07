@@ -1,22 +1,18 @@
 import { test, expect, type Page } from '@playwright/test';
 import { playwrightBaseURL } from './env';
-import { CASE_ID } from './case_helpers';
+import { CASE_ID, apiHeaders, deleteCaseViaApi } from './case_helpers';
 
 // Both flows mutate only disposable clones; cleanup also runs after a failed test.
 const caseIds: number[] = [];
-async function headers(page: Page) {
-  return { Accept: 'application/json', 'Content-Type': 'application/json',
-    'X-CSRF-Token': await page.locator('meta[name="csrf-token"]').getAttribute('content') || '' };
-}
 async function cloneCase(page: Page) {
   await page.goto(`case/${CASE_ID}`);
-  const sourceResponse = await page.request.get(`api/cases/${CASE_ID}`, { headers: await headers(page) });
+  const sourceResponse = await page.request.get(`api/cases/${CASE_ID}`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   expect(sourceResponse.ok()).toBeTruthy();
   const source = await sourceResponse.json();
   const tryNumber = Number(source.last_try_number);
   expect(source.tries.some((item: { try_number: number }) => Number(item.try_number) === tryNumber)).toBeTruthy();
   const response = await page.request.post('api/clone/cases', {
-    headers: await headers(page),
+    headers: await apiHeaders(page, { 'Content-Type': 'application/json' }),
     data: { case_id: CASE_ID, case_name: `Catalog templates ${Date.now()}`, clone_queries: true,
       clone_ratings: true, preserve_history: false, try_number: tryNumber }
   });
@@ -34,8 +30,7 @@ test.afterAll(async ({ browser }) => {
   try {
     await page.goto('cases');
     for (const id of caseIds) {
-      const response = await page.request.delete(`api/cases/${id}`, { headers: await headers(page) });
-      expect(response.ok()).toBeTruthy();
+      await deleteCaseViaApi(page, id);
     }
   } finally { await page.close(); }
 });

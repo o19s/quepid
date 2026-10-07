@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiHeaders } from './case_helpers';
+import { apiHeaders, createCaseViaApi, deleteCaseViaApi } from './case_helpers';
 
 // The live Qdrant demo is exercised manually. Intercept only its proxy response here
 // so the persisted wizard/runtime contract does not depend on the demo's availability.
@@ -40,8 +40,7 @@ for (const { idField, docId } of [
             }
           });
           await attempt(async () => {
-            const response = await page.request.delete(`api/cases/${caseId}`, { headers });
-            expect(response.ok()).toBeTruthy();
+            await deleteCaseViaApi(page, caseId!);
           });
         }
         if (endpointId) {
@@ -70,11 +69,7 @@ for (const { idField, docId } of [
       const me = await (await page.request.get('api/users/current', { headers })).json();
       userId = me.id;
       completedWizard = me.completed_case_wizard;
-      const created = await page.request.post('api/cases', {
-        headers, data: { case_name: `Qdrant E2E ${Date.now()}` }
-      });
-      expect(created.ok()).toBeTruthy();
-      caseId = (await created.json()).case_id;
+      caseId = await createCaseViaApi(page, `Qdrant E2E ${Date.now()}`);
 
       try {
         let failValidation = true;

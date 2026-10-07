@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { gotoCase } from './case_helpers';
+import { apiHeaders, gotoCase } from './case_helpers';
 
 /**
  * Saving book settings in the judgements modal must reconfigure book sync for
@@ -16,13 +16,6 @@ import { gotoCase } from './case_helpers';
 
 const CASE_ID = 6;
 const BOOK_ID = Number(process.env.QUEPID_E2E_BOOK_ID || 1);
-
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
-}
 
 async function saveBookSettings(page: Page, bookId: number | '', syncPairs: boolean) {
   await page.locator('[data-bs-target="#judgementsModal"]:visible').first().click();
@@ -50,7 +43,7 @@ test.describe('judgements modal: book sync settings', () => {
   });
 
   test.afterEach(async ({ page }) => {
-    const headers = await apiHeaders(page);
+    const headers = await apiHeaders(page, { 'Content-Type': 'application/json' });
     const responses = [
       await page.request.put(`api/cases/${CASE_ID}`, {
         data: { book_id: null, auto_populate_book_pairs: false, auto_populate_case_judgements: false },

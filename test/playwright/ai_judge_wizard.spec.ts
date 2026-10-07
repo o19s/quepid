@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiHeaders } from './case_helpers';
+import { apiHeaders, createCaseViaApi, deleteCaseViaApi } from './case_helpers';
 
 let judgeId: string | undefined;
 let bookId: number | undefined;
@@ -22,6 +22,10 @@ test.afterAll(async ({ browser }) => {
     } catch (error) { errors.push(error); }
     for (const url of [caseId && `api/cases/${caseId}`, bookId && `api/books/${bookId}`, judgeId && `ai_judges/${judgeId}`].filter(Boolean)) {
       try {
+        if (url === `api/cases/${caseId}`) {
+          await deleteCaseViaApi(page, caseId!);
+          continue;
+        }
         const response = await page.request.delete(url as string, { headers: { ...headers, Accept: String(url).startsWith("ai_judges/") ? "text/html" : "application/json" } });
         expect(response.ok()).toBeTruthy();
       } catch (error) { errors.push(error); }
@@ -82,9 +86,7 @@ test('tests drafts, handles errors, saves via Turbo, and selects owned books wit
   const createdBook = await page.request.post('api/books', { headers, data: { book: { name } } });
   expect(createdBook.ok()).toBeTruthy();
   bookId = (await createdBook.json()).book_id;
-  const createdCase = await page.request.post('api/cases', { headers, data: { case_name: name } });
-  expect(createdCase.ok()).toBeTruthy();
-  caseId = (await createdCase.json()).case_id;
+  caseId = await createCaseViaApi(page, name);
   await page.goto(`books/${bookId}/edit`);
   await page.getByLabel('Rating Scale', { exact: true }).selectOption({ label: '0,1,2,3 (Poor, Fair...)' });
   await page.locator(`input[type=checkbox][value="${judgeId}"][name="book[ai_judge_ids][]"]`).check();
@@ -104,7 +106,7 @@ test('tests drafts, handles errors, saves via Turbo, and selects owned books wit
   const savedCase = await (await page.request.get(`api/cases/${caseId}`, { headers })).json();
   expect(savedCase.book_id).toBe(bookId);
   expect(savedCase.teams).toEqual([]);
-  expect((await page.request.delete(`api/cases/${caseId}`, { headers })).ok()).toBeTruthy();
+  await deleteCaseViaApi(page, caseId);
   caseId = undefined;
   expect((await page.request.delete(`api/books/${bookId}`, { headers })).ok()).toBeTruthy();
   bookId = undefined;

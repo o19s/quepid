@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiHeaders } from './case_helpers';
+import { apiHeaders, deleteCaseViaApi } from './case_helpers';
 
 const SOURCE_CASE_ID = Number(process.env.QUEPID_E2E_SOLR_CASE_ID || 6);
 
@@ -36,8 +36,7 @@ test.describe('Workspace tuning drafts and saved tries', () => {
     const page = await browser.newPage();
     try {
       await page.goto('cases');
-      const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
-      expect(response.ok()).toBeTruthy();
+      await deleteCaseViaApi(page, caseId);
     } finally {
       await page.close();
     }

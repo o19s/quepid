@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { dynamicRegions } from './case_helpers';
+import { apiHeaders, dynamicRegions } from './case_helpers';
 
 /**
  * Permanent regression coverage for case sharing: the Stimulus
@@ -38,30 +38,23 @@ async function gotoCasesIndex(page: Page) {
   await page.waitForSelector('table tbody tr', { timeout: 20_000 });
 }
 
-async function apiHeaders(page: Page) {
+async function caseApiHeaders(page: Page) {
   if (!page.url().includes('/case/')) {
     await page.goto(`case/${SHARE_CASE_ID}`);
     await page.waitForSelector('#case-actions', { timeout: 20_000 });
   }
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return {
-    Accept: 'application/json',
-    'Content-Type': 'application/json',
-    'X-CSRF-Token': csrf
-  };
+  return apiHeaders(page, { 'Content-Type': 'application/json' });
 }
 
 async function fetchTeams(page: Page): Promise<Array<{ id: number; name: string }>> {
-  const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page) });
+  const teamsResponse = await page.request.get('/api/teams', { headers: await caseApiHeaders(page) });
   expect(teamsResponse.ok()).toBeTruthy();
   const payload = await teamsResponse.json();
   return Array.isArray(payload.teams) ? payload.teams : [];
 }
 
 async function shareCaseWithTeam(page: Page, caseId: number, teamId: number) {
-  const headers = await apiHeaders(page);
+  const headers = await caseApiHeaders(page);
   const response = await page.request.post(`/api/teams/${teamId}/cases`, {
     data: { id: caseId },
     headers
@@ -70,7 +63,7 @@ async function shareCaseWithTeam(page: Page, caseId: number, teamId: number) {
 }
 
 async function unshareCaseFromTeam(page: Page, caseId: number, teamId: number) {
-  const headers = await apiHeaders(page);
+  const headers = await caseApiHeaders(page);
   const response = await page.request.delete(`/api/teams/${teamId}/cases/${caseId}`, {
     headers
   });

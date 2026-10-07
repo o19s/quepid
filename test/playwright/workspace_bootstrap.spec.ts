@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { apiHeaders, CASE_ID } from './case_helpers';
+import { apiHeaders, CASE_ID, deleteCaseViaApi } from './case_helpers';
 import { playwrightBaseURL } from './env';
 
 test.describe('Rails-provided workspace bootstrap', () => {
@@ -45,8 +45,7 @@ test.describe('Rails-provided workspace bootstrap', () => {
     const page = await browser.newPage();
     try {
       await page.goto('cases');
-      const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
-      expect(response.ok()).toBeTruthy();
+      await deleteCaseViaApi(page, caseId);
     } finally {
       await page.close();
     }
