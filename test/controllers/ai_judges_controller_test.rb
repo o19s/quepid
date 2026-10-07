@@ -250,7 +250,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '#judging-criteria p', text: /0 \(labeled "Not Relevant"\)/
     end
 
-    test 'a judge that needs a book cannot be run without one, and says where to go' do
+    test 'a judge that needs a book cannot be run without one, and lists scales to go test against' do
       ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)
@@ -258,7 +258,19 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
       assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"])',
-                    text: /Judgement Stats/
+                    text: /Scales you have access to/
+    end
+
+    test 'the scale list is deduplicated across every scorer and book the user has access to' do
+      # fixtures random_scorer/random_scorer_1/random_scorer_2/case_default_scorer
+      # all give user a [1, 2, 3, 4] scorer scale - a single mention proves
+      # the list is unique, not one entry per scorer/book that shares it.
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+
+      get edit_ai_judge_url(ai_judge)
+
+      notice = css_select('[data-ai-judge-wizard-target=needsScaleNotice]').text
+      assert_equal 1, notice.scan('1,2,3,4').size
     end
 
     test 'a judge that needs a book can be run once it has one' do

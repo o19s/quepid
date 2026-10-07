@@ -308,8 +308,12 @@
 
             <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
             <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a book's scale, so it can only be tested from a book:
-              open this judge from the book's <strong>Judgement Stats</strong> page (<strong>Refine Prompt</strong>).
+              This provider rates against a scale, so it can only be tested from a book.
+              <% if available_scales.any? %>
+                Scales you have access to: <%= available_scales.map { |s| s.join(',') }.join(' &bull; ').html_safe %>.
+              <% else %>
+                You don't have access to any scorers or books yet.
+              <% end %>
             </div>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
