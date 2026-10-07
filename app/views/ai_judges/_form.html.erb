@@ -64,47 +64,6 @@
         </div>
       </div>
 
-      <div class="row mb-3">
-        <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
-        <div class="col-sm-4">
-          <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,
-                { include_blank: 'Nobody' }, class: 'form-select' %>
-          <% if ai_judge.persisted? && ai_judge.on_call? %>
-            <div class="alert alert-info small mb-0 mt-2" id="on-call-notice">
-              <i class="bi bi-moon-stars" aria-hidden="true"></i>
-              <strong>On call</strong> for <%= ai_judge.escalated_from_names %>:
-              this judge only rates pairs escalated to it.
-            </div>
-          <% end %>
-        </div>
-        <div class="col-sm-6">
-          <div class="alert alert-info small mb-0" id="escalation-help">
-            <div class="mb-2">
-              <strong>On-Call Judge</strong><br>
-              Woken when the primary judge produces an invalid or missing score.
-            </div>
-            <div class="mb-2">
-              <strong>Escalation Triggers</strong><br>
-              The query/doc pair is marked <strong>unrateable</strong> and escalated to the on-call judge
-              if the primary judge:
-              <ul class="mb-1">
-                <li>Returns no rating.</li>
-                <li>Returns a score outside the book's valid scale (e.g., giving a 3 on a 0&ndash;1 scale).</li>
-                <li>Scores below its defined <strong>Minimum Confidence</strong> threshold (applies only to
-                  judges that support confidence scores, like TypeSafe Jev).</li>
-                <li>Encounters an API failure (timeout, invalid key, or provider error).</li>
-              </ul>
-            </div>
-            <div>
-              <strong>How It Works</strong><br>
-              The on-call judge remains idle until the primary judge finishes its run. It then processes
-              all escalated pairs in a separate run. Both ratings remain linked in the system so both
-              scores are preserved and visible.
-            </div>
-          </div>
-        </div>
-      </div>
-
       <div class="row">
         <div class="col-md-6">
           <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
@@ -207,6 +166,47 @@
         <div class="col-md-6">
           <div class="fw-semibold mb-2">Model Configuration</div>
           <div id="provider-help" data-ai-judge-wizard-target="providerHelp" class="alert alert-info small" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,
+                { include_blank: 'Nobody' }, class: 'form-select' %>
+          <% if ai_judge.persisted? && ai_judge.on_call? %>
+            <div class="alert alert-info small mb-0 mt-2" id="on-call-notice">
+              <i class="bi bi-moon-stars" aria-hidden="true"></i>
+              <strong>On call</strong> for <%= ai_judge.escalated_from_names %>:
+              this judge only rates pairs escalated to it.
+            </div>
+          <% end %>
+        </div>
+        <div class="col-sm-6">
+          <div class="alert alert-info small mb-0" id="escalation-help">
+            <div class="mb-2">
+              <strong>On-Call Judge</strong><br>
+              Woken when the primary judge produces an invalid or missing score.
+            </div>
+            <div class="mb-2">
+              <strong>Escalation Triggers</strong><br>
+              The query/doc pair is marked <strong>unrateable</strong> and escalated to the on-call judge
+              if the primary judge:
+              <ul class="mb-1">
+                <li>Returns no rating.</li>
+                <li>Returns a score outside the book's valid scale (e.g., giving a 3 on a 0&ndash;1 scale).</li>
+                <li>Scores below its defined <strong>Minimum Confidence</strong> threshold (applies only to
+                  judges that support confidence scores, like TypeSafe Jev).</li>
+                <li>Encounters an API failure (timeout, invalid key, or provider error).</li>
+              </ul>
+            </div>
+            <div>
+              <strong>How It Works</strong><br>
+              The on-call judge remains idle until the primary judge finishes its run. It then processes
+              all escalated pairs in a separate run. Both ratings remain linked in the system so both
+              scores are preserved and visible.
+            </div>
           </div>
         </div>
       </div>
