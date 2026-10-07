@@ -7,6 +7,7 @@
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
      data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id, scorer_id: @scorer_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
+     data-ai-judge-wizard-draft-key-value="<%= ai_judge.persisted? ? ai_judge.id : 'new' %>"
      data-ai-judge-wizard-has-scale-value="<%= scale.present? %>"
      data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
@@ -315,8 +316,7 @@
 
             <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
             <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a scale, so it can only be tested from a book - or,
-              to test it without one, pick a rating scale:
+              This provider rates against a scale:
               <% unless @book %>
                 <%# A plain GET select, navigated via onchange reading each option's own
                     data-url - NOT a <form>, since this whole partial already renders
@@ -326,7 +326,7 @@
                     silently creating/saving a judge just from picking a scale). %>
                 <% picker_path = ai_judge.persisted? ? edit_ai_judge_path(ai_judge) : new_ai_judge_path %>
                 <div class="mt-2" style="max-width: 320px;">
-                  <select class="form-select form-select-sm" onchange="if (this.value) window.location = this.options[this.selectedIndex].dataset.url">
+                  <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
                     <option value="">Select a rating scale...</option>
                     <% scorer_options_for_select(current_user).each do |label, id| %>
                       <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if @scorer_id.to_s == id.to_s %>><%= label %></option>
