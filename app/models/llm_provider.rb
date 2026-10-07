@@ -93,11 +93,11 @@ class LlmProvider
     <b>Key:</b> Your TypeSafe API key from
     <a href="https://console.typesafe.ai/keys" target="_blank" rel="noopener">console.typesafe.ai/keys</a><br>
     <b>API Version:</b> Not used<br>
-    The book's rating scale and labels become the question's criteria, so a Jev
-    judge must be run from a book, and the text below is sent as that
-    question's instructions &mdash; not as a system prompt. It writes no prose,
-    so the explanation Quepid stores is built from the score, confidence and
-    distribution.
+    The rating scale and labels (from a book or a picked scorer) become the
+    question's criteria, so a Jev judge must be run against one, and the text
+    below is sent as that question's instructions &mdash; not as a system
+    prompt. It writes no prose, so the explanation Quepid stores is built from
+    the score, confidence and distribution.
   HTML
 
   # Filled into the Ollama entry by .all -- see runtime_settings.

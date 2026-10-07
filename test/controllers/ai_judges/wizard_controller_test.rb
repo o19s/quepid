@@ -116,7 +116,7 @@ module AiJudges
 
         assert_response :success
         assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
-          req.body.include?("This book's rating scale is")
+          req.body.include?('The rating scale is')
         end
       end
 
@@ -142,7 +142,7 @@ module AiJudges
 
         assert_response :success
         assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
-          req.body.include?("This book's rating scale is")
+          req.body.include?('The rating scale is')
         end
       end
 

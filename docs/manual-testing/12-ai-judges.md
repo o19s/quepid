@@ -68,7 +68,7 @@ AI Judges let an LLM stand in for a human judge. An AI Judge is modeled as a spe
 
 ### 12.6 Judge with TypeSafe Jev
 
-Jev is a typed evaluation model rather than a chat model: the book's rating scale is sent as the question's criteria, and the answer comes back as a position on that scale with a probability distribution and a confidence — never prose, and never a rating off the scale. Quepid writes the explanation from those numbers.
+Jev is a typed evaluation model rather than a chat model: the rating scale (from a book or a picked scorer) is sent as the question's criteria, and the answer comes back as a position on that scale with a probability distribution and a confidence — never prose, and never a rating off the scale. Quepid writes the explanation from those numbers.
 
 - [ ] **Steps:**
   1. Create (or edit) an AI Judge and pick **TypeSafe Jev** as the LLM Provider.

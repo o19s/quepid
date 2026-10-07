@@ -98,7 +98,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(
           headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" },
-          body:    /IMPORTANT: This book's rating scale is: 0, 1\./
+          body:    /IMPORTANT: The rating scale is: 0, 1\./
         )
         .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "ok"}' } } ] }.to_json, headers: {})
 
@@ -114,7 +114,7 @@ class LlmServiceTest < ActiveSupport::TestCase
       stub_request(:post, 'https://api.openai.com/v1/chat/completions')
         .with(
           headers: { 'Authorization' => "Bearer #{OPENAI_VALID_KEY}" },
-          body:    /IMPORTANT: This book's rating scale is: 0 \(labeled "Not Relevant"\), 1 \(labeled "Relevant"\)/
+          body:    /IMPORTANT: The rating scale is: 0 \(labeled "Not Relevant"\), 1 \(labeled "Relevant"\)/
         )
         .to_return(status: 200, body: { choices: [ { message: { content: '{"judgment": 0, "explanation": "ok"}' } } ] }.to_json, headers: {})
 
