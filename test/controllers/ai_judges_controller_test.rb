@@ -42,7 +42,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
             name: 'Renamed Judge', llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
           } }
 
-    assert_redirected_to ai_judge_path(ai_judge)
+    assert_redirected_to ai_judges_path
     assert_equal 'AI Judge was successfully updated.', flash[:notice]
     assert_equal 'Renamed Judge', ai_judge.reload.name
   end
@@ -66,7 +66,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     new_judge = User.order(:id).last
     assert_equal user, new_judge.owner
     assert_empty new_judge.teams
-    assert_redirected_to ai_judge_url(new_judge)
+    assert_redirected_to ai_judges_url
     assert_equal 'AI Judge was successfully created.', flash[:notice]
   end
 
@@ -191,7 +191,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
-    assert_redirected_to ai_judge_url(AiJudge.order(:id).last)
+    assert_redirected_to ai_judges_url
     assert_equal 'typesafe_jev', AiJudge.order(:id).last.judge_options[:llm_provider]
   end
 
@@ -367,7 +367,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     it 'saves the judge to wake, and shows that judge as on call' do
       patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
 
-      assert_redirected_to ai_judge_path(ai_judge)
+      assert_redirected_to ai_judges_path
       assert_equal sleeper, ai_judge.reload.escalates_to
 
       get edit_ai_judge_url(sleeper)
@@ -412,7 +412,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       patch ai_judge_url(ai_judge), params: { user: { name: 'Renamed', escalates_to_id: private_judge.id } }
 
-      assert_redirected_to ai_judge_path(ai_judge)
+      assert_redirected_to ai_judges_path
       assert_equal private_judge, ai_judge.reload.escalates_to
     end
 

@@ -47,7 +47,7 @@ class AiJudgesController < ApplicationController
 
     if escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.'
+      redirect_to ai_judges_path, notice: 'AI Judge was successfully created.'
     else
       render :new
     end
@@ -58,7 +58,7 @@ class AiJudgesController < ApplicationController
 
     if escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.'
+      redirect_to ai_judges_path, notice: 'AI Judge was successfully updated.'
     else
       render 'edit'
     end
