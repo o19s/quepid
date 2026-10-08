@@ -13,7 +13,10 @@ description: >-
 
 # Branch UI diff (before/after screenshots)
 
-For comparisons against pre-deangularization / Bootstrap 3 code, use
+Follow [AGENTS.md — Before/after pairs](../../../AGENTS.md#beforeafter-pairs--do-not-break-the-working-tree)
+for baseline selection: initial migration comparisons require the historical
+AngularJS / Bootstrap 3 baseline; a pre-fix worktree is for focused regression rechecks.
+For historical comparisons, use
 [the isolated historical instance](../../../docs/legacy_comparison.md) instead
 of this shared-database workflow. Its schema and runtime are independent; do not
 use the snapshot/restore commands below for historical comparisons.
@@ -24,7 +27,7 @@ branch's base ref on one port, the current code on another — instead of the ol
 flipping files in place and rebuilding (fragile, and __not__ how this skill works: see
 `bin/ui_diff_up`/`bin/ui_diff_down` and `bin/branch_ui_scenarios`).
 
-**What gets compared:** "before" is **`main`**, not some other point on this branch — both
+**Ordinary branch comparisons:** "before" is **`main`**, not some other point on this branch — both
 `bin/branch_ui_scenarios` and `bin/ui_diff_up` default `BASE_REF` to `git merge-base HEAD main`
 (never `HEAD~1` or an arbitrary earlier commit on the same branch). "After" is **the current
 branch as it stands right now, including uncommitted changes** — that's just the live dev server
@@ -32,6 +35,9 @@ at `:3000`, which serves the working directory directly; `bin/docker s`'s `Procf
 runs `yarn build:*:watch` processes, so uncommitted JS/CSS edits show up live with no rebuild step,
 and Rails/ERB changes are read live too. Never narrow this to "last commit vs. uncommitted diff" —
 the point is to show everything this branch changes relative to `main`, committed or not.
+For an explicitly scoped regression recheck, use the requested pre-fix baseline
+in a separate worktree instead; document its source and do not force-checkout a
+retained worktree containing an uncommitted baseline.
 
 **Known, accepted tradeoff:** both instances share one MySQL database. Fine for read-only
 navigation. If a scenario's steps *mutate* data (create/delete/archive/clone/share/import/...),

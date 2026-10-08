@@ -843,6 +843,7 @@ These apply to all client code: Rails pages and the case page alike. ESLint enfo
 
   Each helper resolves to the parsed body (`null` for 204/empty), sends `Accept`/`Content-Type` and the CSRF token, and rejects with an `HttpError` (`status`, parsed `data`) on any non-2xx response, so callers never check `response.ok`. `options` is the usual `fetch` init (`headers`, `signal`); never pass `method`, pick the helper for the verb.
 - **Non-JSON responses** (CSV/blob downloads) use `apiFetch` from `api/fetch`, which adds the CSRF header. Nothing outside `app/javascript/api/` calls the global `fetch`.
+- **Persisted UI fragments** may use Rails HTML endpoints alongside JSON APIs. Use Turbo Frames when their navigation/refresh contract fits, or `apiFetch` with `Accept: text/html` for explicit fragment mounting (annotations). Rails owns markup; keep browser stores and modal instances outside replaced content.
 - **No injected transports.** Runtimes and controllers import the helpers directly. Specs stub `fetch` (`vi.stubGlobal("fetch", ...)`) or `vi.mock("api/json")` / `vi.mock("api/fetch")`.
 - **Server owns URLs.** Emit concrete URLs with Rails path helpers as `data-*-url-value` attributes, or use `this.formTarget.action` for forms (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths.
 - **API-client modules in `utils/`** (`case_runtime`, `settings_runtime`, `ratings_store`, `query_lifecycle`, …) own their REST paths in one place each, like an SDK. Controllers do not build API paths.
@@ -955,7 +956,7 @@ page that is the exception, not the default.
 - Use `data-action` for interactions and document/window events when the receiving controller owns the markup. Stimulus manages listener cleanup. Keep direct listeners for Bootstrap popover/tooltip content relocated outside that scope, and keep store subscriptions paired in `connect()` / `disconnect()`.
 - Use outlets when asking a known peer controller to perform an operation. Keep named events for facts broadcast to multiple consumers or emitted by runtime modules, and stores for shared mutable state.
 - Render static structure in ERB and populate targets. Client-computed query rows, results and scores stay in JavaScript. Keep interactive regions out of Turbo Frames unless their lifecycle is supported.
-- **Rows built in the browser** clone a `<template>` rendered by ERB (`core/_query_list_templates.html.erb`, `core/_annotation_template.html.erb`). Keep those partials free of ERB tags other than comments: the Vitest specs load them verbatim through `test/javascript/support/view_template.js`, and `core_controller_test.rb` checks they render. Mark every point the controller fills in with `data-slot="name"`, never a class, a Bootstrap attribute, or another controller's target.
+- **Rows built in the browser** clone a `<template>` rendered by ERB (`core/_query_list_templates.html.erb`). Keep those partials free of ERB tags other than comments: the Vitest specs load them verbatim through `test/javascript/support/view_template.js`, and `core_controller_test.rb` checks they render. Mark every point the controller fills in with `data-slot="name"`, never a class, a Bootstrap attribute, or another controller's target.
 - **Key rows by record id and reuse them.** A list re-render updates existing rows in place (`li[data-query-id]` in `queries_list_controller.js`) instead of replacing them, so nested controllers keep their state (an open notes form, a half-typed draft) and only see real value changes. Child controllers react through `*ValueChanged` callbacks.
 - **Compare record ids with `isSameId`** from `utils/record_identity.js`, not `===` or `String(a) === String(b)`: ids arrive as numbers or strings, and a missing id never matches.
 - **Per-row data lives on the row.** A modal opened from a row reads the record id with `trigger.closest("[data-query-id]")` and current data from the live store, not from values copied onto the button when the row rendered.
@@ -1274,6 +1275,14 @@ heroku restart -a quepid-staging
 ```
 
 ## Manual testing tracker
+
+The initial parity comparison of a migrated core surface uses the pre-deangularization
+AngularJS / Bootstrap 3 baseline against current code, including uncommitted changes.
+Use the [isolated historical instance](docs/legacy_comparison.md), confirm the surface
+retains both AngularJS and Bootstrap 3, and compare equivalent fixtures. A recent
+`main`, merge-base or pre-fix checkout does not establish migration parity. Later
+focused regression checks may use a separate pre-fix worktree; record its baseline
+and coverage as a supplement to the initial historical comparison.
 
 During incremental development, use a representative sample of affected browser
 flows per meaningful batch, including a success and an error path when relevant.

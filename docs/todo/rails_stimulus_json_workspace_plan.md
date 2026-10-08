@@ -11,7 +11,34 @@ unsaved tuning values, documents and instant scoring. Follow the
 [Stimulus HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions)
 and [case-page lifecycle contract](../../DEVELOPER_GUIDE.md#turbo-on-the-case-page).
 Preserve behavior; product changes and pre-existing defect fixes require separate
-authorization. Parallel HTML endpoints remain outside this plan.
+authorization. Targeted HTML endpoints for persisted case UI are permitted;
+existing JSON API contracts and browser-owned state remain intact.
+
+## First HTML conversion: annotations list — complete
+
+`CaseAnnotationsController` returns Rails-rendered rows for list/create/update;
+Stimulus mounts the fragments and retains browser score capture, relative timestamps,
+`annotations:changed` and the existing edit modal lifecycle. Writes retain JSON
+payloads; the separate JSON API retains its response contracts. Shared creation
+logic preserves persistence and parameter filtering.
+
+This uses explicit fragment requests rather than frame navigation: create prepends
+one row and edit retains its position, while a full list reload follows persisted
+ordering. The modal shell stays outside replacement. Success/error UI and drafts
+remain controller-owned. No second read is needed after a successful write.
+
+Verified create, edit/cancel, failure/retry, reload, delete and graph refresh;
+matched screenshot pairs are in `.playwright-mcp/annotations-html/`. Rails contracts,
+controller unit tests and the annotation E2E passed. The tracker records partial
+coverage; no-score browser state and graph tooltip/empty-state checks remain deferred.
+
+Review follow-up: edit responses now match rows by ID after an intervening delete;
+the regression test and updated core-page assertions pass (32 Rails tests,
+8 JavaScript tests, ESLint). Browser verification passed against a separate
+pre-fix worktree at `/private/tmp/quepid-annotations-review`: overlapping delete/edit
+leaves stale text before and displays the saved edit after. Matched viewport
+screenshots were inspected in `.playwright-mcp/annotations-edit-race/`;
+reload retained the edit and temporary annotations were removed.
 
 ## Conditional follow-ups
 

@@ -215,16 +215,11 @@ The Playwright MCP tools may be exposed as deferred tools rather than a direct n
 
 ### Before/after pairs — do not break the working tree
 
-- For historical pre-deangularization / Bootstrap 3 comparisons, use the
-  [isolated historical instance](docs/legacy_comparison.md). Keep both servers
-  running and compare equivalent fixtures; do not flip current sources or restore
-  the shared development database for this workflow.
+- Follow [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) for initial migration and later regression-check baselines. For the [isolated historical instance](docs/legacy_comparison.md), keep both servers running; do not flip current sources or restore the shared development database.
 - Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
-- To shoot pre-change UI: **save after sources aside**, flip **only** the files needed (often templates/modals), rebuild the core bundle (`yarn build:core`), capture, then **restore + rebuild in the same session** before anything else.
-- Select replay sources against the baseline, including both staged and unstaged changes (for example, `git diff HEAD`); plain `git diff` can omit changed sources. Leave the index untouched.
-- **Never leave the repo on HEAD/old sources** after a before capture — verify the current markup and bundles before finishing. When restoring files, refresh their modification times so Rails reloads cached templates and importmap configuration; verify the rendered module import matches the restored pin.
+- For nonhistorical comparisons, capture pre-change UI from a **separate worktree and server** using `.agents/skills/branch-ui-diff/SKILL.md`; keep the primary branch and server on current sources throughout. Retain the baseline worktree for repeat comparisons. Do not flip primary sources or override browser scripts to replay old code.
+- Select replay sources against the requested baseline, including both staged and unstaged changes (for example, `git diff HEAD`); plain `git diff` can omit changed sources. For an uncommitted pre-fix baseline, copy the relevant current sources into the isolated worktree and reverse only the fix there. Leave the primary index untouched.
 - Use the relevant Playwright screenshot spec and `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
-- No viewer tooling, inventory docs, or unrelated edits while the tree is mid-flip.
 
 ## Code reviews
 

@@ -3,6 +3,8 @@
 module Api
   module V1
     class AnnotationsController < Api::ApiController
+      include AnnotationPersistence
+
       before_action :set_case
       before_action :set_annotation, only: [ :update, :destroy ]
 
@@ -13,27 +15,11 @@ module Api
       end
 
       def create
-        # Read both param sets up front so a malformed request can't leave a score behind.
-        the_annotation_params = annotation_params
-        the_score_params = score_params.merge(
-          user_id:    current_user.id,
-          created_at: Time.zone.now
-        )
-
-        @score = @case.scores.build the_score_params
-
-        if @score.save
-          @annotation = Annotation.new the_annotation_params
-          @annotation.user  = current_user
-          @annotation.score = @score
-
-          if @annotation.save
-            respond_with @annotation
-          else
-            render json: @annotation.errors, status: :bad_request
-          end
+        record = create_annotation_with_score
+        if record.persisted?
+          respond_with @annotation
         else
-          render json: @score.errors, status: :bad_request
+          render json: record.errors, status: :bad_request
         end
       end
 
@@ -54,22 +40,6 @@ module Api
 
       def set_annotation
         @annotation = @case.annotations.find(params.expect(:id))
-      end
-
-      def annotation_params
-        params.expect(
-          annotation: [ :message,
-                        :source ]
-        )
-      end
-
-      def score_params
-        params.expect(
-          score: [ :all_rated,
-                   :score,
-                   :try_id,
-                   { queries: [] } ]
-        )
       end
     end
   end

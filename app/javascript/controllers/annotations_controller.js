@@ -1,14 +1,13 @@
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
-import { deleteJson, getJson, postJson, putJson } from "api/json"
+import { apiFetch } from "api/fetch"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
-import { formatScore } from "utils/scoring"
 import { isSameId } from "utils/record_identity"
 
 export default class extends Controller {
-  static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave", "itemTemplate"]
+  static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave"]
   static values = {
     url: String,
     annotationUrlTemplate: String,
@@ -17,7 +16,6 @@ export default class extends Controller {
   }
 
   connect() {
-    this.annotations = []
     this.onScoreChange = () => this.updateCreateState()
     this.onEditSubmit = (event) => this.saveEdit(event)
     this.scoringStore = getCoreStores().scoring
@@ -32,12 +30,9 @@ export default class extends Controller {
 
   async load() {
     try {
-      const data = await getJson(this.urlValue)
-      this.annotations = (data.annotations || []).map((annotation) => this.normalize(annotation))
-      this.render()
+      this.render(await this.requestRows(this.urlValue))
     } catch {
-      this.annotations = []
-      this.render()
+      this.render([])
       coreFlash.show("error", "Unable to load annotations.")
     }
   }
@@ -54,11 +49,10 @@ export default class extends Controller {
 
     this.createButtonTarget.disabled = true
     try {
-      const data = await postJson(this.urlValue, { annotation: { message }, score })
+      const rows = await this.requestRows(this.urlValue, "POST", { annotation: { message }, score })
 
-      this.annotations.unshift(this.normalize(data))
+      this.render([...rows, ...this.rows()])
       this.messageTarget.value = ""
-      this.render()
       this.notifyScoreConsumers()
       coreFlash.show("success", "New Annotation created successfully!")
     } catch {
@@ -72,7 +66,7 @@ export default class extends Controller {
     event.preventDefault()
     const annotation = this.findAnnotation(event.currentTarget.dataset.annotationId)
     if (!annotation) return
-    this.editingId = annotation.id
+    this.editingId = annotation.dataset.annotationId
     const modal = this.editModalElement || this.editModalTarget
     this.editModalElement = modal
     this.editMessageElement = modal.querySelector('[data-annotations-target="editMessage"]')
@@ -85,7 +79,7 @@ export default class extends Controller {
     // Bootstrap places the backdrop under document.body. Reparenting the modal
     // avoids the east pane's stacking context putting that backdrop above it.
     if (modal.parentElement !== document.body) document.body.appendChild(modal)
-    this.editMessageElement.value = annotation.message || ""
+    this.editMessageElement.value = annotation.querySelector(".annotation-message").textContent
     this.editModalInstance = getOrCreateBsModal(modal)
     this.editModalInstance?.show()
   }
@@ -94,16 +88,14 @@ export default class extends Controller {
     event.preventDefault()
     const annotation = this.findAnnotation(this.editingId)
     if (!annotation) return
+    const annotationId = annotation.dataset.annotationId
 
     const editMessage = this.editMessageElement || this.editMessageTarget
     const editSave = this.editSaveElement || this.editSaveTarget
     editSave.disabled = true
     try {
-      const data = await putJson(this.annotationUrl(annotation.id), { annotation: { message: editMessage.value } })
-
-      const updated = this.normalize(data)
-      this.annotations = this.annotations.map((item) => item.id === updated.id ? updated : item)
-      this.render()
+      const rows = await this.requestRows(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
+      this.render(this.rows().flatMap((item) => isSameId(item.dataset.annotationId, annotationId) ? rows : [item]))
       this.editModalInstance?.hide()
       this.notifyScoreConsumers()
       coreFlash.show("success", "Annotation updated successfully!")
@@ -119,11 +111,11 @@ export default class extends Controller {
     const annotation = this.findAnnotation(event.currentTarget.dataset.annotationId)
     if (!annotation) return
 
+    const annotationId = annotation.dataset.annotationId
     try {
-      await deleteJson(this.annotationUrl(annotation.id))
+      await this.requestRows(this.annotationUrl(annotationId), "DELETE")
 
-      this.annotations = this.annotations.filter((item) => item.id !== annotation.id)
-      this.render()
+      this.render(this.rows().filter((item) => !isSameId(item.dataset.annotationId, annotationId)))
       this.notifyScoreConsumers()
       coreFlash.show("success", "Annotation deleted successfully!")
     } catch {
@@ -157,44 +149,39 @@ export default class extends Controller {
     }))
   }
 
+  rows() {
+    return [...this.listTarget.querySelectorAll("li.annotation")]
+  }
+
   findAnnotation(id) {
-    return this.annotations.find((annotation) => isSameId(annotation.id, id))
+    return this.rows().find((row) => isSameId(row.dataset.annotationId, id))
   }
 
-  normalize(annotation) {
-    return {
-      ...annotation,
-      caseId: annotation.score?.case_id || this.caseIdValue,
-      createdAt: annotation.created_at,
-      score: annotation.score || {},
-      user: annotation.user || {}
+  async requestRows(url, method = "GET", body) {
+    const headers = { Accept: "text/html" }
+    const options = { method, headers }
+    if (body) {
+      headers["Content-Type"] = "application/json"
+      options.body = JSON.stringify(body)
     }
+    const response = await apiFetch(url, options)
+    if (!response.ok || response.redirected) throw new Error("Unable to load annotation rows")
+    if (response.status === 204) return []
+    const html = await response.text()
+    const document = new DOMParser().parseFromString(html, "text/html")
+    const rows = [...document.querySelectorAll("li.annotation")]
+    if (method !== "GET" && rows.length !== 1) throw new Error("Missing annotation row")
+    return rows
   }
 
-  render() {
-    this.listTarget.replaceChildren(...this.annotations.map((annotation) => this.renderAnnotation(annotation)))
-    this.emptyTarget.classList.toggle("d-none", this.annotations.length > 0)
-    this.updateCreateState()
-  }
-
-  renderAnnotation(annotation) {
-    const item = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
-    const slot = name => item.querySelector(`[data-slot="${name}"]`)
-    slot("edit").dataset.annotationId = String(annotation.id)
-    slot("delete").dataset.annotationId = String(annotation.id)
-    slot("time").textContent = `${this.timeAgo(annotation.createdAt)} - `
-
-    const sources = { user: annotation.user?.name, source: annotation.source }
-    Object.entries(sources).forEach(([name, value]) => {
-      if (value) slot(name).textContent = `by ${value}`
-      else slot(name).remove()
+  render(rows) {
+    // Rebuild the list as before, preserving create-at-top and edit-in-place order.
+    this.listTarget.replaceChildren(...rows.map((row) => row.cloneNode(true)))
+    this.listTarget.querySelectorAll(".annotations-time").forEach((time) => {
+      time.textContent = `${this.timeAgo(time.dataset.createdAt)} - `
     })
-
-    slot("try").append(annotation.score.try_number ?? annotation.score.try_id ?? "")
-    const score = annotation.score.score
-    slot("score").append(score == null ? "" : formatScore(score))
-    slot("message").textContent = annotation.message || ""
-    return item
+    this.emptyTarget.classList.toggle("d-none", rows.length > 0)
+    this.updateCreateState()
   }
 
   timeAgo(value) {

@@ -5,7 +5,7 @@ import path from "node:path"
  * Loads a static ERB partial (one whose only ERB is `<%# comments %>`) as HTML,
  * so specs exercise the same `<template>` markup the page ships.
  *
- * @param {string} partialPath repo-relative path, e.g. "app/views/core/_annotation_template.html.erb"
+ * @param {string} partialPath repo-relative path, e.g. "app/views/core/_query_list_templates.html.erb"
  * @returns {string}
  */
 export function loadViewTemplate(partialPath) {

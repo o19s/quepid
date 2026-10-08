@@ -103,6 +103,8 @@ List before editing:
 ### 2. Recover surface truth (two baselines when both exist)
 
 1. **Core:** read Angular template + controller (deleted: `git show <commit>:path`).
+   Select the live comparison baseline using [AGENTS.md — Before/after pairs](../../../AGENTS.md#beforeafter-pairs--do-not-break-the-working-tree)
+   and the [isolated historical instance](../../../docs/legacy_comparison.md).
 2. **Rails pages:** read HEAD `_share_case_modal.html.erb` (or equivalent) + HEAD `share_case_controller.js` on index/teams.
 3. Fill a **parity table per surface**:
 

@@ -76,6 +76,9 @@ Rails.application.routes.draw do
   resources :scorers, only: [ :index, :new, :create, :edit, :update, :destroy ] do
     post :clone, on: :member
   end
+  resources :cases, only: [] do
+    resources :annotations, only: [ :index, :create, :update, :destroy ], controller: :case_annotations
+  end
   post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
   post '/scorers/share' => 'scorers#share', as: :share_scorers
   post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers

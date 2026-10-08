@@ -170,9 +170,11 @@ converting its selectors to targets and its interactions to `data-action`.
 Keep direct listeners for Bootstrap popover content relocated outside the
 controller's markup, as described in [the Stimulus conventions](../../DEVELOPER_GUIDE.md#stimulus-conventions).
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
 
-**Decision needed:** Decide whether to permit HTML endpoints for case-page modal content; the current constraint blocks this approach.
+**Decision:** Permit targeted HTML endpoints for persisted case UI alongside the
+existing JSON APIs. The first conversion, the annotations list, is complete;
+broader conversions remain conditional on a concrete maintenance benefit.
 
 The broader proposed sequence for replacing the remaining SPA responsibilities
 is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
@@ -182,18 +184,16 @@ scoring while moving persisted UI and navigation into Rails/Hotwire.
 `pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
 (snapshot selects), and possibly `judgements_core` and `export_case_core`
 build lists from JSON in JS. They could become partials loaded through lazy
-`<turbo-frame src=...>`, like `dropdown/cases_core.html.erb`, and modal form
+`<turbo-frame src=...>`, like `DropdownController#cases_core`, and modal form
 posts could be answered with Turbo Streams. The annotations list
-(`annotations_controller.js`) is the cleanest candidate: it is entirely
-server-owned, so a lazy frame plus Turbo Stream answers to create, edit and
-delete would remove its client-side rendering (it would still dispatch
-`annotations:changed` for `qgraph`).
+(`annotations_controller.js`) now uses server-rendered persisted rows;
+creation still captures live browser scores. Its UI endpoints now return rendered
+rows while retaining JSON request payloads and dispatching `annotations:changed`
+for `qgraph`; the existing JSON API remains available.
 
-**Blocked by the endpoint-design decision:** parallel HTML endpoints for the
-case page are not wanted for now. Enabling Drive on management pages does not
-lift that constraint; case Frames/Streams already work with Drive disabled. If
-that changes, pilot `pick_scorer_core` or annotations and prove selection and the
-edit modal work inside a lazy frame first.
+Case Frames/Streams already work with Drive disabled. Keep the workspace's
+full-document navigation boundary and prove annotation list and edit-modal parity
+before expanding the conversion.
 
 ---
 

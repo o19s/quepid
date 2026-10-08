@@ -130,27 +130,53 @@ test.describe('annotations', () => {
 
     const message = `Playwright annotation ${Date.now()}`;
     await annotations.locator('#annotation-message').fill(message);
+    const saved = page.waitForResponse(response =>
+      response.url().includes(`/cases/${SNAPSHOT_CASE_ID}/annotations`) && response.request().method() === 'POST'
+    );
     await annotations.getByRole('button', { name: 'Create', exact: true }).click();
 
-    // Appending to the list is the authoritative signal here for the same
-    // reason as the snapshot test above — #flash-messages is a single slot
-    // that case 5's background query refresh can overwrite mid-assertion.
+    const savedResponse = await saved;
+    expect(savedResponse.ok()).toBeTruthy();
+    expect(savedResponse.headers()['content-type']).toContain('text/html');
+
     const annotationItem = annotations.locator('li.annotation').filter({ hasText: message });
     await expect(annotationItem).toBeVisible({ timeout: 10_000 });
 
-    await annotationItem.locator('.dropdown-toggle').click();
-    await annotationItem.getByText('Edit', { exact: true }).click();
-    const editedMessage = `${message} edited`;
-    await page.locator('#edit-annotation-message').fill(editedMessage);
-    await page.getByRole('button', { name: 'Update', exact: true }).click();
-    await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible({ timeout: 10_000 });
+    const annotationId = await annotationItem.getAttribute('data-annotation-id');
+    try {
+      await annotationItem.locator('.dropdown-toggle').click();
+      await annotationItem.getByText('Edit', { exact: true }).click();
+      const editedMessage = `${message} edited`;
+      await page.locator('#edit-annotation-message').fill(editedMessage);
+      await page.getByRole('button', { name: 'Update', exact: true }).click();
+      await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible({ timeout: 10_000 });
 
-    // Same cleanup rationale as the snapshot test — this case's dev DB row is
-    // shared across runs, so remove what we added via the UI's own delete
-    // action rather than leaving it to accumulate.
-    const editedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
-    await editedItem.locator('.dropdown-toggle').click();
-    await editedItem.getByText('Delete', { exact: true }).click();
-    await expect(editedItem).toBeHidden({ timeout: 10_000 });
+      // Same cleanup rationale as the snapshot test — this case's dev DB row is
+      // shared across runs, so remove what we added via the UI's own delete
+      // action rather than leaving it to accumulate.
+      const updatedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
+      await updatedItem.locator('.dropdown-toggle').click();
+      await updatedItem.getByText('Edit', { exact: true }).click();
+      await page.locator('#edit-annotation-message').fill('Cancelled draft');
+      await page.locator('#editAnnotationModal').getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(updatedItem.locator('.annotation-message')).toHaveText(editedMessage);
+
+      await gotoSnapshotCase(page);
+      await page.locator('#tune-relevance-link a').click();
+      await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
+      await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible();
+
+      const editedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
+      await editedItem.locator('.dropdown-toggle').click();
+      await editedItem.getByText('Delete', { exact: true }).click();
+      await expect(editedItem).toBeHidden({ timeout: 10_000 });
+    } finally {
+      if (annotationId) {
+        const token = await page.locator('meta[name="csrf-token"]').getAttribute('content');
+        await page.request.delete(`api/cases/${SNAPSHOT_CASE_ID}/annotations/${annotationId}`, {
+          headers: { 'X-CSRF-Token': token || '' }
+        });
+      }
+    }
   });
 });

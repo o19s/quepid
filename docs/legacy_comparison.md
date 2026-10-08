@@ -1,5 +1,8 @@
 # Historical Quepid comparison instance
 
+For when to use this baseline rather than a pre-fix worktree, follow
+[DEVELOPER_GUIDE.md — Manual testing tracker](../DEVELOPER_GUIDE.md#manual-testing-tracker).
+
 Run `bin/legacy up` from the current checkout to start a persistent, isolated
 baseline at **http://localhost:3001**, alongside the current app (normally
 http://localhost:3000). First startup builds the historical Docker image,

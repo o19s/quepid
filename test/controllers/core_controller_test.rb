@@ -178,7 +178,11 @@ class CoreControllerTest < ActionController::TestCase
       %w[rowTemplate searchResultsTemplate paginationTemplate diffScoreTemplate].each do |name|
         assert_select "#query-container template[data-queries-list-target='#{name}']", 1
       end
-      assert_select "template[data-annotations-target='itemTemplate']", 1
+      assert_select '[data-controller="annotations"][data-annotations-url-value=?]', case_annotations_path(kase)
+      assert_select '[data-controller="annotations"][data-annotations-annotation-url-template-value=?]',
+                    case_annotation_path(kase, '__ANNOTATION_ID__')
+      assert_select '#annotations [data-annotations-target="list"]', 1
+      assert_select '#annotations #editAnnotationModal[data-annotations-target="editModal"]', 1
       assert_select "#diffModal template[data-diff-core-target='selectionTemplate']", 1
       %w[shareableTeamTemplate sharedTeamTemplate].each do |name|
         assert_select "#shareCaseModal template[data-share-case-core-target='#{name}']", 1
@@ -198,7 +202,6 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '#queryOptionsModal[data-query-options-core-save-url-template-value=?]',
                     "/api/cases/#{kase.id}/queries/__QUERY_ID__/options"
       assert_select '#moveQueryModal[data-move-query-core-case-id-value=?]', kase.id.to_s
-      assert_select '[data-annotations-url-value=?]', "/api/cases/#{kase.id}/annotations"
       assert_select '[data-frog-report-refresh-url-template-value*=?]', "/cases/#{kase.id}/"
       assert_select 'template#search-result-template', 1
       assert_select 'body[data-snapshot-bridge-snapshots-url-value=?]', "/api/cases/#{kase.id}/snapshots"

@@ -17,6 +17,16 @@ module Api
       end
 
       describe '#create' do
+        test 'preserves the existing filtering of browser query-score hashes' do
+          post :create, params: {
+            case_id:    acase.id,
+            annotation: { message: 'Browser score' },
+            score:      { score: 0.62, try_id: first_try.id, queries: { '11' => { score: 1 } } },
+          }
+          assert_response :ok
+          assert_nil acase.annotations.first.score.queries
+        end
+
         test 'rejects a request without annotation params and does not create a score' do
           assert_no_difference 'acase.scores.count' do
             assert_raises ActionController::ParameterMissing do
