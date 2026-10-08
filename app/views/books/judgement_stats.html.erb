@@ -108,6 +108,16 @@
               <%= link_to 'Refine Prompt', edit_ai_judge_path(row[:judge], book_id: @book.id), class: 'btn btn-light', role: 'button' %>
             </div>
           <% end %>
+          <% if @on_call_judge_ids.include?(row[:judge].id) %>
+            <span class="badge text-bg-info" title="Sleeps until a judge on this book escalates a pair to it">
+              <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
+            </span>
+          <% end %>
+          <% if @wakes[row[:judge].id] %>
+            <div class="small text-muted fw-normal">
+              <i class="bi bi-arrow-return-right" aria-hidden="true"></i> wakes <%= @wakes[row[:judge].id] %> when unsure
+            </div>
+          <% end %>
         <% end %>
       </th>
       <td>

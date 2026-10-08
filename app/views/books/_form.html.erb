@@ -104,6 +104,16 @@
             <span>
               <%= b.check_box %>
               <%= b.label %>
+              <% if b.object.escalates_to %>
+                <small class="text-muted ms-1" title="Pairs this judge can't rate are handed on, in every book it judges">
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i> wakes <%= b.object.escalates_to.name %> when unsure
+                </small>
+              <% end %>
+              <% if b.object.on_call? %>
+                <span class="badge text-bg-info ms-1" title="Woken by <%= b.object.escalated_from_names %>; no need to assign it here">
+                  <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
+                </span>
+              <% end %>
             </span>
             <span class="form-check form-switch mb-0">
               <%= check_box_tag "book[auto_run_ai_judge_ids][]", b.object.id,
@@ -118,6 +128,7 @@
         <div class="form-text">
           You can have multiple AI judges creating ratings. Only AI judges you own, or that are shared with one of your teams, are available here - regardless of which teams you choose to share this book with above.
           <br/><i class="bi bi-repeat"></i> <strong>Auto-run:</strong> automatically queue this judge whenever new query/doc pairs are added to the book.
+          <br/><i class="bi bi-arrow-right"></i> <strong>Wakes … when unsure:</strong> pairs this judge can't rate are handed to that judge once its run ends. The woken judge is <strong>on call</strong> and doesn't need to be assigned here; set who wakes whom on the AI judge's own page.
           <% if @book.new_record? %>
             <br/>Please create the book first and then use <b>Settings</b> to add AI judges.
           <% end %>

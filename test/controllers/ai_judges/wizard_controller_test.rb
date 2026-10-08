@@ -116,7 +116,33 @@ module AiJudges
 
         assert_response :success
         assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
-          req.body.include?("This book's rating scale is")
+          req.body.include?('The rating scale is')
+        end
+      end
+
+      test 'augments the system prompt with a scorer scale when scorer_id is provided and there is no book' do
+        scorer = Scorer.create!(name: 'scaled scorer', owner: user, scale: [ 0, 1 ],
+                                scale_with_labels: { '0' => 'Not Relevant', '1' => 'Relevant' })
+
+        post ai_judge_test_prompt_url(ai_judge_id: 'new', scorer_id: scorer.id), params: {
+          system_prompt:  'You are a grocery store shopper. You like cheese. Is this a cheese?',
+          llm_key:        OPENAI_VALID_KEY,
+          judge_options:  {
+            llm_provider:    'openai',
+            llm_service_url: 'https://api.openai.com',
+            llm_model:       'gpt-4o',
+            llm_timeout:     30,
+          },
+          query_doc_pair: {
+            query_text:      'cheese',
+            doc_id:          'd1',
+            document_fields: '{"title": "Cheddar"}',
+          },
+        }
+
+        assert_response :success
+        assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
+          req.body.include?('The rating scale is')
         end
       end
 
@@ -162,7 +188,7 @@ module AiJudges
         assert_in_delta(1.0, body['rating'])
       end
 
-      test 'refuses to preview a judge that needs a book when there is no book, and says where to go' do
+      test 'refuses to preview a judge that needs a book when there is no book or scale, and says what to do' do
         post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
           system_prompt:  'Judge this',
           llm_key:        'abc123',
@@ -172,11 +198,11 @@ module AiJudges
 
         assert_response :unprocessable_content
         assert_match(/can only be tested from a book/, response.parsed_body['error'])
-        assert_match(/Judgement Stats/, response.parsed_body['error'])
+        assert_match(/picking a rating scale/, response.parsed_body['error'])
         assert_not_requested(:post, /api\.typesafe\.ai/)
       end
 
-      test 'refuses to preview a judge that needs a scale when the given book has none, and says where to go' do
+      test 'refuses to preview a judge that needs a scale when the given book has none, and says what to do' do
         scaleless_book = Book.create!(name: 'book with no scale', owner: user)
 
         post ai_judge_test_prompt_url(ai_judge_id: 'new', book_id: scaleless_book.id), params: {
@@ -187,8 +213,8 @@ module AiJudges
         }
 
         assert_response :unprocessable_content
-        assert_match(/can only be tested from a book that has one/, response.parsed_body['error'])
-        assert_match(/Judgement Stats/, response.parsed_body['error'])
+        assert_match(/can only be tested from a book/, response.parsed_body['error'])
+        assert_match(/picking a rating scale/, response.parsed_body['error'])
         assert_not_requested(:post, /api\.typesafe\.ai/)
       end
 

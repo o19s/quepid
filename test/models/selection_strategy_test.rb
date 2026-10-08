@@ -298,6 +298,40 @@ class SelectionStrategyTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'escalated judgements' do
+    let(:book) { books(:james_bond_movies) }
+    let(:pair) { book.query_doc_pairs.first }
+    let(:cheap) { AiJudge.create!(name: 'Cheap') }
+    let(:expensive) { AiJudge.create!(name: 'Expensive') }
+
+    # Every other pair gets its three judgements, so `pair` is the only one
+    # that can still be offered.
+    before do
+      book.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
+      book.query_doc_pairs.where.not(id: pair.id).find_each do |other|
+        [ users(:matt), users(:joe), users(:jane) ].each { |judge| other.judgements.create!(user: judge, rating: 1) }
+      end
+    end
+
+    it 'counts a judgement and its escalation as one, so the pair still wants another opinion' do
+      source = pair.judgements.create!(user: cheap, unrateable: true)
+      pair.judgements.create!(user: expensive, rating: 1, escalated_from_judgement: source)
+      pair.judgements.create!(user: users(:matt), rating: 1)
+
+      assert_not SelectionStrategy.every_query_doc_pair_has_three_judgements?(book)
+      assert_equal pair, SelectionStrategy.random_query_doc_based_on_strategy(book, users(:doug))
+    end
+
+    it 'still counts an unrateable judgement nobody escalated, as before' do
+      pair.judgements.create!(user: cheap, unrateable: true)
+      pair.judgements.create!(user: users(:matt), rating: 1)
+      pair.judgements.create!(user: users(:joe), rating: 1)
+
+      assert SelectionStrategy.every_query_doc_pair_has_three_judgements?(book)
+      assert_nil SelectionStrategy.random_query_doc_based_on_strategy(book, users(:doug))
+    end
+  end
+
   describe 'rank depth scoping' do
     let(:book) { books(:james_bond_movies) }
     let(:matt) { users(:matt) }

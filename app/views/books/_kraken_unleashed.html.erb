@@ -20,7 +20,10 @@
     document.getElementById('successModal').style.display = 'none';
   });
   
+  // Closes the whole modal, not just the image - leaving the image removed
+  // but the modal shell up (as this used to) blocks the rest of the page
+  // behind an invisible click-catcher until the user clicks it away by hand.
   document.getElementById('kraken').addEventListener('animationend', function() {
-    this.remove();
+    closeModal();
   });
 </script>

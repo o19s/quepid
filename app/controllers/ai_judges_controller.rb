@@ -4,9 +4,12 @@ class AiJudgesController < ApplicationController
   before_action :set_team, only: [ :new, :clone ]
   before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
+  before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
+
+  helper_method :escalation_targets
 
   def index
-    @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).order(:name)
+    @ai_judges = AiJudge.for_user(current_user).includes(:owner, :teams).preload(:escalates_to, :escalated_from).order(:name)
   end
 
   def show
@@ -42,9 +45,9 @@ class AiJudgesController < ApplicationController
   def create
     @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
 
-    if @ai_judge.save
+    if escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.'
+      redirect_to ai_judges_path, notice: 'AI Judge was successfully created.'
     else
       render :new
     end
@@ -53,17 +56,20 @@ class AiJudgesController < ApplicationController
   def update
     @ai_judge.assign_attributes(ai_judge_params)
 
-    if @ai_judge.save
+    if escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.'
+      redirect_to ai_judges_path, notice: 'AI Judge was successfully updated.'
     else
       render 'edit'
     end
   end
 
   def destroy
-    @ai_judge.destroy
-    redirect_to ai_judges_path
+    if @ai_judge.destroy
+      redirect_to ai_judges_path, notice: "AI Judge #{@ai_judge.name} was deleted."
+    else
+      redirect_to ai_judges_path, alert: "Could not delete AI Judge #{@ai_judge.name}: #{@ai_judge.errors.full_messages.to_sentence}"
+    end
   end
 
   private
@@ -83,6 +89,16 @@ class AiJudgesController < ApplicationController
   def set_book
     @book_id = params[:book_id]
     @book = current_user.books_involved_with.where(id: @book_id).first if @book_id.present?
+  end
+
+  # Lets "Test & Refine" run against a scorer's scale when there's no book
+  # context - the same scale a book would've copied from one (JudgeScale.for_scorer),
+  # without needing a real book's query/doc pairs. Mutually exclusive with
+  # book_id in practice (the form's scale picker is only shown when there's
+  # no @book), but both are independent params so either can be set.
+  def set_scorer
+    @scorer_id = params[:scorer_id]
+    @scorer = current_user.scorers_involved_with.where(id: @scorer_id).first if @scorer_id.present?
   end
 
   # Checkboxes suck: only touch teams the current user can actually see, so
@@ -109,8 +125,31 @@ class AiJudgesController < ApplicationController
     params.dig(:user, :team_ids)
   end
 
+  # The judges this one may wake: any the current user can see, except
+  # itself. A target that was set by someone who could see it, and that the
+  # current user can't, stays in the list so an unrelated save keeps it.
+  def escalation_targets
+    @escalation_targets ||= begin
+      visible = AiJudge.for_user(current_user).where.not(id: @ai_judge.id).order(:name).to_a.uniq
+      current = @ai_judge.escalates_to
+      current && visible.exclude?(current) ? visible + [ current ] : visible
+    end
+  end
+
+  # Only a judge the current user can see may be chosen, the same scope as
+  # the AI Judges list. Checked here, not on the model, because visibility
+  # depends on who is saving.
+  def escalation_target_visible?
+    return true unless @ai_judge.escalates_to_id_changed? && @ai_judge.escalates_to_id
+    return true if AiJudge.for_user(current_user).exists?(id: @ai_judge.escalates_to_id)
+
+    @ai_judge.errors.add(:escalates_to, 'is not an AI judge you can use')
+    false
+  end
+
   def ai_judge_params
-    params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, { judge_options: {} } ])
+    params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, :escalates_to_id,
+                                             { judge_options: {} } ])
     params_to_return[:options] = JSON.parse(params_to_return[:options]) if params_to_return[:options]
 
     params_to_return

@@ -17,6 +17,11 @@
   <% if is_ai_judge && row[:auto_run] %>
     <i class="bi bi-repeat text-muted" title="Auto-runs when new query/doc pairs are added"></i>
   <% end %>
+  <% if row[:on_call] %>
+    <span class="badge text-bg-info" title="Sleeps until a judge on this book escalates a pair to it">
+      <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
+    </span>
+  <% end %>
   <% if is_ai_judge %>
     <span class="d-inline-flex align-items-center gap-1 ms-1">
       <% if row[:actively_judging] %>
@@ -31,7 +36,7 @@
               css_class: 'btn btn-outline-danger btn-sm py-0 px-1',
               style: 'font-size:0.7rem; line-height:1.4;',
               icon: 'bi-x-circle', title: 'Cancel judging' %>
-      <% else %>
+      <% elsif !row[:on_call] %>
         <button type="button"
                 class="btn btn-outline-success btn-sm py-0 px-1"
                 style="font-size:0.7rem; line-height:1.4;"
@@ -50,5 +55,10 @@
         <% end %>
       <% end %>
     </span>
+    <% if row[:wakes] %>
+      <div class="small text-muted ms-4" title="Pairs this judge can't rate are handed on">
+        <i class="bi bi-arrow-return-right" aria-hidden="true"></i> wakes <%= row[:wakes] %> when unsure
+      </div>
+    <% end %>
   <% end %>
 </td>

@@ -177,6 +177,60 @@
   animation: icon-pulse 1s ease-in-out 4;
 }
 
+/*
+ * Generic secret-field mask (paired with the password-toggle Stimulus
+ * controller) for fields that shouldn't be type="password" - e.g. the AI
+ * Judge form's LLM key, or the mapper wizard's API key. A real password
+ * input makes mobile Safari/Chrome treat the field as a login credential,
+ * triggering the OS-level AutoFill-Passwords/Keychain prompt on page load.
+ * -webkit-text-security alone doesn't dodge this: WebKit's AutoFill
+ * heuristic keys off the same underlying secure-text-entry signal that CSS
+ * property sets, independent of the `type` attribute, so Safari still
+ * treated the field as password-like (confirmed on-device). Masking
+ * instead with transparent input text plus a sibling overlay rendering
+ * dots carries no secure-entry semantics at all - the input's real
+ * `.value` is untouched throughout, so JS that reads it live
+ * (ai_judge_wizard_controller, mapper_wizard_controller) and the
+ * submitted form data both keep working unchanged.
+ */
+.masked-input-wrapper {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.masked-input-wrapper .masked-field {
+  position: relative;
+  z-index: 1;
+  background-color: transparent;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.masked-input-wrapper.is-masked .masked-field {
+  color: transparent;
+  caret-color: var(--bs-body-color);
+}
+
+.masked-input-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: none;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--bs-body-color);
+  pointer-events: none;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.masked-input-wrapper.is-masked .masked-input-overlay {
+  display: flex;
+}
+
 /* Linked Cases: centers the sync-direction icon on the case/book divider line. */
 .case-book-divider-cell {
   position: relative;

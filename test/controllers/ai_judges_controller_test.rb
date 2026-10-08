@@ -42,7 +42,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
             name: 'Renamed Judge', llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
           } }
 
-    assert_redirected_to ai_judge_path(ai_judge)
+    assert_redirected_to ai_judges_path
     assert_equal 'AI Judge was successfully updated.', flash[:notice]
     assert_equal 'Renamed Judge', ai_judge.reload.name
   end
@@ -66,7 +66,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     new_judge = User.order(:id).last
     assert_equal user, new_judge.owner
     assert_empty new_judge.teams
-    assert_redirected_to ai_judge_url(new_judge)
+    assert_redirected_to ai_judges_url
     assert_equal 'AI Judge was successfully created.', flash[:notice]
   end
 
@@ -156,14 +156,19 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_select 'input#judge_options_llm_include_images[checked]', count: 0
     # the judge's own choice still posts, kept for a provider that can
     assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'true'
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice]:not([style])', text: /Ollama\s+doesn't support images/
+    # the "doesn't support images" explanation lives in Model Configuration
+    # now (LlmProvider#to_preset[:help]), populated client-side from the
+    # presets JSON rather than server-rendered inline under the switch.
+    presets = JSON.parse(css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-presets-value'])
+    assert_includes presets.dig('ollama', 'help'), "doesn't support images"
   end
 
   test 'new shows the include images switch enabled for the default provider' do
     get new_ai_judge_url
 
     assert_select 'input#judge_options_llm_include_images[disabled]', count: 0
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice][style*="display:none"]'
+    presets = JSON.parse(css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-presets-value'])
+    assert_includes presets.dig('openai', 'help'), 'Attached as an image URL'
   end
 
   test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do
@@ -186,7 +191,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
-    assert_redirected_to ai_judge_url(AiJudge.order(:id).last)
+    assert_redirected_to ai_judges_url
     assert_equal 'typesafe_jev', AiJudge.order(:id).last.judge_options[:llm_provider]
   end
 
@@ -245,15 +250,33 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_select '#judging-criteria p', text: /0 \(labeled "Not Relevant"\)/
     end
 
-    test 'a judge that needs a book cannot be run without one, and says where to go' do
+    test 'a judge that needs a book cannot be run without one, and offers a scale picker instead' do
       ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
 
       get edit_ai_judge_url(ai_judge)
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"])',
-                    text: /Judgement Stats/
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"]) select'
+      # a plain select navigated via each option's own data-url, not a <form> -
+      # this whole partial already renders inside the page's outer judge-save
+      # form_with, and a nested <form> here would silently submit THAT one
+      # instead (see the view's comment).
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice] form', count: 0
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice] select option[data-url*="scorer_id="]',
+                    minimum: 1
+    end
+
+    test 'the scale picker is deduplicated across every scorer the user has access to' do
+      # fixtures random_scorer/random_scorer_1/random_scorer_2/case_default_scorer
+      # all give user the same [1, 2, 3, 4] scale - a single option proves the
+      # picker is unique, not one entry per scorer that shares it.
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+
+      get edit_ai_judge_url(ai_judge)
+
+      options = css_select('[data-ai-judge-wizard-target=needsScaleNotice] select option').map(&:text)
+      assert_equal(1, options.count { |text| text.include?('1,2,3,4') })
     end
 
     test 'a judge that needs a book can be run once it has one' do
@@ -264,6 +287,18 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
       assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
+    end
+
+    test 'a judge that needs a book can also be run against a scorer picked without one' do
+      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+      scorer = scorers(:random_scorer)
+
+      get edit_ai_judge_url(ai_judge, scorer_id: scorer.id)
+
+      assert_response :success
+      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
+      assert_select '#judging-criteria', text: /#{Regexp.escape(scorer.name)}/
     end
 
     test 'shows no criteria when there is no book to take them from' do
@@ -280,6 +315,18 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     end
 
     assert_redirected_to ai_judges_url
+  end
+
+  test 'says why a judge with judgements cannot be deleted' do
+    ai_judge.update!(owner: user)
+    books(:james_bond_movies).query_doc_pairs.first.judgements.create!(user: ai_judge, rating: 1)
+
+    assert_no_difference('User.count') do
+      delete ai_judge_url(id: ai_judge.id)
+    end
+
+    assert_redirected_to ai_judges_url
+    assert_equal 'Could not delete AI Judge Judge Judy: Please reassign ownership of the 1 judgements.', flash[:alert]
   end
 
   describe 'index' do
@@ -300,6 +347,82 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       get ai_judges_url
 
       assert_not_includes assigns(:ai_judges), private_judge
+    end
+  end
+
+  describe 'escalation' do
+    let(:sleeper) { AiJudge.create!(name: 'Sleeper', owner: user) }
+
+    it 'offers the judges the user can see, but not the judge itself' do
+      sleeper
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+
+      get edit_ai_judge_url(ai_judge)
+
+      assert_select 'select#user_escalates_to_id option[value=?]', sleeper.id.to_s, text: 'Sleeper'
+      assert_select 'select#user_escalates_to_id option[value=?]', ai_judge.id.to_s, count: 0
+      assert_select 'select#user_escalates_to_id option[value=?]', private_judge.id.to_s, count: 0
+    end
+
+    it 'saves the judge to wake, and shows that judge as on call' do
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
+
+      assert_redirected_to ai_judges_path
+      assert_equal sleeper, ai_judge.reload.escalates_to
+
+      get edit_ai_judge_url(sleeper)
+      assert_select '#on-call-notice', text: /On call\s+for Judge Judy/
+
+      get ai_judges_url
+      assert_select 'td', text: /wakes Sleeper/
+      assert_select '.badge', text: /On call/
+    end
+
+    it 'explains when a pair is handed on, including the confidence floor' do
+      get edit_ai_judge_url(ai_judge)
+
+      assert_select '#escalation-help li', 4
+      assert_select '#escalation-help li', text: /Minimum Confidence/
+    end
+
+    it 'clears the judge to wake when Nobody is picked' do
+      ai_judge.update!(escalates_to: sleeper)
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: '' } }
+
+      assert_nil ai_judge.reload.escalates_to_id
+    end
+
+    it 'refuses a judge the user cannot see' do
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: private_judge.id } }
+
+      assert_response :success
+      assert_nil ai_judge.reload.escalates_to_id
+      assert_select 'li', text: /is not an AI judge you can use/
+    end
+
+    it 'keeps a target the user cannot see when saving something else' do
+      private_judge = AiJudge.create!(name: 'Not Mine', owner: users(:doug))
+      ai_judge.update!(escalates_to: private_judge)
+
+      get edit_ai_judge_url(ai_judge)
+      assert_select 'select#user_escalates_to_id option[selected][value=?]', private_judge.id.to_s
+
+      patch ai_judge_url(ai_judge), params: { user: { name: 'Renamed', escalates_to_id: private_judge.id } }
+
+      assert_redirected_to ai_judges_path
+      assert_equal private_judge, ai_judge.reload.escalates_to
+    end
+
+    it 'refuses a loop' do
+      sleeper.update!(escalates_to: ai_judge)
+
+      patch ai_judge_url(ai_judge), params: { user: { escalates_to_id: sleeper.id, team_ids: [ team.id ] } }
+
+      assert_response :success
+      assert_nil ai_judge.reload.escalates_to_id
     end
   end
 

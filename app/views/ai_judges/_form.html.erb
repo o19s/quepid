@@ -1,9 +1,14 @@
+<%# A book's own scale if there's a book context, otherwise a scorer's (picked
+    below, in Step 2, when there's no book) - either way, the same scale an
+    actual judging run would be handed. %>
+<% scale = @book ? JudgeScale.for(@book) : JudgeScale.for_scorer(@scorer) %>
 <div class="card"
      data-controller="ai-judge-wizard"
      data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
-     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id, scorer_id: @scorer_id) %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
-     data-ai-judge-wizard-has-scale-value="<%= JudgeScale.for(@book).present? %>"
+     data-ai-judge-wizard-draft-key-value="<%= ai_judge.persisted? ? ai_judge.id : 'new' %>"
+     data-ai-judge-wizard-has-scale-value="<%= scale.present? %>"
      data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
   <div class="card-header">
@@ -55,7 +60,16 @@
       <div class="row mb-3">
         <%= form.label :llm_key, class: 'col-sm-2 col-form-label' %>
         <div class="col-sm-10">
-          <%= form.text_field :llm_key, class: "form-control", data: { ai_judge_wizard_target: "llmKey" } %>
+          <div class="input-group" data-controller="password-toggle">
+            <div class="masked-input-wrapper is-masked" data-password-toggle-target="wrapper">
+              <%= form.text_field :llm_key, class: "form-control masked-field", autocomplete: "off",
+                    data: { ai_judge_wizard_target: "llmKey", password_toggle_target: "input", action: "input->password-toggle#renderOverlay" } %>
+              <div class="masked-input-overlay" data-password-toggle-target="overlay" aria-hidden="true"></div>
+            </div>
+            <button type="button" class="btn btn-outline-secondary" data-action="password-toggle#toggle" aria-label="Show LLM key">
+              <i class="bi bi-eye" data-password-toggle-target="icon"></i>
+            </button>
+          </div>
           <div class="form-text">
             This is the key to access your LLM provider's API. What it looks like, and
             whether it is needed at all, depends on the provider &mdash; see its notes under
@@ -64,7 +78,7 @@
         </div>
       </div>
 
-      <div class="row">
+      <div class="row mb-4">
         <div class="col-md-6">
           <ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
@@ -124,14 +138,7 @@
                                       unsupported: (!images_supported).to_s, wanted: wants_images.to_s } %>
                       </div>
                       <div class="form-text">
-                        Attach the document's image, or its thumbnail if available, to the request as an
-                        image URL. Turn off for text-only models.
-                      </div>
-                      <div class="form-text text-warning-emphasis" data-ai-judge-wizard-target="includeImagesNotice"
-                           <%= 'style=display:none;'.html_safe if images_supported %>>
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <span data-ai-judge-wizard-target="includeImagesNoticeProvider"><%= provider&.label %></span>
-                        doesn't support images, so none are sent.
+                        Attach the document's image or thumbnail. See Model Configuration for details.
                       </div>
                     <% else %>
                       <% common_field_attrs = { id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
@@ -166,6 +173,47 @@
         <div class="col-md-6">
           <div class="fw-semibold mb-2">Model Configuration</div>
           <div id="provider-help" data-ai-judge-wizard-target="providerHelp" class="alert alert-info small" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+      <div class="row mb-3">
+        <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,
+                { include_blank: 'Nobody' }, class: 'form-select' %>
+          <% if ai_judge.persisted? && ai_judge.on_call? %>
+            <div class="alert alert-info small mb-0 mt-2" id="on-call-notice">
+              <i class="bi bi-moon-stars" aria-hidden="true"></i>
+              <strong>On call</strong> for <%= ai_judge.escalated_from_names %>:
+              this judge only rates pairs escalated to it.
+            </div>
+          <% end %>
+        </div>
+        <div class="col-sm-6">
+          <div class="alert alert-info small mb-0" id="escalation-help">
+            <div class="mb-2">
+              <strong>On-Call Judge</strong><br>
+              Woken when the primary judge produces an invalid or missing score.
+            </div>
+            <div class="mb-2">
+              <strong>Escalation Triggers</strong><br>
+              The query/doc pair is marked <strong>unrateable</strong> and escalated to the on-call judge
+              if the primary judge:
+              <ul class="mb-1">
+                <li>Returns no rating.</li>
+                <li>Returns a score outside the book's valid scale (e.g., giving a 3 on a 0&ndash;1 scale).</li>
+                <li>Scores below its defined <strong>Minimum Confidence</strong> threshold (applies only to
+                  judges that support confidence scores, like TypeSafe Jev).</li>
+                <li>Encounters an API failure (timeout, invalid key, or provider error).</li>
+              </ul>
+            </div>
+            <div>
+              <strong>How It Works</strong><br>
+              The on-call judge remains idle until the primary judge finishes its run. It then processes
+              all escalated pairs in a separate run. Both ratings remain linked in the system so both
+              scores are preserved and visible.
+            </div>
           </div>
         </div>
       </div>
@@ -239,15 +287,16 @@
           <div class="col-md-6">
             <h6>Rating Information</h6>
 
-            <%# The other half of what gets sent: for a typed model the book's scale IS the
+            <%# The other half of what gets sent: for a typed model the scale IS the
                 question's criteria, so show them here rather than making people guess. %>
-            <% scale = JudgeScale.for(@book) %>
-            <% if @book && scale.present? %>
+            <% scale_source = @book || @scorer %>
+            <% if scale_source && scale.present? %>
+              <% scale_source_link = @book ? link_to(scale_source.name, book_path(@book)) : link_to(scale_source.name, edit_scorer_path(@scorer)) %>
               <div class="mb-3" id="judging-criteria">
                 <div data-ai-judge-wizard-target="criteriaTable" <%= 'style=display:none;'.html_safe unless provider&.scale_as_criteria? %>>
                   <h3 class="h6 mb-1">
                     Criteria sent with the question
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                    <small class="text-muted fw-normal">&mdash; from <%= scale_source_link %>'s scale</small>
                   </h3>
                   <table class="table table-sm table-borderless small mb-1 w-auto">
                     <tbody>
@@ -264,18 +313,33 @@
                 <div data-ai-judge-wizard-target="criteriaProse" <%= 'style=display:none;'.html_safe if provider&.scale_as_criteria? %>>
                   <h3 class="h6 mb-1">
                     Rating scale added to the prompt
-                    <small class="text-muted fw-normal">&mdash; from <%= link_to @book.name, book_path(@book) %>'s scale</small>
+                    <small class="text-muted fw-normal">&mdash; from <%= scale_source_link %>'s scale</small>
                   </h3>
                   <p class="small mb-1"><%= scale.describe %></p>
                 </div>
-                <div class="form-text">Read-only here. Edit the labels in the book's settings to change them.</div>
               </div>
             <% end %>
 
             <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
             <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a book's scale, so it can only be tested from a book:
-              open this judge from the book's <strong>Judgement Stats</strong> page (<strong>Refine Prompt</strong>).
+              This provider rates against a scale:
+              <% unless @book %>
+                <%# A plain GET select, navigated via onchange reading each option's own
+                    data-url - NOT a <form>, since this whole partial already renders
+                    inside the page's outer judge-save form_with and nested <form>s are
+                    invalid HTML (the browser discards the inner one, so a would-be
+                    form.submit() here actually POSTs the OUTER save form instead -
+                    silently creating/saving a judge just from picking a scale). %>
+                <% picker_path = ai_judge.persisted? ? edit_ai_judge_path(ai_judge) : new_ai_judge_path %>
+                <div class="mt-2" style="max-width: 320px;">
+                  <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
+                    <option value="">Select a rating scale...</option>
+                    <% scorer_options_for_select(current_user).each do |label, id| %>
+                      <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if @scorer_id.to_s == id.to_s %>><%= label %></option>
+                    <% end %>
+                  </select>
+                </div>
+              <% end %>
             </div>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">

@@ -153,22 +153,13 @@ class BooksController < ApplicationController
 
     @refinable_ai_judge_ids = refinable_ai_judge_ids
 
-    stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
+    # On-call judges are listed before they have judged anything, so the
+    # book shows who its judges will wake.
+    @on_call_judge_ids = @book.on_call_ai_judges.map(&:id)
+    stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
+    @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
-    stats_judges = []
-    stats_judges_ids.each do |judge_id|
-      begin
-        judge = User.find(judge_id) unless judge_id.nil?
-      rescue ActiveRecord::RecordNotFound
-        judge = nil
-      end
-      stats_judges << judge
-    end
-
-    stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
-
-    stats_judges.each do |judge|
+    judges_sorted_by_name(stats_judges_ids).each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -209,7 +200,7 @@ class BooksController < ApplicationController
       end
     end
 
-    @ai_judges = AiJudge.for_user(current_user)
+    @ai_judges = AiJudge.for_user(current_user).preload(:escalates_to, :escalated_from)
 
     if @origin_case
       @book.name = "Book for #{@origin_case.case_name}"
@@ -220,7 +211,7 @@ class BooksController < ApplicationController
   end
 
   def edit
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = visible_ai_judges_for(current_user).preload(:escalates_to, :escalated_from)
 
     @book.scorer_id = matching_scorer_id_for_book(current_user, @book)
 
@@ -293,7 +284,7 @@ class BooksController < ApplicationController
 
     @book.save
 
-    @ai_judges = visible_ai_judges_for(current_user)
+    @ai_judges = visible_ai_judges_for(current_user).preload(:escalates_to, :escalated_from)
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
     respond_with(@book)
@@ -378,7 +369,19 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
+    unless ai_judge
+      redirect_to book_path(@book), alert: 'AI Judge not found.'
+      return
+    end
+
+    # An on-call judge sleeps until another judge escalates to it; it is
+    # woken by the end of that judge's run, never started by hand.
+    if ai_judge.on_call?
+      waking = ai_judge.escalated_from_names
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it."
+      return
+    end
 
     judge_all = deserialize_bool_param(params[:judge_all])
     number_of_pairs = params[:number_of_pairs].to_i
@@ -389,7 +392,7 @@ class BooksController < ApplicationController
   end
 
   def cancel_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.'
       return
@@ -585,6 +588,23 @@ class BooksController < ApplicationController
 
   def find_user
     @user = User.find(params.expect(:user_id))
+  end
+
+  # The judges behind these ids, sorted by name; ids that no longer resolve
+  # to a user collapse into a single nil (anonymous) entry.
+  def judges_sorted_by_name judge_ids
+    judges = []
+    judge_ids.each do |judge_id|
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        judge = nil
+      end
+      judges << judge
+    end
+
+    judges = compact_keep_one_nil(judges)
+    judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
   end
 
   def compact_keep_one_nil array

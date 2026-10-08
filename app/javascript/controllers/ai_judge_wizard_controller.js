@@ -90,6 +90,7 @@ export default class extends Controller {
     sampleUrl: String,
     testUrl: String,
     existing: Boolean,
+    draftKey: String,
     presets: Object,
     stockPrompts: Array,
     hasScale: Boolean
@@ -100,6 +101,7 @@ export default class extends Controller {
     this.optionsEditor = null
     setTimeout(() => this.captureEditors(), 500)
 
+    this.restoreDraft()
     this.readStoredOptions()
 
     if (this.hasLlmProviderTarget) {
@@ -109,6 +111,67 @@ export default class extends Controller {
     if (this.existingValue) {
       this.revealStep2()
     }
+  }
+
+  // The scale picker (Test & Refine) navigates to this same page with a
+  // different ?scorer_id= - a real GET, not a fetch, since the criteria
+  // shown and the scale handed to test_prompt both come from server-rendered
+  // state keyed off that param. Snapshot everything typed into the not-yet-
+  // saved form first so that reload doesn't throw it all away.
+  navigateToScale(event) {
+    const url = event.target.options[event.target.selectedIndex]?.dataset.url
+    if (!url) return
+
+    this.saveDraft()
+    window.location.href = url
+  }
+
+  get draftStorageKey() {
+    return `ai_judge_wizard_draft:${this.draftKeyValue}`
+  }
+
+  // Every input/select/textarea's own current value, keyed by name (and by
+  // value too for checkboxes/radios, since several share a name) - deliberately
+  // not FormData, which omits an unchecked checkbox entirely and would leave
+  // restoreDraft with no way to tell "unchecked" apart from "never asked".
+  saveDraft() {
+    const form = this.element.closest("form")
+    if (!form) return
+
+    const snapshot = []
+    form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
+      if ("checkbox" === field.type || "radio" === field.type) {
+        snapshot.push({ name: field.name, value: field.value, type: field.type, checked: field.checked })
+      } else {
+        snapshot.push({ name: field.name, value: field.value, type: field.type })
+      }
+    })
+
+    sessionStorage.setItem(this.draftStorageKey, JSON.stringify(snapshot))
+  }
+
+  restoreDraft() {
+    const raw = sessionStorage.getItem(this.draftStorageKey)
+    if (!raw) return
+
+    sessionStorage.removeItem(this.draftStorageKey)
+    const form = this.element.closest("form")
+    if (!form) return
+
+    JSON.parse(raw).forEach(({ name, value, type, checked }) => {
+      if ("checkbox" === type || "radio" === type) {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`)
+        if (field) field.checked = checked
+      } else {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
+        if (field) field.value = value
+      }
+    })
+
+    // A restored name should reveal step 2 just like typing it would've -
+    // connect()'s own updateProviderPanels call (right after this returns)
+    // already covers a restored provider selection.
+    this.checkReveal()
   }
 
   captureEditors() {

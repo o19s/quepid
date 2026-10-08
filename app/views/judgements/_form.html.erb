@@ -181,6 +181,7 @@
       This judgement was made by <%= judgement.user.fullname %>!
     </div>
   <% end %>
+  <%= render 'judgements/escalation_notice', judgement: judgement %>
   <% if image_url %>
   <div class="card mb-3" style="">
     <div class="row g-0">
