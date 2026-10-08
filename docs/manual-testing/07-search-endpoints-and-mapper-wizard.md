@@ -99,6 +99,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   2. Choose HTTP Method (GET/POST). Enter a Search URL and a Test Query (query-string params for GET, JSON body for POST — hint text should change with the method).
   3. Optionally expand "Advanced Options" and add a Basic Auth Credential and/or Custom HTTP Headers (JSON).
   4. Click **Fetch**.
+  5. On a plain-HTTP origin where `isSecureContext` is false and `navigator.clipboard` is absent, click the preview's **Copy** button and paste to verify the exact preview text. Confirm the existing success status and two-second button restoration; reject the copy command and confirm the existing failure status.
 - **Expected:** Step 2/3 headings are visible from entry; their bodies start hidden for a new endpoint. Fetch displays the raw HTML/JSON in a scrollable, expandable, copyable preview with its length, and reveals Step 2's body. Generation reveals Step 3's body.
 - **Edge cases:**
   - [ ] Leave the URL blank — expect "URL is required".

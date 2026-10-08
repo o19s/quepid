@@ -5,10 +5,6 @@ import { HttpError } from "api/http_error"
 export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
 
-  connect() {
-    console.log("Import case controller connected")
-  }
-
   fileSelected(event) {
     const file = event.target.files[0]
     if (file) {

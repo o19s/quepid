@@ -37,4 +37,35 @@ describe("clipboard", () => {
     await expect(copyText("nope")).rejects.toThrow("Copy command was rejected")
     expect(document.querySelector("textarea")).toBeNull()
   })
+
+  it.each([true, false])("keeps the fallback selection inside a supplied modal and cleans up (accepted=%s)", async accepted => {
+    vi.stubGlobal("navigator", {})
+    const modal = document.createElement("div")
+    modal.className = "modal"
+    document.body.appendChild(modal)
+    document.execCommand = vi.fn(() => {
+      const textarea = modal.querySelector("textarea")
+      expect(textarea.value).toBe("modal text")
+      expect(textarea.selectionStart).toBe(0)
+      expect(textarea.selectionEnd).toBe(textarea.value.length)
+      return accepted
+    })
+
+    const copy = copyText("modal text", modal)
+    if (accepted) await copy
+    else await expect(copy).rejects.toThrow("Copy command was rejected")
+
+    expect(modal.querySelector("textarea")).toBeNull()
+  })
+
+  it("removes a modal fallback textarea when the copy command throws", async () => {
+    vi.stubGlobal("navigator", {})
+    const modal = document.createElement("div")
+    document.body.appendChild(modal)
+    document.execCommand = vi.fn(() => { throw new Error("denied") })
+
+    await expect(copyText("modal text", modal)).rejects.toThrow("denied")
+
+    expect(modal.querySelector("textarea")).toBeNull()
+  })
 })

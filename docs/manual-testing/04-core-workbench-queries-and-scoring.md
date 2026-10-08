@@ -228,9 +228,10 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   1. Expand a query whose search endpoint supports browsing (Solr, or a Search API using GET).
   2. Click **Browse N Results on {engine}** in the results footer.
   3. Confirm the modal shows a copyable curl command and the correct engine name.
-  4. Click **Copy curl command** and confirm the button changes to **Copied!**. Close/reopen during a pending clipboard write and confirm its completion cannot alter the new modal.
+  4. Click **Copy curl command** and confirm the button changes to **Copied!**, then restores its original label/icon after two seconds. Paste to verify the exact curl command. Force a clipboard failure and confirm **Copy failed**, restoration after two seconds and a successful retry. Close/reopen during a pending clipboard write and confirm its completion cannot alter the new modal.
   5. When the endpoint has no configured headers or credentials, click **Open URL directly** and confirm it opens the browse URL in a new tab.
 - **Expected:** The modal preserves the query's URL encoding, includes configured headers/credentials in the curl command, warns that those values are secret, and hides the direct-URL action when headers or credentials are present.
+  Copy must also work on insecure HTTP without `navigator.clipboard`; paste a different sentinel beforehand to confirm copying replaces it with the curl command.
 
 ### 4.19 Query-list controls
 

@@ -7,7 +7,7 @@ class RunCaseEvaluationJob < ApplicationJob
   queue_as :bulk_processing
 
   # for now let's minimize simultaneous jobs, but we can wait a long time before running them.
-  limits_concurrency to: 2, key: self.class.name, duration: 12.hours
+  limits_concurrency to: 2, key: 'RunCaseEvaluationJob', duration: 12.hours
 
   def perform acase, atry, user: nil
     @case = acase

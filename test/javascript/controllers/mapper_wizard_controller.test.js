@@ -629,6 +629,26 @@ describe("MapperWizardController helpers", () => {
     expect(button.innerHTML).toBe("Copy")
   })
 
+  it("copies through the plain-HTTP fallback when the Clipboard API is absent", async () => {
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined })
+    const execCommand = vi.fn(() => true)
+    Object.defineProperty(document, "execCommand", { configurable: true, value: execCommand })
+    const controller = buildController()
+    controller.htmlPreviewTarget.textContent = "<html>results</html>"
+    const button = document.createElement("button")
+    button.innerHTML = "Copy"
+    vi.useFakeTimers()
+
+    await controller.copyHtmlPreview({ preventDefault: vi.fn(), currentTarget: button })
+
+    expect(execCommand).toHaveBeenCalledWith("copy")
+    expect(controller.showStatus).toHaveBeenCalledWith("Copied to clipboard!", "success")
+    expect(document.querySelector("textarea")).toBeNull()
+    vi.advanceTimersByTime(2000)
+    expect(button.innerHTML).toBe("Copy")
+    delete document.execCommand
+  })
+
   it("reports an empty preview or a clipboard failure instead of copying", async () => {
     const writeText = vi.fn(() => Promise.reject(new Error("denied")))
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })

@@ -56,6 +56,15 @@ controllers populate JSON data and selection state while retaining existing muta
 owners. Snapshot hydration/scoring stays in the bridge and stores; management sharing
 retains its separate Rails select/form surface.
 
+#### Persisted case UI
+
+**Decision:** Permit targeted HTML endpoints for persisted case UI alongside the
+existing JSON APIs. Annotations, sharing teams, judgements books and scorer lists now use Rails-rendered
+rows; further conversions remain conditional on a concrete maintenance benefit.
+
+Browser-owned repeated content remains appropriate for interactive search results.
+Use `ProgressBroadcaster` as an existing pattern for background Turbo Stream updates.
+
 #### Live-query ownership map
 
 `createLiveQueryRuntimeOwner` (`utils/live_query_runtime_owner.js`) is the only

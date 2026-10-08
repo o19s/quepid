@@ -200,6 +200,98 @@ Status rendering goes through the controller-owned `showStatusMessage` behavior 
 
 ---
 
+## 6. Per-surface contracts
+
+### Refresh-ratings orchestration
+
+`frog_report_controller.js#refresh` (line 143) and
+`judgements_core_controller.js#_refreshRatings` (line 432) both fill in
+`__BACKGROUND__`, use the same "run in the background at 50 or more queries"
+rule, send a PUT, then either reload the queries or redirect.
+
+| | `frog_report` | `judgements_core` |
+| --- | --- | --- |
+| Threshold | hardcoded `50` | `BACKGROUND_QUERY_THRESHOLD` |
+| Reload | calls `queryLifecycle.refreshQueries` | dispatches `judgements:queries-need-reload` |
+| Redirect | immediate, no notice | 500ms, with `?notice=` |
+| Error text | `` `${status} ${statusText}` `` | `serverMessage(...)` |
+
+There are also two event names for one action:
+`judgements:queries-need-reload` and `imports:queries-need-reload` both go to
+the same handler (`live_query_events.js:91-92`).
+
+### Snapshot CSV import contracts
+
+| Caller | On failure |
+| --- | --- |
+| `import_snapshot_controller.js#importSnapshots` (line 127) | keeps going, counts failures, then throws |
+| `import_ratings_core_controller.js#importSnapshots` (line 136) | stops at the first failure |
+| `snapshot_import.js#importSnapshotsToCase` (line 45, used by the wizard) | stops at the first failure |
+
+### Clipboard feedback
+
+There are four versions of "copy, then swap the button label for a moment":
+`query_explain_controller.js:68`, `invite_controller.js:33`,
+`mapper_wizard_controller.js:446` and `browse_query_controller.js:44`.
+
+Do not impose one feedback policy on all four callers; Explain, Invite and
+Browse share `utils/temporary_feedback`, while Mapper retains independent timers.
+Browse restores its label/icon after two seconds on success or failure and
+cancels feedback on modal close/disconnect. Its HTTP fallback textarea stays
+inside the modal's focus trap. Mapper uses `utils/clipboard` for
+plain-HTTP copying while retaining its existing status messages and button timing.
+
+### Success-and-redirect timing
+
+There are five versions with different delays: `import_case_controller.js:55`
+and `import_snapshot_controller.js:112` (1500ms), `clone_case_core_controller.js:138`
+(1000ms), `judgements_core_controller.js:478` (500ms), and
+`frog_report_controller.js:163` (none).
+
+### Busy-state contracts
+
+There are about six versions: `CoreModalControllerBase#setLoading`/`setProgress`,
+`import_form_controller_base.js#setLoading`, `add_query_controller`,
+`missing_documents_controller`, `team_member_autocomplete_controller` (which
+uses `style.display` instead of `d-none`), and `mapper_wizard_controller`,
+which swaps the button's `innerHTML`.
+
+### Import-ratings error precedence
+
+In `import_ratings_core_controller`,
+`error.data?.message || serverMessage(...)` deliberately prefers `data.message`
+when both `message` and `error` exist, while `serverMessage` and `HttpError`
+prefer `data.error`. The existing import-ratings test pins that distinction;
+keep the fallback unless a change deliberately preserves that precedence.
+
+### Direct Bootstrap modal calls
+
+Former J12: wrapping lookup/show/hide made call sites longer without removing
+instance lookup. Keep direct calls; do not expand helpers solely for this cleanup.
+Preserve silent no-op behavior when Bootstrap is absent and the existing error
+when Bootstrap exists but Modal is missing. Existing screenshot pairs and actual
+verification timestamps remain in the manual-testing tracker.
+
+### Rated-document search and write paths
+
+"Fetch the docs this query has rated" has three implementations with different
+strategies:
+
+- `query_runtime.js#refreshRatedDocs`: the `filterToRated` searcher option.
+  `buildSearcherRequest` wraps the ES query in `bool: { should: query, filter }`
+  or adds a Solr `fq`, so the original query still ranks the results.
+- `createTargetedSearchAdapter#resetToRated`: replaces the ES `queryDsl` with
+  the filter outright, strips template args by hand, and uses Solr
+  `explainOther`.
+- The adapter's `paginate` default-list branch: repeats the `resetToRated`
+  engine branches, including the ES template stripping, nearly line for line.
+
+Rating is also written twice: `live_query_commands.js#rateDocument`/`rateAll` go
+through `ratingsStore`, while `adapter.rate`/`rateAll` call the doc's
+`rate`/`rateBulk`.
+
+---
+
 ## Related docs
 
 | Doc | Purpose |

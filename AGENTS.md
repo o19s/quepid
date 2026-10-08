@@ -118,6 +118,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 ## Documentation
 
 - Documentation goes in the `docs` directory, not a toplevel `doc` directory.
+- Keep provenance tags and the migration skill until remaining work is classified and closed. Archive completed plans only after their acceptance criteria pass; retain links to unresolved criteria and historical evidence.
 - Every actionable item in `docs/todo/todo.md` must carry a provenance marker:
   `[MIGRATION]` for defects introduced by or required to complete AngularJS
   removal, `[MIGRATION-FOLLOWUP]` for related cleanup that is not necessarily a

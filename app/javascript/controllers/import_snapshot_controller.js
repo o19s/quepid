@@ -8,10 +8,6 @@ export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
   static values = { importsUrlTemplate: String }
 
-  connect() {
-    console.log("Import snapshot controller connected")
-  }
-
   async fileSelected(event) {
     const file = event.target.files[0]
     if (!file) {

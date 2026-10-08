@@ -55,8 +55,6 @@ mapper migration. Define a compatible input contract and verify both stored
 string-based and object-based mappers; an adaptive mapper workaround does not
 resolve existing saved mapper failures.
 
-## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
-
 ### [PREEXISTING] P1 I0 C3 — Scorer sandboxing - LATER
 
 **Decision needed:** Agree on the trust model for shared scorer code and the isolation guarantees required while preserving supported scorer behavior.
@@ -66,36 +64,16 @@ Worker or equivalent browser isolation. The batch path already uses the shared
 scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
 aligned when adding isolation.
 
----
-
-## [MIGRATION-FOLLOWUP] Stimulus/Turbo retrofit, and frontend DRY
-
-AngularJS removal is complete; remaining work concerns ownership, lifecycle and
-optional simplification. Ordinary management/admin pages now enable Turbo Drive
-through `application.js`. The case workspace uses the shared Rails layout
-but keeps a separate bundle with Drive disabled and a destination reload boundary;
-standalone analytics also forces a fresh document. Frames and Streams remain
-available on the case page. Shared layout/header markup does not make runtime
-lifecycle or per-surface behavior interchangeable.
-
-Follow [DEVELOPER_GUIDE.md — Turbo navigation](../../DEVELOPER_GUIDE.md#turbo-navigation)
-and [Turbo on the case page](../../DEVELOPER_GUIDE.md#turbo-on-the-case-page)
-for the current contracts. Actual Drive verification and deferred coverage are in manual scenario 15.8.
-
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
 
-**Decision:** Permit targeted HTML endpoints for persisted case UI alongside the
-existing JSON APIs. Annotations, sharing teams, judgements books and scorer lists now use Rails-rendered
-rows; further conversions remain conditional on a concrete maintenance benefit.
+See [Persisted case UI](../app_structure.md#persisted-case-ui) for the accepted
+HTML-endpoint boundary.
 
 The broader proposed sequence for replacing the remaining SPA responsibilities
 is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
 with the endpoint-design decision below and preserves browser search and instant
 scoring while moving persisted UI and navigation into Rails/Hotwire.
 
-`pick_scorer_core` (scorer lists), `share_case_core` (team lists) and
-`judgements_core` (book catalog) now fetch targeted HTML fragments while retaining
-JSON writes, selection/drafts, workspace events and immediate browser rescoring.
 `diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
 in JS. They could become partials loaded through lazy
 `<turbo-frame src=...>`, like `DropdownController#cases_core`, and modal form
@@ -109,27 +87,7 @@ Case Frames/Streams already work with Drive disabled. Keep the workspace's
 full-document navigation boundary and prove annotation list and edit-modal parity
 before expanding the conversion.
 
----
-
-### [PREEXISTING] P3 I0 C3 — Separate legacy entry effects before any prefetch enablement
-
-**Decision needed:** Decide whether to enable prefetch and which deliberate-navigation effects must become explicit submissions.
-
-The [GET side-effect audit](../../DEVELOPER_GUIDE.md#get-side-effect-audit) moved
-Judge Later/logout to POST/DELETE and protects speculative requests. Keep the
-management/admin meta guard and controller rejection. Prefetch remains a
-separate product decision.
-
-Before relaxing either guard, decouple core case creation and URL-supplied
-settings writes from GET, and move mapper wizard state reset to a deliberate
-submission. Preserve the existing shared-link/bootstrap and fresh-wizard
-contracts; the smallest prerequisite is defining their explicit submission UI.
-Home announcement consumption, book-view tracking, judging session counters,
-authentication callbacks and mounted engines also need destination-specific
-prefetch decisions. Do not change those deliberate-navigation contracts merely
-to enable hover requests.
-
-## [PREEXISTING] P0 — Security
+## [PREEXISTING] Security
 
 ### [PREEXISTING] P0 I0 C3 — User API IDOR and cross-account write path
 
@@ -142,8 +100,6 @@ to enable hover requests.
 **Fix direction:** Scope ordinary requests to `current_user`. If admin lookup is needed, make it a separate admin-only endpoint with its own serializer and authorization test.
 
 ---
-
-## [PREEXISTING] P1 — Security
 
 ### [PREEXISTING] P1 I0 C2 — Outbound HTTPS certificate verification is disabled globally
 
@@ -189,13 +145,11 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P1 I0 C3 — Triage the Brakeman baseline
+### [PREEXISTING] P3 I0 C2 — Triage the Brakeman baseline
 
 **Location:** `config/brakeman.ignore`
 
-CI runs Brakeman with `--exit-on-warn`, and the 24 warnings that existed when the gate was added are suppressed in the ignore file with a "needs triage" note. They include `Marshal.load` in `DeferredPayload`, dynamic `eval` in `V8MapperExecutor`, SQL injection warnings and `protect_from_forgery with: :null_session` in `Api::ApiController`. Suppression is not an assessment of exploitability.
-
-**Fix direction:** Review each entry. Fix real findings and delete their entries; replace the rest with a specific justification in `note`. Delete the item when the baseline holds no "needs triage" entries.
+**Fix direction:** As tracked fixes below eliminate Brakeman warnings, remove their entries from `config/brakeman.ignore` and rerun Brakeman to confirm CI's `--exit-on-warn` gate passes. For retained suppressions, replace "needs triage" with the specific justification documented below. Delete this parent item when obsolete entries are removed and no "needs triage" notes remain; keep unresolved findings below. This parent is bookkeeping (CI already passes with the current ignore file); the fixes below keep their own priorities.
 
 **Review evidence (2026-10-08):** A fresh Brakeman 8.1.0 scan reproduced all 24 warnings with zero scan errors. Source/caller inspection and unsaved runtime probes informed the recommendations below; persistence exploit tests, the Rails suite and browser flows were not run. Import compatibility and suitable execution limits remain unverified.
 
@@ -239,7 +193,7 @@ Two warnings cover template names derived from `file_format`. No traversal explo
 
 **Compatibility gate:** Preserve existing valid formats, casing behavior, defaults, snapshot selection and output. Supported export content must remain identical; unknown formats may receive a deliberate error instead of the current template-resolution failure. Do not fold unrelated export behavior fixes into this hardening.
 
-#### [PREEXISTING] P2 I0 C2 — Replace justified Brakeman suppressions with specific notes
+#### [PREEXISTING] P3 I0 C2 — Replace justified Brakeman suppressions with specific notes
 
 Keep intentional operations where the current trust boundary supports them. The following dispositions cover the remaining 19 entries; the five entries covered by case-import, announcement, export-template and sampling fixes above should be removed only after their fixes eliminate the warnings.
 
@@ -268,6 +222,19 @@ Keep intentional operations where the current trust boundary supports them. The 
 **Cause:** `config.paranoid` commented out in `config/initializers/devise.rb`.
 
 **Fix direction:** Enable `config.paranoid = true` (or normalize both responses).
+
+### [PREEXISTING] P2 I0 C1 — `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=false` enables detailed errors
+
+**Location:** `config/environments/production.rb:18`, `.env.example`
+
+`consider_all_requests_local` is set from `ENV[...].present?`, so any value,
+including the `false` that `.env.example` recommends, shows detailed error pages
+(stack traces, request details) in production. Only an unset or empty variable
+disables them.
+
+**Fix direction:** Parse the value as a boolean (for example
+`ActiveModel::Type::Boolean.new.cast(ENV[...])`) and add a test. Deployments
+that rely on any non-empty value enabling detailed errors will change behavior.
 
 ### [PREEXISTING] P1 I0 C2 — No minimum password length
 
@@ -340,9 +307,11 @@ snapshot name and API reason in the alert, and distinguish partial success.
 
 ---
 
-### [PREEXISTING] P1 I0 C3 — `BooksController#combine` collapses anonymous judgements into one averaged row
+### [PREEXISTING] P2 I0 C3 — Anonymous judgements have no identity: `combine` collapses them, re-import duplicates them
 
-**Decision needed:** Choose separate anonymous rows versus a combined rating, and define aggregation when combining multiple books.
+**Decision needed:** Define what identifies an anonymous judgement across book operations. For `combine`, choose separate anonymous rows versus a combined rating, and define aggregation when combining multiple books. For import, choose whether anonymous imports accumulate rows or replace an authoritative set, and define an identity/retry contract. Decide both together; they share a root cause.
+
+#### `BooksController#combine` collapses anonymous judgements into one averaged row
 
 **Location:** `app/controllers/books_controller.rb:275` — `combine`
 
@@ -354,11 +323,7 @@ The merge loop upserts each source judgement with `query_doc_pair.judgements.fin
 
 **Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `j.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under the [judgement-scale validation item](#preexisting-p2-i1-c3--judgement-rating-not-validated-against-books-scale-outside-ai-judging) for a different reason.
 
----
-
-### [PREEXISTING] P1 I0 C3 — Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
-
-**Decision needed:** Choose whether anonymous imports accumulate rows or replace an authoritative set, and define an identity/retry contract.
+#### Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
 
 **Location:** `app/services/book_importer.rb` — `import_judgement`
 
@@ -366,7 +331,7 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 **Reached by** the ordinary export → re-import path, since `_judgements.json.jbuilder` emits `user_email` only `if judgement.user`, so exported anonymous rows come back identity-less; also by a Mission Control retry of a failed `ImportBookJob` (no job-local `retry_on`; `DeferredPayload.consume` retains the upload on failure and purges it only after the import block succeeds), and plausibly by a double-submitted import form.
 
-**Fix direction:** Needs a product call, same as the `combine` entry above. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
+**Fix direction:** Needs the same product call as `combine` above. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
 
 ---
 
@@ -388,7 +353,33 @@ and scores, so keep it separate from behavior-preserving cleanup.
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
 
-### [PREEXISTING] P1 I0 C3 — Mapper wizard function extraction is not lexical-aware
+### [PREEXISTING] P1 I0 C1 — `FetchService` query substitution treats `\0`/`\1` as backreferences
+
+**Location:** `app/services/fetch_service.rb` — `build_get_params`
+
+`#$query##` is substituted twice. `build_get_params` uses
+`gsub(string, string)`, so `\0` or `\1` in the query text is treated as a
+backreference and the server sends a different query than the user typed.
+`replace_values` already uses the safe block form. Background scores can
+silently differ from the case page.
+
+**Fix direction:** Use the block form (or a shared substitution helper) and add
+a test with backslash sequences in the query text.
+
+### [PREEXISTING] P1 I0 C2 — `FetchService` drops repeated GET params such as Solr `fq`
+
+**Location:** `app/services/fetch_service.rb` — `build_get_params`
+
+`build_get_params` assigns `params[key] = val` in a loop, so repeated Solr
+params such as `fq` keep only the last value. Background evaluations then run
+with fewer filters than the browser search and produce different scores.
+
+**Fix direction:** Accumulate repeated keys into arrays and encode them as
+repeated params; add a test with multiple `fq` values. This changes fetched
+results and background scores, so verify against a client search for the same
+try.
+
+### [PREEXISTING] P2 I0 C3 — Mapper wizard function extraction is not lexical-aware
 
 **Location:** `app/services/mapper_wizard_service.rb:265-296`
 
@@ -436,7 +427,7 @@ the original payload), and add tests for leading/trailing whitespace.
 
 ---
 
-### [PREEXISTING] P1 I1 C2 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
+### [PREEXISTING] P2 I1 C2 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
 
 **Location:** `app/services/book_importer.rb` — `find_judgement_user`, `validate`, `emails_of_judges`
 
@@ -451,7 +442,7 @@ Not a regression — before the 2026-09-10 fix these were silently attributed to
 
 ---
 
-### [PREEXISTING] P1 I0 C3 — BookImporter: unsaved records aren't reported back to the user
+### [PREEXISTING] P2 I0 C3 — BookImporter: unsaved records aren't reported back to the user
 
 **Decision needed:** Choose how partial imports are reported and whether valid rows remain imported when other rows fail.
 
@@ -566,11 +557,6 @@ those scopes and boolean semantics during extraction.
 
 Inside `FetchService`:
 
-- [PREEXISTING] P2 I1 C2 — `#$query##` is substituted twice. `build_get_params` uses
-  `gsub(string, string)`, so `\0` or `\1` in the query text is treated as a
-  backreference. `replace_values` uses the safe block form.
-- [PREEXISTING] P2 I0 C2 — `build_get_params` assigns `params[key] = val` in a loop, so repeated Solr
-  params such as `fq` keep only the last value.
 - [PREEXISTING] P2 I0 C3 — `escape_query` is never applied on the server, while the client honors it.
 
 This backlog accepts keeping response parsing in both Ruby and JS. Request
@@ -626,21 +612,8 @@ escaping, query DSL, or snapshot-field rules.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C3 — Refresh-ratings orchestration — deferred
 
-`frog_report_controller.js#refresh` (line 143) and
-`judgements_core_controller.js#_refreshRatings` (line 432) both fill in
-`__BACKGROUND__`, use the same "run in the background at 50 or more queries"
-rule, send a PUT, then either reload the queries or redirect.
-
-| | `frog_report` | `judgements_core` |
-| --- | --- | --- |
-| Threshold | hardcoded `50` | `BACKGROUND_QUERY_THRESHOLD` |
-| Reload | calls `queryLifecycle.refreshQueries` | dispatches `judgements:queries-need-reload` |
-| Redirect | immediate, no notice | 500ms, with `?notice=` |
-| Error text | `` `${status} ${statusText}` `` | `serverMessage(...)` |
-
-There are also two event names for one action:
-`judgements:queries-need-reload` and `imports:queries-need-reload` both go to
-the same handler (`live_query_events.js:91-92`).
+Current thresholds, reloads, redirects and errors are documented in
+[Refresh-ratings orchestration](../core_ui_implementation_reference.md#refresh-ratings-orchestration).
 
 **Defer.** These flows alter scoring inputs and differ in stale-response
 handling, reload completion, errors, and redirects. Extracting only the threshold
@@ -648,11 +621,8 @@ and PUT offers little reduction. Keep the existing reload event contracts.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C3 — Snapshot CSV import contracts — deferred
 
-| Caller | On failure |
-| --- | --- |
-| `import_snapshot_controller.js#importSnapshots` (line 127) | keeps going, counts failures, then throws |
-| `import_ratings_core_controller.js#importSnapshots` (line 136) | stops at the first failure |
-| `snapshot_import.js#importSnapshotsToCase` (line 45, used by the wizard) | stops at the first failure |
+Caller-specific failure policies are documented in
+[Snapshot CSV import contracts](../core_ui_implementation_reference.md#snapshot-csv-import-contracts).
 
 Each one also builds its import URL differently.
 
@@ -691,46 +661,19 @@ There are seven versions: `qscore_case_controller` (`diffRefreshGeneration`),
 also cancels work. A shared token helper saves few lines and must not replace
 caller-specific cancellation or stale-response rules.
 
-### [MIGRATION-FOLLOWUP] P2 I1 C2 — Clipboard feedback and fallback contracts
-
-There are four versions of "copy, then swap the button label for a moment":
-`query_explain_controller.js:68`, `invite_controller.js:33`,
-`mapper_wizard_controller.js:446` and `browse_query_controller.js:44`.
-
-- [PREEXISTING] P2 I0 C1 — **Bug:** `mapper_wizard` calls `navigator.clipboard` directly and skips the
-  plain-HTTP fallback in `utils/clipboard`, so copying fails on deployments
-  served over plain HTTP.
-- [MIGRATION-FOLLOWUP] P3 I0 C1 — `browse_query` never puts its label back and never reports a failed copy.
-
-Do not impose one feedback policy on all four callers; Explain and Invite
-already share `utils/temporary_feedback`, while Mapper's independent timers and
-Browse's permanent success label are intentionally different.
-
-The mapper HTTP fallback and Browse label restoration/error reporting are
-separate behavior fixes, outside a strict behavior-preserving refactor.
-
-Mapper Wizard's direct clipboard call is `[PREEXISTING]` (present in
-`be9b319a:app/javascript/controllers/mapper_wizard_controller.js`). Fix that
-fallback independently of optional feedback consolidation; verify plain HTTP.
-Browse feedback provenance has not been classified against the baseline.
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C2 — Success-and-redirect helpers — deferred
 
-There are five versions with different delays: `import_case_controller.js:55`
-and `import_snapshot_controller.js:112` (1500ms), `clone_case_core_controller.js:138`
-(1000ms), `judgements_core_controller.js:478` (500ms), and
-`frog_report_controller.js:163` (none).
+Current delays are documented in
+[Success-and-redirect timing](../core_ui_implementation_reference.md#success-and-redirect-timing).
 
 **Defer.** One delay changes the current contract. A helper preserving each
 caller's delay, URL, notice, and navigation method saves very little.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Busy-state helpers — deferred
 
-There are about six versions: `CoreModalControllerBase#setLoading`/`setProgress`,
-`import_form_controller_base.js#setLoading`, `add_query_controller`,
-`missing_documents_controller`, `team_member_autocomplete_controller` (which
-uses `style.display` instead of `d-none`), and `mapper_wizard_controller`,
-which swaps the button's `innerHTML`.
+Existing implementations are documented in
+[Busy-state contracts](../core_ui_implementation_reference.md#busy-state-contracts).
 
 **Defer a universal helper.** Disabled controls, spinner classes, visibility,
 and HTML replacement have different contracts. Consolidate only demonstrably
@@ -747,74 +690,21 @@ Mapper Wizard interpolates `error.message` directly in several catch blocks
 (`mapper_wizard_controller.js:149,205,366,431`). Frog Report additionally
 rewrites an `HttpError`'s message before displaying it (`:164`).
 
-**Fix direction:** explicitly choose an error policy at each
-boundary: contextual server errors via `serverMessage`, unknown rejection
-shapes via `errorMessage`, structured search errors via `flashErrorMessage`.
-Reuse the appropriate existing helper rather than add another extractor.
-Replacing `error.message || fallback` with `errorMessage` expands accepted
-rejection shapes; replacing it with `serverMessage` also changes the fallback
-for body-less HTTP failures. Treat those as intentional changes with focused
-tests, not mechanically equivalent substitutions. Preserve fixed generic
-messages and editor parse diagnostics. In `import_ratings_core_controller`,
-`error.data?.message || serverMessage(...)` deliberately prefers `data.message`
-when both `message` and `error` exist, while `serverMessage` and `HttpError`
-prefer `data.error`. The existing import-ratings test pins that distinction;
-keep the fallback unless a change deliberately preserves that precedence.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C1 — Direct Bootstrap modal wrappers — deferred
-
-Former J12: wrapping lookup/show/hide made call sites longer without removing
-instance lookup. Keep direct calls; do not expand helpers solely for this cleanup.
-Preserve silent no-op behavior when Bootstrap is absent and the existing error
-when Bootstrap exists but Modal is missing. Existing screenshot pairs and actual
-verification timestamps remain in the manual-testing tracker.
+**Fix direction:** apply the [Error-message policies](../../DEVELOPER_GUIDE.md#error-message-policies)
+explicitly at each boundary, with focused tests for intentional changes. Preserve
+the [Import-ratings error precedence](../core_ui_implementation_reference.md#import-ratings-error-precedence).
 
 ### Review boundaries
 
-Triaged out as not worth standalone refactoring: a Rails sharing-modal partial
-(four copies that would mostly become parameters), a team filter-form helper,
-legacy deleted-flag duplication, per-caller error-message chains, sample-data
-snapshot reconstruction, generator pipeline sharing, footer config, sharing
-response messages, lint-runner selection and Book/Scorer scale getters. Revisit
-only when already editing that code. Archive scopes (`Case.not_archived` includes
-`nil`; `active` excludes it), Book/Scorer scale setters and nDCG scorer variants
-differ intentionally.
-
-Do not unify sequential import upload loops or their stop/continue policies.
-Avoid changing `pAll`'s rate-limited starts and bounded concurrency for style.
-Book-sync scheduling needs the separate correctness fix below; it is not an
-example of interchangeable parallel work. CSV parsing consumes lookahead and
-advances its index intentionally. Prefer loop constructs according to intent,
-not uniform syntax.
-
-Keep autocomplete's server filtering separate from endpoint suggestions'
-client filtering; rating popovers and downloads already have shared helpers.
-Keep Rails/core sharing twins separate where their behavior differs, even with
-the shared layout and header markup. Ruby and
-JS response parsers and CSV formula escaping serve distinct execution/export
-contracts; keep them aligned rather than merging them. Similar jbuilder
-partials have separate export/API contracts. The small Thor ratings/snapshot
-generators do not justify abstraction solely for copied lines.
+See [Behavior-preserving refactoring boundaries](../../DEVELOPER_GUIDE.md#behavior-preserving-refactoring-boundaries)
+and [Direct Bootstrap modal calls](../core_ui_implementation_reference.md#direct-bootstrap-modal-calls).
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Rated-document lookup duplication
 
 **Decision needed:** Decide whether the two rated-document surfaces should share ranking and rating-persistence semantics. Equivalent-branch cleanup can proceed separately.
 
-"Fetch the docs this query has rated" has three implementations with different
-strategies:
-
-- `query_runtime.js#refreshRatedDocs`: the `filterToRated` searcher option.
-  `buildSearcherRequest` wraps the ES query in `bool: { should: query, filter }`
-  or adds a Solr `fq`, so the original query still ranks the results.
-- `createTargetedSearchAdapter#resetToRated`: replaces the ES `queryDsl` with
-  the filter outright, strips template args by hand, and uses Solr
-  `explainOther`.
-- The adapter's `paginate` default-list branch: repeats the `resetToRated`
-  engine branches, including the ES template stripping, nearly line for line.
-
-Rating is also written twice: `live_query_commands.js#rateDocument`/`rateAll` go
-through `ratingsStore`, while `adapter.rate`/`rateAll` call the doc's
-`rate`/`rateBulk`.
+Current search and write strategies are documented in
+[Rated-document search and write paths](../core_ui_implementation_reference.md#rated-document-search-and-write-paths).
 
 **Decide first:** should "Show only rated" and the Document Finder's rated list
 rank the same way? Then use one rated-search builder for all three paths.
@@ -844,15 +734,17 @@ So a case can score differently in the UI and in a background evaluation.
 **Fix:** move input assembly (`bestDocs`) and case aggregation into the shared
 scorer module so both sides run the same code.
 
-## [MIGRATION-FOLLOWUP] Stimulus / Hotwire / Rails best-practices review
-
-### [PREEXISTING] P2 I1 C2 — Inline scripts in views
+### [PREEXISTING] P3 I1 C2 — Chart initialization and lifecycle ownership
 
 The remaining inline `<script>` blocks are on the isolated analytics surfaces
 (`layouts/analytics.html.erb`, `analytics/tries_visualization/show.html.erb`)
-and the standalone `home/sparklines` frame example. Move their chart and
-clipboard lifecycle into Stimulus controllers. Analytics keeps an explicit
-full-page boundary.
+and the standalone `home/sparklines` frame example. Defer extraction until
+analytics work or CSP hardening requires it. Verify chart initialization waits
+for Vega readiness; source inspection suggests a loading-order risk, not a
+reproduced failure. Use Stimulus for chart and clipboard lifecycle ownership
+when extracting. Analytics keeps an explicit full-page boundary. Confirm the
+sparklines example is maintained functionality before migrating its frame
+lifecycle.
 
 ### [PREEXISTING] P2 I0 C3 — The CSP is effectively off
 
@@ -867,22 +759,6 @@ plus nonces in report-only mode first, then enforce it. The core page's Solr JSO
 hosts in `script-src`, or a per-request allow-list. Either remove
 `report_uri` or add the endpoint.
 
-### [PREEXISTING] P1 I0 C3 — Importers use `permit!` and denylists
-
-`api/v1/import/cases_controller.rb:34` and `api/v1/import/books_controller.rb:85`
-call `params.require(...).permit!`. `CaseImporter` then passes nested hashes
-straight to Active Record, filtered by `except` (a denylist):
-
-- `app/services/case_importer.rb:93`: `queries.build(query.except(...))`
-- `app/services/case_importer.rb:99`: `ratings.build(rating.except(:user_email))`
-- `app/services/case_importer.rb:126`: `tries.first.update(try_params.except(...))`
-
-With a denylist, any column not explicitly excluded can be set, for example
-`user_id` on a rating or `case_id` on the try. *Not verified* whether this is
-exploitable (whether the association overrides the foreign key in each case),
-but the best practice is an allowlist. Use nested `permit` with the export
-schema's fields, or `slice` to known keys inside the importer.
-
 ### [PREEXISTING] P3 I1 C2 — Small Rails idiom issues
 
 - [PREEXISTING] P3 I1 C2 — **`Case` initialization.** `Case` uses `after_initialize` to default
@@ -891,134 +767,9 @@ schema's fields, or `slice` to known keys inside the importer.
   every instantiated record whose `scorer_id` is nil. Move the `archived`
   default into the migration (as a column default) or into an `attribute`
   default, and set the scorer `before_validation on: :create` instead.
-- [PREEXISTING] P3 I0 C1 — **Concurrency key.** `RunCaseEvaluationJob`'s
-  `limits_concurrency key: self.class.name` is evaluated in the class body,
-  so it is the string `"Class"`. It works as a class-wide limit only by
-  accident. Keep the required `key:` argument: use an explicit constant key
-  or `key: ->(*) { self.class.name }` for the class-wide limit. The default
-  group namespaces the key by job class; it does not replace the key.
 - [PREEXISTING] P3 I0 C1 — **`where(...).first`.** There are 21 uses where `find_by` (or `find`, when
   a 404 is the intended response) is the idiom, e.g.
   `core_controller.rb:24` and `search_endpoints_controller.rb:92`.
-- [PREEXISTING] P3 I0 C0 — **Debug comment in a view.** `books/_book.html.erb:2` renders `Time.now`
-  inside an HTML comment that ships to every browser. Remove it.
-
-### [PREEXISTING] P3 I0 C0 — Leftover debug `console.log`s
-
-These controllers log on `connect`: `mapper_wizard`, `prompt_form`,
-`import_case` and `import_snapshot`. `eslint.config.mjs` currently sets
-`no-console: 'off'`; a `warn` rule for `app/javascript/controllers/` would
-catch new ones.
-
-## [MIGRATION-FOLLOWUP] Upstream integration plan
-
-Assessment snapshot: 2026-10-06. Branch: `angular-phase-10` at
-`c465fdc5`. Upstream: `origin/main` at `c5344288`. Refresh upstream and
-reassess new commits before execution.
-
-### [MIGRATION-FOLLOWUP] Recommendation
-
-Integrate selectively: cherry-pick isolated changes and adapt features that
-overlap the Angular removal work. Reuse upstream implementations and tests;
-write fresh code only where the current architecture requires it. Do not
-rebase this branch onto `main` now.
-
-| Approach | Use |
-| --- | --- |
-| Rebase onto `main` | Avoid now: replaying 294 branch-only commits would spread conflict resolution across intermediate implementations. |
-| Cherry-pick | Use for isolated changes after checking dependencies and existing coverage. |
-| Adapt upstream changes | Preferred for AI judge features and UI changes touching migrated surfaces. |
-| Rewrite everything fresh | Avoid: preserve useful upstream code, tests, and implementation decisions. |
-| Merge `main` | Consider after feature batches are integrated and verified, to reconcile ancestry without rewriting branch history. |
-
-The branches have 294 branch-only and 31 upstream-only commits. Upstream
-changed 343 files since the common ancestor (`f77c17d4`); 206 also changed
-on this branch. A merge simulation produced 129 conflict reports, including
-upstream edits to deleted Angular files. The simulation used temporary Git
-objects and did not alter the branch, index, or working files.
-
-### Existing integration
-
-Commit `c465fdc5` already adapts portions of `c468d18f`, `348b1890`,
-`957ab241`, `15a75d2a`, `213c2bdb`, `bc611bc0`, and `2acb1164`:
-book scales, score-list performance, Vespa validation, mapper cleanup,
-AI images, and job handling.
-
-These commits still appear missing in Git ancestry despite some behavior
-being present. Track remaining changes by feature; do not pick the commits
-again wholesale or assume their complete functionality is integrated.
-
-### [MIGRATION-FOLLOWUP] Execution batches
-
-Batches 1–11 are complete; their ledgers have been removed. Desktop support
-(`78b5f3db`) is excluded by user decision. Remaining work is tracked in the
-[remaining audit inventory](#preexisting-remaining-audit-inventory).
-
-### Contracts to preserve
-
-- Book API team selection is scoped to `current_user.teams`; upstream uses
-  unrestricted `Team.find_by`. Retain current authorization and sharing
-  behavior in `app/controllers/api/v1/books_controller.rb`.
-- Logout and Judge Later use mutation verbs in `config/routes.rb`; upstream
-  still uses GET. Retain the current verbs and corresponding callers.
-- Historical scores survive try deletion through `Try#scores` nullification
-  and optional `Score#try`. Retain both sides of that association contract.
-- `Try.latest` returns nil for an empty case through a class method; upstream
-  uses a scope whose empty result can become a relation. Retain current behavior.
-- Retain Turbo response contracts, case-page navigation boundaries, and
-  existing authorization, validation, persistence, and job safeguards.
-
-These are source-level findings, not runtime parity verification.
-
-### [MIGRATION-FOLLOWUP] Completion gates and ledger
-
-Follow [AGENTS.md](../../AGENTS.md) and
-[DEVELOPER_GUIDE.md](../../DEVELOPER_GUIDE.md) for execution and verification.
-Complete each batch end-to-end before marking it done:
-
-- Record upstream provenance and distinguish existing adaptations from new work.
-- Preserve current regression tests and bring over relevant upstream tests.
-- Run affected tests and required lint/build checks in the existing server container.
-- For user-visible changes, capture and inspect before/after Playwright MCP
-  screenshots for representative success and failure flows. Record deferred
-  coverage and update only manual scenarios actually exercised.
-- Record any concrete blocker and smallest safe prerequisite; leave the batch
-  incomplete when parity or acceptance criteria remain unresolved.
-
-Maintain a concise ledger here as execution proceeds. For each feature, record
-upstream commits, status (`fully integrated`, `partially adapted`, `deferred`,
-or `superseded`), resulting branch commit when available, remaining work, and
-verification evidence. Reconcile ancestry only after every incoming change has
-an explicit disposition; choosing an entire side of a conflict is not proof
-that its behavior has been reconciled.
-
-### Remaining upstream integration audit
-
-**Two documentation/configuration hunks remain unported from `origin/main` at
-`c5344288`.** The incoming-commit map was recorded in the final ledger
-(`upstream_remaining_audit_ledger.md`, batch 11, 2026-10-07); that file
-is no longer present in the working tree.
-
-#### [PREEXISTING] Remaining audit inventory
-
-- [PREEXISTING] P2 I1 C0 — `78b5f3db`: remove the first, conflicting
-  `QUEPID_CONSIDER_ALL_REQUESTS_LOCAL=true` assignment from `.env.example`,
-  retaining upstream's single `false` example and its explanation. Desktop
-  exclusion does not account for this unrelated cleanup.
-- [PREEXISTING] P2 I0 C0 — `c468d18f`: restore the Books API index's `@parameter owned(query)` Boolean
-  annotation in `app/controllers/api/v1/books_controller.rb`. The filter is
-  implemented; its API documentation is missing.
-
-These are pending corrections, not new product features.
-
-#### Remaining verification limits
-
-No new browser pass or production cutover was performed. Earlier sampled
-browser evidence, deferred live/paid-provider and account matrices, and
-production/CI verification limits remain. At the audit, the tracker reported 109/168 due
-scenarios for changed paths or missing runs; no age-only expiry was found.
-[MIGRATION-FOLLOWUP] P3 I0 C3 — Git ancestry still requires separate reconciliation; the incoming commits'
-absence from ancestry does not mean their features are missing.
 
 ## [MIGRATION-FOLLOWUP] Developer Experience Review
 
@@ -1026,48 +777,31 @@ A review of Quepid's tooling, structure and architecture from four perspectives:
 
 **Reviewed:** October 5, 2026. This snapshot includes the current working tree, including pending changes. Findings come from source, configuration and documentation inspection; no builds, test suites or browser flows were run for this documentation update. File counts describe source files, not runtime classes or test coverage.
 
-### Snapshot
+### [PREEXISTING] P2 I2 C1 — 2. Reconcile onboarding, Docker and frontend documentation
 
-- **Backend:** Rails 8.1.3.1 (`Gemfile.lock`), Ruby 4.0.6 (`.ruby-version`), Minitest, Solid Queue and ActionCable. There are 36 model, 96 controller and 21 service Ruby files under `app/`.
-- **Frontend:** Rails-rendered HTML, Stimulus, Turbo and plain JavaScript modules. `app/javascript/` contains 178 JS files, about 18,600 lines, including 74 `*_controller.js` files. The case workspace uses explicit runtime capabilities and stores rather than AngularJS.
-  - Eight `live_query_*` modules remain in `utils/`; `live_query_runtime_owner.js` is 682 lines.
-  - Importmap serves ordinary Rails pages; esbuild builds the case and analytics bundles. `config/importmap.rb` has 35 explicit pins plus directory-wide pins, so that number is not the total resolved module count.
-- **Tests and tooling:** 165 Vitest spec files and 31 Playwright spec files, plus one Rails system-test file. These counts do not establish coverage or passing status. Node is constrained to version 24 by `package.json`; Yarn is the package manager.
-- **Documentation:** 27 files under `bin/`, a 1,243-line `DEVELOPER_GUIDE.md`, and a 216-line `AGENTS.md`. Dedicated JS pipeline/tooling docs, a manual-testing tracker, migration references and an Azure-provider OpenSpec coexist.
-- **CI:** `.github/workflows/test.yml` has separate MySQL, SQLite and PostgreSQL jobs. Each runs `bin/setup_docker` and `rails test`. A dedicated frontend job runs `rails test:frontend` without Compose services. A separate nightly workflow builds and publishes the production image.
-
-#### [PREEXISTING] P2 I2 C1 — 2. Reconcile onboarding, Docker and frontend documentation
-
-Keep [DEVELOPER_GUIDE.md](../../DEVELOPER_GUIDE.md) as the human-facing entry point, [app_structure.md](../app_structure.md) for architecture, and [js_pipeline.md](../js_pipeline.md) / [js_tooling.md](../js_tooling.md) for frontend mechanics.
+Use the established destinations in the [Documentation index](../README.md).
 
 - [PREEXISTING] P2 I2 C1 — Replace conflicting operational advice with safe, complete procedures for identifying and reusing the running server. The guide currently recommends throwaway commands during development, killing port owners, resetting the environment and pruning Docker resources, while agent guidance requires preserving the server. Once the shared procedures are correct, link to them from `AGENTS.md` and remove duplicated human-facing policy. Retain agent-specific safeguards.
 
-#### [PREEXISTING] P2 I2 C2 — 3. Add safe execution support for existing server containers
+### [PREEXISTING] P2 I2 C2 — 3. Add safe execution support for existing server containers
 
 `bin/docker s` / `q` start servers through `docker compose run`; `r`, `b` and `c` create separate containers. Add an explicit exec command that recognizes actual `quepid-app-run-*` servers and refuses ambiguous choices, preserving startup semantics.
 
 Until that exists, use `docker exec <actual-server-container>` or `docker compose exec app` for an existing service container. Do not infer that the server is stopped from an empty Compose service listing.
 
-#### [MIGRATION-FOLLOWUP] P3 I2 C3 — 5. Clarify frontend ownership and delivery boundaries
+### [MIGRATION-FOLLOWUP] P3 I2 C3 — 5. Clarify frontend ownership and delivery boundaries
 
-[Application structure](../app_structure.md) describes workspace construction, capability groups and query/document/score stores. `createCoreWorkspaceRuntime` constructs dependencies before controllers connect. Retain these explicit state owners while making their relationships easier to navigate.
+Retain the explicit state owners described in [Application structure](../app_structure.md#core-frontend-app).
 
 - [MIGRATION-FOLLOWUP] P3 I1 C2 — Group coherent subsystems in `utils/` when their boundaries are understood. Search, scoring, snapshots, case state, Bootstrap and DOM helpers currently share that directory; imposing `domain/`, `ui/` and `net/` everywhere is not a prerequisite.
-- DOM ownership and Rails-owned modal shells are tracked in [the DOM lifecycle item](#migration-followup-p3-i1-c2--move-remaining-utils-dom-lifecycles-into-controllers-retrofit-track-e); global event names are tracked in [the event-constants item](#migration-followup-p3-i1-c1--global-event-names-lack-shared-constants). Preserve the per-surface lifecycles described in [Angular remnants, Stimulus/Turbo retrofit, and frontend DRY](#migration-followup-angular-remnants-stimulusturbo-retrofit-and-frontend-dry). Use `ProgressBroadcaster` as an existing pattern for background Turbo Stream updates. Browser-owned repeated content remains appropriate for interactive search results.
-- Retain the established asset conventions: importmap and esbuild serve different lifecycles; Quepid already uses `jsbundling-rails`, `esbuild.config.js` and `bin/dev`. CSS has custom core/application outputs and compatibility layers. Keep importmap pins, bundle resolution and Vitest aliases consistent when modules are added.
+- DOM ownership and Rails-owned modal shells are tracked in [the DOM lifecycle item](#migration-followup-p3-i1-c2--move-remaining-utils-dom-lifecycles-into-controllers-retrofit-track-e); global event names are tracked in [the event-constants item](#migration-followup-p3-i1-c1--global-event-names-lack-shared-constants). Preserve the per-surface lifecycles described in [Angular remnants, Stimulus/Turbo retrofit, and frontend DRY](#migration-followup-angular-remnants-stimulusturbo-retrofit-and-frontend-dry). See [Persisted case UI](../app_structure.md#persisted-case-ui) for rendering and background-update ownership.
+- Follow [JavaScript delivery](../js_pipeline.md) and [JavaScript tooling](../js_tooling.md) when adding modules; retain the core/application CSS outputs and compatibility layers.
 
-Module moves must also update bare imports and manual-test path mappings in the same patch. Keep mechanical moves separate from behavioral changes. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
-
-#### [MIGRATION-FOLLOWUP] P2 I2 C3 — 7. Clarify review, verification and maintenance responsibilities
-
-- [MIGRATION-FOLLOWUP] P2 I1 C1 — Improve the existing [PR template](../../.github/PULL_REQUEST_TEMPLATE.md): correct checkbox syntax to `- [ ]`, request sampled/deferred manual coverage when applicable, and scale test requirements to the change. Define release-note expectations before adding automatic CHANGELOG enforcement; do not infer PR scope from working-tree size.
-- [MIGRATION-FOLLOWUP] P2 I1 C2 — Clarify the browser release gate. Playwright is the substantial browser suite; `test/system/search_endpoints_test.rb` remains a generated-style Rails system test. Decide whether to maintain or retire it, correct `config/ci.rb`'s comment claiming none exist, and document which suite gates releases.
-- [MIGRATION-FOLLOWUP] P2 I2 C3 — Automate repeatable critical paths from the [manual tracker](../../DEVELOPER_GUIDE.md#manual-testing-tracker); do not remove useful scenarios merely to shrink the tracker. Verification requirements are in [Completion gates and ledger](#migration-followup-completion-gates-and-ledger).
-- [MIGRATION-FOLLOWUP] P2 I1 C1 — Document dependency-update ownership and review/merge cadence. Renovate configuration and cleanup tooling do not establish responsibility. Include checking npm and importmap versions for packages delivered through both paths.
+Follow [Behavior-preserving refactoring boundaries](../../DEVELOPER_GUIDE.md#behavior-preserving-refactoring-boundaries) for module moves. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
 ### [MIGRATION-FOLLOWUP] Execution guidance
 
-Follow [AGENTS.md](../../AGENTS.md) for behavior-preserving scope and [Completion gates and ledger](#migration-followup-completion-gates-and-ledger) for verification. Unit tests cover state and command contracts; browser checks cover rendering, lifecycle, Bootstrap and Turbo behavior.
+Follow [AGENTS.md](../../AGENTS.md) for behavior-preserving scope and [DEVELOPER_GUIDE.md](../../DEVELOPER_GUIDE.md) for verification. Unit tests cover state and command contracts; browser checks cover rendering, lifecycle, Bootstrap and Turbo behavior.
 
 This review supplies priorities, not a migration acceptance plan or proof that outstanding defects are fixed. Concrete defects and their provenance remain in the preceding items; the [best-practices review](#migration-followup-stimulus--hotwire--rails-best-practices-review) retains its detailed findings and verification evidence.
 

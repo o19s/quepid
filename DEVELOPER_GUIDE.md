@@ -59,6 +59,8 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [How does the Frontend work?](#how-does-the-frontend-work)
 		- [Partial inputs](#partial-inputs)
 		- [Stimulus HTTP conventions](#stimulus-http-conventions)
+		- [Error-message policies](#error-message-policies)
+		- [Behavior-preserving refactoring boundaries](#behavior-preserving-refactoring-boundaries)
 		- [Core event bus](#core-event-bus)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
@@ -857,6 +859,18 @@ These apply to all client code: Rails pages and the case page alike. ESLint enfo
 - **Form submits** (e.g. `confirm_delete_controller.js`) send `authenticity_token` instead of the header.
 - **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard); the same helpers apply.
 - **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import).
+
+### Error-message policies
+
+Explicitly choose an error policy at each
+boundary: contextual server errors via `serverMessage`, unknown rejection
+shapes via `errorMessage`, structured search errors via `flashErrorMessage`.
+Reuse the appropriate existing helper rather than add another extractor.
+Replacing `error.message || fallback` with `errorMessage` expands accepted
+rejection shapes; replacing it with `serverMessage` also changes the fallback
+for body-less HTTP failures. Treat those as intentional changes with focused
+tests, not mechanically equivalent substitutions. Preserve fixed generic
+messages and editor parse diagnostics.
 
 ### Turbo navigation
 

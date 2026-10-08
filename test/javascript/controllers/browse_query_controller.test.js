@@ -21,7 +21,10 @@ function owner(headers = {}) {
 }
 
 describe("BrowseQueryController modal lifecycle", () => {
-  afterEach(() => vi.clearAllMocks())
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+  })
 
   it.each([{}, { Authorization: "Bearer example" }])("preserves header notices and direct-link visibility for %j", headers => {
     const { controller } = owner(headers)
@@ -35,12 +38,16 @@ describe("BrowseQueryController modal lifecycle", () => {
     controller.disconnect()
   })
 
-  it("copies the command and preserves the existing success feedback", async () => {
+  it("copies the command and restores the label and icon after two seconds", async () => {
+    vi.useFakeTimers()
     copyText.mockResolvedValue()
     const { controller } = owner()
     await controller.copy()
-    expect(copyText).toHaveBeenCalledWith("curl 'https://example.test'")
+    expect(copyText).toHaveBeenCalledWith("curl 'https://example.test'", controller.element)
     expect(controller.copyLabelTarget.textContent).toBe("Copied!")
+    vi.advanceTimersByTime(2000)
+    expect(controller.copyLabelTarget.textContent).toBe("Copy curl command")
+    expect(controller.copyIconTarget.className).toBe("bi bi-copy")
     controller.disconnect()
   })
 
@@ -58,10 +65,55 @@ describe("BrowseQueryController modal lifecycle", () => {
     controller.disconnect()
   })
 
-  it("retains the existing silent clipboard failure behavior", async () => {
+  it("reports a failure, restores feedback, and allows retry", async () => {
+    vi.useFakeTimers()
     copyText.mockRejectedValue(new Error("denied"))
     const { controller } = owner()
     await controller.copy()
+    expect(controller.copyLabelTarget.textContent).toBe("Copy failed")
+    expect(controller.copyIconTarget.className).toBe("bi bi-exclamation-triangle")
+    vi.advanceTimersByTime(2000)
+    expect(controller.copyLabelTarget.textContent).toBe("Copy curl command")
+    copyText.mockResolvedValue()
+    await controller.copy()
+    expect(controller.copyLabelTarget.textContent).toBe("Copied!")
+    controller.disconnect()
+  })
+
+  it("restarts feedback on repeated copies without capturing the success label", async () => {
+    vi.useFakeTimers()
+    copyText.mockResolvedValue()
+    const { controller } = owner()
+    await controller.copy()
+    vi.advanceTimersByTime(1500)
+    await controller.copy()
+    vi.advanceTimersByTime(1500)
+    expect(controller.copyLabelTarget.textContent).toBe("Copied!")
+    vi.advanceTimersByTime(500)
+    expect(controller.copyLabelTarget.textContent).toBe("Copy curl command")
+    controller.disconnect()
+  })
+
+  it.each(["hide", "disconnect"])("cancels feedback on %s", async action => {
+    vi.useFakeTimers()
+    copyText.mockResolvedValue()
+    const { modal, controller } = owner()
+    await controller.copy()
+    if (action === "hide") modal.dispatchEvent(new Event("hide.bs.modal"))
+    else controller.disconnect()
+    expect(vi.getTimerCount()).toBe(0)
+    expect(controller.copyLabelTarget.textContent).toBe("Copy curl command")
+    if (action === "hide") controller.disconnect()
+  })
+
+  it("ignores a failed clipboard write after the modal closes", async () => {
+    let reject
+    copyText.mockImplementation(() => new Promise((resolve, fail) => { reject = fail }))
+    const { modal, controller } = owner()
+    const pending = controller.copy()
+    modal.dispatchEvent(new Event("hide.bs.modal"))
+    reject(new Error("denied"))
+    await pending
     expect(controller.copyLabelTarget.textContent).toBe("Copy curl command")
     controller.disconnect()
   })

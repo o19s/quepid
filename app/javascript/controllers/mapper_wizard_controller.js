@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { HttpError } from "api/http_error"
 import { postJson } from "api/json"
+import { copyText } from "utils/clipboard"
 import { withStatusMessages } from "controllers/status_message_behavior"
 
 export default class extends withStatusMessages(Controller) {
@@ -47,7 +48,6 @@ export default class extends withStatusMessages(Controller) {
   }
 
   connect() {
-    console.log("Mapper Wizard controller connected")
     // If editing an existing endpoint with mappers, show steps 2 and 3
     if (this.hasExistingMappersValue) {
       this.step2Target.style.display = "block"
@@ -469,7 +469,7 @@ export default class extends withStatusMessages(Controller) {
     }
 
     try {
-      await navigator.clipboard.writeText(content)
+      await copyText(content)
       this.showStatus("Copied to clipboard!", "success")
 
       // Briefly change button icon to show success
