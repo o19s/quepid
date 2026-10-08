@@ -192,10 +192,7 @@ class BooksController < ApplicationController
 
     @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
-    # Explicit scorer_id (e.g. a "new book for this scorer" link) wins; a
-    # book created from a case otherwise defaults to that case's own
-    # scorer, so the case's existing ratings land on a matching scale
-    # instead of silently falling back to no scale selected.
+    # Explicit scorer_id wins; otherwise default to the origin case's own scorer.
     scorer_id = params[:scorer_id] || @origin_case&.scorer_id
     if scorer_id
       scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
