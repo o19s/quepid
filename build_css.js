@@ -72,10 +72,6 @@ function buildApplicationCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/judgements.css');
   output += '\n';
-  // Admin pages share this bundle (layouts/application.html.erb, since
-  // layouts/admin.html.erb was merged into it - same header/footer/JS/flex
-  // structure, just a different sidebar partial) - admin2.css's couple of
-  // rules need to be here instead of their own bundle now.
   output += readFileIfExists('app/assets/stylesheets/admin2.css');
   output += '\n';
 

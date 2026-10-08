@@ -4,6 +4,11 @@ module Admin
   class AdminController < ::ApplicationController
     before_action :require_administrator
 
+    def sidebar_partial
+      'layouts/admin_sidebar'
+    end
+    helper_method :sidebar_partial
+
     private
 
     def require_administrator

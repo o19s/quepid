@@ -89,13 +89,8 @@
     the way down to the footer instead of only matching short page content. %>
 <div class="container-fluid flex-shrink-0 flex-grow-1 d-flex ps-0">
 
-  <%# Admin::AdminController-backed pages (behind AdminConstraint, gated by
-      current_user.administrator? in that controller) get the text-label
-      admin nav instead of the regular icon rail - shared layout since both
-      are otherwise identical (same header/footer/JS, same flex structure),
-      not because the two sidebars have anything in common to factor out. %>
   <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
-    <%= render(controller_path.start_with?('admin/') ? 'layouts/admin_sidebar' : 'layouts/sidebar') %>
+    <%= render(sidebar_partial) %>
   <% end %>
 
   <!-- Begin page content -->
