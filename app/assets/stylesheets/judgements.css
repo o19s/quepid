@@ -177,6 +177,21 @@
   animation: icon-pulse 1s ease-in-out 4;
 }
 
+/*
+ * Generic secret-field mask (paired with the password-toggle Stimulus
+ * controller) for type="text" inputs that shouldn't be type="password":
+ * a real password input makes mobile Safari/Chrome treat the field as a
+ * login credential, triggering the OS-level AutoFill-Passwords/Keychain
+ * prompt on page load - confusing for a secret that isn't an account
+ * password (e.g. the AI Judge form's LLM key). -webkit-text-security has
+ * no Firefox support; there it just renders as plain text, a cosmetic
+ * fallback only (the real secret is encrypted server-side regardless of
+ * display).
+ */
+.masked-field {
+  -webkit-text-security: disc;
+}
+
 /* Linked Cases: centers the sync-direction icon on the case/book divider line. */
 .case-book-divider-cell {
   position: relative;
