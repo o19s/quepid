@@ -17,6 +17,8 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - **Edge cases:**
   - [ ] Try Detailed export outside of single-case context — confirm it's disabled, not silently broken.
 
+  - [ ] Select TREC, then choose/change a snapshot in the shared Basic/TREC dropdown; TREC stays selected and downloads qrel text. Repeat with Basic and confirm CSV.
+
 ### 6.2 Import into a case (ratings / information needs / snapshots)
 
 - [ ] **Steps — Ratings tab:**

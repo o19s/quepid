@@ -9,6 +9,33 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'invalid settings update renders populated edit data and preserves persisted settings' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    original_name = james_bond_movies.name
+    original_teams = james_bond_movies.team_ids
+    original_judges = james_bond_movies.ai_judge_ids
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+
+    # Membership assignment precedes name validation; submit the existing choices.
+    patch book_path(james_bond_movies), params: { book: {
+      name:         '',
+      team_ids:     original_teams,
+      ai_judge_ids: original_judges,
+    } }
+
+    assert_response :unprocessable_content
+    assert_select '#error_explanation', /Name can't be blank/
+    assert_select 'input[name="book[name]"][value=""]'
+    assert_select 'form[action=?]', book_path(james_bond_movies)
+    assert_equal original_name, james_bond_movies.reload.name
+    assert_equal original_teams.sort, james_bond_movies.team_ids.sort
+    assert_equal original_judges.sort, james_bond_movies.ai_judge_ids.sort
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
   test 'unchecked linking creates a book without changing existing case integration' do
     login_user_for_integration_test user
     origin = cases(:with_scorer)

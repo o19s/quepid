@@ -78,7 +78,8 @@
         <div class="row">
           <div class="mb-3 col-sm-6">
             <textarea class="form-control" rows="4" data-missing-documents-target="queryParams"></textarea>
-            <p class="form-text">This is pre-filled from your current try's query, just like the Query Sandbox — edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query.</p>
+            <p class="form-text d-none" data-missing-documents-target="solrHelp">Enter a Lucene query to find documents, for example <code>id:123</code>. Explanations use your original query; this search does not change your try.</p>
+            <p class="form-text" data-missing-documents-target="previewHelp">This is pre-filled from your current try's query, just like the Query Sandbox — edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query.</p>
           </div>
           <div class="col-sm-3"><input type="submit" class="btn btn-primary form-control" value="Search" data-missing-documents-target="searchButton"></div>
         </div>

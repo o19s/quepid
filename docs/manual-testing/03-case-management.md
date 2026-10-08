@@ -54,6 +54,8 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Non-CSV file chosen — rejected with a message.
   - [ ] Confirm Add Query is disabled on the resulting case (4.2 edge case) and the Query tab shows the static-engine message (4.10).
 
+  - [ ] Omit `Snapshot Time` from the static CSV; the import retains the server-generated snapshot timestamp. Snapshot-import metadata headers with spaces are rejected as document field names.
+
 ### 3.3 Import a case from JSON
 
 - [ ] **Steps:**
@@ -82,6 +84,8 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Try submitting with no file chosen — the Import button should stay disabled until a file is selected (button starts `disabled`).
   - [ ] Round trip: export a snapshot from a case (**Export** → snapshot) whose queries include a comma (`shoes, red`) and a quoted phrase (`"star wars"`), then import that file here. Every row should import, and in Compare Snapshots each query's docs should line up with the case's existing query — no new `shoes` / `star wars` query should appear. (8.6.0 silently dropped rows containing commas.)
   - [ ] Upload a CSV with one malformed row (e.g. an extra unquoted comma in one line) — it should be refused with `CSV format error: line N: expected 6 columns but found 7.`, and nothing imported.
+
+  - [ ] Import `Snapshot Time` as ISO 8601 or `MM/DD/YY HH:MM` (20YY), reload and confirm the exact calendar date. Invalid dates identify the CSV row before an import request is sent.
 
 ### 3.5 Archive / unarchive a case from the list
 

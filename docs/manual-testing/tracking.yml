@@ -58,9 +58,9 @@ parts:
         paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
       "1.2":
         title: "Log in / log out"
-        last_run: 2026-10-06T14:52:17Z
-        result: pass_with_fixes
-        notes: "Covered live: seed sign-in, management/core logout, hover sent no logout request, native POST with DELETE override returned 303 to login; GET /logout returned 404 while the session stayed authenticated. Management/core before-after menus inspected in .playwright-mcp/get-mutations. Not rerun: locked account/repeated failures."
+        last_run: 2026-10-07T21:09:28Z
+        result: pass
+        notes: "Both instances: wrong password rejected generically, valid login reached home, hover logout retained session, management and core logout cleared session. Current POST/DELETE returns 303; historical GET returns 302. Signed-in GET /logout returns 404 and retains current session, but logs out historically (known changed security contract). Inspected core logout pairs. Rapid-failure lockout not tested; explicit locked-user login verified in 14.5."
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_sidebar.html.erb", "config/routes.rb"]
       "1.3":
         title: "OAuth login"
@@ -70,9 +70,9 @@ parts:
         paths: ["app/controllers/users/omniauth_callbacks_controller.rb", "config/initializers/devise.rb"]
       "1.4":
         title: "Password reset"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: mismatch renders visible confirmation error with422; valid reset redirects303, old password rejected422, new password signs in. PasswordsController now uses ApplicationResponder; invitation responder unchanged. Inspected before/after screenshots in .playwright-mcp/fix-failures-20261006. Earlier email-link flow retained; not rerun: email delivery, expired/reused tokens, unknown email, short password."
+        last_run: 2026-10-07T21:04:18Z
+        result: pass
+        notes: "Both instances: UI requested reset for disposable user, retrieved delivered HTML link from development log, mismatched confirmation rejected, valid reset succeeded, old password rejected and new password signed in. Inspected pairs. Historical email host is localhost:3000; used its token on isolated :3001. Unknown email, short password, expired/reused token not covered."
         paths: ["app/models/user.rb", "app/controllers/users/passwords_controller.rb", "app/views/users/passwords/new.html.erb", "app/views/users/passwords/edit.html.erb", "app/views/devise/mailer/reset_password_instructions.html.erb"]
       "1.5":
         title: "Invitations (accepting one)"
@@ -88,9 +88,9 @@ parts:
         paths: ["app/controllers/profiles_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb", "config/initializers/field_errors.rb"]
       "1.7":
         title: "Change password from Profile"
-        last_run: 2026-10-05T23:15:46Z
+        last_run: 2026-10-07T21:00:47Z
         result: pass
-        notes: "Covered live: incorrect-old-password alert, successful password update and login using new password on disposable account. Not covered live: confirmation mismatch."
+        notes: "Live on historical 8ceb99e9 and current: wrong original password rejected; mismatched confirmation rejected with fields retained and saved avatar; valid change succeeded and new password logged in after UI logout. Paired screenshots inspected; current places errors in Account Security and uses bottom flash, historical errors above Profile."
         paths: ["app/controllers/accounts_controller.rb", "app/views/profiles/show.html.erb", "app/views/shared/_error_messages.html.erb", "config/initializers/field_errors.rb"]
       "1.8":
         title: "API Keys (Personal Access Tokens)"
@@ -100,9 +100,9 @@ parts:
         paths: ["app/controllers/api_keys_controller.rb", "app/models/api_key.rb"]
       "1.9":
         title: "Account deletion (Danger Zone)"
-        last_run: 2026-10-06T13:50:19Z
-        result: pass_with_fixes
-        notes: "Covered live: disposable inviter Cancel retained account; Confirm deleted/signed out, removed private case and query, preserved shared case with nil owner, and nullified the pending invitee's invited_by_id. The invitee then accepted the original invitation and reached the team page. A separate judgement-restricted account showed the Danger Zone error and retained its private case and query. Fixed the PREEXISTING foreign-key failure with dependent invitation nullification and transactional case/account deletion; regression tests cover invitation retention and rollback. Inspected before/after screenshots in .playwright-mcp/remaining-failures/. Not covered live: sole-member team or annotation cleanup in this batch; other newly due flows deferred."
+        last_run: 2026-10-07T21:09:28Z
+        result: pass
+        notes: "Both instances: UI self-deleted disposable user with private/shared cases prepared via Rails; database verified user and private case gone, shared case owner nil and OSC retained; teammate opened surviving shared case. Inspected pair. Current cancellation retained account before confirmed deletion; historical button submitted without native dialog. Annotation, sole-team and blocked-deletion rollback edges not exercised."
         paths: ["app/controllers/accounts_controller.rb", "app/models/user.rb", "app/views/profiles/show.html.erb", "app/javascript/controllers/form_confirm_controller.js", "config/initializers/field_errors.rb"]
       "1.10":
         title: "Transactional emails (invitation & password reset)"
@@ -112,9 +112,9 @@ parts:
         paths: ["app/views/devise/mailer/invitation_instructions.html.erb", "app/views/devise/mailer/invitation_instructions.text.erb", "app/views/devise/mailer/reset_password_instructions.html.erb", "app/views/layouts/email.html.erb"]
       "1.11":
         title: "Health check"
-        last_run: 2026-10-05T23:15:46Z
+        last_run: 2026-10-07T20:59:20Z
         result: pass
-        notes: "Covered live: logged-out GET /healthcheck returned HTTP 200. Not covered live: database outage."
+        notes: "Both historical 8ceb99e9 and current returned HTTP 200 from /healthcheck after UI logout. Database outage intentionally not exercised."
         paths: ["config/routes.rb"]
 
   "02":
@@ -122,9 +122,9 @@ parts:
     scenarios:
       "2.1":
         title: "First-time / empty state"
-        last_run: 2026-10-05T23:15:46Z
+        last_run: 2026-10-07T20:59:20Z
         result: pass
-        notes: "Covered live: new disposable account showed Welcome to Quepid and Create Your First Relevancy Case. Not covered live: only-book/only-case variants."
+        notes: "Dual-instance live comparison at 8ceb99e9: disposable new users see the empty dashboard welcome card and Create Your First Relevancy Case CTA. Screenshots inspected; greeting varies and current has existing announcement/footer."
         paths: ["app/controllers/home_controller.rb", "app/views/home/"]
       "2.2":
         title: "Case summary cards"
@@ -168,45 +168,45 @@ parts:
     scenarios:
       "3.1":
         title: "Cases list — browsing and filtering"
-        last_run: 2026-10-06T15:29:00Z
+        last_run: 2026-10-07T20:42:53Z
         result: pass
-        notes: "Covered live: case list rendered latest score, timestamp and user, including never-run rows; inspected before/after screenshots. Not covered live: combined filters and pagination."
+        notes: "Covered live current: name/exact-ID search, combined OSC filter, Archived toggle and empty search without first-case message. Historical Angular name/empty search matches; numeric search is broad across displayed fields, not exact-ID-only, and view presets replace team/archive controls. Inspected listing screenshots; baseline 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65. Not covered live: second-user isolation, pagination and truly empty account."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-07T14:56:26Z
+        last_run: 2026-10-07T23:52:13Z
         result: pass
-        notes: "Covered live: Solr forced-proxy wizard failure/retry, real proxy validation, fields/query/Finish and persisted GET/proxy with results; default-off JSONP/switch restored. Screenshots inspected; disposable records removed and onboarding restored. Not covered live: other engines, protocol reload and full account matrix."
+        notes: "Partial compatibility sample only: wizard Name and Endpoint navigation, metadata-header rejection and valid Static File import without Snapshot Time verified (see 3.2b). No Finish, Solr endpoint validation or complete wizard replay in this batch."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T23:52:13Z
         result: pass
-        notes: "Covered live: Static CSV imported on selection, generated snapshot URL, prefilled two queries, finished with results in CSV order and Add disabled. Not covered live: malformed/header/whitespace CSV variants."
+        notes: "Partial direct-fixes compatibility sample: Static File uploaded Query Text,Doc ID,Doc Position,title without Snapshot Time; actual 200 import omitted created_at and server supplied current time, preserving title and rank. Snapshot-export metadata headers remain rejected as document fields with spaces; matched before/after rejection screenshots retained. Finish and static search replay deferred."
         paths: ["app/javascript/controllers/wizard_controller.js", "app/javascript/utils/wizard_contracts.js", "app/views/shared/_wizard_modal.html.erb", "app/controllers/api/v1/snapshots/imports_controller.rb", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js"]
       "3.3":
         title: "Import a case from JSON"
-        last_run: 2026-10-05T23:45:15Z
+        last_run: 2026-10-07T19:18:52Z
         result: pass
-        notes: "Covered live: uploaded downloaded full case JSON, success validation then navigation to new case675; imported queries/settings rendered. Not covered live: malformed JSON and nested structural variants."
+        notes: "Covered live: imported the same historical case JSON through both UIs (legacy case8, current case1067523057); both returned 201 and rendered 20 queries with AP@10 score 0.64. Legacy stays on the list with success feedback; current navigates to the imported workbench. Import/imported screenshot pairs inspected in .playwright-mcp/dual-parity; baseline 8ceb99e9. Not covered live: invalid JSON, large export or cancellation."
         paths: ["app/controllers/cases_controller.rb", "app/controllers/api/v1/import/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/controllers/import_case_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/application.js", "config/importmap.rb", "app/views/shared/_import_case_modal.html.erb", "app/views/api/v1/import/cases/create.json.jbuilder", "test/javascript/controllers/import_case_controller.test.js", "test/controllers/api/v1/import/cases_controller_test.rb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb"]
       "3.4":
         title: "Import snapshots from CSV"
-        last_run: 2026-10-05T23:45:15Z
-        result: pass
-        notes: "Covered live: management Snapshot CSV upload reused exported snapshot, success notice and refresh. Not covered live: multiple-case file/unauthorized case IDs."
-        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/utils/csv.js", "test/javascript/controllers/import_snapshot_controller.test.js", "test/javascript/utils/csv.test.js", "app/views/shared/_import_snapshot_modal.html.erb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/snapshot_import.js"]
+        last_run: 2026-10-07T23:54:15Z
+        result: pass_with_fixes
+        notes: "Partial sample: list and core CSV imports stored 10/07/26 21:10 as 2026-10-07T21:10:00Z, versus year 0010 before. Matching import screenshots inspected. List invalid date identified Row 2 before upload; core overrides CSV Case ID and retains fields. Final list replay confirmed ISO payload and persisted timestamp after formatting. ISO inputs, calendar validation, omitted wizard timestamps and caller-specific failure policies covered by regressions; remaining multi-snapshot/API-failure matrix deferred."
+        paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/utils/csv.js", "test/javascript/controllers/import_snapshot_controller.test.js", "test/javascript/utils/csv.test.js", "app/views/shared/_import_snapshot_modal.html.erb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/snapshot_import.js", "test/javascript/utils/snapshot_import.test.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
-        last_run: 2026-10-05T22:25:20Z
+        last_run: 2026-10-07T20:00:13Z
         result: pass
-        notes: "Representative MCP sample: archive prompt/cancel, confirmed archive and unarchive of case 260; inspected matching before/after viewport pairs in .playwright-mcp/best-practices. Case restored to active. Team buttons and full management sweep deferred."
+        notes: "Covered live: disposable owned case archived from list, removed from active list, restored through historical Archived Cases/Add Back and current Archived filter/confirmation; inspected screenshots. Not covered live: team-only ownership transfer or deleted-ID recovery."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-10-05T23:41:52Z
-        result: pass
-        notes: "Covered live: management Share modal opened shared case672 and listed team26 with disabled no-other-teams select. Not covered live: mutations on this surface; core share and endpoint/scorer management mutations exercised separately."
+        last_run: 2026-10-07T20:43:07Z
+        result: blocked
+        notes: "Current list Share modal successfully shared OSC, reloaded row/shared-list, unshared and verified Teams dash plus flash; inspected screenshot. Historical 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65 renders empty share-case element on the fixture row, so live historical Share is unavailable, same blocker as 6.5. Smallest prerequisite: repair historical fixture/asset binding without altering current sources, then repeat historical flow. Not covered live: duplicate/tampered requests."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb"]
 
   "04":
@@ -214,105 +214,105 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T19:30:56Z
         result: pass
-        notes: "Covered live: renamed disposable case and try; reload retained both. Not covered live: blank-name rejection/cancel."
+        notes: "Covered live: double-clicked and renamed both case and try on matching disposable baseline 8ceb99e9/current cases; reload retained both names. Renamed screenshot pair inspected in .playwright-mcp/dual-parity. Not covered live: Cancel, blank name or forced save failure."
         paths: ["app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/controllers/core/case_header_controller.rb", "app/javascript/controllers/case_rename_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_runtime.js", "app/models/case.rb", "app/models/try.rb", "app/javascript/api/json.js", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
       "4.2":
         title: "Add a query (single)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:19:22Z
         result: pass
-        notes: "Covered live: added matrix to disposable Solr case, searched and scored; Static Add disabled branch also checked. Not covered live: forced single-add failure."
+        notes: "Covered live: added paritysingle to matching disposable Solr cases on baseline 8ceb99e9 and current; searched/scored with zero results and persisted through later reloads. Added-query screenshot pair inspected in .playwright-mcp/dual-parity. Not covered live: whitespace, Static or forced save/search failure."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_model.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/models/query.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.3":
         title: "Add multiple queries (bulk)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:19:22Z
         result: pass
-        notes: "Covered live: semicolon alien/batman/qa-no-matching-zzzz switched button to Add queries and added/searched all three. Not covered live: per-query mixed failure fixture."
+        notes: "Covered live: semicolon paritybulkone/paritybulktwo changed the button to Add queries; both queries searched/scored and persisted through reload on baseline 8ceb99e9 and current. Matching case scores became 0.55; screenshot pair inspected in .playwright-mcp/dual-parity. Not covered live: multiline paste or mixed request failures."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.4":
         title: "Move a query to another case"
-        last_run: 2026-10-05T23:45:15Z
+        last_run: 2026-10-07T19:53:08Z
         result: pass
-        notes: "Covered live: moved matrix from clone674 to static672; target selection updated Move to label, success flash and source row removed. Not covered live: ratings/history fixture and forced failure."
+        notes: "Live baseline 8ceb99e9/current: selected matching disposable MCP Parity Empty in Move Query, footer named target; moved paritybulkone, source removed it and separately loading target showed it. Selected/moved pairs inspected in .playwright-mcp/dual-parity. Target list sizes differ with independent DBs. Not covered: rating/history transfer (query had none), no-target case, fresh catalog, forced failure or Escape."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T19:28:19Z
         result: pass
-        notes: "Covered live: invalid JSON kept modal open with visible flash; valid JSON saved/rescored and reopening retained options. Not covered live: delayed saves or network failure."
+        notes: "Covered live: invalid JSON showed the validation flash; current retained the modal, while live baseline 8ceb99e9 closed it before validation (confirmed in historical query_options_controller.js). Valid parity=1 JSON saved and survived reload/reopening on both. Invalid/saved screenshot pairs inspected in .playwright-mcp/dual-parity; saved state recaptured after the show transition. Not covered live: delayed saves or network failure."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js"]
       "4.6":
         title: "Rate a document"
-        last_run: 2026-10-06T14:11:10Z
-        result: pass_with_fixes
-        notes: "Keyboard rating 1 saved and survived reload; RESET restored Unrated on static case 219. Rating buttons/popover screenshots inspected. Deferred duplicate-id and depth-cutoff paths."
+        last_run: 2026-10-07T19:26:58Z
+        result: pass
+        notes: "Covered live: rated legislative doc l_15577 Relevant on matching disposable cases in baseline 8ceb99e9/current; query score became 0.66 and case score 0.56 on both. Reload retained rating 1; RESET cleared it (legacy --, current Unrated) and scores returned to 0.38/0.55. Rating/reset screenshot pairs inspected in .playwright-mcp/dual-parity. Not covered live: keyboard activation, duplicate/missing IDs or cutoff edge cases."
         paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/query_unrated_badge_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/ratings_store.js", "app/javascript/utils/core_flash.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/frog_report_controller.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/core_runtime.js", "app/javascript/core_stimulus.js", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "config/importmap.rb", "package.json", "Procfile.dev", "test/javascript/utils/ratings_store.test.js", "test/javascript/utils/query_scoring.test.js", "test/playwright/case_helpers.ts", "app/javascript/utils/bs_popover.js", "app/javascript/utils/live_query_events.js", "app/javascript/utils/query_state.js", "app/javascript/utils/query_model.js", "app/javascript/utils/scorer_runtime.js", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/live_query_lifecycle.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/query_documents.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/modal_a11y.spec.ts"]
       "4.7":
         title: "Case & query score badges"
-        last_run: 2026-10-06T14:11:10Z
-        result: pass_with_fixes
-        notes: "Live numeric case/query scores show maximum; pending Not scored observed during load. Before/after screenshots inspected. Unit coverage includes Unrated/No results/unavailable; deferred custom-scorer and live snapshot comparison matrix."
+        last_run: 2026-10-07T19:52:28Z
+        result: pass
+        notes: "Live baseline 8ceb99e9/current: empty cloned case showed historical -- versus current Unrated after bootstrap; no query rows. Earlier rating/scorer changes updated matching low/high colored badges and case scores, current numeric maximum visible. Empty screenshot pair inspected in .playwright-mcp/dual-parity. Not covered: capture of in-flight pending searches or other scorer ranges."
         paths: ["app/models/score.rb", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/ratings_store.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/core_stimulus.js", "config/importmap.rb", "app/views/core/index.html.erb", "app/assets/stylesheets/qscore.css", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "test/playwright/modal_a11y.spec.ts"]
       "4.8":
         title: "Select a scorer for the case"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T19:47:14Z
         result: pass
-        notes: "Covered live: communal/custom lists, selected AP@10, live rescore and header update; reload retained AP@10. Not covered live: inaccessible scorer, save-failure retry, create shortcut."
+        notes: "Live baseline 8ceb99e9/current: selected P@10, scores recomputed to case0.49, reload/reopen retained active P@10, then restored AP@10. Scorer screenshot pair inspected in .playwright-mcp/dual-parity. Current custom-scorer list differs because seed data differs. Not covered: create shortcut, inaccessible-current warning or save-failure retry."
         paths: ["app/javascript/controllers/pick_scorer_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/views/core/_scorer_list_template.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.9":
         title: "Missing Documents finder"
-        last_run: 2026-10-05T23:41:52Z
-        result: pass
-        notes: "Covered live: finder title:matrix returned3 docs; rated The Matrix3, reset returned rated doc and restored original params. Not covered live: forced network failures/pending dismissal."
-        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
+        last_run: 2026-10-07T23:50:14Z
+        result: pass_with_fixes
+        notes: "Partial Solr sample: plain id:l_15577 returns Legislative summaries on current and live baseline 8ceb99e9 using identical imported queries, scorer and endpoint. Before current returned no results. Original regulated explain context retained, all-docs paging 10 to 20 and reset to blank/rated list work. Rating 1 persists after reload in rated results. Inspected search and historical comparison screenshots. Current/historical layout and no-match explanation wording differ. Other engines and complete rating/failure matrix deferred; failure recovery covered by checked-in E2E."
+        paths: ["app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:41:11Z
         result: pass
-        notes: "Covered live: Static no-query-settings branch; Solr edited query template, switched Knobs and back retaining edit, rerun created try2. Not covered live: protocol mismatch."
+        notes: "Live baseline 8ceb99e9/current: edited the Query Sandbox template to include parityBoost, switched tabs/back with edits retained, reran searches and created new tries. Both retained 22 queries and AP@10 0.59; inspected 4.10-4.11-template pairs in .playwright-mcp/dual-parity. Historical editor needs its debounce to settle. Not covered: Static, protocol mismatch, drag limits or failure."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:41:11Z
         result: pass
-        notes: "Covered live: titleBoost placeholder produced numeric knob default10, changed2 and rerun saved try2. Not covered live: slider and no-placeholder branch."
+        notes: "Live baseline 8ceb99e9/current: parityBoost knob appeared from the template, numeric value 31 saved with Rerun My Searches into try3 and searches rescored to matching 0.59. Inspected template pairs in .playwright-mcp/dual-parity. Empty state seen before adding the knob; slider dragging and failure not covered."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:41:47Z
         result: pass
-        notes: "Covered live: read endpoint details, changed displayed fields and number5, rerun saved try3; nightly check persisted and header repeat changed. Not covered live: endpoint switching, max100 and failed-new-try retry. Background completion failed (17.2)."
+        notes: "Live baseline 8ceb99e9/current: changed displayed fields to id:id title:catch_line structure and results to 5; rerun created try4, reload retained both values. Settings screenshot pair inspected in .playwright-mcp/dual-parity. Partial coverage: endpoint switching, escaping, nightly/background jobs, numeric clamp and failure/retry remain untested."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T20:03:04Z
         result: pass
-        notes: "Covered live: history showed3 tries and endpoint-colored rows; Check Scores navigated management table with scorer/try/score/day and disabled Delete before selection. Duplicate diagnostic link followed. Not covered live: bulk score deletion and ratings search."
+        notes: "Covered live: History try list and Check Scores/Check Ratings links navigated to populated tables on both instances; inspected screenshot pairs against 8ceb99e9. Not covered live: visualize link, scorer/search filters or bulk score deletion."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:44:55Z
         result: pass
-        notes: "Covered live: annotations create/edit/delete on Solr case and score0.00 display. Not covered live: Cancel edit branch."
+        notes: "Live baseline 8ceb99e9/current: created annotation at case score0.33, edited message, cancelled a further edit without leaking text, then deleted without confirmation; list and graph marker updated. Created/edited/deleted pairs inspected in .playwright-mcp/dual-parity. Current formats score0.33 and try4; historical shows raw decimal and internal try ID88. Not covered: persistence after reload, blank/unscored creation or request failures."
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
-        last_run: 2026-10-05T23:45:15Z
+        last_run: 2026-10-07T19:31:44Z
         result: pass
-        notes: "Covered live: clipboard readback exactly alien; Delete Query confirmation cancel retained row, accept removed it. Not covered live: rated query deletion."
+        notes: "Covered live: Copy query pasted exact paritybulkone into the filter on baseline 8ceb99e9/current. Cancelling native delete confirmation retained paritysingle; accepting removed it and reload retained removal, with 22 queries and case score 0.58 on both. Cancel/deleted screenshot pairs inspected in .playwright-mcp/dual-parity; historical search counts were still settling in the capture. Not covered live: deleting a rated or annotated query."
         paths: ["app/javascript/controllers/query_command_bridge_controller.js", "app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.16":
         title: "Query Notes & Information Need"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T19:21:06Z
         result: pass
-        notes: "Covered live: information need and notes saved, panel collapsed, reopening retained both values. Not covered live: load/save race, blank fields, export roundtrip."
+        notes: "Covered live: saved Information Need and Notes on legislative in matching disposable baseline 8ceb99e9/current cases; reload, expansion and Toggle Notes retained both values. Notes screenshot pair inspected in .playwright-mcp/dual-parity. Not covered live: save/load races, forced failure, blank fields or export roundtrip."
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js"]
       "4.17":
         title: "Workbench boot & case/try navigation"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T20:05:55Z
         result: pass
-        notes: "Covered live: case/try direct navigation, real searches, missing try error with hidden toolbar, recovery to valid case; request capture contained neither current-user nor case bootstrap GET. Not covered live: bare /case, unknown route, deleting tries, forced engine failure."
+        notes: "Covered live: direct try-4 boot on both, current bootstrap made no current-user/case-record GET, bare /case booted current workspace, unknown nested path returned Rails 404; all-search failure and recovery exercised separately. Inspected direct-boot screenshot pair. Historical boot fetched user/case APIs. Not covered live: missing try, inaccessible case, deletion of latest/only try, zero-case user or navigation lifecycle matrix."
         paths: ["test/playwright/workspace_settings.spec.ts", "app/controllers/core_controller.rb", "app/views/core/_bootstrap.json.jbuilder", "app/views/api/v1/cases/_case.json.jbuilder", "app/views/api/v1/tries/_try.json.jbuilder", "app/views/api/v1/users/_current_user.json.jbuilder", "app/views/api/v1/users/_user.json.jbuilder", "app/javascript/utils/user_runtime.js", "test/controllers/core_controller_test.rb", "test/javascript/controllers/core_bootstrap_controller.test.js", "test/javascript/utils/user_runtime.test.js", "test/playwright/workspace_bootstrap.spec.ts", "app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/controllers/api/v1/tries_controller.rb", "test/integration/try_deletion_flow_test.rb", "app/javascript/utils/configuration_runtime.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/curator_vars.js", "test/javascript/utils/configuration_runtime.test.js", "test/javascript/utils/navigation_runtime.test.js", "test/javascript/utils/case_runtime.test.js", "test/javascript/utils/settings_runtime.test.js", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/utils/search_error.js", "app/javascript/utils/query_model.js", "app/javascript/utils/query_service.js", "app/javascript/utils/live_query_lifecycle.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/core_workspace_runtime.js", "vitest.config.js", "test/javascript/utils/search_error.test.js", "test/javascript/utils/curator_vars.test.js", "test/javascript/utils/query_service.test.js", "test/javascript/utils/live_query_model.test.js", "test/javascript/utils/live_query_runtime.test.js", "test/javascript/utils/live_query_lifecycle.test.js", "test/javascript/utils/query_runtime.test.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/controllers/dropdown_controller.rb", "app/views/dropdown/cases.html.erb", "app/views/dropdown/books.html.erb", "app/javascript/core_stimulus.js", "test/javascript/controllers/queries_list_controller.test.js", "test/playwright/case_shell_navigation.spec.ts", "app/javascript/core_runtime.js", "app/javascript/utils/scorer_runtime.js", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/splainer_search_runtime.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "4.18":
         title: "Browse query results"
@@ -322,39 +322,39 @@ parts:
         paths: ["app/javascript/controllers/browse_query_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/browse_query.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "config/importmap.rb", "test/javascript/utils/browse_query.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "4.19":
         title: "Query-list controls"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:47:54Z
         result: pass
-        notes: "Covered live: unmatched filter returned zero visible rows, clear restored; Name alphabetized five queries and URL sort=query; Collapse all closed results. Not covered live: manual drag persistence."
+        notes: "Live baseline 8ceb99e9/current: unmatched filter emptied list, clearing restored it; Name reversed ordering and updated sort=query URL, expansion then Collapse all stayed collapsed after animation. Controls pair inspected in .playwright-mcp/dual-parity. Not covered: manual reorder or collapse while pending."
         paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/controllers/search_results_template.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js"]
       "4.20":
         title: "Query-list sorting, pagination & Show only rated"
-        last_run: 2026-10-06T14:11:10Z
-        result: pass_with_fixes
-        notes: "Keyboard Tab reached all five sort buttons; Enter/Space activated each, active state retained; returned to Manual. Deferred drag persistence, pagination and rated-filter matrix in this batch."
+        last_run: 2026-10-07T19:47:54Z
+        result: pass
+        notes: "Live baseline 8ceb99e9/current:22 queries paginated15/7 with matching page2 order; filtering page2 to legislative clamped to visible row. Name reverse and Show only rated worked; both showed5 rated result rows/count, toggling restored searches. Page2/rated pairs inspected in .playwright-mcp/dual-parity. Observed footer difference: historical Browse5 versus current Browse329 while rated filter on; browse action not exercised. Not covered: remaining sort modes, keyboard, reorder, ES or forced failures."
         paths: ["app/javascript/utils/query_service.js", "test/javascript/utils/query_service.test.js", "app/javascript/controllers/queries_list_controller.js", "app/views/core/_queries.html.erb", "app/javascript/utils/query_state.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "test/playwright/modal_a11y.spec.ts"]
       "4.21":
         title: "Query row states & score badge values"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T20:03:57Z
         result: pass
-        notes: "Covered live: loaded/zero-result/unrated rows with numeric AP/nDCG zero scores, frog counts, graded scores and information-need tooltip. Not covered live: forced loading/error visual states or Querqy rewrite."
+        notes: "Covered live: loaded, zero-result and unrated rows, Info Need hover, all-search transport failures and successful reload recovery on both instances; screenshot pairs inspected. Historical failure leaves Updating Queries 0/21; current clears progress and shows failed-query notice. Not covered live: controlled loading capture, Querqy rewrite or five simultaneous snapshot badges."
         paths: ["app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js"]
       "4.22":
         title: "Bulk rating (Score All) & result paging"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T20:02:27Z
         result: pass
-        notes: "Covered live: Peek appended10 results (20 total), Score All1 updated all20 visible ratings and query score, RESET cleared all20. Not covered live: rated-only bulk path and final-page boundary."
+        notes: "Covered live: Score All Relevant updated five visible documents/scores, Peek appended through rank 10, bulk RESET cleared visible ratings and reload preserved reset on both instances; screenshots inspected against 8ceb99e9. Not covered live: rated-only paging, finder bulk action or final-page boundary."
         paths: ["app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/store_subscription.js"]
       "4.23":
         title: "Search result rendering"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T21:32:54Z
         result: pass
-        notes: "Covered live: Solr title/overview/cast JSON tree/thumb rendered; Matches visible score breakdown, Debug opened raw explain modal. Screenshot inspected. Not covered live: sanitizer payload, audio/video/translations and relative image prefix."
+        notes: "Dual live replay: controlled rich response verified plain fields, clickable new-tab URL, expandable JSON, image prefix, audio/video controls, translation link and inert markup. Real Solr legislative results: title/details, Matches score8.075559, contribution bar, Debug raw explain. Screenshot pairs inspected; fixture routes removed. Not rerun: >3-bar expand/collapse, huge JSON/narrow overflow, highlighted search snippets."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T20:05:26Z
         result: pass
-        notes: "Covered live: fresh closed pane, open/close toggle, drag resized east pane to 564px and release stopped drag; reload reset closed. Not covered live: release outside window and rapid toggle."
+        notes: "Covered live: open, drag to 870px main pane, browser resize to 768x900, narrow-pane scrolling and reload reset to closed/full-width on both instances; inspected all screenshot pairs. Both have heavily wrapped/clipped controls with a roughly 220px main pane. Not covered live: release outside browser window or rapid-toggle stress."
         paths: ["app/javascript/controllers/pane_controller.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/index.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/views/core/_case_toolbar.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/core-additions.css", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
 
   "05":
@@ -362,9 +362,9 @@ parts:
     scenarios:
       "5.1":
         title: "Try history (History tab)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:42:59Z
         result: pass
-        notes: "Covered live: edited query and fields created tries2/3; history showed all3; selected try1 navigated full page, returned newest3 retaining settings. Not covered live: per-try details edit."
+        notes: "Live baseline 8ceb99e9/current: settings changes created tries2-4 without replacing try1; History showed all four endpoint-colored rows, selecting try1 restored 10-result scores (case0.59), then try4 restored 5-result scores (case0.33) and 22 queries. History screenshot pair inspected in .playwright-mcp/dual-parity. Historical navigation resets drawer tab to Query; reselected History. Not covered: per-try edit details or a different endpoint."
         paths: ["test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
@@ -374,21 +374,21 @@ parts:
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T19:46:18Z
         result: pass
-        notes: "Covered live: applied named snapshot; query/case diff badges and paired result columns appeared; Clear Comparison removed comparison. Not covered live: duplicates, max 5, deletion, load/apply failures."
+        notes: "Live baseline 8ceb99e9/current: created a named snapshot recording fields, selected it twice and saw duplicate warning, removed second selection, applied comparison with matching case0.33 and query badges, then Clear Comparison View removed comparisons. Duplicate/applied pairs inspected in .playwright-mcp/dual-parity. Historical copy says max3; current max5. Not covered: max rows, pending snapshot, snapshot deletion, refresh isolation or forced failures."
         paths: ["app/views/core/_snapshot_selection_template.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "app/javascript/utils/parse_explain.js", "test/javascript/utils/date_format.test.js", "test/javascript/utils/parse_explain.test.js"]
       "5.4":
         title: "Annotations"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:44:55Z
         result: pass
-        notes: "Covered live: created Solr annotation at0.00, edited in modal, updated message immediately; deleted via dropdown without confirm. Static annotation also created earlier. Not covered live: Cancel edit and undefined-score branch."
+        notes: "Live baseline 8ceb99e9/current: created annotation at case score0.33, edited message, cancelled a further edit without leaking text, then deleted without confirmation; list and graph marker updated. Created/edited/deleted pairs inspected in .playwright-mcp/dual-parity. Current formats score0.33 and try4; historical shows raw decimal and internal try ID88. Not covered: persistence after reload, blank/unscored creation or request failures."
         paths: ["app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:44:55Z
         result: pass
-        notes: "Covered live: repeated searches yielded header sparkline (one SVG) and annotation update/delete retained one chart. Not covered live: marker-hover tooltip and 0\u20131 score branch."
+        notes: "Live baseline 8ceb99e9/current: multiple saved scores rendered one sparkline; creating/editing/deleting annotation added/removed one vertical marker with no duplicate SVG. Marker/deleted screenshots inspected in .playwright-mcp/dual-parity. Historical marker title updated to edited message. Current marker tooltip hover and 0-1-score empty state not verified; no tooltip parity claim."
         paths: ["app/views/core/index.html.erb", "app/javascript/controllers/qgraph_controller.js", "app/javascript/utils/qgraph.js", "app/assets/stylesheets/qgraph.css", "app/assets/stylesheets/qscore.css", "app/controllers/api/v1/case_scores_controller.rb", "test/javascript/utils/qgraph.test.js", "app/javascript/api/json.js"]
 
   "06":
@@ -396,15 +396,15 @@ parts:
     scenarios:
       "6.1":
         title: "Export a case"
-        last_run: 2026-10-05T23:45:15Z
-        result: pass
-        notes: "Covered live: downloaded all nine export formats; CSV headers/rows and JSON parse inspected, information need included saved text. Snapshot dropdown selected named snapshot. Not covered live: multi-case Detailed disabled."
-        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "test/javascript/utils/date_format.test.js"]
+        last_run: 2026-10-07T23:51:12Z
+        result: pass_with_fixes
+        notes: "Partial sample: Basic and TREC selections survive snapshot changes; inspected matched radio-selection screenshots. Replayed real rated-snapshot exports through UI; captured delivered download blobs/filenames (anchor intercepted after earlier browser crash): trec_snapshot.txt contained qrel rows; basic_snapshot.csv contained query,docid,rating CSV. Native filesystem download covered separately by E2E. Unrated snapshot TREC policy and other formats deferred."
+        paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "test/javascript/utils/date_format.test.js", "test/javascript/controllers/export_case_core_controller.test.js", "test/playwright/todo_fixes.spec.ts"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
-        last_run: 2026-10-05T23:45:15Z
+        last_run: 2026-10-07T19:51:54Z
         result: pass
-        notes: "Covered live: bad ratings CSV showed Headers mismatch; valid CSV imported qa-doc-2 rating2; Information Needs and exported Snapshot CSV imports succeeded. Not covered live: RRE/LTR input, unquoted extra-column rows."
+        notes: "Live baseline 8ceb99e9/current: rejected wrong-tab headers, then imported ratings CSV and Information Need CSV into existing legislative; success feedback and visible imported need confirmed. Imported a snapshot with foreign Case ID999999; both current-case comparison catalogs listed MCP Imported Snapshot. Invalid/imported/snapshot pairs inspected in .playwright-mcp/dual-parity. Not covered: RRE/LTR, clear/create flags, extra-column validation, cancel/no mutation or reload persistence."
         paths: ["app/controllers/api/v1/import/ratings_controller.rb", "app/controllers/api/v1/import/queries/information_needs_controller.rb", "app/services/snapshot_importer.rb", "app/javascript/controllers/import_ratings_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_import_ratings_core_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "test/javascript/controllers/import_ratings_core_controller.test.js", "test/playwright/dom_migration_screenshots.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "6.3":
         title: "Clone a case"
@@ -414,21 +414,21 @@ parts:
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/javascript/utils/error_message.js", "app/views/core/_case_toolbar.html.erb", "app/javascript/controllers/core_modal_controller_base.js"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
-        last_run: 2026-10-05T23:45:15Z
+        last_run: 2026-10-07T20:00:31Z
         result: pass
-        notes: "Covered live: disposable clone Delete All Queries yielded0 rows and kept case; Archive navigated index; unarchive then Delete Case navigated index and removed clone. Not covered live: proving annotation/snapshot retention (clone had none), forced failures."
+        notes: "Covered live on equivalent disposable cases: disabled initial confirmation, Delete All Queries preserved case/annotation/snapshot, Archive navigated to Cases and allowed unarchive, Delete Case permanently removed case and returned to list. Inspected each option screenshot pair against 8ceb99e9. Not covered live: rated-row deletion or forced server failures."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-10-06T00:08:55Z
-        result: pass
-        notes: "Covered live: shared fixture case 673 with team 26; closing/reopening displayed Already shared with. Earlier case 672 share persisted across reload. Not covered live: unshare mutation, selection toggle/cancel reset and forced retries."
+        last_run: 2026-10-07T20:07:25Z
+        result: blocked
+        notes: "Covered live: current core shared disposable case with OSC, reload/reopen showed shared state, unshared and reload/reopen restored available team; screenshot inspected. Historical 8ceb99e9 renders empty share-case components in toolbar and Judgements, preventing equivalent UI replay (toolbar screenshot saved). Remaining: historical share/unshare replay and current cancellation/failure matrix; investigate baseline component initialization without changing historical sources."
         paths: ["app/views/shared/_share_case_core_team_templates.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"
-        last_run: 2026-10-06T16:23:53Z
+        last_run: 2026-10-07T20:53:45Z
         result: pass
-        notes: "Covered live: owned book on a teamless case, injected save failure retained selection, retry/save and reload persisted the link with sync off. Inspected book-picker before/after and success/error screenshots. Deferred: sync operations, disconnect and broader team matrix; prior sync coverage remains in history."
+        notes: "Covered live current teamless owned-book picker, linked matching Static case to merge target, saved/reopened sync flags, Populate Now, Refresh Ratings, no-op Sync Queries, None/disconnect/reload with both flags off and controls/Save hidden. Historical team-only picker required OSC fixture association via Rails because Share UI unavailable; then Select Book and Populate, Refresh plus missing-query option, Unselect/reload worked. Matching target ratings 1/0 imported and AP=1 on both; inspected selected/refreshed/disconnected pairs. Historical one-time controls differ from current persistent sync flags. Not covered live: failure/retry, View/Cancel selection, empty-owner account, large background operation, actual missing-query creation and cross-case settings."
         paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/views/core/_judgement_book_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/core_runtime.js", "app/controllers/api/v1/books_controller.rb"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
@@ -438,27 +438,27 @@ parts:
         paths: ["app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/query_explain_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:28:19Z
         result: pass
-        notes: "Covered live: Matches Debug opened expanded raw explain for Star Wars id11, match/value/description/details visible; Escape closed. Not covered live: hot-match click and tree collapse."
+        notes: "Covered live: Matches Debug opened raw explain for Legislative summaries. id l_15577 in baseline 8ceb99e9/current; matching value 8.075559 and nested details rendered. Debug screenshot pair inspected in .playwright-mcp/dual-parity; baseline closed via Escape and current via backdrop; focused current Escape also closed after the show transition. Not covered live: hot-match click or tree collapse."
         paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:25:10Z
         result: pass
-        notes: "Covered live: title opened Star Wars id11 details with overview/cast; View All Fields exposed JSON, Hide All Fields collapsed; Escape closed. Screenshot inspected. Not covered live: direct engine popup and backdrop dismissal."
+        notes: "Covered live: title opened matching Legislative summaries. id l_15577 details on baseline 8ceb99e9/current; View All Fields exposed matching JSON, Close returned to results. Details/fields screenshot pairs inspected in .playwright-mcp/dual-parity. Not covered live: direct engine link, Hide All Fields, keyboard or backdrop dismissal."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.9":
         title: "Frog Report"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T19:47:14Z
         result: pass
-        notes: "Covered live: Frog Report showed5 result-bearing queries,0 zero-result queries,47 missing ratings and rendered distribution chart. Not covered live: full-rated congratulations and book refresh failure retry."
+        notes: "Live baseline 8ceb99e9/current: opened Frog Report on identical 5-result cases; both showed22 queries (20 with results,2 empty),100 required ratings, fully-rated congratulations and a single distribution bar22. Frog screenshot pair inspected in .playwright-mcp/dual-parity; chart paint differs (historical red transparent vs current blue white). Not covered: missing-rating distribution, book refresh or lifecycle/failure."
         paths: ["app/javascript/controllers/frog_report_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/views/core/_queries.html.erb", "app/assets/stylesheets/froggy.css", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T19:59:29Z
         result: pass
-        notes: "Covered live: case archive/unarchive/delete fixture flows. Recheck case 675 proved BOTH archive/unarchive app confirmation modals and correct list transitions. Earlier native-dialog-only check was insufficient and corrected. Not covered live: inaccessible case requests."
+        notes: "Covered live: restored disposable archived case on both instances and inspected confirmation/restored screenshots. Baseline 8ceb99e9 uses Archived Cases modal/Add Back; current uses Archived checkbox/row confirmation. Not covered live: team-list entry point."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/views/teams/_cases.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
 
   "07":
@@ -466,63 +466,63 @@ parts:
     scenarios:
       "7.1":
         title: "Browse / filter the Search Endpoints list"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-07T20:35:24Z
         result: pass
-        notes: "Covered live: combined name filter, Mine and team selection returned only disposable Solr endpoint. Not covered live: unrelated-user isolation, archived filter later in 7.5."
+        notes: "Covered live both: text search, Mine plus OSC filters yielded only shared owned fixture; nonexistent text yielded empty rows without first-endpoint message; Archived exposed archived clone. Inspected filter/archived pairs. Not covered live: unrelated-user visibility, no-endpoints account and inaccessible direct URL."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "7.2":
         title: "Create a Search Endpoint — one per engine type"
-        last_run: 2026-10-07T14:56:26Z
+        last_run: 2026-10-07T20:31:53Z
         result: pass
-        notes: "Covered live: forced-proxy Solr form rejects tampered false with 422, retains fields, then saves true/GET with 303; default-off JSONP/switch restored. Before/after screenshots inspected. Not covered live: full engine/team/credential matrix."
+        notes: "Covered live both instances: created all seven engine types; JSON arrays/malformed headers and options rejected; JSONP plus proxy rejected. Current no-colon basic auth rejected, historical 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65 accepted it (older validation absent). Inspected error screenshot pairs. Disposable unreachable URLs used for non-Solr types: creation only, no provider search claim. Not covered live: every required-field variant, zero-team and environment-specific proxy requirement."
         paths: ["app/views/shared/_team_picker.html.erb", "app/controllers/search_endpoints_controller.rb", "app/models/search_endpoint.rb", "app/views/search_endpoints/_form.html.erb", "app/views/search_endpoints/new.html.erb", "app/views/search_endpoints/edit.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "7.3":
         title: "View / Edit a Search Endpoint"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-07T20:34:45Z
         result: pass
-        notes: "Covered live: show details, shared team and owner; changed Solr URL, method and requests/minute to 60, saved and show retained values. Not covered live: masked Basic Auth roundtrip and hidden-team preservation."
+        notes: "Covered live both instances: edited rate to 7 and fake fixture credential, shared OSC, reloaded edit and resubmitted untouched; current masked in edit/show, baseline displays plaintext (older masking absent). Current existing-container boolean checks confirmed real fixture secret preserved after resave and clone. Inspected show screenshots. Not covered live: hidden-team preservation and used-by-case references."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "7.4":
         title: "Clone a Search Endpoint"
-        last_run: 2026-10-05T23:31:28Z
+        last_run: 2026-10-07T20:34:45Z
         result: pass
-        notes: "Covered live: cloned Search API endpoint with mapper code copied and Clone of name; save created endpoint38 owned by test user. Team selection did not carry over (unchecked). Not covered live: secret-bearing clone."
+        notes: "Covered live both: Clone of name and endpoint settings copied, renamed and saved a distinct owned record. Team sharing does not carry over. Current backend boolean verified real fixture credential copied, not mask; old clone displays fake credential unchanged. Inspected clone screenshot pair. Baseline 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65."
         paths: ["app/views/search_endpoints/_form.html.erb", "app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/clone.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "7.5":
         title: "Archive / Delete a Search Endpoint"
-        last_run: 2026-10-05T23:33:57Z
+        last_run: 2026-10-07T20:35:24Z
         result: pass
-        notes: "Covered live: endpoint38 Archive confirm, archived-filter presence, then Delete confirm removed disposable endpoint. Not covered live: referenced-case nullification."
+        notes: "Covered live both: confirmed Archive on disposable clone, active row disappeared, Archived plus name filter displayed it; confirmed Delete and verified removed direct URL redirects to list. Inspected archived screenshot pair. Not covered live: endpoint referenced by try, team-page archive/unarchive and unauthorized association."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/models/concerns/text_search.rb"]
       "7.6":
         title: "Share / unshare a Search Endpoint"
-        last_run: 2026-10-05T23:33:57Z
+        last_run: 2026-10-07T20:34:45Z
         result: pass
-        notes: "Covered live: unshared endpoint31 from team26; team-filtered row vanished, then unfiltered index share restored team association and notice. Not covered live: duplicate actions and inaccessible requests."
+        notes: "Covered live both: shared disposable cloned endpoint with OSC, reopened shared list, selected OSC and unshared, reopened to verify removal and exact unshared flash. UI removes already-shared team from choices and disables repeat unshare when none remain. Inspected shared screenshots. Not covered live: forced duplicate share/unshare POSTs or inaccessible endpoints."
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
-        last_run: 2026-10-07T14:23:18Z
+        last_run: 2026-10-07T20:38:15Z
         result: pass
-        notes: "Covered live: initial visible Step 2/3 headings with hidden bodies, updated example copy and routed Fetch success revealing preview/Step 2. Not covered live: real remote transport, POST, timeout, credentials and custom-header variants."
+        notes: "Covered live both: blank URL and file scheme rejected, POST hint switched to JSON, GET fetched same real Solr sample (2182 chars, 329 found, 2 docs) and revealed AI step; inspected preview screenshot pair. Current headings appear at entry, baseline hides 2/3 until progression. Not covered live: Copy/Expand, custom-header rejection, unreachable/timeout transport variants."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
-        last_run: 2026-10-06T18:28:43Z
-        result: pass
-        notes: "Covered live: real Rails/RubyLLM HTTP calls to a disposable local provider, invalid-key failure/retry and both populated editors before/after v2; screenshot pairs inspected. Not covered live: paid OpenAI, long samples and non-code answers (service regressions cover the latter)."
+        last_run: 2026-10-07T20:38:15Z
+        result: blocked
+        notes: "Covered live both: blank key and deliberately invalid fixture key produce clear errors; inspected screenshots. Successful real AI generation is blocked by lack of an authorized usable OpenAI API key in this session. Smallest prerequisite: provide a usable key through the wizard, then generate and test both mapper functions. Not covered live: successful generation, no-code response and truncation warning. Other sweep scenarios continue independently."
         paths: ["Gemfile.lock", "app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/services/mapper_wizard_service.rb", "app/views/mapper_wizards/show.html.erb"]
       "7.9":
         title: "Mapper Wizard — Step 3: Edit, Test & Refine"
-        last_run: 2026-10-07T14:23:18Z
-        result: pass
-        notes: "Covered live: manual link reveals both bodies without Fetch/key; three CodeMirror editors render, and Back reconnects them without duplication. Unsaved mapper code resets in both pre-batch 0d6e6b72 and current live replays. Not covered live: V8 Test, generation/refinement, save and existing-endpoint editing."
+        last_run: 2026-10-07T20:40:17Z
+        result: fail
+        notes: "Live parity discrepancy: identical JSON.parse(data) mappers returned 329/two docs on historical 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65 but current reported object-is-not-valid-JSON errors. Input contract changed in upstream 92519d55 (2026-02-23), before this migration: lib/v8_mapper_executor.rb now pre-parses JSON. Adaptive string/object mappers worked on both and console logs displayed; this does not resolve original compatibility discrepancy. Current manual-entry shortcut and historical stored-mapper preload exercised; inspected error/success screenshots. AI refinement blocked without usable provider key; empty/broken variants not exercised."
         paths: ["Gemfile.lock", "app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "lib/v8_mapper_executor.rb", "app/services/mapper_wizard_service.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
-        last_run: 2026-10-04T23:10:00Z
-        result: pass_with_fixes
-        notes: "Playwright MCP review-fix sample on an existing disposable endpoint: unchecked team plus API method forced blank in the outgoing request returns 422 with visible validation error; saved membership and wizard state remain. Removing the interception and retrying succeeds, clears visible sharing and redirects to Show. Inspected error before/after pair and success screenshot in .playwright-mcp/team-assignment; records removed. Fetch/generate/refine, new endpoint, credentials and hidden-team success flows deferred this sample."
+        last_run: 2026-10-07T20:40:17Z
+        result: pass
+        notes: "Covered live: current fresh wizard created Search API endpoint with GET URL, proxy on, OSC auto-selected and combined hand-edited mappers; historical existing-endpoint wizard saved equivalent settings/mappers (no teams selected). Show screenshots inspected. Re-entering fresh wizard on both cleared URL and fetched sample. Not covered live: malformed-header save and missing URL save."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.11":
         title: "Quepid proxy: SSRF guard"
@@ -533,9 +533,9 @@ parts:
 
       "7.12":
         title: "Qdrant preset: case creation, search and rated-document lookup"
-        last_run: 2026-10-06T15:59:10Z
-        result: pass_with_fixes
-        notes: "Original sample used the live demo for creation/search, rating refresh and point-ID lookup. Review-fix sample used type-sensitive intercepted Qdrant responses: numeric movie_id lookup returned zero before and one after; Missing Documents retrieved the rated payload ID. Inspected numeric-payload before/after and missing-documents screenshots. E2E covers point IDs, numeric payload IDs and leading-zero string IDs; mapper tests cover UUID, unsafe keys and >10 ratings. Scratch records removed and onboarding restored. Dense/self-hosted and live payload-ID collections deferred."
+        last_run: 2026-10-07T21:43:02Z
+        result: pass
+        notes: "Current live Qdrant replay: shipped POST/proxy preset validated; forced502 showed retained form/error and retry advanced without skip. Finished star wars case with prefilled fields,10 live results/loaded thumbnails; rating12180 persisted reload. Already Rated retrieved point; rated-only sent numeric has_id:[12180], limit1 and showed one result/no next-page control. Screenshots inspected. Baseline8ceb99e has no Qdrant preset; equivalent Search API flow tested separately. UUID/>10-id edges not rerun; disposable case/endpoint scheduled for sweep cleanup."
         paths: ["app/models/mapper_based_search_engine.rb", "db/mapper_based_search_engines/qdrant.js", "public/images/qdrant-icon.png", "public/images/qdrant.png", "docs/endpoints_qdrant.md", "app/javascript/controllers/wizard_controller.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/query_service.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/missing_documents_controller.js"]
 
       "7.13":
@@ -586,9 +586,9 @@ parts:
         paths: ["app/controllers/scorers_controller.rb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb"]
       "8.7":
         title: "Share / unshare a scorer with a team"
-        last_run: 2026-10-05T23:33:57Z
+        last_run: 2026-10-07T21:13:54Z
         result: pass
-        notes: "Covered live: shared custom27 with team26, reopened shared list, selected team and unshared successfully. Communal rows lacked Share. Not covered live: duplicate/inaccessible direct requests."
+        notes: "Both instances: created owned custom scorer, shared with OSC, reopened verified shared list, unshared and reopened verified none. Inspected both states. All-teams picker prevents duplicate share through UI; forced duplicate and direct unauthorized/communal requests not covered."
         paths: ["app/views/shared/_share_scorer_modal.html.erb", "app/javascript/controllers/share_scorer_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/scorers/index.html.erb", "app/views/scorers/_list.html.erb", "app/views/teams/_scorers.html.erb", "app/controllers/scorers_controller.rb", "app/services/team_sharing.rb", "app/views/shared/_index_filters.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "8.8":
         title: "Confirm the seeded communal scorers"
@@ -602,27 +602,27 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-10-06T20:00:31Z
+        last_run: 2026-10-07T23:52:41Z
         result: pass
-        notes: "Batch 7 MCP sample: solo empty state, CTA opened new-team form, filtered empty state omitted solo CTA. Before/after inspected. Create/rename and populated-team filter matrix deferred."
-        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts"]
+        notes: "Partial direct-fixes sample: existing team case list shows identical latest scores 0.618/0.420/0.246, timestamps and users before/after the bulk score-summary lookup; inspected matching screenshots. Rails regression proves one score query for multiple cases and Never Run fallback. Team create/rename, search/archive and other tabs deferred."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb"]
       "9.2":
         title: "Add a team member (existing user)"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T21:04:18Z
         result: pass
-        notes: "Covered live: exact-email autocomplete selected existing seed user and added to disposable team. Not covered live: duplicate membership/privacy suggestion boundaries."
+        notes: "Both instances added disposable existing user to OSC and rejected duplicate with already-member flash. Current exact-email autocomplete selected; historical had no cross-domain suggestion but direct Add worked. Screenshots inspected. Partial-name privacy boundary not exercised."
         paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.3":
         title: "Invite a new (non-existing) user"
-        last_run: 2026-10-05T23:20:41Z
+        last_run: 2026-10-07T21:04:18Z
         result: pass
-        notes: "Covered live: invited new email, delivery flash and INVITED badge, accepted link and badge disappeared. Not covered live: disabled-signup config/clipboard."
+        notes: "Both instances invited mcp-parity-invite-20261007@example.invalid, showed sent-email flash, member row and INVITED badge. Screenshots inspected. Disabled-signup, clipboard and acceptance not yet exercised."
         paths: ["app/javascript/controllers/invite_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/views/teams/show.html.erb", "app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.4":
         title: "Remove a team member"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:09:40Z
         result: pass
-        notes: "Covered live: modal-confirmed invitee removal; separate session lost book access and case returned 404. Not covered live: last human member removal."
+        notes: "Both instances: pending disposable invite member Remove opened matching Bootstrap confirmation, Confirm removed member row with removed-from-team notice. Screenshots inspected. Removed active-member resource access and last-human removal not exercised."
         paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.5":
         title: "Sharing a Case/Book/Search Endpoint/Scorer with a team"
@@ -642,9 +642,9 @@ parts:
     scenarios:
       "10.1":
         title: "Books list"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T20:24:35Z
         result: pass
-        notes: "Covered live: books columns, text matching shared team name, active list and archive/unarchive list transition. Not covered live: combined team/text/archive filter."
+        notes: "Covered live: populated book lists and combined book-name + OSC team + archived filters selected disposable book on both; active/archived switching exercised through archive roundtrip and inspected screenshots. Not covered live: zero-owned-books state or team-name text search."
         paths: ["app/controllers/books_controller.rb", "app/views/books/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js"]
       "10.2":
         title: "Create a new book"
@@ -654,51 +654,51 @@ parts:
         paths: ["app/javascript/controllers/case_book_synchronization_controller.js", "app/views/shared/_team_picker.html.erb", "app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.3":
         title: "Edit book settings"
-        last_run: 2026-10-06T17:07:23Z
-        result: fail
-        notes: "Covered live: assigned judge, auto-run and rank depth persisted, existing settings before/after inspected. Forced empty-name update reproduced the pre-existing @current_ratings nil error in both versions (todo.md); other settings succeed. Deferred: hidden-account matrix and attachment maintenance."
+        last_run: 2026-10-07T23:36:15Z
+        result: pass_with_fixes
+        notes: "Direct fixes sample: invalid empty-name submission now renders errors with 422 and populated remap data instead of the before 500. Reopening Settings retained the stored book name. Inspected book-invalid before-after pair. Membership/scorer assignments, file purge and other settings operations deferred; controller tests cover persisted settings on invalid update."
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/helpers/books_helper.rb", "app/controllers/concerns/book_scorer_assignment.rb", "app/models/books_ai_judge.rb", "app/models/book.rb"]
       "10.4":
         title: "Book Overview / Show page"
-        last_run: 2026-10-06T17:36:08Z
-        result: pass_with_fixes
-        notes: "Latest approved MCP sample: Overview live count/status during bounded manual judging, queued automatic continuation and cancellation; screenshots inspected. Earlier redesign coverage retained; archive/import/anonymous and broader management variants deferred."
+        last_run: 2026-10-07T20:24:35Z
+        result: pass
+        notes: "Covered live: disposable book empty and populated Overview, current coverage/activity/settings panels, archive confirmed and archived index membership verified, unarchive restored active status on both. Inspected Overview/archived-list screenshot pairs. Not covered live: 3+ judgements coverage, linked-case arrows, running jobs or AI launch."
         paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judge_count_cell.html.erb", "app/views/books/_judge_last_cell.html.erb", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/models/book.rb", "app/assets/stylesheets/judgements.css"]
       "10.5":
         title: "Combine (merge) books"
-        last_run: 2026-10-05T22:26:10Z
-        result: pass_with_fixes
-        notes: "Representative MCP sample: scale mismatch leaves target empty; successful merge persists one pair and judgement. Inspected matching viewport pairs in .playwright-mcp/best-practices; disposable books removed. Missing-source browser request returns 404 instead of the original 500 (Turbo retains Settings); inaccessible-source rejection and atomic rollback covered by Rails tests; multi-source averaging deferred live. Corrected unsupported mismatch-copy expectation: pre-Angular-removal b2478bd7 books_controller.rb:242-244 already states the target scale, not a source name (historical source inspection, not live replay)."
+        last_run: 2026-10-07T20:29:16Z
+        result: pass
+        notes: "Covered live on both instances: created matching binary/implicit target, merged 3 source pairs, verified fields and copied rating 1; changed target rating to 0 then merged again and verified per-user average 0.5. Current zero-rated source checkbox disabled. Inspected both screenshot pairs, baseline 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65. Not covered live: scale mismatch, inaccessible IDs and injected transaction rollback."
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/services/book_combiner.rb", "app/models/book.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/views/books/edit.html.erb"]
       "10.6a":
         title: "Assign anonymous judgements/ratings to a user"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:23:01Z
         result: pass
-        notes: "Covered live: seeded one anonymous judgement only in disposable book 42; UI assignment attributed it to user 47 with success notice. Not covered live: existing-user duplicate and blank required assignee."
+        notes: "Covered live: selected seed assignee and assigned one anonymous judgement on each disposable book. Historical fixture prepared in its existing container (historical existing-book Import fails); current fixture imported through UI and duplicate removed without changing existing user judgement. Inspected audit screenshots; all rows attributed to selected user. Not covered live: missing-assignee validation or anonymous case ratings."
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb"]
       "10.6b":
         title: "Delete judgements by user"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:27:52Z
         result: pass
-        notes: "Covered live: selected fixture user in book 42, confirmed Delete Judgements, success notice and overview returned. Not covered live: deletion across multiple judges."
+        notes: "Covered live on both instances: selected realisticActivity, accepted confirmation, removed all 3 disposable-book judgements and verified empty Judgements after navigation. Historical baseline 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65; inspected screenshot pair."
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb"]
       "10.6c":
         title: "Delete query doc pairs below a rank"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:21:03Z
         result: pass
-        notes: "Covered live: confirmed rank-5 cutoff in book 41; list retained ranks 1\u20135 and nil-position pair, removed ranks 6/7. Not covered live: empty-book cutoff."
+        notes: "Covered live: confirmed rank-3 cutoff on disposable six-pair books; only positions 1,2,3 remained on both, pair-list screenshot pair inspected. Not covered live: unranked pairs or missing cutoff validation."
         paths: ["app/controllers/books_controller.rb", "app/models/query_doc_pair.rb", "app/models/concerns/text_search.rb"]
       "10.6d":
         title: "Assign rating to Judge Later judgements"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:19:11Z
         result: pass
-        notes: "Covered live: Judge Later fixture mapped to rating 1 via confirmed maintenance form; notice reported one mapped and stats Later count became zero. Not covered live: zero-mapping submission."
+        notes: "Covered live: confirmed Assign Rating and Clear Judge Later mapped one Later judgement to 1.0; expanded audit showed cleared Later flag and persisted rating on both. Inspected screenshot pair against 8ceb99e9. Not covered live: zero-Later variant."
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb"]
       "10.6e":
         title: "Remap judgement ratings"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:20:31Z
         result: pass
-        notes: "Covered live: simultaneous 3\u21922 and 2\u21921 mappings changed original values once; audit showed 3s became 2, original 2s became 1; associated case ratings updated and scale remained 0\u20133. Not covered live: blank/no-op mappings."
+        notes: "Covered live on current: confirmed remap 1 to 0; audit showed all three ratings 0.0 after reload, screenshot inspected. Historical 8ceb99e9 has no remap form, so parity replay unavailable for this later feature. Not covered live: linked-case ratings, unchanged/blank/chained mapping or scale preservation."
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/models/concerns/text_search.rb"]
       "10.7":
         title: "Import a new book from JSON"
@@ -721,9 +721,9 @@ parts:
 
       "10.10":
         title: "Judge Overview"
-        last_run: 2026-10-06T17:44:32Z
-        result: pass_with_fixes
-        notes: "Covered MCP sample: rank-limited personal progress corrected from 300% to 100% (one of one eligible pairs), while total contributions and activity retain all three judgements. Inspected before/after screenshots after the final controller save. Deferred: empty/completed book variants and broader navigation/rubric flows."
+        last_run: 2026-10-07T20:28:16Z
+        result: pass
+        notes: "Covered live current Judge Overview: empty 0/3, Start Judging contribution, reload 1/3 (33%), remaining 2, rubric and 30-day chart; followed Bulk Judging showing 2 unrated documents. Previously observed completed 3/3 with disabled links. Inspected screenshots. Historical 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65 has no Judge Overview; captured its book Overview and exercised equivalent judging entry. Not covered live: Rank Depth and alternative selection strategies."
         paths: ["app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/models/book.rb", "app/models/selection_strategy.rb"]
 
   "11":
@@ -731,27 +731,27 @@ parts:
     scenarios:
       "11.1":
         title: "Single-pair judging screen"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: mouse ratings advanced through four cards, persisted four human judgements, linked-case sync completed. Exhausted one-pair and four-pair books returned full Book Overview with completion notice. Fixed frame escape with reload directive and retained flash. Before/after screenshots inspected. Not covered live: rapid duplicate clicks."
+        last_run: 2026-10-07T20:14:51Z
+        result: pass
+        notes: "Covered live: matching six-pair books displayed query/information need, fields, rank and rating scale; mouse Relevant saved 1.0 and advanced on both. Inspected judging/audit screenshots. Not covered live: rapid duplicate click or linked-case rating sync."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/_form.html.erb", "app/models/judgement.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.2":
         title: "Keyboard-shortcut rating"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:14:51Z
         result: pass
-        notes: "Covered live: D selected rating 2 after hold, explanation typing did not trigger shortcut. Not covered live: all ten mapped keys and modal focus exclusion."
+        notes: "Covered live: A keyboard shortcut saved 0.0 and advanced on both; typed A/S in explanation textarea and open skip modal without submission. Inspected judging/audit screenshots. Binary scale only; not covered live: all ten mapped keys or hold-highlight screenshot."
         paths: ["app/assets/", "app/javascript/controllers/", "app/javascript/api/json.js"]
       "11.3":
         title: "I will Judge Later"
-        last_run: 2026-10-06T14:50:34Z
-        result: pass_with_fixes
-        notes: "Covered live: hover sent no request; one POST returned 303 and advanced within the same JS environment. Disposable book retained exactly one nil-rated Later judgement after reload/history; former GET returned 404. Before-after screenshots inspected; random card text differs. Repeated POST covered by Rails test; fixture removed."
+        last_run: 2026-10-07T20:14:51Z
+        result: pass
+        notes: "Covered live: hover produced no Judge Later request; click persisted Later judgement and advanced on both. Historical uses GET/302; current POST/303. Inspected audit screenshot pair. Current former GET checked separately; not covered live: Back/Forward replay."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/_form.html.erb", "config/routes.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.4":
         title: "I Can't Tell (mark unrateable)"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:14:51Z
         result: pass
-        notes: "Covered live: I Can't Tell modal accepted explanation and skipped; unrateable audit filter retained reason; cancelled modal preserved card. Not covered live: post-cancel keyboard shortcut."
+        notes: "Covered live: opened/cancelled explanation modal without advancing, then saved unrateable explanation and advanced on both; inspected modal/audit screenshots. Not covered live: empty explanation variant."
         paths: ["app/controllers/judgements_controller.rb", "app/models/judgement.rb", "app/views/shared/_modal_shell.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
       "11.5":
         title: "Session milestones, navigation, and completion"
@@ -761,27 +761,27 @@ parts:
         paths: ["app/views/judgements/new.html.erb", "app/views/judgements/edit.html.erb", "app/views/judgements/show.html.erb", "app/views/books/judge_overview.html.erb", "app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.6":
         title: "Judgements list (audit view)"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:16:46Z
         result: pass
-        notes: "Covered live: pair-id/doc-id/query syntax, explanation free text, judge filter, Compact expanded columns, individual Later/Unrateable filters and judgement ID edit link. Not covered live: combined flag filters and pagination."
+        notes: "Covered live: saved mouse/keyboard/Later/unrateable rows, expanded columns, Later and Unrateable filters each returned one expected row, doc_id:mcp_doc_3 returned rated pair on both; inspected audit screenshot pairs. Not covered live: judge/combined filters, full search syntax matrix or edit/re-rate from audit."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
-        last_run: 2026-10-06T17:07:23Z
+        last_run: 2026-10-07T20:17:38Z
         result: pass
-        notes: "Covered live: leaderboard/distribution and before/after action placement; removed duplicate launch control, scoped Refine Prompt remains. Deferred: reset buttons and anonymous bucket in this batch."
+        notes: "Covered live: one-human leaderboard with four contributions, one Later and one unrateable; reset unrateable removed that judgement, count became zero/reset disappeared while Later count stayed one on both. Inspected chart/reset screenshots. Not covered live: Later reset, multiple judges or anonymous bucket."
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_judge_status_cell.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"
-        last_run: 2026-10-06T19:58:33Z
-        result: pass
-        notes: "Batch 7 MCP sample: bulk grid opened and Back to Judge Overview navigated correctly; before/after inspected. Rating/filter/pagination matrix deferred; bulk controller regressions passed."
-        paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb"]
+        last_run: 2026-10-07T23:34:40Z
+        result: pass_with_fixes
+        notes: "Direct fixes sample: rapid edits to two rated rows both persist; clearing a Judge Later explanation persists after reload. Forced 500 reports Error saving and retains prior saved text; navigation before debounce cancels the edit, verified by hard reload after Back. Inspected bulk rapid/clear before-after pairs. Other filters, rank depth, pagination and rating/reset matrix deferred."
+        paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js"]
       "11.9":
         title: "Query/Doc Pairs management"
-        last_run: 2026-10-05T23:51:55Z
+        last_run: 2026-10-07T20:12:18Z
         result: pass
-        notes: "Covered live: partial doc/id/field searches, judgement count column, full JSON modal, new pair with optional fields; invalid document JSON validation; editing existing pair retained both judgement IDs. Not covered live: invalid Options JSON and deleting from pair edit."
+        notes: "Covered live: created six identical pairs, document-id filter, judgement-count toggle, full document JSON modal and Notes edit/reopen persistence on both instances; inspected pair-list/modal screenshots. Historical create/update redirects to list with dot-format suffix; current redirects to pair Show. Not covered live: invalid JSON, edit with existing judgements, pair-ID/content search or deletion."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query_doc_pair.rb", "test/controllers/query_doc_pairs_controller_test.rb", "app/views/query_doc_pairs/index.html.erb", "app/views/query_doc_pairs/new.html.erb", "app/views/query_doc_pairs/edit.html.erb", "app/views/query_doc_pairs/show.html.erb", "app/views/query_doc_pairs/_form.html.erb", "app/views/query_doc_pairs/_document_fields.html.erb", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb"]
 
   "12":
@@ -795,15 +795,15 @@ parts:
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
-        last_run: 2026-10-06T19:57:38Z
+        last_run: 2026-10-07T21:56:19Z
         result: pass
-        notes: "Batch 7 MCP sample: owned judge edit saved and displayed update notice; screenshot inspected. Delete/key replacement and cross-account browser matrix deferred; judge controller regressions passed."
+        notes: "Edited name and prompt of matching local fixture judges on baseline 8ceb99e9/current, saved and reopened persisted values. Current index delete of zero-judgement clone: Cancel retained row; Confirm deleted it and returned to index, inspected confirmation screenshot. Historical nested edit has no index/delete control (new standalone surface), so deletion parity is not asserted. Existing-judgement restriction and hidden-team preservation tested separately with 12.7; provider edits also covered in 12.9/17.6."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/edit.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/views/ai_judges/index.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/models/concerns/for_user_scope.rb"]
       "12.3":
         title: "Assign an AI Judge to a Book"
-        last_run: 2026-10-06T16:29:40Z
+        last_run: 2026-10-07T21:52:33Z
         result: pass
-        notes: "Covered live: assigned owned judge to teamless book after selecting required scale, saved/reopened and checked persistence; inspected Settings screenshot. E2E asserts the saved checkbox. Deferred: overview call-to-action and cross-account matrix; Rails covers owned/shared access and hidden assignments."
+        notes: "Equivalent graded books and local fixture AI judges on baseline 8ceb99e9/current. Selected assigned judge in Settings, saved, reloaded and confirmed checked and named helping text on Overview; inspected screenshot pair. Both share OSC team. Private/teamless, hidden-assignment preservation and forged inaccessible-ID edges are deferred to 12.7; no claim of historical support for new ownership eligibility."
         paths: ["app/controllers/books_controller.rb", "app/models/concerns/text_search.rb", "app/models/ai_judge.rb", "app/models/book.rb", "app/models/concerns/for_user_scope.rb", "app/helpers/books_helper.rb", "app/views/books/_form.html.erb", "app/views/books/show.html.erb"]
       "12.4":
         title: "Test & Refine an AI Judge's prompt"
@@ -813,9 +813,9 @@ parts:
         paths: ["app/controllers/ai_judges/prompts_controller.rb", "app/views/ai_judges/prompts/edit.html.erb", "app/views/ai_judges/prompts/_form.html.erb", "app/views/ai_judges/prompts/update.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/views/books/judgement_stats.html.erb", "app/models/ai_judge.rb", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
       "12.5":
         title: "Trigger a judging run (Judge Judy)"
-        last_run: 2026-10-06T17:36:08Z
-        result: pass_with_fixes
-        notes: "Latest approved MCP sample: bounded manual launch, automatic continuation for new pairs, all-pairs launch, cancellation with one pending response saving and stable count afterward; conflicting restart creates no overlap. Book Activity E2E covers failure/retry and linked-rating refresh. Broader providers and zero-work live variants deferred."
+        last_run: 2026-10-07T21:54:21Z
+        result: pass
+        notes: "Live UI default bounded runs created exactly 10 rating-2 judgements per matching 12-pair book via local OpenAI-compatible fixtures, attributed to the disposable judge with explanations. Judge All created the remaining 2, all 12 visible after navigation; inspected modal/audit screenshot pairs and kraken capture made. Current label changed to Unleash the Kraken!!; baseline Stats modal retained Judge Documents because updateModalTitle is defined only on Overview (source and live baseline limit). Current activity row updated live to 12; aggregate Not Started remained 2 until reload, investigated in 12.8. Zero-pair/failure edges deferred to 12.8."
         paths: ["app/jobs/", "app/models/user.rb", "app/models/book.rb", "app/models/judgement.rb", "app/services/llm_service.rb", "app/views/books/_unleash_modal.html.erb", "app/views/books/_kraken_unleashed.html.erb", "app/views/books/_update_kraken_mode.turbo_stream.erb", "app/views/books/_judging.turbo_stream.erb", "app/views/books/_complete.turbo_stream.erb", "app/views/books/_notification.turbo_stream.erb", "app/views/shared/_modal_shell.html.erb", "app/models/ai_judge.rb", "app/controllers/books_controller.rb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judging_modal.html.erb", "app/views/books/_judging_activity_detail.html.erb", "app/views/books/_cancel_judging_button.html.erb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/selection_strategy.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb"]
 
       "12.6":
@@ -827,30 +827,30 @@ parts:
 
       "12.7":
         title: "Judge ownership and document access"
-        last_run: null
-        result: null
-        notes: "Deferred cross-account browser matrix under approved sample. Rails verifies private access denial, shared editing, hidden-team retention and requester-scoped document sampling."
+        last_run: 2026-10-07T21:59:04Z
+        result: pass
+        notes: "Current owner-only disposable judge omitted from OSC Member index and Book choices; authenticated direct show/edit/PATCH/DELETE all 404, forged private assignment 404. After sharing OSC plus owner-only Navigation Team, Member edited name while hidden-team sharing survived. Ten sample requests, with/without inaccessible private Book ID, returned accessible data and never the distinctive private marker. Private judge assigned to teamless owned nonstandard-scale Book persisted. Existing shared judge with 12 judgements survived DELETE (redirect/index still present). Omitted-choice screenshot inspected. Historical 8ceb99e9 has no owned-judge/index/wizard-sample contract, so these are current authorization checks; shared team judge editing is replayed by 12.2. Hidden assignment update edge remains partial."
         paths: ["app/models/ai_judge.rb", "app/models/user.rb", "app/models/concerns/for_user_scope.rb", "app/controllers/ai_judges_controller.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/books_controller.rb", "db/migrate/20260914204719_add_owner_id_to_users.rb", "db/migrate/20260915163412_backfill_ai_judge_owners.rb", "db/migrate/20260915214546_add_type_to_users.rb"]
 
       "12.8":
         title: "Automatic judging, cancellation and live synchronization"
-        last_run: 2026-10-06T17:35:58Z
+        last_run: 2026-10-07T23:46:43Z
         result: pass_with_fixes
-        notes: "Covered MCP sample with held local provider: bounded manual run plus two new pairs queued one automatic continuation; all five eligible pairs judged. Cancellation retained the lock, conflicting restart created no second run, current response saved once, count then stayed six and status became idle. Inspected screenshots. Book Activity E2E also passed rank-limited auto-run, provider failure/retry and linked-rating refresh. Deferred: broader providers, cross-account and unrelated book flows."
-        paths: ["app/controllers/books_controller.rb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/jobs/update_case_ratings_job.rb", "app/jobs/judgement_from_rating_job.rb", "app/javascript/utils/book_sync.js", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judging_modal.html.erb", "db/migrate/20260914010000_add_rank_depth_to_books.rb", "db/migrate/20260914010100_add_auto_run_to_books_ai_judges.rb"]
+        notes: "Partial sample: browser imported the real book-sync runtime; first A then A/B produced A rank 1 and B rank 2 after the fix, versus cleared A and B rank 1 before. Persisted actual queued payloads synchronously in disposable fixtures because the existing worker did not consume requests. Inspected matching screenshots. AI judging, cancellation, queue health and other synchronization flows deferred."
+        paths: ["app/controllers/books_controller.rb", "app/models/books_ai_judge.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/jobs/update_case_ratings_job.rb", "app/jobs/judgement_from_rating_job.rb", "app/javascript/utils/book_sync.js", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judging_modal.html.erb", "db/migrate/20260914010000_add_rank_depth_to_books.rb", "db/migrate/20260914010100_add_auto_run_to_books_ai_judges.rb", "test/javascript/utils/book_sync.test.js", "test/jobs/populate_book_job_test.rb", "test/jobs/update_case_job_test.rb"]
 
       "12.9":
         title: "TypeSafe Jev and provider acceptance rules"
-        last_run: 2026-10-06T18:02:15Z
+        last_run: 2026-10-07T22:02:28Z
         result: pass
-        notes: "Approved MCP sample: missing-scale gate; book-scoped [1,3,5] criteria/mapping, low confidence, API error and refused-request retry through local HTTP provider; saved confidence, image preferences and real Ollama regression. Screenshots inspected. Rails verifies Jev job persistence/missing answers, preview rejection, adapters/auth and timeout retry limits. Live TypeSafe, all-provider credentials and long-scale browser coverage deferred. Scratch rows/provider removed."
+        notes: "Current Jev UI showed fixed URL/model/version, disabled images and scale guidance. No-scale preview returned 422 with zero local provider calls. Nonstandard [1,3,5] labels/criteria sent to /v1/systemone; score 1.6 mapped to 5 with confidence/distribution explanation. Saved floor 0.9 persisted and rejected confidence 0.7. Fixture 401/missing-answer/timeout returned recoverable Unrateable; 429 and 529 each made exactly two calls then succeeded, timeout one call only. Bounded job persisted rating 5/explanation; inspected UI screenshots. This verifies local transport/acceptance, not live TypeSafe service; baseline 8ceb99e9 lacks Jev adapter/provider UI. Preview made no persistent judgements before explicit run."
         paths: ["app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/controllers/ai_judges/wizard_controller.rb", "app/controllers/ai_judges_controller.rb", "app/models/ai_judge.rb", "app/jobs/run_judge_judy_job.rb", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "config/initializers/customize_quepid.rb"]
 
       "12.10":
         title: "Clone a team AI Judge"
-        last_run: 2026-10-06T19:53:53Z
+        last_run: 2026-10-07T21:55:44Z
         result: pass
-        notes: "MCP: nested clone opened unsaved; blank-prompt failure retained configuration/team/action, corrected retry created a distinct owned judge with matching key and team. Screenshots inspected. Rails covers no-write GET, unauthorized scopes, exact JSON options, no account/book state and malformed JSON. Cross-account/private-clone browser matrix deferred."
+        notes: "Current supported nested clone URL copied configuration into an unsaved form, kept OSC only and retained fields/create action after blank-prompt 422. Corrected and saved, redirected to team, reopened distinct judge 1044838752; owner 3, same fixture key/prompt/options, zero books/judgements, source unchanged. Validation screenshot inspected. Historical 8ceb99e9 clone URL has no route (live 404 and source routes confirmed), so this is new current functionality, not a historical replay. Inaccessible-source/private-clone/malformed-JSON edges not all exercised."
         paths: ["app/controllers/ai_judges_controller.rb", "config/routes.rb", "app/views/ai_judges/new.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/shared/_team_picker.html.erb", "app/models/ai_judge.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/javascript/controllers/ai_judge_form_controller.js"]
 
   "13":
@@ -898,33 +898,33 @@ parts:
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb", "app/views/admin/users/index.csv.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.4":
         title: "User show page & Pulse activity"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:06:48Z
         result: pass
-        notes: "Covered live: realistic seed user details and Pulse heatmap screenshot. Not covered live: pending invitation usage replacement and every chart dataset."
+        notes: "Both instances: realisticActivity user fields and six dated Pulse heatmaps rendered; pending disposable invite replaces usage charts with not-accepted alert. Screenshots inspected. Counts differ because isolated databases have different histories."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb", "app/controllers/admin/users/pulses_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb", "app/javascript/controllers/user_activity_controller.js"]
       "14.5":
         title: "Lock / unlock a user"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:01:30Z
         result: pass
-        notes: "Covered live: fixture user 50 lock blocked separate-session login, unlock restored login. Not covered live: existing active-session invalidation or admin self-lock."
+        notes: "Both 8ceb99e9 and current: admin locked disposable user; already-active session survived reload; subsequent login rejected with generic unknown-email/password message; unlock restored login. Screenshots inspected. Self-lock and index icon not covered."
         paths: ["app/controllers/admin/users_controller.rb", "app/controllers/admin/users/locks_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.6":
         title: "Edit a user"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:02:10Z
         result: pass
-        notes: "Covered live: fixture user promotion granted admin in separate session, demotion revoked it; plain password changed and new password authenticated. Not covered live: logged-in admin self-demotion."
+        notes: "Both instances: promote disposable user, separate active session accesses /admin; demote redirects /admin to home with administrator alert; admin replaced password and separate session logged in using replacement. Promoted screenshots inspected. Self-demotion not covered."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.7":
         title: "Assign judgements to anonymous user (admin-level)"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:07:59Z
         result: pass
-        notes: "Covered live: invitee 48 owned two judgements; admin reassignment succeeded with All judgements assigned to anonymous user notice. Not covered live: empty-user reassignment."
+        notes: "Both instances: disposable user submitted one bulk judgement; admin reassigned it to anonymous; Edit changed 1 to 0 judgements and database check confirmed one nil-user fixture judgement remains. Screenshots inspected."
         paths: ["app/controllers/admin/users_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.8":
         title: "Delete a user"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:06:48Z
         result: pass
-        notes: "Covered live: invitee deletion blocked with reassignment validation while two judgements existed; reassign then confirmed correctly worded deletion succeeded; empty user 50 deletion succeeded. Not covered live: admin deletion of annotation/case/book owner."
+        notes: "Both instances: deleted disposable pre-encrypted user via Admin Edit, confirmation reads Are you sure you want to delete this User?, returned to Users index with removal notice. Screenshots inspected. Owned-resource, annotation and un-reassigned-judgement deletion edge cases not covered here."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.9":
         title: "Announcements"
@@ -940,22 +940,22 @@ parts:
         paths: ["app/controllers/admin/websocket_tester_controller.rb", "app/views/admin/websocket_tester/index.html.erb", "app/views/admin/websocket_tester/_notification.turbo_stream.erb", "app/channels/application_cable/connection.rb", "app/controllers/concerns/authentication/current_user_manager.rb"]
       "14.11":
         title: "Mounted engines (Job Manager, SQL Analytics, Rails Pulse)"
-        last_run: 2026-10-06T19:21:50Z
+        last_run: 2026-10-07T21:06:21Z
         result: pass
-        notes: "Admin Job Manager, SQL Analytics and Rails Pulse loaded. Confirmed non-admin OSC member receives 404 from all three and Pulse Requests; anonymous Pulse also 404. Engine predicate tested separately with production authentication enabled. SQL execution and every deep route deferred."
+        notes: "Live: admin Job Manager and Blazer loaded on both instances; SELECT 1 returned parity_check=1. Current Rails Pulse dashboard rendered (absent at historical baseline). Non-admin requests to all three engines and Pulse requests returned 404. Screenshots inspected. Signed-out Pulse gate not yet exercised."
         paths: ["config/routes.rb", "config/initializers/rails_pulse.rb", "app/views/admin/home/index.html.erb"]
       "14.12":
         title: "Create a user (admin)"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:05:19Z
         result: pass
-        notes: "Covered live: admin created plain-password fixture 50 with name/company; mismatch validation rejected first submit; separate login succeeded. Not covered live: pre-encrypted password, blank/duplicate email and create-time admin flag."
+        notes: "Both instances: admin created disposable plain-password user after mismatch rejection and separately created pre-encrypted user using the first disposable user hash; each logged in with the represented password. Creation and hash-login screenshots inspected. Duplicate/blank email not covered; cleanup via deletion scenarios follows."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/new.html.erb", "app/views/admin/users/_form.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
 
       "14.13":
         title: "Rails Pulse monitoring"
-        last_run: 2026-10-06T19:21:50Z
+        last_run: 2026-10-07T21:14:27Z
         result: pass
-        notes: "Live sample: setup screen, dashboard charts, real admin request timeline/normalized SQL, real Solid Queue tester success (31s) and Job detail. Generated initial hour/day summaries explicitly; recurring tasks registered. Job failure and retention covered by Rails tests, not live browser; long-term production volume and all filters deferred. Screenshots inspected under upstream-pulse."
+        notes: "Current live: Pulse dashboard charts, request detail with status/duration/normalized SQL/timeline, and newly triggered Websocket Tester job run 433 (success, 31 seconds) rendered; fresh scorer request 4101 recorded. Screenshots inspected. Pulse absent in 8ceb99e9 historical instance. Failed-job monitoring and isolated expiry cleanup not exercised; hourly summary not forced because charts already existed."
         paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "config/initializers/postgresql_schema_compatibility.rb"]
 
   "15":
@@ -969,21 +969,21 @@ parts:
         paths: ["app/views/layouts/_sidebar.html.erb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:22:20Z
         result: pass
-        notes: "Covered live: recent case/book dropdowns on management/core, core active counts, non-admin actions and 768px collapsed core navbar expansion. Not covered live: create actions/context-derived book params, management 768 dropdown, empty lists."
+        notes: "Dual live replay: management/core recent case/book lists, active counts, desktop and 768px core dropdowns; case Create Book reached form with origin/scorer and team where attached. Viewports inspected. Current core toggle is new; historical navbar wraps. Create wizard exercised separately in 3.2/7.12. Not rerun: brand-new empty lists, management mobile toggle."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/controllers/dropdown_controller.rb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:19:00Z
         result: pass
-        notes: "Covered live: API Docs link loaded RapiDoc catalogue; User Manual/Wiki href and new-tab targets verified. Not covered live: actual external destination navigation or Docs try-it-out."
+        notes: "Dual live replay against 8ceb99e: User Manual and Wiki actually opened correct external pages in new tabs; API Docs loaded catalogue on both, viewport pairs inspected. Authenticated API execution covered separately in 17.4."
         paths: ["config/routes.rb", "app/views/layouts/_header_help_links.html.erb"]
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
-        last_run: 2026-10-06T14:52:17Z
-        result: pass_with_fixes
-        notes: "Covered live: management/core account menus retained profile/API/admin shortcuts; logout button submitted a native DELETE override and reached login. Before-after viewport pairs inspected; core background differed during asynchronous scoring. Not rerun: non-admin gating/all shortcut destinations."
+        last_run: 2026-10-07T21:19:00Z
+        result: pass
+        notes: "Dual live replay: admin and OSC member avatar menus inspected; admin shortcuts present only for admin and member direct admin URL rejected. Profile/API destinations and logout exercised in account flows. Before/after viewport pairs inspected."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.5":
         title: "Cookies static page"
@@ -1007,23 +1007,23 @@ parts:
 
       "15.8":
         title: "Turbo Drive navigation and lifecycle"
-        last_run: 2026-10-07T14:23:18Z
+        last_run: 2026-10-07T21:25:13Z
         result: pass
-        notes: "Covered live: real Profile notice/error submission; Rails/admin Drive navigation/Back, one-time notice removal and alert disconnect/reconnect; actual Home-to-case click creates a fresh Drive-disabled document and Back restores management Drive. Mapper Back matches the pre-batch reset and reconnects three editors. Not covered live: HTTPS, scorer editing, judging/archive controls, analytics and full navigation sweep."
+        notes: "Dual live replay: Teams blank/valid create, Teams/Scorers Back/Forward, one scorer editor and save, case/management transitions and standalone analytics chart. Current Back retained unsaved editor text; old reloaded saved code. Current archive confirmation cancelled; historical archived immediately and was unarchived. Screenshot pairs inspected. AI tabs/judging covered in Part12; HTTPS unavailable."
         paths: ["app/javascript/application.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/page_cache_controller.js", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/consent_toast_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/score_selection_controller.js", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/kraken_controller.js", "app/javascript/modules/editor.js", "app/helpers/application_helper.rb", "app/controllers/teams_controller.rb", "app/controllers/application_controller.rb", "app/responders/application_responder.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/judgements/_form.html.erb", "app/views/scores/index.html.erb", "app/views/ai_judges/_form.html.erb", "test/playwright/turbo_drive.spec.ts", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb", "app/javascript/controllers/user_activity_controller.js", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb"]
 
       "15.9":
         title: "GET mutation and prefetch safety"
-        last_run: 2026-10-06T14:50:34Z
+        last_run: 2026-10-07T21:26:09Z
         result: pass
-        notes: "Covered live: global meta guard remained false, Judge Later/logout hover sent no request; marked judge prefetch returned 400, old mutation GETs returned 404, session remained active. Controller tests cover HEAD, header variants, counter, case/mapper/announcement and queued-job state. Deferred live: other management/admin destinations, legacy bootstrap and mounted engines."
+        notes: "Dual live navigation: hover Judge produced no request on either; current management turbo-prefetch=false (absent historically). Current judging/core/home/book/mapper GETs with each of X-Sec-Purpose/Sec-Purpose/Purpose returned400 private,no-store; old logout/Judge Later GET and HEAD404, session retained. Baseline predates these safety guards. Not rerun: every DB side-effect counter and admin mounted engines."
         paths: ["config/routes.rb", "app/controllers/application_controller.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/controller_configuration.rb", "app/controllers/core_controller.rb", "app/controllers/home_controller.rb", "app/controllers/mapper_wizards_controller.rb", "app/controllers/concerns/authentication/current_book_manager.rb", "app/controllers/books_controller.rb", "app/controllers/judgements_controller.rb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/judgements/new.html.erb", "app/views/judgements/_moar_judgements_needed.html.erb", "test/controllers/get_mutations_test.rb"]
 
       "15.10":
         title: "Flash timing and placement"
-        last_run: 2026-10-07T14:30:20Z
+        last_run: 2026-10-07T21:28:15Z
         result: pass
-        notes: "Covered live: real Rails notice/error, helper-rendered admin success/error fixtures and core event channels; five-second timing, combined hover/focus pause/restart, reconnection, Turbo Back and modal-close stacking. Before/after viewport pairs inspected. Not covered live: live admin mutation failures, warning type and every flash-producing flow."
+        notes: "Dual live replay: actual Profile success/error viewport pairs; current notice visible3s/gone6s, hover+focus pause and fresh5s delay, error persists. Current Turbo Back did not repeat notice. Core service/event fixtures: main timed out despite hover, search-error persisted6s on both; screenshots inspected. Historical Rails notice persists in header; current overlay/timer follows changed contract. Not rerun: warning, every admin producer, modal stacking."
         paths: ["app/helpers/application_helper.rb", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/bootstrap5-add.css", "app/javascript/controllers/flash_controller.js", "app/views/core/index.html.erb", "app/assets/stylesheets/core-additions.css"]
       "15.11":
         title: "Global avatar presentation"
@@ -1037,9 +1037,9 @@ parts:
     scenarios:
       "16.1":
         title: "Popover & tooltip paint check (BS3↔BS5 trap)"
-        last_run: 2026-10-06T14:16:22Z
-        result: pass_with_fixes
-        notes: "Custom ten-value labeled rating popover clipped final choice/RESET before fix; flex wrapping keeps every button inside at 1280x900 and 768x900. Before/after viewport pairs inspected; computed display block, opacity 1, font-size 14px. Deferred tooltip, Matches and broader popover sweep."
+        last_run: 2026-10-07T20:03:57Z
+        result: pass
+        notes: "Covered live: rating popover and Info Need tooltip visibly paint on both core instances; tooltip display block, opacity 0.9, baseline/current font sizes 12px/14px, current transform places it beside query. Inspected screenshot pairs. Not covered live: every popover family or scrollbar/pane matrix."
         paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/stylesheets/bootstrap5-compat.css", "app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_tooltip.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/match_explain_controller.js", "app/views/core/_queries.html.erb", "app/views/shared/_clone_case_core_modal.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "test/playwright/popover_visibility.spec.ts", "app/assets/stylesheets/core-additions.css", "test/playwright/modal_a11y.spec.ts"]
       "16.2":
         title: "Narrow viewport reflow sweep"
@@ -1049,15 +1049,15 @@ parts:
         paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/assets/stylesheets/application.css", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "app/views/admin/users/index.html.erb"]
       "16.3":
         title: "Case header typography"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T20:04:17Z
         result: pass
-        notes: "Covered live: core h1 35px and subtitle 30.625px (exact 0.875 ratio), visual heading inspected. Not covered live: additional breakpoints."
+        notes: "Covered live: current visible h1 is 35px with small subtitles 30.625px (0.875 ratio); historical 36px/23.4px. Inspected header screenshot pairs at desktop width. Not covered live: all responsive breakpoints."
         paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/assets/stylesheets/core-additions.css"]
       "16.4":
         title: "Modal accessibility spot-check"
-        last_run: 2026-10-06T14:11:10Z
-        result: pass_with_fixes
-        notes: "axe select-name/heading-order clean for Export, Compare (two picker rows), and Judgements including Case Integration. Tab traversal/Escape passed; BODY browser-chrome boundary allowed, no background controls focused. Explain structural scan and failed-Move Escape passed. Before/after screenshots inspected. Deferred Import and other axe rules/color contrast."
+        last_run: 2026-10-07T20:14:51Z
+        result: pass
+        notes: "Covered live: Record Explanation modal focus remained inside for seven Tab presses and Escape closed it on both instances; screenshots inspected. Not covered live: axe scan, Export/Compare/Judgements ARIA matrix."
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts", "app/views/shared/_export_case_core_modal.html.erb", "app/views/core/_diff_modal.html.erb", "app/views/core/_snapshot_selection_template.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/diff_core_controller.js"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
@@ -1079,57 +1079,57 @@ parts:
     scenarios:
       "17.1":
         title: "Image field specifications"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:31:52Z
         result: pass
-        notes: "Covered live: intercepted disposable static response with absolute thumbnail and relative image; saved field spec prefix yielded two loaded images (natural width 299), title remained details trigger, injected onerror markup displayed as text and did not execute. Removed interception. Not covered live: broken image and single-image dedup."
+        notes: "Dual live replay using intercepted static response and local image fixture: absolute thumb and JSON-prefixed relative full image loaded on both (120px natural width); images display-only, title opened details. Single-thumb result had one image;404 image retained card. HTML/script/onerror payload did not execute. Reload retained field spec; all viewport pairs inspected. Interceptions removed after rendering batch."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/views/query_doc_pairs/_document_fields.html.erb", "app/views/core/"]
       "17.2":
         title: "Background and nightly case evaluation"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: nightly enabled/persisted, background action returned dashboard, Run Case Job completed notification arrived; job finished without error and snapshot created. Nightly disabled afterward. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no evaluation-code change. Screenshot inspected. Not covered live: scheduled overnight trigger."
+        last_run: 2026-10-07T21:34:24Z
+        result: pass
+        notes: "Dual live replay: nightly toggle persisted reload and header repeat indicator; background action returned dashboard, live completion notice appeared on both, completed Fetch snapshots and score0.33 persisted. Disabled nightly afterward. Viewport pairs inspected. Historical dashboard table stayed at pre-run time until reload; current updated. Not rerun: overnight schedule, duplicate request, no-query/cable rejection edges."
         paths: ["app/controllers/cases_controller.rb", "app/jobs/", "app/models/case.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/case_runtime.js", "app/javascript/controllers/case_header_controller.js", "config/recurring.yml", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/channels/application_cable/connection.rb", "app/controllers/concerns/authentication/current_user_manager.rb"]
       "17.3":
         title: "Search-endpoint request throttling"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-07T21:37:24Z
         result: pass
-        notes: "Covered live: Solr endpoint31 requests/minute60 persisted; browser resource starts for five foreground searches spaced1051\u20131075ms. Not covered live: invalid limits and background throttle. Setting to restore0 during cleanup."
+        notes: "Dual live replay: disposable Search API endpoints set60/min via edit, persisted show page; selected shared endpoint and foreground case run. Browser resource start deltas for last10 searches >=1168ms historical/>=1159ms current. Restored0 on both. Endpoint screenshot pair inspected. Not rerun: invalid limits, background throttle or unthrottled timing."
         paths: ["test/models/search_endpoint_test.rb", "app/models/search_endpoint.rb", "app/services/fetch_service.rb", "app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "17.4":
         title: "Execute a documented API request"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:23:18Z
         result: pass
-        notes: "Covered live: generated token, isolated bearer GET case 673 returned JSON/id 673; destroyed token, isolated request returned 401. Anonymous unshared case returned 404. Not covered live: foreign-user token access."
+        notes: "Dual live replay: UI-generated disposable tokens authorized isolated bearer GET of own private case (200 JSON resource); UI destruction gave401, unrelated OSC member token gave404. Missing bearer rejected: historical401/current404. Tokens never printed; only newly generated tokens deleted, prior tokens preserved."
         paths: ["app/controllers/api/", "app/controllers/concerns/api_key_authenticatable.rb", "app/models/api_key.rb", "config/initializers/oas_rails.rb", "config/routes.rb", "app/services/latest_case_scores.rb", "test/services/latest_case_scores_test.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "17.5":
         title: "External score ingestion"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:22:52Z
         result: pass
-        notes: "Covered live: equivalent example API created empty fixture case 676 and stored external 0.781 for try 1; Scores page displayed 0.781, API shape confirmed; no document ratings created. Not covered live: invalid ids/duplicate submission. Queryful case foreground scoring overwrites current-day score, so empty fixture follows checked-in example."
+        notes: "Dual live replay: authenticated API created empty disposable cases and PUT external score0.781 for try1; Scores UI showed one record after identical repeat (upsert), invalid case returned404. No ratings existed/changed. Before/after viewport pair inspected. Not rerun: invalid try with valid case, queryful foreground rescoring."
         paths: ["test/controllers/api/v1/case_scores_controller_test.rb", "app/services/case_score_manager.rb", "docs/examples/external_eval/", "app/controllers/api/", "app/models/score.rb", "app/models/try.rb"]
       "17.6":
         title: "Ollama-backed AI Judge"
-        last_run: 2026-10-06T13:36:06Z
-        result: pass_with_fixes
-        notes: "Covered live: Ollama qwen3:0.6b at http://ollama:31434 produced four attributed ratings/explanations; bounded and Judge All jobs completed with batched case-rating sync. Earlier ApplicationResponder failure was stale worker autoload paths, resolved by restart; no LLM-code change. Screenshot inspected. Not covered live: unavailable/out-of-scale variants."
+        last_run: 2026-10-07T22:04:07Z
+        result: pass
+        notes: "Live qwen3:0.6b Ollama one-pair jobs completed on both matching graded books with rating 3 and substantive explanations attributed to the disposable judge; inspected audit screenshot pair. Current Ollama provider saved with blank key and http://ollama:31434. Historical 8ceb99e9 has no provider selector/provisioned Ollama, but its OpenAI-compatible judge was explicitly pointed at the same published model through host.docker.internal:31434, without changing Compose or DB isolation. Switched back to OpenAI/local fixture after completion. Off-scale/unavailable-model edges not exercised with live model; provider failure acceptance checked by 12.9/12.8."
         paths: ["app/services/llm_service.rb", "app/models/user.rb", "app/models/book.rb", "app/controllers/ai_judges_controller.rb", "app/views/ai_judges/", "config/initializers/customize_quepid.rb", "app/javascript/controllers/ai_judge_form_controller.js"]
       "17.7":
         title: "Scoring semantics and metric behavior"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:52:01Z
         result: pass
-        notes: "Covered live: controlled ten-doc response with 0s/rating2 at rank6/rating3 at rank10 scored nDCG 0.33; reversed results retaining ratings scored 0.87 with rating3 first. Separate scorer change AP@10 persisted. Removed interception. Not covered live: perfect low-valued ordering/global missing-doc semantics."
+        notes: "Matching ten-result fixtures and ratings on Angular baseline 8ceb99e9/current: nDCG rose 0.33 to 0.95 when rated docs 10 (3) and 6 (2) moved first; inspected low/high-order pairs. The extra previously rated off-result document contributes globally (uniform visible Fair ratings yield 0.94, not 1.00). AP@10 then became the sole active scorer, persisted after reload, and retained ratings (0.91). Uniform perfect-without-off-result and Explain Other lookup edge not exercised here; fixture routes removed."
         paths: ["app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/models/scorer.rb", "app/models/score.rb", "app/controllers/scores_controller.rb", "app/javascript/controllers/query_explain_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js"]
       "17.8":
         title: "Judgement consistency and rating guidance"
-        last_run: 2026-10-05T23:56:39Z
+        last_run: 2026-10-07T21:57:01Z
         result: pass
-        notes: "Covered live: separate users 47/48 judged same shoes/doc pair; edit cards matched query/information need/fields/scale; audit retained human ratings 2 and 0 separately plus AI rating. Earlier Later/Unrateable flags distinguished from ratings. Not covered live: same document under different needs, resulting case sync (background job failed)."
+        notes: "Matched explicit-information-need graded books on Angular baseline 8ceb99e9/current. Two separate authenticated human sessions rated the same metric_1 pair Perfect=3 and Fair=1; audit retained both attributed ratings alongside AI=2, without overwrites. Reopened each human edit displayed identical query, information need, document fields, rank and Poor/Fair/Good/Perfect labels; inspected audit and judging screenshot pairs. Reviewed per-rater Stats. No linked-case score or alternate-information-need comparison in this check; Judge Later/Unrateable states separately covered by Part 11."
         paths: ["app/controllers/judgements_controller.rb", "app/controllers/books_controller.rb", "app/views/judgements/", "app/views/books/judgement_stats.html.erb", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/javascript/controllers/bulk_judgement_controller.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "17.9":
         title: "Search-engine provider compatibility smoke test"
-        last_run: 2026-10-06T00:08:55Z
+        last_run: 2026-10-07T21:47:05Z
         result: blocked
-        notes: "Covered live: Solr endpoint/case returned live results and supported inspect/rate; Search API mapper fetched public Solr and mapped two docs. Blocked: no real ES/OpenSearch/Vectara/Elastic Cloud test endpoint or credentials supplied. Not covered live: Search API attached-case workflow/provider auth failures. Automated coverage added for ES/OpenSearch extraction through persisted SnapshotDoc IDs, including conflicting _source.id; live provider verification remains blocked pending a test endpoint."
+        notes: "Live equivalent Solr, Search API and Elasticsearch queries expanded, mapped fields inspected and ratings persisted on both instances (baseline 8ceb99e9); inspected screenshot pairs. Elasticsearch Star Wars returned 781 hits with loaded posters; rank-two highlighted overview is raw array text on baseline and formatted emphasis on current. Current Qdrant is additionally covered by 7.12. OpenSearch, Vectara and Elastic Cloud have no authorized working test endpoints/credentials, so their live searches remain blocked; dummy configuration checks are not live provider verification. Authentication/error edge coverage is partial (7.5/7.12)."
         paths: ["app/models/search_endpoint.rb", "app/controllers/search_endpoints_controller.rb", "app/services/fetch_service.rb", "app/services/mapper_wizard_service.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/search_endpoints/", "app/views/mapper_wizards/", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "17.10":
         title: "Deployment configuration smoke test"

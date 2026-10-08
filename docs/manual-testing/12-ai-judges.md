@@ -111,6 +111,8 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   6. While a bounded manual run is waiting for a provider response, add new eligible pairs with auto-run enabled. Confirm one automatic continuation waits, the manual run retains its requested limit, and the continuation judges the remaining pairs. During cancellation, a conflicting manual restart must not overlap the pending response.
 - **Expected:** Only one run per book/judge proceeds at a time; conflicting manual launches still discard. Cancellation prevents subsequent iterations and cancels queued continuations; one in-flight provider response may still save, with the lock held until the worker exits. Failed job rows do not leave activity permanently running. Per-cell updates preserve mounted sparklines. Polling recovers missed/removed rows, and synchronization retains the existing no-feedback-loop contract.
 
+  - [ ] In a linked case with automatic book population enabled, sync result A, then results A/B. Confirm book pairs retain A at position 1 and B at position 2; already-synced rows must not renumber later results.
+
 ### 12.9 TypeSafe Jev and provider acceptance rules
 
 - [ ] **Steps:**

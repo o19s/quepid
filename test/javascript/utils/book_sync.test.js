@@ -124,6 +124,24 @@ describe("buildQueryDocPairsPayload", () => {
     expect(fetcher.mock.calls[2][0]).toBe("api/books/8/populate")
   })
 
+  it("preserves result positions when previously synced documents are filtered out", async () => {
+    const fetcher = vi.fn(async () => ({ text: async () => "", ok: true, status: 204 }))
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime()
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+    const first = { id: "a", title: "A" }
+    await runtime.sync([{ queryText: "search", docs: [first] }])
+    await runtime.sync([{
+      queryText: "search", docs: [first, { id: "b", title: "B" }, { id: "c", title: "C" }]
+    }])
+
+    const pairs = JSON.parse(fetcher.mock.calls[1][1].body).query_doc_pairs
+    expect(pairs.map(({ doc_id, position }) => ({ doc_id, position }))).toEqual([
+      { doc_id: "b", position: 2 }, { doc_id: "c", position: 3 }
+    ])
+    expect(first).not.toHaveProperty("position")
+  })
+
   it("reads thumb and image flags whether they are methods or booleans", () => {
     const [pair] = buildQueryDocPairsPayload([{
       queryText: "q",

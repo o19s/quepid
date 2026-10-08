@@ -37,6 +37,60 @@ Browser coverage and actual verification timestamps live in
 `docs/manual-testing/tracking.yml`.
 Line numbers may drift — re-check cited files before fixing.
 
+### [PREEXISTING] P2 I0 C2 — Resolve stored mapper input compatibility
+
+Manual scenario 7.9: stored `JSON.parse(data)` mappers work on historical
+`8ceb99e9` but fail on current because `lib/v8_mapper_executor.rb` pre-parses JSON
+into an object. Upstream `92519d55` changed that contract before the Stimulus
+mapper migration. Define a compatible input contract and verify both stored
+string-based and object-based mappers; an adaptive mapper workaround does not
+resolve existing saved mapper failures.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — Unblock OAuth verification (1.3)
+
+Provide working Google OAuth configuration and host resolution for Keycloak,
+then replay sign-in through both providers. Current Google credentials are
+placeholders; Keycloak sign-in fails with no host `keycloak` entry. Host-level
+configuration changes require separate authorization. This is an environment
+blocker, not an established migration defect.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete historical list sharing parity (3.6)
+
+Investigate the empty historical `share-case` component on baseline `8ceb99e9`
+and recover its fixture/asset binding without changing current sources or the
+baseline implementation. Replay list share/unshare after recovery, then cover
+duplicate/tampered requests. Current share/unshare and reload persistence passed.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — Complete core sharing parity (6.5)
+
+After resolving the historical sharing blocker in 3.6, replay core toolbar and
+Judgements share/unshare on the baseline. Cover current cancellation and forced
+request failures. Current share/unshare and reload/reopen persistence passed;
+historical components render empty.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — Unblock mapper AI generation (7.8)
+
+Provide an authorized usable OpenAI key through the wizard, then generate and
+test both mapper functions on both instances. Cover no-code responses and
+truncation warnings, plus the AI refinement deferred in 7.9. Blank/invalid-key
+errors passed; successful generation remains unverified.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete live search-provider coverage (17.9)
+
+Provide authorized working OpenSearch, Vectara and Elastic Cloud test endpoints
+and credentials, then compare live searches, mapped fields, persisted ratings
+and authentication/error behavior on both instances. Solr, Search API and
+Elasticsearch passed the recorded live sample; Qdrant is covered in 7.12.
+Dummy endpoint creation does not establish live provider parity.
+
+### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete deployment verification (17.10)
+
+Prepare a disposable non-root deployment and configured mail/provider services;
+verify non-root URLs, mail/invitation links, encrypted-provider workflows and
+realtime/job execution. The recorded production runtime/SSL sample passed, but
+worker startup alone did not verify these remaining workflows. Keep the existing
+development servers and data intact.
+
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
 ### [PREEXISTING] P0 I1 C3 — Scorer sandboxing - LATER
@@ -361,16 +415,6 @@ An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix
 
 ---
 
-### [PREEXISTING] P2 I1 C2 — Snapshot CSV `Snapshot Time` parses two-digit years as year 00YY
-
-**Observed:** Importing a snapshot CSV (cases list → Import Snapshots from CSV) with `Snapshot Time` `10/01/26 18:05` stored `created_at` as `0010-01-26 18:05`, shown as `(1/26/10)` in Compare Snapshots. The modal's own sample format (`10/10/18 18:05`) has the same problem.
-
-**Cause:** `import_snapshot_controller.js` posts the raw string as `created_at`; the server's time parsing reads `NN/NN/NN` as year/month/day. The Angular importer passed the string through the same way.
-
-**Fix direction:** Parse `Snapshot Time` explicitly (document the accepted formats, e.g. ISO 8601 and `MM/DD/YY HH:MM`) and reject unparseable values with a row-numbered error instead of storing a wrong date. Fix the sample in the modal to an unambiguous format.
-
----
-
 ### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
 Cloning case 6 swapped its first two queries. `Case#clone_case` dups each query and appends it, and `Arrangement::Item#prepend_node_to_list` overwrites the copied arrangement on create and prepends each clone, so iterating the original order can reverse it. The deterministic ordering on `Case#queries` does not fix that callback. Re-sequence the clones in the original order after creation (or explicitly avoid prepending during cloning) and cover it with a model test.
@@ -481,13 +525,12 @@ Status cleanup alone does not change scoring inputs.
 
 ## [PREEXISTING] P2 — Performance
 
-### [PREEXISTING] P2 I1 C2 — Team case list latest-score queries bypass eager loading
+### [PREEXISTING] P2 I1 C2 — Dashboard case list latest-score queries bypass eager loading
 
 `Case#last_score` calls `scores.last_one`, whose ordering/limit scope issues a
-separate lookup per case. `teams/_cases.html.erb` (and `home/_case.html.erb`)
-read it per row and its user, while `TeamsController#show` preloads only owner
-and teams. `CasesController#index` already avoids this through
-`Score.latest_summaries_for_cases`; reuse that approach for the team list.
+separate lookup per call. `home/_case.html.erb` reads it repeatedly and its user,
+while `HomeController#show` preloads only metadata. The team-list portion is
+resolved; dashboard loading remains outside that approved direct-fix batch.
 
 Measure the endpoint with a query-count test, then load only the latest score and
 its user per case. Avoid loading every historical score merely to render one
@@ -803,38 +846,6 @@ generators do not justify abstraction solely for copied lines.
 
 ## [MIGRATION-FOLLOWUP] JavaScript correctness findings
 
-### [PREEXISTING] P1 I0 C1 — Bulk judging drops cross-row explanation edits
-
-**Location:** `app/javascript/controllers/bulk_judgement_controller.js#saveExplanation`.
-
-One debounce timer serves the entire multi-row controller. Editing B within a
-second of A cancels A's pending write, leaving its visible explanation unsaved.
-
-**Fix direction:** key pending saves by query-document pair; preserve independent
-row edits and define disconnect/navigation behavior explicitly. Test two rows
-edited inside the debounce window and cleanup of all pending timers. With Drive
-now enabled on the bulk-judging page, also cover navigating away and returning:
-`disconnect()` currently cancels a pending edit rather than persisting it. Decide
-whether to flush or block navigation with unsaved edits; do not imply that
-history restoration proves the text was saved.
-
-**Provenance:** the same single `saveTimeout` exists in the baseline controller.
-
-### [PREEXISTING] P1 I0 C2 — Book auto-sync renumbers newly discovered documents
-
-**Location:** `app/javascript/utils/book_sync.js#sync`, `buildQueryDocPairsPayload`.
-
-The sync cache filters out already-sent documents before payload construction
-assigns `index + 1`. After A has synced, results `[A, B]` send B at position 1
-instead of 2. `PopulateBookJob#fix_duplicate_positions` can consequently clear
-A's position, changing rank-depth judging coverage.
-
-**Fix direction:** carry original result positions through cache filtering.
-Test mixed synced/unsynced documents and persistence through the population job.
-
-**Provenance:** baseline `queriesSvc.js#syncToBook` similarly filters
-first; `bookSvc.js#updateQueryDocPairs` numbers the filtered list.
-
 ### [MIGRATION-FOLLOWUP] P1 I0 C2 — Book auto-sync batches conflict with queued population
 
 **Location:** `app/javascript/utils/book_sync.js#sync`,
@@ -853,44 +864,3 @@ server-managed payload. Awaiting each HTTP response alone is insufficient:
 **Provenance:** parallel client batching predates the migration; the baseline
 population endpoint did not have the current conflict guard. The introduction
 of that contract mismatch has not been classified against migration history.
-
-### [PREEXISTING] P2 I0 C1 — Clearing an explanation-only judgement is not persisted
-
-**Location:** `app/javascript/controllers/bulk_judgement_controller.js#saveExplanation`.
-
-When no rating is selected and explanation text becomes empty, the callback
-skips the request. An existing explanation therefore returns after reload.
-The server can accept an explicit empty explanation.
-
-**Fix direction:** distinguish an untouched empty field from clearing previously
-saved content. Test saving text, clearing it, and reloading its persisted value;
-preserve zero-valued ratings and the untouched-empty case.
-
-**Provenance:** the same empty-input early return exists in the baseline controller.
-
-## [PREEXISTING] Background refresh counts
-
-### [PREEXISTING] P2 I0 C1 — UpdateCaseJob reports inconsistent creation totals
-
-**Location:** `app/jobs/update_case_job.rb#perform`.
-
-`@counts['ratings_created'] = + service.ratings_created` assigns rather than
-adds. `queries_created` adds the reused RatingsManager's cumulative totals
-again for every case, double-counting earlier work. Both patterns exist at
-`be9b319a`.
-
-**Fix direction:** accumulate per-case deltas or report the service's final
-cumulative totals consistently. Test multiple cases with different creation
-counts. This changes refresh API counts, not ratings or score calculations.
-
-
-### [PREEXISTING] Book Settings invalid update cannot render errors
-
-Bypassing browser required-field validation and submitting an empty name raises
-`NoMethodError` in the ratings-remap section of `books/edit`: `@current_ratings`
-is initialized only in `BooksController#edit`, not the failed-update response.
-Upstream pre-removal `main` at `86e3de9f` retains this contract from `e77dcfb8`;
-this is historical source evidence, not a live historical replay. Batch 3's
-before/after form replay reproduced the same error. Populate the edit-page data
-for invalid updates and verify 422 rendering without changing failed-update
-membership/persistence behavior.

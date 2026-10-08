@@ -81,6 +81,18 @@ function okJsonResponse(body) {
 }
 
 describe("ExportCaseCoreController", () => {
+  it.each(["basic", "trec"])("keeps %s selected when changing the shared snapshot dropdown", (format) => {
+    const controller = buildModalController()
+    controller.selectedFormat = format
+    const radio = controller.formatTargets.find((target) => target.value === format)
+    radio.checked = true
+    controller.basicSnapshotSelectTarget.innerHTML = '<option value="9">Weekly</option>'
+
+    controller.selectBasicSnapshot()
+
+    expect(controller.selectedFormat).toBe(format)
+    expect(radio.checked).toBe(true)
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     queryDocumentsStore.reset()

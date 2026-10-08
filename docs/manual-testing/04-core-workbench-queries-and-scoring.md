@@ -109,9 +109,10 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Expand a query, click **Missing Documents**.
-  2. Enter a Lucene-syntax search against the underlying index to find a document that should match but doesn't currently appear in the query's results.
+  2. For Solr, enter a plain Lucene query such as `id:123` in the initially blank finder. Confirm explanations still describe the original query. For Elasticsearch/OpenSearch, edit the pre-filled query parameters.
   3. Rate the found document inline.
   4. Click **Reset to All Rated Docs**.
+- [ ] With a proxied/authenticated Solr endpoint, verify both finder requests retain proxying and credentials. Repeat with JSON query parameters and a small result limit: Next appends distinct documents at the configured page size; a failed page can be retried without skipping results.
 - **Expected:** Search returns matching documents with a count message (or a "no results" message); ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."
 - **Edge cases:**
   - [ ] Reject a search, reset, or next-page request — expect a contextual "Unable to … Please try again." message, a hidden spinner, and usable controls. Retry successfully and confirm the error clears. A failed reset keeps the edited query parameters.

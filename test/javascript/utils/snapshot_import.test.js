@@ -36,6 +36,34 @@ describe("snapshot import runtime", () => {
     expect(groups[8].snapshots.Weekly.queries["star wars"].docs[0].id).toBe("doc-2")
   })
 
+  it.each(["10/07/26 21:10", "10/07/2026 21:10"])(
+    "parses the documented month/day/year timestamp %s without browser timezone conversion",
+    (timestamp) => {
+      const groups = buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+      expect(groups[7].snapshots.Weekly.created_at).toBe("2026-10-07T21:10:00")
+    }
+  )
+
+  it("preserves ISO timestamps including their timezone", () => {
+    const timestamp = "2026-10-07T21:10:00-05:00"
+    const groups = buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+    expect(groups[7].snapshots.Weekly.created_at).toBe(timestamp)
+  })
+
+  it("keeps the static wizard contract when Snapshot Time is omitted", () => {
+    const { "Snapshot Time": _time, ...row } = rows[0]
+    expect(buildSnapshotImportGroups([row], 7)[7].snapshots.Weekly.created_at).toBeUndefined()
+  })
+
+  it.each(["02/29/26 12:00", "13/01/26 12:00", "10/07/26 24:00", "not a date", ""])(
+    "rejects invalid timestamps with the CSV row number: %s",
+    (timestamp) => {
+      expect(() => buildSnapshotImportGroups([
+        rows[0], { ...rows[0], "Snapshot Name": "Invalid", "Snapshot Time": timestamp }
+      ], 7)).toThrow(/Row 3: invalid Snapshot Time/)
+    }
+  )
+
   it("groups names that collide with object prototype properties", () => {
     const groups = buildSnapshotImportGroups([
       { ...rows[0], "Snapshot Name": "__proto__", "Query Text": "constructor" }

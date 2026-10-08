@@ -154,6 +154,7 @@ class TeamsController < ApplicationController
     cases_query = cases_query.search_by(@cases_q, :case_name).or(cases_query.where(id: @cases_q.to_i)) if @cases_q.present?
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
     @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
+    @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
 
     # Books filtering
     @books_q = params[:books_q].to_s.strip

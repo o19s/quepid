@@ -9,6 +9,40 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  test 'case list loads latest score summaries in one query and preserves displayed values' do
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+    @team.cases.clear
+    3.times do |index|
+      kase = Case.create!(case_name: "Score summary #{index}", owner: @user)
+      @team.cases << kase
+      kase.scores.create!(score: 0.1, user: @user, updated_at: 2.days.ago)
+      kase.scores.create!(score: 0.5 + (index / 10.0), user: @user, updated_at: 1.day.ago)
+    end
+    unscored = Case.create!(case_name: 'Never scored', owner: @user)
+    @team.cases << unscored
+    score_queries = []
+    subscriber = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      score_queries << sql if sql.match?(/\ASELECT.*(?:FROM|JOIN) [`"]?case_scores/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
+      get team_path(@team)
+    end
+
+    assert_response :success
+    assert_equal 1, score_queries.size, score_queries.join("\n")
+    [ '0.500', '0.600', '0.700' ].each do |score|
+      assert_select 'td', text: score
+    end
+    assert_select 'td', text: 'Never Run'
+    assert_select 'td', text: @user.fullname, minimum: 3
+    assert_not score_queries.first.match?(/SELECT [`"]?case_scores[`"]?\.\*/i)
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
   test 'invalid creation renders validation errors with a Turbo-compatible status' do
     assert_no_difference 'Team.count' do
       post teams_path, params: { team: { name: '' } }

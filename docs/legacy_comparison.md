@@ -67,9 +67,16 @@ Historical seeds created six users, seven cases, one book and 24 queries.
 HTTP sign-in succeeded; case 4 and all nine linked JS/CSS assets returned 200.
 The current server retained its original container and start time.
 
-Playwright MCP browser verification remains pending: its automation profile is
-already in use, and takeover permission was requested. No browser parity result
-or manual-scenario timestamp is claimed from these HTTP checks.
+Playwright MCP takeover completed with permission. All initially due scenarios
+were attempted against equivalent fixtures where the baseline supports the flow;
+`bin/manual_test_status --due-only` now reports 0/168 due. This is a freshness
+check, not a parity pass: the tracker retains four failures and six blocked
+scenarios, including historical share binding and unavailable provider coverage.
+Actual scenario results and coverage limits are recorded in
+`docs/manual-testing/tracking.yml`; inspected screenshot pairs are under
+`.playwright-mcp/dual-parity/`. Identical historical case JSON was imported into
+disposable cases because sample queries are randomly generated. The disposable
+parity fixtures were removed from both databases; both servers remain running.
 
 Setup recovery checks passed: failed archive extraction cleans up and a subsequent
 attempt succeeds; in a disposable historical database, a simulated Solr outage

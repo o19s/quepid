@@ -16,13 +16,17 @@ export default class extends Controller {
   static values = { saveUrl: String, deleteUrl: String }
 
   connect() {
-    this.saveTimeout = null
+    this.saveTimeouts = new Map()
+    this.savedExplanations = new Map(
+      [...this.element.querySelectorAll("textarea[data-query-doc-pair-id]")].map((field) =>
+        [field.dataset.queryDocPairId, field.value]
+      )
+    )
   }
 
   disconnect() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout)
-    }
+    this.saveTimeouts.forEach((timeout) => clearTimeout(timeout))
+    this.saveTimeouts.clear()
   }
 
   // Called when reset button is clicked
@@ -72,6 +76,7 @@ export default class extends Controller {
     if (explanationField) {
       explanationField.value = ''
     }
+    this.savedExplanations.set(queryDocPairId, "")
   }
 
   // Called when a rating is clicked
@@ -98,6 +103,7 @@ export default class extends Controller {
         explanation: explanation
         })
 
+      this.savedExplanations.set(queryDocPairId, explanation)
       this.showStatus(queryDocPairId, "saved")
     } catch (error) {
       this.showStatus(queryDocPairId, "error")
@@ -109,16 +115,15 @@ export default class extends Controller {
   saveExplanation(event) {
     const field = event.currentTarget
     const queryDocPairId = field.dataset.queryDocPairId
-    // Clear existing timeout
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout)
-    }
+    // Debounce independently for each document row.
+    clearTimeout(this.saveTimeouts.get(queryDocPairId))
 
     // Show typing status
     this.showStatus(queryDocPairId, "typing")
 
     // Debounce the save
-    this.saveTimeout = setTimeout(async () => {
+    this.saveTimeouts.set(queryDocPairId, setTimeout(async () => {
+      this.saveTimeouts.delete(queryDocPairId)
       // Get current rating if it exists
       const checkedRating = this.element.querySelector(
         `input[name="judgement_${queryDocPairId}"]:checked`
@@ -127,8 +132,8 @@ export default class extends Controller {
       const rating = checkedRating ? checkedRating.value : null
       const explanation = field.value
 
-      // Only save if we have either a rating or an explanation
-      if (!rating && !explanation.trim()) {
+      // An untouched empty field needs no write; clearing saved text does.
+      if (!rating && !explanation.trim() && !this.savedExplanations.get(queryDocPairId)?.trim()) {
         this.showStatus(queryDocPairId, "")
         return
       }
@@ -142,12 +147,13 @@ export default class extends Controller {
           explanation: explanation
           })
 
+        this.savedExplanations.set(queryDocPairId, explanation)
         this.showStatus(queryDocPairId, "saved")
       } catch (error) {
         this.showStatus(queryDocPairId, "error")
         console.error("Error saving explanation:", error)
       }
-    }, 1000) // Wait 1 second after typing stops
+    }, 1000)) // Wait 1 second after typing stops
   }
 
   updateRatingButtons(queryDocPairId, selectedRating) {

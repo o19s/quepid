@@ -37,7 +37,7 @@ export function buildQueryDocPairsPayload(queries) {
       return {
         query_text: query.queryText,
         doc_id: doc.id,
-        position: index + 1,
+        position: query.docPositions?.[index] ?? index + 1,
         document_fields: fields
       }
     })
@@ -82,13 +82,15 @@ export function createBookSyncRuntime({ logger = console } = {}) {
 
     const cache = (syncedPairs[bookId] ||= {})
     const queriesToSync = queries.flatMap((query) => {
-      const docs = (query.docs || []).filter((doc) => {
+      const docPositions = []
+      const docs = (query.docs || []).filter((doc, index) => {
         const key = `${query.queryText}:${doc.id}`
         if (cache[key]) return false
         cache[key] = true
+        docPositions.push(index + 1)
         return true
       })
-      return docs.length > 0 ? [{ ...query, docs }] : []
+      return docs.length > 0 ? [{ ...query, docs, docPositions }] : []
     })
     const batches = []
     for (let index = 0; index < queriesToSync.length; index += 100) {

@@ -234,9 +234,7 @@ class BooksController < ApplicationController
     # In our use case just looks up the count of records per book.
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
 
-    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
-    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
-    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
+    load_current_ratings
   end
 
   def create
@@ -295,6 +293,7 @@ class BooksController < ApplicationController
 
     @ai_judges = accessible_ai_judges
     @other_books = current_user.books_involved_with.where.not(id: @book.id)
+    load_current_ratings if @book.errors.any?
 
     respond_with(@book)
   end
@@ -480,6 +479,12 @@ class BooksController < ApplicationController
   end
 
   private
+
+  def load_current_ratings
+    judgement_ratings = @book.judgements.where.not(rating: nil).distinct.pluck(:rating)
+    case_ratings = Rating.joins(query: :case).where(cases: { book_id: @book.id }).where.not(rating: nil).distinct.pluck(:rating)
+    @current_ratings = (judgement_ratings + case_ratings).uniq.sort
+  end
 
   # A judge that judged this book historically may since have been
   # unassigned, or belong to a teammate whose team doesn't share the judge

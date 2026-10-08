@@ -244,14 +244,74 @@ export function createTargetedSearchAdapter({
   }
 
   adapter.initialQueryParams = () =>
-    selectedTry.queryParams
-      ? selectedTry.queryParams.replace(/#\$query##/g, () => query.queryText)
+    settings.searchEngine === "solr"
+      ? ""
       : selectedTry.queryParams
+        ? selectedTry.queryParams.replace(/#\$query##/g, () => query.queryText)
+        : selectedTry.queryParams
+
+  let solrFinderOffset = 0
+  const solrJson =
+    selectedTry.jsonQueryParams ??
+    !Object.values(selectedTry.args || {}).every((value) => Array.isArray(value))
+  const solrFinderRows = Number(
+    (solrJson ? selectedTry.args?.limit : selectedTry.args?.rows) ?? settings.numberOfRows ?? 10
+  )
+
+  async function searchSolrFinder(offset) {
+    const fieldSpec = settings.createFieldSpec()
+    const args = structuredClone(selectedTry.args || {})
+    if (solrJson) {
+      args.params = { ...args.params, explainOther: [adapter.lastQuery] }
+      args.offset = offset
+    } else {
+      args.explainOther = [adapter.lastQuery]
+      args.start = [String(offset)]
+    }
+    const explanationSettings = settingsWithTryOverrides(settings, { args })
+    const searcher = createSearcherFromSettings(explanationSettings, query)
+    await searcher.search()
+
+    // splainer's explainOther metadata search drops transport settings and
+    // reads only classic rows/start. Build both requests through our factory.
+    const documentSettings = settingsWithTryOverrides(settings, {
+      jsonQueryParams: false,
+      args: {
+        q: [adapter.lastQuery],
+        qf: [`${fieldSpec.title} ${fieldSpec.id}`],
+        rows: [String(solrFinderRows)],
+        start: [String(offset)]
+      }
+    })
+    documentSettings.escapeQuery = false
+    if (solrJson) documentSettings.apiMethod = "POST"
+    const documents = createSearcherFromSettings(documentSettings, query)
+    await documents.search()
+    searcher.docs = documents.docs
+    searcher.numFound = documents.numFound
+    adapter.searcher = searcher
+    adapter.numFound = searcher.numFound
+    solrFinderOffset = offset
+    return normalizeDocExplains(query, searcher, fieldSpec)
+  }
 
   adapter.search = (queryParams) => {
     const fieldSpec = settings.createFieldSpec()
     adapter.defaultList = false
     adapter.searching = true
+    if (settings.searchEngine === "solr") {
+      adapter.lastQuery = queryParams
+      adapter.parseError = false
+      const offset = Number((solrJson ? selectedTry.args?.offset : selectedTry.args?.start) || 0)
+      return searchSolrFinder(offset)
+        .then((docs) => {
+          adapter.docs = docs
+          return adapter
+        })
+        .finally(() => {
+          adapter.searching = false
+        })
+    }
     return previewArgs(selectedTry.tryNo, queryParams).then((resolvedArgs) => {
       adapter.searching = false
       adapter.lastQuery = queryParams
@@ -383,13 +443,29 @@ export function createTargetedSearchAdapter({
         })
     }
 
+    if (adapter.searcher.type === "solr") {
+      const offset = solrFinderOffset + solrFinderRows
+      if (offset >= adapter.numFound) {
+        adapter.paging = false
+        return Promise.resolve(adapter)
+      }
+      return searchSolrFinder(offset)
+        .then((docs) => {
+          adapter.docs = adapter.docs.concat(docs)
+          return adapter
+        })
+        .finally(() => {
+          adapter.paging = false
+        })
+    }
+
     adapter.searcher = adapter.searcher.pager()
     if (!adapter.searcher) {
       adapter.paging = false
       return Promise.resolve(adapter)
     }
+    const fieldSpec = settings.createFieldSpec()
     return adapter.searcher.search().then(() => {
-      const fieldSpec = settings.createFieldSpec()
       adapter.numFound = adapter.searcher.numFound
       adapter.docs = adapter.docs.concat(normalizeDocExplains(query, adapter.searcher, fieldSpec))
       adapter.paging = false

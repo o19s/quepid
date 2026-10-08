@@ -356,7 +356,10 @@ describe("createLiveQueryRuntimeOwner", () => {
       const adapter = buildOwner({ store: stores, editable: editable() }).targetedSearch(7)
 
       expect(adapter).toMatchObject({ queryId: 7, queryText: "star wars", usesQueryParamsEditor: true, ratingScale: { 1: "own" } })
-      expect(adapter.initialQueryParams()).toBe("q=star wars")
+      // Historical Solr docFinder starts with a blank Lucene query.
+      expect(adapter.initialQueryParams()).toBe("")
+      const preview = buildOwner({ store: stores, editable: editable({ searchEngine: "es" }) }).targetedSearch(7)
+      expect(preview.initialQueryParams()).toBe("q=star wars")
 
       const staticAdapter = buildOwner({ store: stores, editable: editable({ searchEngine: "static" }) }).targetedSearch(7)
       expect(staticAdapter.usesQueryParamsEditor).toBe(false)
@@ -387,7 +390,7 @@ describe("createLiveQueryRuntimeOwner", () => {
         const searcher = { type: "static", docs: [], numFound: 0, search: vi.fn(() => Promise.resolve()) }
         const proxyUrlFor = vi.fn(() => "/proxy/9?url=")
         const previewArgs = vi.fn(() => Promise.resolve({ q: ["x"] }))
-        const search = buildOwner({ store: stores, searcher, previewArgs, proxyUrlFor, editable: editable(overrides) })
+        const search = buildOwner({ store: stores, searcher, previewArgs, proxyUrlFor, editable: editable({ searchEngine: "es", ...overrides }) })
         await search.targetedSearch(7).search("q=x")
         return { proxyUrlFor, previewArgs, createSearcher: search.splainerSearch.searchSvc.createSearcher }
       }

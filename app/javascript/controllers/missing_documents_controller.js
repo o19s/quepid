@@ -7,7 +7,7 @@ import { fromTextArea } from "modules/editor"
 import { showStatusMessage } from "utils/status_message"
 
 export default class extends Controller {
-  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported"]
+  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported", "solrHelp", "previewHelp"]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
@@ -51,6 +51,9 @@ export default class extends Controller {
   renderShell() {
     const supported = this.adapter.usesQueryParamsEditor
     const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
+    const solr = this.adapter.settings?.searchEngine === "solr"
+    if (this.hasSolrHelpTarget) this.solrHelpTarget.classList.toggle("d-none", !solr)
+    if (this.hasPreviewHelpTarget) this.previewHelpTarget.classList.toggle("d-none", solr)
     this.supportedTarget.classList.toggle("d-none", !supported)
     this.unsupportedTarget.classList.toggle("d-none", supported)
     this.engineNameTarget.textContent = this.engineLabel

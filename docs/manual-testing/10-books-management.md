@@ -45,6 +45,8 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
   - [ ] Submit a foreign team ID or an inaccessible/human AI judge ID in a create/update request — expect 404, no new book and no changes to existing memberships.
 
+  - [ ] Bypass browser required-field validation and submit a blank Name; expect a 422 Settings form with the validation error and ratings-remap section rendered. Reopen Settings and confirm the stored name is unchanged.
+
 ### 10.4 Book Overview / Show page
 
 - [ ] **Steps:**

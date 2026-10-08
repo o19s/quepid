@@ -103,9 +103,12 @@ export default class extends CoreModalControllerBase {
     this.selectFormat({ params: { format: "snapshot" } })
   }
 
-  // The Basic/TREC section shares one snapshot dropdown; picking a snapshot
-  // there always selects "Basic".
+  // Keep the chosen format in the shared Basic/TREC snapshot dropdown.
   selectBasicSnapshot() {
+    if (this.selectedFormat === "trec") {
+      this._refreshSubmitState()
+      return
+    }
     if (this.hasBasicRadioTarget) this.basicRadioTarget.checked = true
     this.selectFormat({ params: { format: "basic" } })
   }

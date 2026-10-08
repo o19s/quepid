@@ -99,6 +99,9 @@ Confirm **Back to Judge Overview** returns to your personal Judge Overview.
 - **Edge cases:**
   - [ ] Submit an invalid rating value (e.g., via browser dev tools tampering the request) — expect a `422` JSON error response and some visible failure indication in the UI, not a silent no-op.
 
+  - [ ] Edit explanations on two rows within one second; reload after saves and confirm both persisted. Clear an existing Judge Later explanation, wait for Saved, reload and confirm it stays empty.
+  - [ ] Navigate away before the one-second debounce fires, return and hard reload: pending explanation edits are cancelled, so only previously saved text persists. Force a save failure and confirm the visible error and prior persisted value.
+
 ### 11.9 Query/Doc Pairs management
 
 - [ ] **Steps:**

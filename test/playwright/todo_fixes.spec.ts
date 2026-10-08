@@ -113,3 +113,60 @@ test('book pairs import without a file requests an upload', async ({ page }) => 
   await expect(errors).toContainText('You must select the file to be imported first.');
   await expect(errors).not.toContainText('Invalid JSON');
 });
+
+// Read-only seed case; snapshot/export responses are intercepted, so these tests
+// create no shared database rows and exercise native browser downloads.
+for (const format of ['Basic', 'TREC']) {
+  test(`snapshot selection preserves ${format} through the download`, async ({ page }) => {
+    await page.route('**/api/cases/6/snapshots?*', route => route.fulfill({
+      json: { snapshots: [{ id: 9999, name: 'Format regression', time: '2026-10-07T21:10:00Z' }] }
+    }));
+    const expectedFormat = format === 'TREC' ? 'trec_snapshot' : 'basic_snapshot';
+    const content = format === 'TREC' ? '1 0 doc1 1\n' : 'query,docid,rating\nheart,doc1,1\n';
+    let requestedFormat = '';
+    await page.route('**/api/export/ratings/6.*?*', async route => {
+      const params = new URL(route.request().url()).searchParams;
+      requestedFormat = params.get('file_format') || '';
+      expect(params.get('snapshot_id')).toBe('9999');
+      await route.fulfill({ body: content, contentType: format === 'TREC' ? 'text/plain' : 'text/csv' });
+    });
+    await gotoCase(page, '', 6);
+    await page.getByRole('link', { name: 'Export', exact: true }).click();
+    const modal = page.getByRole('dialog');
+    await modal.getByRole('radio', { name: format, exact: true }).check();
+    await modal.locator('[data-export-case-core-target="basicSnapshotSelect"]').selectOption('9999');
+    await expect(modal.getByRole('radio', { name: format, exact: true })).toBeChecked();
+    const downloadPromise = page.waitForEvent('download');
+    await modal.getByRole('button', { name: 'Export', exact: true }).click();
+    const download = await downloadPromise;
+    expect(requestedFormat).toBe(expectedFormat);
+    expect(download.suggestedFilename()).toContain(expectedFormat);
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
+    expect(Buffer.concat(chunks).toString()).toBe(content);
+  });
+}
+
+test('Solr Missing Documents accepts a plain ID query and retains original explain context', async ({ page }) => {
+  await gotoCase(page, '', 6);
+  await expandFirstQuery(page);
+  const originalQuery = await page.locator('.results-list-element h2').first().innerText();
+  const requests: URL[] = [];
+  page.on('request', request => {
+    const url = new URL(request.url());
+    if (url.searchParams.get('explainOther') === 'id:l_15577') requests.push(url);
+  });
+  await page.getByRole('button', { name: 'Missing Documents', exact: true }).first().click();
+  const modal = page.getByRole('dialog');
+  await expect(modal.locator('textarea')).toHaveValue('');
+  await modal.locator('textarea').fill('id:l_15577');
+  await modal.getByRole('button', { name: 'Search', exact: true }).click();
+  await expect(modal).toContainText('Legislative summaries.');
+  await expect(modal).toContainText('1 matching document.');
+  expect(requests.length).toBeGreaterThan(0);
+  expect(requests[0].searchParams.get('q')).toBe(originalQuery.trim());
+  await modal.getByRole('button', { name: 'Reset to All Rated Docs' }).click();
+  await expect(modal).toContainText('Already Rated Documents');
+  await expect(modal.locator('textarea')).toHaveValue('');
+});

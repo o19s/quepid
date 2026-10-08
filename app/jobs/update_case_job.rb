@@ -56,9 +56,9 @@ class UpdateCaseJob < ApplicationJob
 
     kases_to_sync.each do |kase|
       service.sync_ratings_for_case(kase)
-      @counts['queries_created'] += service.queries_created
-      @counts['ratings_created'] = + service.ratings_created
     end
+    @counts['queries_created'] = service.queries_created
+    @counts['ratings_created'] = service.ratings_created
     BroadcastLinkedCasesJob.perform_later(book)
     @counts
   end

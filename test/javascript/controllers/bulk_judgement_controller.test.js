@@ -180,6 +180,66 @@ describe("BulkJudgementController", () => {
       return { currentTarget: el }
     }
 
+    it("persists edits to two rows within the same debounce window", async () => {
+      vi.useFakeTimers()
+      apiFetch.mockResolvedValue(ok())
+      const { controller, element } = mount()
+      const other = element.querySelector(`#qdp_${QDP}`).cloneNode(true)
+      other.id = "qdp_8"
+      other.innerHTML = other.innerHTML.replaceAll(QDP, "8")
+      element.appendChild(other)
+      controller.disconnect()
+      controller.connect()
+
+      const first = field(element).currentTarget
+      first.value = "First explanation"
+      controller.saveExplanation({ currentTarget: first })
+      await vi.advanceTimersByTimeAsync(500)
+      const second = element.querySelector("#explanation_8")
+      second.value = "Second explanation"
+      controller.saveExplanation({ currentTarget: second })
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(apiFetch.mock.calls.map(([, request]) => JSON.parse(request.body))).toEqual([
+        { query_doc_pair_id: QDP, rating: null, explanation: "First explanation" },
+        { query_doc_pair_id: "8", rating: null, explanation: "Second explanation" }
+      ])
+    })
+
+    it("persists clearing an explanation loaded from the server without a rating", async () => {
+      vi.useFakeTimers()
+      apiFetch.mockResolvedValue(ok())
+      const { controller, element } = mount()
+      const event = field(element)
+      controller.disconnect()
+      event.currentTarget.value = "Previously saved"
+      controller.connect()
+      event.currentTarget.value = ""
+
+      controller.saveExplanation(event)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
+        query_doc_pair_id: QDP, rating: null, explanation: ""
+      })
+    })
+
+    it("persists clearing an explanation saved during this visit", async () => {
+      vi.useFakeTimers()
+      apiFetch.mockResolvedValue(ok())
+      const { controller, element } = mount()
+      const event = field(element)
+      event.currentTarget.value = "New explanation"
+      controller.saveExplanation(event)
+      await vi.advanceTimersByTimeAsync(1000)
+      event.currentTarget.value = ""
+      controller.saveExplanation(event)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(apiFetch).toHaveBeenCalledTimes(2)
+      expect(JSON.parse(apiFetch.mock.calls[1][1].body).explanation).toBe("")
+    })
+
     it("shows 'Typing...' immediately and saves once after a second of quiet", async () => {
       vi.useFakeTimers()
       apiFetch.mockResolvedValue(ok())
@@ -255,7 +315,14 @@ describe("BulkJudgementController", () => {
       event.currentTarget.value = "note"
 
       controller.saveExplanation(event)
+      const second = element.querySelector("textarea").cloneNode(true)
+      second.dataset.queryDocPairId = "8"
+      second.value = "second pending note"
+      element.appendChild(second)
+      controller.saveExplanation({ currentTarget: second })
+      expect(controller.saveTimeouts.size).toBe(2)
       controller.disconnect()
+      expect(controller.saveTimeouts.size).toBe(0)
       await vi.advanceTimersByTimeAsync(2000)
 
       expect(apiFetch).not.toHaveBeenCalled()
