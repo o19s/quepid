@@ -33,6 +33,12 @@ class ApplicationController < ActionController::Base
     request.variant = :turbo_frame if turbo_frame_request?
   end
 
+  # Overridden by Admin::AdminController
+  def sidebar_partial
+    'layouts/sidebar'
+  end
+  helper_method :sidebar_partial
+
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   protect_from_forgery with: :exception
