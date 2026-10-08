@@ -386,10 +386,6 @@ for `rubocop:disable` and check `.rubocop.yml` for the full current lint scope.
 Candidates for extraction into smaller methods or services:
 
 - `[PREEXISTING]` P3 I2 C3 — `FetchService` — `app/services/fetch_service.rb`
-- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Import::RatingsController#create`
-- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Export::RatingsController`
-- `[PREEXISTING]` P3 I2 C2 — `Api::V1::Snapshots::SearchController`
-- `[PREEXISTING]` P3 I3 C3 — `RatingsImporter`
 - `[PREEXISTING]` P3 I2 C3 — `MapperWizardsController`
 - `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `HomeController`
 

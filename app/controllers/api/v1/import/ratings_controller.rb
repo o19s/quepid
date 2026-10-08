@@ -6,59 +6,13 @@ module Api
       class RatingsController < Api::ApiController
         before_action :set_case
 
-        # rubocop:disable Metrics/MethodLength
-        # rubocop:disable Metrics/AbcSize
         def create
           file_format = params[:file_format]
           file_format = 'hash' unless params[:file_format]
 
           clear_queries = deserialize_bool_param(params[:clear_queries])
 
-          case file_format
-          when 'hash'
-            # convert from ActionController::Parameters to a Hash, symbolize, and
-            # then return just the ratings as an array.
-            ratings = params.permit(ratings: [ :query_text, :doc_id, :rating ]).to_h.deep_symbolize_keys[:ratings]
-          when 'rre'
-            # normalize the RRE ratings format to the default hash format.
-            ratings = []
-            rre_json = JSON.parse(params[:rre_json])
-            rre_json['queries'].each do |rre_query|
-              query_text = rre_query['placeholders']['$query']
-              if rre_query['relevant_documents'] # deal with if a query had no rated docs.
-                rre_query['relevant_documents'].each do |rating_value, doc_ids|
-                  doc_ids.each do |doc_id|
-                    rating = {
-                      query_text: query_text,
-                      doc_id:     doc_id,
-                      rating:     rating_value,
-                    }
-                    ratings << rating
-                  end
-                end
-              else
-                rating = {
-                  query_text: query_text,
-                  doc_id:     nil,
-                  rating:     nil,
-                }
-                ratings << rating
-              end
-            end
-
-          when 'ltr'
-            # normalize the LTR ratings format to the default hash format.
-
-            # What do we do about qid?  Do we assume that qid is in Quepid already?
-            ratings = []
-            ltr_text = params[:ltr_text]
-            ltr_lines = ltr_text.split(/\n+/)
-
-            ltr_lines.each do |ltr_line|
-              rating = rating_from_ltr_line ltr_line
-              ratings << rating
-            end
-          end
+          ratings = normalized_ratings(file_format)
 
           options = {
             format:         :hash,
@@ -106,8 +60,52 @@ module Api
           }
           rating
         end
-        # rubocop:enable Metrics/MethodLength
-        # rubocop:enable Metrics/AbcSize
+
+        private
+
+        def normalized_ratings file_format
+          case file_format
+          when 'hash'
+            # convert from ActionController::Parameters to a Hash, symbolize, and
+            # then return just the ratings as an array.
+            params.permit(ratings: [ :query_text, :doc_id, :rating ]).to_h.deep_symbolize_keys[:ratings]
+          when 'rre'
+            ratings_from_rre
+          when 'ltr'
+            # What do we do about qid? Do we assume that qid is in Quepid already?
+            ltr_text = params[:ltr_text]
+            ltr_text.split(/\n+/).map { |line| rating_from_ltr_line(line) }
+          end
+        end
+
+        def ratings_from_rre
+          # normalize the RRE ratings format to the default hash format.
+          ratings = []
+          rre_json = JSON.parse(params[:rre_json])
+          rre_json['queries'].each do |rre_query|
+            query_text = rre_query['placeholders']['$query']
+            if rre_query['relevant_documents'] # deal with if a query had no rated docs.
+              rre_query['relevant_documents'].each do |rating_value, doc_ids|
+                doc_ids.each do |doc_id|
+                  rating = {
+                    query_text: query_text,
+                    doc_id:     doc_id,
+                    rating:     rating_value,
+                  }
+                  ratings << rating
+                end
+              end
+            else
+              rating = {
+                query_text: query_text,
+                doc_id:     nil,
+                rating:     nil,
+              }
+              ratings << rating
+            end
+          end
+          ratings
+        end
       end
     end
   end

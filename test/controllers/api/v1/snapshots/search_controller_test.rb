@@ -165,6 +165,19 @@ module Api
             end
           end
 
+          test 'matching query text takes precedence over an individual document lookup' do
+            snapshot_query = snapshot.snapshot_queries.first
+            snapshot_query.query.update!(query_text: 'id:fake')
+
+            get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: 'id:fake', start: 1 }
+
+            assert_response :ok
+            data = response.parsed_body
+            assert_equal 2, data['response']['numFound']
+            assert_equal 2, data['response']['docs'].size
+            assert_equal '1', data['responseHeader']['params']['start']
+          end
+
           test 'handles a ? character in the query' do
             # the front end app converts a ? into a \? when sending the request.
             get :index, params: { case_id: acase.id, snapshot_id: snapshot.id, q: 'can you compare tesla to ford\?' }

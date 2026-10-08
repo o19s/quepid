@@ -134,4 +134,53 @@ class RatingsImporterTest < ActiveSupport::TestCase
     assert_not_nil(rating)
     assert_equal 'Swedish Food', rating.query.query_text
   end
+
+  test 'preserves existing ratings without force and inserts new ratings' do
+    acase = cases(:import_ratings_case)
+    query = queries(:import_ratings_query)
+    existing = ratings(:import_rating_1)
+    rows = [
+      { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
+      { query_text: query.query_text, doc_id: 'new-doc', rating: 0 }
+    ]
+
+    assert_difference 'query.ratings.count', 1 do
+      RatingsImporter.new(acase, rows, format: :hash).import
+    end
+
+    assert_equal 5, existing.reload.rating
+    assert_equal 0, query.ratings.find_by!(doc_id: 'new-doc').rating
+    assert_equal 5, ratings(:import_rating_2).reload.rating
+  end
+
+  test 'rating insertion failure retains clearing query creation and prior rating updates' do
+    acase = cases(:import_ratings_case)
+    query = queries(:import_ratings_query)
+    existing = ratings(:import_rating_1)
+    rows = [
+      { query_text: query.query_text, doc_id: existing.doc_id, rating: 1 },
+      { query_text: 'new query', doc_id: 'new-doc', rating: 2 }
+    ]
+    failure = ->(*) { raise 'rating insertion failed' }
+
+    original_insert = Rating.method(:insert_all)
+    Rating.define_singleton_method(:insert_all, failure)
+    assert_raises(RuntimeError) do
+      RatingsImporter.new(acase, rows, format: :hash, force: true).import
+    end
+
+    assert_equal 1, existing.reload.rating
+    assert acase.queries.exists?(query_text: 'new query')
+    assert_not Rating.exists?(doc_id: 'new-doc')
+
+    assert_raises(RuntimeError) do
+      RatingsImporter.new(acase, rows, format: :hash, clear_existing: true).import
+    end
+
+    assert_empty query.ratings.reload
+    assert acase.queries.exists?(query.id)
+    assert acase.queries.exists?(query_text: 'new query')
+  ensure
+    Rating.define_singleton_method(:insert_all, original_insert) if original_insert
+  end
 end

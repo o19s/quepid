@@ -162,6 +162,29 @@ module Api
           let(:the_case)      { cases(:snapshot_case) }
           let(:the_snapshot)  { snapshots(:a_snapshot) }
 
+          test 'exports current ratings missing ratings and empty snapshot queries with padded rows' do
+            query = the_case.queries.create!(query_text: '=empty')
+            the_snapshot.snapshot_queries.create!(query: query)
+            login_user the_user
+
+            get :show, params: {
+              case_id:     the_case.id,
+              snapshot_id: the_snapshot.id,
+              format:      :csv,
+              file_format: 'basic_snapshot',
+            }
+
+            assert_response :ok
+            rows = CSV.parse(response.body)
+            assert_equal %w[query docid rating], rows.first
+            assert_includes rows, [ 'A Query', 'doc_a', '1.0' ]
+            assert_includes rows, [ 'A Query', 'doc_b', nil ]
+            assert_includes rows, [ ' =empty', nil, nil ]
+            assert(rows.all? { |row| 3 == row.size })
+            assert_equal "attachment; filename=\"case_#{the_case.id}_snapshot_judgements.csv\"",
+                         response.headers['Content-Disposition']
+          end
+
           test 'CSV response doesnt have a trailing line feed' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_snapshot.snapshot_queries.map do |sq|

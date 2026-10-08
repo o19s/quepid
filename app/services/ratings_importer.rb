@@ -31,46 +31,35 @@ class RatingsImporter
     options[:show_progress]
   end
 
-  # rubocop:disable Metrics/MethodLength
-  # rubocop:disable Metrics/AbcSize
-  # rubocop:disable Metrics/PerceivedComplexity
-  # rubocop:disable Metrics/CyclomaticComplexity
   def import
-    if @options[:clear_existing]
-      print_step 'Clearing all ratings'
-      ratings = []
-      @acase.queries.each do |query|
-        query.ratings.each do |rating|
-          ratings << rating.id
-        end
-      end
-      Rating.delete ratings
-    end
+    clear_existing_ratings if @options[:clear_existing]
+    @ratings = @ratings.drop(1) if @options[:drop_header] # get rid of header row
 
-    if @options[:drop_header]
-      @ratings = @ratings.drop(1) # get rid of header row
-    end
-    #
-    # 2 ways to import ratings:
-    #   i. The naive way:
-    #     a. Loop through each row
-    #     b. Create or fetch the query based on the query text (cache the query)
-    #     c. Create or update the rating
-    #   ii. The less naive way, which we are using:
-    #     a. Map from the rows all the unique queries
-    #     b. Fetch all the existing queries
-    #     c. Determine which queries do not already exist
-    #     d. Create remaining queries in bulk
-    #     e. Updating existing ratings if needed
-    #     f. Create remaining ratings in mass
-    #
-
-    # a. Map from the rows all the unique queries
     normalized_rows = @ratings.map { |row| extract_rating_info row }
-    query_texts     = normalized_rows.pluck(:query_text)
-    unique_queries  = query_texts.uniq
+    prepare_queries(normalized_rows.pluck(:query_text).uniq)
+    ratings_to_update, ratings_to_import = build_rating_changes(normalized_rows)
+    persist_rating_changes(ratings_to_update, ratings_to_import)
+    sync_imported_ratings(ratings_to_update, ratings_to_import)
 
-    # b. Fetch all the existing queries
+    return unless @options[:clear_existing]
+
+    clear_unused_queries
+  end
+
+  private
+
+  def clear_existing_ratings
+    print_step 'Clearing all ratings'
+    ratings = []
+    @acase.queries.each do |query|
+      query.ratings.each do |rating|
+        ratings << rating.id
+      end
+    end
+    Rating.delete ratings
+  end
+
+  def prepare_queries unique_queries
     queries_params = {
       query_text: unique_queries,
       case_id:    @acase.id,
@@ -79,46 +68,43 @@ class RatingsImporter
       .all
       .index_by(&:query_text)
 
-    # c. Determine which queries do not already exist
+    # Determine which queries do not already exist
     existing_queries = indexed_queries.keys
     non_existing_queries = unique_queries - existing_queries
 
     if non_existing_queries.empty?
       @queries = indexed_queries
     else
-      # d. Create remaining queries in bulk
-      queries_to_import = []
-      print_step 'Importing queries'
-      block_with_progress_bar(non_existing_queries.length) do |i|
-        query_text  = non_existing_queries[i]
-        query       = Query.new query_text: query_text, case_id: @acase.id
-
-        queries_to_import << query
-      end
-
-      # Mass insert queries using Rails' insert_all
-      if queries_to_import.any?
-        Query.insert_all(
-          queries_to_import.map do |query|
-            query.attributes.except('id').merge(
-              'created_at' => Time.zone.now,
-              'updated_at' => Time.zone.now
-            )
-          end
-        )
-      end
-
+      insert_queries(non_existing_queries)
       # Refetch the queries now that we've created new ones
-      queries_params = {
-        query_text: unique_queries,
-        case_id:    @acase.id,
-      }
-      @queries = Query.where(queries_params)
-        .all
-        .index_by(&:query_text)
+      @queries = Query.where(queries_params).all.index_by(&:query_text)
+    end
+  end
+
+  def insert_queries non_existing_queries
+    queries_to_import = []
+    print_step 'Importing queries'
+    block_with_progress_bar(non_existing_queries.length) do |i|
+      query_text  = non_existing_queries[i]
+      query       = Query.new query_text: query_text, case_id: @acase.id
+
+      queries_to_import << query
     end
 
-    # e. Create or update ratings
+    # Mass insert queries using Rails' insert_all
+    if queries_to_import.any?
+      Query.insert_all(
+        queries_to_import.map do |query|
+          query.attributes.except('id').merge(
+            'created_at' => Time.zone.now,
+            'updated_at' => Time.zone.now
+          )
+        end
+      )
+    end
+  end
+
+  def build_rating_changes normalized_rows
     ratings_to_import = []
     ratings_to_update = []
     print_step 'Importing ratings'
@@ -144,6 +130,10 @@ class RatingsImporter
       end
     end
 
+    [ ratings_to_update, ratings_to_import ]
+  end
+
+  def persist_rating_changes ratings_to_update, ratings_to_import
     # Mass update ratings
     ActiveRecord::Base.transaction do
       ratings_to_update.each(&:save)
@@ -160,26 +150,22 @@ class RatingsImporter
         end
       )
     end
+  end
 
+  def sync_imported_ratings ratings_to_update, ratings_to_import
     imported = (ratings_to_update + ratings_to_import).filter_map do |rating|
       rating.query.ratings.find_by(doc_id: rating.doc_id)
     end
     JudgementSync.from_ratings(@options[:user], imported)
+  end
 
-    return unless @options[:clear_existing]
-
+  def clear_unused_queries
     print_step 'Clearing unused queries'
 
     @acase.queries.each do |query|
       query.destroy if @queries[query.query_text].blank?
     end
   end
-  # rubocop:enable Metrics/PerceivedComplexity
-  # rubocop:enable Metrics/AbcSize
-  # rubocop:enable Metrics/MethodLength
-  # rubocop:enable Metrics/CyclomaticComplexity
-
-  private
 
   def extract_rating_info row
     case @options[:format]
