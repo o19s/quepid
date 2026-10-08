@@ -1,3 +1,7 @@
+# frozen_string_literal: true
+
+# rubocop:disable Metrics/BlockLength
+
 RailsPulse.configure do |config|
   # ====================================================================================================
   #                                         GLOBAL CONFIGURATION
@@ -21,21 +25,21 @@ RailsPulse.configure do |config|
   config.route_thresholds = {
     slow:      500,
     very_slow: 1500,
-    critical:  3000
+    critical:  3000,
   }
 
   # Thresholds for an individual request
   config.request_thresholds = {
     slow:      700,
     very_slow: 2000,
-    critical:  4000
+    critical:  4000,
   }
 
   # Thresholds for an individual database query
   config.query_thresholds = {
     slow:      100,
     very_slow: 500,
-    critical:  1000
+    critical:  1000,
   }
 
   # ====================================================================================================
@@ -85,7 +89,7 @@ RailsPulse.configure do |config|
   # Rails Pulse from tracking its own requests. Leave as nil for default '/rails_pulse'.
   # Examples:
   #   config.mount_path = "/admin/monitoring"
-  config.mount_path = "/admin/rails_pulse"
+  config.mount_path = '/admin/rails_pulse'
 
   # Manual route filtering
   # Specify additional routes, requests, or queries to ignore from performance tracking.
@@ -119,7 +123,7 @@ RailsPulse.configure do |config|
   # Example configuration:
   #   config.tags = ["ignored", "critical", "experimental", "deprecated", "external", "admin"]
 
-  config.tags = [ "ignored", "critical", "experimental" ]
+  config.tags = %w[ignored critical experimental]
 
   # ====================================================================================================
   #                                          EXCEPTION TRACKING
@@ -187,7 +191,7 @@ RailsPulse.configure do |config|
   config.job_thresholds = {
     slow:      5_000,   # 5 seconds
     very_slow: 30_000,  # 30 seconds
-    critical:  60_000   # 1 minute
+    critical:  60_000, # 1 minute
   }
 
   # Job classes to ignore from tracking (by class name)
@@ -221,7 +225,7 @@ RailsPulse.configure do |config|
   # config/application.rb) - includes the recurring tasks in config/recurring.yml
   # (nightly_run_cases_command, blazer_run_checks_daily) in tracking.
   config.job_adapters = {
-    solid_queue: { enabled: true, track_recurring: true }
+    solid_queue: { enabled: true, track_recurring: true },
   }
 
   # ====================================================================================================
@@ -396,15 +400,15 @@ RailsPulse.configure do |config|
   # After time-based cleanup, if tables still exceed these limits,
   # the oldest remaining records will be deleted to stay under the limit
   config.max_table_records = {
-    rails_pulse_requests: 50_000,                 # HTTP requests (moderate volume)
-    rails_pulse_operations: 100_000,              # Operations within requests (high volume)
-    rails_pulse_routes: 1_000,                    # Unique routes (low volume)
-    rails_pulse_queries: 10_000,                  # Normalized SQL queries (low volume)
-    rails_pulse_job_runs: 50_000,                 # Individual job executions (high volume)
-    rails_pulse_jobs: 1_000,                      # Unique job classes (low volume)
-    rails_pulse_exception_occurrences: 50_000,    # Individual exception raises (high volume)
-    rails_pulse_exception_groups: 10_000,         # Distinct exception sites (moderate volume)
-    rails_pulse_deployments: 1_000                # Deploy markers (low volume; oldest pruned first)
+    rails_pulse_requests:              50_000, # HTTP requests (moderate volume)
+    rails_pulse_operations:            100_000, # Operations within requests (high volume)
+    rails_pulse_routes:                1_000, # Unique routes (low volume)
+    rails_pulse_queries:               10_000, # Normalized SQL queries (low volume)
+    rails_pulse_job_runs:              50_000, # Individual job executions (high volume)
+    rails_pulse_jobs:                  1_000, # Unique job classes (low volume)
+    rails_pulse_exception_occurrences: 50_000, # Individual exception raises (high volume)
+    rails_pulse_exception_groups:      10_000, # Distinct exception sites (moderate volume)
+    rails_pulse_deployments:           1_000, # Deploy markers (low volume; oldest pruned first)
   }
 
   # ====================================================================================================
@@ -468,3 +472,5 @@ RailsPulse.configure do |config|
   # Useful for standalone/API-only deployments that use a separate dashboard app.
   # config.mount_dashboard = true
 end
+
+# rubocop:enable Metrics/BlockLength
