@@ -634,24 +634,3 @@ JS response parsers and CSV formula escaping serve distinct execution/export
 contracts; keep them aligned rather than merging them. Similar jbuilder
 partials have separate export/API contracts. The small Thor ratings/snapshot
 generators do not justify abstraction solely for copied lines.
-
-## [MIGRATION-FOLLOWUP] JavaScript correctness findings
-
-### [MIGRATION-FOLLOWUP] P1 I0 C2 — Book auto-sync batches conflict with queued population
-
-**Location:** `app/javascript/utils/book_sync.js#sync`,
-`app/controllers/api/v1/books/populate_controller.rb#update`, `Book#queue_job`.
-
-More than 100 queries produce concurrent population requests for one book.
-The first queues a job and marks the book busy; additional requests can receive
-409. The client logs failures and clears their cache entries but resolves the
-sync without retrying them, so a completed search can leave the book incomplete.
-
-**Fix direction:** coordinate submission with job completion, or submit one
-server-managed payload. Awaiting each HTTP response alone is insufficient:
-204 acknowledges queueing, not completion. Surface partial failure and test
-101+ queries against the queued-job contract and a retry path.
-
-**Provenance:** parallel client batching predates the migration; the baseline
-population endpoint did not have the current conflict guard. The introduction
-of that contract mismatch has not been classified against migration history.

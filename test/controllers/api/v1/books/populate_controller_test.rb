@@ -98,6 +98,45 @@ module Api
           end
         end
 
+        test 'queues all 101 queries together and accepts a rejected payload after job completion' do
+          expects_any_ga_event_call
+          pairs = 101.times.map do |index|
+            query_text = "bulk sync query #{index}"
+            acase.queries.create!(query_text: query_text)
+            {
+              query_text:      query_text,
+              doc_id:          "bulk-doc-#{index}",
+              position:        1,
+              document_fields: { title: "Document #{index}" },
+            }
+          end
+          data = { book_id: book.id, case_id: acase.id, query_doc_pairs: pairs }
+
+          assert_enqueued_jobs 1, only: PopulateBookJob do
+            put :update, params: data
+            assert_response :no_content
+          end
+          assert_not_nil book.reload.populate_job
+          assert_equal 0, book.query_doc_pairs.where(query_text: pairs.pluck(:query_text)).count
+
+          retry_data = data.merge(query_doc_pairs: [ pairs.first.merge(doc_id: 'retry-doc') ])
+          assert_no_enqueued_jobs do
+            put :update, params: retry_data
+            assert_response :conflict
+          end
+
+          perform_enqueued_jobs
+          assert_nil book.reload.populate_job
+          assert_equal 101, book.query_doc_pairs.where(query_text: pairs.pluck(:query_text)).count
+
+          perform_enqueued_jobs do
+            put :update, params: retry_data
+            assert_response :no_content
+          end
+          assert_equal 102, book.query_doc_pairs.where(query_text: pairs.pluck(:query_text)).count
+          assert_equal 1, book.query_doc_pairs.find_by!(doc_id: 'retry-doc').position
+        end
+
         describe 'refresh a existing book' do
           test 'updates the position and doc fields' do
             assert_not_empty book.query_doc_pairs

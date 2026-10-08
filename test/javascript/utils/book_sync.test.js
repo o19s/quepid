@@ -86,7 +86,7 @@ describe("buildQueryDocPairsPayload", () => {
     expect(fetcher).not.toHaveBeenCalled()
   })
 
-  it("sends only unsynced documents, in batches of 100 queries", async () => {
+  it("sends all unsynced documents in one queued payload", async () => {
     const fetcher = vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null,  ok: true, status: 204 }))
     vi.stubGlobal("fetch", fetcher)
     const runtime = createBookSyncRuntime()
@@ -94,9 +94,9 @@ describe("buildQueryDocPairsPayload", () => {
     const queries = Array.from({ length: 250 }, (_, i) => ({ queryText: `q${i}`, docs: [{ id: "d" }] }))
 
     await runtime.sync(queries)
-    expect(fetcher).toHaveBeenCalledTimes(3)
+    expect(fetcher).toHaveBeenCalledTimes(1)
     const batchSizes = fetcher.mock.calls.map(([, init]) => JSON.parse(init.body).query_doc_pairs.length)
-    expect(batchSizes).toEqual([100, 100, 50])
+    expect(batchSizes).toEqual([250])
 
     fetcher.mockClear()
     await runtime.sync([{ queryText: "q0", docs: [{ id: "d" }, { id: "new" }] }])
@@ -160,7 +160,7 @@ describe("buildQueryDocPairsPayload", () => {
     expect(pair.document_fields).not.toHaveProperty("image")
   })
 
-  it("deduplicates automatic syncs and retries failed batches", async () => {
+  it("deduplicates automatic syncs and retries failed submissions", async () => {
     const fetcher = vi.fn()
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: async () => ({ error: "failed" }) })
       .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, status: 204, json: vi.fn(async () => null) })
@@ -170,14 +170,40 @@ describe("buildQueryDocPairsPayload", () => {
     const query = { queryText: "search", docs: [{ id: "doc-1", title: "Document" }] }
     runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
 
-    await runtime.sync([query])
+    await expect(runtime.sync([query])).rejects.toThrow("Book auto-sync could not submit all new results")
     expect(runtime.getSyncCacheStats(7).syncedPairsCount).toBe(0)
     await runtime.sync([query])
     expect(fetcher).toHaveBeenCalledTimes(2)
     expect(runtime.getSyncCacheStats(7).syncedPairsCount).toBe(1)
     expect(logger.error).toHaveBeenCalledOnce()
   })
-  describe("payload and batching edges", () => {
+  it("submits 101 queries once and retries every pair after a busy-book conflict", async () => {
+    let busy = true
+    const fetcher = vi.fn(async () => {
+      if (busy) return { ok: false, status: 409, json: async () => null }
+      busy = true // 204 queues work: subsequent requests would conflict.
+      return { ok: true, status: 204 }
+    })
+    vi.stubGlobal("fetch", fetcher)
+    const runtime = createBookSyncRuntime({ logger: { error: vi.fn() } })
+    runtime.configure({ caseId: 42, bookId: 7, autoPopulate: true })
+    const queries = Array.from({ length: 101 }, (_, i) => ({
+      queryText: `q${i}`, docs: [{ id: "d" }]
+    }))
+
+    await expect(runtime.sync(queries)).rejects.toThrow("Book auto-sync")
+    expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(0)
+    busy = false // The previous job finished; retry the same search.
+    await runtime.sync(queries)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(fetcher.mock.calls.map(([, init]) => JSON.parse(init.body).query_doc_pairs.length))
+      .toEqual([101, 101])
+    expect(runtime.getSyncCacheStats().syncedPairsCount).toBe(101)
+    await runtime.sync(queries)
+    expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
+  describe("payload and submission edges", () => {
     const okFetch = () =>
       vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null, ok: true, status: 204 }))
 

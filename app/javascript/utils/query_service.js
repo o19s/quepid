@@ -322,9 +322,9 @@ export function runSearchAll({
   return pAll(searchQueue, requestsPerMinute)
     .then(() => Promise.all(searchPromises), rejectAfterFailure)
     .then(() => scoreAll(), rejectAfterFailure)
-    .then((scoreInfo) => {
+    .then(async (scoreInfo) => {
       try {
-        syncToBook()
+        await syncToBook()
       } catch (error) {
         return rejectAfterFailure(error)
       }

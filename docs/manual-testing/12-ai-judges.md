@@ -112,6 +112,8 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
 - **Expected:** Only one run per book/judge proceeds at a time; conflicting manual launches still discard. Cancellation prevents subsequent iterations and cancels queued continuations; one in-flight provider response may still save, with the lock held until the worker exits. Failed job rows do not leave activity permanently running. Per-cell updates preserve mounted sparklines. Polling recovers missed/removed rows, and synchronization retains the existing no-feedback-loop contract.
 
   - [ ] In a linked case with automatic book population enabled, sync result A, then results A/B. Confirm book pairs retain A at position 1 and B at position 2; already-synced rows must not renumber later results.
+  - [ ] Search a linked case with 101+ queries and automatic book population enabled. Confirm all new pairs are submitted together and appear after the queued job completes. While the book is busy, search again with new pairs: confirm a visible auto-sync error. After the job finishes, rerun the search and confirm the rejected pairs are submitted and persisted.
+  - [ ] Add one query while automatic book population is enabled and the book is busy. Confirm successful search results refresh the new query's score badge and case score despite the visible auto-sync error. Repeat with the book available; confirm refreshed scores and successful submission. A search-engine failure must still show its error without submitting pairs.
 
 ### 12.9 TypeSafe Jev and provider acceptance rules
 

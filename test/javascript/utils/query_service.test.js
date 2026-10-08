@@ -390,6 +390,54 @@ describe("query service helpers", () => {
     expect(onSearchFailed).toHaveBeenCalledWith(error, 3)
     expect(onSearchFailed).toHaveBeenCalledOnce()
   })
+  it("waits for book submission and reports its asynchronous failure before completing", async () => {
+    let rejectSync
+    const submission = new Promise((_, reject) => { rejectSync = reject })
+    const onSearchCompleted = vi.fn()
+    const onSearchFailed = vi.fn()
+    const syncToBook = vi.fn(() => submission)
+    const result = runSearchAll({
+      queries: {},
+      search: vi.fn(),
+      score: vi.fn(),
+      scoreAll: vi.fn(() => "scores"),
+      syncToBook,
+      onSearchStarted: () => 3,
+      onSearchCompleted,
+      onSearchFailed
+    })
+    const error = new Error("Book auto-sync failed")
+    const failure = expect(result).rejects.toBe(error)
+    await vi.waitFor(() => expect(syncToBook).toHaveBeenCalledOnce())
+    expect(onSearchCompleted).not.toHaveBeenCalled()
+    rejectSync(error)
+    await failure
+    expect(onSearchFailed).toHaveBeenCalledExactlyOnceWith(error, 3)
+    expect(onSearchCompleted).not.toHaveBeenCalled()
+  })
+
+  it("returns scores only after the book submission is acknowledged", async () => {
+    let acknowledge
+    const submission = new Promise((resolve) => { acknowledge = resolve })
+    const syncToBook = vi.fn(() => submission)
+    const onSearchCompleted = vi.fn()
+    const scores = { score: 0.5 }
+    const result = runSearchAll({
+      queries: {},
+      search: vi.fn(),
+      score: vi.fn(),
+      scoreAll: () => scores,
+      syncToBook,
+      onSearchStarted: () => 4,
+      onSearchCompleted
+    })
+    await vi.waitFor(() => expect(syncToBook).toHaveBeenCalledOnce())
+    expect(onSearchCompleted).not.toHaveBeenCalled()
+    acknowledge()
+    await expect(result).resolves.toBe(scores)
+    expect(onSearchCompleted).toHaveBeenCalledExactlyOnceWith(4)
+  })
+
   describe("searcher option branches", () => {
     const build = (settings = {}, extra = {}) =>
       buildSearcherRequest({

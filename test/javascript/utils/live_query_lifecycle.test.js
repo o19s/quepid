@@ -15,6 +15,7 @@ function runtimeFor(overrides = {}) {
     registerQuery: vi.fn(),
     removeQuery: vi.fn(() => true),
     searchAndScore: vi.fn(() => Promise.resolve()),
+    syncToBook: vi.fn(() => Promise.resolve()),
     updateScores: vi.fn(),
     logger: { info: vi.fn() },
     ...overrides
@@ -63,6 +64,33 @@ describe("createLiveQueryLifecycleRuntime", () => {
 
     expect(registerQuery).not.toHaveBeenCalled()
     expect(updateScores).toHaveBeenCalledOnce()
+  })
+
+  it("refreshes case scores before reporting a single-query book sync failure", async () => {
+    const syncError = new Error("Book auto-sync could not submit all new results")
+    const updateScores = vi.fn()
+    const syncToBook = vi.fn(() => {
+      expect(updateScores).toHaveBeenCalledOnce()
+      return Promise.reject(syncError)
+    })
+    const runtime = runtimeFor({ updateScores, syncToBook })
+
+    await expect(runtime.commitQueries({ query: {} }, { status: 204 }))
+      .resolves.toEqual({ searchError: syncError })
+    expect(syncToBook).toHaveBeenCalledOnce()
+  })
+
+  it("does not sync a single query whose search failed", async () => {
+    const searchError = new Error("engine down")
+    const syncToBook = vi.fn()
+    const runtime = runtimeFor({
+      searchAndScore: vi.fn(() => Promise.reject(searchError)),
+      syncToBook
+    })
+
+    await expect(runtime.commitQueries({ query: {} }, { status: 204 }))
+      .resolves.toEqual({ searchError })
+    expect(syncToBook).not.toHaveBeenCalled()
   })
 
   it("replaces the collection from the response for bulk commits, then searches", async () => {

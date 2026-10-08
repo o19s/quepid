@@ -92,25 +92,24 @@ export function createBookSyncRuntime({ logger = console } = {}) {
       })
       return docs.length > 0 ? [{ ...query, docs, docPositions }] : []
     })
-    const batches = []
-    for (let index = 0; index < queriesToSync.length; index += 100) {
-      batches.push(queriesToSync.slice(index, index + 100))
-    }
+    if (queriesToSync.length === 0) return
 
-    await Promise.all(
-      batches.map(async (batch) => {
-        try {
-          await populateBook({ bookId, caseId, queries: batch })
-        } catch (error) {
-          batch.forEach((query) =>
-            query.docs.forEach((doc) => {
-              delete cache[`${query.queryText}:${doc.id}`]
-            })
-          )
-          logger.error("Failed to sync book query_doc_pairs batch:", error)
-        }
-      })
-    )
+    // A 204 acknowledges one queued job, not its completion. Submit all new
+    // pairs together so the book's busy guard cannot reject later batches.
+    try {
+      await populateBook({ bookId, caseId, queries: queriesToSync })
+    } catch (error) {
+      queriesToSync.forEach((query) =>
+        query.docs.forEach((doc) => {
+          delete cache[`${query.queryText}:${doc.id}`]
+        })
+      )
+      logger.error("Failed to sync book query_doc_pairs:", error)
+      throw new Error(
+        "Book auto-sync could not submit all new results. Retry the search after the book's current job finishes.",
+        { cause: error }
+      )
+    }
   }
 
   return { configure, getSyncCacheStats, reset, sync }

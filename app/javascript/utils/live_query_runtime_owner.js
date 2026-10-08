@@ -248,6 +248,7 @@ export function createLiveQueryRuntimeOwner({
     registerQuery,
     removeQuery,
     searchAndScore,
+    syncToBook: () => bookSyncRuntime.sync(queryArray()),
     updateScores,
     logger
   })
@@ -489,7 +490,6 @@ export function createLiveQueryRuntimeOwner({
     return runtimeFor(query)
       .search()
       .then(() => query.score())
-      .then(() => bookSyncRuntime.sync(queryArray()))
   }
 
   function searchAll() {

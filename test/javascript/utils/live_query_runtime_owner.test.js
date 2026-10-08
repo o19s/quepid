@@ -13,7 +13,8 @@ function buildOwner({
   bootstrapScorer = vi.fn(),
   editable = {},
   previewArgs = vi.fn(),
-  proxyUrlFor = vi.fn()
+  proxyUrlFor = vi.fn(),
+  eventTarget = new EventTarget()
 } = {}) {
   const splainerSearch = {
     searchSvc: { createSearcher: vi.fn(() => searcher) },
@@ -25,7 +26,7 @@ function buildOwner({
   const runtime = createLiveQueryRuntimeOwner({
     splainerSearch,
     snapshotRegistry: {},
-    eventTarget: new EventTarget(),
+    eventTarget,
     store: { scoring: new EventTarget(), ...store },
     framework: {
       request: vi.fn(() => Promise.resolve({ data: {} })),
@@ -165,7 +166,7 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(stores.queries.query(1).expanded).toBe(false)
   })
 
-  async function addQuery() {
+  async function addQuery({ syncConflict = false } = {}) {
     const stores = buildStores()
     vi.spyOn(stores.scoring, "setLatestScoreInfo")
     const searcher = {
@@ -177,13 +178,23 @@ describe("createLiveQueryRuntimeOwner", () => {
     }
     const scorer = { score: vi.fn(() => 0.5), maxScore: () => 1, getColors: () => ({}) }
     vi.spyOn(stores.documents, "replaceQuery")
-    const search = buildOwner({ store: stores, searcher, scorer })
+    const eventTarget = new EventTarget()
+    const search = buildOwner({ store: stores, searcher, scorer, eventTarget })
     const settings = {
       searchEngine: "solr",
       selectedTry: { searchUrl: "http://solr/select", args: { q: ["#$query##"] }, requestsPerMinute: 0 },
       createFieldSpec: () => ({ id: "id" })
     }
     await search.queryCapabilities.changeSettings(-1, settings)
+
+    if (syncConflict) {
+      vi.stubGlobal("fetch", vi.fn(async () => ({
+        ok: false, status: 409, json: async () => null
+      })))
+      eventTarget.dispatchEvent(new CustomEvent("quepid:case-book-updated", {
+        detail: { caseId: -1, bookId: 7, autoPopulateBookPairs: true }
+      }))
+    }
 
     const prepared = search.queryLifecycle.prepareQueries(["star wars"])
     const committed = await search.queryLifecycle.commitQueries(prepared, {
@@ -226,6 +237,23 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(search.queryCapabilities.getQuery(5).hasBeenScored).toBe(true)
     expect(stores.queries.searchStatus).toBe("ready")
     expect(stores.scoring.setLatestScoreInfo).toHaveBeenCalledOnce()
+  })
+
+  it("publishes an added query's case scores despite a busy book and retries its pairs", async () => {
+    const { stores, search, committed } = await addQuery({ syncConflict: true })
+
+    expect(committed.searchError.message).toContain("Book auto-sync")
+    expect(stores.scoring.queryScore(5)).toMatchObject({ score: 0.5, countMissingRatings: 2 })
+    expect(stores.scoring.caseScore.score).toBe(0.5)
+    expect(stores.documents.query(5).errorText).toBeFalsy()
+    const rejectedPayload = JSON.parse(fetch.mock.calls[0][1].body)
+
+    fetch.mockResolvedValue({ ok: true, status: 204 })
+    await search.queryCommands.searchAll()
+
+    expect(fetch).toHaveBeenCalledTimes(2)
+    expect(JSON.parse(fetch.mock.calls[1][1].body)).toEqual(rejectedPayload)
+    expect(stores.queries.searchStatus).toBe("ready")
   })
 
   it("refreshes every query's diff, republishes it, and reports success", async () => {

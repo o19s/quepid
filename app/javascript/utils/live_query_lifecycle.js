@@ -17,6 +17,7 @@ export function createLiveQueryLifecycleRuntime({
   registerQuery,
   removeQuery,
   searchAndScore,
+  syncToBook,
   updateScores,
   logger = console
 }) {
@@ -28,14 +29,16 @@ export function createLiveQueryLifecycleRuntime({
       registerQuery(query.queryId, query)
     }
 
-    return searchAndScore(query).then(
-      () => {
+    return searchAndScore(query)
+      .then(() => {
         logger.info("rescoring queries after adding query")
         updateScores()
-        return {}
-      },
-      (searchError) => ({ searchError })
-    )
+        return syncToBook()
+      })
+      .then(
+        () => ({}),
+        (searchError) => ({ searchError })
+      )
   }
 
   function commitPersistedQueries(persisted) {
