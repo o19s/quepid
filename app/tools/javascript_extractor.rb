@@ -2,7 +2,7 @@
 
 class JavascriptExtractor < RubyLLM::Tool
   description 'Extracts JavaScript code blocks from markdown content'
-  param :markdown_content, desc: 'Markdown content string containing JavaScript code blocks'
+  parameter :markdown_content, description: 'Markdown content string containing JavaScript code blocks'
 
   def execute markdown_content:
     # Validate input
