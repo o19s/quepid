@@ -147,11 +147,18 @@
         <div class="row g-3">
           <div class="col-md-8">
             <label for="apiKey" class="form-label">OpenAI API Key</label>
-            <input type="password"
-                   class="form-control"
-                   id="apiKey"
-                   placeholder="sk-..."
-                   data-mapper-wizard-target="apiKey">
+            <div class="input-group" data-controller="password-toggle">
+              <input type="text"
+                     class="form-control masked-field"
+                     id="apiKey"
+                     placeholder="sk-..."
+                     autocomplete="off"
+                     data-mapper-wizard-target="apiKey"
+                     data-password-toggle-target="input">
+              <button type="button" class="btn btn-outline-secondary" data-action="password-toggle#toggle" aria-label="Show API key">
+                <i class="bi bi-eye" data-password-toggle-target="icon"></i>
+              </button>
+            </div>
             <div class="form-text">Your API key is used only for this request and is not stored.</div>
           </div>
           <div class="col-md-4 d-flex align-items-end">
