@@ -9,7 +9,8 @@ const EOL = "\r\n"
 const toCsv = (headers, rows) =>
   [headers, ...rows].map((fields) => fields.map(csvField).join(",")).join(EOL) + EOL
 
-// Header names are plain identifiers; values are arbitrary unicode, including
+// For the main round trip, header names are plain identifiers (arbitrary header
+// text has its own property below); values are arbitrary unicode, including
 // commas, quotes, CR/LF, and formula-leading characters.
 const header = fc.stringMatching(/^[a-z][a-z0-9_]{0,8}$/)
 const headers = fc.uniqueArray(header, { minLength: 1, maxLength: 5 })
@@ -60,6 +61,40 @@ describe("csv round trip", () => {
 
         expect(Array.isArray(parsedHeaders)).toBe(true)
         rows.forEach((row) => expect(Object.keys(row).sort()).toEqual([...new Set(parsedHeaders)].sort()))
+      })
+    )
+  })
+
+  it("round-trips arbitrary header text, not just identifiers", () => {
+    const anyHeader = fc.string({ minLength: 1, maxLength: 10 }).filter((text) => text.trim() !== "")
+    const names = fc.uniqueArray(anyHeader, { minLength: 1, maxLength: 4, selector: (text) => text.trim() })
+
+    fc.assert(
+      fc.property(names, (headerNames) => {
+        const parsed = parseCsv(toCsv(headerNames, [headerNames.map(() => "x")]))
+
+        expect(parsed.errors).toEqual([])
+        expect(parsed.headers).toEqual(headerNames.map((name) => name.trim()))
+      })
+    )
+  })
+
+  it("round-trips numbers, nulls, and JSON objects the way the exporter stringifies them", () => {
+    const cell = fc.oneof(
+      fc.integer().map((n) => ({ written: n, read: String(n) })),
+      fc.constant({ written: null, read: "" }),
+      fc
+        .oneof(fc.dictionary(fc.string({ maxLength: 6 }), fc.jsonValue({ maxDepth: 2 }), { maxKeys: 3 }), fc.array(fc.jsonValue({ maxDepth: 2 }), { maxLength: 3 }))
+        .map((object) => ({ written: object, read: JSON.stringify(object) }))
+    )
+
+    fc.assert(
+      fc.property(fc.array(cell, { minLength: 2, maxLength: 5 }), (cells) => {
+        const names = cells.map((_, index) => `c${index}`)
+        const parsed = parseCsv(toCsv(names, [cells.map((c) => c.written)]))
+
+        expect(parsed.errors).toEqual([])
+        expect(Object.values(parsed.rows[0])).toEqual(cells.map((c) => c.read))
       })
     )
   })

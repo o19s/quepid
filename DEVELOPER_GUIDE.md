@@ -27,6 +27,7 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [III. Run Tests](#iii-run-tests)
 		- [Minitest](#minitest)
 		- [Vitest](#vitest)
+			- [Property-based tests](#property-based-tests)
 		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
@@ -294,6 +295,12 @@ See [`docs/js_tooling.md`](docs/js_tooling.md) for the canonical JavaScript tool
 bin/docker r yarn test:unit          # Vitest
 bin/docker r rails test:vitest       # same as yarn test:unit
 ```
+
+#### Property-based tests
+
+Property tests (fast-check, `test/javascript/utils/*_properties.test.js`) complement example specs for pure `utils/` and `api/` logic with a clear invariant: round trips, aggregations, payload builders, ordering and concurrency helpers. When you add or materially change such a module, consider whether a property fits; when you fix a bug found by one, pin the shrunk counterexample as an example test. Always confirm a new property fails when you deliberately break the code. See [`docs/js_tooling.md` — Property-based tests](docs/js_tooling.md#property-based-tests-fast-check) for conventions.
+
+On the Ruby side there is no property-testing gem. For importer/exporter pairs, prefer a shared fixture that both the Minitest suite and the Vitest suite read (the CSV contract in `test/fixtures/files/csv_round_trip_cases.json` is the model) over randomized Ruby tests.
 
 ### Pre-commit hooks
 

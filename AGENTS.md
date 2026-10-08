@@ -77,6 +77,8 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Run JavaScript unit tests via `docker compose exec app yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated).
 - Lint modern JS via `docker compose exec app yarn lint:js` or `docker compose exec app rails test:eslint` (see `docs/js_tooling.md`).
 - **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
+- **Property-based tests (fast-check):** when you add or materially change a pure `utils/` or `api/` function with a crisp invariant (round trip, aggregation, payload builder, ordering/concurrency), add or extend `test/javascript/utils/<module>_properties.test.js`. Follow `docs/js_tooling.md` — "Property-based tests". Before finishing one, temporarily break the code under test and confirm the property fails, then restore it. Pin any shrunk counterexample as a plain example test. Don't use them for controllers or DOM code, and don't loosen a failing property without understanding its counterexample.
+- **Cross-language contracts (Ruby ↔ JS):** share a fixture under `test/fixtures/files/` read by both Minitest and Vitest rather than adding a Ruby property-testing gem. If you change `CsvExport` or the CSV import/export utilities, update `csv_round_trip_cases.json` and run both suites.
 
 ### Rails
 - Run Rails tests via `docker compose exec app rails test`.

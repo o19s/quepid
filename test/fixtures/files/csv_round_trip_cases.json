@@ -1,0 +1,47 @@
+[
+  {
+    "values": [
+      "plain",
+      "a,b",
+      "say \"hi\"",
+      "line1\nline2"
+    ],
+    "ruby_csv": "plain,\"a,b\",\"say \"\"hi\"\"\",\"line1\nline2\"\n"
+  },
+  {
+    "values": [
+      "-\r-",
+      "=1+1",
+      "@x",
+      "+y"
+    ],
+    "ruby_csv": "\" -\r-\", =1+1, @x, +y\n"
+  },
+  {
+    "values": [
+      " padded ",
+      "",
+      "héllo ✓",
+      "\"\""
+    ],
+    "ruby_csv": " padded ,\"\",héllo ✓,\"\"\"\"\"\"\n"
+  },
+  {
+    "values": [
+      "\r\n",
+      "x",
+      ",",
+      "\""
+    ],
+    "ruby_csv": "\"\r\n\",x,\",\",\"\"\"\"\n"
+  },
+  {
+    "values": [
+      "=HYPERLINK(\"http://x\",\"y\")",
+      "-1",
+      "a\rb",
+      "tab\there"
+    ],
+    "ruby_csv": "\" =HYPERLINK(\"\"http://x\"\",\"\"y\"\")\", -1,\"a\rb\",tab\there\n"
+  }
+]

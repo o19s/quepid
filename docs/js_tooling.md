@@ -146,6 +146,41 @@ Keep fakes local to the spec; production modules have no test injection hooks.
 - **`controllers/`** — Add Vitest when you touch a controller for meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
 
+### Property-based tests (fast-check)
+
+[fast-check](https://fast-check.dev) is installed alongside Vitest. Use it where an invariant can be stated crisply ("for all inputs, X holds") — not as a replacement for example-based specs, which stay the place for documented edge cases and regressions.
+
+**Good fits** (pure functions in `utils/` and `api/`):
+
+- Round trips: `parse(serialize(x))` equals `x` modulo documented normalization (`csv.js` ↔ `case_csv.js`).
+- Aggregations and read models: bounds, "sentinel iff nothing numeric", order independence (`scoring.js`, `diff_scores.js`).
+- Payload builders: one output per input, order preserved, input not mutated (`book_sync.js`).
+- Concurrency and ordering helpers, via `fc.scheduler()` (`pAll` in `query_service.js`).
+
+**Poor fits** — use examples instead: Stimulus controllers, DOM rendering, anything needing heavy mocking, and code whose only oracle is a reimplementation of itself.
+
+Conventions:
+
+- Put properties in `test/javascript/utils/<module>_properties.test.js` next to the module's example spec, importing via the same bare paths.
+- Make generators describe the real input domain. Include hostile values (commas, quotes, CR/LF, `=@+-` prefixes, unicode) for text that crosses a file or network boundary. Don't constrain generators just to make a property pass.
+- Use exactly representable numbers (for example `fc.integer().map((n) => n / 8)`) when asserting means or sums, so properties don't depend on floating-point tolerance.
+- Prefer `fc.pre(...)` sparingly; if most cases are discarded, build the generator to produce valid inputs instead.
+- Async code: take `fc.scheduler()` as a property input (`fc.asyncProperty(fc.scheduler(), ..., async (s, ...) => ...)`) and `await s.waitAll()`. Don't use real timers.
+- A failure prints the seed and a shrunk counterexample. Reproduce with `fc.assert(property, { seed, path })`, then **add the counterexample as a plain example test** so it stays pinned. Never "fix" a failing property by loosening it without understanding the counterexample.
+- **Prove the property can fail.** After writing one, temporarily break the code under test (flip a condition, change a constant) and confirm the property fails, then restore the code. A property that passes against a mutated implementation is too weak (for example, asserting "one of the errors" instead of "the first error").
+- Keep runs at fast-check's default 100 per property so the suite stays quick and Stryker, which re-runs tests per mutant, stays tractable. Don't raise `numRuns` globally.
+- Contracts that span Ruby and JS use a checked-in fixture under `test/fixtures/files/` that both suites read. See `csv_round_trip_cases.json`: `test/services/csv_export_test.rb` asserts the Ruby exporter still produces it, and `test/javascript/utils/csv_cross_language.test.js` asserts the JS importer reads it. Changing either side of the contract fails one of the two tests.
+- To regenerate that fixture after an intentional `CsvExport` change, edit the `values` arrays as needed and rewrite each `ruby_csv` from the exporter, in the running app container:
+
+  ```bash
+  docker exec <app-container> sh -c 'cd /srv/app && RAILS_ENV=test bin/rails runner "
+    path = Rails.root.join(\"test/fixtures/files/csv_round_trip_cases.json\")
+    cases = JSON.parse(path.read).map { |c| c.merge(\"ruby_csv\" => CsvExport.line(c[\"values\"])) }
+    path.write(JSON.pretty_generate(cases) + \"\n\")"'
+  ```
+
+  Then run `test/services/csv_export_test.rb` and `yarn test:unit test/javascript/utils/csv_cross_language.test.js`, and review the fixture diff to confirm the change was intended.
+
 ## StrykerJS mutation testing (`app/javascript/api`, `app/javascript/utils`)
 
 Mutation testing checks whether Vitest specs actually fail when the code they cover is broken (a "mutant" — e.g. flipping `&&` to `||`, an `if (x)` to `if (true)`) — plain coverage only proves a line ran, not that a test would catch a change to it.
