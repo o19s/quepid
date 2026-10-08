@@ -85,17 +85,19 @@ for the current contracts. Actual Drive verification and deferred coverage are i
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
 
 **Decision:** Permit targeted HTML endpoints for persisted case UI alongside the
-existing JSON APIs. The first conversion, the annotations list, is complete;
-broader conversions remain conditional on a concrete maintenance benefit.
+existing JSON APIs. Annotations, sharing teams, judgements books and scorer lists now use Rails-rendered
+rows; further conversions remain conditional on a concrete maintenance benefit.
 
 The broader proposed sequence for replacing the remaining SPA responsibilities
 is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
 with the endpoint-design decision below and preserves browser search and instant
 scoring while moving persisted UI and navigation into Rails/Hotwire.
 
-`pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
-(snapshot selects), and possibly `judgements_core` and `export_case_core`
-build lists from JSON in JS. They could become partials loaded through lazy
+`pick_scorer_core` (scorer lists), `share_case_core` (team lists) and
+`judgements_core` (book catalog) now fetch targeted HTML fragments while retaining
+JSON writes, selection/drafts, workspace events and immediate browser rescoring.
+`diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
+in JS. They could become partials loaded through lazy
 `<turbo-frame src=...>`, like `DropdownController#cases_core`, and modal form
 posts could be answered with Turbo Streams. The annotations list
 (`annotations_controller.js`) now uses server-rendered persisted rows;
@@ -170,18 +172,6 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 Deployments that omit the env vars use publicly known keys, so encrypted fields are recoverable by anyone with the database.
 
 **Fix direction:** Fail fast in production when keys are absent; keep generated dev/test defaults out of production config; document key rotation and backup.
-
----
-
-### [PREEXISTING] P1 I0 C3 — Secrets exposed through API serializers and admin views
-
-**Decision needed:** Agree on the credential-sharing contract and how direct browser searches will work if stored secrets are withheld and proxying becomes mandatory. Password-hash removal has a clear independent path.
-
-**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`, `app/views/admin/users/index.json.jbuilder:7-9`, `app/views/admin/users/show.html.erb:88-92`
-
-`api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses. Admin user JSON/HTML also render the encrypted password hash.
-
-**Fix direction:** Never serialize credentials or custom secret headers; return a masked/presence-only value and proxy server-side when secrets are needed. Make this unconditional rather than flag-dependent. Remove password hashes from admin views.
 
 ---
 
@@ -1105,3 +1095,13 @@ The `http`↔`https` switch is a cross-origin navigation, so browser storage and
 ### [PREEXISTING] Wizard TLS reload loses endpoint-specific settings
 
 The same server-side handoff could preserve the full pending endpoint configuration (headers, mapper code, field selections), including explicit empty values, without reapplying engine defaults over it. This work is deferred; currently users re-enter those settings after the switch.
+
+### [PREEXISTING] Stored search-endpoint credentials are serialized to members
+
+**Why deferred:** Plain `http` search engines must remain supported, and direct browser searches against them need the stored `api_basic_auth_credential` and custom headers in the client. Withholding secrets means mandatory server-side proxying, which a direct browser search cannot use; an HTTPS-hosted Quepid also cannot call `http` engines from the browser (mixed content). Needs a decision on the credential-sharing contract before any change.
+
+**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`
+
+`api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses.
+
+**Fix direction if revisited:** Never serialize credentials or custom secret headers; return a presence-only value and proxy server-side. Make this unconditional rather than flag-dependent.

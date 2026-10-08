@@ -2,11 +2,8 @@ import { describe, expect, it, vi } from "vitest"
 import {
   deactivateListItem,
   parseTeamsJson,
-  partitionTeams,
   unsharedTeams
 } from "utils/share_case_teams"
-
-// partitionTeams preserves the existing teamHasCase / addTeamToLists behavior.
 
 describe("parseTeamsJson", () => {
   it("parses a JSON array string", () => {
@@ -34,36 +31,6 @@ describe("parseTeamsJson", () => {
 
   it("returns [] when the JSON parses to something other than an array", () => {
     expect(parseTeamsJson('{"id":1,"name":"A"}')).toEqual([])
-  })
-})
-
-describe("partitionTeams", () => {
-  const teams = [
-    { id: 1, name: "Shared", cases: [{ case_id: 42 }] },
-    { id: 2, name: "Other", cases: [{ caseNo: 99 }] },
-    { id: 3, name: "Empty", cases: [] }
-  ]
-
-  it("partitions by case_id on team.cases", () => {
-    const { allTeams, sharedTeams } = partitionTeams(teams, 42)
-    expect(allTeams.map((t) => t.id)).toEqual([1, 2, 3])
-    expect(sharedTeams).toEqual([{ id: 1, name: "Shared" }])
-  })
-
-  it("partitions by caseNo on team.cases", () => {
-    const { sharedTeams } = partitionTeams(teams, 99)
-    expect(sharedTeams).toEqual([{ id: 2, name: "Other" }])
-  })
-
-  it("treats missing cases as unshared", () => {
-    const { sharedTeams } = partitionTeams(teams, 42)
-    expect(sharedTeams.some((t) => t.id === 3)).toBe(false)
-  })
-
-  it("treats a team with no cases property at all as unshared", () => {
-    const { allTeams, sharedTeams } = partitionTeams([{ id: 4, name: "NoCases" }], 42)
-    expect(allTeams).toEqual([{ id: 4, name: "NoCases" }])
-    expect(sharedTeams).toEqual([])
   })
 })
 

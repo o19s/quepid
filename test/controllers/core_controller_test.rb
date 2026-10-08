@@ -184,15 +184,11 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '#annotations [data-annotations-target="list"]', 1
       assert_select '#annotations #editAnnotationModal[data-annotations-target="editModal"]', 1
       assert_select "#diffModal template[data-diff-core-target='selectionTemplate']", 1
-      %w[shareableTeamTemplate sharedTeamTemplate].each do |name|
-        assert_select "#shareCaseModal template[data-share-case-core-target='#{name}']", 1
-      end
-      assert_select "#pickScorerModal template[data-pick-scorer-core-target='itemTemplate']", 1
-      %w[noneTemplate bookTemplate].each do |name|
-        assert_select "#judgementsModal template[data-judgements-core-target='#{name}']", 1
-      end
-      assert_select '#judgementsModal[data-judgements-core-book-url-template-value=?]',
-                    book_path(id: '__BOOK_ID__', script_name: '').delete_prefix('/')
+      assert_select '#shareCaseModal[data-share-case-core-catalog-url-template-value=?]',
+                    case_sharing_catalog_path(case_id: '__CASE_ID__')
+      assert_select '#pickScorerModal[data-pick-scorer-core-scorers-url-value=?]', scorers_catalog_path
+      assert_select '#judgementsModal[data-judgements-core-catalog-url-template-value=?]',
+                    case_books_catalog_path(case_id: '__CASE_ID__')
       assert_select '#query-container[data-queries-list-query-url-template-value=?]',
                     "/api/cases/#{kase.id}/queries/__QUERY_ID__"
       assert_select '#query-container[data-queries-list-notes-url-template-value=?]',

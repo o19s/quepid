@@ -1,11 +1,7 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { deleteJson, getJson, postJson } from "api/json"
-import {
-  deactivateListItem,
-  parseTeamsJson,
-  partitionTeams,
-  unsharedTeams
-} from "utils/share_case_teams"
+import { deleteJson, postJson } from "api/json"
+import { apiFetch } from "api/fetch"
+import { deactivateListItem } from "utils/share_case_teams"
 import { caseNameFromHeader } from "utils/case_header"
 import { isSameId } from "utils/record_identity"
 
@@ -22,8 +18,6 @@ export default class extends CoreModalControllerBase {
     "shareableList",
     "sharedSection",
     "sharedList",
-    "shareableTeamTemplate",
-    "sharedTeamTemplate",
     "caseId",
     "unshareCaseId",
     "teamId",
@@ -34,7 +28,7 @@ export default class extends CoreModalControllerBase {
   ]
 
   static values = {
-    teamsUrl: String,
+    catalogUrlTemplate: String,
     teamCasesUrlTemplate: String,
     teamCaseUrlTemplate: String
   }
@@ -45,8 +39,8 @@ export default class extends CoreModalControllerBase {
     this.selectedSharedTeamId = null
     this.selectedSharedTeamName = null
     this.currentCaseId = null
-    this.allTeams = []
-    this.sharedTeams = []
+    this.teamRows = []
+    this.sharedRows = []
   }
 
   async openFor(btn) {
@@ -63,16 +57,7 @@ export default class extends CoreModalControllerBase {
     this.clearSelections()
     this.clearAlert()
 
-    if (this.hasTeamsUrlValue && this.teamsUrlValue) {
-      await this.loadTeamsFromApi(this.currentCaseId)
-    } else {
-      const sharedTeamsJson = btn?.dataset?.shareCaseCoreSharedTeamsJson
-      const allTeamsJson = btn?.dataset?.shareCaseCoreAllTeamsJson
-      this.applyTeamLists(
-        parseTeamsJson(allTeamsJson),
-        parseTeamsJson(sharedTeamsJson)
-      )
-    }
+    await this.loadTeams(this.currentCaseId)
   }
 
   // Called through the judgements-core outlet rather than a toolbar link, so
@@ -142,13 +127,6 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  renderShareableTeams(teams) {
-    if (!this.hasShareableListTarget) return
-
-    this.shareableTeams = teams
-    this.renderTeamList(this.shareableListTarget, teams, this.shareableTeamTemplateTarget)
-  }
-
   toggleShareSelect(e, team) {
     if (this.hasShareableListTarget) {
       deactivateListItem(this.shareableListTarget, this.selectedShareTeamId)
@@ -167,35 +145,16 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  renderSharedTeams(teams) {
-    if (!this.hasSharedListTarget) return
-
-    this.renderedSharedTeams = teams
-    this.renderTeamList(this.sharedListTarget, teams, this.sharedTeamTemplateTarget)
-
-    this.updateUnshareFooter()
-  }
-
   selectShareTeam(event) {
-    const team = this.shareableTeams.find(team => isSameId(team.id, event.params.teamId))
-    if (team) this.toggleShareSelect(event, team)
+    this.toggleShareSelect(event, this.teamFor(event.currentTarget))
   }
 
   selectSharedTeam(event) {
-    const team = this.renderedSharedTeams.find(team => isSameId(team.id, event.params.teamId))
-    if (team) this.toggleCoreSharedSelect(event, team)
+    this.toggleCoreSharedSelect(event, this.teamFor(event.currentTarget))
   }
 
-  renderTeamList(target, teams, template) {
-    target.replaceChildren()
-
-    teams.forEach((team) => {
-      const item = template.content.firstElementChild.cloneNode(true)
-      item.textContent = team.name || `Team ${team.id}`
-      item.dataset.teamId = team.id
-      item.dataset.shareCaseCoreTeamIdParam = String(team.id)
-      target.appendChild(item)
-    })
+  teamFor(row) {
+    return { id: Number(row.dataset.teamId), name: row.textContent }
   }
 
   toggleCoreSharedSelect(e, team) {
@@ -215,67 +174,66 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams) {
-    const hasShareable = shareableTeams.length > 0
-    const hasShared = sharedTeams.length > 0
-    const hasNoTeams = allTeams.length === 0
-
-    if (this.hasEmptyShareableTarget) {
-      // A team that already has this case is not shareable again, but it
-      // still means the user has a team. Reserve this empty state for users
-      // with no teams at all.
-      this.toggleVisible("emptyShareable", hasNoTeams)
-    }
+  refreshSections() {
+    const hasShareable = this.shareableListTarget.children.length > 0
+    const hasShared = this.sharedListTarget.children.length > 0
+    this.toggleVisible("emptyShareable", this.teamRows.length === 0)
     this.toggleVisible("sharePicker", hasShareable)
     this.toggleVisible("sharedSection", hasShared)
-
     if (!hasShareable) this.clearShareSelection()
     if (!hasShared) this.clearSharedSelection()
   }
 
-  rebuildShareableList(allTeams, sharedTeams) {
-    const shareableTeams = unsharedTeams(allTeams, sharedTeams)
-
-    this.renderShareableTeams(shareableTeams)
-    this.applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams)
-  }
-
-  async loadTeamsFromApi(caseId) {
+  async loadTeams(caseId) {
     this.setLoading(true)
     try {
-      const data = await getJson(this.teamsUrlValue)
-      // Bail if the case changed while this request was in flight (e.g. the
-      // modal was reopened for a different case) — an outdated response must
-      // not clobber the now-current case's share UI.
+      const url = this.catalogUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
+      const response = await apiFetch(url, { headers: { Accept: "text/html" } })
+      if (!response.ok || response.redirected) throw new Error("Unable to load teams")
+      const html = new DOMParser().parseFromString(await response.text(), "text/html")
+      const catalog = html.querySelector("[data-share-catalog]")
+      if (!catalog) throw new Error("Missing team catalog")
+      // Retain the established guard for responses from another case.
       if (!isSameId(caseId, this.currentCaseId)) return
-      const teams = Array.isArray(data.teams) ? data.teams : []
-      const { allTeams, sharedTeams } = partitionTeams(teams, caseId)
-      this.applyTeamLists(allTeams, sharedTeams)
+      this.sharedRows = [...catalog.querySelector('[data-catalog-list="shared"]').children]
+      this.teamRows = [...catalog.querySelectorAll("[data-team-id]")].sort(
+        (a, b) => Number(a.dataset.teamOrder) - Number(b.dataset.teamOrder)
+      )
+      this.renderTeamLists()
     } catch (error) {
       if (!isSameId(caseId, this.currentCaseId)) return
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
-      this.resetTeamListsForError()
+      this.teamRows = []
+      this.sharedRows = []
+      this.shareableListTarget.replaceChildren()
+      this.sharedListTarget.replaceChildren()
+      this.clearSelections()
+      for (const target of ["emptyShareable", "sharePicker", "sharedSection"]) {
+        this.toggleVisible(target, false)
+      }
     } finally {
       if (isSameId(caseId, this.currentCaseId)) this.setLoading(false)
     }
   }
 
-  // Same end state as applyTeamLists([], []) — empty picker/shared section,
-  // selections cleared — except the "no teams" placeholder must stay hidden
-  // here: this is a load failure, not a user with zero teams.
-  resetTeamListsForError() {
-    this.applyTeamLists([], [])
-    if (this.hasEmptyShareableTarget) {
-      this.emptyShareableTarget.classList.add("d-none")
+  renderTeamLists() {
+    const sharedIds = this.sharedRows.map((row) => row.dataset.teamId)
+    const shareable = this.teamRows.filter((row) => !sharedIds.includes(row.dataset.teamId))
+    for (const [target, rows, shared] of [
+      [this.shareableListTarget, shareable, false],
+      [this.sharedListTarget, this.sharedRows, true]
+    ]) {
+      target.replaceChildren(...rows.map((row) => {
+        const copy = row.cloneNode(true)
+        copy.classList.remove("active")
+        copy.classList.toggle("list-group-item-success", shared)
+        copy.dataset.action = `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
+        return copy
+      }))
     }
-  }
-
-  applyTeamLists(allTeams, sharedTeams) {
-    this.allTeams = allTeams
-    this.sharedTeams = sharedTeams
-    this.rebuildShareableList(allTeams, sharedTeams)
-    this.renderSharedTeams(sharedTeams)
+    this.refreshSections()
+    this.updateUnshareFooter()
   }
 
   async submitShare(event) {
@@ -289,6 +247,7 @@ export default class extends CoreModalControllerBase {
       (this.hasCaseIdTarget ? this.caseIdTarget.value : null)
     if (!teamId || !caseId) return
 
+    const submittedRow = this.shareableListTarget.querySelector(`[data-team-id="${teamId}"]`)
     this.setSubmitting(true)
     this.clearAlert()
 
@@ -296,13 +255,16 @@ export default class extends CoreModalControllerBase {
       const url = this.teamCasesUrlTemplateValue.replaceAll("__TEAM_ID__", teamId)
       await postJson(url, { id: Number(caseId) })
 
-      const team = this.allTeams.find((t) => isSameId(t.id, teamId)) || {
-        id: Number(teamId),
-        name: this.selectedShareTeamName || `Team ${teamId}`
+      const row = this.teamRows.find((item) => isSameId(item.dataset.teamId, teamId))
+      const team = row ? this.teamFor(row) : {
+        id: Number(teamId), name: this.selectedShareTeamName || `Team ${teamId}`
       }
-      this.sharedTeams = [...this.sharedTeams, team]
+      // Retain append order and the previous overlapping-response semantics.
+      const sharedRow = row || submittedRow?.cloneNode(true)
+      if (!row && sharedRow) sharedRow.textContent = team.name
+      if (sharedRow) this.sharedRows = [...this.sharedRows, sharedRow]
       this.clearShareSelection()
-      this.applyTeamLists(this.allTeams, this.sharedTeams)
+      this.renderTeamLists()
       this.dispatchCaseTeamChanged("added", caseId, team)
       this.showAlert("Case shared with team successfully.", "success")
     } catch (error) {
@@ -333,16 +295,13 @@ export default class extends CoreModalControllerBase {
         .replaceAll("__CASE_ID__", caseId)
       await deleteJson(url)
 
-      const team =
-        this.sharedTeams.find((t) => isSameId(t.id, teamId)) || {
-          id: Number(teamId),
-          name: this.selectedSharedTeamName || `Team ${teamId}`
-        }
-      this.sharedTeams = this.sharedTeams.filter(
-        (t) => !isSameId(t.id, teamId)
-      )
+      const row = this.sharedRows.find((item) => isSameId(item.dataset.teamId, teamId))
+      const team = row ? this.teamFor(row) : {
+        id: Number(teamId), name: this.selectedSharedTeamName || `Team ${teamId}`
+      }
+      this.sharedRows = this.sharedRows.filter((item) => !isSameId(item.dataset.teamId, teamId))
       this.clearSharedSelection()
-      this.applyTeamLists(this.allTeams, this.sharedTeams)
+      this.renderTeamLists()
       this.dispatchCaseTeamChanged("removed", caseId, team)
       this.showAlert("Case unshared from team successfully.", "success")
     } catch (error) {

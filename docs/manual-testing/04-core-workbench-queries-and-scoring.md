@@ -92,7 +92,7 @@ Before testing individual features, get oriented:
 
 ### 4.8 Select a scorer for the case
 
-Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); its rows are cloned from a Rails-rendered template and loaded/saved through JSON APIs. After save the live-query runtime rescores the active queries.
+Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`); Rails renders its list rows through a targeted HTML endpoint; saves retain the JSON API. After save the live-query runtime rescores the active queries.
 
 - [ ] **Steps:**
   1. Click **Select scorer** in the case toolbar.

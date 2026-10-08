@@ -1,6 +1,7 @@
 import { serverMessage } from "utils/error_message"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getJson, putJson } from "api/json"
+import { putJson, readJson } from "api/json"
+import { apiFetch } from "api/fetch"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import coreFlash from "utils/core_flash"
@@ -10,7 +11,6 @@ import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
 
 const CASE_ID_PLACEHOLDER = "__CASE_ID__"
-const TEAM_ID_PLACEHOLDER = "__TEAM_ID__"
 const BOOK_ID_PLACEHOLDER = "__BOOK_ID__"
 const BACKGROUND_QUERY_THRESHOLD = 50
 const REDIRECT_DELAY_MS = 500
@@ -32,8 +32,6 @@ export default class extends CoreModalControllerBase {
     "noBooks",
     "bookPicker",
     "bookList",
-    "noneTemplate",
-    "bookTemplate",
     "selectHint",
     "integration",
     "autoPopulateBookPairs",
@@ -51,11 +49,9 @@ export default class extends CoreModalControllerBase {
   static outlets = ["share-case-core"]
   static values = {
     caseUrlTemplate: String,
-    teamBooksUrlTemplate: String,
-    ownedBooksUrl: String,
+    catalogUrlTemplate: String,
     refreshUrlTemplate: String,
     newBookUrlTemplate: String,
-    bookUrlTemplate: String,
     judgeUrlTemplate: String
   }
 
@@ -275,26 +271,23 @@ export default class extends CoreModalControllerBase {
 
       this._updateCreateBookLinks()
 
-      const bookLists = await Promise.all([
-        getJson(this.ownedBooksUrlValue).then((data) =>
-          Array.isArray(data.all_books) ? data.all_books.map((book) => ({ id: book.book_id, name: book.name })) : []
-        ),
-        ...this.teams.map(async (team) => {
-          const url = this.teamBooksUrlTemplateValue.replaceAll(TEAM_ID_PLACEHOLDER, String(team.id))
-          const data = await getJson(url)
-          return Array.isArray(data.books) ? data.books : []
-        })
-      ])
-
+      const url = this.catalogUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, caseId)
+      const response = await apiFetch(url, { headers: { Accept: "text/html" } })
+      if (!response.ok) {
+        throw new HttpError({ status: response.status, statusText: response.statusText, data: await readJson(response) })
+      }
+      if (response.redirected) throw new Error("Unable to load judgements settings.")
+      const html = new DOMParser().parseFromString(await response.text(), "text/html")
+      const catalog = html.querySelector("[data-book-catalog]")
+      if (!catalog) throw new Error("Unable to load judgements settings.")
       if (this.openGeneration !== generation) return
-      this.books = this._dedupeAndSortBooks(bookLists.flat())
+      this._renderBooks([...catalog.children])
       this.setLoading(false)
 
       if (this.books.length === 0) {
         this._setSectionsVisible({ noBooks: true, noTeams: this.teams.length === 0 })
       } else {
         this._setSectionsVisible({ books: true })
-        this._renderBooks()
       }
 
       this._refreshIntegrationVisibility()
@@ -307,40 +300,22 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  _dedupeAndSortBooks(books) {
-    const seen = new Set()
-    const unique = []
-    books.forEach((book) => {
-      const id = Number(book.id)
-      if (seen.has(id)) return
-      seen.add(id)
-      unique.push({ id, name: book.name })
-    })
-
-    unique.sort((a, b) => {
-      if (a.id === this.activeBookId) return -1
-      if (b.id === this.activeBookId) return 1
-      return String(a.name).localeCompare(String(b.name))
-    })
-    return unique
-  }
-
-  _renderBooks() {
+  _renderBooks(rows) {
     if (!this.hasBookListTarget) return
-    this.bookListTarget.replaceChildren(this.noneTemplateTarget.content.cloneNode(true))
-
-    this.books.forEach((book) => {
-      const li = this.bookTemplateTarget.content.firstElementChild.cloneNode(true)
-      li.dataset.judgementsCoreBookIdParam = String(book.id)
-      li.querySelector('[data-slot="name"]').textContent = book.name
-      li.querySelector('[data-slot="view"]').href = this.bookUrlTemplateValue.replaceAll(
-        BOOK_ID_PLACEHOLDER,
-        String(book.id)
+    const [none, ...books] = rows
+    // Preserve the browser's locale ordering and saved-book-first contract.
+    books.sort((a, b) => {
+      if (Number(a.dataset.judgementsCoreBookIdParam) === this.activeBookId) return -1
+      if (Number(b.dataset.judgementsCoreBookIdParam) === this.activeBookId) return 1
+      return a.querySelector('[data-slot="name"]').textContent.localeCompare(
+        b.querySelector('[data-slot="name"]').textContent
       )
-
-      this.bookListTarget.appendChild(li)
     })
-
+    this.books = books.map((row) => ({
+      id: Number(row.dataset.judgementsCoreBookIdParam),
+      name: row.querySelector('[data-slot="name"]').textContent
+    }))
+    this.bookListTarget.replaceChildren(none, ...books)
     this._refreshBookSelection()
   }
 

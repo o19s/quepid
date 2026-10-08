@@ -307,8 +307,9 @@ On the Ruby side there is no property-testing gem. For importer/exporter pairs, 
 Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available. RuboCop reuses the running app container
-(including one started by `bin/docker s` / `q`), so it uses that container's installed
-gems. With no running app container, it falls back to `bin/docker r`; the JS hooks
+that mounts the current checkout at `/srv/app` (including one started by
+`bin/docker s` / `q`), so comparison servers for other worktrees do not make the
+selection ambiguous. With no running app container, it falls back to `bin/docker r`; the JS hooks
 also use `bin/docker r`.
 
 Enable hooks:

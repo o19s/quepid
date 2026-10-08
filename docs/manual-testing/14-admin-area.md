@@ -34,7 +34,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 
 - [ ] **Steps:**
   1. Open a user with a reasonable amount of activity (e.g., `realisticActivity`).
-  2. Confirm displayed fields: Email, Name, Company, Signed Up (+ time ago), Created by Invite?, Email Marketing, Number of Logins, Is Administrator?, Locked?, Encrypted Password.
+  2. Confirm displayed fields: Email, Name, Company, Signed Up (+ time ago), Created by Invite?, Email Marketing, Number of Logins, Is Administrator?, Locked?. Confirm the password hash is **not** displayed.
   3. Review the **Pulse** charts: Cases viewed, Cases scored, Cases created, Queries created, Books created, Judgements created.
   4. Open a **pending-invite** user who hasn't accepted yet.
 - **Expected:** Pulse charts render grouped-by-date counts for a normal user. For a pending-invite user, confirm the info alert "This user hasn't accepted the invite to join Quepid, therefore no usage data is available." replaces the charts.

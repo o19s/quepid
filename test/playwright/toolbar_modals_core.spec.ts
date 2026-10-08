@@ -238,28 +238,27 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
 
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
-    await page.route(`**/api/teams/${teamId}/books`, route => route.fulfill({
+    await page.route(`**/cases/${caseId}/modal_catalogs/books`, route => route.fulfill({
       status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Book list verification failure' })
     }));
     await page.locator('a[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="error"]')).toContainText('Book list verification failure');
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
-    await page.unroute(`**/api/teams/${teamId}/books`);
+    await page.unroute(`**/cases/${caseId}/modal_catalogs/books`);
     await page.locator('a[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeVisible();
     await expect(modal.locator('[data-judgements-core-target="error"]')).toBeHidden();
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
-    await page.route(`**/api/teams/${teamId}/books`, route => route.fulfill({
-      status: 200, contentType: 'application/json', body: JSON.stringify({ books: [] })
+    await page.route(`**/cases/${caseId}/modal_catalogs/books`, route => route.fulfill({
+      status: 200, contentType: 'text/html', body: '<ul data-book-catalog><li data-judgements-core-target=item data-judgements-core-book-id-param="" data-action="click->judgements-core#selectBook"><em>None (disconnect from any book)</em></li></ul>'
     }));
     await page.locator('a[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="noBooks"]')).toBeVisible();
     await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeHidden();
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
-    await page.unroute(`**/api/teams/${teamId}/books`);
     await page.unroute(`**/api/cases/${caseId}`);
     await page.route(`**/api/cases/${caseId}`, async route => {
       const response = await route.fetch();

@@ -78,7 +78,10 @@ Rails.application.routes.draw do
   end
   resources :cases, only: [] do
     resources :annotations, only: [ :index, :create, :update, :destroy ], controller: :case_annotations
+    get 'modal_catalogs/sharing', to: 'core/modal_catalogs#sharing', as: :sharing_catalog
+    get 'modal_catalogs/books', to: 'core/modal_catalogs#books', as: :books_catalog
   end
+  get 'modal_catalogs/scorers', to: 'core/modal_catalogs#scorers', as: :scorers_catalog
   post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
   post '/scorers/share' => 'scorers#share', as: :share_scorers
   post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers

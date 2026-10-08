@@ -1,7 +1,7 @@
 # Remaining case-workspace follow-ups while keeping JSON APIs
 
-The selected simplification batches are complete. This file retains conditional
-follow-ups and deferred verification; actual browser coverage remains in the
+The earlier selected simplification batches are complete. This file retains the
+completed modal-list batch, conditional follow-ups and deferred verification; actual browser coverage remains in the
 [manual testing tracker](../manual-testing/tracking.yml).
 
 Keep Rails responsible for static structure, authorization and URLs; Stimulus
@@ -39,6 +39,30 @@ pre-fix worktree at `/private/tmp/quepid-annotations-review`: overlapping delete
 leaves stale text before and displays the saved edit after. Matched viewport
 screenshots were inspected in `.playwright-mcp/annotations-edit-race/`;
 reload retained the edit and temporary annotations were removed.
+
+## Selected batch: server-rendered modal catalogs — complete
+
+Implemented sharing lists, judgements catalog and scorer lists. Rails
+renders persisted lists; Stimulus retains selection, drafts, modal lifecycle and
+workspace events. Preserve existing JSON APIs and full-document navigation.
+HTML fragments do not require converting writes to Turbo forms.
+
+- [x] Sharing: render the initial shared/shareable lists; retain selection toggles, share/unshare ordering and events.
+- [x] Judgements: consolidate owned/team book catalog loading and render rows;
+  retain current settings refresh, ordering, drafts and Populate/Refresh/Sync behavior.
+- [x] Scorers: render accessible lists and retain inaccessible-current-scorer
+  behavior and the complete scorer payload for immediate browser rescoring.
+- [x] Acceptance: relevant Rails/Vitest tests, lint/build and matched, inspected
+  before/after screenshots. Representative browser coverage includes open/reopen,
+  selection/cancel, successful writes and failure/retry; record deferred coverage
+  and update only actually exercised tracker entries.
+
+Verified 22 Rails tests (198 assertions), 46 controller tests, the targeted
+Playwright batch (4 passed including auth setup), ESLint, RuboCop and the core build.
+Inspected 12 before/after modal screenshot pairs against isolated `ca2d1d4f` in
+`.playwright-mcp/modal-catalogs/`; background search state differs. The tracker
+records sampled and deferred coverage. Snapshot comparison and Export remain
+outside this batch.
 
 ## Conditional follow-ups
 

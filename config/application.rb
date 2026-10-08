@@ -71,7 +71,9 @@ module Quepid
       hsts: false,
       redirect: {
         exclude: -> request {
-          request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or '/' == request.path
+          # The scorer fragment must share the HTTP origin of the Solr JSONP workspace.
+          '/modal_catalogs/scorers' == request.path_info or
+            request.path =~ /api/ or request.path =~ /assets/ or request.path =~ /case/ or '/' == request.path
         },
       },
     }

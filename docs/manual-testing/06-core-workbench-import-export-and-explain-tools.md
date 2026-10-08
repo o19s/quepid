@@ -73,7 +73,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 
 ### 6.5 Share a case (in-case toolbar)
 
-Rails supplies separate core team-button templates; Stimulus retains JSON mutations
+Rails renders the core team lists through a targeted HTML endpoint; Stimulus retains JSON mutations
 and stays on the workspace. The management surface in Part 3.6 retains its select/form UI.
 
 - [ ] **Steps:** Open **Share case**, select a shareable team and share; reload and reopen to confirm persistence. Select a shared team and unshare; reload and reopen again.
@@ -84,7 +84,7 @@ and stays on the workspace. The management surface in Part 3.6 retains its selec
 
 ### 6.6 Judgements link (connect a case to a Book)
 
-Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Populate Now reads the document store; live search publishes that store from the live-query runtime.
+Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Rails renders the owned/case-team book catalog; Stimulus retains settings reads and JSON writes. Populate Now reads the document store; live search publishes that store from the live-query runtime.
 
 - [ ] **Steps:**
   1. Click **Judgements** in the case toolbar.

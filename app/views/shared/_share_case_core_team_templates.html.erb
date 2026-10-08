@@ -1,6 +1,14 @@
-<template data-share-case-core-target="shareableTeamTemplate">
-  <button type="button" class="list-group-item list-group-item-action" data-action="click->share-case-core#selectShareTeam"></button>
-</template>
-<template data-share-case-core-target="sharedTeamTemplate">
-  <button type="button" class="list-group-item list-group-item-action list-group-item-success" data-action="click->share-case-core#selectSharedTeam"></button>
-</template>
+<div data-share-catalog>
+  <% [false, true].each do |shared| %>
+    <div data-catalog-list="<%= shared ? 'shared' : 'shareable' %>">
+      <% @teams.each_with_index do |team, index| %>
+        <% next unless @shared_team_ids.include?(team.id) == shared %>
+        <button type="button"
+                class="list-group-item list-group-item-action<%= ' list-group-item-success' if shared %>"
+                data-team-id="<%= team.id %>" data-team-order="<%= index %>"
+                data-share-case-core-team-id-param="<%= team.id %>"
+                data-action="click->share-case-core#<%= shared ? 'selectSharedTeam' : 'selectShareTeam' %>"><%= team.name.presence || "Team #{team.id}" %></button>
+      <% end %>
+    </div>
+  <% end %>
+</div>

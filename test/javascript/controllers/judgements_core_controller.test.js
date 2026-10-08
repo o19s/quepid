@@ -1,5 +1,5 @@
 import { buildControllerFixture } from "../support/controller_fixture"
-import { viewTemplateTargets } from "../support/view_template"
+import { bookCatalogHtml } from "../support/modal_catalog_html"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import JudgementsCoreController from "controllers/judgements_core_controller"
@@ -22,7 +22,6 @@ function buildModalController(overrides = {}) {
   const controller = buildControllerFixture(JudgementsCoreController, {
     overrides: { identifier: "judgements-core" },
     targets: {
-      ...viewTemplateTargets("app/views/core/_judgement_book_templates.html.erb", "judgements-core"),
       title: document.createElement("h5"),
       loading: document.createElement("div"),
       noTeams: document.createElement("div"),
@@ -44,10 +43,8 @@ function buildModalController(overrides = {}) {
     },
     values: {
       caseUrlTemplate: "/api/cases/__CASE_ID__",
-      ownedBooksUrl: "/api/books?owned=true",
-      teamBooksUrlTemplate: "/api/teams/__TEAM_ID__/books",
+      catalogUrlTemplate: "/cases/__CASE_ID__/modal_catalogs/books",
       newBookUrlTemplate: "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__",
-      bookUrlTemplate: "books/__BOOK_ID__",
       judgeUrlTemplate: "books/__BOOK_ID__/judge"
     }
   })
@@ -65,20 +62,30 @@ function buildModalController(overrides = {}) {
   return controller
 }
 
+// `json()` carries the payload in these mocks; book lists reach the controller as Rails catalog HTML.
+async function responseText() {
+  const data = await this.json()
+  return data.books ? bookCatalogHtml(data.books) : JSON.stringify(data)
+}
+
+function renderBooks(controller, books) {
+  const catalog = new DOMParser().parseFromString(bookCatalogHtml(books), "text/html").querySelector("[data-book-catalog]")
+  controller._renderBooks([...catalog.children])
+}
+
 describe("JudgementsCoreController", () => {
   it("renders names safely and replaces rows without losing the current selection", () => {
     const name = '<img src=x onerror="alert(1)">'
     const controller = buildModalController({ books: [{ id: 2, name }], activeBookId: 2 })
-    controller.bookUrlTemplateValue = "/quepid/books/__BOOK_ID__"
-    controller._renderBooks()
-    controller._renderBooks()
+    renderBooks(controller, controller.books || [])
+    renderBooks(controller, controller.books || [])
 
     expect(controller.itemTargets).toHaveLength(2)
     const row = controller.itemTargets[1]
     expect(row.querySelector('[data-slot="name"]').textContent).toBe(name)
     expect(row.querySelector("img")).toBeNull()
     expect(row.dataset.action).toBe("click->judgements-core#selectBook")
-    expect(row.querySelector("a").getAttribute("href")).toBe("/quepid/books/2")
+    expect(row.querySelector("a").getAttribute("href")).toBe("books/2")
     expect(row.classList.contains("active")).toBe(true)
     expect(controller.itemTargets[0].querySelector("em").textContent).toBe("None (disconnect from any book)")
   })
@@ -116,7 +123,7 @@ describe("JudgementsCoreController", () => {
 
   it("keeps View navigation independent of book selection", () => {
     const controller = buildModalController({ books: [{ id: 2, name: "Catalog" }] })
-    controller._renderBooks()
+    renderBooks(controller, controller.books || [])
     const link = controller.bookListTarget.querySelector("a")
     expect(link.getAttribute("href")).toBe("books/2")
     expect(link.dataset.action).toBe("click->judgements-core#viewBook")
@@ -130,7 +137,7 @@ describe("JudgementsCoreController", () => {
     const controller = buildModalController()
     controller.books = [{ id: 8, name: "Book" }]
     controller.activeBookId = 8
-    controller._renderBooks()
+    renderBooks(controller, controller.books || [])
     expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([false, true])
     controller.activeBookId = null
     controller._refreshBookSelection()
@@ -139,7 +146,7 @@ describe("JudgementsCoreController", () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    apiFetch.mockResolvedValue({ ok: true, text: async () => '{"books":[]}' })
+    apiFetch.mockReset()
   })
 
   afterEach(() => {
@@ -147,13 +154,12 @@ describe("JudgementsCoreController", () => {
   })
 
   it("shows the no-teams empty state when the case has no teams", async () => {
-    apiFetch.mockResolvedValue({
-      async text() {
-        return JSON.stringify(await this.json()) || ""
-      },
+    apiFetch.mockResolvedValueOnce({
+      text: responseText,
       ok: true,
       json: () => Promise.resolve({ teams: [], book_id: null, scorer_id: 7, queries_count: 0 })
     })
+      .mockResolvedValueOnce({ ok: true, text: async () => bookCatalogHtml() })
 
     const controller = buildModalController()
     const trigger = document.createElement("a")
@@ -166,31 +172,27 @@ describe("JudgementsCoreController", () => {
     expect(controller.createBookLinkTarget.href).toContain("books/new?scorer_id=7&origin_case_id=42")
   })
 
-  it("merges owned and team books regardless of response order and removes duplicates", async () => {
+  it("mounts the consolidated owned/team catalog without additional team requests", async () => {
     apiFetch.mockImplementation(async (url) => ({
       ok: true,
-      text: async () => JSON.stringify(url.includes("cases") ? { teams: [{ id: 1 }], book_id: null } :
-        url.includes("owned") ? { all_books: [{ book_id: 7, name: "Owned" }, { book_id: 8, name: "Shared" }] } :
-          { books: [{ id: 8, name: "Shared" }, { id: 9, name: "Team" }] })
+      text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: null }) :
+        bookCatalogHtml([{ id: 7, name: "Owned" }, { id: 8, name: "Shared" }, { id: 9, name: "Team" }])
     }))
     const controller = buildModalController()
-    const trigger = document.createElement("a")
-    trigger.dataset.judgementsCoreIdValue = "42"
-    await controller.openFor(trigger)
+    await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
     expect(controller.books.map(book => book.id)).toEqual([7, 8, 9])
     expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(true)
+    expect(apiFetch.mock.calls.map(([url]) => url)).toEqual(["/api/cases/42", "/cases/42/modal_catalogs/books"])
   })
 
   it("offers owned books when the case has no team", async () => {
     apiFetch.mockImplementation(async (url) => ({
       ok: true,
-      text: async () => JSON.stringify(url.includes("cases") ? { teams: [], book_id: null } :
-        { all_books: [{ book_id: 7, name: "Owned" }] })
+      text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [], book_id: null }) :
+        bookCatalogHtml([{ id: 7, name: "Owned" }])
     }))
     const controller = buildModalController()
-    const trigger = document.createElement("a")
-    trigger.dataset.judgementsCoreIdValue = "42"
-    await controller.openFor(trigger)
+    await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
     expect(controller.books).toEqual([{ id: 7, name: "Owned" }])
     expect(controller.bookPickerTarget.classList.contains("d-none")).toBe(false)
     expect(controller.noTeamsTarget.classList.contains("d-none")).toBe(true)
@@ -199,9 +201,7 @@ describe("JudgementsCoreController", () => {
   it("lists books with the active book first and tracks unsaved changes", async () => {
     apiFetch
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () =>
           Promise.resolve({
@@ -213,11 +213,8 @@ describe("JudgementsCoreController", () => {
             auto_populate_case_judgements: true
           })
       })
-      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () =>
           Promise.resolve({
@@ -248,10 +245,8 @@ describe("JudgementsCoreController", () => {
   })
 
   it("prefers the API book_id over a stale trigger attribute", async () => {
-    apiFetch.mockResolvedValue({
-      async text() {
-        return JSON.stringify(await this.json()) || ""
-      },
+    apiFetch.mockResolvedValueOnce({
+      text: responseText,
       ok: true,
       json: () =>
         Promise.resolve({
@@ -261,6 +256,7 @@ describe("JudgementsCoreController", () => {
           queries_count: 0
         })
     })
+      .mockResolvedValueOnce({ ok: true, text: async () => bookCatalogHtml() })
 
     const controller = buildModalController()
     const trigger = document.createElement("a")
@@ -276,9 +272,7 @@ describe("JudgementsCoreController", () => {
   it("populates the book from the document store for Populate Now", async () => {
     apiFetch
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () =>
           Promise.resolve({
@@ -288,11 +282,8 @@ describe("JudgementsCoreController", () => {
             queries_count: 3
           })
       })
-      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () => Promise.resolve({ books: [{ id: 2, name: "Beta" }] })
       })
@@ -309,7 +300,9 @@ describe("JudgementsCoreController", () => {
       docs: [{ id: "doc-1", title: "Document" }]
     })
 
+    apiFetch.mockResolvedValueOnce({ ok: true, status: 204 })
     await controller.manualPopulateBook({ preventDefault() {} })
+    expect(controller.errorTarget.textContent).toBe("")
 
     expect(apiFetch).toHaveBeenLastCalledWith("api/books/2/populate", expect.objectContaining({ method: "PUT" }))
   })
@@ -317,9 +310,7 @@ describe("JudgementsCoreController", () => {
   it("disables Cancel while a save is in flight, re-enables on completion", async () => {
     apiFetch
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () =>
           Promise.resolve({
@@ -329,11 +320,8 @@ describe("JudgementsCoreController", () => {
             queries_count: 0
           })
       })
-      .mockResolvedValueOnce({ ok: true, text: async () => '{"all_books":[]}' })
       .mockResolvedValueOnce({
-        async text() {
-          return JSON.stringify(await this.json()) || ""
-        },
+        text: responseText,
         ok: true,
         json: () => Promise.resolve({ books: [{ id: 2, name: "Beta" }] })
       })
@@ -352,17 +340,18 @@ describe("JudgementsCoreController", () => {
       })
     )
 
+    apiFetch.mockResolvedValueOnce({ ok: true, status: 204 })
     const savePromise = controller.save({ preventDefault() {} })
     expect(controller.cancelButtonTarget.disabled).toBe(true)
 
-    resolveSave({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve({}) })
+    resolveSave({ text: responseText, ok: true, json: () => Promise.resolve({}) })
     await savePromise
 
     expect(controller.cancelButtonTarget.disabled).toBe(false)
   })
 
   describe("saving and refreshing against a book", () => {
-    const ok = (data = {}) => ({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(data) })
+    const ok = (data = {}) => ({ text: responseText, ok: true, json: () => Promise.resolve(data) })
 
     function linkedController(state = {}) {
       return Object.assign(buildModalController(), {
@@ -429,7 +418,7 @@ describe("JudgementsCoreController", () => {
     })
 
     it("shows the server's message when saving fails", async () => {
-      apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
+      apiFetch.mockResolvedValueOnce({ text: responseText, ok: false, status: 422, json: () => Promise.resolve({ error: "Book not found" }) })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController({ activeBookId: 9 })
 
@@ -489,7 +478,7 @@ describe("JudgementsCoreController", () => {
 
       const pending = controller.manualRefreshRatings({ preventDefault() {} })
       controller.currentCaseId = "43"
-      resolveRefresh({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
+      resolveRefresh({ text: responseText, ok: false, status: 500, json: () => Promise.resolve({ error: "stale" }) })
       await pending
 
       expect(coreFlash.show).not.toHaveBeenCalled()
@@ -497,7 +486,7 @@ describe("JudgementsCoreController", () => {
     })
 
     it("reports a failed refresh and skips the action without a book", async () => {
-      apiFetch.mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: false, status: 500, json: () => Promise.resolve({}) })
+      apiFetch.mockResolvedValueOnce({ text: responseText, ok: false, status: 500, json: () => Promise.resolve({}) })
       vi.spyOn(console, "error").mockImplementation(() => {})
       const controller = linkedController()
 

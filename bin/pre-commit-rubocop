@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Run RuboCop on staged Ruby files. Invoked by pre-commit; prefers Docker when available.
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 cd "$ROOT"
 
 if [[ $# -eq 0 ]]; then
@@ -11,17 +11,26 @@ if [[ $# -eq 0 ]]; then
 fi
 
 if docker info >/dev/null 2>&1; then
+  running_containers=()
   containers=()
   while IFS= read -r container; do
-    [[ -n "$container" ]] && containers+=("$container")
+    [[ -z "$container" ]] && continue
+    running_containers+=("$container")
+    checkout=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/srv/app"}}{{.Source}}{{end}}{{end}}' "$container")
+    [[ "$checkout" == "$ROOT" ]] && containers+=("$container")
   done < <(docker compose ps -a --status running -q app)
 
   if [[ ${#containers[@]} -gt 1 ]]; then
-    echo "Multiple app containers are running; cannot select one for RuboCop: ${containers[*]}" >&2
+    echo "Multiple app containers mount this checkout; cannot select one for RuboCop: ${containers[*]}" >&2
     exit 1
   fi
   if [[ ${#containers[@]} -eq 1 ]]; then
     exec docker exec "${containers[0]}" bundle exec rubocop --force-exclusion "$@"
+  fi
+
+  if [[ ${#running_containers[@]} -gt 0 ]]; then
+    echo "No running app container mounts this checkout for RuboCop: $ROOT" >&2
+    exit 1
   fi
 
   exec bin/docker r bundle exec rubocop --force-exclusion "$@"

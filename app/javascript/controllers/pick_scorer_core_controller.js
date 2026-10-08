@@ -1,11 +1,12 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { getJson, putJson } from "api/json"
+import { putJson } from "api/json"
+import { apiFetch } from "api/fetch"
 import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
 
 /**
  * Pick-scorer modal for the core case toolbar. Lists communal (+ custom, when
- * allowed) scorers from `api/scorers`, saves via
+ * allowed) Rails-rendered scorer rows, saves via
  * `PUT api/cases/:id/scorers/:scorerId`, then dispatches
  * `pick-scorer:selected` so the live-query scorer can rescore
  * live queries until the live-query-state migration owns that path.
@@ -16,7 +17,6 @@ import { getQuepidRootUrl } from "utils/quepid_root"
 export default class extends CoreModalControllerBase {
   static targets = [
     "item",
-    "itemTemplate",
     "title",
     "alert",
     "warning",
@@ -111,16 +111,12 @@ export default class extends CoreModalControllerBase {
     if (this.hasCustomListTarget) this.customListTarget.replaceChildren()
 
     try {
-      const data = await getJson(this.scorersUrlValue)
-
-      this.userScorers = Array.isArray(data.user_scorers) ? data.user_scorers : []
-      this.communalScorers = Array.isArray(data.communal_scorers) ? data.communal_scorers : []
-
-      this.userScorers.sort((a, b) =>
-        String(a.name || "").toLowerCase().localeCompare(String(b.name || "").toLowerCase())
-      )
-
-      this._renderLists()
+      const response = await apiFetch(this.scorersUrlValue, { headers: { Accept: "text/html" } })
+      if (!response.ok || response.redirected) throw new Error("Unable to load scorers")
+      const html = new DOMParser().parseFromString(await response.text(), "text/html")
+      const catalog = html.querySelector("[data-scorer-catalog]")
+      if (!catalog) throw new Error("Missing scorer catalog")
+      this._renderLists(catalog)
 
       // Keep the case's current scorer selected even when it is missing from
       // the accessible lists — that is what the inaccessible-scorer warning
@@ -150,34 +146,21 @@ export default class extends CoreModalControllerBase {
     }
   }
 
-  _renderLists() {
-    if (this.hasCommunalListTarget) {
-      this.communalListTarget.replaceChildren(
-        ...this.communalScorers.map((scorer) => this._listItem(scorer))
-      )
-    }
-
+  _renderLists(catalog) {
+    const communal = [...catalog.querySelector('[data-catalog-list="communal"]').children]
+    const custom = [...catalog.querySelector('[data-catalog-list="custom"]').children]
+    // Scorer data stays available to the immediate browser rescoring event.
+    this.communalScorers = communal.map((row) => JSON.parse(row.dataset.scorerJson))
+    custom.sort((a, b) => a.textContent.toLowerCase().localeCompare(b.textContent.toLowerCase()))
+    this.userScorers = custom.map((row) => JSON.parse(row.dataset.scorerJson))
+    if (this.hasCommunalListTarget) this.communalListTarget.replaceChildren(...communal)
     const showCustom = !this.communalScorersOnlyValue
     this.toggleVisible("customSection", showCustom)
     if (this.hasCustomListTarget) {
       this.toggleVisible("customList", showCustom)
-      this.customListTarget.replaceChildren(
-        ...(showCustom ? this.userScorers.map((scorer) => this._listItem(scorer)) : [])
-      )
+      this.customListTarget.replaceChildren(...(showCustom ? custom : []))
     }
-    if (this.hasCustomEmptyTarget) {
-      this.customEmptyTarget.classList.toggle(
-        "d-none",
-        !showCustom || this.userScorers.length > 0
-      )
-    }
-  }
-
-  _listItem(scorer) {
-    const li = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
-    li.textContent = scorer.name
-    li.dataset.pickScorerCoreScorerIdParam = String(scorer.scorer_id)
-    return li
+    this.toggleVisible("customEmpty", showCustom && custom.length === 0)
   }
 
   _refreshListActive() {
