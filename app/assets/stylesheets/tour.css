@@ -1,17 +1,13 @@
-body.shepherd-active {
-	 pointer-events: none !important;
-}
- body.shepherd-active .shepherd-target.shepherd-enabled {
-	 position: relative;
-	 box-shadow: 0 0 0 99999px rgba(0, 0, 0, 0.2);
+/* Quepid tweaks on top of shepherd.js's own stylesheet (node_modules/shepherd.js/dist/css/shepherd.css). */
+
+.shepherd-element.quepid-tour-step {
 	 z-index: 9999;
-	 pointer-events: auto;
-	 transition: all 0.3s ease;
+	 max-width: 28rem;
+	 font-size: 1rem;
 }
- body.shepherd-active .shepherd-step {
-	 pointer-events: auto;
-	 z-index: 9999;
+ .shepherd-element.quepid-tour-step .shepherd-text {
+	 line-height: 1.4;
 }
- body.shepherd-active .shepherd-step footer {
-	 display: block;
+ .shepherd-modal-overlay-container {
+	 z-index: 9998;
 }

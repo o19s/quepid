@@ -204,9 +204,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/confirm_delete_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/confirm_delete_dialog_controller.js", "app/views/shared/_confirm_delete_modal.html.erb"]
       "3.6":
         title: "Share a case from the list"
-        last_run: 2026-10-07T20:43:07Z
-        result: blocked
-        notes: "Current list Share modal successfully shared OSC, reloaded row/shared-list, unshared and verified Teams dash plus flash; inspected screenshot. Historical 8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65 renders empty share-case element on the fixture row, so live historical Share is unavailable, same blocker as 6.5. Smallest prerequisite: repair historical fixture/asset binding without altering current sources, then repeat historical flow. Not covered live: duplicate/tampered requests."
+        last_run: 2026-10-08T16:50:06Z
+        result: pass
+        notes: "Covered live: list Share modal share/unshare persisted across reload, plus tampered foreign-team and private-case requests rejected; compared with live 13bf23ff since pinned 8ceb99e9 lacks teamSvc. Not covered live: endpoint-sharing side effects, concurrent duplicates, core sharing (6.5)."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_share_case_modal.html.erb", "app/javascript/controllers/share_case_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb"]
 
   "04":
@@ -420,9 +420,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/destructive_form.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb"]
       "6.5":
         title: "Share a case (in-case toolbar)"
-        last_run: 2026-10-07T20:07:25Z
-        result: blocked
-        notes: "Covered live: current core shared disposable case with OSC, reload/reopen showed shared state, unshared and reload/reopen restored available team; screenshot inspected. Historical 8ceb99e9 renders empty share-case components in toolbar and Judgements, preventing equivalent UI replay (toolbar screenshot saved). Remaining: historical share/unshare replay and current cancellation/failure matrix; investigate baseline component initialization without changing historical sources."
+        last_run: 2026-10-08T17:03:42Z
+        result: pass
+        notes: "Covered live: toolbar and Judgements-initiated share/unshare persisted across reload, plus Cancel reset and routed failure retries; compared with live 13bf23ff since pinned 8ceb99e9 lacks teamSvc. Not covered live: no-team user, Create a team navigation, concurrent requests, endpoint-sharing effects."
         paths: ["app/views/shared/_share_case_core_team_templates.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/views/shared/_share_case_core_modal.html.erb", "app/javascript/controllers/share_case_core_controller.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/share_entity_controller_base.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/status_message.js", "app/javascript/utils/share_case_teams.js", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
       "6.6":
         title: "Judgements link (connect a case to a Book)"

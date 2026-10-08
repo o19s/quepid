@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Builds the esbuild bundles into app/assets/builds/. Usage:
-//   node esbuild.config.js <core-case|core-vendor|analytics>... [--watch[=forever]]
+//   node esbuild.config.js <core-case|analytics>... [--watch[=forever]]
 // See docs/js_pipeline.md for how these bundles relate to the importmap.
 
 const esbuild = require('esbuild');
@@ -32,21 +32,6 @@ const BUNDLES = {
       quepid_search: `./${JS}/quepid_search.js`,
       quepid_store: `./${JS}/quepid_store.js`
     }
-  },
-  // Third-party globals (Ace, Sortable, Shepherd, splainer-search, ...).
-  'core-vendor': {
-    entryPoints: [`${JS}/core_vendor.js`],
-    outdir: 'app/assets/builds',
-    loader: {
-      '.css': 'css',
-      '.png': 'dataurl',
-      '.svg': 'dataurl',
-      '.woff': 'dataurl',
-      '.woff2': 'dataurl',
-      '.ttf': 'dataurl',
-      '.eot': 'dataurl'
-    },
-    alias: { utils: `./${JS}/utils`, api: `./${JS}/api` }
   },
   analytics: {
     entryPoints: [`${JS}/analytics.js`],

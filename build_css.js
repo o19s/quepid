@@ -101,7 +101,7 @@ function buildCoreCSS() {
     `${STYLES}/panes.css`,
     `${STYLES}/stackedChart.css`,
     // Tour/Guides
-    'node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css',
+    'node_modules/shepherd.js/dist/css/shepherd.css',
     `${STYLES}/tour.css`,
     // Screen-specific styles
     `${STYLES}/docs.css`,

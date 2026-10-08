@@ -63,20 +63,6 @@ placeholders; Keycloak sign-in fails with no host `keycloak` entry. Host-level
 configuration changes require separate authorization. This is an environment
 blocker, not an established migration defect.
 
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete historical list sharing parity (3.6)
-
-Investigate the empty historical `share-case` component on baseline `8ceb99e9`
-and recover its fixture/asset binding without changing current sources or the
-baseline implementation. Replay list share/unshare after recovery, then cover
-duplicate/tampered requests. Current share/unshare and reload persistence passed.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete core sharing parity (6.5)
-
-After resolving the historical sharing blocker in 3.6, replay core toolbar and
-Judgements share/unshare on the baseline. Cover current cancellation and forced
-request failures. Current share/unshare and reload/reopen persistence passed;
-historical components render empty.
-
 ### [MIGRATION-FOLLOWUP] P2 I0 C2 — Unblock mapper AI generation (7.8)
 
 Provide an authorized usable OpenAI key through the wizard, then generate and
@@ -101,16 +87,6 @@ worker startup alone did not verify these remaining workflows. Keep the existing
 development servers and data intact.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals
-
-`core_vendor.js` puts `Tether` and `Shepherd` on `window` because `tour.js`
-expects bare globals. `tether-shepherd` is a dated dependency; choosing a
-replacement tour library is its own decision, after which converting `tour.js`
-to imports is cheap. `bootstrap_globals.js` and `vega_globals.js` load UMD
-builds for their own data-API/consumer reasons; revisit them separately.
-
----
 
 ### [PREEXISTING] P1 I0 C3 — Scorer sandboxing - LATER
 

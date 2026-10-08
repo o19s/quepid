@@ -5,7 +5,7 @@
 #
 # If watchers are not running: bin/docker r yarn build:core
 #
-# The mounted files below will be bundled into app/assets/builds/core_vendor.js during
+# The mounted files below will be bundled into app/assets/builds/core_case.js during
 # the build process, so any changes you make locally will be included after rebuilding.
 # Vendor CSS for the core layout is refreshed separately via:
 #   bin/docker r yarn build:css

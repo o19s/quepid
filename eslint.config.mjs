@@ -14,7 +14,6 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 import {
   ESLINT_FILES,
   ESLINT_IGNORES,
-  LEGACY_SCRIPT_FILES,
 } from './config/javascript_lint_scope.mjs';
 
 const recommendedRules = {
@@ -68,25 +67,6 @@ export default [
         name: 'fetch',
         message: 'Use the api/json verb helpers, or apiFetch from api/fetch for non-JSON responses.',
       }],
-    },
-  },
-  {
-    files: LEGACY_SCRIPT_FILES,
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'script',
-      globals: {
-        ...globals.browser,
-        ace: 'readonly',
-        Shepherd: 'readonly',
-        setupTour: 'readonly',
-        startTour: 'readonly',
-      },
-    },
-    rules: {
-      ...js.configs.recommended.rules,
-      'no-var': 'off',
-      'prefer-const': 'off',
     },
   },
   {

@@ -1,6 +1,7 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import WizardController from "controllers/wizard_controller"
+import { setupAndStartTour } from "modules/tour"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -10,6 +11,7 @@ import { createSettingsRuntime } from "utils/settings_runtime"
 
 const modal = { show: vi.fn(), hide: vi.fn() }
 
+vi.mock("modules/tour", () => ({ setupAndStartTour: vi.fn() }))
 vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => modal) }))
 vi.mock("utils/core_capabilities_runtime", () => ({ getWizardCapabilities: vi.fn() }))
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn() }))
@@ -773,33 +775,31 @@ describe("WizardController", () => {
 
     it("starts the tour only for first-time wizard users", async () => {
       vi.useFakeTimers()
-      window.setupAndStartTour = vi.fn()
+      setupAndStartTour.mockClear()
       const first = mount({ step: STEPS.finish })
       await first.finish()
       vi.advanceTimersByTime(1500)
-      expect(window.setupAndStartTour).toHaveBeenCalledTimes(1)
+      expect(setupAndStartTour).toHaveBeenCalledTimes(1)
 
       const returning = mount({ step: STEPS.finish })
       returning.capability.user.current.mockReturnValue({ completedCaseWizard: true })
       await returning.finish()
       vi.advanceTimersByTime(1500)
-      expect(window.setupAndStartTour).toHaveBeenCalledTimes(1)
+      expect(setupAndStartTour).toHaveBeenCalledTimes(1)
 
-      delete window.setupAndStartTour
       vi.useRealTimers()
     })
 
     it("cancels the pending tour start when disconnected", async () => {
       vi.useFakeTimers()
-      window.setupAndStartTour = vi.fn()
+      setupAndStartTour.mockClear()
       const controller = mount({ step: STEPS.finish })
       await controller.finish()
 
       controller.disconnect()
       vi.advanceTimersByTime(1500)
 
-      expect(window.setupAndStartTour).not.toHaveBeenCalled()
-      delete window.setupAndStartTour
+      expect(setupAndStartTour).not.toHaveBeenCalled()
       vi.useRealTimers()
     })
 

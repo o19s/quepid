@@ -26,9 +26,9 @@
     "clipboard": "^2.0.11",
     "esbuild": "^0.28.0",
     "local-time": "^3.0.0",
+    "shepherd.js": "^15.3.0",
     "sortablejs": "^1.15.6",
-    "splainer-search": "3.3.0",
-    "tether-shepherd": "latest"
+    "splainer-search": "3.3.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
@@ -55,8 +55,7 @@
   },
   "scripts": {
     "build:core-case": "node esbuild.config.js core-case",
-    "build:core-vendor": "node esbuild.config.js core-vendor",
-    "build:core": "yarn build:core-case && yarn build:core-vendor",
+    "build:core": "yarn build:core-case",
     "build:analytics": "node esbuild.config.js analytics",
     "build:css": "node build_css.js",
     "build:css:watch": "node build_css.js --watch",

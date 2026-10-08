@@ -39,7 +39,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - After CSS or vendor JS changes make sure you rebuild:
     `docker compose exec app yarn build`              # full frontend build
     `docker compose exec app yarn build:css`          # core.css / application.css only
-    `docker compose exec app yarn build:core-vendor`     # BS5 + splainer-search bundle
+    `docker compose exec app yarn build:core`         # core case JS bundle
 - In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 ### Shared agent skills
@@ -177,7 +177,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 ## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)
 
 - The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then Quepid layers (`core-additions.css` — Quepid layout without Bootstrap-class selectors; **`bootstrap5-compat.css`** — all Bootstrap-class shims, navbar brand skin, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
-- **`app/javascript/core_vendor.js`** and the core Stimulus/runtime bundle provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
+- The core Stimulus/runtime bundle and `bootstrap_globals` provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
 - The rest of the UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
 - **Root `font-size` and rem-based BS5 defaults.** `core-additions.css` sets **`html { font-size: 87.5% }`** on `core` (1rem = 14px, Bootstrap 3's base), so every rem-based BS5 default renders smaller than upstream.
     - Where a BS5 widget needs an exact size, override the relevant **`--bs-*`** vars with **px** in compat CSS, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.

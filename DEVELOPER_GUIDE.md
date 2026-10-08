@@ -304,7 +304,7 @@ On the Ruby side there is no property-testing gem. For importer/exporter pairs, 
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/`, `utils/`, and the classic core scripts (`app/javascript/tour.js`) — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available. RuboCop reuses the running app container
 (including one started by `bin/docker s` / `q`), so it uses that container's installed
@@ -503,7 +503,7 @@ bin/docker r bundle exec derailed bundle:mem
 
 While running the application, you can debug the JavaScript using your favorite tool, the way you've always done it.
 
-The core case bundles (`core_case.js`, `core_vendor.js`) and the other entries under `app/assets/builds/` are built by esbuild with source maps, so browser dev tools show the original files under `app/javascript/`. With `bin/docker s`, Foreman keeps the bundles rebuilt as you save (see `Procfile.dev`); hard-refresh the page to pick up changes. Run `yarn build:core` only if the watchers are not running.
+The core case bundles (`core_case.js`) and the other entries under `app/assets/builds/` are built by esbuild with source maps, so browser dev tools show the original files under `app/javascript/`. With `bin/docker s`, Foreman keeps the bundles rebuilt as you save (see `Procfile.dev`); hard-refresh the page to pick up changes. Run `yarn build:core` only if the watchers are not running.
 
 Pages that use the importmap (`application.js`) load `app/javascript/` modules unbundled.
 
@@ -536,10 +536,9 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    Then refresh your browser to see the changes.
 
 4. **Why bundles work this way**
-   - Splainer-search ESM modules are inlined into **`app/assets/builds/core_vendor.js`** at build time, not runtime.
-   - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
-   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core-vendor`**
-   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`core_vendor.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running.
+   - Splainer-search ESM modules are inlined into **`app/assets/builds/core_case.js`** at build time, not runtime.
+   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core`**
+   - With **`bin/docker s`**, Foreman watches the import graph (including **`node_modules/splainer-search`**) and keeps **`core_case.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running.
 
 
 ## Convenience Scripts
@@ -1058,7 +1057,7 @@ lists have a separate lifecycle.
 3. Add the listener in `connect()` and remove it in `disconnect()`, and cover both with a Vitest spec. Some specs already assert the dispatch, e.g. `share_case_core_controller.test.js` and `case_runtime.test.js`.
 4. Update the tables above.
 
-The remaining globals are `window.Stimulus` (Playwright specs look up controllers through it), `window.bootstrap` (`bootstrap_globals.js`, for the data API), Vega's `vegaEmbed` (`vega_globals.js`), and `Tether`/`Shepherd` (`core_vendor.js`, because `tour.js` expects bare globals). Check their consumers before changing them; Angular compatibility globals are no longer required. CodeMirror is not global: import `fromTextArea` from `modules/editor`.
+The remaining globals are `window.Stimulus` (Playwright specs look up controllers through it), `window.bootstrap` (`bootstrap_globals.js`, for the data API), Vega's `vegaEmbed` (`vega_globals.js`). Check their consumers before changing them; Angular compatibility globals are no longer required. CodeMirror is not global: import `fromTextArea` from `modules/editor`.
 
 ## Fonts
 

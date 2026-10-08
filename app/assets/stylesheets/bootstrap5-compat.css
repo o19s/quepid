@@ -198,7 +198,7 @@ label {
 }
 
 /* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
- * (auto-registered in core_vendor.js). Font size inherits BS5's 1rem;
+ * (window.bootstrap from bootstrap_globals.js). Font size inherits BS5's 1rem;
  * other vars restate BS5 defaults at 16px root for explicitness.
  *
  * Header dropdowns get their distinct look from `header .dropdown-menu`

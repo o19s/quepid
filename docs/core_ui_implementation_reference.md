@@ -6,9 +6,9 @@ Source of truth is always the code; update this doc when you change the listed f
 
 ---
 
-## 1. Shepherd post-wizard tour (`tour.js`)
+## 1. Shepherd post-wizard tour (`modules/tour.js`)
 
-After the case wizard closes, `setupAndStartTour()` runs (1.5s `setTimeout` from `wizard_controller.js`, only when `!currentUser.completedCaseWizard`). Uses **Shepherd.js** with `shepherd-theme-arrows`, `scrollTo: true`.
+After the case wizard closes, `setupAndStartTour()` runs (1.5s `setTimeout` from `wizard_controller.js`, only when `!currentUser.completedCaseWizard`). Uses **Shepherd.js** (v15, imported as an ES module and bundled into `core_case.js`) with its default theme, `useModalOverlay`, `scrollTo: true`. `wizard_controller.js` imports `setupAndStartTour` directly.
 
 | Step id | Title | Attach | Advance |
 |---------|-------|--------|---------|
@@ -24,11 +24,9 @@ After the case wizard closes, `setupAndStartTour()` runs (1.5s `setTimeout` from
 
 **Engine-specific tune hints** (step `tune`): Solr example `q=#$query##&defType=edismax&qf=title overview`; ES/OpenSearch JSON `match` on `title`; Algolia `restrictSearchableAttributes`.
 
-**Dead code path:** `$(document).ready()` starts the tour when `[data-trigger-tour]` exists — no template sets that attribute today.
-
 **Wizard gating** (when the tour runs): [COREUI §14](./todo/QUEPID_COREUI_FEATURES.md#14-wizard--onboarding).
 
-**File:** `app/javascript/tour.js`
+**File:** `app/javascript/modules/tour.js` (styles: `app/assets/stylesheets/tour.css`)
 
 ---
 

@@ -12,14 +12,14 @@ Quepid serves JavaScript through two mechanisms. Which one a page uses depends o
 | Layout | Pages | JavaScript loaded |
 |--------|-------|-------------------|
 | `application.html.erb` (non-case branch), `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
-| `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads bundles `core_vendor.js` and `core_case.js`, then classic script `tour.js` |
+| `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads the `core_case.js` bundle (which includes the Shepherd tour in `modules/tour.js`) |
 | `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then bundle `analytics.js` |
 
 ### Rails entry point
 
 - **`application.js`** is the live importmap entry. It is pinned in `config/importmap.rb`, loaded by `javascript_importmap_tags 'application'` in `application.html.erb` and `admin.html.erb`, and starts Turbo, Stimulus, local-time, ahoy and the globals. The case branch of `application.html.erb` deliberately does not load it.
 
-The case page is bundled because it depends on legacy UMD vendor libraries that need to be exposed as `window` globals, which esbuild handles in `core_vendor.js`.
+The case page is bundled so esbuild can inline its npm dependencies (splainer-search, Shepherd) instead of importmap-pinning them.
 
 ## The bundles
 
@@ -28,10 +28,9 @@ All defined in [esbuild.config.js](../esbuild.config.js):
 | Name | Entry | Output | Purpose |
 |------|-------|--------|---------|
 | `core-case` | `app/javascript/core_stimulus.js` | `core_case.js` | Case page: registers only the Stimulus controllers the case layout renders, plus runtime modules |
-| `core-vendor` | `app/javascript/core_vendor.js` | `core_vendor.js` | Third-party code that legacy scripts need as `window` globals (Shepherd/Tether for `tour.js`) |
 | `analytics` | `app/javascript/analytics.js` | `analytics.js` | Analytics pages |
 
-Source files are shared with the importmap, so **imports in shared code must be bare names** (`utils/flash`, `controllers/application`). The `core-case` and `core-vendor` bundles teach esbuild how to resolve those names through the `alias` maps in `esbuild.config.js`, and the importmap does the same in the browser through `config/importmap.rb`.
+Source files are shared with the importmap, so **imports in shared code must be bare names** (`utils/flash`, `controllers/application`). The `core-case` bundle teaches esbuild how to resolve those names through the `alias` maps in `esbuild.config.js`, and the importmap does the same in the browser through `config/importmap.rb`.
 
 ## Adding a module
 
@@ -42,24 +41,23 @@ Top-level modules (for example `core_runtime.js`) and other directories (for exa
 For a new npm package:
 
 - **Rails pages:** `bin/importmap pin <package>`, which adds a pin to `config/importmap.rb`.
-- **Case page:** import it directly in the module that uses it; esbuild bundles it into `core_case.js`. Add it to `core_vendor.js` only if legacy code needs a `window` global. Rebuild either way.
+- **Case page:** import it directly in the module that uses it; esbuild bundles it into `core_case.js`. Rebuild afterward.
 
 ## Commands
 
 ```bash
 docker compose exec app yarn build                # CSS + all JS bundles
-docker compose exec app yarn build:core           # core-case + core-vendor
+docker compose exec app yarn build:core           # core-case
 docker compose exec app yarn build:analytics
 docker compose exec app node esbuild.config.js core-case --watch   # one bundle, watching
 ```
 
-With `bin/docker s`, `Procfile.dev` keeps `core_vendor`, `core_case` and CSS rebuilt on save; hard-refresh the browser afterward. Importmap-served files need no build, just a refresh.
+With `bin/docker s`, `Procfile.dev` keeps `core_case` and CSS rebuilt on save; hard-refresh the browser afterward. Importmap-served files need no build, just a refresh.
 
 In production, `jsbundling-rails` runs `yarn build` as part of `assets:precompile`.
 
 ## Gotchas
 
 - **Edits to `controllers/`, `utils/` and similar affect both mechanisms.** A change that works on Rails pages (importmap, no build) can still need a `core-case` rebuild to show up on the case page.
-- **Bundles are IIFEs, so top-level `var`/`function` do not become globals.** Legacy code that expects a global must be assigned to `window` explicitly, as `core_vendor.js` does.
+- **Bundles are IIFEs, so top-level `var`/`function` do not become globals.** Code that expects a global must assign it to `window` explicitly.
 - **`app/assets/builds/` is git-ignored.** A fresh checkout has no bundles until `yarn build` runs (`bin/setup_docker` does this).
-- **Classic script** (`tour.js`) is a plain `<script>` file included by the core layout. It is neither bundled nor importmapped. The case footer is rendered directly inside the scrolling case pane by Rails.

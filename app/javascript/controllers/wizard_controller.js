@@ -1,5 +1,6 @@
 import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
+import { setupAndStartTour } from "modules/tour"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -365,10 +366,10 @@ export default class extends Controller {
       const isFirstCaseWizard = !currentUser.completedCaseWizard
       user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
-      if (isFirstCaseWizard && typeof window.setupAndStartTour === "function") {
+      if (isFirstCaseWizard) {
         this.tourTimer = window.setTimeout(() => {
           this.tourTimer = null
-          window.setupAndStartTour()
+          setupAndStartTour()
         }, 1500)
       }
     } catch (error) {

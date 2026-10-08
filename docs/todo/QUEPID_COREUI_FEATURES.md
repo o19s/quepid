@@ -1024,7 +1024,7 @@ Modals are Bootstrap 5 modals opened by Stimulus controllers through `utils/bs_m
 | Clipboard helper | `utils/clipboard.js` | Copy query text |
 | Flash messages | `flash` controller, `utils/core_flash.js` | Success/error messages |
 | Wizard | `wizard`, `wizard-launcher` controllers, `utils/wizard_contracts` | Multi-step onboarding wizard |
-| Shepherd.js | `tour.js` | Post-wizard guided tour |
+| Shepherd.js | `modules/tour.js` | Post-wizard guided tour |
 | Vega-Lite | `utils/qgraph.js`, frog report | QGraph and reports |
 | JSON explorer | `json-explorer` controller, `utils/json_explorer.js` | Detailed doc fields, query/match explain, object/array field values |
 | Relative timestamps | `Intl.RelativeTimeFormat` | Annotation timestamps |

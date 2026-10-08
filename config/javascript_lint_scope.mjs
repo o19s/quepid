@@ -6,13 +6,7 @@ import { join, relative } from 'node:path';
 
 /** Esbuild bridge files — not importmap/Stimulus; excluded from modern lint. */
 export const LEGACY_ESBUILD_ENTRIES = [
-  'app/javascript/core_vendor.js',
   'app/javascript/utils/splainer_search_runtime.js',
-];
-
-/** Classic scripts still loaded directly by the core layout (ESLint + Prettier enforced). */
-export const LEGACY_SCRIPT_FILES = [
-  'app/javascript/tour.js',
 ];
 
 /** Directory names under app/javascript/ never linted (vendored legacy plugins). */
@@ -98,8 +92,7 @@ export function isPrettierJavascriptPath(path) {
   const normalized = path.replace(/^\.\//, '');
   return (
     normalized.startsWith('app/javascript/api/') ||
-    normalized.startsWith('app/javascript/utils/') ||
-    LEGACY_SCRIPT_FILES.includes(normalized)
+    normalized.startsWith('app/javascript/utils/')
   );
 }
 

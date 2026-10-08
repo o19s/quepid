@@ -87,3 +87,42 @@ rolled back partial seed rows, the real retry succeeded, and repeated setup reta
 all fixture counts. A fresh database was seeded despite a stale filesystem marker.
 The existing historical data was adopted without reseeding; the disposable database
 was removed. Ruby lint, shell syntax and diff checks passed.
+
+## Supplemental sharing comparison
+
+The pinned `8ceb99e9` cannot render sharing: `eba45615` deleted `teamSvc` while
+`ShareCaseCtrl` still injects it. For scenario 3.6, an authorized separate archive
+at `13bf23fff87f77e997440ba0c5fc5bff0c4378f1` (the deletion's parent) runs at
+**http://localhost:3002**, using Compose project `quepid-legacy-sharing` and
+gitignored `tmp/legacy-sharing/compose.yml`. It retains its own source directory,
+network, MySQL volume, database `quepid_legacy_sharing_development` and session
+cookie; MySQL is exposed on port 33308. Dependency locks match the pinned
+baseline, so it reuses the existing historical image. Implementation files match
+the earlier commit; setup uses its sample database config and a separate cookie.
+Both original servers remain running. Inspect it with:
+
+```bash
+docker compose --project-name quepid-legacy-sharing -f tmp/legacy-sharing/compose.yml ps
+```
+
+Scenario 3.6 was replayed live on 2026-10-08 against equivalent disposable owned
+and private cases and member/nonmember teams; fixtures were removed afterward.
+Share/unshare persisted on both versions. Historical Teams rows remain stale
+until reload; duplicate requests return 200/204 without duplicate memberships.
+Historical private-case sharing accepts an unauthorized case ID and grants team
+access; current rejects it. Both reject nonmember teams. These historical defects
+were reproduced on the earlier server, not inferred from source alone. Current
+duplicate alerts and tampered share/unshare checks passed. Inspected screenshot
+pairs are under `.playwright-mcp/list-sharing-parity/`; detailed scope is recorded
+in scenario 3.6 of the tracker.
+
+Core sharing (6.5) was replayed on 2026-10-08 through the toolbar and Judgements
+link. Both versions persisted share/unshare after reload; current cancellation
+and routed team-load/share/unshare failures recovered correctly. Matching
+disposable no-book users exercised the Judgements link, which current hides
+when owned books are available. Historical Share closes on success and shows a
+misleading no-teams prompt when all teams already share; current stays open with
+updated lists and inline success. Inspected pairs and current error/retry shots
+are under `.playwright-mcp/core-sharing-parity/`; scenario 6.5 records coverage
+limits. Disposable cases, teams and users were removed; implementations and
+servers retained.

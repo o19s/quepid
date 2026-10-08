@@ -41,8 +41,8 @@ class CoreControllerTest < ActionController::TestCase
         assert_not(hrefs.any? { |href| href.match?(%r{/application[.-]}) })
       end
       scripts = css_select('script[src]').map { |script| script['src'] }
-      entries = scripts.filter_map { |src| src[%r{/(core_vendor|core_case|tour)[.-]}, 1] }
-      assert_equal %w[core_vendor core_case tour], entries
+      entries = scripts.filter_map { |src| src[%r{/(core_case)[.-]}, 1] }
+      assert_equal %w[core_case], entries
       assert_select 'script[type="module"]', text: /import "vega_globals"/
       assert_select 'script[type="module"]', text: /import "bootstrap_globals"/
       assert_select 'script[type="module"]', text: /import "application"/, count: 0
