@@ -440,7 +440,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.index ["query_id", "duration", "occurred_at"], name: "index_rails_pulse_operations_query_performance"
     t.index ["query_id", "occurred_at"], name: "index_rails_pulse_operations_on_query_and_time"
     t.index ["request_id"], name: "index_rails_pulse_operations_on_request_id"
-    t.check_constraint "(`request_id` is not null) or (`job_run_id` is not null)", name: "rails_pulse_operations_request_or_job_run"
+    t.check_constraint "(request_id IS NOT NULL) OR (job_run_id IS NOT NULL)", name: "rails_pulse_operations_request_or_job_run"
   end
 
   create_table "rails_pulse_queries", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
@@ -488,7 +488,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.string "controller_action", comment: "Rails controller and action handling this route (e.g., articles#show)"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index "(case when (`controller_action` is null) then `path` else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
+    t.index "(case when (controller_action is null) then path else NULL end)", name: "index_rails_pulse_routes_on_path_without_action", unique: true
     t.index ["controller_action", "path"], name: "index_rails_pulse_routes_on_controller_action_and_path", unique: true
     t.index ["path"], name: "index_rails_pulse_routes_on_path"
   end
