@@ -72,6 +72,8 @@ function buildApplicationCSS() {
   output += '\n';
   output += readFileIfExists('app/assets/stylesheets/judgements.css');
   output += '\n';
+  output += readFileIfExists('app/assets/stylesheets/admin2.css');
+  output += '\n';
 
   // Add the inline styles from application.css (excluding comments)
   const appCSS = readFileIfExists('app/assets/stylesheets/application.css');
@@ -150,41 +152,6 @@ function buildCoreCSS() {
   console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function buildAdminCSS() {
-  console.log('Building admin.css...');
-  
-  const outputFile = 'app/assets/builds/admin.css';
-  let output = '/* Admin CSS Bundle (Bootstrap 5) */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Bootstrap 5
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Fonts
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-
-  // Bootstrap 5 additions
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
-  output += '\n';
-
-  // Admin-specific styles
-  output += readFileIfExists('app/assets/stylesheets/admin2.css');
-  output += '\n';
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`admin.css created (${(stats.size / 1024).toFixed(1)}KB)`);
-}
-
 function copyVendorFiles() {
   console.log('Copying Angular vendor CSS files...');
   
@@ -236,7 +203,6 @@ function buildAllCSS() {
     // Build all CSS bundles
     buildApplicationCSS();
     buildCoreCSS();
-    buildAdminCSS();
 
     // Copy vendor and asset files
     copyVendorFiles();
