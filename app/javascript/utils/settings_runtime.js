@@ -203,7 +203,7 @@ export function createSettingsRuntime({
       selectTry(item.tryNo)
       return item
     },
-    update: async (settings) => {
+    update: async (settings, { navigateAfterSave = true } = {}) => {
       if (settings.inError) return
       settings.selectedTry.updateVars()
       settings.selectedTry.apiMethod = settings.apiMethod
@@ -221,7 +221,7 @@ export function createSettingsRuntime({
           detail: { caseNo: caseNo(), lastTry: settings.selectedTry }
         })
       )
-      navigate({ tryNo: settings.selectedTry.tryNo })
+      if (navigateAfterSave) navigate({ tryNo: settings.selectedTry.tryNo })
     },
     duplicateTry: async (number) => {
       if (!tries) return

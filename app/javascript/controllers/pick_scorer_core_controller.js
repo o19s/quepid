@@ -37,6 +37,7 @@ export default class extends CoreModalControllerBase {
   }
 
   openFor(btn) {
+    this.openGeneration = (this.openGeneration || 0) + 1
     const caseId = this.triggerValue(btn, "id")
     const currentScorerId = this.triggerValue(btn, "currentScorerId")
     const currentScorerName = this.triggerValue(btn, "currentScorerName")
@@ -83,8 +84,10 @@ export default class extends CoreModalControllerBase {
     this.setSubmitting(true)
     this.clearAlert()
 
-    const scorerId = this.selectedScorer.scorer_id
+    const selectedScorer = this.selectedScorer
+    const scorerId = selectedScorer.scorer_id
     const caseId = this.currentCaseId
+    const generation = this.openGeneration
 
     try {
       const url = this.caseScorerUrlTemplateValue
@@ -94,13 +97,14 @@ export default class extends CoreModalControllerBase {
 
       document.dispatchEvent(
         new CustomEvent(CORE_EVENTS.PICK_SCORER_SELECTED, {
-          detail: { caseId: Number(caseId), scorer: this.selectedScorer }
+          detail: { caseId: Number(caseId), scorer: selectedScorer }
         })
       )
 
-      this.hide()
+      if (generation === this.openGeneration) this.hide()
     } catch (error) {
       console.error("pick-scorer-core: save failed", error)
+      if (generation !== this.openGeneration) return
       const message = serverMessage(error, "Unable to save scorer.")
       this.showAlert(message, "danger")
       this.setSubmitting(false)

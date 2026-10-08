@@ -310,6 +310,7 @@ export function createLiveQueryRuntimeOwner({
     if (!queryDocumentsStore || !query) {
       return
     }
+    if (getLiveQuery(query.queryId) !== query) return
 
     const ratingScale = resolveQueryRatingScale(query)
     const applicableSettings = domain.settings.applicable() || {}

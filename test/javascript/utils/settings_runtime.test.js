@@ -26,6 +26,15 @@ const tryData = (tryNumber = 1) => ({
 })
 
 describe("settings runtime", () => {
+  it("allows the wizard to finish its writes before navigation", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response()))
+    const navigate = vi.fn()
+    const runtime = createSettingsRuntime({ caseNo: () => 9, tryNo: () => 1, navigate })
+    runtime.setCaseTries([tryData(1)])
+    runtime.setCurrentTry(1)
+    await runtime.update(runtime.editable(), { navigateAfterSave: false })
+    expect(navigate).not.toHaveBeenCalled()
+  })
   afterEach(() => {
     vi.unstubAllGlobals()
   })

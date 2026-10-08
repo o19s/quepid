@@ -6,6 +6,7 @@ import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 import { flashErrorMessage } from "utils/error_message"
 import { isSameId } from "utils/record_identity"
+import { setupAndStartTour } from "modules/tour"
 
 export default class extends Controller {
   static outlets = ["case-toolbar"]
@@ -19,6 +20,11 @@ export default class extends Controller {
     if (this.started) return
     this.started = true
     this.bootstrap()
+  }
+
+  disconnect() {
+    if (this.tourTimer) window.clearTimeout(this.tourTimer)
+    this.tourTimer = null
   }
 
   async bootstrap() {
@@ -114,6 +120,15 @@ export default class extends Controller {
   ready(detail) {
     window.quepidCoreBootstrap = { ready: true, ...detail }
     if (this.hasCaseToolbarOutlet) this.caseToolbarOutlet.showActions()
+    const url = new URL(window.location.href)
+    if (url.searchParams.get("startTour") === "true") {
+      url.searchParams.delete("startTour")
+      window.history.replaceState(window.history.state, "", url)
+      this.tourTimer = window.setTimeout(() => {
+        this.tourTimer = null
+        setupAndStartTour()
+      }, 1500)
+    }
   }
 
   fail(error) {

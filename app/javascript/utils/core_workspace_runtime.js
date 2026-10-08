@@ -161,7 +161,7 @@ function createWizardCapabilities(
       demoChosen: (engine, url) => settingsCatalog.demoSettingsChosen(engine, url),
       defaultSolrQueryParams: () => settingsCatalog.defaultSolrQueryParams(),
       applicable: () => settingsRuntime.applicable(),
-      update: (value) => settingsRuntime.update(value)
+      update: (...args) => settingsRuntime.update(...args)
     },
     case: {
       selected: () => caseRuntime.selected(),
@@ -188,6 +188,7 @@ function createWizardCapabilities(
       rootUrl: () => navigationRuntime.getQuepidRootUrl(),
       caseNo: () => navigationRuntime.getCaseNo(),
       needToRedirectProtocol: (url) => navigationRuntime.needToRedirectQuepidProtocol(url),
+      navigateTo: (values) => navigationRuntime.navigateTo(values),
       swapUrlTls: () => navigationRuntime.swapQuepidUrlTLS(),
       appendQueryParams: (...args) => navigationRuntime.appendQueryParams(...args)
     },

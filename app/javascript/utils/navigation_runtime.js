@@ -30,6 +30,7 @@ export function createNavigationRuntime({
       const query = new URLSearchParams()
       if (sortBy) query.set("sort", sortBy)
       if (sortOrder) query.set("reverse", sortOrder)
+      if (caseTryObj.startTour === true) query.set("startTour", "true")
       const queryString = query.toString()
       if (queryString) url += `?${queryString}`
 

@@ -28,6 +28,19 @@ const choose = (controller, element, value) => {
 const labelInputs = controller => [...controller.scaleLabelsTarget.querySelectorAll("input")].map(i => i.name)
 
 describe("ScorerScaleController", () => {
+  it("preserves labels for retained values when adding a value or selecting a preset", () => {
+    const { controller, element } = mount()
+    choose(controller, element, "binary")
+    const inputs = controller.scaleLabelsTarget.querySelectorAll("input")
+    inputs[0].value = "Bad"
+    inputs[1].value = "Good"
+    choose(controller, element, "graded")
+    expect([...controller.scaleLabelsTarget.querySelectorAll("input")].map(input => input.value))
+      .toEqual(["Bad", "Good", "", ""])
+    controller.handleScaleListInput({ target: { value: "1,3,4" } })
+    expect([...controller.scaleLabelsTarget.querySelectorAll("input")].map(input => input.value))
+      .toEqual(["Good", "", ""])
+  })
   it("fills a binary scale and builds a label input per value", () => {
     const { controller, element } = mount()
     choose(controller, element, "binary")

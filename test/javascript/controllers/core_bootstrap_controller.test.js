@@ -3,6 +3,9 @@ import coreFlash from "utils/core_flash"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
 import { SearchError } from "utils/search_error"
+import { setupAndStartTour } from "modules/tour"
+
+vi.mock("modules/tour", () => ({ setupAndStartTour: vi.fn() }))
 
 let testStores
 
@@ -19,6 +22,33 @@ beforeEach(() => {
 })
 
 describe("CoreBootstrapController", () => {
+  it("starts a requested tour once after readiness and consumes only its URL flag", () => {
+    vi.useFakeTimers()
+    window.history.replaceState({}, "", "/case/2/try/1?sort=score&startTour=true")
+    const controller = buildControllerFixture(CoreBootstrapController)
+    controller.ready({ caseNo: 2, tryNo: 1 })
+    expect(window.location.search).toBe("?sort=score")
+    vi.advanceTimersByTime(1500)
+    expect(setupAndStartTour).toHaveBeenCalledOnce()
+    controller.ready({ caseNo: 2, tryNo: 1 })
+    vi.advanceTimersByTime(1500)
+    expect(setupAndStartTour).toHaveBeenCalledOnce()
+    window.history.replaceState({}, "", "/")
+    vi.useRealTimers()
+  })
+
+  it("cancels a requested tour if the workspace disconnects", () => {
+    vi.useFakeTimers()
+    setupAndStartTour.mockClear()
+    window.history.replaceState({}, "", "/case/2/try/1?startTour=true")
+    const controller = buildControllerFixture(CoreBootstrapController)
+    controller.ready({ caseNo: 2, tryNo: 1 })
+    controller.disconnect()
+    vi.advanceTimersByTime(1500)
+    expect(setupAndStartTour).not.toHaveBeenCalled()
+    window.history.replaceState({}, "", "/")
+    vi.useRealTimers()
+  })
   beforeEach(() => {
     testStores = {
       diff: {

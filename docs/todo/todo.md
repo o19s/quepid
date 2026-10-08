@@ -145,13 +145,17 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 ---
 
-### [PREEXISTING] P3 I0 C2 — Triage the Brakeman baseline
+### Brakeman findings
 
-**Location:** `config/brakeman.ignore`
-
-**Fix direction:** As tracked fixes below eliminate Brakeman warnings, remove their entries from `config/brakeman.ignore` and rerun Brakeman to confirm CI's `--exit-on-warn` gate passes. For retained suppressions, replace "needs triage" with the specific justification documented below. Delete this parent item when obsolete entries are removed and no "needs triage" notes remain; keep unresolved findings below. This parent is bookkeeping (CI already passes with the current ignore file); the fixes below keep their own priorities.
+Specific suppression notes live in `config/brakeman.ignore`. As the fixes below
+eliminate warnings, remove their fingerprints and rerun the CI Brakeman gate.
 
 **Review evidence (2026-10-08):** A fresh Brakeman 8.1.0 scan reproduced all 24 warnings with zero scan errors. Source/caller inspection and unsaved runtime probes informed the recommendations below; persistence exploit tests, the Rails suite and browser flows were not run. Import compatibility and suitable execution limits remain unverified.
+
+**Bookkeeping verification (2026-10-08):** The CI Brakeman gate passes with
+24 suppressed warnings, no scan errors and no obsolete fingerprints. Focused
+authentication and sampling tests pass (14 tests, 44 assertions); the added
+authentication coverage passes RuboCop. These checks do not resolve the findings below.
 
 #### [PREEXISTING] P1 I0 C3 — Restrict nested case-import attributes
 
@@ -192,24 +196,6 @@ Two warnings cover template names derived from `file_format`. No traversal explo
 **Fix direction:** Map supported formats to literal template names and define the unsupported-format response.
 
 **Compatibility gate:** Preserve existing valid formats, casing behavior, defaults, snapshot selection and output. Supported export content must remain identical; unknown formats may receive a deliberate error instead of the current template-resolution failure. Do not fold unrelated export behavior fixes into this hardening.
-
-#### [PREEXISTING] P3 I0 C2 — Replace justified Brakeman suppressions with specific notes
-
-Keep intentional operations where the current trust boundary supports them. The following dispositions cover the remaining 19 entries; the five entries covered by case-import, announcement, export-template and sampling fixes above should be removed only after their fixes eliminate the warnings.
-
-| Warning group | Entries | Justification / remaining work |
-| --- | ---: | --- |
-| API `null_session` | 1 | Devise clears the cached user on failed CSRF verification; a synthetic tokenless POST returned 401. Retain with a regression test that enables forgery protection and covers cookie and API-key authentication. Do not change authentication behavior merely to silence the warning. |
-| Book import `permit!` | 1 | `BookImporter` explicitly selects assignable attributes and controls ownership. Preserve supported imports; do not duplicate its boundary solely to remove the warning. |
-| Book rating-remapping SQL | 2 | Interpolated rating values are converted to floats before entering SQL. No unchanged request strings enter the CASE expressions. |
-| Pages render/file paths | 2 | The only route supplies fixed `page: "cookies"`; a runtime probe confirmed that query parameters cannot override it. Reassess if a dynamic page route is introduced. |
-| `CaseScoreSamples` SQL | 1 | SQL function names come from fixed adapter choices; IDs use ActiveRecord conditions. |
-| Deferred payload `Marshal.load` | 1 | Current producers serialize parsed data server-side; consumers load those internally generated blobs. No direct uploaded-Marshal path was found. Retain this trust boundary; changing serialization is deferred hardening with payload/retry compatibility implications. |
-| LLM adapter `constantize` | 1 | Adapter classes come from the code-defined provider registry, not an arbitrary request-supplied class name. |
-| Scorer initialization evaluation | 2 | Both evaluations load repository-controlled code. Keep the notes distinct from resource limits required for custom scorer execution. |
-| Mapper evaluation | 8 | One entry loads a fixed repository file, two intentionally execute mapper code, and five inject JSON-encoded data. Use separate notes for these trust boundaries; retain intentional code execution after addressing the resource limits above. |
-
-**Verification:** Rerun Brakeman after fixes and note updates, remove obsolete fingerprints, and confirm the CI gate passes. Keep unresolved fixes as todo items even if all "needs triage" notes have been replaced. No scoring formulas, Marshal format or JavaScript architecture changes are proposed in this batch.
 
 ---
 
@@ -807,24 +793,4 @@ This review supplies priorities, not a migration acceptance plan or proof that o
 
 Start with CI parity and documentation drift; pursue structural changes where they reduce an observed maintenance cost. A wholesale runtime rewrite, controller-wide refactor, forced importmap/esbuild consolidation or deletion of migration evidence is outside these recommendations.
 
-## Not doing
-
-Deferred work. Delete an entry when it is resolved or move it back to the active backlog when prioritized.
-
-### [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
-
-The `http`↔`https` switch is a cross-origin navigation, so browser storage and `Secure` session cookies cannot provide a direct handoff. A short-lived, single-use opaque token could retrieve server-side pending state without sharing those cookies, keeping the credential itself out of browser history and URL logs. Redemption over plaintext `http` would still carry transport risk. This mitigation is deferred, not technically impossible.
-
-### [PREEXISTING] Wizard TLS reload loses endpoint-specific settings
-
-The same server-side handoff could preserve the full pending endpoint configuration (headers, mapper code, field selections), including explicit empty values, without reapplying engine defaults over it. This work is deferred; currently users re-enter those settings after the switch.
-
-### [PREEXISTING] Stored search-endpoint credentials are serialized to members
-
-**Why deferred:** Plain `http` search engines must remain supported, and direct browser searches against them need the stored `api_basic_auth_credential` and custom headers in the client. Withholding secrets means mandatory server-side proxying, which a direct browser search cannot use; an HTTPS-hosted Quepid also cannot call `http` engines from the browser (mixed content). Needs a decision on the credential-sharing contract before any change.
-
-**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`
-
-`api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses.
-
-**Fix direction if revisited:** Never serialize credentials or custom secret headers; return a presence-only value and proxy server-side. Make this unconditional rather than flag-dependent.
+Deliberately deferred or declined items live in [NOT-DOING.md](NOT-DOING.md).

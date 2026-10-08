@@ -1,7 +1,6 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import WizardController from "controllers/wizard_controller"
-import { setupAndStartTour } from "modules/tour"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreCapabilities } from "utils/core_capability_access"
@@ -11,7 +10,6 @@ import { createSettingsRuntime } from "utils/settings_runtime"
 
 const modal = { show: vi.fn(), hide: vi.fn() }
 
-vi.mock("modules/tour", () => ({ setupAndStartTour: vi.fn() }))
 vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn(() => modal) }))
 vi.mock("utils/core_capabilities_runtime", () => ({ getWizardCapabilities: vi.fn() }))
 vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: vi.fn() }))
@@ -42,7 +40,8 @@ function makeCapability() {
       swapUrlTls: vi.fn(() => ["https://q", "https"]),
       appendQueryParams: vi.fn((url, qs) => `${url}?${qs}`),
       rootUrl: vi.fn(() => "/root"),
-      caseNo: vi.fn(() => 5)
+      caseNo: vi.fn(() => 5),
+      navigateTo: vi.fn()
     },
     search: { createValidator: vi.fn() },
     case: {
@@ -166,7 +165,7 @@ describe("WizardController", () => {
       await controller.finish()
       expect(controller.capability.settings.update).toHaveBeenCalledWith(expect.objectContaining({
         searchEndpointId: 8, apiMethod: "GET", proxyRequests: true
-      }))
+      }), { navigateAfterSave: false })
       const payload = JSON.parse(request.mock.calls[0][1].body)
       expect(payload.try.search_endpoint_id).toBe(8)
       expect(payload).not.toHaveProperty("search_endpoint")
@@ -733,10 +732,9 @@ describe("WizardController", () => {
 
       const { case: c, settings } = controller.capability
       expect(c.rename).toHaveBeenCalledWith({ id: 5 }, "Named")
-      expect(settings.update).toHaveBeenCalledWith(expect.objectContaining({ newQueries: controller.newQueries }))
-      expect(queryCapabilities.changeSettings).toHaveBeenCalledWith(5, expect.anything())
+      expect(settings.update).toHaveBeenCalledWith(expect.objectContaining({ newQueries: controller.newQueries }), { navigateAfterSave: false })
       expect(persistQueries).toHaveBeenCalledWith(5, ["a", "b"])
-      expect(queryLifecycle.commitPersistedQueries).toHaveBeenCalledWith(["p"])
+      expect(controller.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: true })
       expect(controller.capability.user.shownIntroWizard).toHaveBeenCalled()
       expect(modal.hide).toHaveBeenCalled()
     })
@@ -773,34 +771,47 @@ describe("WizardController", () => {
       expect(persistQueries).not.toHaveBeenCalled()
     })
 
-    it("starts the tour only for first-time wizard users", async () => {
-      vi.useFakeTimers()
-      setupAndStartTour.mockClear()
+    it("waits for queries and the onboarding write before navigating", async () => {
+      const controller = mount({ step: STEPS.finish })
+      controller.newQueries = [{ queryString: "a" }]
+      let saveQueries
+      let saveUser
+      persistQueries.mockReturnValue(new Promise(resolve => { saveQueries = resolve }))
+      controller.capability.user.shownIntroWizard.mockReturnValue(new Promise(resolve => { saveUser = resolve }))
+      const pending = controller.finish()
+      await flush()
+      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
+      expect(controller.capability.user.shownIntroWizard).not.toHaveBeenCalled()
+      saveQueries({})
+      await flush()
+      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
+      saveUser()
+      await pending
+      expect(controller.capability.navigation.navigateTo).toHaveBeenCalledOnce()
+    })
+
+    it("keeps the wizard open when query persistence fails", async () => {
+      const controller = mount({ step: STEPS.finish })
+      controller.newQueries = [{ queryString: "a" }]
+      persistQueries.mockRejectedValueOnce({ data: { error: "query save failed" } })
+      await controller.finish()
+      expect(controller.error).toContain("query save failed")
+      expect(controller.saving).toBe(false)
+      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
+      expect(controller.capability.user.shownIntroWizard).not.toHaveBeenCalled()
+      expect(modal.hide).not.toHaveBeenCalled()
+    })
+
+    it("requests the tour on the loaded workspace only for first-time wizard users", async () => {
       const first = mount({ step: STEPS.finish })
       await first.finish()
-      vi.advanceTimersByTime(1500)
-      expect(setupAndStartTour).toHaveBeenCalledTimes(1)
+      expect(first.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: true })
 
       const returning = mount({ step: STEPS.finish })
       returning.capability.user.current.mockReturnValue({ completedCaseWizard: true })
       await returning.finish()
-      vi.advanceTimersByTime(1500)
-      expect(setupAndStartTour).toHaveBeenCalledTimes(1)
+      expect(returning.capability.navigation.navigateTo).toHaveBeenCalledWith({ tryNo: 1, startTour: false })
 
-      vi.useRealTimers()
-    })
-
-    it("cancels the pending tour start when disconnected", async () => {
-      vi.useFakeTimers()
-      setupAndStartTour.mockClear()
-      const controller = mount({ step: STEPS.finish })
-      await controller.finish()
-
-      controller.disconnect()
-      vi.advanceTimersByTime(1500)
-
-      expect(setupAndStartTour).not.toHaveBeenCalled()
-      vi.useRealTimers()
     })
 
     it("shows the save error, re-enables Finish, and lets the user retry", async () => {

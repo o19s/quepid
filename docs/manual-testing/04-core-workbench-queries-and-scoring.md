@@ -56,6 +56,7 @@ Before testing individual features, get oriented:
   - [ ] With no other cases available, confirm the modal shows "Please create another case to move this query to first." with no way to proceed.
   - [ ] Rename or create a case in another tab while this modal is open, then reopen it — confirm the case list reflects the change.
   - [ ] Force a failure — confirm flash "Unable to move query."
+  - [ ] Delay a move, close the modal and reopen it for another query before the response arrives. Only the submitted query is removed; the reopened modal stays open. A failed move leaves its submit button usable.
   - [ ] After picking a case, and again after a failed move, press Escape — confirm the modal closes.
 
 ### 4.5 Set per-query options (Query Options)
@@ -104,6 +105,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   - [ ] When the case's current scorer is not in your accessible lists, confirm the warning that "you won't have access to it again" if you switch away from it.
   - [ ] Force a scorer-save failure: the modal stays open, shows the server error and retains the selected row; retry succeeds and closes the modal.
   - [ ] Reload and reopen the modal: the saved scorer remains selected.
+  - [ ] Delay scorer save and select another row while waiting. The workspace uses the scorer submitted in the request. Close and reopen while waiting; the earlier response must not close or overwrite the new modal.
 
 ### 4.9 Missing Documents finder
 
@@ -189,6 +191,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 - **Expected:** Copy always copies the raw query text. Delete Query removes only that single query (and, per the case model, its ratings/history) — this is a *different, narrower* action than the case-wide "Delete All Queries" option covered in Part 6.4. Cancelling the confirm dialog leaves the query untouched.
 - **Edge cases:**
   - [ ] Delete a query that has ratings/annotations tied to it and confirm the case score recalculates correctly afterward.
+  - [ ] Delay a rated-document lookup, then delete or move that query. The delayed response must not restore the removed query.
   - [ ] Confirm there is no secondary safety net beyond the one native confirm dialog — this is a single-click-plus-confirm irreversible action, worth flagging if a more deliberate confirmation (e.g., typing the query name) is ever expected here.
 
 ### 4.16 Query Notes & Information Need
@@ -260,6 +263,8 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   - [ ] Drag handles are inactive for every sort except Manual.
   - [ ] Filter text plus a non-default sort plus page 2 — confirm the page clamps back to a valid page when the filtered set shrinks below it.
   - [ ] "Show only rated" on Solr and ES/OS cases — each should filter via the engine (results contain exactly the rated doc IDs); confirm no error on an engine that can't look up by id.
+  - [ ] With 25 matching rated documents and ten rows per request, confirm the rated count is 25 and **Peek at the next page of results** appends distinct documents beyond the first ten.
+  - [ ] On a SearchAPI mapper supporting rated lookup, enable the rated filter with no ratings, then rate a document and refresh. The newly rated document appears without reloading the workspace.
   - [ ] While a rescore runs, confirm the "Updating Queries" progress banner appears and clears when done.
   - [ ] With more than ten queries, force every search to fail (e.g. a broken endpoint URL); confirm every query gets an error and the progress banner clears instead of stalling at 10 / N. Repeat with mixed successes and failures, then restore the endpoint and retry successfully.
 

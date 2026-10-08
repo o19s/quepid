@@ -46,6 +46,20 @@ function buildModalController(overrides = {}) {
 }
 
 describe("PickScorerCoreController", () => {
+  it("publishes the submitted scorer if selection changes while saving", async () => {
+    const selected = { scorer_id: 1, name: "A" }
+    const controller = buildModalController({ selectedScorer: selected, currentCaseId: "5" })
+    const changed = vi.fn()
+    document.addEventListener("pick-scorer:selected", changed)
+    let resolveSave
+    apiFetch.mockReturnValue(new Promise(resolve => { resolveSave = resolve }))
+    const pending = controller.submit()
+    controller.selectedScorer = { scorer_id: 2, name: "B" }
+    resolveSave({ ok: true, status: 200, text: async () => "{}" })
+    await pending
+    expect(changed.mock.calls[0][0].detail).toEqual({ caseId: 5, scorer: selected })
+    document.removeEventListener("pick-scorer:selected", changed)
+  })
   it("updates scorer targets without changing unrelated list items", () => {
     const controller = buildModalController()
     const scorer = new DOMParser().parseFromString(scorerCatalogHtml({ communal_scorers: [{ scorer_id: 8, name: "Scorer" }] }), "text/html").querySelector("li")

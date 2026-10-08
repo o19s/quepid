@@ -58,6 +58,20 @@ function trigger({ queryId = "12" } = {}) {
 }
 
 describe("MoveQueryCoreController", () => {
+  it("reconciles the submitted query and leaves a reopened modal alone", async () => {
+    const controller = buildController({ currentCaseId: "4", queryId: "12", selectedCase: { case_id: 8 }, openGeneration: 1 })
+    let resolveSave
+    apiFetch.mockReturnValueOnce(new Promise(resolve => { resolveSave = resolve }))
+    const pending = controller.submit({ preventDefault: vi.fn() })
+    await controller.openFor(trigger({ queryId: "13" }))
+    controller.selectCase({ params: { caseId: 8 } })
+    resolveSave({ ok: true, status: 200, text: async () => "{}" })
+    await pending
+    expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith({ caseId: 4, queryId: 12, targetCaseId: 8 })
+    expect(controller.queryId).toBe("13")
+    expect(hideBsModal).not.toHaveBeenCalled()
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+  })
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({

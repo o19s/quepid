@@ -1,9 +1,7 @@
 import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
-import { setupAndStartTour } from "modules/tour"
 import { getOrCreateBsModal } from "utils/bs_modal"
 import { getWizardCapabilities } from "utils/core_capabilities_runtime"
-import { getCoreCapabilities } from "utils/core_capability_access"
 import { parseCsv } from "utils/csv"
 import { persistQueries } from "utils/query_lifecycle"
 import { importSnapshotsToCase } from "utils/snapshot_import"
@@ -47,8 +45,6 @@ export default class extends Controller {
 
   disconnect() {
     this.connected = false
-    if (this.tourTimer) window.clearTimeout(this.tourTimer)
-    this.tourTimer = null
   }
 
   async loadWizard() {
@@ -341,7 +337,7 @@ export default class extends Controller {
     this.saving = true
     this.render()
     try {
-      const { case: caseCapability, endpoints, settings, navigation, documents, user } = this.capability
+      const { case: caseCapability, endpoints, settings, navigation, user } = this.capability
       const selectedCase = caseCapability.selected()
       if (this.settings.caseName) await caseCapability.rename(selectedCase, this.settings.caseName)
       if (!settings.demoChosen(this.settings.searchEngine, this.settings.searchUrl)) {
@@ -351,27 +347,14 @@ export default class extends Controller {
         if (this.settings.searchEngine === "solr") this.settings.queryParams = settings.defaultSolrQueryParams()
       }
       this.settings.selectedTry ||= settings.applicable()
-      await settings.update({ ...this.settings, newQueries: this.newQueries })
-      const latestSettings = settings.editable()
-      documents.cache.invalidate()
-      documents.cache.update(latestSettings)
-      const capabilities = getCoreCapabilities()
-      await capabilities.queryCapabilities.changeSettings(navigation.caseNo(), latestSettings)
+      await settings.update({ ...this.settings, newQueries: this.newQueries }, { navigateAfterSave: false })
       const texts = this.newQueries.map((query) => query.queryString).filter(Boolean)
-      if (texts.length && capabilities.queryLifecycle) {
-        const persisted = await persistQueries(navigation.caseNo(), texts)
-        await capabilities.queryLifecycle.commitPersistedQueries(persisted)
-      }
+      if (texts.length) await persistQueries(navigation.caseNo(), texts)
       const currentUser = user.current()
       const isFirstCaseWizard = !currentUser.completedCaseWizard
-      user.shownIntroWizard()
+      await user.shownIntroWizard()
       getOrCreateBsModal(this.element)?.hide()
-      if (isFirstCaseWizard) {
-        this.tourTimer = window.setTimeout(() => {
-          this.tourTimer = null
-          setupAndStartTour()
-        }, 1500)
-      }
+      navigation.navigateTo({ tryNo: this.settings.selectedTry.tryNo, startTour: isFirstCaseWizard })
     } catch (error) {
       this.saving = false
       this.showError(formatWizardSaveError(error))

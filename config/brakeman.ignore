@@ -20,7 +20,7 @@
       "cwe_id": [
         352
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Intentional null_session API boundary: failed CSRF verification clears the cached cookie-session user through Devise before authentication; API keys authenticate independently. Forgery-enabled POST regression coverage is in test/controllers/api/api_controller_test.rb."
     },
     {
       "warning_type": "Dynamic Render Path",
@@ -43,7 +43,7 @@
       "cwe_id": [
         22
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Unresolved dynamic template selection from file_format; retained baseline pending the ratings-export template allowlist in docs/todo/todo.md. Preserve supported formats, casing, defaults and snapshot output when fixing."
     },
     {
       "warning_type": "Dynamic Render Path",
@@ -66,7 +66,7 @@
       "cwe_id": [
         22
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Unresolved dynamic template selection from file_format; retained baseline pending the ratings-export template allowlist in docs/todo/todo.md. Preserve supported formats, casing, defaults and snapshot output when fixing."
     },
     {
       "warning_type": "Mass Assignment",
@@ -89,7 +89,7 @@
       "cwe_id": [
         915
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "BookImporter selects assignable book, pair and judgement attributes explicitly and controls ownership and relationship lookup. permit! carries the import payload to that shared boundary; it does not assign the entire payload to records."
     },
     {
       "warning_type": "Mass Assignment",
@@ -112,7 +112,7 @@
       "cwe_id": [
         915
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Unresolved broad nested assignments in CaseImporter; retained baseline pending the nested case-import allowlists and export/import compatibility checks in docs/todo/todo.md. Controller permit! changes alone would not protect other importer callers."
     },
     {
       "warning_type": "SQL Injection",
@@ -135,7 +135,7 @@
       "cwe_id": [
         89
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Both sides of each rating-map entry are converted to Float before interpolation into the CASE expression. Request strings do not enter the SQL unchanged; the target book is scoped to current_user.books_involved_with."
     },
     {
       "warning_type": "SQL Injection",
@@ -158,7 +158,7 @@
       "cwe_id": [
         89
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Both sides of each rating-map entry are converted to Float before interpolation into the CASE expression. Request strings do not enter the SQL unchanged; the target book is scoped to current_user.books_involved_with."
     },
     {
       "warning_type": "Dynamic Render Path",
@@ -181,7 +181,7 @@
       "cwe_id": [
         22
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "The only PagesController route is /cookies with fixed page: cookies. Route parameters override query parameters, so callers cannot choose the template or file path. Reassess before adding any dynamic page route."
     },
     {
       "warning_type": "File Access",
@@ -204,30 +204,30 @@
       "cwe_id": [
         22
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "The only PagesController route is /cookies with fixed page: cookies. Route parameters override query parameters, so callers cannot choose the template or file path. Reassess before adding any dynamic page route."
     },
     {
       "warning_type": "SQL Injection",
       "warning_code": 0,
-      "fingerprint": "e69e0432361c832ab629e80413333de7f6b648da9517e5da022719b1421ab36b",
+      "fingerprint": "c175481fbbd1f781cfa9dbbae23ba6b037c21863df4bc3685f736d1f5c9532bf",
       "check_name": "SQL",
       "message": "Possible SQL injection",
       "file": "app/models/score.rb",
-      "line": 84,
+      "line": 89,
       "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
-      "code": "joins(\"\\n      JOIN (\\n        SELECT id FROM case_scores where case_id=#{case_id} ORDER BY #{AdapterFunctions.random_function} LIMIT #{count}\\n      ) as filtered_case_scores ON case_scores.id=filtered_case_scores.id\\n    \")",
+      "code": "joins(\"\\n      JOIN (\\n        SELECT id FROM case_scores where case_id=#{Integer(case_id.to_s, 10)} ORDER BY #{AdapterFunctions.random_function} LIMIT #{Integer(count.to_s, 10)}\\n      ) as filtered_case_scores ON case_scores.id=filtered_case_scores.id\\n    \")",
       "render_path": null,
       "location": {
         "type": "method",
         "class": "Score",
         "method": "sampled"
       },
-      "user_input": "case_id",
+      "user_input": "Integer(case_id.to_s, 10)",
       "confidence": "Medium",
       "cwe_id": [
         89
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Score.sampled validates case_id and count as nonnegative decimal integers and converts both with Integer(value, 10) before SQL interpolation. The random function is a fixed AdapterFunctions choice (RAND() or RANDOM()); no request SQL fragments are accepted. Covered in test/models/score_test.rb."
     },
     {
       "warning_type": "SQL Injection",
@@ -250,7 +250,7 @@
       "cwe_id": [
         89
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "The interpolated random function comes from fixed AdapterFunctions choices (RAND() or RANDOM()). Case IDs use ActiveRecord where conditions; the outer subquery and rank limit are server-defined SQL."
     },
     {
       "warning_type": "Remote Code Execution",
@@ -273,7 +273,7 @@
       "cwe_id": [
         502
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "DeferredPayload.stash! serializes parsed data server-side; job consumers load those internally generated blobs. No direct uploaded-Marshal path is supported. Preserve this producer/consumer boundary; serialization hardening requires payload and retry compatibility review."
     },
     {
       "warning_type": "Remote Code Execution",
@@ -296,7 +296,7 @@
       "cwe_id": [
         470
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "LlmProvider.find resolves a key in the code-defined provider registry; adapter class names and the fallback are repository-controlled. A request-supplied provider key cannot supply an arbitrary constant name."
     },
     {
       "warning_type": "Cross-Site Scripting",
@@ -340,7 +340,7 @@
       "cwe_id": [
         79
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Unresolved administrator-authored announcement HTML rendered with html_safe; retained baseline pending a consistent HTML allowlist for both announcement displays in docs/todo/todo.md. Administrator-only editing does not eliminate stored-script risk."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -364,7 +364,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Loads the fixed repository scorer runtime file, stripping ES-module exports for MiniRacer; no request chooses this source or path. Custom scorer execution still needs resource limits, tracked separately in docs/todo/todo.md."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -388,7 +388,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Evaluates the repository-defined ADAPTER constant, not request-supplied Ruby or JavaScript source. Custom scorer execution still needs resource limits, tracked separately in docs/todo/todo.md."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -412,7 +412,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Current callers supply the fixed repository lib/mapper_code_logic.js path. Reassess if a caller can supply an untrusted file path; custom mapper execution limits remain separately tracked in docs/todo/todo.md."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -436,7 +436,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Intentional execution of user-authored or LLM-generated mapper JavaScript in MiniRacer; this is a supported mapper operation, not Ruby eval. Execution time and memory limits and exposed Ruby callbacks remain unresolved under server-side JavaScript execution in docs/todo/todo.md."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -460,7 +460,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Response data is parsed as JSON and then JSON-encoded with to_json before assignment in JavaScript; it is not interpolated as raw source. Mapper code execution and its resource limits are separate trust boundaries."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -484,7 +484,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Response data is JSON-encoded with to_json before assignment in JavaScript, preserving it as data rather than raw source. Mapper code execution and its resource limits are separate trust boundaries."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -508,7 +508,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Response data is JSON-encoded with to_json before assignment in JavaScript, preserving it as data rather than raw source. Mapper code execution and its resource limits are separate trust boundaries."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -532,7 +532,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Intentional execution of user-authored or LLM-generated mapper JavaScript in MiniRacer; this is a supported mapper operation, not Ruby eval. Execution time and memory limits and exposed Ruby callbacks remain unresolved under server-side JavaScript execution in docs/todo/todo.md."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -556,7 +556,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Response data is parsed as JSON and then JSON-encoded with to_json before assignment in JavaScript; it is not interpolated as raw source. Mapper code execution and its resource limits are separate trust boundaries."
     },
     {
       "warning_type": "Dangerous Eval",
@@ -580,7 +580,7 @@
         913,
         95
       ],
-      "note": "Baselined when Brakeman was added to CI; needs triage."
+      "note": "Response data is JSON-encoded with to_json before assignment in JavaScript, preserving it as data rather than raw source. Mapper code execution and its resource limits are separate trust boundaries."
     }
   ],
   "brakeman_version": "8.1.0"

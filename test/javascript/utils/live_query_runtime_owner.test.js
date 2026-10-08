@@ -66,6 +66,34 @@ function buildStores() {
 }
 
 describe("createLiveQueryRuntimeOwner", () => {
+  it.each(["removed", "replaced"])("ignores a pending rated response for a %s query", async disposition => {
+    const stores = buildStores()
+    let resolveSearch
+    const searcher = {
+      type: "solr", docs: [{ id: "rated" }], numFound: 1,
+      search: () => new Promise(resolve => { resolveSearch = resolve })
+    }
+    const search = buildOwner({ store: stores, searcher })
+    search.splainerSearch.solrExplainExtractorSvc.docsWithExplainOther.mockImplementation(docs => docs)
+    await search.queryCapabilities.changeSettings(-1, {
+      searchEngine: "solr", selectedTry: { searchUrl: "http://solr", args: {} },
+      createFieldSpec: () => ({ id: "id" })
+    })
+    const query = {
+      queryId: 7, docs: [], ratedDocs: [], ratings: {},
+      ratingsGeneration: 0, ratingsStore: { createRateableDoc: doc => doc },
+      filterToRatings: () => "{!terms f=id}rated"
+    }
+    stores.queries.upsert(query)
+    const pending = search.queryCapabilities.refreshRatedDocs(7)
+    search.queryCapabilities.reconcileQueryRemoval(7)
+    const replacement = { ...query, docs: [], ratedDocs: [] }
+    if (disposition === "replaced") stores.queries.upsert(replacement)
+    resolveSearch()
+    await pending
+    expect(stores.queries.liveQuery(7)).toBe(disposition === "removed" ? null : replacement)
+    expect(stores.documents.query(7)?.ratedDocs || []).toEqual([])
+  })
   afterEach(() => {
     vi.unstubAllGlobals()
     delete window.quepidStore

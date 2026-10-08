@@ -2,6 +2,24 @@ import { describe, expect, it, vi } from "vitest"
 import { createNavigationRuntime } from "utils/navigation_runtime"
 
 describe("navigation runtime", () => {
+  it("does not carry the tour flag when it is false", () => {
+    const assign = vi.fn()
+    const runtime = createNavigationRuntime({
+      location: new URL("https://example.test/quepid/case/1/try/1?sort=score&reverse=false&showWizard=true"),
+      window: { location: { assign } }
+    })
+    runtime.navigateTo({ caseNo: 1, tryNo: 1, startTour: false })
+    expect(assign).toHaveBeenCalledWith("https://example.test/quepid/case/1/try/1?sort=score&reverse=false")
+  })
+  it("carries a first-time tour request without reopening the wizard", () => {
+    const assign = vi.fn()
+    const runtime = createNavigationRuntime({
+      location: new URL("https://example.test/quepid/case/1/try/1?showWizard=true&sort=score"),
+      window: { location: { assign } }
+    })
+    runtime.navigateTo({ caseNo: 1, tryNo: 1, startTour: true })
+    expect(assign).toHaveBeenCalledWith("https://example.test/quepid/case/1/try/1?sort=score&startTour=true")
+  })
   it("tracks the current case and try and preserves query sorting", () => {
     const assign = vi.fn()
     const runtime = createNavigationRuntime({

@@ -44,6 +44,9 @@ export default class extends Controller {
 
     const values = scaleValue.split(',').map(v => v.trim()).filter(v => v)
     const labelsContainer = this.scaleLabelsTarget
+    const labels = new Map(
+      [...labelsContainer.querySelectorAll("input")].map(input => [input.name, input.value])
+    )
     
     labelsContainer.innerHTML = ''
     
@@ -57,7 +60,7 @@ export default class extends Controller {
       input.className = 'form-control scale-label clearfix'
       input.type = 'text'
       input.name = `scorer[scale_with_labels][${value}]`
-      input.value = ''
+      input.value = labels.get(input.name) || ""
       input.style.width = '100px'
       input.style.display = 'inline-block'
       label.appendChild(input)

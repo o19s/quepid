@@ -92,15 +92,15 @@ export function createQueryRuntime({
 
       if (pageSize) settings.numberOfRows = pageSize
 
-      const resetRatedDocsToEmpty = () => {
-        query.ratedSearcher = null
-        query.ratedDocs = []
-        query.ratedDocsFound = 0
-        query.ratingsReady = true
-        publish(query)
-        query.ratingsPromise = null
-        return Promise.resolve()
-      }
+      const resetRatedDocsToEmpty = () =>
+        Promise.resolve().then(() => {
+          query.ratedSearcher = null
+          query.ratedDocs = []
+          query.ratedDocsFound = 0
+          query.ratingsReady = true
+          publish(query)
+          query.ratingsPromise = null
+        })
 
       const refreshSearchApiRatedDocs = () => {
         query.ratedDocsUnsupported = !supportsSearchApiRatedDocsLookup(settings.selectedTry)
@@ -147,7 +147,7 @@ export function createQueryRuntime({
           const normalized = normalizeDocuments(query.ratedSearcher, settings.createFieldSpec())
           ratedDocsStaging = normalized.map(createRateableDoc)
           query.ratedDocs = ratedDocsStaging
-          query.ratedDocsFound = normalized.length
+          query.ratedDocsFound = query.ratedSearcher.numFound
           query.ratingsReady = true
           publish(query)
           query.ratingsPromise = null

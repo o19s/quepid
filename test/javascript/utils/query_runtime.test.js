@@ -36,6 +36,31 @@ function buildRuntime(overrides = {}) {
 }
 
 describe("query runtime", () => {
+  it("looks up newly rated documents after an empty mapper lookup", async () => {
+    const lookup = vi.fn().mockResolvedValue({ searcher: { numFound: 1 }, docs: [{ id: "first" }] })
+    const { runtime, query } = buildRuntime({
+      query: { ratings: {}, ratingsGeneration: 0 },
+      getSettings: () => ({ searchEngine: "searchapi", selectedTry: {} }),
+      searchApiRatedDocs: lookup
+    })
+    await runtime.refreshRatedDocs()
+    expect(query.ratingsPromise).toBeNull()
+    query.ratings.first = 1
+    query.ratingsGeneration++
+    query.ratingsReady = false
+    await runtime.refreshRatedDocs()
+    expect(lookup).toHaveBeenCalledOnce()
+    expect(query.ratedDocs).toHaveLength(1)
+  })
+
+  it("retains the total rated-result count across a partial first page", async () => {
+    const { runtime, query } = buildRuntime({
+      createRatedSearcher: () => ({ search: () => Promise.resolve(), numFound: 25 })
+    })
+    await runtime.refreshRatedDocs()
+    expect(query.ratedDocs).toHaveLength(1)
+    expect(query.ratedDocsFound).toBe(25)
+  })
   it("delegates live search while keeping searcher construction injected", async () => {
     const searcher = { search: vi.fn(() => Promise.resolve()), docs: [], numFound: 0 }
     const createSearcher = vi.fn(() => searcher)

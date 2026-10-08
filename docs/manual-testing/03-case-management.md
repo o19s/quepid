@@ -31,6 +31,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
 - **Expected:** A new case is created and you land in its Core Workbench (Part 4), on its first try, connected to the chosen search endpoint.
 - **Edge cases:**
   - [ ] Leave the case name blank and try to proceed — should be blocked.
+  - [ ] Delay the query save after **Finish** — the wizard stays open with Finish disabled until settings, queries and onboarding status are saved. Force a query-save failure, then retry; the error stays in the wizard and navigation occurs only after success. Confirm a first-time tour starts on the loaded workspace and does not restart on reload; returning users receive no automatic tour.
   - [ ] Enter an invalid/unreachable endpoint URL and click **Continue** — should surface a clear connection error, not a silent failure or crash.
   - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `bootstrap5-compat.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
   - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.

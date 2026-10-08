@@ -45,6 +45,7 @@ A Scorer is a JavaScript formula that turns a set of graded judgements into a si
   - [ ] Enter more than 10 comma-separated scale values — expect a length validation error.
   - [ ] Enter non-integer values in the scale list (e.g. `a,b,c`) — expect a type validation error.
   - [ ] Enter scale values with stray spaces (`0, 1, 2`) — confirm this is handled gracefully (not silently broken).
+  - [ ] Enter labels for Binary values, then change the scale to `0,1,2`. Labels for 0 and 1 remain; the new value starts blank. Removing a value removes only its corresponding label field. Repeat on the Edit form.
 
 ### 8.4 Edit a scorer
 

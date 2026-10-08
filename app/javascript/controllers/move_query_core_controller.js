@@ -22,6 +22,7 @@ export default class extends CoreModalControllerBase {
 
   // Opened from a query row's "Move Query" button; the row carries the query id.
   async openFor(btn) {
+    this.openGeneration = (this.openGeneration || 0) + 1
     this.queryId = btn?.closest("[data-query-id]")?.dataset.queryId || ""
     this.currentCaseId = this.caseIdValue
     this.selectedCase = null
@@ -71,25 +72,26 @@ export default class extends CoreModalControllerBase {
     }
 
     this.submitButtonTarget.disabled = true
-
-    try {
-      await moveQuery(this.currentCaseId, this.queryId, this.selectedCase.case_id)
-    } catch (error) {
-      console.error("move-query-core: move failed", error)
-      coreFlash.show("error", "Unable to move query.")
-      this.submitButtonTarget.disabled = false
-      return
-    }
-
+    const generation = this.openGeneration
     const detail = {
       caseId: Number(this.currentCaseId),
       queryId: Number(this.queryId),
       targetCaseId: Number(this.selectedCase.case_id)
     }
+
+    try {
+      await moveQuery(detail.caseId, detail.queryId, detail.targetCaseId)
+    } catch (error) {
+      console.error("move-query-core: move failed", error)
+      coreFlash.show("error", "Unable to move query.")
+      if (generation === this.openGeneration) this.refreshUi()
+      return
+    }
+
     this.queryCommandBridgeOutlet.queryRemoved(detail)
     this.dispatch("completed", { detail })
     coreFlash.show("success", "Query moved successfully!")
-    this.hide()
+    if (generation === this.openGeneration) this.hide()
   }
 
   renderCases() {
