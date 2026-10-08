@@ -42,6 +42,11 @@ class RatingsGenerator
 
   delegate :docs, to: :@generator
 
+  # Same shape as #docs, but for a query text we already have.
+  def fetch_docs_for_query query_text
+    @generator.fetch_results_for_single_query(query_text)
+  end
+
   private
 
   def rate_docs docs

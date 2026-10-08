@@ -159,7 +159,6 @@ class SampleData < Thor
 
     user_specifics = {
       name:          'OSC AI Judge',
-      llm_key:       'key123456',
       system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)
@@ -332,9 +331,21 @@ class SampleData < Thor
     tens_of_queries_case = realistic_activity_user.cases.find_or_create_by case_name: '10s of Queries', nightly: true
 
     docs_lookup = {}
-    unless tens_of_queries_case.queries.count >= 20
-      generator = ::RatingsGenerator.new search_url, { number: 20 }
-      ratings   = generator.generate_ratings
+    generator = ::RatingsGenerator.new search_url, { number: 20 }
+
+    if tens_of_queries_case.queries.count >= 20
+      # Ratings already exist from a prior run of this task - re-fetch each
+      # existing query's own results directly instead of generating a fresh
+      # random set (which wouldn't line up with the already-persisted
+      # queries), so document_fields still get populated on every
+      # idempotent re-run, not just the first.
+      tens_of_queries_case.queries.find_each do |query|
+        generator.fetch_docs_for_query(query.query_text).each do |item|
+          docs_lookup["#{item[:query_text]}|#{item[:doc_id]}"] = item[:doc]
+        end
+      end
+    else
+      ratings = generator.generate_ratings
 
       # Create lookup hash for document fields by query_text and doc_id
       generator.docs.each do |item|
@@ -440,14 +451,20 @@ class SampleData < Thor
         lookup_key = "#{query.query_text}|#{rating.doc_id}"
         query_doc_pair.document_fields = docs_lookup[lookup_key].except('id') if docs_lookup[lookup_key]
 
-        query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user)
+        # A re-run would otherwise re-append a judgement for a user who
+        # already has one on this pair, failing its uniqueness validation
+        # and - since it's the same unsaved record - losing the
+        # document_fields assignment above along with it.
+        query_doc_pair.judgements << Judgement.new(rating: rating.rating, user: osc_member_user) unless query_doc_pair.judgements.exists?(user: osc_member_user)
         query_doc_pair.save
       end
 
       book.reload
       book.query_doc_pairs.sample(3).each do |query_doc_pair|
-        query_doc_pair.judgements << Judgement.new(rating: query_doc_pair.judgements.first.rating,
-                                                   user:   realistic_activity_user)
+        unless query_doc_pair.judgements.exists?(user: realistic_activity_user)
+          query_doc_pair.judgements << Judgement.new(rating: query_doc_pair.judgements.first.rating,
+                                                     user:   realistic_activity_user)
+        end
         query_doc_pair.save
       end
     end
