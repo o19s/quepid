@@ -1,16 +1,27 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Toggles a field between masked and plaintext, swapping the eye icon to
-// match. Generic/reusable - not tied to any one form. Masks via a CSS class
-// (-webkit-text-security) rather than type="password": a real password
-// input makes mobile browsers treat it as a login credential, prompting
-// their OS-level password AutoFill/Keychain UI on unrelated secret fields.
+// Masks a field with a dot overlay (toggled via an eye icon) instead of
+// type="password" or -webkit-text-security - both get treated by iOS/
+// WebKit as a secure-entry field, triggering the native Passwords AutoFill
+// sheet even on fields that aren't a login credential. The real input's
+// `.value` is left untouched throughout (only its text color and a sibling
+// overlay change), so anything else reading the field live, or the form
+// submission itself, keeps working unchanged. Generic/reusable - not tied
+// to any one form.
 export default class extends Controller {
-  static targets = ["input", "icon"]
+  static targets = ["wrapper", "input", "overlay", "icon"]
+
+  connect() {
+    this.renderOverlay()
+  }
+
+  renderOverlay() {
+    this.overlayTarget.textContent = "•".repeat(this.inputTarget.value.length)
+  }
 
   toggle() {
-    const showing = this.inputTarget.classList.toggle("masked-field") === false
-    this.iconTarget.classList.toggle("bi-eye", !showing)
-    this.iconTarget.classList.toggle("bi-eye-slash", showing)
+    const nowMasked = this.wrapperTarget.classList.toggle("is-masked")
+    this.iconTarget.classList.toggle("bi-eye", nowMasked)
+    this.iconTarget.classList.toggle("bi-eye-slash", !nowMasked)
   }
 }

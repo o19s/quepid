@@ -148,13 +148,17 @@
           <div class="col-md-8">
             <label for="apiKey" class="form-label">OpenAI API Key</label>
             <div class="input-group" data-controller="password-toggle">
-              <input type="text"
-                     class="form-control masked-field"
-                     id="apiKey"
-                     placeholder="sk-..."
-                     autocomplete="off"
-                     data-mapper-wizard-target="apiKey"
-                     data-password-toggle-target="input">
+              <div class="masked-input-wrapper is-masked" data-password-toggle-target="wrapper">
+                <input type="text"
+                       class="form-control masked-field"
+                       id="apiKey"
+                       placeholder="sk-..."
+                       autocomplete="off"
+                       data-mapper-wizard-target="apiKey"
+                       data-password-toggle-target="input"
+                       data-action="input->password-toggle#renderOverlay">
+                <div class="masked-input-overlay" data-password-toggle-target="overlay" aria-hidden="true"></div>
+              </div>
               <button type="button" class="btn btn-outline-secondary" data-action="password-toggle#toggle" aria-label="Show API key">
                 <i class="bi bi-eye" data-password-toggle-target="icon"></i>
               </button>
