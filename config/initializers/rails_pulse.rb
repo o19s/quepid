@@ -4,7 +4,13 @@ RailsPulse.configure do |config|
   # ====================================================================================================
 
   # Enable or disable Rails Pulse
-  config.enabled = true
+  #
+  # Disabled in test: its own tracking writes go through the same
+  # sql.active_record/ActiveSupport::Notifications channel as the queries
+  # they're recording, and embed the original query text as literal data in
+  # their INSERT statements - any test that counts or matches issued SQL
+  # (N+1 guards, query-count assertions) picks those up as false positives.
+  config.enabled = !Rails.env.test?
 
   # Tracking writes happen on a background thread by default (see `config.async`
   # under ADVANCED). Transactional tests share one database connection across
