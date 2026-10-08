@@ -1,7 +1,6 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsPopover } from "utils/bs_popover"
 import { openDynamicModal } from "utils/dynamic_modal"
-import { renderJsonExplorer } from "utils/json_explorer"
 import { escapeHtml } from "utils/html"
 
 /**
@@ -215,9 +214,7 @@ export default class extends Controller {
       size: "lg",
       windowClass: "doc-detailed-explain-modal"
     })
-    modal.element.querySelector("[data-modal-target='title']").textContent = data.docTitle
-    modal.element.querySelector("[data-modal-target='docId']").textContent = data.docId
-    renderJsonExplorer(modal.element.querySelector("[data-modal-target='json']"), data.explainRawStr, { collapsed: false })
+    modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
   }
 
   openExpandModal(data) {
@@ -225,7 +222,6 @@ export default class extends Controller {
       templateId: "match-explain-expand-modal-template",
       windowClass: "full-screen-modal"
     })
-    modal.element.querySelector("[data-modal-target='score']").textContent = data.docScore
-    modal.element.querySelector("[data-modal-target='explanation']").textContent = data.hasChildren ? data.explainToStr : data.explainAsJson
+    modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
   }
 }

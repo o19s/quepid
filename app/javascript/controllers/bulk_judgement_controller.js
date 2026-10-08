@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 import { deleteJson, postJson } from "api/json"
 import { HttpError } from "api/http_error"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
 const STATUS_VARIANT_CLASSES = [
   "text-muted",
@@ -11,7 +11,7 @@ const STATUS_VARIANT_CLASSES = [
   "text-info"
 ]
 
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   static targets = ["rating", "explanation", "status", "savedIndicator"]
   static values = { saveUrl: String, deleteUrl: String }
 
@@ -25,6 +25,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    super.disconnect()
     this.saveTimeouts.forEach((timeout) => clearTimeout(timeout))
     this.saveTimeouts.clear()
   }
@@ -205,14 +206,14 @@ export default class extends Controller {
 
     switch (status) {
       case "saving":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<span class="spinner-border spinner-border-sm me-1 align-middle" role="status" aria-hidden="true"></span> Saving...',
           variantClass: "text-warning",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       case "saved":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-check-circle"></i> Saved',
           variantClass: "text-success",
           variantClasses: STATUS_VARIANT_CLASSES,
@@ -220,7 +221,7 @@ export default class extends Controller {
         })
         break
       case "reset":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-arrow-counterclockwise"></i> Reset',
           variantClass: "text-info",
           variantClasses: STATUS_VARIANT_CLASSES,
@@ -228,21 +229,21 @@ export default class extends Controller {
         })
         break
       case "error":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-x-circle"></i> Error saving',
           variantClass: "text-danger",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       case "typing":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-pencil"></i> Typing...',
           variantClass: "text-muted",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       default:
-        showStatusMessage(statusElement, { html: "", variantClasses: STATUS_VARIANT_CLASSES })
+        this.showStatusMessage(statusElement, { html: "", variantClasses: STATUS_VARIANT_CLASSES })
     }
   }
 }

@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   setLoading(isLoading) {
     this.submitButtonTarget.disabled = isLoading
     this.submitTextTarget.textContent = isLoading ? "Importing..." : "Import"
@@ -9,7 +9,7 @@ export default class extends Controller {
   }
 
   showAlert(message, type) {
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
+    this.showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
   }
 
   hideAlert() {

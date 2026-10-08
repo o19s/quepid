@@ -1,9 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 import { HttpError } from "api/http_error"
 import { postJson } from "api/json"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   static targets = [
     "searchUrl",
     "testQuery",
@@ -487,7 +487,7 @@ export default class extends Controller {
     if (!this.hasStatusTarget) return
 
     this.statusTarget.style.display = "block"
-    showStatusMessage(this.statusTarget, {
+    this.showStatusMessage(this.statusTarget, {
       message,
       className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'}`,
       // Auto-hide success messages after 5 seconds

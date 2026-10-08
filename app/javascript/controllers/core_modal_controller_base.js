@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 import { getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
 
 /**
@@ -18,7 +18,7 @@ import { getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
  *
  * Subclasses with an "alert" target get `showAlert`/`clearAlert` for free.
  */
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   // Read raw trigger data; callers own parsing and defaults.
   triggerValue(trigger, name) {
     const prefix = this.identifier.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())
@@ -74,12 +74,12 @@ export default class extends Controller {
   showError(message) {
     const target = this.optionalTarget("error")
     if (!target) return
-    showStatusMessage(target, { message: this.actionErrorMessage(message), className: "text-danger" })
+    this.showStatusMessage(target, { message: this.actionErrorMessage(message), className: "text-danger" })
     target.style.whiteSpace = "pre-line"
   }
 
   clearError() {
-    showStatusMessage(this.optionalTarget("error"), { message: "", className: "text-danger d-none" })
+    this.showStatusMessage(this.optionalTarget("error"), { message: "", className: "text-danger d-none" })
   }
 
   open(event) {
@@ -90,11 +90,11 @@ export default class extends Controller {
 
   showAlert(message, variant) {
     if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
+    this.showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
   }
 
   clearAlert() {
     if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
+    this.showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
   }
 }

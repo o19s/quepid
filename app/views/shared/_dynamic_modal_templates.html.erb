@@ -126,29 +126,29 @@
 </template>
 
 <template id="match-explain-debug-modal-template">
-  <div class="doc-detailed-explain">
-    <h3>Debug Explain for <em data-modal-target="title"></em> (id:<span data-modal-target="docId"></span>)</h3>
-    <div class="match-explain-json" data-modal-target="json"></div>
+  <div class="doc-detailed-explain" data-controller="match-explain-modal">
+    <h3>Debug Explain for <em data-match-explain-modal-target="title"></em> (id:<span data-match-explain-modal-target="docId"></span>)</h3>
+    <div class="match-explain-json" data-match-explain-modal-target="json"></div>
   </div>
 </template>
 
 <template id="match-explain-expand-modal-template">
-  <div class="col-sm-12 pt-4 pb-4 px-4">
-    <h1>Relevancy Score: <span data-modal-target="score"></span></h1>
-    <div><pre data-modal-target="explanation"></pre></div>
+  <div class="col-sm-12 pt-4 pb-4 px-4" data-controller="match-explain-modal">
+    <h1>Relevancy Score: <span data-match-explain-modal-target="score"></span></h1>
+    <div><pre data-match-explain-modal-target="explanation"></pre></div>
   </div>
 </template>
 
 <template id="detailed-document-modal-template">
   <div style="margin: 20px" data-controller="detailed-document">
-    <h3>Detailed Document View of doc: <span data-modal-target="docId"></span></h3>
-    <h4 data-modal-target="title"></h4>
-    <div data-modal-target="fields"></div>
+    <h3>Detailed Document View of doc: <span data-detailed-document-target="docId"></span></h3>
+    <h4 data-detailed-document-target="title"></h4>
+    <div data-detailed-document-target="fields"></div>
     <div data-detailed-document-target="allFields" class="row detaileddoc code detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
-      <pre data-modal-target="allFields"></pre>
+      <pre data-detailed-document-target="rawFields"></pre>
     </div>
-    <button class="btn btn-primary detailed-doc-view" data-modal-target="view" data-action="detailed-document#view">View Document</button>
-    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields" data-modal-target="toggleFields" data-detailed-document-target="toggle" data-action="detailed-document#toggleFields">View All Fields</a>
-    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close" data-modal-target="close" data-bs-dismiss="modal">Close</button>
+    <button class="btn btn-primary detailed-doc-view" data-detailed-document-target="viewButton" data-action="detailed-document#view">View Document</button>
+    <a href="#" class="btn btn-outline-secondary detailed-doc-toggle-fields" data-detailed-document-target="toggle" data-action="detailed-document#toggleFields">View All Fields</a>
+    <button type="button" class="btn btn-outline-secondary float-end detailed-doc-close" data-bs-dismiss="modal">Close</button>
   </div>
 </template>

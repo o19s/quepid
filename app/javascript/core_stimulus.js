@@ -18,6 +18,7 @@ import "@hotwired/turbo-rails"
 import "core_runtime"
 import { application } from "controllers/application"
 import DynamicModalController from "controllers/dynamic_modal_controller"
+import MatchExplainModalController from "controllers/match_explain_modal_controller"
 import DetailedDocumentController from "controllers/detailed_document_controller"
 import CaseRenameController from "controllers/case_rename_controller"
 import CaseToolbarController from "controllers/case_toolbar_controller"
@@ -72,6 +73,7 @@ Turbo.session.drive = false
 installModalEscapeFallback()
 
 application.register("dynamic-modal", DynamicModalController)
+application.register("match-explain-modal", MatchExplainModalController)
 application.register("detailed-document", DetailedDocumentController)
 application.register("case-rename", CaseRenameController)
 application.register("case-toolbar", CaseToolbarController)

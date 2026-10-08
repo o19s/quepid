@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
+
+const owner = new (withStatusMessages(class {}))()
+const showStatusMessage = (...args) => owner.showStatusMessage(...args)
 
 describe("status_message", () => {
   it("does nothing when the element is missing", () => {
@@ -121,4 +124,19 @@ describe("status_message", () => {
     expect(el.textContent).toBe("Saved")
     vi.useRealTimers()
   })
+  it("releases timers on disconnect without changing rendered content", () => {
+    vi.useFakeTimers()
+    const controller = new (withStatusMessages(class {}))()
+    const el = document.createElement("span")
+    controller.showStatusMessage(el, { message: "Saved", autoHideMs: 2000 })
+    controller.disconnect()
+    expect(vi.getTimerCount()).toBe(0)
+    vi.advanceTimersByTime(2000)
+    expect(el.textContent).toBe("Saved")
+    controller.showStatusMessage(el, { message: "Reconnected", autoHideMs: 2000 })
+    vi.advanceTimersByTime(2000)
+    expect(el.textContent).toBe("")
+    vi.useRealTimers()
+  })
+
 })

@@ -1,11 +1,11 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { getOrCreateBsModal } from "utils/bs_modal"
-import { submitDestructiveForm } from "utils/destructive_form"
 import ConfirmDeleteDialogController from "controllers/confirm_delete_dialog_controller"
 
-vi.mock("utils/destructive_form", () => ({ submitDestructiveForm: vi.fn() }))
 vi.mock("utils/bs_modal", () => ({ getOrCreateBsModal: vi.fn() }))
+
+const submitDestructiveForm = vi.spyOn(ConfirmDeleteDialogController.prototype, "submitDestructiveForm").mockImplementation(() => {})
 
 const request = { url: "/cases/5", method: "patch", message: "Archive this case?" }
 function buildController() {

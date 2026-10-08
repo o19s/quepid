@@ -20,7 +20,19 @@ vi.mock("utils/json_explorer", () => ({
 
 import { openDynamicModal } from "utils/dynamic_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
-import { openDetailedDocumentModal, sanitizeDocumentHtml } from "utils/detailed_document_modal"
+import DetailedDocumentController from "controllers/detailed_document_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
+import { loadDynamicModalTemplate, controllerTargets } from "../support/view_template"
+import { openDetailedDocumentModal as openModal, sanitizeDocumentHtml } from "utils/detailed_document_modal"
+
+function openDetailedDocumentModal(options) {
+  const result = openModal(options)
+  const element = result.element.querySelector("[data-controller='detailed-document']")
+  const targets = controllerTargets(element, DetailedDocumentController, "detailed-document")
+  const controller = buildControllerFixture(DetailedDocumentController, { element, targets })
+  controller.connect()
+  return result
+}
 
 describe("detailed document modal", () => {
   afterEach(() => document.getElementById("detailed-document-modal-template")?.remove())
@@ -29,9 +41,7 @@ describe("detailed document modal", () => {
     modal.element.innerHTML = ""
     modal.dispose.mockClear()
     vi.clearAllMocks()
-    const template = document.createElement("template")
-    template.id = "detailed-document-modal-template"
-    template.innerHTML = `<div data-controller="detailed-document"><span data-modal-target="docId"></span><h4 data-modal-target="title"></h4><div data-modal-target="fields"></div><div class="detailed-doc-all-fields" style="display: none"><pre data-modal-target="allFields"></pre></div><button data-modal-target="view" class="detailed-doc-view"></button><a href="#" data-modal-target="toggleFields" class="detailed-doc-toggle-fields">View All Fields</a><button data-modal-target="close" class="detailed-doc-close">Close</button></div>`
+    const template = loadDynamicModalTemplate("detailed-document-modal-template")
     document.body.appendChild(template)
   })
 
@@ -52,8 +62,8 @@ describe("detailed document modal", () => {
     })
 
     expect(openDynamicModal.mock.calls[0][0].templateId).toBe("detailed-document-modal-template")
-    expect(modal.element.querySelector("[data-modal-target='title']").textContent).toBe("<unsafe>")
-    expect(modal.element.querySelector("[data-modal-target='allFields']").textContent).toContain(
+    expect(modal.element.querySelector("[data-detailed-document-target='title']").textContent).toBe("<unsafe>")
+    expect(modal.element.querySelector("[data-detailed-document-target='rawFields']").textContent).toContain(
       "<raw>"
     )
     expect(renderJsonExplorer).toHaveBeenCalledWith(
@@ -121,7 +131,7 @@ describe("detailed document modal", () => {
       }
     })
 
-    const field = modal.element.querySelector("[data-modal-target='fields'] .col-md-8")
+    const field = modal.element.querySelector("[data-detailed-document-target='fields'] .col-md-8")
 
     expect(field.innerHTML).toContain("<section>First</section>")
     expect(field.innerHTML).toContain("<section>Second</section>")

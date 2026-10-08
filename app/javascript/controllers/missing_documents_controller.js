@@ -4,9 +4,9 @@ import { snapshotDocument } from "stores/query_documents_store"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import { isEsLikeEngine, searchEngineLabel } from "utils/search_engines"
 import { fromTextArea } from "modules/editor"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported", "solrHelp", "previewHelp"]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
@@ -41,6 +41,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    super.disconnect()
     this.disconnected = true
     this.lifecycle = null
     this.busy = false
@@ -109,7 +110,7 @@ export default class extends Controller {
       if (this.disconnected || lifecycle !== this.lifecycle) return false
       console.error("missing-documents: operation failed", error)
       const message = document.createElement("div")
-      showStatusMessage(message, {
+      this.showStatusMessage(message, {
         message: `Unable to ${action}. Please try again.`,
         className: "alert alert-danger"
       })

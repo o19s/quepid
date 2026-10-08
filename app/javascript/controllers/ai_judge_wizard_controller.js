@@ -1,10 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
 import { getJson, postJson } from "api/json"
-import { showStatusMessage } from "utils/status_message"
+import { withStatusMessages } from "controllers/status_message_behavior"
 import { serverMessage } from "utils/error_message"
 
 // Testing uses the active form values; only the Rails Save submission persists.
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation", "unrateable"]
   static values = { sampleUrl: String, testUrl: String, existing: Boolean }
 
@@ -14,6 +14,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    super.disconnect()
     this.abortController.abort()
     this.sampleGeneration = (this.sampleGeneration || 0) + 1
   }
@@ -105,7 +106,7 @@ export default class extends Controller {
 
   showError(error) {
     this.statusTarget.style.display = "block"
-    showStatusMessage(this.statusTarget, {
+    this.showStatusMessage(this.statusTarget, {
       message: `Error: ${serverMessage(error, error.message)}`,
       className: "alert alert-danger"
     })

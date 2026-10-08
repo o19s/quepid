@@ -1,5 +1,5 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { submitDestructiveForm } from "utils/destructive_form"
+import { withDestructiveForm } from "controllers/destructive_form_behavior"
 import { caseNameFromHeader } from "utils/case_header"
 
 const ACTION_LABELS = {
@@ -20,7 +20,7 @@ const ACTION_METHODS = {
  *
  * The toolbar trigger carries the case id.
  */
-export default class extends CoreModalControllerBase {
+export default class extends withDestructiveForm(CoreModalControllerBase) {
   static targets = [ "title", "optionButton", "description", "submitButton" ]
 
   static values = {
@@ -52,7 +52,7 @@ export default class extends CoreModalControllerBase {
     if (!template) return
 
     const url = template.replaceAll("__CASE_ID__", this.currentCaseId)
-    submitDestructiveForm(url, ACTION_METHODS[this.selectedAction])
+    this.submitDestructiveForm(url, ACTION_METHODS[this.selectedAction])
   }
 
   _urlTemplateFor(action) {

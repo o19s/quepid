@@ -1,5 +1,6 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import MatchExplainModalController from "controllers/match_explain_modal_controller"
 import MatchExplainController from "controllers/match_explain_controller"
 
 const popoverHandle = {
@@ -19,10 +20,23 @@ vi.mock("utils/dynamic_modal", () => ({
   openDynamicModal: vi.fn(({ templateId }) => {
     dynamicModal.element = document.createElement("div")
     if (templateId === "match-explain-debug-modal-template") {
-      dynamicModal.element.innerHTML = '<em data-modal-target="title"></em><span data-modal-target="docId"></span><div data-modal-target="json"></div>'
+      dynamicModal.element.innerHTML = '<em data-match-explain-modal-target="title"></em><span data-match-explain-modal-target="docId"></span><div data-match-explain-modal-target="json"></div>'
     } else {
-      dynamicModal.element.innerHTML = '<span data-modal-target="score"></span><pre data-modal-target="explanation"></pre>'
+      dynamicModal.element.innerHTML = '<span data-match-explain-modal-target="score"></span><pre data-match-explain-modal-target="explanation"></pre>'
     }
+    const root = document.createElement("div")
+    root.dataset.controller = "match-explain-modal"
+    root.append(...dynamicModal.element.childNodes)
+    dynamicModal.element.append(root)
+    Object.defineProperty(root, "matchExplainData", {
+      set(data) {
+        Object.defineProperty(root, "matchExplainData", { value: data, configurable: true })
+        const targets = Object.fromEntries([...root.querySelectorAll("[data-match-explain-modal-target]")].map(el =>
+          [el.dataset.matchExplainModalTarget, el]
+        ))
+        buildControllerFixture(MatchExplainModalController, { element: root, targets }).connect()
+      }, configurable: true
+    })
     return dynamicModal
   })
 }))
@@ -227,8 +241,8 @@ describe("MatchExplainController", () => {
     expect(options.size).toBe("lg")
     expect(options.windowClass).toBe("doc-detailed-explain-modal")
     expect(options.templateId).toBe("match-explain-debug-modal-template")
-    expect(dynamicModal.element.querySelector("[data-modal-target='title']").textContent).toBe("Some Doc")
-    expect(dynamicModal.element.querySelector("[data-modal-target='docId']").textContent).toBe("doc-1")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent).toBe("Some Doc")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent).toBe("doc-1")
 
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer.mock.calls[0][1]).toBe(data.explainRawStr)
@@ -246,8 +260,8 @@ describe("MatchExplainController", () => {
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-expand-modal-template")
-    expect(dynamicModal.element.querySelector("[data-modal-target='score']").textContent).toBe("3.5")
-    expect(dynamicModal.element.querySelector("[data-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='score']").textContent).toBe("3.5")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
   })
 
   it("updates the popover in place (setTitle/setBody) on a data change, without disposing or recreating it", () => {

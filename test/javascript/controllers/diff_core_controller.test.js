@@ -2,14 +2,13 @@ import { viewTemplateTargets } from "../support/view_template"
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCoreController from "controllers/diff_core_controller"
-import { showStatusMessage } from "utils/status_message"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
 
 const { apiFetch } = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
 vi.mock("api/fetch", () => ({ apiFetch }))
-vi.mock("utils/status_message", () => ({
-  showStatusMessage: vi.fn()
-}))
+
+let showStatusMessage
 
 function buildBridge() {
   return {
@@ -88,6 +87,7 @@ describe("DiffCoreController", () => {
   })
 
   beforeEach(() => {
+    showStatusMessage = vi.spyOn(CoreModalControllerBase.prototype, "showStatusMessage").mockImplementation(() => {})
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [] }) })
   })
@@ -314,4 +314,3 @@ describe("DiffCoreController", () => {
     expect(controller.snapshotName({ id: 4, time: "not a date" })).toBe("Snapshot 4")
   })
 })
-

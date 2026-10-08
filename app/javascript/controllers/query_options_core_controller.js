@@ -20,6 +20,7 @@ export default class extends CoreModalControllerBase {
   }
 
   disconnect() {
+    super.disconnect()
     this.openGeneration = (this.openGeneration || 0) + 1
     this.editor?.destroy()
     this.editor = null

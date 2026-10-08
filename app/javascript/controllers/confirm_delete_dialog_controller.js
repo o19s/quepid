@@ -1,9 +1,9 @@
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
-import { submitDestructiveForm } from "utils/destructive_form"
+import { withDestructiveForm } from "controllers/destructive_form_behavior"
 
 // One owner for the shared confirmation modal and its pending request.
-export default class extends Controller {
+export default class extends withDestructiveForm(Controller) {
   static targets = ["message"]
 
   open(request) {
@@ -13,7 +13,7 @@ export default class extends Controller {
       this.request = request
       this.modal.show()
     } else if (window.confirm(request.message)) {
-      submitDestructiveForm(request.url, request.method)
+      this.submitDestructiveForm(request.url, request.method)
     }
   }
 
@@ -22,7 +22,7 @@ export default class extends Controller {
     if (!this.request) return
     const { url, method } = this.request
     this.clear()
-    submitDestructiveForm(url, method)
+    this.submitDestructiveForm(url, method)
     this.modal.hide()
   }
 
@@ -38,6 +38,7 @@ export default class extends Controller {
   }
 
   disconnect() {
+    super.disconnect()
     this.clear()
     const modal = this.modal
     if (!modal) return

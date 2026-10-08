@@ -1,16 +1,23 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
-import { submitDestructiveForm } from "utils/destructive_form"
+import { withDestructiveForm } from "controllers/destructive_form_behavior"
+
+const owner = new (withDestructiveForm(class {}))()
+const submitDestructiveForm = (...args) => owner.submitDestructiveForm(...args)
 
 function setCsrfToken(token) {
   document.head.innerHTML = token ? `<meta name="csrf-token" content="${token}">` : ""
 }
 
 describe("submitDestructiveForm", () => {
+  const originalSubmit = HTMLFormElement.prototype.submit
+
   beforeEach(() => {
     setCsrfToken("test-token")
   })
 
   afterEach(() => {
+    HTMLFormElement.prototype.submit = originalSubmit
+    owner.disconnect()
     document.body.innerHTML = ""
     document.head.innerHTML = ""
   })
@@ -59,4 +66,14 @@ describe("submitDestructiveForm", () => {
     const form = document.body.querySelector("form")
     expect(form.querySelector('input[name="authenticity_token"]')).toBeNull()
   })
+  it("removes only its submitted forms when disconnected", () => {
+    HTMLFormElement.prototype.submit = () => {}
+    const unrelated = document.createElement("form")
+    document.body.append(unrelated)
+    submitDestructiveForm("/cases/5", "delete")
+    owner.disconnect()
+    expect(document.body.querySelectorAll("form")).toHaveLength(1)
+    expect(unrelated.isConnected).toBe(true)
+  })
+
 })

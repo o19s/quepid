@@ -165,7 +165,7 @@ Valid JSON is auto-pretty-printed with 2-space indent. Number of rows must be 1�
 
 **Explanation save:** 1000ms debounce on `saveExplanation`. Skips POST if both rating and explanation empty. Optimistic UI: rating click updates buttons immediately, injects Reset button if missing.
 
-Status rendering goes through `showStatusMessage` (`utils/status_message.js`). **HTTP:** the `api/json` verb helpers, which add CSRF (see [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)).
+Status rendering goes through the controller-owned `showStatusMessage` behavior (`controllers/status_message_behavior.js`). **HTTP:** the `api/json` verb helpers, which add CSRF (see [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions)).
 
 ---
 

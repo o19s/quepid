@@ -55,37 +55,6 @@ mapper migration. Define a compatible input contract and verify both stored
 string-based and object-based mappers; an adaptive mapper workaround does not
 resolve existing saved mapper failures.
 
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — Unblock OAuth verification (1.3)
-
-Provide working Google OAuth configuration and host resolution for Keycloak,
-then replay sign-in through both providers. Current Google credentials are
-placeholders; Keycloak sign-in fails with no host `keycloak` entry. Host-level
-configuration changes require separate authorization. This is an environment
-blocker, not an established migration defect.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — Unblock mapper AI generation (7.8)
-
-Provide an authorized usable OpenAI key through the wizard, then generate and
-test both mapper functions on both instances. Cover no-code responses and
-truncation warnings, plus the AI refinement deferred in 7.9. Blank/invalid-key
-errors passed; successful generation remains unverified.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C2 — Complete live search-provider coverage (17.9)
-
-Provide authorized working OpenSearch, Vectara and Elastic Cloud test endpoints
-and credentials, then compare live searches, mapped fields, persisted ratings
-and authentication/error behavior on both instances. Solr, Search API and
-Elasticsearch passed the recorded live sample; Qdrant is covered in 7.12.
-Dummy endpoint creation does not establish live provider parity.
-
-### [MIGRATION-FOLLOWUP] P2 I0 C3 — Complete deployment verification (17.10)
-
-Prepare a disposable non-root deployment and configured mail/provider services;
-verify non-root URLs, mail/invitation links, encrypted-provider workflows and
-realtime/job execution. The recorded production runtime/SSL sample passed, but
-worker startup alone did not verify these remaining workflows. Keep the existing
-development servers and data intact.
-
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
 ### [PREEXISTING] P1 I0 C3 — Scorer sandboxing - LATER
@@ -99,7 +68,7 @@ aligned when adding isolation.
 
 ---
 
-## [MIGRATION-FOLLOWUP] Angular remnants, Stimulus/Turbo retrofit, and frontend DRY
+## [MIGRATION-FOLLOWUP] Stimulus/Turbo retrofit, and frontend DRY
 
 AngularJS removal is complete; remaining work concerns ownership, lifecycle and
 optional simplification. Ordinary management/admin pages now enable Turbo Drive
@@ -112,39 +81,6 @@ lifecycle or per-surface behavior interchangeable.
 Follow [DEVELOPER_GUIDE.md — Turbo navigation](../../DEVELOPER_GUIDE.md#turbo-navigation)
 and [Turbo on the case page](../../DEVELOPER_GUIDE.md#turbo-on-the-case-page)
 for the current contracts. Actual Drive verification and deferred coverage are in manual scenario 15.8.
-
-### [MIGRATION-FOLLOWUP] P3 I0 C2 — Rename case-only `_core` controllers and modal partials
-
-Inventory `controllers/*_core_controller.js`
-and `shared/_*_core_modal.html.erb` and remove suffixes that only mean "lives on
-the case page". Keep distinct names for features with different per-surface
-behavior, notably `share-case` and `share-case-core`. Asset-loader changes are
-not a prerequisite. Rename references together across registration, ERB actions,
-outlets, tests, docs and manual-tracker paths; avoid standalone cosmetic churn.
-
-**Acceptance:** search for stale references, pass affected unit/rendering tests,
-lint and builds, and browser-smoke the renamed controllers' connections and
-outlets. Record sampled/deferred coverage and retain inspected screenshots for
-the sampled interactions.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C2 — Move remaining `utils/` DOM lifecycles into controllers (retrofit Track E)
-
-`dynamic_modal.js`, `detailed_document_modal.js`, `destructive_form.js` and
-`status_message.js` still manage DOM state or events outside Stimulus. Static
-modal shells already live in `shared/_dynamic_modal_templates.html.erb`; preserve
-that Rails-owned markup and consider moving the remaining lifecycle/behavior
-into controllers or controller mixins. Management caching now has a
-`page-cache` controller; reuse its existing boundary where relevant. The case
-workspace still navigates as a full page, so its destructive-form helper is not
-a reason to add global Turbo opt-outs or convert every submission. Leave thin Bootstrap
-wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
-
-`match_explain` still populates cloned modal templates through
-`querySelector("[data-modal-target='…']")`. These attributes are plain
-selectors, not Stimulus targets. Give modal content an owning controller before
-converting its selectors to targets and its interactions to `data-action`.
-Keep direct listeners for Bootstrap popover content relocated outside the
-controller's markup, as described in [the Stimulus conventions](../../DEVELOPER_GUIDE.md#stimulus-conventions).
 
 ### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists
 
@@ -190,41 +126,6 @@ Home announcement consumption, book-view tracking, judging session counters,
 authentication callbacks and mounted engines also need destination-specific
 prefetch decisions. Do not change those deliberate-navigation contracts merely
 to enable hover requests.
-
-## [PREEXISTING] P1 — Product bugs
-
-
-### [PREEXISTING] P1 I0 C3 — Wizard TLS reload exposes basic-auth credentials
-
-**Location:** `app/javascript/controllers/wizard_controller.js`, `renderTls`
-
-The protocol-switch link places `basicAuthCredential` in the query string. A
-credential entered during wizard setup can therefore leak through browser
-history, server/proxy logs, referrers, and the subsequent `CoreController`
-request. This behavior predates AngularJS removal; it was carried forward while
-restoring the TLS handoff.
-
-**Fix direction:** Preserve pending wizard state server-side or behind a
-short-lived opaque token, and never put the credential itself in a URL.
-
----
-
-### [PREEXISTING] P1 I0 C3 — Wizard TLS reload loses endpoint-specific settings
-
-**Location:** `app/javascript/controllers/wizard_controller.js`, `applyReloadParams`
-
-The protocol-switch reload reapplies engine defaults and restores only the URL,
-case name, API method, and basic-auth credential. Custom query parameters,
-headers, mapper code, test query, field selections, and intentionally empty
-values can be replaced or lost. This was also present in the Angular wizard and
-is not a deangularization regression.
-
-**Fix direction:** Preserve the complete pending endpoint configuration across
-the reload, including explicit empty values, without reapplying defaults over
-user-entered settings.
-
----
-
 
 ## [PREEXISTING] P0 — Security
 
@@ -1192,3 +1093,15 @@ Follow [AGENTS.md](../../AGENTS.md) for behavior-preserving scope and [Completio
 This review supplies priorities, not a migration acceptance plan or proof that outstanding defects are fixed. Concrete defects and their provenance remain in the preceding items; the [best-practices review](#migration-followup-stimulus--hotwire--rails-best-practices-review) retains its detailed findings and verification evidence.
 
 Start with CI parity and documentation drift; pursue structural changes where they reduce an observed maintenance cost. A wholesale runtime rewrite, controller-wide refactor, forced importmap/esbuild consolidation or deletion of migration evidence is outside these recommendations.
+
+## Not doing
+
+Deferred work. Delete an entry when it is resolved or move it back to the active backlog when prioritized.
+
+### [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
+
+The `http`↔`https` switch is a cross-origin navigation, so browser storage and `Secure` session cookies cannot provide a direct handoff. A short-lived, single-use opaque token could retrieve server-side pending state without sharing those cookies, keeping the credential itself out of browser history and URL logs. Redemption over plaintext `http` would still carry transport risk. This mitigation is deferred, not technically impossible.
+
+### [PREEXISTING] Wizard TLS reload loses endpoint-specific settings
+
+The same server-side handoff could preserve the full pending endpoint configuration (headers, mapper code, field selections), including explicit empty values, without reapplying engine defaults over it. This work is deferred; currently users re-enter those settings after the switch.

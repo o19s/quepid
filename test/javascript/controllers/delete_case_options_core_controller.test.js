@@ -1,12 +1,10 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { submitDestructiveForm } from "utils/destructive_form"
 import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
 import { mountCaseHeader } from "../support/case_header_dom"
 
-vi.mock("utils/destructive_form", () => ({
-  submitDestructiveForm: vi.fn()
-}))
+
+const submitDestructiveForm = vi.spyOn(DeleteCaseOptionsCoreController.prototype, "submitDestructiveForm").mockImplementation(() => {})
 
 function buildOptionButton(action) {
   const btn = document.createElement("button")
@@ -58,7 +56,7 @@ describe("DeleteCaseOptionsCoreController", () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    submitDestructiveForm.mockClear()
   })
 
   it("open titles itself from the live case header and disables the submit button until a choice is made", () => {
