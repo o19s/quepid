@@ -129,10 +129,12 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 - [ ] **Steps:**
   1. On an existing book's **Import** tab, confirm the heading identifies the book, Import is active and the Overview/Judge Overview tabs navigate correctly. Upload a JSON payload of additional `query_doc_pairs` (referencing existing `query_doc_pair_id`s, or new `query_text`/`doc_id` pairs to upsert).
-  2. Separately, upload an `all_judgements` payload (using `email` to attribute judgements to a user, and optionally a nested `query_doc_pair` object instead of an id).
-- **Expected:** Pairs/judgements are created or updated once the background job completes.
+  2. Separately, upload the JSON from the same book's `/api/books/:id/judgements` endpoint, using its `judgements` envelope. Also check the legacy `all_judgements` envelope, `email` attribution, and both flat `query_text`/`doc_id` keys and a nested `query_doc_pair` object instead of an id.
+- **Expected:** Pairs/judgements are created or updated once the background job completes. Known judges upsert their own judgements; anonymous judgements remain separate.
 - **Edge cases:**
   - [ ] Same JSON-validity edge cases as 10.7 apply here too. Submit each upload form without a file: both must show "You must select the file to be imported first." and queue no import.
+  - [ ] Upload an empty judgement array, only foreign/missing pair ids, or incomplete flat query/document keys — expect "No judgements could be imported", no queued import and no success notice. Ids must belong to this book.
+  - [ ] Upload only an explanation for an existing identified judge/pair — expect the explanation to update without changing its rating. Upload an invalid nested pair followed by a valid judgement — expect the valid row to import and the background job/attachment to clear, without saving the invalid pair.
   - [ ] Anonymous (`user_email`-less) judgements stay separate and unattributed on both upload forms — see 10.7's anonymous-judgement edge case.
 
 ### 10.9 Export a book

@@ -42,6 +42,8 @@ class BookImporter
     @book.scale = params_to_use[:scale] if params_to_use.key?(:scale)
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
 
+    validate_standalone_judgements
+
     emails_of_judges(params_to_use).each do |email|
       unless User.by_email(email).exists?
         if true == options[:force_create_users]
@@ -60,7 +62,6 @@ class BookImporter
     JudgementSync.batch { import_data }
   end
 
-  # rubocop:disable-next Naming/PredicateMethod -- Imports data and persists it.
   def import_data
     params_to_use = @data_to_process
 
@@ -74,7 +75,8 @@ class BookImporter
     @book.save
 
     import_query_doc_pairs(params_to_use[:query_doc_pairs]) if params_to_use[:query_doc_pairs]
-    import_all_judgements(params_to_use[:all_judgements]) if params_to_use[:all_judgements]
+    imported = import_all_judgements(standalone_judgements) if standalone_judgements
+    return no_judgements_imported if standalone_judgements && imported.zero? && params_to_use[:query_doc_pairs].blank?
 
     true
   end
@@ -111,7 +113,7 @@ class BookImporter
       end
     end
 
-    params_to_use[:all_judgements]&.each do |judgement|
+    standalone_judgements&.each do |judgement|
       email = judgement[:user_email] || judgement[:email]
       emails << email if email.present?
     end
@@ -138,43 +140,67 @@ class BookImporter
     end
   end
 
+  # Keep the complete-book envelope compatible; the judgements endpoint uses judgements.
+  def standalone_judgements
+    @data_to_process[:all_judgements] || @data_to_process[:judgements]
+  end
+
+  def validate_standalone_judgements
+    return unless standalone_judgements && @data_to_process[:query_doc_pairs].blank?
+
+    usable = standalone_judgements.any? do |attrs|
+      qdp = judgement_query_doc_pair(attrs)
+      next false unless qdp&.valid?
+
+      user = find_judgement_user(attrs)
+      judgement = Judgement.find_by(query_doc_pair: qdp, user: user) if qdp.persisted? && user
+      judgement ||= Judgement.new(query_doc_pair: qdp, user: user)
+      judgement.assign_attributes(attrs.slice(*ASSIGNABLE_JUDGEMENT_KEYS))
+      judgement.valid?
+    end
+    no_judgements_imported unless usable
+  end
+
+  # rubocop:disable-next Naming/PredicateMethod -- Adds an import error.
+  def no_judgements_imported
+    @book.errors.add(:base, 'No judgements could be imported. Provide a query_doc_pair_id belonging to this book, or both query_text and doc_id, and a valid judgement.')
+    false
+  end
+
   def import_all_judgements judgements
-    judgements.each do |judgement|
-      qdp = if judgement[:query_doc_pair].present?
-              upsert_nested_query_doc_pair(judgement[:query_doc_pair])
-            else
-              find_query_doc_pair(judgement)
-            end
-
-      next unless qdp
-
-      import_judgement(qdp, judgement)
+    judgements.count do |attrs|
+      qdp = judgement_query_doc_pair(attrs)
+      qdp&.save && import_judgement(qdp, attrs)
     end
   end
 
-  def upsert_nested_query_doc_pair attrs
-    qdp = find_or_initialize_query_doc_pair(attrs)
-    qdp.assign_attributes(attrs.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
-    qdp.save
-    qdp
+  def judgement_query_doc_pair attrs
+    # Keep validation candidates and rejected rows out of book.save's autosave.
+    scope = QueryDocPair.where(book: @book)
+    pair_attrs = attrs[:query_doc_pair].presence
+    if pair_attrs
+      qdp = find_or_initialize_query_doc_pair(pair_attrs, scope: scope)
+      qdp.assign_attributes(pair_attrs.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+      qdp
+    elsif attrs[:query_doc_pair_id].present?
+      scope.find_by(id: attrs[:query_doc_pair_id])
+    elsif attrs[:query_text].present? && attrs[:doc_id].present?
+      find_or_initialize_query_doc_pair(attrs, scope: scope)
+    end
   end
 
-  def find_query_doc_pair attrs
-    return nil if attrs[:query_doc_pair_id].blank?
-
-    @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
-  end
-
-  def find_or_initialize_query_doc_pair attrs
+  def find_or_initialize_query_doc_pair attrs, scope: @book.query_doc_pairs
     if attrs[:query_doc_pair_id].present?
-      existing = @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
+      existing = scope.find_by(id: attrs[:query_doc_pair_id])
       return existing if existing
     end
 
     # No id given, or it doesn't belong to this book (e.g. a stale/foreign id) - fall back to
     # matching by query_text/doc_id rather than forcing that id onto a new record, which would
     # collide with an unrelated row's primary key.
-    @book.find_or_initialize_query_doc_pair(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+    pair = scope.find_or_initialize_by(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+    pair.book = @book if pair.new_record?
+    pair
   end
 
   def import_judgement query_doc_pair, attrs

@@ -4,6 +4,8 @@
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
+Items requiring unresolved team decisions are in [todo-team.md](todo-team.md).
+
 Every actionable item carries a provenance marker: `[MIGRATION]` means it was
 introduced by or is required to complete AngularJS removal, `[MIGRATION-FOLLOWUP]`
 means it is related cleanup but not necessarily a migration regression, and
@@ -93,15 +95,6 @@ development servers and data intact.
 
 ## [MIGRATION-FOLLOWUP] Frontend cleanup after Angular removal
 
-### [PREEXISTING] P0 I1 C3 — Scorer sandboxing - LATER
-
-Client scorer code still executes through `new Function()`; evaluate a Web
-Worker or equivalent browser isolation. The batch path already uses the shared
-scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
-aligned when adding isolation.
-
----
-
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Replace the tether-shepherd tour globals
 
 `core_vendor.js` puts `Tether` and `Shepherd` on `window` because `tour.js`
@@ -152,72 +145,8 @@ workspace still navigates as a full page, so its destructive-form helper is not
 a reason to add global Turbo opt-outs or convert every submission. Leave thin Bootstrap
 wrappers (`bs_modal`, `bs_tooltip`, `bs_popover`) as helpers. Opportunistic.
 
-### [MIGRATION-FOLLOWUP] P3 I2 C3 — Server-rendered modal lists (retrofit Track D, blocked) - BLOCKED
-
-The broader proposed sequence for replacing the remaining SPA responsibilities
-is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
-with the endpoint-design decision below and preserves browser search and instant
-scoring while moving persisted UI and navigation into Rails/Hotwire.
-
-`pick_scorer_core` (scorer lists), `share_case_core` (team list), `diff_core`
-(snapshot selects), and possibly `judgements_core` and `export_case_core`
-build lists from JSON in JS. They could become partials loaded through lazy
-`<turbo-frame src=...>`, like `dropdown/cases_core.html.erb`, and modal form
-posts could be answered with Turbo Streams. The annotations list
-(`annotations_controller.js`) is the cleanest candidate: it is entirely
-server-owned, so a lazy frame plus Turbo Stream answers to create, edit and
-delete would remove its client-side rendering (it would still dispatch
-`annotations:changed` for `qgraph`).
-
-**Blocked by the endpoint-design decision:** parallel HTML endpoints for the
-case page are not wanted for now. Enabling Drive on management pages does not
-lift that constraint; case Frames/Streams already work with Drive disabled. If
-that changes, pilot `pick_scorer_core` or annotations and prove selection and the
-edit modal work inside a lazy frame first.
-
----
-
-### [PREEXISTING] P2 I0 C3 — Separate legacy entry effects before any prefetch enablement
-
-The [GET side-effect audit](../../DEVELOPER_GUIDE.md#get-side-effect-audit) moved
-Judge Later/logout to POST/DELETE and protects speculative requests. Keep the
-management/admin meta guard and controller rejection. Prefetch remains a
-separate product decision.
-
-Before relaxing either guard, decouple core case creation and URL-supplied
-settings writes from GET, and move mapper wizard state reset to a deliberate
-submission. Preserve the existing shared-link/bootstrap and fresh-wizard
-contracts; the smallest prerequisite is defining their explicit submission UI.
-Home announcement consumption, book-view tracking, judging session counters,
-authentication callbacks and mounted engines also need destination-specific
-prefetch decisions. Do not change those deliberate-navigation contracts merely
-to enable hover requests.
-
-## [PREEXISTING] P0 — Security
-
-### [PREEXISTING] P0 I1 C2 — User API IDOR and cross-account write path
-
-**Location:** `app/controllers/api/v1/users_controller.rb:24-48`, `test/controllers/api/v1/users_controller_test.rb:30-39`
-
-`set_user` looks up any user by email or numeric ID without scoping to `current_user`, and `update` permits `company`, `completed_case_wizard`, and `default_scorer_id`. The existing test codifies one signed-in user fetching another's record. Unless this is an intentional admin directory, it exposes account metadata and allows cross-account changes.
-
-**Fix direction:** Scope ordinary requests to `current_user`. If admin lookup is needed, make it a separate admin-only endpoint with its own serializer and authorization test.
-
----
-
 ## [PREEXISTING] P1 — Product bugs
 
-### [PREEXISTING] P1 I1 C2 — Uploading the judgements export imports nothing and reports success
-
-**Location:** `app/services/book_importer.rb:66`, `app/views/api/v1/judgements/index.json.jbuilder`, `app/views/books/import/edit.html.erb:71`
-
-The Import Judgements panel tells users verbatim: *"The format for importing Judgement data is the same as that for exporting it: `/api/books/:id/judgements`"*. That endpoint emits a top-level **`judgements`** key; `#import` only reads **`all_judgements`**, and nothing normalizes between them (`grep all_judgements app/controllers app/jobs app/services` → importer only). So the advertised round-trip drops every row, `#import` still returns `true`, and the user gets "Data was successfully queued for import."
-
-**Status:** Confirmed by reading; not driven through the UI. Two nearby format mismatches in the same panel, worth fixing together: the export's per-judgement `judgement_id` key isn't a `Judgement` attribute (the `ASSIGNABLE_JUDGEMENT_KEYS` allowlist now drops it), and the panel's promise that *"If you do NOT provide a `query_doc_pair_id` then you must provide `query_text` and `doc_id`"* isn't implemented — `find_query_doc_pair` returns nil for a blank id and `import_all_judgements` then does `next unless qdp`, silently dropping the judgement. Only the nested-`query_doc_pair`-object form actually upserts.
-
-**Fix direction:** Pick one canonical envelope and add a fixture-based export → import round-trip test. Accept `judgements` as an alias for `all_judgements` (or make the export emit `all_judgements`), implement the flat `query_text`/`doc_id` fallback through `find_or_initialize_query_doc_pair`, and either way make a payload that matches zero rows report that instead of flashing success.
-
----
 
 ### [PREEXISTING] P1 I1 C3 — Wizard TLS reload exposes basic-auth credentials
 
@@ -273,16 +202,6 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 ---
 
-### [PREEXISTING] P1 I1 C3 — Secrets exposed through API serializers and admin views
-
-**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`, `app/views/admin/users/index.json.jbuilder:7-9`, `app/views/admin/users/show.html.erb:88-92`
-
-`api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses. Admin user JSON/HTML also render the encrypted password hash.
-
-**Fix direction:** Never serialize credentials or custom secret headers; return a masked/presence-only value and proxy server-side when secrets are needed. Make this unconditional rather than flag-dependent. Remove password hashes from admin views.
-
----
-
 ### [PREEXISTING] P1 I0 C3 — Static Active Record encryption keys committed as production fallbacks
 
 **Location:** `config/application.rb:55-61`
@@ -290,18 +209,6 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 Deployments that omit the env vars use publicly known keys, so encrypted fields are recoverable by anyone with the database.
 
 **Fix direction:** Fail fast in production when keys are absent; keep generated dev/test defaults out of production config; document key rotation and backup.
-
----
-
-### [PREEXISTING] P1 I1 C3 — Proxy CSRF bypass and permissive CORS / Action Cable origins
-
-**Location:** `app/controllers/proxy_controller.rb:5-8`, `config/initializers/cors.rb:6-17`, `config/environments/production.rb:41-50`
-
-`fetch` skips CSRF verification (`skip_before_action :verify_authenticity_token`) for GET and POST while requiring login, so cross-site POSTs from an authenticated session remain possible. Production also allows every CORS origin, disables Action Cable request forgery protection, and accepts every Action Cable origin.
-
-**Fix direction:** Restrict CORS to configured origins with credentials off unless needed; derive Action Cable allowed origins from the deployment host list; give the proxy a CSRF token or a deliberately token-authenticated route.
-
-**Also open:** no rate limiting on proxy fetch (production concern when `proxy_requests: true`).
 
 ---
 
@@ -361,15 +268,7 @@ Deployments that omit the env vars use publicly known keys, so encrypted fields 
 
 **Fix direction:** Add an `inclusion` validation on `Judgement` for required ratings (preserve `rating_not_required?` for unrateable/judge-later rows), scoped to `query_doc_pair.book.scale`, conditioned `unless: -> { query_doc_pair&.book&.support_implicit_judgements? }` (safe-navigate — `query_doc_pair` is a required `belongs_to` but its own presence validation runs independently, so a blank `query_doc_pair` must not blow up this lambda with a `NoMethodError`) so the two legitimate continuous-rating paths above stay unaffected. Change `JudgementFromRatingJob` to `save` + handle a validation failure instead of `save!` (a case rating can legitimately be off-scale for an explicit-only book). Retire the job-local check in `run_judge_judy_job.rb` in favor of the model validation (catch the failure, call `mark_unrateable`).
 
-Also audit coercion and aggregation across rating writers (former DRY #15).
-`BooksController#combine` and `RatingsManager` round unless the book supports
-implicit judgements; bulk judging, the judgements API, `JudgementFromRatingJob`
-and `LlmService` do not all apply that rule. `combine` uses a pairwise mean,
-while `RatingsManager#calculate_rating_from_judgements` uses a different
-aggregation rule. Decide intended semantics before centralizing coercion in
-`Judgement`; check bulk writers that bypass callbacks and preserve legitimate
-continuous ratings. Changing rounding or aggregation changes stored ratings
-and scores, so keep it separate from behavior-preserving cleanup.
+The separate coercion/aggregation decision is in [todo-team.md](todo-team.md#preexisting-p2-i2-c3--judgement-coercion-and-aggregation-semantics).
 
 The explicit `unrateable`/`judge_later` resets in `BulkJudgeController#save`
 are redundant: `Judgement#rating=` already clears both for a non-nil rating.
@@ -377,43 +276,6 @@ Removing just those resets is a separate small no-op cleanup.
 
 ---
 
-### [PREEXISTING] P2 I1 C3 — `BooksController#combine` collapses anonymous judgements into one averaged row
-
-**Location:** `app/controllers/books_controller.rb:275` — `combine`
-
-The merge loop upserts each source judgement with `query_doc_pair.judgements.find_or_initialize_by(user: j.user)`. `Judgement` deliberately permits several nil-user rows per pair (`validates :user_id, uniqueness: { scope: :query_doc_pair_id }, unless: -> { user_id.nil? }`), so *every* anonymous judgement in the source book matches the same target row. N anonymous judgements collapse to 1 — and because the same loop averages (`(judgement.rating + j.rating) / 2`), the surviving rating is an order-dependent running mean, not a true average.
-
-**Reproduced** by running the verbatim inner loop against the test DB (a script, not a Playwright pass): a source pair carrying anonymous `[1.0, 3.0, 3.0]` produced **one** target row rating `2.5`, where the true mean is 2.33.
-
-**Cause:** Same root cause as the import bug fixed in `BookImporter#import_judgement` on 2026-09-10 — `find_or_initialize_by(user: nil)` treats "no judge" as an identity.
-
-**Fix direction:** Needs a product call first: should anonymous judgements copy across as separate rows (mirroring the importer, no averaging), or keep collapsing into one averaged row? If separate, skip the find when `j.user.nil?` and `build` unconditionally. Note the averaging is order-dependent even for identified users once you merge 3+ books; the same `combine` line is already documented under the judgement-scale validation item above for a different reason.
-
----
-
-### [PREEXISTING] P2 I1 C3 — Re-importing anonymous judgements is not idempotent, and it moves computed case ratings
-
-**Location:** `app/services/book_importer.rb` — `import_judgement`
-
-An anonymous judgement has no identity to upsert on, so as of the 2026-09-10 fix each import `build`s a new row (the alternative — `find_or_initialize_by(user: nil)` — collapsed all of them into one, which was worse). The accepted cost is documented in the code and in `docs/manual-testing/10-books-management.md`. What makes it more than cosmetic: `RatingsManager#calculate_rating_from_judgements` averages 1-2 judgements but takes the **min of the top 3** at 3 or more, so duplication can move a rating a user never re-judged — `[3.0, 0.0]` → 1.5 becomes `[3.0, 3.0, 0.0]` → 0.0. Pinned by `test/services/book_importer_test.rb`'s "re-importing anonymous judgements duplicates them and moves the computed case rating".
-
-**Reached by** the ordinary export → re-import path, since `_judgements.json.jbuilder` emits `user_email` only `if judgement.user`, so exported anonymous rows come back identity-less; also by a Mission Control retry of a failed `ImportBookJob` (no job-local `retry_on`; `DeferredPayload.consume` retains the upload on failure and purges it only after the import block succeeds), and plausibly by a double-submitted import form.
-
-**Fix direction:** Needs a product call, same as the `combine` entry above. Option: treat a payload's `judgements` array as authoritative for a pair's *anonymous* set — `query_doc_pair.judgements.where(user: nil).delete_all` before building the incoming user-less ones — which keeps upsert semantics for identified judges and makes repeated imports converge. Wrong answer if a book legitimately accumulates anonymous judgements across several import files.
-
----
-
-### [PREEXISTING] P2 I1 C2 — `Api::V1::JudgementsController#create` keys its lookup off `:user` but assigns `:user_id`
-
-**Location:** `app/controllers/api/v1/judgements_controller.rb:80`
-
-`find_or_create_by(query_doc_pair_id: ..., user_id: judgement_params[:user])` looks up on `:user`, while eight lines later the judge is assigned from `judgement_params[:user_id]`. The lookup therefore runs with `user_id: nil`, which can match an existing *anonymous* judgement on that pair and then re-attribute it to the posting user: a silent overwrite of someone else's rating instead of a new row.
-
-**Status:** Confirmed by reading `extract_judgement_params` — `:user` is **not** in its permit list (`:rating, :unrateable, :judge_later, :query_doc_pair_id, :user_id, :explanation`), so `judgement_params[:user]` is always nil and the lookup key is *always* `nil`, not just when a caller omits it. Consequences in order: the endpoint never attributes a judgement to anyone unless the caller passes `user_id`; when a caller does pass it, the request adopts and re-attributes an existing anonymous row; two API clients judging the same pair fight over one row. Deferrable because nothing in Quepid's own frontend calls it (checked current `app/javascript` callers) — this is external API surface only. Note the existing controller test asserts only a `judgements.count` delta, so it passes either way. Same bug family as the `BookImporter` nil-user work of 2026-09-10.
-
-**Fix direction:** Decide which key is canonical, use it in both places, and guard the lookup so a nil judge cannot adopt an existing anonymous row.
-
----
 
 ### [PREEXISTING] P2 I0 C2 — Cloning a case doesn't keep manual query order
 
@@ -481,14 +343,6 @@ the original payload), and add tests for leading/trailing whitespace.
 
 ---
 
-### [PREEXISTING] P3 I1 C3 — BookImporter: unsaved records aren't reported back to the user
-
-**Location:** `app/services/book_importer.rb` — `import_query_doc_pairs`, `import_all_judgements`, `import_judgement`, `upsert_nested_query_doc_pair`
-
-None of these check the return value of `qdp.save` / `judgement.save`. If a row fails validation during an "add more data" import (`Books::ImportController#update`), it's silently dropped — `ImportBookJob` still clears `book.import_job` and reports success, with no indication some rows didn't make it in. Pre-existing gap (the original code didn't check `.create`'s success either), just calling it out now that this path is being hardened for repeated/production re-imports. Fixing it well means deciding how partial failures should surface to the user (job status field? notification?) — a small design call, not a drive-by fix.
-
----
-
 ### [PREEXISTING] P3 I1 C2 — BookImporter: judge identifiers `validate` doesn't check import silently as anonymous
 
 **Location:** `app/services/book_importer.rb` — `find_judgement_user`, `validate`, `emails_of_judges`
@@ -501,25 +355,6 @@ None of these check the return value of `qdp.save` / `judgement.save`. If a row 
 Not a regression — before the 2026-09-10 fix these were silently attributed to whichever nil-email AI-judge user the database returned first, which was worse — but all the identifier paths should fail the same way.
 
 **Fix direction:** Have `emails_of_judges` read `user_email || email` in both branches, and have the `validate` pass collect `user_id`s alongside emails so an id that doesn't resolve is treated like an unknown email rather than degrading to anonymous in silence.
-
----
-
-## [PREEXISTING] P2 — Background jobs
-
-### [PREEXISTING] P2 I2 C3 — Import/populate jobs leave state and idempotency to best effort
-
-**Location:** `app/jobs/import_book_job.rb:7-21` (and similar populate jobs)
-
-Jobs set status strings before working and clear them only on success, so a failure can leave a book permanently busy and leave uploaded blobs in place. Several import paths use `find_or_create_by` plus later updates, vulnerable to duplicate work from retries or concurrent requests. Related to the anonymous-judgement re-import entry above.
-
-**Fix direction:** `ensure`/failure transitions for status and blob cleanup; deliberate retry/discard policy; idempotency via unique constraints or an explicit import identity. Test a failed job followed by retry, and a duplicate submission.
-
-The shared lifecycle scope also includes `ExportBookJob` and
-`Book#queue_job`: queueing sets “queued”, each job sets “started”, and each
-clears status only on success. Consider one `book.run_job(operation) { … }`
-boundary. Define failed/retry status and blob retention before using `ensure`;
-blindly clearing everything could hide failed work or prevent retries.
-Status cleanup alone does not change scoring inputs.
 
 ---
 
@@ -556,7 +391,7 @@ Candidates for extraction into smaller methods or services:
 - `[PREEXISTING]` P3 I2 C2 — `Api::V1::Snapshots::SearchController`
 - `[PREEXISTING]` P3 I3 C3 — `RatingsImporter`
 - `[PREEXISTING]` P3 I2 C3 — `MapperWizardsController`
-- `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `BooksController` / `HomeController`
+- `[PREEXISTING]` P3 I2 C3 — `TeamsController` / `HomeController`
 
 ---
 
@@ -572,50 +407,6 @@ concern. The team filter currently uses `joins` (Cases), `includes` plus a hash
 A shared concern is appropriate only where accessible/owned scopes, archive
 behavior, duplicate handling, and responses have the same contract. Preserve
 those scopes and boolean semantics during extraction.
-
-### [MIGRATION-FOLLOWUP] P2 I2 C2 — Rated-document lookup duplication
-
-"Fetch the docs this query has rated" has three implementations with different
-strategies:
-
-- `query_runtime.js#refreshRatedDocs`: the `filterToRated` searcher option.
-  `buildSearcherRequest` wraps the ES query in `bool: { should: query, filter }`
-  or adds a Solr `fq`, so the original query still ranks the results.
-- `createTargetedSearchAdapter#resetToRated`: replaces the ES `queryDsl` with
-  the filter outright, strips template args by hand, and uses Solr
-  `explainOther`.
-- The adapter's `paginate` default-list branch: repeats the `resetToRated`
-  engine branches, including the ES template stripping, nearly line for line.
-
-Rating is also written twice: `live_query_commands.js#rateDocument`/`rateAll` go
-through `ratingsStore`, while `adapter.rate`/`rateAll` call the doc's
-`rate`/`rateBulk`.
-
-**Decide first:** should "Show only rated" and the Document Finder's rated list
-rank the same way? Then use one rated-search builder for all three paths.
-
-Sharing the equivalent `resetToRated`/default-list pagination branches can
-preserve behavior. Merging all builders or rating-write paths needs the ranking
-and persistence decisions first.
-
-### [PREEXISTING] P2 I2 C2 — Align client and server scoring inputs and aggregation
-
-The scorer code is shared (MiniRacer runs it on the server), but the code around
-it is not, and the two sides disagree:
-
-| Rule | Case page (JS) | Server (`FetchService`, `JavascriptScorer`) |
-| --- | --- | --- |
-| Best-docs ratings | `parseInt`, so 2.5 becomes 2 (`ratings_store.js#bestDocs`) | `to_f`, kept as float |
-| Case score with nothing scored | `'--'` | `0.0` |
-| `all_rated` | computed | `nil` |
-| NaN query score | shown as blank | stored as 0 |
-| Rounding | none | `smart_round` to 2 places |
-
-Ratings are `float` in the schema, and averaged judgements produce non-integers.
-So a case can score differently in the UI and in a background evaluation.
-
-**Fix:** move input assembly (`bestDocs`) and case aggregation into the shared
-scorer module so both sides run the same code.
 
 ### [PREEXISTING] P2 I1 C2 — Server search request building duplicates and drifts
 

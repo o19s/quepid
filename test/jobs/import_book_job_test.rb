@@ -57,6 +57,18 @@ class ImportBookJobTest < ActiveJob::TestCase
       assert_not book.import_file.attached?
     end
 
+    test 'keeps the payload and import status when no judgements are saved' do
+      attach_import_file book, { judgements: [ { query_doc_pair_id: 999_999, rating: 1 } ] }
+
+      error = assert_raises ActiveRecord::RecordInvalid do
+        ImportBookJob.perform_now user, book
+      end
+
+      assert_includes error.message, 'No judgements could be imported'
+      assert_predicate book.reload.import_file, :attached?
+      assert_not_nil book.import_job
+    end
+
     test 'handles data with no query_doc_pairs without error' do
       test_data = {
         name:  'Book With No Pairs',

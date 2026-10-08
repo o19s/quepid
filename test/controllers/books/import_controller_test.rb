@@ -216,6 +216,86 @@ module Books
       assert_response :not_found
     end
 
+    test 'PATCH accepts judgements with flat query and document keys' do
+      book = Book.create!(name: 'Flat import', owner: user)
+      payload = { judgements: [ { query_text: 'cat', doc_id: '42', rating: 1, user_id: user.id, judgement_id: 123 } ] }
+      assert_enqueued_with job: ImportBookJob do
+        patch books_import_url(book), params: { book: { import_file: upload_for(payload) } }
+      end
+      assert_redirected_to book_path(book)
+      perform_enqueued_jobs
+      judgement = book.judgements.first!
+      assert_equal 'cat', judgement.query_doc_pair.query_text
+      assert_equal '42', judgement.query_doc_pair.doc_id
+      assert_equal user, judgement.user
+      assert_in_delta 1, judgement.rating
+    end
+
+    test 'PATCH updates an existing judges explanation without replacing the rating' do
+      book = Book.create!(name: 'Explanation import', owner: user)
+      pair = book.query_doc_pairs.create!(query_text: 'cat', doc_id: '42')
+      judgement = pair.judgements.create!(user: user, rating: 3, explanation: 'Old explanation')
+      payload = { all_judgements: [ { query_doc_pair_id: pair.id, email: user.email, explanation: 'Updated explanation' } ] }
+
+      assert_enqueued_with job: ImportBookJob do
+        patch books_import_url(book), params: { book: { import_file: upload_for(payload) } }
+      end
+      assert_redirected_to book_path(book)
+      perform_enqueued_jobs
+
+      assert_equal 'Updated explanation', judgement.reload.explanation
+      assert_in_delta 3, judgement.rating
+      assert_equal 1, book.judgements.count
+    end
+
+    test 'PATCH imports valid standalone rows after an invalid nested pair' do
+      book = Book.create!(name: 'Mixed import', owner: user)
+      payload = {
+        all_judgements: [
+          { query_doc_pair: { query_text: 'invalid' }, rating: 1 },
+          { query_doc_pair: { query_text: 'cat', doc_id: '42' }, user_id: user.id, rating: 3 }
+        ],
+      }
+
+      assert_enqueued_with job: ImportBookJob do
+        patch books_import_url(book), params: { book: { import_file: upload_for(payload) } }
+      end
+      assert_redirected_to book_path(book)
+      assert_empty book.query_doc_pairs
+      perform_enqueued_jobs
+
+      assert_equal 1, book.query_doc_pairs.count
+      judgement = book.judgements.first!
+      assert_equal 'cat', judgement.query_doc_pair.query_text
+      assert_equal user, judgement.user
+      assert_in_delta 3, judgement.rating
+      assert_nil book.reload.import_job
+      assert_not book.import_file.attached?
+    end
+
+    test 'PATCH rejects empty and unmatched judgement uploads before queuing' do
+      book = Book.create!(name: 'No matches', owner: user)
+      [ [], [ { query_doc_pair_id: 999_999, rating: 1 } ], [ { query_text: 'cat', rating: 1 } ] ].each do |rows|
+        assert_no_enqueued_jobs only: ImportBookJob do
+          patch books_import_url(book), params: { book: { import_file: upload_for({ judgements: rows }) } }
+        end
+        assert_response :unprocessable_content
+        assert_match(/No judgements could be imported/, response.body)
+        assert_empty book.judgements
+        assert_empty book.query_doc_pairs
+      end
+    end
+
+    test 'PATCH validates judge emails in the judgements alias' do
+      book = Book.create!(name: 'Missing judge', owner: user)
+      payload = { judgements: [ { query_text: 'cat', doc_id: '42', rating: 1, email: 'missing@example.com' } ] }
+      assert_no_enqueued_jobs only: ImportBookJob do
+        patch books_import_url(book), params: { book: { import_file: upload_for(payload) } }
+      end
+      assert_response :unprocessable_content
+      assert_match(/needs to be migrated over first/, response.body)
+    end
+
     private
 
     def upload_for payload

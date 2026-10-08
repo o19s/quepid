@@ -9,7 +9,8 @@ class ImportBookJob < ApplicationJob
 
     DeferredPayload.consume(book.import_file) do |params|
       service = ::BookImporter.new book, user, params, options
-      service.import
+      raise ActiveRecord::RecordInvalid, book unless service.import
+
       book.update!(import_job: nil)
     end
   end

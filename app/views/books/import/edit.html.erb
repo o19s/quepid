@@ -74,7 +74,7 @@
       <code>
         <pre>
           {
-            "all_judgements": [                     // Array containing all judgement entries
+            "judgements": [                     // Array containing all judgement entries
               {
                 "rating": 3.0,                      // Numerical rating score (e.g., on a scale of 1-5)
                 "query_doc_pair_id": 123,           // Unique identifier linking this judgement to a query-document pair
@@ -89,6 +89,7 @@
         </pre>
       </code>    
       
+        The legacy <code>all_judgements</code> envelope is also accepted.
         If you provide a <code>email</code> instead of <code>user_id</code> then that will be used to identify the judge.
         If you do NOT provide a <code>query_doc_pair_id</code> then you must provide <code>query_text</code> and <code>doc_id</code> to be used to upsert the query doc pair.
     </p>
@@ -99,7 +100,7 @@
       <code>
         <pre>
           {
-            "all_judgements": [                     // Array containing all judgement entries
+            "judgements": [                     // Array containing all judgement entries
               {
                 "rating": 3.0,                      // Numerical rating score (e.g., on a scale of 1-5)
                 "query_doc_pair": {

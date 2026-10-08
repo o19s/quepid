@@ -75,14 +75,11 @@ module Api
       # @request_body_example basic judgement [Reference:#/components/examples/BasicJudgement]
       def create
         judgement_params = extract_judgement_params
-        @judgement = @book.judgements.find_or_create_by(
-          query_doc_pair_id: judgement_params[:query_doc_pair_id],
-          user_id:           judgement_params[:user]
-        )
+        user = User.find(judgement_params[:user_id]) if judgement_params[:user_id].present?
+        lookup = { query_doc_pair_id: judgement_params[:query_doc_pair_id], user: user }
+        @judgement = user ? @book.judgements.find_or_initialize_by(lookup) : @book.judgements.build(lookup)
         @judgement.rating = judgement_params[:rating] if judgement_params[:rating].present?
         @judgement.explanation = judgement_params[:explanation] if judgement_params[:explanation].present?
-
-        @judgement.user = User.find(judgement_params[:user_id]) if judgement_params[:user_id].present?
 
         @judgement.mark_unrateable if judgement_params[:unrateable]
 
