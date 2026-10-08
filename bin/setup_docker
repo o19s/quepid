@@ -39,13 +39,13 @@ bin/docker r yarn build
 
 case "${DB_ADAPTER:-mysql2}" in
   mysql2)
-    bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:reset
+    bin/docker r ./wait-for mysql:3306 --timeout=60 -- bin/rake db:drop db:create db:schema:load
     ;;
   postgresql)
-    bin/docker r ./wait-for postgres:5432 --timeout=60 -- bin/rake db:reset
+    bin/docker r ./wait-for postgres:5432 --timeout=60 -- bin/rake db:drop db:create db:schema:load
     ;;
   sqlite3)
-    bin/docker r bin/rake db:reset
+    bin/docker r bin/rake db:drop db:create db:schema:load
     ;;
   *)
     echo "Unsupported DB_ADAPTER: ${DB_ADAPTER}. Choose mysql2, postgresql, or sqlite3." >&2
@@ -53,6 +53,7 @@ case "${DB_ADAPTER:-mysql2}" in
     ;;
 esac
 bin/docker r bin/rake db:migrate
+bin/docker r bin/rake db:seed
 
 echo -e "\n== Removing old logs and tempfiles =="
 bin/docker r rails log:clear tmp:clear
