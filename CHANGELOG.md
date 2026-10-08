@@ -939,7 +939,7 @@ Just to make life harder, the rating interface requires a live connection to you
 
 However that is no longer the case!
 
-![Quepid Human Rater Interface](./docs/rating-card-interface.png)
+![Quepid Human Rater Interface](./docs/images/rating-card-interface.png)
 
 This rating interface features:
  * You can have up to three independent ratings for every query/doc pair, opening the door to interesting measurements of rating quality.
@@ -1389,7 +1389,7 @@ We also did some housecleaning by ripping out some features that hadn't seen ado
 
 * We have simplified our queries that involve cases and users that are part of teams by making the simplifying assumption that all owners of teams are also members, which turns out to be true in practice.   We also have audited our use of `.includes` to load child objects (avoiding the N+1 problem), and used more `.preload` to try and deal with running out of temp space in our database.   https://github.com/o19s/quepid/pull/286 by @epugh.
 
-* Turns out we had a [ERD](docs/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
+* Turns out we had a [ERD](docs/images/erd.png) diagram all along, but it was hidden.  Now you can see it on our [Data Mapping](docs/datamapping.md) page, plus we have how to recreate it documented and integrated.  https://github.com/o19s/quepid/pull/287 by @epugh.
 
 * Remove obscure `quepidIf.js` file that doesn't seem to do anything.  https://github.com/o19s/quepid/pull/293 by @worleydl.
 

@@ -38,7 +38,7 @@ Quepid is a **search relevance evaluation platform** (cases, queries, ratings, b
 | Topic | Canonical doc |
 |-------|----------------|
 | How the code is organized | [`app_structure.md`](./app_structure.md) |
-| Domain narrative (entities, workflows) | [`data_mapping.md`](./data_mapping.md), [`erd.png`](./erd.png) |
+| Domain narrative (entities, workflows) | [`data_mapping.md`](./data_mapping.md), [`erd.png`](./images/erd.png) |
 | Whole-app feature inventory | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) |
 | Case workspace (`/case/...`) | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) |
 | Core UI implementation quirks | [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md) |
@@ -63,7 +63,7 @@ See [`todo/QUEPID_FEATURES.md` §4](./todo/QUEPID_FEATURES.md#4-authentication--
 
 ## 3. Data Model
 
-**Domain narrative:** [`data_mapping.md`](./data_mapping.md) and [`erd.png`](./erd.png). Per-table column detail below is the **schema reference for rewrites** — do not duplicate in [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) or other docs.
+**Domain narrative:** [`data_mapping.md`](./data_mapping.md) and [`erd.png`](./images/erd.png). Per-table column detail below is the **schema reference for rewrites** — do not duplicate in [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) or other docs.
 
 ### 3.1 Entity Relationship Diagram
 

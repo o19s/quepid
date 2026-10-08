@@ -104,7 +104,7 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 | `docs/test_suite_review_*.md` | Generated test review | Test inventory/reference; no additional runtime behavior. |
 | `docs/todo/*.md` | Planning, implementation, and issue references | Test any item only when it becomes implemented user-facing behavior; do not treat todo prose as shipped behavior. |
 | `docs/Quepid-Data-Storage-Briefing.pdf` | Architecture/reference artifact | No browser scenario; review when storage architecture changes. |
-| `docs/erd.png`, `docs/image_*.png`, `docs/frog-pond.jpg`, `docs/rating-card-interface.png` | Diagrams/screenshots/reference media | Visual references only; corresponding UI is covered by Parts 4–6, 11, and 13. |
+| `docs/images/*` | Diagrams/screenshots/reference media | Visual references only; corresponding UI is covered by Parts 4–6, 11, and 13. |
 
 ## Test scenarios
 

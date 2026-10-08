@@ -1,0 +1,587 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Cross-Site Request Forgery",
+      "warning_code": 86,
+      "fingerprint": "7290b33f61b37ee21b31dcf06310655029e07d07a8033b8a4cf369afb0899890",
+      "check_name": "ForgerySetting",
+      "message": "`protect_from_forgery` should be configured with `with: :exception`",
+      "file": "app/controllers/api/api_controller.rb",
+      "line": 22,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross-site_request_forgery/",
+      "code": "protect_from_forgery(:with => :null_session)",
+      "render_path": null,
+      "location": {
+        "type": "controller",
+        "controller": "Api::ApiController"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        352
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "a6d597fe9002b55556ebffd1ba092143fa0b3de919456d30ad572782aa7750ab",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/controllers/api/v1/export/ratings_controller.rb",
+      "line": 18,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => (\"show\" or \"show_#{params[:file_format].downcase}\"), { :formats => :json })",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Api::V1::Export::RatingsController",
+        "method": "show"
+      },
+      "user_input": "params[:file_format].downcase",
+      "confidence": "High",
+      "cwe_id": [
+        22
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "c909a488adcbe98fe011a6b88fd141093bce2bd00dd40661ac551523118fdb27",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/controllers/api/v1/export/ratings_controller.rb",
+      "line": 29,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => (\"show\" or \"show_#{params[:file_format].downcase}\"), { :formats => :txt })",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Api::V1::Export::RatingsController",
+        "method": "show"
+      },
+      "user_input": "params[:file_format].downcase",
+      "confidence": "High",
+      "cwe_id": [
+        22
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "bd2436d4efee8dbec73ea4bce8313cb9e809ec970336f3c3e31522813535b70e",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/api/v1/import/books_controller.rb",
+      "line": 85,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.require(:book).permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Api::V1::Import::BooksController",
+        "method": "book_params"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        915
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Mass Assignment",
+      "warning_code": 70,
+      "fingerprint": "a3971f777e11001db1599aaaaa41c276bf15387d0494c467c8c025e59654db59",
+      "check_name": "MassAssignment",
+      "message": "Specify exact keys allowed for mass assignment instead of using `permit!` which allows any keys",
+      "file": "app/controllers/api/v1/import/cases_controller.rb",
+      "line": 34,
+      "link": "https://brakemanscanner.org/docs/warning_types/mass_assignment/",
+      "code": "params.require(:case).permit!",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Api::V1::Import::CasesController",
+        "method": "case_params"
+      },
+      "user_input": null,
+      "confidence": "Medium",
+      "cwe_id": [
+        915
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "bc747ae0ded48ea1e3385abd57bf4f2ee6453585d9a21653b21924c142ccc52b",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/books_controller.rb",
+      "line": 466,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "current_user.books_involved_with.where(:id => params[:id]).first.judgements.where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE judgements.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE judgements.rating END\"}\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "BooksController",
+        "method": "remap_judgement_ratings"
+      },
+      "user_input": "params[:rating_map]",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "40bf22b9d788476746bf03d4f46b50bc6850ed2e6e6348920fc94e8d4d086eba",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/controllers/books_controller.rb",
+      "line": 472,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Rating.joins(:query => :case).where(:cases => ({ :book_id => current_user.books_involved_with.where(:id => params[:id]).first.id })).where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE ratings.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE ratings.rating END\"}\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "BooksController",
+        "method": "remap_judgement_ratings"
+      },
+      "user_input": "params[:rating_map]",
+      "confidence": "High",
+      "cwe_id": [
+        89
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "0d65275a6b9e56ab756db50e4ad75a7394a308992823937c716d8807ee4c8848",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/controllers/pages_controller.rb",
+      "line": 8,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(template => \"pages/#{params[:page]}\", {})",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PagesController",
+        "method": "show"
+      },
+      "user_input": "params[:page]",
+      "confidence": "Medium",
+      "cwe_id": [
+        22
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "File Access",
+      "warning_code": 16,
+      "fingerprint": "27844080930577d25ac1d71ff83e6e02ba767c6b807f9e1912e6e0034e10f60b",
+      "check_name": "FileAccess",
+      "message": "Parameter value used in file name",
+      "file": "app/controllers/pages_controller.rb",
+      "line": 15,
+      "link": "https://brakemanscanner.org/docs/warning_types/file_access/",
+      "code": "Pathname.new((Rails.root + \"app/views/pages/#{params[:page]}.html.erb\"))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "PagesController",
+        "method": "check_page"
+      },
+      "user_input": "params[:page]",
+      "confidence": "High",
+      "cwe_id": [
+        22
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "e69e0432361c832ab629e80413333de7f6b648da9517e5da022719b1421ab36b",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/score.rb",
+      "line": 84,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "joins(\"\\n      JOIN (\\n        SELECT id FROM case_scores where case_id=#{case_id} ORDER BY #{AdapterFunctions.random_function} LIMIT #{count}\\n      ) as filtered_case_scores ON case_scores.id=filtered_case_scores.id\\n    \")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Score",
+        "method": "sampled"
+      },
+      "user_input": "case_id",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "efef56a0fc65c4095d44bf7f2f2a64c6cca69887affb1411b3030632ce57a01a",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/services/case_score_samples.rb",
+      "line": 13,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "Score.where(:case_id => cases.map(&:id)).select(\"case_scores.id,\\nROW_NUMBER() OVER (\\n  PARTITION BY case_scores.case_id ORDER BY #{AdapterFunctions.random_function}\\n) AS sample_rank\\n\".squish)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "CaseScoreSamples",
+        "method": "self.load"
+      },
+      "user_input": "AdapterFunctions.random_function",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Remote Code Execution",
+      "warning_code": 25,
+      "fingerprint": "75076b8cb0fe13b9141e2e4dc4585769e161955ffbf18561dc7e156ecf86c4e6",
+      "check_name": "Deserialize",
+      "message": "Use of `Marshal.load` may be dangerous",
+      "file": "app/services/deferred_payload.rb",
+      "line": 18,
+      "link": "https://brakemanscanner.org/docs/warning_types/unsafe_deserialization",
+      "code": "Marshal.load(Zlib::Inflate.inflate(blob.download))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "DeferredPayload",
+        "method": "self.load"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        502
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Remote Code Execution",
+      "warning_code": 24,
+      "fingerprint": "a3cd42cca40fc58f61e850d9e8970180067747a5965cc0094ede7833bf047ead",
+      "check_name": "UnsafeReflection",
+      "message": "Unsafe reflection method `constantize` called on model attribute",
+      "file": "app/services/llm_judge_adapters.rb",
+      "line": 18,
+      "link": "https://brakemanscanner.org/docs/warning_types/remote_code_execution/",
+      "code": "(LlmProvider.find(options[:llm_provider]).adapter or \"LlmJudgeAdapters::OpenAi\").constantize",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "LlmJudgeAdapters",
+        "method": "self.for"
+      },
+      "user_input": "LlmProvider.find(options[:llm_provider]).adapter",
+      "confidence": "Medium",
+      "cwe_id": [
+        470
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 2,
+      "fingerprint": "525155ce709e79c19f67fe428348f0431d94ccdec070cac1d0bfb94f064567b8",
+      "check_name": "CrossSiteScripting",
+      "message": "Unescaped model attribute",
+      "file": "app/views/layouts/_header.html.erb",
+      "line": 33,
+      "link": "https://brakemanscanner.org/docs/warning_types/cross_site_scripting",
+      "code": "Announcement.find(params.expect(:id)).text",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "Admin::AnnouncementsController",
+          "method": "edit",
+          "line": 23,
+          "file": "app/controllers/admin/announcements_controller.rb",
+          "rendered": {
+            "name": "layouts/application",
+            "file": "app/views/layouts/application.html.erb"
+          }
+        },
+        {
+          "type": "template",
+          "name": "layouts/application",
+          "line": 96,
+          "file": "app/views/layouts/application.html.erb",
+          "rendered": {
+            "name": "layouts/_header",
+            "file": "app/views/layouts/_header.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "layouts/_header"
+      },
+      "user_input": null,
+      "confidence": "High",
+      "cwe_id": [
+        79
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "02ca19276d1cbd0715cbda1b9a41d5a10b64c14f5ed21a780798f432c3d1da0b",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/javascript_scorer.rb",
+      "line": 39,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "@context.eval(File.read(RUNTIME_PATH).gsub(/^export /, \"\"))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "JavascriptScorer",
+        "method": "initialize"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "26deea64404431e79285a1058d6802460d6d70ded9e888d5f7d452fb9a766c23",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/javascript_scorer.rb",
+      "line": 40,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "@context.eval(ADAPTER)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "JavascriptScorer",
+        "method": "initialize"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "4576b32b03b980ccef870632da6f8c6b0c8267b988ae770adbfaa2515e126ec9",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 63,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "@context.eval(File.read(js_file_path))",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "initialize"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "ac00f15b515d25e8727ecda2c4cb75a265ffe2a74c67d6b384de797092d57064",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 74,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(code_mapper)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_docs"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "f107bb5b2314c4f1cc1feb93da9bdff49313ada1bc0282e001eab42ec3c61cf8",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 84,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"var responseBody = #{JSON.parse(response_body.join(\"\\n\")).to_json};\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_docs"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "ac51b243e090eb233743f9f75157620a301eafe1e2f7d3b920b9fcba7a2ea359",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 87,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"var responseBody = #{response_body.join(\"\\n\").to_json};\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_docs"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "ac51b243e090eb233743f9f75157620a301eafe1e2f7d3b920b9fcba7a2ea359",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 90,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"var responseBody = #{response_body.join(\"\\n\").to_json};\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_docs"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "24d0a0017891b0ceea6e2242773b151d34c72aec108bf42a08c838afa312aace",
+      "check_name": "Evaluation",
+      "message": "Dynamic code evaluation",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 108,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(code_mapper)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_number_of_results"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "151ff704d16b8b9ad7c490acb48b975020849eed4307d1fd1691696fd2f8c30f",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 117,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"var responseBody = #{JSON.parse(response_body.join(\"\\n\")).to_json};\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_number_of_results"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    },
+    {
+      "warning_type": "Dangerous Eval",
+      "warning_code": 13,
+      "fingerprint": "b16a78969f135355111c156b7758cd6a7875b9576a96793a70c7123823a7d5cd",
+      "check_name": "Evaluation",
+      "message": "Dynamic string evaluated as code",
+      "file": "lib/v8_mapper_executor.rb",
+      "line": 120,
+      "link": "https://brakemanscanner.org/docs/warning_types/dangerous_eval/",
+      "code": "MiniRacer::Context.new.eval(\"var responseBody = #{response_body.join(\"\\n\").to_json};\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "V8MapperExecutor",
+        "method": "extract_number_of_results"
+      },
+      "user_input": null,
+      "confidence": "Weak",
+      "cwe_id": [
+        913,
+        95
+      ],
+      "note": "Baselined when Brakeman was added to CI; needs triage."
+    }
+  ],
+  "brakeman_version": "8.1.0"
+}

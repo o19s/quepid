@@ -170,7 +170,7 @@ namespace :test do
 end
 
 namespace :erd do
-  desc 'Generate Entity Relationship Diagram image at docs/erd.png'
+  desc 'Generate Entity Relationship Diagram image at docs/images/erd.png'
   task image: :environment do
     # Framework/infrastructure tables that drown out our actual domain model in the diagram.
     # Excluding them keeps the Case/Query/Rating/Book story readable. New domain models show up
@@ -191,10 +191,10 @@ namespace :erd do
     # Render a PNG via Graphviz; Mermaid output is unreadably small for a schema this size.
     # Requires the ruby-graphviz gem and the graphviz system package (the `dot` binary).
     # docs/data_mapping.md embeds this image, so overwriting it here updates the doc in place.
-    system 'bundle exec erd --generator=graphviz --filename=docs/erd --filetype=png ' \
+    system 'bundle exec erd --generator=graphviz --filename=docs/images/erd --filetype=png ' \
            '--inheritance --direct ' \
            "--attributes=foreign_keys,content,inheritance --exclude=#{infrastructure.join(',')}"
 
-    puts 'Generated ERD diagram at docs/erd.png (embedded in docs/data_mapping.md)'
+    puts 'Generated ERD diagram at docs/images/erd.png (embedded in docs/data_mapping.md)'
   end
 end

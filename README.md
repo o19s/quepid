@@ -48,7 +48,7 @@ People have been sharing how they have used Quepid in various [blog posts](https
 
 The [Data Mapping](docs/data_mapping.md) file provides detailed information about the data structure of the app.
 
-You can see the database schema as an [ERD](docs/erd.png) `
+You can see the database schema as an [ERD](docs/images/erd.png) `
 
 # App Structure
 

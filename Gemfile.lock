@@ -116,10 +116,15 @@ GEM
       safely_block (>= 1)
     bootsnap (1.26.0)
       msgpack (~> 1.5)
+    brakeman (8.1.0)
+      racc
     builder (3.3.0)
     bullet (8.2.0)
       activesupport (>= 3.0.0)
       uniform_notifier (~> 1.11)
+    bundler-audit (0.9.3)
+      bundler (>= 1.2.0)
+      thor (~> 1.0)
     capybara (3.40.0)
       addressable
       matrix
@@ -658,7 +663,9 @@ DEPENDENCIES
   benchmark
   blazer
   bootsnap
+  brakeman
   bullet
+  bundler-audit
   capybara
   colorize
   database_consistency

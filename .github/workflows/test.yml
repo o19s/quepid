@@ -5,8 +5,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
       - name: Build frontend test image
-        run: docker build -f Dockerfile.dev -t quepid-frontend-ci .
+        uses: docker/build-push-action@v7
+        with:
+          file: Dockerfile.dev
+          tags: quepid-frontend-ci
+          load: true
+          cache-from: type=gha,scope=dev-image
+          cache-to: type=gha,scope=dev-image,mode=max
       - name: Install frontend dependencies
         run: |
           cp config/database.yml.sample config/database.yml
@@ -17,6 +24,29 @@ jobs:
           docker run --rm --network none -v "$PWD:/srv/app" \
             -e RAILS_ENV=test -e CI=true -e DB_ADAPTER=sqlite3 \
             quepid-frontend-ci bin/rails test:frontend
+
+  # Mirrors the Style and Security steps in config/ci.rb (bin/ci).
+  lint-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          file: Dockerfile.dev
+          tags: quepid-lint-ci
+          load: true
+          cache-from: type=gha,scope=dev-image
+      - name: Ruby style, gem audit, importmap audit and Brakeman
+        run: |
+          cp config/database.yml.sample config/database.yml
+          docker run --rm -v "$PWD:/srv/app" -e RAILS_ENV=test -e DB_ADAPTER=sqlite3 \
+            quepid-lint-ci sh -c '
+              bin/rubocop &&
+              bin/bundler-audit check --update &&
+              bin/importmap audit &&
+              bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error'
 
   test:
     runs-on: ubuntu-latest

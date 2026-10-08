@@ -127,7 +127,7 @@ User → Book → QueryDocPairs → Judgements (per user)
 
 ## 3. Data Model & Relationships
 
-**Domain narrative:** [`data_mapping.md`](./data_mapping.md) and [`erd.png`](./erd.png).
+**Domain narrative:** [`data_mapping.md`](./data_mapping.md) and [`erd.png`](../images/erd.png).
 
 **Per-table schema (columns, associations, scopes):** [`complete_application_specification.md` §3](../complete_application_specification.md#3-data-model).
 
@@ -1229,7 +1229,7 @@ Used for:
 | `assets:jupyterlite` | Downloads JupyterLite build from GitHub releases, unpacks to `public/notebooks/`; hooked into `assets:precompile` for production |
 | `db:exists` | Checks DB connectivity (exit 0/1); used for Docker health checks |
 | `test:report_failed_tests` | Parses JUnit XML reports for CI failure reporting |
-| `erd:image` | Generates entity-relationship diagram PNG to `docs/erd.png` |
+| `erd:image` | Generates entity-relationship diagram PNG to `docs/images/erd.png` |
 
 ### Environment Configuration
 
@@ -1557,7 +1557,7 @@ The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md).
 - [`operating_documentation.md`](./operating_documentation.md) — operations/deployment guide covering Nginx, OAuth, Thor scripts, etc.
 - [`endpoints_solr.md`](./endpoints_solr.md) / [`endpoints_opensearch.md`](./endpoints_opensearch.md) — detailed per-engine query documentation
 - [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md), [`jupyterlite.md`](./jupyterlite.md), [`agentic_javascript_extraction.md`](./agentic_javascript_extraction.md) — feature-specific docs
-- [`erd.png`](./erd.png) — entity-relationship diagram (generated via `rake erd:image`)
+- [`erd.png`](../images/erd.png) — entity-relationship diagram (generated via `rake erd:image`)
 - `Quepid-Data-Storage-Briefing.pdf` — stakeholder briefing document
 
 ---

@@ -808,7 +808,7 @@ Followed by `bin/docker r bundle exec rake db:migrate`
 You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
 when you change the schema.
 
-You can rebuild the [ERD](docs/erd.png) (embedded in the [Data Mapping](docs/data_mapping.md) doc) via
+You can rebuild the [ERD](docs/images/erd.png) (embedded in the [Data Mapping](docs/data_mapping.md) doc) via
 `bin/docker r bundle exec rake erd:image`
 
 ## Updating RubyGems

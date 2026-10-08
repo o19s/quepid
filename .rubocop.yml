@@ -11,6 +11,7 @@ AllCops:
     - bin/**/*
     - vendor/**/*
     - node_modules/**/*
+    - tmp/**/*
     - config/initializers/content_security_policy.rb
 
 Style/OneClassPerFile:

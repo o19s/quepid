@@ -386,9 +386,10 @@ upstream design history, including superseded extraction names and steps.
 - Current manual scenarios are 12.9 for Jev, 12.6 for images and 12.7 for ownership.
   Allocate a new scenario number if escalation is implemented.
 
-Implementation/test evidence and remaining coverage are in the
-[Batch 4 ledger](../todo/upstream_integration_plan.md#batch-4-ledger--provider-registry-jev-and-image-support)
-and [final reconciliation](../todo/upstream_remaining_audit_ledger.md#batch-11-documentationrelease-ledger--2026-10-07).
+Remaining upstream work and verification limits are in the
+[upstream integration plan](../todo/todo.md#migration-followup-upstream-integration-plan)
+and [remaining audit](../todo/todo.md#remaining-upstream-integration-audit).
+The earlier Batch 4 and final reconciliation ledgers are no longer present in the working tree.
 For test commands, use the existing server container per the
 [developer guide](../../DEVELOPER_GUIDE.md#iii-run-tests), rather than the
 historical `bin/docker r` examples.

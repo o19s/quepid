@@ -85,6 +85,8 @@ group :development do
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
   gem 'rubocop-capybara', require: false
+  gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
   gem 'rails-erd'
   gem 'ruby-graphviz' # required for rails-erd's Graphviz (PNG) output, used by `rake erd:image`
 end

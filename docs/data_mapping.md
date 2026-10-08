@@ -46,6 +46,6 @@ Quepid provides scorers that are written by the OSC team for everyone to use, th
 
 ## Entity Relationship Diagram
 
-![Quepid data model](erd.png)
+![Quepid data model](images/erd.png)
 
 > Regenerate with `bin/docker r bundle exec rake erd:image`.
