@@ -35,6 +35,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   2. Click **Import**.
 - **Expected:** The Stimulus core modal validates headers strictly and refreshes the relevant data (queries/scores) after success, with a flash confirming the result.
 - **Edge cases:**
+  - [ ] If the ratings importer fails unexpectedly, expect "Unable to import ratings. Please try again." rather than internal exception details; the modal permits retry.
   - [ ] Upload a Ratings CSV with mismatched headers — confirm a red "Headers mismatch!" alert lists the expected headers.
   - [ ] Upload a Ratings CSV where a row has more than 3 comma-separated values without quote-wrapping — confirm a red alert lists the specific offending line number(s). Repeat for Information Needs with the 2-column limit.
   - [ ] Upload the wrong file into the wrong tab (e.g., an Information Needs CSV into the Ratings tab) — confirm this is caught by header validation rather than silently corrupting data.

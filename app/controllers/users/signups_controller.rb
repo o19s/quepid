@@ -7,17 +7,7 @@ module Users
     def create
       user_params_to_save = user_params
 
-      # Check if we already have an invite out for this user, and if so let's use that
-      if user_params_to_save[:email].blank?
-        @user = User.new user_params_to_save
-      else
-        @user = User.by_email(user_params_to_save[:email]).where.not(invitation_token: nil).first
-        if @user
-          @user.assign_attributes(user_params_to_save)
-        else
-          @user = User.new user_params_to_save
-        end
-      end
+      @user = User.build_for_signup(user_params_to_save)
 
       if @user.save
         session[:current_user_id] = @user.id # not sure if we need to do more here?

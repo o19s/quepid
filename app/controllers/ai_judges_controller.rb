@@ -18,13 +18,14 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
-    @ai_judge.system_prompt = DEFAULT_SYSTEM_PROMPT
+    provider = LlmProvider.find('openai')
+    @ai_judge.system_prompt = provider.default_system_prompt
     @ai_judge.judge_options = {
-      llm_provider:    'openai',
-      llm_service_url: 'https://api.openai.com',
-      llm_model:       'gpt-4o',
+      llm_provider:    provider.key,
+      llm_service_url: provider.default_service_url,
+      llm_model:       provider.default_model,
       llm_timeout:     30,
-      llm_api_version: '',
+      llm_api_version: provider.default_api_version,
     }
   end
 

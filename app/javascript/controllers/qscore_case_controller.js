@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
 import { putJson } from "api/json"
@@ -127,7 +128,7 @@ export default class extends Controller {
     }
 
     return putJson(this.scoreUrlValue, { case_score: scoreData }).then(() => {
-      document.dispatchEvent(new CustomEvent("case-score:persisted", {
+      document.dispatchEvent(new CustomEvent(CORE_EVENTS.CASE_SCORE_PERSISTED, {
         detail: { caseId: this.caseIdValue }
       }))
     }).catch(error => {

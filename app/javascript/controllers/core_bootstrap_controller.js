@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { Controller } from "@hotwired/stimulus"
 import { getBootstrapCapabilities } from "utils/core_capabilities_runtime"
 import { getCoreStores } from "utils/core_store_access"
@@ -116,6 +117,6 @@ export default class extends Controller {
   }
 
   fail(error) {
-    document.dispatchEvent(new CustomEvent("core-bootstrap:failed", { detail: { error } }))
+    document.dispatchEvent(new CustomEvent(CORE_EVENTS.CORE_BOOTSTRAP_FAILED, { detail: { error } }))
   }
 }

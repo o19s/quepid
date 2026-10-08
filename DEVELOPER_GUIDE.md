@@ -57,6 +57,7 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [Modifying the database](#modifying-the-database)
 	- [Updating RubyGems](#updating-rubygems)
 	- [How does the Frontend work?](#how-does-the-frontend-work)
+		- [Partial inputs](#partial-inputs)
 		- [Stimulus HTTP conventions](#stimulus-http-conventions)
 		- [Core event bus](#core-event-bus)
 	- [Fonts](#fonts)
@@ -154,7 +155,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 1. **Ruby**: Check `.ruby-version` for the current version of Ruby.  We track the latest releases.  We recommend using a version manager like [rbenv](https://github.com/rbenv/rbenv) or [RVM](https://rvm.io/).
 
-2. **Node.js**: Install Node.js 22.x or later.
+2. **Node.js**: Install Node.js 24.x (`>=24 <25`), as required by `package.json`.
 
 3. **Yarn**: Install Yarn package manager.
 
@@ -828,6 +829,11 @@ The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus 
 
 For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
 
+### Partial inputs
+
+Declare strict locals (`<%# locals: (form:) %>`) in new or substantially changed
+ERB partials, and pass their inputs explicitly from each caller.
+
 ### Stimulus HTTP conventions
 
 These apply to all client code: Rails pages and the case page alike. ESLint enforces the first two.
@@ -1050,6 +1056,11 @@ book-settings save invalidates older reads and publishes
 notification so book sync follows externally changed settings too. Navigation
 and query collections retain ids for their own loading lifecycle. Snapshot
 lists have a separate lifecycle.
+
+Global JavaScript event names are exported as `CORE_EVENTS` from
+`utils/core_events`. ERB `@document` actions retain their literal names and must
+be coordinated with that module. Controller-owned notifications use
+`this.dispatch()`; direct calls to a known peer use outlets.
 
 **Adding or changing an event**
 

@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { deleteJson, postJson } from "api/json"
 import { apiFetch } from "api/fetch"
@@ -314,7 +315,7 @@ export default class extends CoreModalControllerBase {
 
   dispatchCaseTeamChanged(action, caseNo, team) {
     document.dispatchEvent(
-      new CustomEvent("quepid:case-team-changed", {
+      new CustomEvent(CORE_EVENTS.CASE_TEAM_CHANGED, {
         detail: {
           action,
           caseNo: Number(caseNo),

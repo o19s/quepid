@@ -7,6 +7,12 @@ module ControllerConfiguration
     Rails.application.config.signup_enabled
   end
 
+  protected
+
+  def deserialize_bool_param param
+    ActiveRecord::Type::Boolean.new.deserialize(param) || false
+  end
+
   private
 
   # These controllers retain intentional entry/session effects. Speculative GETs

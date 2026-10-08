@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { deleteJson, postJson, putJson } from "api/json"
 import { extractCuratorVars } from "utils/curator_vars"
 
@@ -216,7 +217,7 @@ export function createSettingsRuntime({
       })
       await putJson(`api/cases/${caseNo()}/tries/${tryNo()}`, payload)
       document.dispatchEvent(
-        new CustomEvent("case-settings:updated", {
+        new CustomEvent(CORE_EVENTS.CASE_SETTINGS_UPDATED, {
           detail: { caseNo: caseNo(), lastTry: settings.selectedTry }
         })
       )

@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { serverMessage } from "utils/error_message"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { putJson, readJson } from "api/json"
@@ -420,7 +421,7 @@ export default class extends CoreModalControllerBase {
 
     if (closeWithReload && !processInBackground) {
       document.dispatchEvent(
-        new CustomEvent("judgements:queries-need-reload", {
+        new CustomEvent(CORE_EVENTS.JUDGEMENTS_QUERIES_NEED_RELOAD, {
           detail: { caseId: Number(this.currentCaseId) }
         })
       )

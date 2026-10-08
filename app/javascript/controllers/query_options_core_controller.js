@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { putJson } from "api/json"
 import { fromTextArea } from "modules/editor"
@@ -63,7 +64,7 @@ export default class extends CoreModalControllerBase {
     try {
       await putJson(saveUrl, { query: { options } })
 
-      document.dispatchEvent(new CustomEvent("query-options:saved", {
+      document.dispatchEvent(new CustomEvent(CORE_EVENTS.QUERY_OPTIONS_SAVED, {
         detail: { queryId, options }
       }))
       if (generation !== this.openGeneration) return

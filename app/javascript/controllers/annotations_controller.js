@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { Controller } from "@hotwired/stimulus"
 import { subscribeToStore } from "utils/store_subscription"
 import { apiFetch } from "api/fetch"
@@ -143,7 +144,7 @@ export default class extends Controller {
   }
 
   notifyScoreConsumers() {
-    document.dispatchEvent(new CustomEvent("annotations:changed", {
+    document.dispatchEvent(new CustomEvent(CORE_EVENTS.ANNOTATIONS_CHANGED, {
       bubbles: true,
       detail: { caseId: this.caseIdValue }
     }))

@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { putJson } from "api/json"
 import { apiFetch } from "api/fetch"
@@ -92,7 +93,7 @@ export default class extends CoreModalControllerBase {
       await putJson(url, {})
 
       document.dispatchEvent(
-        new CustomEvent("pick-scorer:selected", {
+        new CustomEvent(CORE_EVENTS.PICK_SCORER_SELECTED, {
           detail: { caseId: Number(caseId), scorer: this.selectedScorer }
         })
       )

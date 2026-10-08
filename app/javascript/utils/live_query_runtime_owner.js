@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { isEsLikeEngine } from "utils/search_engines"
 import {
   buildRatedDocsFilter,
@@ -136,7 +137,7 @@ export function createLiveQueryRuntimeOwner({
   // Query objects, but the list no longer discovers them through a
   // compiled controller scope.
   function publishQueryListState() {
-    document.dispatchEvent(new CustomEvent("queries-state:changed"))
+    document.dispatchEvent(new CustomEvent(CORE_EVENTS.QUERIES_STATE_CHANGED))
   }
 
   const caseScoringRuntime = createCaseScoringRuntime({
@@ -523,7 +524,7 @@ export function createLiveQueryRuntimeOwner({
 
   function refreshAllDiffs() {
     const notify = (detail) =>
-      document.dispatchEvent(new CustomEvent("query-diffs:refreshed", { detail }))
+      document.dispatchEvent(new CustomEvent(CORE_EVENTS.QUERY_DIFFS_REFRESHED, { detail }))
     const refreshes = Object.values(getLiveQueries()).map((query) => {
       const refresh = createDiff(query)
       publishQueryDocuments(query)

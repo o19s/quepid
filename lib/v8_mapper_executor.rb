@@ -5,7 +5,6 @@ class V8MapperExecutor
 
   attr_reader :logs
 
-  # rubocop:disable-next Metrics/MethodLength
   def initialize js_file_path
     @context = MiniRacer::Context.new
     @logs = []
@@ -15,48 +14,26 @@ class V8MapperExecutor
 
     # Add console.log support that captures to @logs
     @context.eval <<-JS
-      var console = {
-        log: function() {
-          var args = Array.prototype.slice.call(arguments);
-          var message = args.map(function(arg) {
-            if (typeof arg === 'object') {
-              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
-            }
-            return String(arg);
-          }).join(' ');
-          captureLog('log', message);
-        },
-        error: function() {
-          var args = Array.prototype.slice.call(arguments);
-          var message = args.map(function(arg) {
-            if (typeof arg === 'object') {
-              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
-            }
-            return String(arg);
-          }).join(' ');
-          captureLog('error', message);
-        },
-        warn: function() {
-          var args = Array.prototype.slice.call(arguments);
-          var message = args.map(function(arg) {
-            if (typeof arg === 'object') {
-              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
-            }
-            return String(arg);
-          }).join(' ');
-          captureLog('warn', message);
-        },
-        info: function() {
-          var args = Array.prototype.slice.call(arguments);
-          var message = args.map(function(arg) {
-            if (typeof arg === 'object') {
-              try { return JSON.stringify(arg); } catch(e) { return String(arg); }
-            }
-            return String(arg);
-          }).join(' ');
-          captureLog('info', message);
+      var console = (function() {
+        function formatArgument(arg) {
+          if (typeof arg === 'object') {
+            try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+          }
+          return String(arg);
         }
-      };
+        function logger(level) {
+          return function() {
+            var args = Array.prototype.slice.call(arguments);
+            captureLog(level, args.map(formatArgument).join(' '));
+          };
+        }
+        return {
+          log: logger('log'),
+          error: logger('error'),
+          warn: logger('warn'),
+          info: logger('info')
+        };
+      })();
     JS
 
     # Load your code_mapper JavaScript

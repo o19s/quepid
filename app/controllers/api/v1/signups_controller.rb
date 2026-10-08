@@ -11,17 +11,7 @@ module Api
         # The client performs password confirmation before submitting.
         user_params_to_save[:password_confirmation] = user_params_to_save[:password]
 
-        # Check if we already have an invite out for this user, and if so let's use that
-        if user_params_to_save[:email].blank?
-          @user = User.new user_params_to_save
-        else
-          @user = User.by_email(user_params_to_save[:email]).where.not(invitation_token: nil).first
-          if @user
-            @user.assign_attributes(user_params_to_save)
-          else
-            @user = User.new user_params_to_save
-          end
-        end
+        @user = User.build_for_signup(user_params_to_save)
 
         if @user.save
           Analytics::Tracker.track_signup_event @user

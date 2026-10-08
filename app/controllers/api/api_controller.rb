@@ -43,10 +43,6 @@ module Api
 
     protected
 
-    def deserialize_bool_param param
-      ActiveRecord::Type::Boolean.new.deserialize(param) || false
-    end
-
     def set_default_response_format
       request.format = :json unless params[:format]
     end

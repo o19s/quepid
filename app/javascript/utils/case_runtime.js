@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { deleteJson, getJson, postJson, putJson } from "api/json"
 import { isSameId } from "utils/record_identity"
 
@@ -65,7 +66,7 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
 
   function publishBookSettings(value) {
     document.dispatchEvent(
-      new CustomEvent("quepid:case-book-updated", {
+      new CustomEvent(CORE_EVENTS.CASE_BOOK_UPDATED, {
         detail: {
           caseId: Number(value.caseNo),
           bookId: value.bookId ?? null,
@@ -118,7 +119,7 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
       selectedCase = value
       if (value) {
         document.dispatchEvent(
-          new CustomEvent("quepid:case-selected", {
+          new CustomEvent(CORE_EVENTS.CASE_SELECTED, {
             detail: {
               caseNo: value.caseNo,
               caseName: value.caseName || "",
@@ -142,7 +143,7 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
       await putJson(`api/cases/${value.caseNo}`, { case_name: name })
       value.caseName = name
       document.dispatchEvent(
-        new CustomEvent("quepid:case-renamed", {
+        new CustomEvent(CORE_EVENTS.CASE_RENAMED, {
           detail: { caseNo: value.caseNo, caseName: name }
         })
       )
@@ -160,7 +161,7 @@ export function createCaseRuntime({ now = () => new Date() } = {}) {
       revision += 1
       if (isSameId(selectedCase?.caseNo, caseNo)) selectedCase.nightly = nightly
       document.dispatchEvent(
-        new CustomEvent("quepid:case-header-stale", {
+        new CustomEvent(CORE_EVENTS.CASE_HEADER_STALE, {
           detail: { caseNo: value.caseNo, reason: "nightly" }
         })
       )

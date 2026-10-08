@@ -197,6 +197,66 @@ CI runs Brakeman with `--exit-on-warn`, and the 24 warnings that existed when th
 
 **Fix direction:** Review each entry. Fix real findings and delete their entries; replace the rest with a specific justification in `note`. Delete the item when the baseline holds no "needs triage" entries.
 
+**Review evidence (2026-10-08):** A fresh Brakeman 8.1.0 scan reproduced all 24 warnings with zero scan errors. Source/caller inspection and unsaved runtime probes informed the recommendations below; persistence exploit tests, the Rails suite and browser flows were not run. Import compatibility and suitable execution limits remain unverified.
+
+#### [PREEXISTING] P1 I0 C3 — Restrict nested case-import attributes
+
+**Location:** `app/services/case_importer.rb` (`build_queries_and_ratings`, `update_first_try`), `app/controllers/api/v1/import/cases_controller.rb`
+
+Queries, ratings, tries and curator variables receive broadly accepted nested attributes. Unsaved probes confirmed assignment of internal query/rating IDs, timestamps, rating `user_id`, and try `case_id`/`ancestry`; persisted cross-account effects were not tested.
+
+**Fix direction:** Use explicit attribute allowlists inside the importer, following `BookImporter`'s existing pattern, so all callers share the boundary. Replacing the controller's `permit!` alone is insufficient.
+
+**Compatibility gate:** Compare actual case exports and supported import payloads before excluding fields. Preserve content, supported metadata and rating attribution; prevent imported internal IDs or relationships from redirecting writes. Verify valid export/import round trips and malicious nested attributes. Do not infer that every historically accepted field is disposable.
+
+#### [PREEXISTING] P1 I0 C3 — Bound server-side JavaScript execution
+
+**Location:** `lib/v8_mapper_executor.rb`, `lib/javascript_scorer.rb`
+
+MiniRacer contexts have no execution timeout or memory limit. User-authored and LLM-generated mapper/scorer code can loop indefinitely or exhaust resources. Intentional JavaScript evaluation is not itself evidence of Ruby remote code execution.
+
+**Fix direction:** Keep the execution architecture and add MiniRacer timeouts and memory soft limits, preserving existing error handling. Review exposed Ruby callbacks, including the unused `fetchData` stub, without adding access to application records. This is separate from the browser isolation decision under "Scorer sandboxing - LATER".
+
+**Compatibility gate:** Existing scorer and mapper fixtures must produce identical successful outputs. Exercise legitimate large cases before choosing limits: previously successful slow evaluations may now fail. Termination must report an explicit error without persisting partial results or substituting zero scores. Limits reduce resource-exhaustion risk; they do not establish complete isolation.
+
+#### [PREEXISTING] P2 I0 C2 — Sanitize announcement HTML
+
+**Location:** `app/views/layouts/_header.html.erb`, `app/views/admin/announcements/index.html.erb`
+
+Both displays render administrator-authored announcement text with `html_safe`. Administrator-only editing lowers exposure but still permits stored scripts and event handlers.
+
+**Fix direction:** Apply a consistent HTML allowlist to both displays, preserving supported formatting and links.
+
+**Compatibility gate:** Inspect existing announcement HTML before choosing allowed tags and attributes. Sanitization may remove formatting, embedded content or links; verify retained formatting and rejection of executable markup. Search results, ratings and scores should be unaffected.
+
+#### [PREEXISTING] P2 I0 C2 — Allowlist ratings-export templates
+
+**Location:** `app/controllers/api/v1/export/ratings_controller.rb`
+
+Two warnings cover template names derived from `file_format`. No traversal exploit was established.
+
+**Fix direction:** Map supported formats to literal template names and define the unsupported-format response.
+
+**Compatibility gate:** Preserve existing valid formats, casing behavior, defaults, snapshot selection and output. Supported export content must remain identical; unknown formats may receive a deliberate error instead of the current template-resolution failure. Do not fold unrelated export behavior fixes into this hardening.
+
+#### [PREEXISTING] P2 I0 C2 — Replace justified Brakeman suppressions with specific notes
+
+Keep intentional operations where the current trust boundary supports them. The following dispositions cover the remaining 19 entries; the five entries covered by case-import, announcement, export-template and sampling fixes above should be removed only after their fixes eliminate the warnings.
+
+| Warning group | Entries | Justification / remaining work |
+| --- | ---: | --- |
+| API `null_session` | 1 | Devise clears the cached user on failed CSRF verification; a synthetic tokenless POST returned 401. Retain with a regression test that enables forgery protection and covers cookie and API-key authentication. Do not change authentication behavior merely to silence the warning. |
+| Book import `permit!` | 1 | `BookImporter` explicitly selects assignable attributes and controls ownership. Preserve supported imports; do not duplicate its boundary solely to remove the warning. |
+| Book rating-remapping SQL | 2 | Interpolated rating values are converted to floats before entering SQL. No unchanged request strings enter the CASE expressions. |
+| Pages render/file paths | 2 | The only route supplies fixed `page: "cookies"`; a runtime probe confirmed that query parameters cannot override it. Reassess if a dynamic page route is introduced. |
+| `CaseScoreSamples` SQL | 1 | SQL function names come from fixed adapter choices; IDs use ActiveRecord conditions. |
+| Deferred payload `Marshal.load` | 1 | Current producers serialize parsed data server-side; consumers load those internally generated blobs. No direct uploaded-Marshal path was found. Retain this trust boundary; changing serialization is deferred hardening with payload/retry compatibility implications. |
+| LLM adapter `constantize` | 1 | Adapter classes come from the code-defined provider registry, not an arbitrary request-supplied class name. |
+| Scorer initialization evaluation | 2 | Both evaluations load repository-controlled code. Keep the notes distinct from resource limits required for custom scorer execution. |
+| Mapper evaluation | 8 | One entry loads a fixed repository file, two intentionally execute mapper code, and five inject JSON-encoded data. Use separate notes for these trust boundaries; retain intentional code execution after addressing the resource limits above. |
+
+**Verification:** Rerun Brakeman after fixes and note updates, remove obsolete fingerprints, and confirm the CI gate passes. Keep unresolved fixes as todo items even if all "needs triage" notes have been replaced. No scoring formulas, Marshal format or JavaScript architecture changes are proposed in this batch.
+
 ---
 
 ## [PREEXISTING] P2 — Security
@@ -478,46 +538,6 @@ reason.
 
 ## [MIGRATION-FOLLOWUP] Consolidated DRY review
 
-### [PREEXISTING] P3 I1 C1 — AI judge form defaults bypass the provider registry
-
-`AiJudgesController` hardcodes `'openai'`, `https://api.openai.com` and the
-model, while `LlmService` takes defaults from `LlmProvider`. Derive the form's
-provider-owned defaults from the registry; keep controller-specific settings such
-as timeout. Do not change current default values.
-
-### [PREEXISTING] P3 I1 C1 — `deserialize_bool_param` is defined twice
-
-`ApplicationController` and `Api::ApiController` define the same helper. Move it
-to an existing shared concern. Leave `SearchEndpointsController`'s own caster
-(`bool.deserialize`) alone unless its blank-string/`nil` behavior is verified
-identical; the helper coerces `nil` to `false`.
-
-### [PREEXISTING] P3 I1 C1 — `Try#options` normalizes case and endpoint options twice
-
-`app/models/try.rb` parses strings, rescues bad JSON and converts hashes
-separately for the case and the search endpoint. Extract one private normalizer.
-Keep endpoint-over-case precedence and the final JSON round trip.
-
-### [PREEXISTING] P3 I1 C2 — HTML and API signup repeat invitation-aware user construction
-
-`Users::SignupsController` and `Api::V1::SignupsController` both look up the
-invited user by email (`invitation_token` present) and assign attributes or build
-a new user. Extract only that construction step (e.g. a `User` class method);
-leave password handling, sessions and responses in the controllers. Cover both
-paths with existing tests before and after.
-
-### [PREEXISTING] P3 I1 C1 — V8 console methods repeat the same argument serializer
-
-`lib/v8_mapper_executor.rb` copies the `JSON.stringify`/`String` fallback for
-`log`, `error`, `warn` and `info`. Use one JS formatter plus a level-specific
-wrapper. Preserve object, circular and multi-argument output.
-
-### [PREEXISTING] P3 I1 C1 — Duplicate announcement and book-upload form fields
-
-Extract partials only for the announcement fields (`admin/announcements`
-`new`/`edit`) and the book upload fields (`books/import` `new`/`edit`). Keep form
-ownership, routes and methods in each page.
-
 ### [PREEXISTING] P2 I0 C1 — Blank-to-`nil` conversion turns `false` into `nil`
 
 `Api::V1::TriesController` and `lib/tasks/case.thor` carry the same
@@ -552,8 +572,6 @@ Inside `FetchService`:
 - [PREEXISTING] P2 I0 C2 — `build_get_params` assigns `params[key] = val` in a loop, so repeated Solr
   params such as `fq` keep only the last value.
 - [PREEXISTING] P2 I0 C3 — `escape_query` is never applied on the server, while the client honors it.
-- [PREEXISTING] P3 I1 C1 — `field_spec` is parsed in `FetchService#add_solr_params` and again in
-  `Try#id_from_field_spec`.
 
 This backlog accepts keeping response parsing in both Ruby and JS. Request
 building is different: it drifts from the client and is buggy.
@@ -865,27 +883,6 @@ exploitable (whether the association overrides the foreign key in each case),
 but the best practice is an allowlist. Use nested `permit` with the export
 schema's fields, or `slice` to known keys inside the importer.
 
-### [PREEXISTING] P2 I0 C1 — `rescue Exception` in the ratings import
-
-`api/v1/import/ratings_controller.rb:77` catches `Exception`, which includes
-`Interrupt`, `NoMemoryError` and `SystemExit`, logs it at `debug` level, and
-returns the raw `e.message` to the client. Rescue `StandardError` (or the
-importer's own error classes) instead, report the error with
-`Rails.error.report(e)`, and return a generic message for unexpected errors.
-
-### [MIGRATION-FOLLOWUP] P3 I1 C1 — Global event names lack shared constants
-
-[The core event bus registry](../../DEVELOPER_GUIDE.md#core-event-bus)
-already documents event names, payloads, emitters, listeners and lifecycle rules.
-The remaining issue is that global event names are repeated as string literals
-in JavaScript and ERB `@document` actions; there is no shared constants module.
-
-Optionally centralize genuinely global JavaScript event names in an exported
-constants module. ERB actions would still need coordinated updates. Use
-`this.dispatch()` for controller-owned notifications and outlets for calls to a
-known peer, following the existing guide. Preserve documented event names,
-payloads and scope; a registry does not justify changing their contracts.
-
 ### [PREEXISTING] P3 I1 C2 — Small Rails idiom issues
 
 - [PREEXISTING] P3 I1 C2 — **`Case` initialization.** `Case` uses `after_initialize` to default
@@ -1043,7 +1040,6 @@ A review of Quepid's tooling, structure and architecture from four perspectives:
 
 Keep [DEVELOPER_GUIDE.md](../../DEVELOPER_GUIDE.md) as the human-facing entry point, [app_structure.md](../app_structure.md) for architecture, and [js_pipeline.md](../js_pipeline.md) / [js_tooling.md](../js_tooling.md) for frontend mechanics.
 
-- [PREEXISTING] P2 I1 C1 — Correct the local prerequisite from Node 22 or later to the Node 24 requirement in `package.json`. Link a short clone-to-first-test path to the detailed version and container guidance; time a fresh setup before promising a setup duration.
 - [PREEXISTING] P2 I2 C1 — Replace conflicting operational advice with safe, complete procedures for identifying and reusing the running server. The guide currently recommends throwaway commands during development, killing port owners, resetting the environment and pruning Docker resources, while agent guidance requires preserving the server. Once the shared procedures are correct, link to them from `AGENTS.md` and remove duplicated human-facing policy. Retain agent-specific safeguards.
 
 #### [PREEXISTING] P2 I2 C2 — 3. Add safe execution support for existing server containers
@@ -1062,19 +1058,12 @@ Until that exists, use `docker exec <actual-server-container>` or `docker compos
 
 Module moves must also update bare imports and manual-test path mappings in the same patch. Keep mechanical moves separate from behavioral changes. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
-#### [PREEXISTING] P3 I2 C3 — 6. Extract focused backend responsibilities and clarify partial inputs
-
-Backend extraction is tracked in the [complex-methods item](#preexisting-p3-i2-c3--complex-methods-metrics).
-
-[PREEXISTING] P3 I1 C1 — Adopt strict locals for new or substantially changed partials. Only four ERB partial files currently declare `locals:`, across 273 view files overall. This documents inputs without introducing ViewComponent solely for that purpose.
-
 #### [MIGRATION-FOLLOWUP] P2 I2 C3 — 7. Clarify review, verification and maintenance responsibilities
 
 - [MIGRATION-FOLLOWUP] P2 I1 C1 — Improve the existing [PR template](../../.github/PULL_REQUEST_TEMPLATE.md): correct checkbox syntax to `- [ ]`, request sampled/deferred manual coverage when applicable, and scale test requirements to the change. Define release-note expectations before adding automatic CHANGELOG enforcement; do not infer PR scope from working-tree size.
 - [MIGRATION-FOLLOWUP] P2 I1 C2 — Clarify the browser release gate. Playwright is the substantial browser suite; `test/system/search_endpoints_test.rb` remains a generated-style Rails system test. Decide whether to maintain or retire it, correct `config/ci.rb`'s comment claiming none exist, and document which suite gates releases.
 - [MIGRATION-FOLLOWUP] P2 I2 C3 — Automate repeatable critical paths from the [manual tracker](../../DEVELOPER_GUIDE.md#manual-testing-tracker); do not remove useful scenarios merely to shrink the tracker. Verification requirements are in [Completion gates and ledger](#migration-followup-completion-gates-and-ledger).
 - [MIGRATION-FOLLOWUP] P2 I1 C1 — Document dependency-update ownership and review/merge cadence. Renovate configuration and cleanup tooling do not establish responsibility. Include checking npm and importmap versions for packages delivered through both paths.
-- [MIGRATION-FOLLOWUP] P3 I1 C1 — Preserve `[MIGRATION]`, `[MIGRATION-FOLLOWUP]` and `[PREEXISTING]` until remaining work is classified and closed. Angular's removal alone does not justify retiring tags or the migration skill. Archive completed plans while keeping unresolved acceptance criteria and historical evidence accessible.
 
 ### [MIGRATION-FOLLOWUP] Execution guidance
 

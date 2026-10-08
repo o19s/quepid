@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { isSameId } from "utils/record_identity"
 
 /**
@@ -87,11 +88,11 @@ export function createLiveQueryEventsRuntime({
     if (connected) return
     connected = true
     scoringStore.addEventListener("rating-changed", ratingChanged)
-    eventTarget.addEventListener("query-options:saved", optionsSaved)
-    eventTarget.addEventListener("pick-scorer:selected", scorerSelected)
-    eventTarget.addEventListener("judgements:queries-need-reload", queriesNeedReload)
-    eventTarget.addEventListener("imports:queries-need-reload", queriesNeedReload)
-    eventTarget.addEventListener("quepid:case-book-updated", bookSettingsSaved)
+    eventTarget.addEventListener(CORE_EVENTS.QUERY_OPTIONS_SAVED, optionsSaved)
+    eventTarget.addEventListener(CORE_EVENTS.PICK_SCORER_SELECTED, scorerSelected)
+    eventTarget.addEventListener(CORE_EVENTS.JUDGEMENTS_QUERIES_NEED_RELOAD, queriesNeedReload)
+    eventTarget.addEventListener(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, queriesNeedReload)
+    eventTarget.addEventListener(CORE_EVENTS.CASE_BOOK_UPDATED, bookSettingsSaved)
   }
 
   return { connect }

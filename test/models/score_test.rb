@@ -81,6 +81,18 @@ class ScoreTest < ActiveSupport::TestCase
   describe '.sampled' do
     let(:kase) { cases(:one) }
 
+    it 'accepts decimal strings and a zero sample' do
+      assert_equal 5, Score.sampled(kase.id.to_s, '5').count
+      assert_empty Score.sampled(kase.id, 0)
+    end
+
+    it 'rejects SQL fragments and noninteger arguments' do
+      [ nil, -1, 1.5, '1 OR 1=1', '1; DROP TABLE case_scores' ].each do |invalid|
+        assert_raises(ArgumentError) { Score.sampled(invalid, 5) }
+        assert_raises(ArgumentError) { Score.sampled(kase.id, invalid) }
+      end
+    end
+
     it 'returns the requested number of scores for the case' do
       # fixtures give case :one 11 scores (one + valid_1..valid_10)
       sampled = Score.sampled(kase.id, 5)

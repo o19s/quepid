@@ -1,3 +1,4 @@
+import { CORE_EVENTS } from "utils/core_events"
 import { serverMessage } from "utils/error_message"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { postJson } from "api/json"
@@ -199,7 +200,7 @@ export default class extends CoreModalControllerBase {
     return this.selectedType === "snapshots" ? "Snapshots imported successfully!" : this.selectedType === "information_needs" ? "Successfully imported information needs from CSV." : `Successfully imported ${this.selectedType === "csv" ? "ratings from CSV" : `ratings from ${this.selectedType.toUpperCase()}`}.`
   }
   errorMessage(error) { return error.message || "Import failed. Please try again." }
-  dispatchReload() { document.dispatchEvent(new CustomEvent("imports:queries-need-reload", { detail: { caseId: this.caseIdValue } })) }
+  dispatchReload() { document.dispatchEvent(new CustomEvent(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, { detail: { caseId: this.caseIdValue } })) }
   flash(type, message) { coreFlash.show(type, message) }
   setBusy(busy) {
     this.busy = busy

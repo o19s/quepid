@@ -78,6 +78,11 @@ class Score < ApplicationRecord
   # Have to pass in the case_id and the number of records to randomly sample.
   # Yes, needing to pass in the case_id is awkward if you have kase.scorers.sampled(kase.id, 100).count
   scope :sampled, ->(case_id, count) {
+    # Current callers pass integer IDs and counts; decimal strings remain supported.
+    raise ArgumentError, 'case_id and count must be nonnegative integers' unless case_id.to_s.match?(/\A[0-9]+\z/) && count.to_s.match?(/\A[0-9]+\z/)
+
+    case_id = Integer(case_id.to_s, 10)
+    count = Integer(count.to_s, 10)
     random_function = AdapterFunctions.random_function
     joins("
       JOIN (

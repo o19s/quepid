@@ -16,7 +16,42 @@ module Api
           login_user user
         end
 
+        def with_import_error error
+          original = RatingsImporter.instance_method(:import)
+          RatingsImporter.define_method(:import) { raise error }
+          yield
+        ensure
+          RatingsImporter.define_method(:import, original)
+        end
+
         describe '#create' do
+          test 'reports unexpected import errors without exposing details' do
+            error = RuntimeError.new('secret database details')
+            reported = []
+            subscriber = Object.new
+            subscriber.define_singleton_method(:report) { |exception, **| reported << exception }
+            Rails.error.subscribe(subscriber)
+            with_import_error(error) do
+              post :create, params: { case_id: acase.id, ratings: [] }
+            end
+            assert_includes reported, error
+
+            assert_response :bad_request
+            assert_equal({ 'message' => 'Unable to import ratings. Please try again.' }, response.parsed_body)
+          ensure
+            Rails.error.unsubscribe(subscriber)
+          end
+
+          test 'does not swallow process-level exceptions' do
+            [ Interrupt, NoMemoryError, SystemExit ].each do |error_class|
+              with_import_error(error_class.new('stop')) do
+                assert_raises(error_class) do
+                  post :create, params: { case_id: acase.id, ratings: [] }
+                end
+              end
+            end
+          end
+
           test 'creates new queries when needed' do
             data = {
               case_id: acase.id,

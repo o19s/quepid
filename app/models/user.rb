@@ -54,6 +54,16 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
+  def self.build_for_signup attributes
+    user = by_email(attributes[:email]).where.not(invitation_token: nil).first if attributes[:email].present?
+    if user
+      user.assign_attributes(attributes)
+      user
+    else
+      new(attributes)
+    end
+  end
+
   scope :with_api_counts, -> {
     select(<<~SQL.squish)
       users.*,

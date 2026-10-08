@@ -27,15 +27,10 @@ module Api
             service.import
 
             render json: { message: 'Success!' }, status: :ok
-          # rubocop:disable Lint/RescueException
-          rescue Exception => e
-            # TODO: report this to logging infrastructure so we won't lose any important
-            # errors that we might have to fix.
-            Rails.logger.debug { "Import ratings failed: #{e.inspect}" }
-
-            render json: { message: e.message }, status: :bad_request
+          rescue StandardError => e
+            Rails.error.report(e)
+            render json: { message: 'Unable to import ratings. Please try again.' }, status: :bad_request
           end
-          # rubocop:enable Lint/RescueException
         end
 
         def rating_from_ltr_line ltr_line
