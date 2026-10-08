@@ -86,13 +86,16 @@
     up, so under md nothing but that universal .row > * rule applied, handing
     main the row's entire width right underneath the sidebar instead of
     beside it. flex-grow-1 here (on a flex-column body) lets this reach all
-    the way down to the footer instead of only matching short page content -
-    see admin.html.erb's version of this same chain for the fuller
-    explanation (it skips .row entirely for the same reason). %>
+    the way down to the footer instead of only matching short page content. %>
 <div class="container-fluid flex-shrink-0 flex-grow-1 d-flex ps-0">
 
+  <%# Admin::AdminController-backed pages (behind AdminConstraint, gated by
+      current_user.administrator? in that controller) get the text-label
+      admin nav instead of the regular icon rail - shared layout since both
+      are otherwise identical (same header/footer/JS, same flex structure),
+      not because the two sidebars have anything in common to factor out. %>
   <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
-    <%= render 'layouts/sidebar' %>
+    <%= render(controller_path.start_with?('admin/') ? 'layouts/admin_sidebar' : 'layouts/sidebar') %>
   <% end %>
 
   <!-- Begin page content -->

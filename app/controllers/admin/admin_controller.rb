@@ -3,7 +3,6 @@
 module Admin
   class AdminController < ::ApplicationController
     before_action :require_administrator
-    layout 'admin'
 
     private
 
