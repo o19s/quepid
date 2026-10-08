@@ -12,6 +12,8 @@
   An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere,
   Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like
   search endpoints.
+  They let you test vector search against search engines that can't turn text into vectors themselves, such as
+  Elasticsearch without a paid licence or a self-hosted Qdrant: Quepid vectorizes each query and sends the vector in.
 </div>
 
 <div class="card">
