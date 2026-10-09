@@ -128,7 +128,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
   splitting an item.
 - To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
 - To understand how the application is built, consult `./docs/app_structure.md`.
-- **Documentation audience:** shared development conventions belong in DEVELOPER_GUIDE.md, linked from AGENTS.md. Agent-specific execution, approval, scope and recovery rules belong in AGENTS.md or `.agents/skills/**/SKILL.md`, with links to relevant developer guidance.
+- **Documentation audience and authority:** human-facing guides (DEVELOPER_GUIDE.md and dedicated guides under `docs/`) are authoritative for shared development workflows and conventions. AGENTS.md and skills link to those guides rather than restating their rules. Agent-specific execution, approval, scope and recovery rules belong in AGENTS.md or `.agents/skills/**/SKILL.md`.
 - **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
 
 
@@ -179,7 +179,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 - The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then `base.css` (page skin shared with `application.css`) and Quepid layers (`core-additions.css` — Quepid layout, mostly without Bootstrap-class selectors; `navbar-brand.css` — navbar brand skin; **`bootstrap5-compat.css`** — Bootstrap-class shims, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
 - The core Stimulus/runtime bundle and `bootstrap_globals` provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
-- The rest of the UI loads BS5 via `application.css`. The two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
+- The rest of the UI, admin included, loads BS5 via `application.css`. Apart from `base.css`, `fonts.css` and `navbar-brand.css`, the two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
 - **Root `font-size` and rem-based BS5 defaults.** `core-additions.css` sets **`html { font-size: 87.5% }`** on `core` (1rem = 14px, Bootstrap 3's base), so every rem-based BS5 default renders smaller than upstream.
     - Where a BS5 widget needs an exact size, override the relevant **`--bs-*`** vars with **px** in compat CSS, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
 - **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
@@ -188,40 +188,32 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 ## UI changes — screenshots via Playwright MCP (`playwright` server)
 
-If Playwright MCP reports that its browser/profile is already in use, do not
-skip or defer required browser verification solely for that reason. Identify
-the exact automation browser/profile and ask the user for permission to take
-it over, explaining that recovery may interrupt its current automation session.
-After approval, release only that browser session, reconnect Playwright MCP,
-and complete the required verification. Never terminate unrelated browsers or
-delete profile data. Reuse takeover permission within the authorized scope;
-do not ask again for the same recovery. If permission is declined or recovery
-still fails, record the concrete blocker and the remaining verification.
+For the comparison viewer and capture history workflow, see
+[Screenshot capture and diffing](docs/screenshot_review.md).
+
+Run the Playwright MCP server with `--isolated` (e.g. `claude mcp add playwright
+-s local -- npx @playwright/mcp@latest --isolated --output-dir <repo>/.playwright-mcp`).
+Each session then gets its own temporary browser profile, so several sessions
+can drive browsers at once; each signs in afresh, and cookies don't persist
+between sessions. Without `--isolated`, every session shares one persistent
+profile, which Chrome locks to a single browser, and a second session fails
+with "Browser is already in use". If that still happens (an older session
+started before the change), don't skip required browser verification: ask the
+user before stopping the browser holding that profile, stop only that one, and
+record the blocker if permission is declined. A standalone Playwright script
+launching its own headless browser is a fallback for captures, not for
+interactive scenario steps.
 
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
-Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the flows captured below. Use the actual running server's configured host port when it differs from the example URL.
+Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the captured flows. Use the actual running server's configured host port when it differs from the example URL.
 
 The Playwright MCP tools may be exposed as deferred tools rather than a direct namespace. In that case, discover `mcp__playwright__*` from the tool catalog and invoke them through the tool orchestrator; do not treat an empty computer-surface/browser inventory as proof that Playwright is unavailable. Start with `mcp__playwright__browser_tabs` (`action: "list"`), then use the browser snapshot/click/fill/screenshot tools for the required flow.
 
-- **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
-- **Capturing a screenshot is not verifying it.** Before claiming two states match or differ, actually open and look at every before/after pair (Read tool or equivalent) — don't infer "identical" from the code diff not touching that template, and don't treat a console-log error as a substitute for looking at what the page actually rendered.
-- **Frame big** (screenshots have come out too small): shoot the **full viewport**, not element crops.
-    - Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport.
-    - Size to the content: a tall step (e.g. the wizard endpoint step) needs ~`820x2200`; a short step (e.g. wizard Finish) needs ~`900x760` — a tall viewport dwarfs a short modal. Narrower width = modal fills more of the frame.
-- **Force hard-to-reach states** (e.g. a failed save) by intercepting the API with `browser_run_code_unsafe` + `page.route('**/api/...', ...)`.
-    - Gotcha: `setTimeout` is undefined in that context — use `await page.waitForTimeout(ms)` for delays.
-- **Save** under `.playwright-mcp/<topic>/` (gitignored) with clear `-before`/`-after` (+ state) names, e.g. `.playwright-mcp/share-case/migration-share-case-modal-after.png`. Topic folders keep this PR’s shots separate from older captures in the screenshot viewer (`yarn screenshots:view` / `node test/playwright/screenshot-viewer-server.mjs`).
-  Use an absolute filename for `browser_take_screenshot` under that directory; relative filenames may resolve against the workspace instead of the configured MCP output directory.
-
 ### Before/after pairs — do not break the working tree
 
-- Follow [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) for initial migration and later regression-check baselines. For the [isolated historical instance](docs/legacy_comparison.md), keep both servers running; do not flip current sources or restore the shared development database.
-- Capture **before** first, or keep existing **after** PNGs until matching befores exist — **never delete** the only half of a pair.
-- **Manual-testing passes pair affected scenarios with the diff baseline.** For each scenario that `ruby bin/branch_ui_scenarios` lists (its tracked paths changed since the merge-base with `main`, committed or not), capture the same states on the diff baseline (`bin/ui_diff_up`, :3003) as `*-before.png` beside the current server's `*-after.png`, in one topic folder per pass. Unaffected scenarios need only the current-server shots. Finish with `yarn screenshots:view` and inspect every pair; its numbered boxes (`diff.regions` in `test/playwright/screenshot-manifest.json`) locate changes but don't replace looking. Explain each boxed difference in the tracker notes as intended, regression or state mismatch, and recapture mismatches. Migration-parity checks still use the historical instance instead.
-- Exactly three permanent Quepid instances exist: current (`bin/docker s`, :3000), historical (`bin/legacy`, :3001) and the diff baseline (`bin/ui_diff_up <ref>`, :3003: one worktree `../quepid-ui-diff-worktree`, one container `quepid_app_ui_diff`, and its own database and job worker; `bin/ui_diff_db_sync` refreshes that database from the dev database). For nonhistorical comparisons, point the diff baseline at the old ref (`.agents/skills/branch-ui-diff/SKILL.md`) and leave it running. Never create task-named worktrees, containers or `/tmp` checkouts for a baseline. Keep the primary branch and server on current sources throughout; do not flip primary sources or override browser scripts to replay old code.
-- Select replay sources against the requested baseline, including both staged and unstaged changes (for example, `git diff HEAD`); plain `git diff` can omit changed sources. For an uncommitted pre-fix baseline, run `bin/ui_diff_up HEAD`, then copy the relevant current sources into `../quepid-ui-diff-worktree`, reverse only the fix there and rebuild assets with `docker exec quepid_app_ui_diff yarn build`. A later `bin/ui_diff_up` to a different ref, or `--reset`, discards those edits. Leave the primary index untouched.
-- Use the relevant Playwright screenshot spec and `MIGRATION_SHOT_PHASE=before|after`, Playwright MCP, or a few manual shots — **not** a Docker orchestration script.
+Follow [Screenshot capture and diffing — Comparison baselines](docs/screenshot_review.md#comparison-baselines)
+and its [capture and verification conventions](docs/screenshot_review.md#capture-and-verification).
 
 ## Code reviews
 

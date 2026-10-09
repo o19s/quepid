@@ -71,6 +71,35 @@
         font-size: 0.85rem;
       }
 
+      .meta a,
+      .history-link {
+        color: var(--accent);
+      }
+
+      .baseline-tabs {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem 0;
+      }
+
+      .baseline-tabs button {
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .baseline-tabs[hidden] {
+        display: none;
+      }
+
+      .baseline-tabs button[aria-selected="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
       .search {
         width: min(320px, 100%);
         padding: 0.45rem 0.65rem;
@@ -84,12 +113,22 @@
         margin-bottom: 1.25rem;
       }
 
-      .nav-section h2 {
+      .nav-section .nav-section {
+        margin: 0.75rem 0 0.75rem 0.75rem;
+      }
+
+      .nav-section summary {
         margin: 0 0 0.5rem;
         font-size: 0.72rem;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--muted);
+        cursor: pointer;
+      }
+
+      .nav-section summary:hover,
+      .nav-section summary:focus-visible {
+        color: var(--text);
       }
 
       .nav-list {
@@ -388,19 +427,22 @@
     <div class="layout">
       <aside>
         <div id="topic-navs"></div>
-        <div class="nav-section" id="singles-nav">
-          <h2>Single shots</h2>
+        <details class="nav-section" id="singles-nav" data-section="singles">
+          <summary>Single shots</summary>
           <ul class="nav-list" id="singles-list"></ul>
-        </div>
+        </details>
       </aside>
       <main>
         <header>
           <div>
             <h1 id="title">Screenshot viewer</h1>
             <div class="meta" id="subtitle">Loading manifest…</div>
+            <div class="meta" id="capture-info"></div>
           </div>
+          <a class="history-link" id="archive-link" href="?view=archive">Archive</a>
           <input class="search" id="search" type="search" placeholder="Filter screenshots…" />
         </header>
+        <div class="baseline-tabs" id="baseline-tabs" role="tablist" aria-label="Left comparison" hidden></div>
         <div class="stage" id="stage">
           <div class="empty">Pick a screenshot set from the sidebar.</div>
         </div>
@@ -411,6 +453,9 @@
       const manifestUrl = "screenshot-manifest.json"
       const shotPrefix = "/.playwright-mcp/"
       const PIXEL_THRESHOLD = 8
+      const params = new URLSearchParams(window.location.search)
+      const archiveView = params.get("view") === "archive"
+      const historyScreen = params.get("screen")
 
       let manifest = { groups: [], singles: [], summary: {} }
       let items = []
@@ -418,6 +463,10 @@
       let viewMode = "side"
       let showRegions = true
       const pixelCache = new Map()
+      const expandedSections = new Map()
+      let navFiltered = false
+      const baselineModes = new Map()
+      let stageRenderVersion = 0
 
       function shotSrc(relPath) {
         return (
@@ -471,7 +520,13 @@
       }
 
       function renderNav(filter = "") {
+        if (!navFiltered) {
+          document.querySelectorAll("details.nav-section").forEach((section) => {
+            expandedSections.set(section.dataset.section, section.open)
+          })
+        }
         const q = filter.trim().toLowerCase()
+        navFiltered = Boolean(q)
         const match = (item) =>
           !q ||
           item.title.toLowerCase().includes(q) ||
@@ -483,36 +538,55 @@
         topicNavs.innerHTML = ""
         singlesList.innerHTML = ""
 
-        const pairs = items.filter((item) => item.kind === "pair" && match(item))
-        const singles = items.filter((item) => item.kind === "single" && match(item))
+        const pairs = items.filter((item) => (item.kind === "pair" || !archiveView) && match(item))
+        const singles = archiveView ? items.filter((item) => item.kind === "single" && match(item)) : []
 
         const topics = [...new Set(pairs.map((p) => p.topic || "(root)"))].sort(
           (a, b) => topicRank(a) - topicRank(b) || a.localeCompare(b)
         )
 
+        const topicSections = new Map()
         for (const topic of topics) {
-          const section = document.createElement("div")
-          section.className = "nav-section"
-          const h2 = document.createElement("h2")
-          h2.textContent = topic === "(root)" ? "Before / after (root)" : topic
+          let parent = topicNavs
+          let topicPath = ""
+          for (const part of topic.split("/")) {
+            topicPath = topicPath ? `${topicPath}/${part}` : part
+            let section = topicSections.get(topicPath)
+            if (!section) {
+              section = document.createElement("details")
+              section.className = "nav-section"
+              section.dataset.section = `pair:${topicPath}`
+              section.open = navFiltered || expandedSections.get(section.dataset.section) || false
+              const summary = document.createElement("summary")
+              summary.textContent = topicPath === "(root)" ? "Before / after (root)" : part
+              section.appendChild(summary)
+              parent.insertBefore(section, parent.querySelector(":scope > .nav-list"))
+              topicSections.set(topicPath, section)
+            }
+            parent = section
+          }
           const ul = document.createElement("ul")
           ul.className = "nav-list"
           for (const item of pairs.filter((p) => (p.topic || "(root)") === topic)) {
             const li = document.createElement("li")
             const btn = document.createElement("button")
             btn.type = "button"
-            btn.innerHTML = `<span>${item.title}</span>${pairBadge(item)}`
+            const label = document.createElement("span")
+            label.textContent = item.title
+            const badge = document.createElement("span")
+            badge.innerHTML = item.captureStatus === "missing" ? '<span class="badge diff">capture missing</span>' : item.stale ? '<span class="badge diff">capture due</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
+            btn.append(label, badge)
             btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
             btn.addEventListener("click", () => select(item.id))
             li.appendChild(btn)
             ul.appendChild(li)
           }
-          section.appendChild(h2)
-          section.appendChild(ul)
-          topicNavs.appendChild(section)
+          parent.appendChild(ul)
         }
 
-        document.getElementById("singles-nav").hidden = singles.length === 0
+        const singlesNav = document.getElementById("singles-nav")
+        singlesNav.hidden = singles.length === 0
+        singlesNav.open = navFiltered || expandedSections.get("singles") || false
 
         for (const item of singles) {
           const li = document.createElement("li")
@@ -547,7 +621,7 @@
         const afterSrc = shotSrc(item.after)
         return `
           <figure class="panel">
-            <header>Before (left of the line) / After (right)</header>
+            <header>${item.baselineLabel || "Before"} (left of the line) / ${archiveView ? "After" : "Current"} (right)</header>
             <div class="shot slider" id="slider">
               <img src="${beforeSrc}" alt="${item.title} before" />
               <img class="slider-after" src="${afterSrc}" alt="${item.title} after" />
@@ -563,8 +637,8 @@
         if (mode === "slider") return sliderHtml(item)
         return `
           <div class="compare${mode === "actual" ? " actual" : ""}">
-            ${panel("Before", shotSrc(item.before), `${item.title} before`, item)}
-            ${panel("After", shotSrc(item.after), `${item.title} after`, item)}
+            ${panel(item.baselineLabel || "Before", shotSrc(item.before), `${item.title} before`, item)}
+            ${panel(archiveView ? "After" : "Current", shotSrc(item.after), `${item.title} after`, item)}
           </div>
         `
       }
@@ -760,8 +834,9 @@
 
       // Caches the promise, so revisiting a pair mid-load reuses it.
       function comparePair(item) {
-        if (!pixelCache.has(item.id)) pixelCache.set(item.id, readPair(item))
-        return pixelCache.get(item.id)
+        const key = `${item.before}\0${item.after}`
+        if (!pixelCache.has(key)) pixelCache.set(key, readPair(item))
+        return pixelCache.get(key)
       }
 
       async function readPair(item) {
@@ -809,13 +884,13 @@
             mountCanvas(
               beforeHost,
               overlayDiff(pixel.beforeData, pixel.imageData, showOverlay),
-              "Before (tinted)",
+              `${item.baselineLabel || "Before"} (tinted)`,
               item
             )
             mountCanvas(
               afterHost,
               overlayDiff(pixel.afterData, pixel.imageData, showOverlay),
-              "After (tinted)",
+              `${archiveView ? "After" : "Current"} (tinted)`,
               item
             )
           }
@@ -858,8 +933,59 @@
       }
 
       async function renderStage(item) {
+        const renderVersion = ++stageRenderVersion
+        const original = item
+        const tabs = document.getElementById("baseline-tabs")
+        tabs.replaceChildren()
+        tabs.hidden = archiveView
+        let baseline = baselineModes.get(item.id) || "previous"
+        if (!archiveView) {
+          for (const mode of ["previous", "legacy"]) {
+            const button = document.createElement("button")
+            button.type = "button"
+            button.role = "tab"
+            button.textContent = mode === "previous" ? "Previous" : "Legacy"
+            button.setAttribute("aria-selected", String(mode === baseline))
+            button.tabIndex = mode === baseline ? 0 : -1
+            const change = () => {
+              baselineModes.set(original.id, mode)
+              renderStage(original)
+              tabs.querySelector('[aria-selected="true"]').focus()
+            }
+            button.addEventListener("click", change)
+            button.addEventListener("keydown", (event) => {
+              if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+                event.preventDefault()
+                event.stopPropagation()
+                const next = event.key === "Home" ? "previous" : event.key === "End" ? "legacy" : mode === "previous" ? "legacy" : "previous"
+                baselineModes.set(original.id, next)
+                renderStage(original)
+                tabs.querySelector('[aria-selected="true"]').focus()
+              }
+            })
+            tabs.append(button)
+          }
+          if (baseline === "legacy" && item.legacyComparison) {
+            item = { ...item, ...item.legacyComparison, kind: "pair", baselineLabel: "Legacy" }
+          } else if (baseline === "legacy") {
+            item = { ...item, kind: "single", image: item.now.image }
+          } else {
+            item = { ...item, baselineLabel: "Previous" }
+          }
+        }
         const stage = document.getElementById("stage")
         document.getElementById("title").textContent = item.title
+        const info = document.getElementById("capture-info")
+        info.replaceChildren()
+        if (item.now) {
+          const describe = (version) => `${version.capturedAt} · ${version.commit.slice(0, 8)}${version.dirty ? " + edits" : ""}`
+          const before = item.versions.at(-2)
+          info.append(`${baseline === "legacy" && item.legacy?.image ? `Legacy: ${item.legacy.ref.slice(0, 8)} · ` : before ? `Previous: ${describe(before)} · ` : ""}Current: ${describe(item.now)}${item.stale ? " · Relevant code changed; capture pending" : ""} · `)
+          const link = document.createElement("a")
+          link.href = `?view=archive&screen=${encodeURIComponent(item.screenId)}`
+          link.textContent = `History (${item.versions.length})`
+          info.append(link)
+        }
         stage.classList.toggle("hide-regions", !showRegions)
 
         if (item.kind === "pair") {
@@ -883,7 +1009,7 @@
           if (!hasRegions(item)) return
 
           const pixel = await comparePair(item)
-          if (activeId !== item.id || pixel.dimensionMismatch || pixel.pixelIdentical) return
+          if (activeId !== item.id || renderVersion !== stageRenderVersion || pixel.dimensionMismatch || pixel.pixelIdentical) return
 
           document.getElementById("highlight-row").hidden = false
           document.getElementById("diff-row").hidden = false
@@ -891,11 +1017,26 @@
           return
         }
 
+        let baselineMessage
+        if (item.captureStatus === "missing") {
+          baselineMessage = "The Current screenshot file is missing. Restore it to compare recorded captures."
+        } else if (baseline === "legacy") {
+          baselineMessage = item.legacy?.absent
+            ? "This screen did not exist on the recorded legacy baseline."
+            : item.legacy?.image
+              ? "The recorded Legacy screenshot file is missing. Restore the original image."
+              : "Legacy capture not recorded yet."
+        } else {
+          baselineMessage = item.versions?.at(-2)
+            ? "The recorded Previous screenshot file is missing. Restore the original image."
+            : "No previous code version has been captured yet."
+        }
         stage.innerHTML = `
-          <div class="compare single">
-            ${panel(item.note || "Image", shotSrc(item.image), item.title)}
+          <div class="compare${archiveView ? " single" : ""}">
+            ${archiveView ? "" : `<figure class="panel"><header>${baseline === "legacy" ? "Legacy" : "Previous"}</header><div class="empty">${baselineMessage}</div></figure>`}
+            ${panel(archiveView ? item.note || "Image" : "Current", shotSrc(item.image), item.title)}
           </div>
-          <p class="hint">Single image — no pair to compare. Arrow keys: previous / next set.</p>
+          <p class="hint">${archiveView ? "Single image — no pair to compare." : item.captureStatus === "missing" || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Its next relevant code change will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
         `
       }
 
@@ -928,17 +1069,30 @@
         }
 
         manifest = await res.json()
+        const collection = archiveView ? manifest : manifest.current || { groups: [], singles: [] }
         items = [
-          ...manifest.groups.map((group) => ({ kind: "pair", ...group })),
-          ...manifest.singles.map((single) => ({ kind: "single", ...single }))
-        ]
+          ...collection.groups.map((group) => ({ kind: "pair", ...group })),
+          ...collection.singles.map((single) => ({ kind: "single", ...single })),
+          ...(archiveView ? (manifest.history || []).map((single) => ({ kind: "single", ...single })) : [])
+        ].filter((item) => !archiveView || !historyScreen || item.screenId === historyScreen)
+
+        const archiveLink = document.getElementById("archive-link")
+        if (archiveView) {
+          archiveLink.href = "?"
+          archiveLink.textContent = "Current screens"
+        }
 
         const summary = manifest.summary || {}
         document.getElementById("subtitle").textContent =
-          `${summary.pairs || manifest.groups.length} pairs (${summary.byteIdentical || 0} byte-identical, ${summary.byteDifferent || 0} different, ${summary.visuallyDifferent || 0} with visual changes), ${manifest.singles.length} singles — ${manifest.shotDir}/`
+          archiveView
+            ? `${historyScreen ? "Screen history" : "Archive — older captures; legacy folders have no recorded source version"} · ${items.length} entries`
+            : `${manifest.current?.branch || "Current branch"} · ${items.length} screens · Left: Previous or Legacy · Right: Current`
 
         renderNav()
         if (items.length) select(items[0].id)
+        else {
+          document.getElementById("stage").textContent = "No screens recorded for this branch yet. Record a capture with yarn screenshots:record; existing captures remain in Archive."
+        }
       }
 
       document.getElementById("search").addEventListener("input", (event) => {

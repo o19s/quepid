@@ -74,6 +74,8 @@
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
     "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui",
-    "screenshots:view": "node test/playwright/screenshot-viewer-server.mjs"
+    "screenshots:view": "node test/playwright/screenshot-viewer-server.mjs",
+    "screenshots:record": "node test/playwright/record-screenshot.mjs",
+    "screenshots:status": "node test/playwright/screenshot-status.mjs"
   }
 }

@@ -32,6 +32,7 @@
 |-----|---------|
 | [`adr/README.md`](./adr/README.md) | Architecture decisions and provider foundation; deferred batch/escalation proposals |
 | [`js_tooling.md`](./js_tooling.md) | JavaScript tests, linting, formatting, and build commands |
+| [`screenshot_review.md`](./screenshot_review.md) | Screenshot viewer, pixel diffs, and branch-specific capture history |
 
 ## Dedup rules (Aug 2026)
 

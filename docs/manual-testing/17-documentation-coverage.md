@@ -101,6 +101,7 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 | `docs/credits.md` | Attribution/reference-only | No app behavior. |
 | `docs/agentic_javascript_extraction.md` | Engineering workflow reference | No product behavior; automated test process is outside manual coverage. |
 | `docs/js_tooling.md` | Developer tooling reference | Validate with JS unit/lint checks, not browser manual testing. |
+| `docs/screenshot_review.md` | Screenshot tooling workflow | 17.11 covers the viewer and screen history. |
 | `docs/test_suite_review_*.md` | Generated test review | Test inventory/reference; no additional runtime behavior. |
 | `docs/todo/*.md` | Planning, implementation, and issue references | Test any item only when it becomes implemented user-facing behavior; do not treat todo prose as shipped behavior. |
 | `docs/Quepid-Data-Storage-Briefing.pdf` | Architecture/reference artifact | No browser scenario; review when storage architecture changes. |
@@ -193,6 +194,15 @@ The following covers every non-manual-testing file currently under `docs/`. The 
   - [ ] Confirm an HTTPS deployment cannot directly call an HTTP search endpoint unless the documented Quepid proxy path is enabled.
   - [ ] Confirm a missing/invalid encryption key fails safely at boot or configuration time rather than silently losing secrets.
   - [ ] If OAuth, SMTP/Postmark, SolidCable, or SolidQueue is configured, verify one representative login, email, realtime notification, and background-job flow; record unavailable external services as blocked prerequisites.
+
+### 17.11 Screenshot viewer and screen history
+
+- [ ] **Steps:** Follow [Screen capture history](../screenshot_review.md#screen-capture-history) to link a state in `tracking.yml`, prepare and record it, with a historical Legacy capture where it existed. Run `screenshots:status` and confirm the linked ID resolves to the correct file locations and content freshness. Open the viewer, expand its application area, select the screen and switch between Previous and Legacy with mouse and keyboard. Open History, then Archive and return to Current screens.
+- **Expected:** Sections start collapsed. Current stays on the right when the left baseline changes; missing Previous, uncaptured Legacy and a screen absent on Legacy are distinguished. Recorded baseline files that are missing are identified separately from captures never recorded. History contains only that screen's recorded versions. Archive retains the nested topic folders. Recording unchanged source leaves images intact; relevant source changes retain the previous Current, and unrecaptured changes show `capture due`.
+- **Edge cases:**
+  - [ ] Verify source changes during capture reject recording without advancing history, and unrelated commits or file timestamps do not advance history.
+  - [ ] Verify switching branches keeps their histories separate.
+  - [ ] Verify switching baselines does not reuse the other baseline's pixel diff or display a delayed overlay from it.
 
 ## Scope notes
 

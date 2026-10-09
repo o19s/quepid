@@ -15,30 +15,20 @@ description: >-
 
 # Branch UI diff (before/after screenshots)
 
-Follow [AGENTS.md — Before/after pairs](../../../AGENTS.md#beforeafter-pairs--do-not-break-the-working-tree)
-for baseline selection: initial migration comparisons require the historical
-AngularJS / Bootstrap 3 baseline; a pre-fix baseline in the diff-baseline instance is for focused regression rechecks.
-For historical comparisons, use
-[the isolated historical instance](../../../docs/legacy_comparison.md) instead
-of this workflow. Its schema, runtime and seed data are independent; do not use
-`bin/ui_diff_db_sync` for historical comparisons.
+Follow the authoritative [Screenshot capture and diffing guide](../../../docs/screenshot_review.md)
+for [baseline selection](../../../docs/screenshot_review.md#comparison-baselines),
+[capture and verification conventions](../../../docs/screenshot_review.md#capture-and-verification),
+and [routine screen history](../../../docs/screenshot_review.md#screen-capture-history).
+For historical comparisons, use [the isolated historical instance](../../../docs/legacy_comparison.md)
+instead of the branch comparison steps below.
 
 Proves what a branch actually changed on screen, by running **two Quepid instances at once**
 on the **same data** — the branch's base ref on one port, the current code on another — instead of the older approach of
 flipping files in place and rebuilding (fragile, and __not__ how this skill works: see
 `bin/ui_diff_up`/`bin/ui_diff_down` and `bin/branch_ui_scenarios`).
 
-**Ordinary branch comparisons:** "before" is **`main`**, not some other point on this branch — both
-`bin/branch_ui_scenarios` and `bin/ui_diff_up` default `BASE_REF` to `git merge-base HEAD main`
-(never `HEAD~1` or an arbitrary earlier commit on the same branch). "After" is **the current
-branch as it stands right now, including uncommitted changes** — that's just the live dev server
-at `:3000`, which serves the working directory directly; `bin/docker s`'s `Procfile.dev` already
-runs `yarn build:*:watch` processes, so uncommitted JS/CSS edits show up live with no rebuild step,
-and Rails/ERB changes are read live too. Never narrow this to "last commit vs. uncommitted diff" —
-the point is to show everything this branch changes relative to `main`, committed or not.
-For an explicitly scoped regression recheck, load the requested pre-fix baseline
-into the diff-baseline worktree instead (see AGENTS.md); document its source, and
-don't `--reset` or switch refs while someone else's uncommitted baseline is loaded.
+For branch scope and the default merge-base, follow
+[Branch comparison workflow](../../../docs/screenshot_review.md#branch-comparison-workflow).
 
 **Data:** the old instance has its own database, `quepid_ui_diff_development` for MySQL/PostgreSQL
 or `tmp/ui_diff/storage/development.sqlite3` for SQLite, a copy of the dev
@@ -54,11 +44,10 @@ the copy's attachments may be missing on :3003.
 someone set up on :3003, and restarts the container. Before syncing, check `ListAgents` for other
 active sessions on this machine; if one might be using the baseline, ask first.
 
-**The Playwright MCP browser is a single shared instance, not one per agent.** If you delegate
-scenario batches to multiple subagents, running them **in parallel makes them hijack each other's
-navigation**. Always run Playwright-driving batches **sequentially** — launch one, wait for it to
-finish, launch the next. Only non-Playwright work (e.g. reading tracking.yml, editing docs)
-is safe to parallelize.
+**Browser concurrency:** batches using the same Playwright MCP browser must run
+sequentially so they do not hijack each other's navigation. Isolated sessions use
+separate profiles; follow [AGENTS.md](../../../AGENTS.md#ui-changes--screenshots-via-playwright-mcp-playwright-server)
+for browser setup and recovery.
 
 ## Comparison galleries
 
@@ -115,10 +104,8 @@ of the branch-diff scenario discovery below.
    `git checkout`/`stash`/rebase can bump many files' mtimes without changing their content) — that
    just costs an unnecessary rerun of one scenario, which is a fine tradeoff for staying simple.
 
-   - `bin/manual_test_status` uses modification times for dirty files. For clean files, both
-     modification and commit times must be newer than `last_run` to flag a code change.
-     Committing the same files tested after their last edit therefore keeps verification current.
-     See `DEVELOPER_GUIDE.md` § Manual testing tracker for limitations; preserve actual test times.
+   - Follow [DEVELOPER_GUIDE.md — Manual testing tracker](../../../DEVELOPER_GUIDE.md#manual-testing-tracker)
+     for freshness rules and timestamp limitations; preserve actual test times.
    - A scenario whose last verification predates the sweep (an older `last_run` with no
      branch-ui-diff-style note) has NOT had an old-vs-new comparison yet — it's a genuine gap.
    Report the split to the user: e.g. "88 scenarios matched; 42 already have an explicit
@@ -133,8 +120,8 @@ of the branch-diff scenario discovery below.
    ```
    ./bin/ui_diff_up [BASE_REF] [PORT]     # PORT defaults to 3003 (3001 is bin/legacy's)
    ```
-   The diff baseline is one of three permanent instances (current :3000, `bin/legacy` :3001, this
-   one :3003). The command is idempotent: if `quepid_app_ui_diff` is already serving that ref it
+   Use the permanent instance specified in [Comparison baselines](../../../docs/screenshot_review.md#comparison-baselines).
+   The command is idempotent: if `quepid_app_ui_diff` is already serving that ref it
    returns at once. Otherwise it checks the single sibling worktree (`../quepid-ui-diff-worktree`)
    out at the base ref, recreates that one container (detached, `restart: unless-stopped`, joined
    to the same `mysql`/`keycloak`/`ollama` containers as the primary stack, using its own database
@@ -143,8 +130,7 @@ of the branch-diff scenario discovery below.
    if another session may be using the baseline, check before switching. It blocks (up to ~6 min
    on a cold build) until `http://localhost:<PORT>` responds, or prints `docker logs` and exits
    non-zero — read that log if it fails, don't just retry blindly. `--reset` discards local edits
-   in the worktree (e.g. a pre-fix baseline) and rebuilds. Never create another worktree or
-   container for a baseline.
+   in the worktree (e.g. a pre-fix baseline) and rebuilds.
 
 6. **For each in-scope scenario**, open its doc section (`docs/manual-testing/<file>`, heading
    `### <id> <title>`) and read its **Steps** — drive only the golden path, not every edge case,
@@ -155,8 +141,7 @@ of the branch-diff scenario discovery below.
      `.playwright-mcp/branch-ui-diff/<scenario-id>-<state>-before.png`.
    - Repeat the identical steps against the **current** dev server (`http://localhost:3000`),
      saving `...-after.png`.
-   - Follow the existing screenshot conventions in `CLAUDE.md` (`browser_resize` to fit modals,
-     full viewport shots, not element crops).
+   - Follow the guide's [capture conventions](../../../docs/screenshot_review.md#capture-and-verification).
    - Log in with `quepid+realisticactivity@o19s.com` / `password` on both instances — they're
      separate sessions, so both need their own login.
 
@@ -174,23 +159,9 @@ of the branch-diff scenario discovery below.
    ./bin/ui_diff_down --remove-worktree   # also deletes the worktree entirely
    ```
 
-8. **Actually look at every pair before reporting anything.** Run `yarn screenshots:view` (or
-   `node test/playwright/screenshot-viewer-server.mjs`) to regenerate the manifest; each changed
-   pair's `diff.regions` in `test/playwright/screenshot-manifest.json` lists numbered boxes, in
-   screenshot pixels, around every cluster of changed pixels, and the viewer draws them on both
-   images. Use them to find what to look at, and account for every box: intended change,
-   regression, or a state mismatch to recapture. Many boxes, or one covering most of the page,
-   usually means mismatched data, scroll or session state. Capturing a screenshot is not the
-   same as verifying it. For each scenario/state, open both the `-before.png` and `-after.png`
-   with the Read tool (or equivalent) and look at them — don't infer "identical" or "no visual
-   diff" from the fact that the underlying template/controller wasn't in the diff, and don't rely
-   on console-log text alone (e.g. an API error logged to console still needs the screenshot
-   opened to confirm what the *page* actually showed). If content legitimately differs because the
-   scenario advanced state (e.g. "Continue Judging" landing on a different query/doc pair each
-   run), say so explicitly rather than silently calling it a match. Only after this pass, report a
-   before/after pairing per scenario/state (paths to the PNGs) with what you actually saw, and call
-   out anything that looked wrong on either side, plus any scenario you skipped because it looked
-   mutating or ambiguous.
+8. **Inspect and report the pairs.** Follow the guide's
+   [capture and verification conventions](../../../docs/screenshot_review.md#capture-and-verification)
+   and [viewer instructions](../../../docs/screenshot_review.md#screenshot-viewer).
 
 ## When *not* to use this
 

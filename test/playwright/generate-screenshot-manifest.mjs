@@ -21,6 +21,8 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { decodePng, diffRegions } from "./png-diff.mjs"
+import { readHistory, sourceFingerprint } from "./screen-history.mjs"
+import { linkedScreenshotStatus } from "./screenshot-tracker.mjs"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "../..")
@@ -280,6 +282,62 @@ function buildManifest() {
 }
 
 const manifest = buildManifest()
+const history = readHistory(repoRoot)
+const linkedScreens = linkedScreenshotStatus(repoRoot, undefined, history)
+manifest.screenshots = linkedScreens
+const linkedById = new Map(linkedScreens.map((screen) => [screen.id, screen]))
+const imageExists = (image) => image && fs.existsSync(path.join(shotDir, image))
+const current = { groups: [], singles: [], branch: history.branch }
+const revisions = []
+for (const screen of Object.values(history.screens)) {
+  const versions = screen.versions
+  const now = versions.at(-1)
+  if (!now) continue
+  let stale = true
+  const linked = linkedById.get(screen.id)
+  try {
+    stale = sourceFingerprint(repoRoot, linked?.paths || screen.paths) !== now.source
+  } catch {
+    // Removed source remains visibly pending until a replacement capture is recorded.
+  }
+  const entry = {
+    id: screen.id,
+    screenId: screen.id,
+    topic: screen.area,
+    title: screen.title,
+    stale,
+    captureStatus: linked?.current.status || (imageExists(now.image) ? stale ? "stale" : "current" : "missing"),
+    versions,
+    now,
+    legacy: screen.legacy || null,
+    legacyComparison: imageExists(screen.legacy?.image) && imageExists(now.image) ? {
+      before: screen.legacy.image,
+      after: now.image,
+      ...compareFiles(screen.legacy.image, now.image)
+    } : null
+  }
+  const before = versions.at(-2)
+  if (before && imageExists(before.image) && imageExists(now.image)) {
+    current.groups.push({ ...entry, before: before.image, after: now.image, ...compareFiles(before.image, now.image) })
+  } else {
+    current.singles.push({ ...entry, image: now.image, note: "First capture" })
+  }
+  for (let index = 0; index < versions.length; index++) {
+    const version = versions[index]
+    revisions.push({
+      id: `${screen.id}@${index + 1}`,
+      screenId: screen.id,
+      topic: screen.area,
+      title: `${screen.title} — version ${index + 1}`,
+      image: version.image,
+      note: `${version.capturedAt} · ${version.commit.slice(0, 8)}${version.dirty ? " + edits" : ""}`
+    })
+  }
+}
+current.groups.sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
+current.singles.sort((a, b) => a.topic.localeCompare(b.topic) || a.id.localeCompare(b.id, undefined, { numeric: true }))
+manifest.current = current
+manifest.history = revisions
 if (fs.existsSync(shotDir)) saveDiffCache()
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 console.log(

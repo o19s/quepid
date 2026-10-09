@@ -40,6 +40,9 @@
 #     They're a best-effort heuristic for `bin/manual_test_status`, not exhaustive — improve them
 #     when you learn a scenario touches a file this list is missing.
 #   - result: pass_with_fixes means bugs were found AND fixed in the same pass (see notes for what).
+#   - `screenshots` maps stable state names to screen-history IDs; image paths and source
+#     versions live in the local history registry. Screenshot freshness is independent of
+#     last_run; see docs/screenshot_review.md — Screen capture history.
 #
 # Check status: bin/manual_test_status  (or `bin/manual_test_status --due-only`)
 
@@ -58,9 +61,11 @@ parts:
         paths: ["app/controllers/users/signups_controller.rb", "app/views/sessions/new.html.erb"]
       "1.2":
         title: "Log in / log out"
-        last_run: 2026-10-09T17:15:16Z
+        screenshots:
+          login-form: "1.2/login-form"
+        last_run: 2026-10-09T22:23:15Z
         result: pass
-        notes: "Covered live: partial unused-class cleanup check; successful email sign-in on pre-cleanup baseline :3003 and current :3000; sign-in screenshots inspected and matched. Not covered live: logout, invalid credentials, lockout or signup submission."
+        notes: "Covered live: unauthenticated login form on current :3000 and historical 8ceb99e9 :3001 at1440x1000; captures inspected and registered as1.2/login-form. Legacy/Current viewer tabs preserve the current image. Visible differences include historical missing OAuth buttons (configuration mismatch), form spacing and current footer; this is capture-workflow verification, not full migration parity. Not covered live: sign-in submission, logout, invalid credentials, lockout or signup."
         paths: ["app/controllers/sessions_controller.rb", "app/views/sessions/", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_sidebar.html.erb", "config/routes.rb"]
       "1.3":
         title: "OAuth login"
@@ -171,7 +176,7 @@ parts:
         last_run: 2026-10-09T20:42:42Z
         result: pass
         notes: "Verified columns/two owned cases; partial-name/exact-ID/team filters combine; archived switch empty then active restored; no-match empty table does not show first-case prompt. Unrelated disposable account sees neither private case and gets correct first-case guidance. Screenshot3.1-filter-empty inspected. Pagination not exercised with two fixtures."
-        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb", "app/assets/stylesheets/bootstrap5-add.css"]
+        paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css"]
       "3.2":
         title: "Create a new case (setup wizard)"
         last_run: 2026-10-09T17:31:12Z
@@ -1046,7 +1051,7 @@ parts:
         last_run: 2026-10-09T20:30:27Z
         result: pass_with_fixes
         notes: "Fixed sidebar grid wrapping below768px. Teams600px before/after screenshots inspected in five-failures; layout bounds at375/768/1280 show content beside sidebar with no body overflow. Focused regression sample; Books/admin/full modal sweep and core750px minimum remain outside this check."
-        paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "app/views/admin/users/index.html.erb"]
+        paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css", "app/views/admin/users/index.html.erb"]
       "16.3":
         title: "Case header typography"
         last_run: 2026-10-09T18:12:58Z
@@ -1064,7 +1069,7 @@ parts:
         last_run: 2026-10-09T21:03:56Z
         result: pass_with_fixes
         notes: "Fixed pre-existing sidebar highlighting: make_active? now inspects request.path, excluding filter query parameters while retaining nested-path matching. Live OSC team with all four section filters/archived flags now activates only Teams; filters retained. Inspected before/after PNGs in .playwright-mcp/sidebar-active; nested Book query/doc page activates Books, Turbo Back/Forward restores Teams/Books correctly. Earlier in this batch, dropdown/modal/AI-tab/guidelines/tooltip/popover screenshots were inspected; those controls were not replayed after this path-only fix. Pre-Angular source be9b319a confirmed old fullpath logic (source comparison only). Regression tests reproduced failure before fix; helper suites25 tests/87 assertions pass."
-        paths: ["app/helpers/application_helper.rb", "app/views/layouts/_sidebar.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/signup.css", "app/assets/stylesheets/style.css", "app/assets/stylesheets/json-explorer.css", "app/assets/stylesheets/qscore.css", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "build_css.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/judgements.css"]
+        paths: ["app/helpers/application_helper.rb", "app/views/layouts/_sidebar.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/signup.css", "app/assets/stylesheets/style.css", "app/assets/stylesheets/json-explorer.css", "app/assets/stylesheets/qscore.css", "app/assets/stylesheets/base.css", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "build_css.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/judgements.css"]
 
 
       "16.6":
@@ -1137,3 +1142,9 @@ parts:
         result: blocked
         notes: "Root-hosted local HTTP sign-in/core query/modal/email reset and health smoke covered elsewhere. Configured HTTPS/non-root/encrypted-secret deployment not available; no extra Quepid deployment or production credentials provided. Cannot verify scheme/context/encryption prerequisites from this local browser."
         paths: ["config/application.rb", "config/environments/production.rb", "config/initializers/customize_quepid.rb", "config/initializers/email_provider.rb", "config/routes.rb", "app/mailers/", "app/views/layouts/", "app/views/pages/cookies.html.erb", "Dockerfile.dev", "Dockerfile.prod", "docker-compose.yml", "docker-compose.prod.yml", "nginx.conf", "docs/running_with_postgresql.md"]
+      "17.11":
+        title: "Screenshot viewer and screen history"
+        last_run: 2026-10-09T22:43:14Z
+        result: pass_with_fixes
+        notes: "Covered live: tracker-linked login-form resolves registry ID, Current/Legacy image paths and current source status; CLI check retains saved stylesheet dependencies and needsCapture=false. Regenerated manifest agrees with displayed Current image; Legacy comparison before/after screenshots inspected in tracker-screenshots. Controlled browser fixture renders capture missing. Eleven recorder/tracker tests cover freshness independent of last_run, missing images, added dependencies, mapped IDs, branch isolation and original-byte restoration. Follow-up: fixed deletion fingerprints and missing-baseline wording; 12 tests pass, including simulated Git index removal of a deleted path (confirmed test fails with fix removed). MCP controlled-fixture Previous/Legacy before/after captures inspected in screenshot-baseline-files; intended changes are missing-file messages and recovery hints, Current image retained. Unrecorded/absent Legacy, first capture and missing Current messages also checked. Not covered live: full app capture inventory, actual source-edit/capture cycle or delayed-network overlay race."
+        paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-status.mjs"]
