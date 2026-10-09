@@ -57,7 +57,7 @@ module ApplicationHelper
 
   def make_active? options
     if options.key?(:path)
-      request.fullpath.include?(options[:path])
+      request.path.include?(options[:path])
     elsif options.key?(:controller)
       controller_name == options[:controller]
     elsif options.key?(:action)

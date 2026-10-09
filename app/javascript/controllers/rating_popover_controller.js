@@ -36,7 +36,6 @@ export default class extends Controller {
     container.className = "ratingContainer"
 
     const list = document.createElement("ul")
-    list.className = "ratingNums"
 
     Object.keys(this.scaleValue).forEach((rating) => {
       const entry = this.scaleValue[rating] || {}

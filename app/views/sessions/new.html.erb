@@ -57,17 +57,17 @@
               </div>
             <% end %>
             <div class="mb-3">
-              <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+              <%= f.text_field :email, class: 'form-control', placeholder: 'Email Address' %>
             </div>
 
             <div class="mb-3">
-              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+              <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
             </div>
             <div>
               <%= link_to 'Forgot Password?', new_user_password_path %>
             </div>
             <br>
-            <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
+            <%= f.submit 'Sign in', class: 'btn btn-primary' %>
             <br>
 
           <% end %>
@@ -95,19 +95,19 @@
             </div>
           <% end %>
           <div class="mb-3">
-             <%= f.text_field :name, class: 'form-control name', placeholder: 'Full Name' %>
+             <%= f.text_field :name, class: 'form-control', placeholder: 'Full Name' %>
           </div>
 
           <div class="mb-3">
-            <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+            <%= f.text_field :email, class: 'form-control', placeholder: 'Email Address' %>
           </div>
 
           <div class="mb-3">
-             <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+             <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
           </div>
 
           <div class="mb-3">
-              <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
+              <%= f.password_field :password_confirmation, class: 'form-control', placeholder: 'Confirm Password' %>
           </div>
 
           <% unless Rails.application.config.terms_and_conditions_url.blank? %>
@@ -129,7 +129,7 @@
           </div>
           <% end %>
 
-          <%= f.submit 'Sign up', class: 'btn btn-primary signup' %>
+          <%= f.submit 'Sign up', class: 'btn btn-primary' %>
 
         <% end %>
       </div>

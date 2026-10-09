@@ -1,34 +1,3 @@
-/* begin alert icon for missing ratings */
-.icon-container {
-    position: relative;
-    display: inline-block;
-    /* The 🐸 emoji glyph sits well above the text baseline, so at default
-       vertical-align the icon renders noticeably higher than the sibling
-       result-count number and the toggle chevron. Nudge down to align. */
-    top: 6px;
-}
-
-.notification-bubble {
-    position: absolute;
-    top: -10px; /* Adjust as needed */
-    right: -12px; /* Adjust as needed */
-    background-color: rgba(255, 0, 0, 0.7); /* Red with 50% opacity */
-    color: white;
-    border-radius: 50%;
-    width: 20px; /* Set width */
-    height: 20px; /* Set height equal to width */
-    display: flex; /* Center content */
-    justify-content: center; /* Center content horizontally */
-    align-items: center; /* Center content vertically */
-    font-size: 12px;
-}
-
-.frog-icon {
-    color: grey; 
-    filter: grayscale(100%); 
-}
-/* end alert icon for missing ratings */
-
 .spinner {
     display: inline-block; /* Inline to work with <i> */
     width: 16px;
@@ -38,13 +7,6 @@
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 8px auto; /* Center the spinner */
-}
-
-
-
-/* Get the spinner to align nicer */
-.vertically-centered {
-    margin: 2px;
 }
 
 /* Spin an icon */

@@ -21,28 +21,28 @@
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.email %></p>
+        <p><%= @user.email %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Name</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.name || 'N/A' %></p>
+        <p><%= @user.name || 'N/A' %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Company</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.company %></p>
+        <p><%= @user.company %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Signed Up</label>
       <div class="col-sm-10">
-        <p class="form-control-static">
+        <p>
           <%= @user.agreed_time %>
           <% if @user.agreed_time %>
             (<%= time_ago_in_words @user.agreed_time %> ago)
@@ -53,35 +53,35 @@
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Created by Invite?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.created_by_invite? %></p>
+        <p><%= @user.created_by_invite? %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Email Marketing</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.email_marketing %></p>
+        <p><%= @user.email_marketing %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Number of Logins</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.num_logins %></p>
+        <p><%= @user.num_logins %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Is Administrator?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.administrator %></p>
+        <p><%= @user.administrator %></p>
       </div>
     </div>
 
     <div class="row mb-3">
       <label class="col-sm-2 col-form-label">Locked?</label>
       <div class="col-sm-10">
-        <p class="form-control-static"><%= @user.locked? %></p>
+        <p><%= @user.locked? %></p>
       </div>
     </div>
   </div>

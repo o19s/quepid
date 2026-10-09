@@ -66,7 +66,7 @@
 }
 </style>
 <div class="sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary" style="width: 3.5rem;">
-    <ul class="nav nav-pills nav-flush flex-column mb-auto text-center">
+    <ul class="nav nav-pills flex-column mb-auto text-center">
       <li>
         <%= link_to root_path, class: "nav-link #{make_active?({controller: 'home'}) ? 'active' : ''} py-3 border-bottom rounded-0", 'data-controller':'bs-tooltip', 'data-bs-tooltip-placement-value':'right', 'aria-label':'Dashboard', 'data-bs-tooltip-title-value':'Dashboard' do %>
           <i
@@ -160,7 +160,7 @@
       <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle' %>
       </a>
-      <ul class="dropdown-menu text-small shadow">
+      <ul class="dropdown-menu shadow">
         <li><%= link_to "Create case...", case_new_path, class:'dropdown-item', data: { turbo: false } %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>
         <li><hr class="dropdown-divider"></li>

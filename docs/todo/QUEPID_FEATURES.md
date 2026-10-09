@@ -1475,7 +1475,7 @@ If the case has a linked book (`bookName`), the modal footer shows a **"Refresh 
 | `frog_report_controller.js` | Opens modal via `$uibModal` |
 | `frog_report_modal_instance_controller.js` | Stats computation engine |
 | `_modal.html` | Modal template with Vega chart |
-| `froggy.css` | Styles including Querqy icon |
+| `froggy.css` | Frog pond modal styles (background image, chart) |
 
 ---
 

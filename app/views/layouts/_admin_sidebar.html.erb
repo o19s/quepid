@@ -22,7 +22,7 @@
 </style>
 <div class="admin-sidebar d-flex flex-column flex-shrink-0 bg-body-tertiary">
   <div class="px-3 py-3 text-uppercase text-muted small fw-bold">Admin</div>
-  <ul class="nav nav-pills nav-flush flex-column">
+  <ul class="nav nav-pills flex-column">
     <li class="nav-item">
       <%= link_to 'Overview', admin_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if current_page?(admin_path)}" %>
     </li>
@@ -36,7 +36,7 @@
       <%= link_to 'Websocket Tester', admin_websocket_tester_index_path, class: "nav-link rounded-0 py-2 px-3 border-bottom #{'active' if current_page?(admin_websocket_tester_index_path)}" %>
     </li>
   </ul>
-  <ul class="nav nav-pills nav-flush flex-column">
+  <ul class="nav nav-pills flex-column">
     <%# Blazer and Mission Control Jobs are separately mounted engines with their own UI/layout, %>
     <%# so they're linked here for discoverability but won't show this sidebar themselves. %>
     <li class="nav-item">

@@ -90,7 +90,7 @@
         <i class="bi bi-robot"></i>
         <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
         <%= form.collection_check_boxes(:ai_judge_ids, @ai_judges, :id, :name) do |b| %>
-          <div class="collection-check-box">
+          <div>
             <%= b.check_box %>
             <%= b.label %>
             <div class="form-check ms-4">

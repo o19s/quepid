@@ -1,25 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Brings up a second, throwaway Quepid app instance running a BASE ref's code, on its own port,
-# sharing the same mysql/keycloak/ollama containers as your primary `bin/docker s` dev server —
-# so you can screenshot "before" (this instance) vs "after" (your live dev server) without ever
-# touching your working tree. Pairs with bin/ui_diff_down.
+# Points the permanent "diff baseline" Quepid instance at a BASE ref's code. It runs on its own
+# port, sharing the same mysql/keycloak/ollama containers as your primary `bin/docker s` dev
+# server, so you can screenshot "before" (this instance) vs "after" (your live dev server) without
+# ever touching your working tree. It is one of three long-lived instances: current (:3000),
+# historical (bin/legacy, :3001) and this one (:3003).
 #
 # Usage:
 #   bin/ui_diff_up [BASE_REF] [PORT]
-#   bin/ui_diff_up main            # port defaults to 3001
-#   bin/ui_diff_up main 3002
+#   bin/ui_diff_up main            # port defaults to 3003 (3001 is bin/legacy's)
+#   bin/ui_diff_up --reset HEAD    # discard local edits in the worktree (e.g. a pre-fix baseline)
 #
-# The old-code checkout lives in a sibling git worktree (../quepid-ui-diff-worktree) that's
-# reused across invocations; it's only rebuilt (bundle/yarn install + yarn build) when the base
-# ref actually changed, so repeat runs against the same base ref are fast.
+# Idempotent: if the instance is already serving BASE_REF on PORT, this returns immediately.
+# Otherwise it checks the shared worktree (../quepid-ui-diff-worktree) out at BASE_REF and
+# recreates the single container (quepid_app_ui_diff), detached and with a restart policy, so it
+# outlives the calling shell and Docker restarts. Assets are rebuilt only when the ref changes.
+# bin/ui_diff_down stops it for a manual teardown.
 
 APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$APP_ROOT"
 
+RESET=0
+if [ "${1:-}" = "--reset" ]; then
+  RESET=1
+  shift
+fi
+
 BASE_REF="${1:-}"
-PORT="${2:-3001}"
+PORT="${2:-3003}"
 
 if [ -z "$BASE_REF" ]; then
   BASE_REF=$(git merge-base HEAD main 2>/dev/null || git merge-base HEAD origin/main 2>/dev/null || true)
@@ -32,9 +41,7 @@ BASE_SHA=$(git rev-parse "$BASE_REF")
 
 WORKTREE_DIR="$(dirname "$APP_ROOT")/quepid-ui-diff-worktree"
 STATE_DIR="$APP_ROOT/tmp/ui_diff"
-MARKER_FILE="$STATE_DIR/built_sha"
-LOG_FILE="$STATE_DIR/server.log"
-PID_FILE="$STATE_DIR/server.pid"
+CURRENT_FILE="$STATE_DIR/current"          # "<sha> <port>" the running container was started with
 OVERRIDE_FILE="$STATE_DIR/docker-compose.override.yml"
 CONTAINER_NAME="quepid_app_ui_diff"
 
@@ -44,8 +51,52 @@ echo "==> Base ref: $BASE_REF ($BASE_SHA)"
 echo "==> Worktree: $WORKTREE_DIR"
 echo "==> Port:     $PORT"
 
+running() {
+  [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)" = "true" ]
+}
+
+worktree_dirty() {
+  [ -d "$WORKTREE_DIR" ] && [ -n "$(git -C "$WORKTREE_DIR" status --porcelain --untracked-files=no)" ]
+}
+
+CURRENT=""
+[ -f "$CURRENT_FILE" ] && CURRENT=$(cat "$CURRENT_FILE")
+
+# --- already serving this ref? -----------------------------------------------------------------
+if [ "$RESET" = "0" ] && running && [ "$CURRENT" = "$BASE_SHA $PORT" ]; then
+  if worktree_dirty; then
+    echo "==> Note: the worktree has local edits (a pre-fix baseline?). Pass --reset to discard them."
+  fi
+  if ! curl -sf -o /dev/null "http://localhost:$PORT" 2>/dev/null; then
+    echo "Container is up at this ref but http://localhost:$PORT isn't answering:" >&2
+    docker logs --tail 60 "$CONTAINER_NAME" >&2 || true
+    exit 1
+  fi
+  echo "==> Already up: http://localhost:$PORT  (base ref $BASE_REF)"
+  exit 0
+fi
+
+# Local edits (e.g. a pre-fix baseline) survive a restart at the same ref; switching refs would
+# discard them, so that needs an explicit --reset.
+KEEP_EDITS=0
+if [ "$RESET" = "0" ] && worktree_dirty; then
+  if [ "$(git -C "$WORKTREE_DIR" rev-parse HEAD)" = "$BASE_SHA" ]; then
+    KEEP_EDITS=1
+  else
+    echo "The worktree has local edits (a pre-fix baseline?) that switching to $BASE_SHA would discard." >&2
+    echo "Check nobody is using them, then rerun with --reset." >&2
+    exit 1
+  fi
+fi
+
+if running && [ -n "$CURRENT" ]; then
+  echo "==> Switching the baseline from ${CURRENT% *} (port ${CURRENT#* }) to $BASE_SHA (port $PORT)"
+fi
+
 # --- worktree: create or move to the requested ref ---------------------------------------------
-if git worktree list --porcelain | grep -qxF "worktree $WORKTREE_DIR"; then
+if [ "$KEEP_EDITS" = "1" ]; then
+  echo "==> Reusing existing worktree, keeping its local edits"
+elif git worktree list --porcelain | grep -qxF "worktree $WORKTREE_DIR"; then
   echo "==> Reusing existing worktree"
   git -C "$WORKTREE_DIR" checkout --force --quiet "$BASE_SHA" || {
     echo "Failed to check out $BASE_SHA in existing worktree; remove it and retry: git worktree remove --force $WORKTREE_DIR" >&2
@@ -62,13 +113,9 @@ if [ ! -f "$WORKTREE_DIR/config/database.yml" ]; then
   cp "$WORKTREE_DIR/config/database.yml.sample" "$WORKTREE_DIR/config/database.yml"
 fi
 
-# --- stop any previous ui_diff instance before starting a new one -------------------------------
-if [ -f "$PID_FILE" ] && kill -0 "$(cat "$PID_FILE")" 2>/dev/null; then
-  echo "==> Stopping previous ui_diff instance (pid $(cat "$PID_FILE"))"
-  kill "$(cat "$PID_FILE")" 2>/dev/null || true
-  sleep 1
-fi
+# --- replace the single container ---------------------------------------------------------------
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
+rm -f "$CURRENT_FILE"
 
 # --- compose override: point the `app` service's volume at the worktree instead of `.` ---------
 cat > "$OVERRIDE_FILE" <<YAML
@@ -79,42 +126,42 @@ services:
       - ./log:/log
 YAML
 
-NEEDS_BUILD=1
-if [ -f "$MARKER_FILE" ] && [ "$(cat "$MARKER_FILE")" = "$BASE_SHA" ]; then
-  NEEDS_BUILD=0
+# The build marker lives in the worktree's gitignored tmp/, so it survives checkouts and a
+# container restart only rebuilds when the ref actually changed. --reset forces a rebuild.
+[ "$RESET" = "1" ] && rm -f "$WORKTREE_DIR/tmp/ui_diff_built_sha"
+CONTAINER_CMD='set -e
+bundle check || bundle install
+if [ "$(cat tmp/ui_diff_built_sha 2>/dev/null)" != "$UI_DIFF_SHA" ]; then
+  yarn install --silent
+  yarn build
+  mkdir -p tmp
+  echo "$UI_DIFF_SHA" > tmp/ui_diff_built_sha
 fi
-
-BUILD_CMD=""
-if [ "$NEEDS_BUILD" = "1" ]; then
-  echo "==> Base ref changed (or first run) — installing deps and building assets in the worktree"
-  BUILD_CMD="bundle check || bundle install && yarn install --silent && yarn build && "
-fi
+rm -f tmp/pids/server.pid
+exec bundle exec puma -C config/puma.rb'
 
 echo "==> Starting app container ($CONTAINER_NAME) on port $PORT"
 APP_PORT="$PORT" docker compose \
   -f docker-compose.yml -f "$OVERRIDE_FILE" \
-  run --rm --service-ports --name "$CONTAINER_NAME" \
-  app bash -c "${BUILD_CMD}bundle exec puma -C config/puma.rb" \
-  > "$LOG_FILE" 2>&1 &
+  run --detach --service-ports --name "$CONTAINER_NAME" -e "UI_DIFF_SHA=$BASE_SHA" \
+  app bash -c "$CONTAINER_CMD" >/dev/null
+docker update --restart unless-stopped "$CONTAINER_NAME" >/dev/null
 
-SERVER_PID=$!
-echo "$SERVER_PID" > "$PID_FILE"
-
-echo "==> Waiting for http://localhost:$PORT to respond (log: $LOG_FILE)"
+echo "==> Waiting for http://localhost:$PORT to respond (log: docker logs $CONTAINER_NAME)"
 for _ in $(seq 1 180); do
   if curl -sf -o /dev/null "http://localhost:$PORT" 2>/dev/null; then
-    echo "$BASE_SHA" > "$MARKER_FILE"
+    echo "$BASE_SHA $PORT" > "$CURRENT_FILE"
     echo "==> Ready: http://localhost:$PORT  (base ref $BASE_REF)"
     exit 0
   fi
-  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
-    echo "Server process exited early — check $LOG_FILE" >&2
-    tail -n 60 "$LOG_FILE" >&2
+  if ! running; then
+    echo "Container exited early:" >&2
+    docker logs --tail 60 "$CONTAINER_NAME" >&2 || true
     exit 1
   fi
   sleep 2
 done
 
-echo "Timed out waiting for http://localhost:$PORT — check $LOG_FILE" >&2
-tail -n 60 "$LOG_FILE" >&2
+echo "Timed out waiting for http://localhost:$PORT:" >&2
+docker logs --tail 60 "$CONTAINER_NAME" >&2 || true
 exit 1

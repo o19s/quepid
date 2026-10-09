@@ -603,6 +603,27 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'remove_member' do
+    it 'redirects self-removal to the accessible teams list' do
+      delete member_team_path(@team, member_id: @user.id)
+
+      assert_response :see_other
+      assert_redirected_to teams_path
+      assert_not @team.reload.members.exists?(@user.id)
+      follow_redirect!
+      assert_response :ok
+    end
+
+    it 'does not redirect an inaccessible team back to itself' do
+      @team.members.delete(@user)
+
+      get team_path(@team), headers: { 'HTTP_REFERER' => team_url(@team) }
+
+      assert_response :see_other
+      assert_redirected_to teams_path
+      follow_redirect!
+      assert_response :ok
+    end
+
     it 'removes a member from the team' do
       shared_team = teams(:shared)
       member = users(:random)

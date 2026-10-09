@@ -81,6 +81,9 @@ module Users
         }
 
         assert_response :success
+        assert_select 'form[data-turbo=false]'
+        assert_select '#error_explanation', text: /Password confirmation/
+        assert_nil session[:current_user_id]
 
         invitee.reload
         assert_nil invitee.invitation_accepted_at

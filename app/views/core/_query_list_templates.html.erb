@@ -10,7 +10,7 @@
       </div>
       <div data-query-row-target="diffScores" data-slot="diffScores"></div>
       <h2 class="results-title" data-action="click->query-row#toggle">
-        <span class="query" data-controller="bs-tooltip" data-query-row-target="query" data-slot="label" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
+        <span data-controller="bs-tooltip" data-query-row-target="query" data-slot="label" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
           <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image" alt="">
           <span data-query-row-target="text">&nbsp;</span>
         </span>
@@ -71,7 +71,7 @@
           <form data-action="submit->query-notes#save">
             <div class="row mb-3"><label class="col-sm-2 col-form-label text-sm-end" data-slot="informationNeedLabel">Information Need</label><div class="col-sm-10"><input type="text" data-query-notes-target="informationNeed" class="form-control" placeholder="Info Need:" data-slot="informationNeedField"></div></div>
             <div class="row mb-3"><label class="col-sm-2 col-form-label text-sm-end" data-slot="notesLabel">Notes on this Query</label><div class="col-sm-10"><textarea data-query-notes-target="notes" class="form-control" data-slot="notesField"></textarea></div></div>
-            <div class="row mb-3"><div class="col-sm-offset-2 offset-sm-2 col-sm-10"><button type="submit" class="btn btn-primary">Save</button></div></div>
+            <div class="row mb-3"><div class="offset-sm-2 col-sm-10"><button type="submit" class="btn btn-primary">Save</button></div></div>
           </form>
         </div>
       </div>

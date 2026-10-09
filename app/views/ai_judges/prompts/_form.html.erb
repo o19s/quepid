@@ -68,37 +68,37 @@
         <% end %>
         <%= fields_for :query_doc_pair, query_doc_pair do |query_doc_pair_fields| %>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :query_text %>
             <%= query_doc_pair_fields.text_field :query_text %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :doc_id, "Doc ID" %>
             <%= query_doc_pair_fields.text_field :doc_id %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :information_need, "Information Need" %>
             <%= query_doc_pair_fields.text_field :information_need, size: 80 %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :document_fields %> <small>JSON</small><br/>
             <%= query_doc_pair_fields.text_area :document_fields, value: format_json(query_doc_pair_fields.object.document_fields), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "json", codemirror_height: 400  } %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :options %> <small>JSON</small><br/>
             <%= query_doc_pair_fields.text_area :options, value: format_json(query_doc_pair_fields.object.options), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "json", codemirror_height: 200  } %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :notes %><br/>
             <%= query_doc_pair_fields.text_area :notes, size: "80x8" %>
           </div>
 
-          <div class="field">
+          <div>
             <%= query_doc_pair_fields.label :position %>
             <%= query_doc_pair_fields.text_field :position %>
           </div>

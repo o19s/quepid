@@ -19,7 +19,7 @@ module Api
             text = params[:csv_text]
             create_queries = deserialize_bool_param(params[:create_queries])
 
-            csv_data = CSV.parse(text, liberal_parsing: true)
+            csv_data = CSV.parse(text, liberal_parsing: true, skip_blanks: true)
             headers = csv_data.shift.map(&:to_s)
             string_data = csv_data.map { |row| row.map(&:to_s) }
             data = string_data.map { |row| Hash[*headers.zip(row).flatten] }

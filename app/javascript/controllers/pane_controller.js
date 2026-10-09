@@ -123,8 +123,11 @@ export default class extends Controller {
 
     const width = this.container.offsetWidth
     if (this.toggled) {
-      const minimumMain = Math.max(Math.min(230, width / 2), width - window.innerWidth)
-      const minimumEast = Math.min(250, width / 2)
+      // Reserve the CSS minimum plus the divider so the pane fits inside
+      // the container instead of being clipped by its overflow rule.
+      const cssMinimumEast = parseFloat(window.getComputedStyle(this.east).minWidth) || 0
+      const minimumEast = Math.min(width, Math.max(250, cssMinimumEast) + 6)
+      const minimumMain = Math.min(width - minimumEast, Math.max(Math.min(230, width / 2), width - window.innerWidth))
       x = Math.max(minimumMain, Math.min(x, width - minimumEast))
       this.eastPaneWidth = width - x
     }

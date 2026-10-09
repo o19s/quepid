@@ -6,7 +6,7 @@ class TeamsController < ApplicationController
   rescue_from ActiveRecord::RecordNotFound do |exception|
     resource_name = exception.model.underscore.humanize
     flash[:alert] = "#{resource_name} not found."
-    redirect_back_or_to(teams_path)
+    redirect_to teams_path, status: :see_other
   end
 
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
@@ -257,7 +257,8 @@ class TeamsController < ApplicationController
       flash[:alert] = "#{member.fullname} is not a member of this team."
     end
 
-    redirect_to team_path(@team), status: :see_other
+    destination = @team.members.exists?(current_user.id) ? team_path(@team) : teams_path
+    redirect_to destination, status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize

@@ -1,6 +1,5 @@
 /* CSS Custom Properties for consistent spacing and styling */
 :root {
-  --qscore-spacing-sm: 5px;
   --qscore-spacing-md: 10px;
   --qscore-spacing-lg: 15px;
   --qscore-spacing-xl: 20px;
@@ -149,10 +148,6 @@
 
 .search-result.missing {
   border-left: var(--qscore-highlight-width) solid #dc3545;
-}
-
-.search-result.new {
-  border-left: var(--qscore-highlight-width) solid var(--bs-success);
 }
 
 /* Responsive design */

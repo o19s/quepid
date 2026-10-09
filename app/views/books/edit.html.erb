@@ -29,15 +29,15 @@
         <div class="d-flex w-100 justify-content-between align-items-center">        
           <h5 class="mb-1">
             <%= check_box('book_ids', book.id, class: 'form-check-input me-1', disabled: book.rated_query_doc_pairs.empty?) %>
-            <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
+            <label for="book_ids_<%= book.id %>" class="form-check-label">
             <%= book_title(book) %>
             </label>
           </h5>
-          <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
+          <label for="book_ids_<%= book.id %>" class="form-check-label">
           <span class="badge bg-primary rounded-pill"><%= book.rated_query_doc_pairs.count %> rated query/doc pairs</span>
           </label>
         </div>
-        <label for="book_ids_<%= book.id %>" class="form-check-label stretched">
+        <label for="book_ids_<%= book.id %>" class="form-check-label">
           <p class="mb-1">Uses scale <%= book.scale.join(',') if book.scale.present? %> and <%= book.support_implicit_judgements? ? 'supports':'does not support' %> implicit judgements.</p>
           <small class="text-muted">Updated <%= time_ago_in_words book.updated_at %> ago</small>
         </label>

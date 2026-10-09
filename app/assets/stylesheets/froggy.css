@@ -36,14 +36,3 @@
 #chart1 {
   background-color: #fff;
 }
-
-
-.querqy-icon {
-    display: inline-block;
-    width: 24px;
-    height: 24px;
-    background-image: url('images/querqy-icon.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}

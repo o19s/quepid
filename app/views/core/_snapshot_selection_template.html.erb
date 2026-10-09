@@ -1,7 +1,7 @@
 <template data-diff-core-target="selectionTemplate">
   <div class="snapshot-selection-row" style="margin-bottom: 10px; display: flex; align-items: center;">
-    <label data-slot="label" class="snapshot-selection-label" style="margin-right: 10px; min-width: 100px; font-weight: bold;"></label>
-    <select data-slot="select" class="form-select snapshot-selection-select" style="width: auto; min-width: 200px; margin-right: 10px;" data-action="change->diff-core#selectChanged">
+    <label data-slot="label" style="margin-right: 10px; min-width: 100px; font-weight: bold;"></label>
+    <select data-slot="select" class="form-select" style="width: auto; min-width: 200px; margin-right: 10px;" data-action="change->diff-core#selectChanged">
       <option value="">-- Select Snapshot --</option>
     </select>
     <button type="button" class="btn btn-sm btn-danger" data-slot="remove" data-action="click->diff-core#removeSelectionAt">

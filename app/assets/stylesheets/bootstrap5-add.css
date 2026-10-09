@@ -9,6 +9,14 @@ main > .container {
   padding: 20px 15px 0;
 }
 
+/* Keep the icon sidebar beside content below the Bootstrap column breakpoint. */
+@media (max-width: 767.98px) {
+  .sidebar + main {
+    width: calc(100% - 3.5rem);
+    min-width: 0;
+  }
+}
+
 .centered-form {
   max-width: 960px;
 }

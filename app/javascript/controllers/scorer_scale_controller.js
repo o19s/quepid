@@ -52,12 +52,12 @@ export default class extends Controller {
     
     values.forEach(value => {
       const label = document.createElement('label')
-      label.className = 'scale-with-label-element clearfix'
+      label.className = 'clearfix'
       label.style.display = 'inline-block'
       label.style.marginRight = '10px'
       label.append(`${value}: `)
       const input = document.createElement('input')
-      input.className = 'form-control scale-label clearfix'
+      input.className = 'form-control clearfix'
       input.type = 'text'
       input.name = `scorer[scale_with_labels][${value}]`
       input.value = labels.get(input.name) || ""

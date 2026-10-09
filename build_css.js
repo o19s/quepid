@@ -119,7 +119,6 @@ function buildAdminCSS() {
     ...BOOTSTRAP_BASE,
     `${STYLES}/navbar-brand.css`,
     `${STYLES}/bootstrap5-add.css`,
-    `${STYLES}/admin2.css`,
   ]);
 }
 

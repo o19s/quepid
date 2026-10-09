@@ -21,7 +21,6 @@ pre {
 :root {
   --bs-border-radius: 4px;
   --bs-border-radius-lg: 8px;
-  --q-query-error-icon-color: #fe5b00;
 
   /* BS3's palette: one blue for links, .btn-primary and selected list
    * items; one green for success states. */
@@ -282,9 +281,8 @@ header.navbar-secondary .navbar-nav .nav-link {
   align-items: center;
 }
 
-/* Hover/active emphasis — only this header's nav-links get it. */
-.navbar-secondary .navbar-nav .nav-link:hover,
-.navbar-secondary .navbar-nav .nav-link.active {
+/* Hover emphasis — only this header's nav-links get it. */
+.navbar-secondary .navbar-nav .nav-link:hover {
   background: rgba(0,0,0,0.25);
 }
 
@@ -374,29 +372,9 @@ header .dropdown-toggle .bi {
   margin-bottom: 10px;
 }
 
-/* Info tooltip badge — `<span class="badge bg-info"><a href="#"><i
- * class="bi bi-question-circle-fill"></i></a></span>`, e.g. next to
- * "Evaluate Nightly?" / "Escape Queries". `.badge` sets `color: #fff`, but
- * the *inner* `<a>` has its own `color` from Bootstrap's Reboot (`a {
- * color: var(--bs-link-color) }`), which wins over the inherited white —
- * and under #dev-settings' dark theme that resolves to a light blue nearly
- * indistinguishable from the cyan badge background, making the "?" glyph
- * it colors read as an invisible/solid block instead of a visible icon. */
-#dev-settings .badge a {
-  color: inherit;
-}
-
-/* Checkbox settings ("Evaluate Nightly?" / "Escape Queries") reuse
- * `.dev-body` as their accordion body, giving that element both
- * `.dev-body` and `.form-check`. BS5's default `.form-check` layout floats
- * `.form-check-input` with `margin-left: -1.5em` against a `padding-left:
- * 1.5em` on the container, so the checkbox always renders flush with the
- * container's own left edge — one panel-padding's-width (15px, see
- * `#dev-settings .dev-body` in core-additions.css) to the left of every
- * other control in the panel ("Number of Results to Show"'s input,
- * "Evaluate Nightly?"'s header text). Drop BS5's float/negative-margin
- * trick and just flow the checkbox inline before its label, so it lines
- * up with the panel's normal 15px inset like everything else. */
+/* Checkbox settings ("Evaluate Nightly?" / "Escape Queries")
+ * Drop BS5's float/negative-margin trick and just flow the checkbox 
+ * inline before its label, so it lines up with the panel's normal 15px inset. */
 #dev-settings .dev-body.form-check .form-check-input {
   float: none;
   margin-left: 0;
@@ -438,11 +416,6 @@ header .dropdown-toggle .bi {
 	top: 20px;
 	right: 20px;
 	left: calc(var(--score-col-end) + 20px);
-}
-
-.sub-results .btn-toolbar .active {
-	background: var(--q-brand-blue);
-	color: #FFF;
 }
 
 /* BS3's .btn-default and softer warning/danger shades for the query
@@ -511,14 +484,6 @@ header .dropdown-toggle .bi {
 }
 .paging-row > * {
 	width: auto;
-}
-
-.results-pane-toggle {
-	color: var(--q-brand-blue);
-	font-weight: bold;
-	font-size: 16px;
-	margin-right: 8px;
-	cursor: pointer;
 }
 
 .single-rating .btn {

@@ -22,6 +22,8 @@ module Users
 
       super
 
+      return if @user.errors.any?
+
       @user.agreed_time = Time.zone.now
       session[:current_user_id] = @user.id
       Analytics::Tracker.track_signup_event @user

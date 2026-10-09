@@ -11,7 +11,7 @@
   <div class="row">
     <div class="col-sm-12 mb-3">
       <form
-        class="d-flex align-items-center vertically-centered gap-2 float-start mb-2"
+        class="d-flex align-items-center gap-2 float-start mb-2"
         data-controller="add-query"
         data-query-lifecycle-target="addQuery"
         data-add-query-can-add-queries-value="true"
@@ -63,7 +63,7 @@
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
         <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id="queries-filter" /></div>
         <div class="pe-3">
-          <button type="button" class="btn btn-link p-0 frog-report-trigger" data-controller="frog-report" data-action="click->frog-report#open"
+          <button type="button" class="btn btn-link p-0" data-controller="frog-report" data-action="click->frog-report#open"
                   data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">
             <span class="frog-icon" aria-hidden="true">🐸</span><span>Report</span>
           </button>

@@ -65,6 +65,6 @@ actually exercised, describing partial coverage honestly.
 Serve the topic directory on an unused local port and provide a direct gallery
 link. Also offer a portable ZIP containing the HTML, manifest, original screenshots
 and highlighted full-size pages; use relative asset links and no external runtime
-dependencies. Leave the viewer available for review and follow the skill's teardown
-rules for the temporary comparison app. Do not depend on a particular prior
+dependencies. Leave the viewer available for review; the comparison app is the permanent
+diff baseline, so leave it running. Do not depend on a particular prior
 gitignored gallery or hard-code its candidates, port or worktree name.

@@ -3,8 +3,8 @@ name: branch-ui-diff
 description: >-
   Screenshots the UI before/after a branch's changes, without touching the
   working tree. Finds which manual-testing scenarios are affected by the
-  branch's diff, spins up a throwaway old-code instance in a git worktree on
-  its own port (sharing the live dev server's mysql/keycloak/ollama), then
+  branch's diff, points the permanent diff-baseline instance (:3003, one git
+  worktree, sharing the live dev server's mysql/keycloak/ollama) at the old ref, then
   uses Playwright MCP (headed) to capture each affected scenario against the
   old instance ("before") and the current dev server ("after"). Use when
   asked for visual before/after proof of a branch's changes, or to sanity-check
@@ -16,7 +16,7 @@ description: >-
 
 Follow [AGENTS.md — Before/after pairs](../../../AGENTS.md#beforeafter-pairs--do-not-break-the-working-tree)
 for baseline selection: initial migration comparisons require the historical
-AngularJS / Bootstrap 3 baseline; a pre-fix worktree is for focused regression rechecks.
+AngularJS / Bootstrap 3 baseline; a pre-fix baseline in the diff-baseline instance is for focused regression rechecks.
 For historical comparisons, use
 [the isolated historical instance](../../../docs/legacy_comparison.md) instead
 of this shared-database workflow. Its schema and runtime are independent; do not
@@ -36,9 +36,9 @@ at `:3000`, which serves the working directory directly; `bin/docker s`'s `Procf
 runs `yarn build:*:watch` processes, so uncommitted JS/CSS edits show up live with no rebuild step,
 and Rails/ERB changes are read live too. Never narrow this to "last commit vs. uncommitted diff" —
 the point is to show everything this branch changes relative to `main`, committed or not.
-For an explicitly scoped regression recheck, use the requested pre-fix baseline
-in a separate worktree instead; document its source and do not force-checkout a
-retained worktree containing an uncommitted baseline.
+For an explicitly scoped regression recheck, load the requested pre-fix baseline
+into the diff-baseline worktree instead (see AGENTS.md); document its source, and
+don't `--reset` or switch refs while someone else's uncommitted baseline is loaded.
 
 **Known, accepted tradeoff:** both instances share one MySQL database. Fine for read-only
 navigation. If a scenario's steps *mutate* data (create/delete/archive/clone/share/import/...),
@@ -130,14 +130,19 @@ of the branch-diff scenario discovery below.
 
 5. **Bring up the old-code instance:**
    ```
-   ./bin/ui_diff_up [BASE_REF] [PORT]     # PORT defaults to 3001
+   ./bin/ui_diff_up [BASE_REF] [PORT]     # PORT defaults to 3003 (3001 is bin/legacy's)
    ```
-   This creates/reuses a sibling git worktree (`../quepid-ui-diff-worktree`) at the base ref,
-   installs deps and runs `yarn build` in it **only if the base ref changed since last time**,
-   and starts a second `app` container joined to the same `mysql`/`keycloak`/`ollama` containers
-   as the primary stack. It blocks (up to ~6 min on a cold build) until `http://localhost:<PORT>`
-   responds, or prints the server log and exits non-zero on failure — read that log if it fails,
-   don't just retry blindly.
+   The diff baseline is one of three permanent instances (current :3000, `bin/legacy` :3001, this
+   one :3003). The command is idempotent: if `quepid_app_ui_diff` is already serving that ref it
+   returns at once. Otherwise it checks the single sibling worktree (`../quepid-ui-diff-worktree`)
+   out at the base ref, recreates that one container (detached, `restart: unless-stopped`, joined
+   to the same `mysql`/`keycloak`/`ollama` containers as the primary stack), and runs
+   `yarn build` **only if the ref changed**. When it switches refs it prints the ref it replaced;
+   if another session may be using the baseline, check before switching. It blocks (up to ~6 min
+   on a cold build) until `http://localhost:<PORT>` responds, or prints `docker logs` and exits
+   non-zero — read that log if it fails, don't just retry blindly. `--reset` discards local edits
+   in the worktree (e.g. a pre-fix baseline) and rebuilds. Never create another worktree or
+   container for a baseline.
 
 6. **For each in-scope scenario**, open its doc section (`docs/manual-testing/<file>`, heading
    `### <id> <title>`) and read its **Steps** — drive only the golden path, not every edge case,
@@ -167,12 +172,12 @@ of the branch-diff scenario discovery below.
    mutating scenario's snapshot/restore inside this bracket. Read-only scenarios don't need this;
    only bracket the ones that actually write.
 
-7. **Tear down** when done:
+7. **Leave it running.** The baseline is permanent; don't stop it after a comparison. Only on
+   request:
    ```
-   ./bin/ui_diff_down            # stops the old container, leaves the worktree for next time
+   ./bin/ui_diff_down            # stops the container, leaves the worktree
    ./bin/ui_diff_down --remove-worktree   # also deletes the worktree entirely
    ```
-   Default to leaving the worktree (fast re-run next time) unless the user asks for full cleanup.
 
 8. **Actually look at every pair before reporting anything.** Capturing a screenshot is not the
    same as verifying it. For each scenario/state, open both the `-before.png` and `-after.png`

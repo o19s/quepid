@@ -13,6 +13,8 @@ function buildController() {
   slider.className = "east-slider"
   const east = document.createElement("div")
   east.className = "pane_east"
+  // jsdom does not load panes.css; provide its minimum for computed styles.
+  east.style.minWidth = "300px"
   element.append(main, slider, east)
   document.body.append(element)
 
@@ -37,11 +39,12 @@ describe("PaneController", () => {
     expect(main.style.width).toBe("230px")
     expect(east.style.width).toBe("764px")
     controller.drag({ clientX: 2000 })
-    expect(main.style.width).toBe("750px")
+    expect(main.style.width).toBe("694px")
+    expect(east.style.width).toBe("300px")
     Object.defineProperty(element, "offsetWidth", { configurable: true, value: 400 })
     controller.resize()
-    expect(main.style.width).toBe("200px")
-    expect(east.style.width).toBe("194px")
+    expect(main.style.width).toBe("94px")
+    expect(east.style.width).toBe("300px")
     controller.disconnect()
   })
 
@@ -59,6 +62,19 @@ describe("PaneController", () => {
     expect(slider.style.display).toBe("block")
     expect(main.style.width).toBe("550px")
     expect(east.style.width).toBe("444px")
+  })
+
+  it("reserves the computed pane minimum and divider at the drag limit", () => {
+    const { controller, element, main, east } = buildController()
+    east.style.minWidth = "360px"
+    controller.connect()
+    controller.toggle()
+    controller.drag({ clientX: 2000 })
+
+    expect(east.style.width).toBe("360px")
+    expect(parseFloat(east.style.left) + parseFloat(east.style.width)).toBe(element.offsetWidth)
+    expect(parseFloat(main.style.width) + 6).toBe(parseFloat(east.style.left))
+    controller.disconnect()
   })
 
   it("uses declared pane targets rather than similarly classed descendants", () => {

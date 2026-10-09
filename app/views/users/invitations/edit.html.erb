@@ -5,7 +5,7 @@
   <div class="col-md-6">
     <div class="h-100 p-5 bg-light border rounded-3">
       <div>
-        <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put }) do |f| %>
+        <%= form_for(resource, as: resource_name, url: invitation_path(resource_name), html: { method: :put, data: { turbo: false } }) do |f| %>
         <%= f.hidden_field :invitation_token, readonly: true %>
           <h2></h2>
 
@@ -22,19 +22,19 @@
           <% end %>
 
           <div class="mb-3">
-             <%= f.text_field :name, class: 'form-control name', placeholder: 'Full Name' %>
+             <%= f.text_field :name, class: 'form-control', placeholder: 'Full Name' %>
           </div>
 
           <div class="mb-3">
-            <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+            <%= f.text_field :email, class: 'form-control', placeholder: 'Email Address' %>
           </div>
 
           <div class="mb-3">
-             <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+             <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
           </div>
 
           <div class="mb-3">
-              <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
+              <%= f.password_field :password_confirmation, class: 'form-control', placeholder: 'Confirm Password' %>
           </div>
 
           <% unless Rails.application.config.terms_and_conditions_url.blank? %>
@@ -56,7 +56,7 @@
           </div>
           <% end %>
 
-          <%= f.submit 'Accept Invite', class: 'btn btn-primary signup' %>
+          <%= f.submit 'Accept Invite', class: 'btn btn-primary' %>
         <% end %>
       </div>
     </div>

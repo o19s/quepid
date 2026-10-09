@@ -63,6 +63,25 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'renders the Qdrant icon in endpoint management' do
+    endpoint = SearchEndpoint.create!(
+      name:                          'Qdrant endpoint',
+      endpoint_url:                  'http://example.com/collections/test/points/query',
+      api_method:                    'POST',
+      owner:                         user,
+      search_engine:                 'searchapi',
+      mapper_based_search_engine_id: 'qdrant'
+    )
+
+    get search_endpoints_url
+    assert_response :ok
+    assert_select 'img[src*="qdrant-icon"]'
+
+    get search_endpoint_url(endpoint)
+    assert_response :ok
+    assert_select 'img[src*="qdrant-icon"]'
+  end
+
   test 'filters the index by team without raising' do
     @search_endpoint.teams << team unless @search_endpoint.teams.include?(team)
 

@@ -70,17 +70,17 @@
                 <%= select_tag "user[judge_options][llm_provider]",
                       options_for_select(LlmProvider.select_options, value.to_s),
                       id: 'judge_options_llm_provider',
-                      class: 'form-select form-select-sm structured-field', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" }
+                      class: 'form-select form-select-sm', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" }
                 %>
               <% elsif spec&.dig(:type) == :number %>
                 <%= number_field_tag "user[judge_options][#{key}]", value,
-                      id: "judge_options_#{key}", class: 'form-control form-control-sm structured-field',
+                      id: "judge_options_#{key}", class: 'form-control form-control-sm',
                       min: spec[:min], max: spec[:max], step: spec[:step], data: { ai_judge_form_target: "structured" } %>
                 <div class="form-text"><%= spec[:hint] %></div>
               <% else %>
                 <%= text_field_tag "user[judge_options][#{key}]", value,
                   id: "judge_options_#{key}",
-                  class: 'form-control form-control-sm structured-field', data: { ai_judge_form_target: "structured #{ { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s]}" }
+                  class: 'form-control form-control-sm', data: { ai_judge_form_target: "structured #{ { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s]}" }
                 %>
               <% end %>
             </div>
@@ -118,7 +118,7 @@
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
           <%= form.text_area :options, value: @submitted_options || format_json(@ai_judge.options),
-            class: 'form-control json-field', rows: 10, disabled: true, data: { ai_judge_form_target: "json", action: "input->ai-judge-form#jsonChanged" } %>
+            class: 'form-control', rows: 10, disabled: true, data: { ai_judge_form_target: "json", action: "input->ai-judge-form#jsonChanged" } %>
         </div>
       </div>
     </div>
@@ -151,39 +151,39 @@
               <button type="button" class="btn btn-light" data-action="click->ai-judge-wizard#sampleQueryDocPair">Change Query Doc Pair</button>
             </div>
 
-            <div class="field">
+            <div>
               <label>Query text</label>
               <input type="text" class="form-control" data-ai-judge-wizard-target="queryText">
             </div>
 
-            <div class="field">
+            <div>
               <label>Doc ID</label>
               <input type="text" class="form-control" data-ai-judge-wizard-target="docId">
             </div>
 
-            <div class="field">
+            <div>
               <label>Information Need</label>
               <input type="text" class="form-control" data-ai-judge-wizard-target="informationNeed">
             </div>
 
-            <div class="field">
+            <div>
               <label>Document Fields</label> <small>JSON</small><br>
               <textarea class="form-control" data-ai-judge-wizard-target="documentFields"
                         data-controller="codemirror" data-codemirror-mode="json" data-codemirror-height="300"></textarea>
             </div>
 
-            <div class="field">
+            <div>
               <label>Options</label> <small>JSON</small><br>
               <textarea class="form-control" data-ai-judge-wizard-target="options"
                         data-controller="codemirror" data-codemirror-mode="json" data-codemirror-height="150"></textarea>
             </div>
 
-            <div class="field">
+            <div>
               <label>Notes</label><br>
               <textarea class="form-control" data-ai-judge-wizard-target="notes"></textarea>
             </div>
 
-            <div class="field">
+            <div>
               <label>Position</label>
               <input type="text" class="form-control" data-ai-judge-wizard-target="position">
             </div>

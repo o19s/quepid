@@ -1330,7 +1330,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 ### Key CSS Files
 1. **qscore.css** (218 lines) — score display, diff layout, responsive breakpoints
 2. **bootstrap5-compat.css** (~709 lines) — BS5 shims for case UI (navbar, modals, popovers, etc.)
-3. **animation.css** (152 lines) — frog animation, spinner, notification bubble
+3. **animation.css** — spinners (`.spinner`, `.spintime`)
 4. **judgements.css** (86 lines) — rating button transitions and selected states
 5. **qgraph.css** (105 lines) — SVG chart/graph styling
 6. **style.css** (105 lines) — main layout, results list

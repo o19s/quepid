@@ -159,7 +159,7 @@
                       </div>
                     </div>
 
-                    <div class="document-body">
+                    <div>
                       <div class="row">
                 <% if image_url %>
                   <div class="col-md-3">
@@ -248,7 +248,7 @@
 
                   <!-- Explanation field -->
                   <% if @show_explanations %>
-                    <div class="explanation-field">
+                    <div>
                       <label for="explanation_<%= query_doc_pair.id %>" class="form-label">
                         <small>Explanation (optional):</small>
                       </label>
@@ -264,7 +264,7 @@
                     </div>
                   <% elsif judgement.explanation.present? %>
                     <!-- Show existing explanation as read-only when checkbox is unchecked -->
-                    <div class="explanation-display text-muted small mt-2">
+                    <div class="text-muted small mt-2">
                       <strong>Explanation:</strong> <%= judgement.explanation %>
                     </div>
                   <% end %>

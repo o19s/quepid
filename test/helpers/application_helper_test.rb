@@ -3,6 +3,24 @@
 require 'test_helper'
 
 class ApplicationHelperTest < ActionView::TestCase
+  test 'active navigation ignores section names in query parameters' do
+    @request.env['PATH_INFO'] = '/teams/1'
+    @request.env['QUERY_STRING'] = 'cases_q=case&books_q=book&scorers_q=scorers&search_endpoints_q=search_endpoint'
+
+    assert make_active?(path: 'teams')
+    %w[case book scorers search_endpoint].each do |path|
+      assert_not make_active?(path: path), "Query parameters must not activate #{path} navigation"
+    end
+  end
+
+  test 'active navigation retains matching on nested section paths' do
+    @request.env['PATH_INFO'] = '/books/1/judgements'
+    @request.env['QUERY_STRING'] = 'q=teams'
+
+    assert make_active?(path: 'book')
+    assert_not make_active?(path: 'teams')
+  end
+
   test 'quepid_root_url returns application root without trailing slash' do
     assert_equal root_url.chomp('/'), quepid_root_url
   end

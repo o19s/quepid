@@ -1307,8 +1307,9 @@ AngularJS / Bootstrap 3 baseline against current code, including uncommitted cha
 Use the [isolated historical instance](docs/legacy_comparison.md), confirm the surface
 retains both AngularJS and Bootstrap 3, and compare equivalent fixtures. A recent
 `main`, merge-base or pre-fix checkout does not establish migration parity. Later
-focused regression checks may use a separate pre-fix worktree; record its baseline
-and coverage as a supplement to the initial historical comparison.
+focused regression checks may use a pre-fix baseline from `bin/ui_diff_up` (the permanent
+diff-baseline instance on port 3003); record its baseline and coverage as a supplement to
+the initial historical comparison.
 
 During incremental development, use a representative sample of affected browser
 flows per meaningful batch, including a success and an error path when relevant.
