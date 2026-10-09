@@ -132,19 +132,19 @@ test.describe('Workspace modal lifecycle', () => {
       await page.evaluate(() => {
         (window as any).nestedModalShown = false;
         document.addEventListener('shown.bs.modal', function shown(event) {
-          if (!(event.target as Element).classList.contains('doc-detailed-explain-modal')) return;
+          if (!(event.target as Element).classList.contains('full-screen-modal')) return;
           (window as any).nestedModalShown = true;
           document.removeEventListener('shown.bs.modal', shown);
         });
       });
       await outer.locator('.match-explain-bar').first().click();
-      const inner = page.locator('.doc-detailed-explain-modal.show');
+      const inner = page.locator('.full-screen-modal.show');
       await expect(inner).toContainText('Debug Explain for');
       await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(4);
       // Wait for the opening transition before dismissing via the backdrop.
       await expect.poll(() => page.evaluate(() => (window as any).nestedModalShown)).toBe(true);
       await inner.click({ position: { x: 5, y: 5 } });
-      await expect(page.locator('.doc-detailed-explain-modal')).toHaveCount(0);
+      await expect(page.locator('.full-screen-modal')).toHaveCount(0);
       await expect(outer).toBeVisible();
       await expect(page.locator('.modal-backdrop')).toHaveCount(1);
       await expect(page.locator('body')).toHaveClass(/modal-open/);

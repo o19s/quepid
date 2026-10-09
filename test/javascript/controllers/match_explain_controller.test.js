@@ -228,7 +228,7 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).not.toHaveBeenCalled()
   })
 
-  it("Debug opens a modal sized lg with the doc-detailed-explain-modal class and renders the JSON explorer", () => {
+  it("Debug opens a modal sized lg with the full-screen-modal class and renders the JSON explorer", () => {
     const data = baseData()
     const controller = buildController(element, data)
     MatchExplainController.prototype.connect.call(controller)
@@ -239,7 +239,7 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.size).toBe("lg")
-    expect(options.windowClass).toBe("doc-detailed-explain-modal")
+    expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-debug-modal-template")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent).toBe("Some Doc")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent).toBe("doc-1")

@@ -1,15 +1,16 @@
 /*
  * Quepid core UI — layout and skin that do not use Bootstrap framework classes
- * in selectors. All Bootstrap-class overrides for the core case bundle —
- * navbar brand skin (`.navbar-brand`, `.navbar-secondary`, header `.nav-link`),
- * sub-results toolbars, `#dev-settings` tabs, modals, annotations, dropdown
- * shims, etc. — live in bootstrap5-compat.css.
+ * in selectors. Bootstrap-class overrides for the core case bundle (sub-results
+ * toolbars, `#dev-settings` tabs, modals, annotations, dropdown shims, etc.)
+ * live in bootstrap5-compat.css; the navbar brand skin (`.navbar-brand`,
+ * `.navbar-secondary`, header `.nav-link`) lives in navbar-brand.css.
  *
  * Header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
- * `.dropdown-item`), flash directive chrome (`.flash`), and
- * `#flash-messages` live here.
+ * `.dropdown-item`), flash chrome (`.flash`), and `#flash-messages` live here.
  *
- * Loaded by build_css.js between fonts.css and bootstrap5-compat.css.
+ * build_css.js loads this first in the core bundle, right after the Bootstrap
+ * base (bootstrap.css, bootstrap-icons.css, fonts.css) and before
+ * navbar-brand.css and bootstrap5-compat.css.
  */
 
 /* BS3's 14px base instead of BS5's 16px, so every rem-based size keeps the
@@ -42,7 +43,7 @@ body {
   flex-direction: column;
 }
 
-a, button, .button {
+a, button {
   cursor: pointer;
 }
 
@@ -115,14 +116,6 @@ header .dropdown-item:focus {
   padding-bottom: 10px;
 }
 
-/* stackedChart.css has an unscoped `small { font-size: 11px; }` leak that
- * otherwise wins the cascade here and flattens the "Current case" / "Try N"
- * subtext to a fixed 11px regardless of the heading size. Restore `small`'s
- * normal size-relative-to-parent behavior so it scales with the case title. */
-.results-control h1 small {
-  font-size: 0.875em;
-}
-
 /* BS3's flat #777 muted text and Helvetica body font for the case view.
  * BS5's .text-muted uses !important, so steer the variable it reads.
  * Headings keep the Aller font via the more specific rule below. The BS3
@@ -163,10 +156,6 @@ header .dropdown-item:focus {
   border-width:1px 0;
 }
 
-.results-control queries {
-  background: #fff;
-}
-
 .results-list-element {
 	list-style: none;
   display: block;
@@ -183,7 +172,6 @@ header .dropdown-item:focus {
 }
 
 .result-header {
-  align-items: stretch;
   overflow: auto;
   position: relative;
   padding: 10px 20px;
@@ -204,7 +192,6 @@ header .dropdown-item:focus {
 	line-height: 1.5em;
 	margin:      0;
   display:    block;
-  flex:       2 2 10%;
   float:      left;
 }
 
@@ -414,7 +401,6 @@ header .dropdown-item:focus {
 #dev-settings {
 	width: 100%;
 	height: 100%;
-	min-height: calc(100% - 70px);
 	/* Tabs, then the canvas taking the remaining height, then the TLS warning and
 	 * Rerun My Searches! pinned to the drawer's bottom outside the scrolling tab. */
 	display: flex;
@@ -518,7 +504,6 @@ header .dropdown-item:focus {
 .history-list li:hover {
 	background: #555;
 	cursor: pointer;
-    position: relative;
 }
 
 .history-list li:hover .try-details {
@@ -529,7 +514,6 @@ header .dropdown-item:focus {
 .history-list li span:not([data-try-query]) {
 	display: block;
 	text-align: left;
-	font-weight: bold;
 	font-family: 'allerbold_italic';
 	font-size: 16px;
 	color: #CCC;
@@ -610,7 +594,7 @@ footer {
 /*
 	Flash — Stimulus `flash` controller (app/javascript/controllers/flash_controller.js)
 	toggles "show alert" on class="flash fade" (markup in views/core/index.html.erb).
-	Dismiss control is .btn-core-close (styled in misc.css), not Bootstrap’s .close.
+	Dismiss control is BS5’s .btn-close.
 */
 
 .flash {

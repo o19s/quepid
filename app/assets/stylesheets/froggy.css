@@ -40,8 +40,8 @@
 
 .querqy-icon {
     display: inline-block;
-    width: 24px;  /* Adjust to match your image width */
-    height: 24px; /* Adjust to match your image height */
+    width: 24px;
+    height: 24px;
     background-image: url('images/querqy-icon.png');
     background-size: contain;
     background-repeat: no-repeat;

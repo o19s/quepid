@@ -5,24 +5,22 @@
 	 position: relative;
 	 overflow: hidden;
 }
- .pane_main {
+.pane_main,
+.pane_east {
 	 bottom: 0;
 	 isolation: isolate;
-	 left: 0;
 	 overflow-y: auto;
 	 position: absolute;
 	 top: 0;
+}
+ .pane_main {
+	 left: 0;
 	 width: 100%;
 }
  .pane_east {
 	 background: #333;
-	 bottom: 0;
 	 display: none;
-	 isolation: isolate;
 	 min-width: 300px;
-	 overflow-y: auto;
-	 position: absolute;
-	 top: 0;
 }
  .east-slider {
 	 background: none repeat scroll 0% 0% #ddd;

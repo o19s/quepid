@@ -2,7 +2,7 @@
 <template id="browse-query-modal-template">
   <div class="modal-header">
     <h3 class="modal-title" id="browse-query-modal-title">Browse Results on <span data-browse-query-target="engineName"></span></h3>
-    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body">
     <p>Run this in a terminal, or paste it into a tool like Postman, to see the raw response from <span data-browse-query-target="engineName"></span> for this query.</p>
@@ -29,7 +29,7 @@
 <template id="query-explain-modal-template">
   <div class="modal-header">
     <h3 class="modal-title" id="query-explain-modal-title">Explain Query Parsing</h3>
-    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body">
     <p>These are details returned from the search engine on how it processed the input query</p>
@@ -69,7 +69,7 @@
 <template id="missing-documents-modal-template">
   <div class="modal-header">
     <h3 class="modal-title" id="missing-documents-modal-title">Find and Rate Missing Documents</h3>
-    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body" data-controller="missing-documents" data-action="rating-popover:rate->missing-documents#rate rating-popover:reset->missing-documents#rate" data-missing-documents-modal-root-value="true" data-missing-documents-engine-labels-value="<%= SearchEngine::LABELS.to_json %>">
     <div class="d-none" data-missing-documents-target="supported">
@@ -100,7 +100,7 @@
 <template id="frog-report-modal-template">
   <div class="modal-header">
     <h3 class="modal-title" id="frog-report-modal-title">The Frog Pond Report: <span data-frog-report-target="caseName"></span></h3>
-    <button type="button" class="btn-core-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
   </div>
   <div class="modal-body frog-pond">
     <div class="frog-pond-content">

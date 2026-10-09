@@ -54,10 +54,10 @@ describe("dynamic_modal", () => {
   })
 
   it("builds a .modal > .modal-dialog > .modal-content wrapper with the given html and shows it", () => {
-    const { element } = openDynamicModal({ html: "<p>hi</p>", size: "lg", windowClass: "doc-detailed-explain-modal" })
+    const { element } = openDynamicModal({ html: "<p>hi</p>", size: "lg", windowClass: "full-screen-modal" })
 
     expect(element.classList.contains("modal")).toBe(true)
-    expect(element.classList.contains("doc-detailed-explain-modal")).toBe(true)
+    expect(element.classList.contains("full-screen-modal")).toBe(true)
     expect(element.querySelector(".modal-dialog.modal-lg")).not.toBeNull()
     expect(element.querySelector(".modal-content").innerHTML).toBe("<p>hi</p>")
     expect(document.body.contains(element)).toBe(true)

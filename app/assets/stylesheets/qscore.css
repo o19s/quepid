@@ -10,11 +10,6 @@
   --qscore-highlight-width: 4px;
 }
 
-/* Base qscore component styles */
-qscore-case, qscore-query, .case-score {
-  padding: 0;
-}
-
 /*
   Case score badge spacing. The primary case score is a plain `.case-score` div now
   (Stimulus-driven); the snapshot/diff scores use the same `.case-score` / `.diff-score`
@@ -24,6 +19,7 @@ qscore-case, qscore-query, .case-score {
   flush against the next.
 */
 .case-score {
+  padding: 0;
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
@@ -44,21 +40,15 @@ qscore-case, qscore-query, .case-score {
   vertical-align: top;
 }
 
-/* Overall rating styles - consolidated identical selectors.
-   .qscore-query-badge (Stimulus, store-driven primary query score badge —
-   see the frontend cleanup migration notes)
-   *is* the equivalent of qscore-query's `.overall-rating` child, not a
-   wrapper around one: the legacy client targeted `.overall-rating`
-   itself, and a separate outer wrapper here just to carry
-   `data-controller` left the actual float un-styled. */
-qscore-case .overall-rating,
-qscore-query .overall-rating,
+/* Primary per-query score badge (Stimulus `qscore-query`), floated at the left edge
+   of the query row. The styled element carries `data-controller` itself; an outer
+   wrapper would leave the float un-styled. */
 .qscore-query-badge {
   display: block;
   float: left;
   height: 100%;
   width: 90px;
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
   color: #fff;
   font-family: 'allerbold_italic';
@@ -68,31 +58,10 @@ qscore-query .overall-rating,
   border-bottom-left-radius: var(--qscore-border-radius);
 }
 
-/* Query score specific positioning - consolidated identical rules */
-qscore-query.results-score .overall-rating,
-.diff-query-display qscore-query.results-score .overall-rating,
-.qscore-query-badge {
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
-}
-
-.diff-score .overall-rating,
-qscore-query.diff-score .overall-rating {
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
-}
-
 /* Per-query diff badge: a .qscore-query-badge (so it floats beside the primary badge) that butts
    against its neighbor on the left and is rounded on the right. */
 .qscore-query-badge.diff-score {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
-  border-radius: 0;
-  border-top-right-radius: var(--qscore-border-radius);
-  border-bottom-right-radius: var(--qscore-border-radius);
-}
-
-/* Diff score styling */
-.diff-score .overall-rating,
-qscore-case .overall-rating.diff-score,
-qscore-query.diff-score .overall-rating {
   border-radius: 0;
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);

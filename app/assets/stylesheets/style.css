@@ -1,26 +1,15 @@
-/* Non Brian Styles, brought in from dumb programmer UI quepid
- *
- *
- * */
-
-.rating, .ratingNum {
-    color: white;
-    font-size: .7em;
-}
-
-.rating {
-    background: #db918f;
-    padding: 3px;
-    position: absolute;
-}
-
-.rating:hover, .ratingNum:hover {
-    cursor: pointer;
-}
+/* Core case UI component styles (ratings, results, queries, ...), carried
+ * over from the original Quepid UI. */
 
 .ratingNum {
+    color: white;
+    font-size: .7em;
     margin-right: 2px;
     padding: 3px 5px;
+}
+
+.ratingNum:hover {
+    cursor: pointer;
 }
 
 .notes-box {

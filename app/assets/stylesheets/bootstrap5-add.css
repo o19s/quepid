@@ -1,7 +1,8 @@
 /*
-This is the Bootstrap 5 related styling, and is extracted from the bootstrap-add.css file
-and updated to Bootstrap 5 standards.
-*/
+ * Bootstrap 5 overrides and page skin for the application (dashboard, books,
+ * judgements, ...) and admin bundles. The core case bundle uses
+ * bootstrap5-compat.css instead.
+ */
 
 .centered-form {
   max-width: 960px;

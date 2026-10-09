@@ -85,17 +85,6 @@ pre {
   --bs-btn-disabled-border-color: #4cae4c;
 }
 
-/* Keep bare action anchors styled as links when BS5 Reboot would inherit
- * their text color. */
-a:not([href]):not([class]) {
-  color: var(--bs-link-color);
-  text-decoration: none;
-}
-
-a:not([href]):not([class]):hover {
-  color: var(--bs-link-hover-color);
-}
-
 /* BS3's muted link blue instead of BS5's #0d6efd, for the case view and for
  * modals (which are appended to <body>, outside `.results-control`). */
 .results-control,
@@ -112,14 +101,6 @@ a:not([href]):not([class]):hover {
   --bs-modal-width: 600px;
 }
 
-/* Tooltip + popover: quepidPopover / quepidTooltip pass `animation: false`
- * so `.fade` is never added — avoids invisible-but-present popover bugs
- * from cascade conflicts on opacity.
- *
- * Popover sized for explain / ratings JSON (max-width 800px vs BS5's 276px,
- * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
- * from rendering as a sliver. Other px values restate BS5 defaults at
- * a 16px root for explicitness. */
 /* BS3's pink "pill" for inline <code>; BS5 has no background. */
 code {
   padding: 2px 4px;
@@ -146,6 +127,15 @@ label {
   margin-bottom: 0;
   font-weight: 400;
 }
+
+/* Tooltip + popover: createBsPopover / bs_tooltip.js pass `animation: false`
+ * so `.fade` is never added — avoids invisible-but-present popover bugs
+ * from cascade conflicts on opacity.
+ *
+ * Popover sized for explain / ratings JSON (max-width 800px vs BS5's 276px,
+ * max-height 600px). Tooltip min-width 100px keeps single-word tooltips
+ * from rendering as a sliver. Other px values restate BS5 defaults at
+ * a 16px root for explicitness. */
 .tooltip {
   --bs-tooltip-font-size: 14px;
   --bs-tooltip-padding-x: 8px;
@@ -420,10 +410,6 @@ header .dropdown-toggle .bi {
 
 .annotation > .dropdown > .dropdown-menu > li {
 	border-bottom: 1px solid #AAA !important;
-}
-
-.annotation .dropdown-menu > li > a.text-danger {
-	color: #a94442;
 }
 
 /* Modal body icons (dimmed) and case-name span in modal titles. */

@@ -1,3 +1,22 @@
+/* Base heading style for every application-bundle page (dashboard, books,
+ * judgements, sign-in, ...). Not in bootstrap5-add.css because that file is
+ * also bundled into admin.css. */
+h2,
+h3 {
+  font-family: 'allerregular';
+  color: #036;
+  margin: 10px 0 20px 0;
+  padding: 0;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
  .public-share .clipboard-icon {
 	 visibility: hidden;
  }

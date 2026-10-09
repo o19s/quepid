@@ -76,7 +76,7 @@ test.describe('Core pages — interaction screenshots', () => {
     await expect(page.locator('#query-explain-tab-params')).toBeVisible();
     await expect(page).toHaveScreenshot('query-editor-03-explain-modal.png', expandedCaseScreenshotOpts(page));
 
-    await page.locator('.modal.show').locator('.btn-core-close').first().click();
+    await page.locator('.modal.show').locator('.btn-close').first().click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
 
     await page.getByRole('button', { name: 'Toggle Notes', exact: true }).first().click();

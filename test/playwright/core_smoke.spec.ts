@@ -82,7 +82,7 @@ test.describe('core layout golden paths', () => {
     await expect(modal.locator('[data-controller="frog-report"]')).toHaveCount(1);
     await expect(page.locator('frog-report')).toHaveCount(0);
 
-    await modal.locator('.btn-core-close').click();
+    await modal.locator('.btn-close').click();
     await expect(modal).toBeHidden();
   });
 

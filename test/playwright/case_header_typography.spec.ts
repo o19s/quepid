@@ -6,12 +6,11 @@ import { gotoCase } from './case_helpers';
  * rendered the case name and metadata too small vs legacy BS3 (PR #1703).
  *
  * The h1 uses BS5's `fs-1` utility. The `<small>` subtitles don't carry a
- * `fs-*` class at all — their size comes from `.results-control h1 small {
- * font-size: 0.875em }` in core-additions.css, deliberately relative to the
- * h1's own font-size so it survives stackedChart.css's unscoped
- * `small { font-size: 11px }` leak (which would otherwise flatten the
- * subtitle to a fixed size regardless of the heading). This spec pins that
- * ratio rather than a single px value, so BS5 RFS minor bumps don't break it.
+ * `fs-*` class at all — their size comes from BS5's `small { font-size:
+ * 0.875em }`, relative to the h1's own font-size. A global fixed-px `small`
+ * rule (stackedChart.css used to have `small { font-size: 11px }`) would
+ * flatten the subtitle regardless of the heading. This spec pins the ratio
+ * rather than a single px value, so BS5 RFS minor bumps don't break it.
  */
 
 test.describe('case header typography', () => {
@@ -33,9 +32,9 @@ test.describe('case header typography', () => {
     // Subtitle must read as clearly secondary copy, not heading.
     expect(subtitlePx, 'subtitle must be smaller than the title').toBeLessThan(titlePx);
 
-    // Pin the 0.875em ratio so a regression to a fixed px size (e.g. the
-    // stackedChart.css `small` leak returning) gets caught even though the
+    // Pin the 0.875em ratio so a regression to a fixed px size (e.g. a
+    // global `small { font-size: 11px }` rule returning) gets caught even though the
     // absolute px values move with RFS.
-    expect(subtitlePx / titlePx, 'subtitle/title font-size ratio — expected core-additions.css\'s 0.875em rule').toBeCloseTo(0.875, 1);
+    expect(subtitlePx / titlePx, 'subtitle/title font-size ratio — expected BS5\'s 0.875em small rule').toBeCloseTo(0.875, 1);
   });
 });

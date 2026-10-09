@@ -174,9 +174,9 @@ parts:
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb"]
       "3.2":
         title: "Create a new case (setup wizard)"
-        last_run: 2026-10-08T21:22:07Z
-        result: pass_with_fixes
-        notes: "Focused sample: Name through Finish on disposable cases with mocked Solr validation. Real query/onboarding writes finish before navigation; held POST keeps Finish disabled, forced500 retains wizard and retry saves queries. Simulated first-time runtime flag starts tour on loaded workspace and consumes startTour. Inspected shots against pre-fix dee33692 in .playwright-mcp/js-correctness; disposable cases deleted. Deferred: new endpoints, TLS, Static CSV and tour progression."
+        last_run: 2026-10-09T13:37:43Z
+        result: pass
+        notes: "Partial CSS regression comparison against HEAD 908ecfde (port 33005): wizard opened on existing case 6 via showWizard=true; Name-step shell screenshots inspected at 900x900. Heading, form, buttons and geometry match; BS5 close icon position differs slightly. Header Close showed the abandon confirmation; declined it and navigated away without deleting the existing case. No case created; confirmed abandonment, endpoint validation, later steps and Finish deferred."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/settings_runtime.js"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -238,9 +238,9 @@ parts:
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
-        last_run: 2026-10-07T19:28:19Z
+        last_run: 2026-10-09T13:35:42Z
         result: pass
-        notes: "Covered live: invalid JSON showed the validation flash; current retained the modal, while live baseline 8ceb99e9 closed it before validation (confirmed in historical query_options_controller.js). Valid parity=1 JSON saved and survived reload/reopening on both. Invalid/saved screenshot pairs inspected in .playwright-mcp/dual-parity; saved state recaptured after the show transition. Not covered live: delayed saves or network failure."
+        notes: "Partial CSS regression comparison against HEAD 908ecfde (port 33005): case 6 Query Options opened with existing JSON, paired screenshots inspected at 1440x1000, header Close dismissed cleanly with no backdrop or scroll lock. Body/editor/footer geometry match; BS5 close button sits slightly farther right/up. Editing, validation, save and failure paths deferred."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.6":
         title: "Rate a document"
@@ -286,9 +286,9 @@ parts:
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
-        last_run: 2026-10-07T20:03:04Z
+        last_run: 2026-10-09T13:35:21Z
         result: pass
-        notes: "Covered live: History try list and Check Scores/Check Ratings links navigated to populated tables on both instances; inspected screenshot pairs against 8ceb99e9. Not covered live: visualize link, scorer/search filters or bulk score deletion."
+        notes: "Partial CSS regression sample against HEAD 908ecfde on port 33005: case 6 History list and first-row hover control inspected in paired 1440x1000 screenshots. Drawer geometry and content remain usable; History font-weight cleanup is included. Flash timing differs between captures. Navigation, rename, filters and deletion deferred."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -352,9 +352,9 @@ parts:
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"
-        last_run: 2026-10-07T20:05:26Z
+        last_run: 2026-10-08T21:46:09Z
         result: pass
-        notes: "Covered live: open, drag to 870px main pane, browser resize to 768x900, narrow-pane scrolling and reload reset to closed/full-width on both instances; inspected all screenshot pairs. Both have heavily wrapped/clipped controls with a roughly 220px main pane. Not covered live: release outside browser window or rapid-toggle stress."
+        notes: "Partial CSS DRY regression sample against isolated pre-edit sources (HEAD 908ecfde plus uncommitted changes): closed/open drawer, drag to 870px main pane, close and current reload reset passed; screenshot pairs inspected with matching geometry. Deferred browser resize, outside-window release and rapid-toggle stress."
         paths: ["app/javascript/controllers/pane_controller.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/index.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/views/core/_case_toolbar.html.erb", "app/assets/stylesheets/panes.css", "app/assets/stylesheets/core-additions.css", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb"]
 
   "05":
@@ -432,15 +432,15 @@ parts:
         paths: ["app/controllers/core/modal_catalogs_controller.rb", "config/routes.rb", "app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/views/core/_judgement_book_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/core_runtime.js", "app/controllers/api/v1/books_controller.rb", "app/javascript/controllers/status_message_behavior.js"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
-        last_run: 2026-10-05T23:41:52Z
+        last_run: 2026-10-09T13:35:58Z
         result: pass
-        notes: "Covered live: Explain Query Params displayed actual Solr request JSON; Parsing and Query Template tabs opened, untemplated branch displayed expected message. Not covered live: copy verification and templated asynchronous races."
+        notes: "Partial CSS regression comparison against HEAD 908ecfde (port 33005): case 6 Explain Query Params modal paired screenshots inspected at 1440x1000; content/layout match apart from request ID and BS5 close-button position. Header Close works and removes backdrop/scroll lock after transition. Parsing/template/copy and failure paths deferred."
         paths: ["app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/query_explain_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
-        last_run: 2026-10-08T17:29:45Z
+        last_run: 2026-10-09T13:36:48Z
         result: pass
-        notes: "Covered live: controller-driven deterministic debug/expand payload, repeated debug reopen and Escape after opening transition, backdrop cleanup/body lock. Inspected pairs against pre-fix ca2d1d4f on33001 in .playwright-mcp/dom-lifecycle; modal content matches. Not covered live: real engine explanations, hot-match click or tree collapse; existing units cover payload selection."
+        notes: "Partial CSS regression comparison against HEAD 908ecfde (port 33005): case 6 first result hot-match bar opens Debug Explain. Expanded and collapsed JSON screenshot pairs inspected at 1200x1600; full-screen geometry, content and bool/number colors match. Collapse/re-expand and backdrop dismissal passed with no orphaned backdrop or scroll lock. Nested finder modal and other documents deferred."
         paths: ["app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
@@ -450,9 +450,9 @@ parts:
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.9":
         title: "Frog Report"
-        last_run: 2026-10-07T19:47:14Z
+        last_run: 2026-10-09T13:36:18Z
         result: pass
-        notes: "Live baseline 8ceb99e9/current: opened Frog Report on identical 5-result cases; both showed22 queries (20 with results,2 empty),100 required ratings, fully-rated congratulations and a single distribution bar22. Frog screenshot pair inspected in .playwright-mcp/dual-parity; chart paint differs (historical red transparent vs current blue white). Not covered: missing-rating distribution, book refresh or lifecycle/failure."
+        notes: "Partial CSS regression comparison against HEAD 908ecfde (port 33005): case 6 Frog Report summary, fully-rated congratulations and rendered bar chart matched inspected 1440x1000 screenshot pair; BS5 header Close position differs slightly. Close removes modal/backdrop/scroll lock. Book refresh, error and late-completion paths deferred."
         paths: ["app/javascript/controllers/frog_report_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/views/core/_queries.html.erb", "app/assets/stylesheets/froggy.css", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
@@ -1049,9 +1049,9 @@ parts:
         paths: ["app/views/teams/index.html.erb", "app/views/books/index.html.erb", "app/views/search_endpoints/index.html.erb", "app/assets/stylesheets/application.css", "app/views/layouts/_header.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/assets/stylesheets/navbar-brand.css", "app/assets/stylesheets/bootstrap5-compat.css", "app/views/cases/index.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/assets/stylesheets/core-additions.css", "app/assets/stylesheets/bootstrap5-add.css", "app/views/admin/users/index.html.erb"]
       "16.3":
         title: "Case header typography"
-        last_run: 2026-10-07T20:04:17Z
+        last_run: 2026-10-09T13:35:01Z
         result: pass
-        notes: "Covered live: current visible h1 is 35px with small subtitles 30.625px (0.875 ratio); historical 36px/23.4px. Inspected header screenshot pairs at desktop width. Not covered live: all responsive breakpoints."
+        notes: "Partial CSS regression comparison against HEAD 908ecfde on port 33005: case 6 closed workbench header and case/query badges inspected against current sources at 1440x1000; heading and badge appearance match. Header edit/navigation not exercised."
         paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/assets/stylesheets/core-additions.css"]
       "16.4":
         title: "Modal accessibility spot-check"
@@ -1061,10 +1061,10 @@ parts:
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts", "app/views/shared/_export_case_core_modal.html.erb", "app/views/core/_diff_modal.html.erb", "app/views/core/_snapshot_selection_template.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/status_message_behavior.js"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
-        last_run: 2026-09-02
+        last_run: 2026-10-09T13:37:43Z
         result: pass
-        notes: "Not run as a single standalone sweep, but every JS/view change made this session (case.js, currSettings.js, query_options_modal_instance_controller.js, import_snapshot_controller.js, mapper_wizard_controller.js, queriesLayout.html, wizardModal.html, _sidebar.html.erb) was individually verified live via Playwright MCP screenshots immediately after the change, with no visual regressions observed in any of the affected pages (case workbench header, query options modal, mapper wizard, cases list import modals, sidebar icons)."
-        paths: []
+        notes: "Partial CSS regression sample against isolated HEAD 908ecfde (port 33005) and current sources (port 3000): nine screenshot pairs inspected under .playwright-mcp/css-review: sign-in, closed case 6 workbench, History hover, Query Options, Explain Query Params, Frog Report, Debug Explain expanded/collapsed and wizard Name step. No broken layout or missing control observed. Visible changes: larger core footer small text, History weight cleanup and slightly shifted BS5 close icons. Transient flash/scroll backgrounds and explain request IDs differ. Case 219 static lookup failed, so result checks used live Solr case 6. Deferred other pages, pane drag/resize, narrow sweep, saves/errors, nested Debug and wizard completion."
+        paths: ["app/assets/stylesheets/panes.css", "app/assets/stylesheets/signup.css", "app/assets/stylesheets/application.css", "app/assets/stylesheets/style.css", "app/assets/stylesheets/json-explorer.css", "app/assets/stylesheets/qscore.css", "app/assets/stylesheets/core-additions.css"]
 
 
       "16.6":
