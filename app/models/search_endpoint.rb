@@ -53,6 +53,24 @@ class SearchEndpoint < ApplicationRecord
 
   scope :not_archived, -> { where(archived: false) }
 
+  # Ransack (used by SearchEndpointsController#index's filters and sortable
+  # column headers) requires every searchable/sortable attribute/association
+  # allowlisted - keep this to what's used today. basic_auth_credential is
+  # encrypted and deliberately excluded.
+  #
+  # name_cont/endpoint_url_cont rely on plain LIKE/ILIKE already being case-
+  # insensitive here: Postgres gets ILIKE automatically from Ransack's _cont
+  # predicate, SQLite's LIKE is case-insensitive for ASCII by default, and
+  # both columns are utf8mb3_general_ci on MySQL (confirmed via
+  # information_schema.columns). No custom ransacker needed.
+  def self.ransackable_attributes _auth_object = nil
+    %w[archived name search_engine endpoint_url updated_at]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[teams]
+  end
+
   after_initialize do |se|
     se.archived = false if se.archived.nil?
   end

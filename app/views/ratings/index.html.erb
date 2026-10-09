@@ -16,10 +16,10 @@
       <div class="mb-0 d-flex fs-6 justify-content-center">
           
         <div class="input-group">
-          <%= text_field_tag :q, params[:q], 
-              class: 'form-control form-control-sm', 
+          <%= text_field_tag :search, params[:search],
+              class: 'form-control form-control-sm',
               placeholder: 'Filter by query, doc id, or rating',
-              id: 'q' 
+              id: 'q'
           %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
             <i class="bi bi-search-heart"></i>
@@ -36,13 +36,13 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          <th>Rating ID</th>     
+          <th>Rating ID</th>
           <th>Query</th>
-          <th>Doc ID</th>
-          <th>Rating</th>         
+          <th><%= sort_link(@q, :doc_id, 'Doc ID') %></th>
+          <th><%= sort_link(@q, :rating, 'Rating') %></th>
           <th>User</th>
-          <th>Created At</th>
-          <th>Updated At</th>             
+          <th><%= sort_link(@q, :created_at, 'Created At') %></th>
+          <th><%= sort_link(@q, :updated_at, 'Updated At') %></th>
         </tr>
       </thead>
   

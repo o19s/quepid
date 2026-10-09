@@ -231,6 +231,27 @@ class User < ApplicationRecord
   # don't depend on every stored address already being lowercase.
   scope :by_email, ->(email) { where('LOWER(users.email) = ?', email.to_s.strip.downcase) }
 
+  # Ransack (used by admin/users#index's search box and sortable column
+  # headers) requires every searchable/sortable attribute to be allowlisted -
+  # deny-by-default so nothing sensitive (password, *_token, llm_key,
+  # system_prompt) becomes queryable just by adding a param. Keep this list
+  # to what the admin UI actually needs.
+  #
+  # name_or_email_cont relies on plain LIKE/ILIKE already being case-
+  # insensitive here: Postgres gets ILIKE automatically from Ransack's _cont
+  # predicate, SQLite's LIKE is case-insensitive for ASCII by default, and on
+  # MySQL both columns use a _ci collation (latin1_swedish_ci - confirmed via
+  # information_schema.columns, not assumed). No custom ransacker needed,
+  # unlike by_email above (which uses plain `=`, not LIKE, so it can't lean
+  # on any of that).
+  def self.ransackable_attributes _auth_object = nil
+    %w[name email administrator created_at type agreed_time email_marketing num_logins]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   def ai_judge?
     is_a?(AiJudge)
   end

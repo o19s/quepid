@@ -15,22 +15,22 @@
 
 <div class="card">
   <div class="card-header">   
-    <%= form_tag(admin_announcements_path, { method: :get }) do %> 
+    <%= search_form_for @q, url: admin_announcements_path do |f| %>
       <div class="mb-0 d-flex fs-6 ">
-          
+
         <div class="input-group">
-          <%= text_field_tag :q, params[:q], 
-              class: 'form-control form-control-sm', 
+          <%= f.search_field :text_cont,
+              class: 'form-control form-control-sm',
               placeholder: 'Filter by announcement text',
-              id: 'q' 
+              id: 'q'
           %>
           <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary', id: 'button-addon2' do %>
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-        
-        
+
+
+
       </div>
     <% end %>
   </div>
@@ -40,11 +40,11 @@
     <table class="table table-hover table-sm">
       <thead>
         <tr>
-          <th>Text</th>
+          <th><%= sort_link(@q, :text, 'Text') %></th>
           <th>Author</th>
-          <th>Created</th>
-          <th>Publishes</th>
-          <th>Expires</th>
+          <th><%= sort_link(@q, :created_at, 'Created') %></th>
+          <th><%= sort_link(@q, :publish_date, 'Publishes') %></th>
+          <th><%= sort_link(@q, :expiration_date, 'Expires') %></th>
           <th>Views</th>
           <th></th>
         </tr>

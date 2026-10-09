@@ -5,13 +5,13 @@ module Admin
     include Pagy::Method
 
     def index
-      query = Announcement.order(updated_at: :desc)
-      if params[:q].present?
-        query = query.where('LOWER(text) LIKE ?',
-                            "%#{params[:q].to_s.downcase}%")
-      end
+      @q = Announcement.ransack(params[:q])
+      # Default sort when the user hasn't clicked a column header yet (sort_link
+      # in the view drives @q.sorts from here on - a hardcoded .order would
+      # fight with that once a column is clicked).
+      @q.sorts = 'updated_at desc' if @q.sorts.empty?
 
-      @pagy, @announcements = pagy(query)
+      @pagy, @announcements = pagy(@q.result)
     end
 
     def new

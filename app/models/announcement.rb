@@ -26,6 +26,22 @@ class Announcement < ApplicationRecord
   validates :expiration_date, presence: true
   validate :publish_date_not_after_expiration_date
 
+  # Ransack (used by admin/announcements#index's search box and sortable
+  # column headers) requires every searchable/sortable attribute to be
+  # allowlisted - keep this to what's used today.
+  #
+  # text_cont relies on plain LIKE/ILIKE already being case-insensitive here:
+  # Postgres gets ILIKE automatically from Ransack's _cont predicate,
+  # SQLite's LIKE is case-insensitive for ASCII by default, and this column
+  # is explicitly utf8mb4_unicode_ci on MySQL. No custom ransacker needed.
+  def self.ransackable_attributes _auth_object = nil
+    %w[text publish_date expiration_date created_at updated_at]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    []
+  end
+
   # Ordered by publish_date desc, id desc so the most recently scheduled announcement
   # wins when windows overlap (id as a tiebreaker keeps same-day picks deterministic) -
   # avoids needing a separate "only one active" flag to keep in sync.

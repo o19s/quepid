@@ -29,4 +29,16 @@ class Rating < ApplicationRecord
   # arguably we shouldn't need this, however today you can have a rating object that doesn't have a
   # value set.  fully_rated means that the rating integer has been set.
   scope :fully_rated, -> { where.not(rating: nil) }
+
+  # Ransack (used by RatingsController#index's search box and sortable
+  # column headers) - the query association is needed for query_query_text_cont
+  # to actually JOIN to queries.query_text (the old hand-written raw SQL
+  # referenced that column with no join at all - see the controller).
+  def self.ransackable_attributes _auth_object = nil
+    %w[doc_id rating created_at updated_at]
+  end
+
+  def self.ransackable_associations _auth_object = nil
+    %w[query]
+  end
 end

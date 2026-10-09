@@ -11,16 +11,24 @@ class SearchEndpointsController < ApplicationController
     bool = ActiveRecord::Type::Boolean.new
     @archived = bool.deserialize(params[:archived] || false )
 
-    query = @current_user.search_endpoints_involved_with.order(updated_at: :desc)
-    query = query.where(archived: @archived)
+    # The free-text search lives under the nested q[...] ransack hash
+    # (q[name_or_endpoint_url_cont]) rather than a plain top-level q string -
+    # sort_link's links are q[s]=..., and params[:q] can't be both a Hash
+    # (sort) and a String (free text) at once. owned isn't a plain column
+    # match (the value comes from current_user, not the request), so it
+    # stays a manual filter applied after ransack rather than a ransack
+    # predicate.
+    ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+    ransack_params[:archived_eq] = @archived
+    ransack_params[:teams_id_eq] = params[:team_id] if params[:team_id].present?
 
+    @q = @current_user.search_endpoints_involved_with.ransack(ransack_params)
+    # Default sort until the user clicks a column header (sort_link in the
+    # view drives @q.sorts from here on).
+    @q.sorts = 'updated_at desc' if @q.sorts.empty?
+
+    query = @q.result
     query = query.where(owner_id: current_user.id) if params[:owned].present?
-    query = query.where(teams: { id: params[:team_id] }) if params[:team_id].present?
-
-    if params[:q].present?
-      q = "%#{params[:q].to_s.downcase}%"
-      query = query.where('LOWER(search_endpoints.name) LIKE ? OR LOWER(endpoint_url) LIKE ?', q, q)
-    end
 
     @pagy, @search_endpoints = pagy(query)
   end

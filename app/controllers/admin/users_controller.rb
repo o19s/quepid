@@ -15,12 +15,11 @@ module Admin
       @shallow = 'true' == params[:shallow]
 
       # Exclude AI judges from the admin user list.
-      query = User.real_users.order(created_at: :desc)
-
-      if params[:q].present?
-        q = "%#{params[:q].to_s.downcase}%"
-        query = query.where('LOWER(users.name) LIKE ? OR LOWER(users.email) LIKE ?', q, q)
-      end
+      @q = User.real_users.ransack(params[:q])
+      # Default sort until the user clicks a column header (sort_link in the
+      # view drives @q.sorts from here on).
+      @q.sorts = 'created_at desc' if @q.sorts.empty?
+      query = @q.result
 
       respond_to do |format|
         format.html { @pagy, @users = pagy(query) }

@@ -17,9 +17,16 @@ class JudgementsController < ApplicationController
     query = query.where(unrateable: true) if params[:unrateable].present?
     query = query.where(judge_later: true) if params[:judge_later].present?
 
-    query = apply_search_filter(query, params[:q]) if params[:q].present?
+    query = apply_search_filter(query, params[:search]) if params[:search].present?
 
-    @pagy, @judgements = pagy(query.order(:query_doc_pair_id))
+    # params[:q] only ever carries sort_link's q[s]=... here - the free-text
+    # box is params[:search] (handled above by apply_search_filter's own
+    # field:value DSL), kept separate since it isn't a single groupable
+    # Ransack attribute.
+    @q = query.ransack(params[:q])
+    @q.sorts = 'query_doc_pair_id asc' if @q.sorts.empty?
+
+    @pagy, @judgements = pagy(@q.result)
   end
 
   def show
@@ -175,14 +182,24 @@ class JudgementsController < ApplicationController
     query = query.where(query_doc_pairs: { doc_id: field_filters['doc_id'] }) if field_filters['doc_id']
     query = query.where(query_doc_pairs: { query_text: field_filters['query_text'] }) if field_filters['query_text']
 
-    # Apply generic LIKE search for remaining text
+    # Apply generic OR search for remaining text, across both judgements' own
+    # columns and the query_doc_pair association - via Ransack's association
+    # predicates rather than a raw SQL string with bare, unqualified column
+    # names (doc_id/query_text/information_need all actually live on
+    # query_doc_pairs, not judgements - this only worked because @book.judgements
+    # is itself a has_many-through on query_doc_pairs, so the join was always
+    # there regardless of this WHERE clause).
     if remaining_text.present?
-      q = "%#{remaining_text.to_s.downcase}%"
-      query = query.where(
-        'query_doc_pair_id = ? OR LOWER(doc_id) LIKE ? OR LOWER(query_text) LIKE ? OR ' \
-        'LOWER(information_need) LIKE ? OR LOWER(judgements.explanation) LIKE ?',
-        remaining_text.to_i, q, q, q, q
-      )
+      query = query.ransack(
+        groupings: { search: {
+          m:                                    'or',
+          query_doc_pair_id_eq:                 remaining_text.to_i,
+          query_doc_pair_doc_id_cont:           remaining_text,
+          query_doc_pair_query_text_cont:       remaining_text,
+          query_doc_pair_information_need_cont: remaining_text,
+          explanation_cont:                     remaining_text,
+        } }
+      ).result
     end
 
     query

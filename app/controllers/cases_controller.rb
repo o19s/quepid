@@ -7,23 +7,11 @@ class CasesController < ApplicationController
 
   def index
     @archived = deserialize_bool_param(params[:archived])
-    @filter_q = params[:q].to_s.strip
+    @filter_q = params[:search].to_s.strip
     @filter_team_id = params[:team_id].to_s.strip
 
-    # Get all cases the user is involved with (owned or via teams)
-    query = current_user.cases_involved_with
-
-    # Apply team filter
-    query = query.joins(:teams).where(teams: { id: @filter_team_id }) if @filter_team_id.present?
-
-    # Apply search filter
-    if @filter_q.present?
-      query = query.where('LOWER(case_name) LIKE ? OR cases.id = ?',
-                          "%#{@filter_q.to_s.downcase}%", @filter_q.to_i)
-    end
-
-    # Apply archived filter
-    query = query.where(archived: @archived)
+    @q = current_user.cases_involved_with.ransack(cases_ransack_params)
+    query = @q.result
 
     # Collapse any duplicates the team join produced by matching on ids, then
     # build the query we actually render from a clean scope. Selecting DISTINCT
@@ -36,6 +24,11 @@ class CasesController < ApplicationController
     # query = query.includes([ :metadata ])
     # query = query.order('`case_metadata`.`last_viewed_at` DESC, `cases`.`id` DESC')
     query = query.includes(:owner, :teams)
+
+    # Default sort until the user clicks a column header (sort_link in the
+    # view drives @q.sorts from here on) - applied after the dedup/dedup-via-
+    # Case.where above, since @q.result's own order doesn't survive that.
+    query = query.order(@q.sorts.any? ? @q.sorts.map(&:name).zip(@q.sorts.map(&:dir)).to_h : { updated_at: :desc })
 
     # Paginate results
     @pagy, @cases = pagy(query)
@@ -83,6 +76,20 @@ class CasesController < ApplicationController
   end
 
   private
+
+  # params[:q] only ever carries sort state here (q[s]=... from sort_link) -
+  # the free-text box is params[:search], kept separate since it isn't a
+  # single groupable Ransack attribute. archived stays a top-level AND'd
+  # condition; the name-or-id search is a nested OR grouping (Ransack ANDs
+  # top-level conditions with named groupings by default, only ORing
+  # *within* a grouping).
+  def cases_ransack_params
+    ransack_params = params[:q].present? ? params[:q].to_unsafe_h : {}
+    ransack_params[:archived_eq] = @archived
+    ransack_params[:teams_id_eq] = @filter_team_id if @filter_team_id.present?
+    ransack_params[:groupings] = { search: { m: 'or', case_name_cont: @filter_q, id_eq: @filter_q.to_i } } if @filter_q.present?
+    ransack_params
+  end
 
   def set_case
     @case = current_user.cases_involved_with.find_by(id: params[:id])
