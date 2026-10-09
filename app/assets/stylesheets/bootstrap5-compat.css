@@ -1,8 +1,10 @@
 /*
  * Quepid overrides for the core bundle, layered on top of the
- * full BS5 stylesheet that build_css.js concatenates earlier. Each
- * component block below is just the px / size tuning Quepid wants on
- * top of BS5; the upstream rules supply structure and behaviour.
+ * full BS5 stylesheet that build_css.js concatenates earlier: the `--q-*`
+ * brand variables, px sizing in place of BS5's rem values (the core root
+ * font-size is 87.5%), BS3 colors and shadows BS5 dropped, and Quepid's
+ * own skin on Bootstrap components. The upstream rules supply structure
+ * and behaviour.
  *
  * Parallel brand skin for the application bundle: bootstrap5-add.css.
  */
@@ -30,6 +32,9 @@ pre {
   --q-brand-blue-hover-rgb: 35, 82, 124;
   --q-success-bg: #dff0d8;
   --q-success-text: #3c763d;
+
+  /* BS3's body font, for the case view and the dev panel (core-additions.css). */
+  --q-body-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* BS5 defines --bs-modal-box-shadow but never applies it, so modals have
@@ -433,20 +438,17 @@ header .dropdown-toggle .bi {
 }
 
 .sub-results .btn-warning {
-	--bs-btn-color: #fff;
 	--bs-btn-bg: #f0ad4e;
 	--bs-btn-border-color: #f0ad4e;
-	--bs-btn-hover-color: #fff;
 	--bs-btn-hover-bg: #ec971f;
 	--bs-btn-hover-border-color: #e28a00;
-	--bs-btn-active-color: #fff;
 	--bs-btn-active-bg: #ec971f;
 	--bs-btn-active-border-color: #e28a00;
 }
 
-/* Modal-footer warning buttons (diff modal's "Clear Comparison View", etc.)
- * — BS5's .btn-warning defaults to black text; BS3 used white. */
-.modal-footer .btn-warning {
+/* BS5's .btn-warning defaults to black text; BS3 used white (e.g. "Move
+ * Query", the diff modal's "Clear Comparison View"). */
+.btn-warning {
 	--bs-btn-color: #fff;
 	--bs-btn-hover-color: #fff;
 	--bs-btn-active-color: #fff;

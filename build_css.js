@@ -46,16 +46,18 @@ function copyFileIfExists(src, dest) {
 
 const STYLES = 'app/assets/stylesheets';
 
-// Every bundle starts with Bootstrap 5, its icons, and Quepid's fonts.
+// Every bundle starts with Bootstrap 5, its icons, Quepid's fonts, and the
+// page skin shared by both bundles.
 const BOOTSTRAP_BASE = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
   'node_modules/bootstrap-icons/font/bootstrap-icons.css',
   `${STYLES}/fonts.css`,
+  `${STYLES}/base.css`,
 ];
 
 // Concatenates `files` in order (order matters for the cascade) into
-// app/assets/builds/<name>.css, followed by `trailer` if given.
-function writeBundle(name, title, files, trailer = '') {
+// app/assets/builds/<name>.css.
+function writeBundle(name, title, files) {
   console.log(`Building ${name}.css...`);
 
   const outputFile = `app/assets/builds/${name}.css`;
@@ -66,7 +68,6 @@ function writeBundle(name, title, files, trailer = '') {
     output += readFileIfExists(file);
     output += '\n';
   }
-  output += trailer;
 
   fs.writeFileSync(outputFile, output);
   const stats = fs.statSync(outputFile);
@@ -74,19 +75,13 @@ function writeBundle(name, title, files, trailer = '') {
 }
 
 function buildApplicationCSS() {
-  // The inline rules from application.css, with comments and blank lines stripped.
-  const appCSS = readFileIfExists(`${STYLES}/application.css`)
-    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
-    .replace(/^\s*$/gm, '') // Remove empty lines
-    .trim();
-
   writeBundle('application', 'Application CSS Bundle (Bootstrap 5)', [
     ...BOOTSTRAP_BASE,
     `${STYLES}/navbar-brand.css`,
     `${STYLES}/bootstrap5-add.css`,
     `${STYLES}/signup.css`,
     `${STYLES}/judgements.css`,
-  ], appCSS);
+  ]);
 }
 
 function buildCoreCSS() {
@@ -111,14 +106,6 @@ function buildCoreCSS() {
     `${STYLES}/misc.css`,
     `${STYLES}/animation.css`,
     `${STYLES}/froggy.css`,
-  ]);
-}
-
-function buildAdminCSS() {
-  writeBundle('admin', 'Admin CSS Bundle (Bootstrap 5)', [
-    ...BOOTSTRAP_BASE,
-    `${STYLES}/navbar-brand.css`,
-    `${STYLES}/bootstrap5-add.css`,
   ]);
 }
 
@@ -161,7 +148,6 @@ function buildAllCSS() {
     // Build all CSS bundles
     buildApplicationCSS();
     buildCoreCSS();
-    buildAdminCSS();
 
     // Copy linked stylesheets and other asset files
     copyLinkedStylesheets();

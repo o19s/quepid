@@ -927,7 +927,7 @@ Doc lists detect two error conditions (undefined/missing ID field, duplicate IDs
 esbuild → core_vendor.js (vendor libs, CodeMirror, Bootstrap)
 esbuild → core_case.js (core_stimulus.js: case-page controllers and utils)
 esbuild → jquery bundle, analytics.js (Vega)
-Node.js → application.css, core.css, admin.css (concatenated CSS)
+Node.js → application.css, core.css (concatenated CSS)
 ```
 
 **Development (Foreman, `Procfile.dev`):**

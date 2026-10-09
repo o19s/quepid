@@ -17,7 +17,7 @@
 }
  .full-screen-modal .modal-content {
 	 height: 100%;
-	 overflow: scroll;
+	 overflow: auto;
 }
 
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>

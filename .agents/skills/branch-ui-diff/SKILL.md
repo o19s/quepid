@@ -4,7 +4,8 @@ description: >-
   Screenshots the UI before/after a branch's changes, without touching the
   working tree. Finds which manual-testing scenarios are affected by the
   branch's diff, points the permanent diff-baseline instance (:3003, one git
-  worktree, sharing the live dev server's mysql/keycloak/ollama) at the old ref, then
+  worktree, its own copy of the dev database, sharing the live dev server's
+  keycloak/ollama) at the old ref, then
   uses Playwright MCP (headed) to capture each affected scenario against the
   old instance ("before") and the current dev server ("after"). Use when
   asked for visual before/after proof of a branch's changes, or to sanity-check
@@ -19,12 +20,11 @@ for baseline selection: initial migration comparisons require the historical
 AngularJS / Bootstrap 3 baseline; a pre-fix baseline in the diff-baseline instance is for focused regression rechecks.
 For historical comparisons, use
 [the isolated historical instance](../../../docs/legacy_comparison.md) instead
-of this shared-database workflow. Its schema and runtime are independent; do not
-use the snapshot/restore commands below for historical comparisons.
+of this workflow. Its schema, runtime and seed data are independent; do not use
+`bin/ui_diff_db_sync` for historical comparisons.
 
 Proves what a branch actually changed on screen, by running **two Quepid instances at once**
-against the **same backend** (mysql/keycloak/ollama from the live `bin/docker s` stack) — the
-branch's base ref on one port, the current code on another — instead of the older approach of
+on the **same data** — the branch's base ref on one port, the current code on another — instead of the older approach of
 flipping files in place and rebuilding (fragile, and __not__ how this skill works: see
 `bin/ui_diff_up`/`bin/ui_diff_down` and `bin/branch_ui_scenarios`).
 
@@ -40,18 +40,19 @@ For an explicitly scoped regression recheck, load the requested pre-fix baseline
 into the diff-baseline worktree instead (see AGENTS.md); document its source, and
 don't `--reset` or switch refs while someone else's uncommitted baseline is loaded.
 
-**Known, accepted tradeoff:** both instances share one MySQL database. Fine for read-only
-navigation. If a scenario's steps *mutate* data (create/delete/archive/clone/share/import/...),
-snapshot and restore around it — see step 6b — rather than letting the mutation bleed into the
-other pass. If the branch changes migrations, the base-ref (old) instance runs against an
-already-migrated-to-head schema; that's accepted risk, not a bug — flag it in the summary if a
-page errors, don't try to work around it by re-migrating.
+**Data:** the old instance has its own database, `quepid_ui_diff_development` for MySQL/PostgreSQL
+or `tmp/ui_diff/storage/development.sqlite3` for SQLite, a copy of the dev
+database made by `bin/ui_diff_db_sync` (bin/ui_diff_up makes the first copy), with an empty job
+queue and its own Solid Queue worker. Writes on :3003 never reach the dev database, and the old
+code runs its own background jobs. Both instances share the database service, Keycloak and Ollama.
+The copy keeps the dev database's schema: if the branch adds migrations, the old code runs against
+the newer schema; that's accepted risk, not a bug — flag it in the summary if a page errors, don't
+try to work around it by re-migrating. Uploaded files (Active Storage) live in each checkout, so
+the copy's attachments may be missing on :3003.
 
-**Concurrency guardrail:** `bin/ui_diff_db_restore` overwrites the *entire* shared dev database
-back to a snapshot — including anything anyone else did in the meantime. Before taking a snapshot
-or restoring, check `ListAgents` for other active sessions on this machine; if one might be
-exercising the same dev stack (e.g. running its own manual-testing pass), ask before proceeding —
-don't silently blow away someone else's in-progress work.
+**Concurrency guardrail:** `bin/ui_diff_db_sync` replaces the *entire* copy, including anything
+someone set up on :3003, and restarts the container. Before syncing, check `ListAgents` for other
+active sessions on this machine; if one might be using the baseline, ask first.
 
 **The Playwright MCP browser is a single shared instance, not one per agent.** If you delegate
 scenario batches to multiple subagents, running them **in parallel makes them hijack each other's
@@ -122,7 +123,7 @@ of the branch-diff scenario discovery below.
      branch-ui-diff-style note) has NOT had an old-vs-new comparison yet — it's a genuine gap.
    Report the split to the user: e.g. "88 scenarios matched; 42 already have an explicit
    before/after comparison on record from `<date>`; 46 don't." This is cheap (one YAML read plus
-   an `ls -la` per path) and skips potentially hours of redundant Playwright/DB-snapshot work.
+   an `ls -la` per path) and skips potentially hours of redundant Playwright work.
 
 4. **Scope the run.** Of what's left after filtering, this can still match many scenarios. Don't
    silently run all of them — tell the user how many are genuinely uncovered and, unless they said
@@ -136,7 +137,8 @@ of the branch-diff scenario discovery below.
    one :3003). The command is idempotent: if `quepid_app_ui_diff` is already serving that ref it
    returns at once. Otherwise it checks the single sibling worktree (`../quepid-ui-diff-worktree`)
    out at the base ref, recreates that one container (detached, `restart: unless-stopped`, joined
-   to the same `mysql`/`keycloak`/`ollama` containers as the primary stack), and runs
+   to the same `mysql`/`keycloak`/`ollama` containers as the primary stack, using its own database
+   and job worker; the first run copies the dev database), and runs
    `yarn build` **only if the ref changed**. When it switches refs it prints the ref it replaced;
    if another session may be using the baseline, check before switching. It blocks (up to ~6 min
    on a cold build) until `http://localhost:<PORT>` responds, or prints `docker logs` and exits
@@ -156,21 +158,14 @@ of the branch-diff scenario discovery below.
    - Follow the existing screenshot conventions in `CLAUDE.md` (`browser_resize` to fit modals,
      full viewport shots, not element crops).
    - Log in with `quepid+realisticactivity@o19s.com` / `password` on both instances — they're
-     separate sessions against the same DB, so both need their own login.
+     separate sessions, so both need their own login.
 
 6b. **Mutating scenarios** (steps that create/delete/archive/clone/import/rename/share-unshare
-   anything, not just view/filter it): bracket **each side's pass** in a snapshot/restore so the
-   two runs never see each other's writes and the DB ends up clean:
-   ```
-   ./bin/ui_diff_db_snapshot          # dump quepid_development
-   #  ... drive the old instance (before), screenshot ...
-   ./bin/ui_diff_db_restore           # undo whatever that pass just did
-   #  ... drive the current dev server (after), screenshot ...
-   ./bin/ui_diff_db_restore           # undo that pass too, leave the DB as found
-   ```
-   Only one snapshot slot exists (`tmp/ui_diff/db_snapshot.sql`) — don't interleave a second
-   mutating scenario's snapshot/restore inside this bracket. Read-only scenarios don't need this;
-   only bracket the ones that actually write.
+   anything) need no bracketing on the old side: its writes stay in the copy. The "after" pass
+   writes to the dev database like any manual testing. Both sides must start from the same data,
+   though: if an earlier pass changed either database in a way the scenario can see (a case
+   created on one side only, a renamed fixture), run `bin/ui_diff_db_sync` first so the copy
+   matches the dev database again. Record when the copy was made if the data matters.
 
 7. **Leave it running.** The baseline is permanent; don't stop it after a comparison. Only on
    request:
@@ -179,7 +174,13 @@ of the branch-diff scenario discovery below.
    ./bin/ui_diff_down --remove-worktree   # also deletes the worktree entirely
    ```
 
-8. **Actually look at every pair before reporting anything.** Capturing a screenshot is not the
+8. **Actually look at every pair before reporting anything.** Run `yarn screenshots:view` (or
+   `node test/playwright/screenshot-viewer-server.mjs`) to regenerate the manifest; each changed
+   pair's `diff.regions` in `test/playwright/screenshot-manifest.json` lists numbered boxes, in
+   screenshot pixels, around every cluster of changed pixels, and the viewer draws them on both
+   images. Use them to find what to look at, and account for every box: intended change,
+   regression, or a state mismatch to recapture. Many boxes, or one covering most of the page,
+   usually means mismatched data, scroll or session state. Capturing a screenshot is not the
    same as verifying it. For each scenario/state, open both the `-before.png` and `-after.png`
    with the Read tool (or equivalent) and look at them — don't infer "identical" or "no visual
    diff" from the fact that the underlying template/controller wasn't in the diff, and don't rely
@@ -195,5 +196,5 @@ of the branch-diff scenario discovery below.
 
 - Pure backend/API changes with no template/JS/CSS diff — `bin/branch_ui_scenarios` will
   correctly report no matches; don't force screenshots.
-- Another session is actively using the same dev stack right now (see the concurrency guardrail
-  above) — coordinate or wait rather than snapshotting/restoring out from under them.
+- Another session is actively using the baseline right now (see the concurrency guardrail
+  above) — coordinate or wait rather than switching its ref or syncing its database under them.

@@ -4,6 +4,6 @@
 
 .doc-score-explanation {
   max-height: 200px;
-  overflow:   scroll;
+  overflow:   auto;
   width:      100%;
 }

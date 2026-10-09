@@ -35,6 +35,10 @@ recovery, screenshot and manual-tracker rules in [AGENTS.md](../../../../AGENTS.
 
 - Give each candidate a numbered card with its title, sampled flow, exact
   proposed removal/change, and a short description of the observed difference.
+- Start from the automatic boxes: `yarn screenshots:view` records each pair's
+  changed regions (`diff.regions` in `test/playwright/screenshot-manifest.json`)
+  and draws them in the viewer. Reuse those coordinates and adjust or split them
+  by hand only where a cluster mixes unrelated changes.
 - **Put conspicuous matching boxes around the relevant area on both images.**
   Use a shared region covering the before/after bounds with enough padding to
   leave the changed pixels visible. Use separate boxes for distinct areas, such

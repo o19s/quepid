@@ -51,6 +51,7 @@ function ensureWritableOutDir(dir) {
 // belong to upstream packages.
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
+  'app/assets/stylesheets/base.css',
   'app/assets/stylesheets/core-additions.css',
   'app/assets/stylesheets/navbar-brand.css',
   'app/assets/stylesheets/bootstrap5-compat.css',

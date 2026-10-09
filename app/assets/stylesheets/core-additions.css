@@ -1,15 +1,18 @@
 /*
- * Quepid core UI — layout and skin that do not use Bootstrap framework classes
+ * Quepid core UI — layout and skin, mostly without Bootstrap framework classes
  * in selectors. Bootstrap-class overrides for the core case bundle (sub-results
  * toolbars, `#dev-settings` tabs, modals, annotations, dropdown shims, etc.)
  * live in bootstrap5-compat.css; the navbar brand skin (`.navbar-brand`,
- * `.navbar-secondary`, header `.nav-link`) lives in navbar-brand.css.
+ * `.navbar-secondary`, header `.nav-link`) lives in navbar-brand.css; the page
+ * background, footer size and `#flash-messages` bar live in base.css.
  *
- * Header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
- * `.dropdown-item`), flash chrome (`.flash`), and `#flash-messages` live here.
+ * Exceptions that do touch Bootstrap classes but stay here with their layout:
+ * the header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
+ * `.dropdown-item`), flash chrome (`.flash`, which gets `.alert`), and the
+ * `.row` margin reset under `.results-control`.
  *
- * build_css.js loads this first in the core bundle, right after the Bootstrap
- * base (bootstrap.css, bootstrap-icons.css, fonts.css) and before
+ * build_css.js loads this first in the core bundle, right after the shared
+ * base (bootstrap.css, bootstrap-icons.css, fonts.css, base.css) and before
  * navbar-brand.css and bootstrap5-compat.css.
  */
 
@@ -36,9 +39,9 @@ hr {
 */
 
 /* A column: the header keeps its natural height (it grows when the navbar
- * wraps) and #main-content's workbench panes (panes.css) fill the rest. */
+ * wraps) and #main-content's workbench panes (panes.css) fill the rest. The
+ * page background comes from base.css. */
 body {
-  background: url('blue_bg.jpg') top center repeat;
   display: flex;
   flex-direction: column;
 }
@@ -122,7 +125,7 @@ header .dropdown-item:focus {
  * link blue for this scope is set in bootstrap5-compat.css. */
 .results-control {
   --bs-secondary-color: #777;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--q-body-font);
 }
 
 /* BS3 underlined links only on hover/focus; BS5's Reboot always does. */
@@ -254,10 +257,15 @@ header .dropdown-item:focus {
 	background-position: center;
 }
 
-.results-pane-toggle {
+/* Expand/collapse toggles: the results-pane one and the per-query chevron. */
+.results-pane-toggle,
+.results .toggleSign {
 	color: var(--q-brand-blue);
 	font-weight: bold;
 	font-size: 16px;
+}
+
+.results-pane-toggle {
 	margin-right: 8px;
 	cursor: pointer;
 }
@@ -268,14 +276,11 @@ header .dropdown-item:focus {
 }
 
 .results .toggleSign {
-	color: var(--q-brand-blue);
 	position: absolute;
 	top: 50%;
 	right: 19px;
 	transform: translateY(-50%);
-	font-weight: bold;
 	border-radius: 3px;
-	font-size: 16px;
 }
 
 
@@ -399,7 +404,7 @@ header .dropdown-item:focus {
 */
 .move-query-cases-list {
   max-height: 300px;
-  overflow:   scroll;
+  overflow:   auto;
 }
 
 
@@ -432,7 +437,7 @@ header .dropdown-item:focus {
 	color: var(--bs-body-color);
 	/* Outside `.results-control`'s font rule; BS5's wider system-ui font
 	 * would wrap the "Annotations" tab onto its own row. */
-	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	font-family: var(--q-body-font);
 	/* main's .dev-section wrapper inset the whole panel by 15px. */
 	padding: 15px;
 }
@@ -461,7 +466,7 @@ header .dropdown-item:focus {
 }
 
 /* Rules for this section that reference Bootstrap classes (`.d-flex`,
- * `.form-check-*`, `.badge`) live in bootstrap5-compat.css alongside the
+ * `.form-check-*`) live in bootstrap5-compat.css alongside the
  * other #dev-settings Bootstrap-class overrides (nav-tabs, form-control),
  * per this file's Bootstrap-class-vs-not split (see file header). */
 
@@ -562,7 +567,6 @@ header .dropdown-item:focus {
 
 footer {
   margin-top: 30px;
-  font-size: 14px;
 }
 
 .matches-popper:hover {
@@ -586,13 +590,6 @@ footer {
 
 .search-feedback {
   margin: 20px 0;
-}
-
-#flash-messages {
-  bottom:     0;
-  position:   fixed;
-  width:      100%;
-  z-index:    100;
 }
 
 /*
@@ -626,7 +623,7 @@ footer {
 /* Import file preview (import ratings modal) */
 .import-content {
   max-height: 200px;
-  overflow:   scroll;
+  overflow:   auto;
 }
 
 /* No empty preview bars before a file is chosen. */

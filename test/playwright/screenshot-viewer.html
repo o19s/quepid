@@ -148,10 +148,6 @@
         border-color: color-mix(in srgb, var(--diff) 50%, var(--border));
       }
 
-      .badge.pending {
-        color: var(--muted);
-      }
-
       .badge.single {
         color: var(--muted);
       }
@@ -261,6 +257,97 @@
         background: #0a0c10;
       }
 
+      .panel header .raw-link {
+        margin-left: auto;
+        color: var(--accent);
+      }
+
+      /* Changed-region boxes, positioned in percentages of the screenshot so
+         they stay aligned at any rendered size. */
+      .shot {
+        position: relative;
+      }
+
+      .region {
+        position: absolute;
+        outline: 3px solid var(--diff);
+        box-shadow: 0 0 0 4px #000, inset 0 0 0 1px #fff;
+        pointer-events: none;
+      }
+
+      .region span {
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        transform: translateY(-100%);
+        padding: 0 0.3rem;
+        background: var(--diff);
+        color: #000;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      .hide-regions .region {
+        display: none;
+      }
+
+      .compare.actual {
+        grid-template-columns: 1fr;
+      }
+
+      .compare.actual .shot {
+        width: fit-content;
+      }
+
+      .compare.actual .panel img,
+      .compare.actual .panel canvas {
+        width: auto;
+        max-width: none;
+        cursor: zoom-out;
+      }
+
+      .compare.actual .panel {
+        overflow: auto;
+      }
+
+      .compare.actual .panel header {
+        position: sticky;
+        left: 0;
+      }
+
+      .slider {
+        --pos: 50%;
+      }
+
+      .slider .slider-after {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        clip-path: inset(0 0 0 var(--pos));
+      }
+
+      .slider::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--pos);
+        border-left: 2px solid var(--warn);
+        pointer-events: none;
+      }
+
+      .slider-range {
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+
+      .region-list {
+        margin: 0;
+        padding-left: 1.4rem;
+        font-size: 0.85rem;
+        columns: 2;
+      }
+
       .panel .img-error {
         padding: 1rem;
         color: var(--diff);
@@ -328,6 +415,8 @@
       let manifest = { groups: [], singles: [], summary: {} }
       let items = []
       let activeId = null
+      let viewMode = "side"
+      let showRegions = true
       const pixelCache = new Map()
 
       function shotSrc(relPath) {
@@ -356,13 +445,29 @@
         if (item.byteIdentical) {
           return '<span class="badge identical">byte =</span>'
         }
-        if (item.byteIdentical === false) {
-          const pixel = pixelCache.get(item.id)
-          if (pixel?.pixelIdentical) return '<span class="badge identical">pixel =</span>'
-          if (pixel && !pixel.pending) return '<span class="badge diff">diff</span>'
-          return '<span class="badge diff">bytes ≠</span>'
-        }
-        return '<span class="badge pending">…</span>'
+        const diff = item.diff
+        if (!diff || diff.error) return '<span class="badge diff">bytes ≠</span>'
+        if (diff.dimensionMismatch) return '<span class="badge diff">size ≠</span>'
+        if (diff.pixelIdentical) return '<span class="badge identical">pixel =</span>'
+        const count = diff.regions.length
+        return `<span class="badge diff">${count} box${count === 1 ? "" : "es"}</span>`
+      }
+
+      function hasRegions(item) {
+        return Boolean(item?.diff?.regions?.length)
+      }
+
+      function regionsHtml(item) {
+        if (!hasRegions(item)) return ""
+        const { width, height } = item.diff
+        return item.diff.regions
+          .map(
+            (r, index) => `
+              <div class="region" style="left:${(r.x / width) * 100}%;top:${(r.y / height) * 100}%;width:${(r.width / width) * 100}%;height:${(r.height / height) * 100}%">
+                <span>${index + 1}</span>
+              </div>`
+          )
+          .join("")
       }
 
       function renderNav(filter = "") {
@@ -421,20 +526,65 @@
         }
       }
 
-      function panel(label, src, alt) {
+      // Clicking a screenshot toggles the actual-size view, which keeps the
+      // boxes; the header's raw PNG link opens the untouched file.
+      function panel(label, src, alt, item = null) {
         const safeAlt = alt.replaceAll('"', "&quot;")
         return `
           <figure class="panel">
-            <header>${label}</header>
-            <a href="${src}" target="_blank" rel="noopener noreferrer">
+            <header>${label}<a class="raw-link" href="${src}" target="_blank" rel="noopener noreferrer">raw PNG</a></header>
+            <div class="shot" data-toggle-actual>
               <img src="${src}" alt="${safeAlt}" loading="lazy"
                 onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'img-error',textContent:'Failed to load: ${src}'}))" />
-            </a>
+              ${regionsHtml(item)}
+            </div>
           </figure>
         `
       }
 
-      function reportHtml(item, pixel = null) {
+      function sliderHtml(item) {
+        const beforeSrc = shotSrc(item.before)
+        const afterSrc = shotSrc(item.after)
+        return `
+          <figure class="panel">
+            <header>Before (left of the line) / After (right)</header>
+            <div class="shot slider" id="slider">
+              <img src="${beforeSrc}" alt="${item.title} before" />
+              <img class="slider-after" src="${afterSrc}" alt="${item.title} after" />
+              ${regionsHtml(item)}
+            </div>
+          </figure>
+          <input class="slider-range" id="slider-pos" type="range" min="0" max="100" value="50" aria-label="Slider position" />
+        `
+      }
+
+      function viewHtml(item) {
+        const mode = viewMode === "slider" && item.diff?.dimensionMismatch ? "side" : viewMode
+        if (mode === "slider") return sliderHtml(item)
+        return `
+          <div class="compare${mode === "actual" ? " actual" : ""}">
+            ${panel("Before", shotSrc(item.before), `${item.title} before`, item)}
+            ${panel("After", shotSrc(item.after), `${item.title} after`, item)}
+          </div>
+        `
+      }
+
+      function viewControlsHtml(item) {
+        const option = (value, label, disabled = false) => `
+          <label><input type="radio" name="view-mode" value="${value}" ${viewMode === value ? "checked" : ""} ${disabled ? "disabled" : ""} /> ${label}</label>`
+        return `
+          <div class="controls">
+            ${option("side", "Side by side")}
+            ${option("slider", "Slider", Boolean(item.diff?.dimensionMismatch))}
+            ${option("actual", "Actual size")}
+            ${hasRegions(item) ? `<label><input type="checkbox" id="show-regions" ${showRegions ? "checked" : ""} /> Boxes</label>` : ""}
+            ${hasRegions(item) ? '<label><input type="checkbox" id="diff-only" /> Diff only (hide unchanged pixels)</label>' : ""}
+            ${hasRegions(item) ? '<label><input type="checkbox" id="diff-overlay" checked /> Tint changed pixels</label>' : ""}
+          </div>
+        `
+      }
+
+      function reportHtml(item) {
         if (item.kind !== "pair") return ""
 
         if (item.byteIdentical) {
@@ -450,56 +600,57 @@
           `
         }
 
-        if (!pixel || pixel.pending) {
+        const diff = item.diff || { error: "manifest has no pixel diff; rerun yarn screenshots:view" }
+        const bytes = `<dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>`
+
+        if (diff.error) {
           return `
-            <div class="report warn" id="diff-report">
-              <strong>Comparing pixels…</strong>
-              <dl>
-                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-              </dl>
+            <div class="report warn">
+              <strong>Couldn't compare pixels</strong>
+              <dl>${bytes}<dt>Reason</dt><dd>${diff.error}</dd></dl>
             </div>
           `
         }
 
-        if (pixel.dimensionMismatch) {
+        if (diff.dimensionMismatch) {
           return `
             <div class="report diff">
               <strong>Different dimensions</strong>
               <dl>
-                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-                <dt>Before</dt><dd>${pixel.beforeWidth}×${pixel.beforeHeight}</dd>
-                <dt>After</dt><dd>${pixel.afterWidth}×${pixel.afterHeight}</dd>
+                ${bytes}
+                <dt>Before</dt><dd>${diff.beforeWidth}×${diff.beforeHeight}</dd>
+                <dt>After</dt><dd>${diff.afterWidth}×${diff.afterHeight}</dd>
               </dl>
             </div>
           `
         }
 
-        if (pixel.pixelIdentical) {
+        if (diff.pixelIdentical) {
           return `
             <div class="report identical">
               <strong>Pixel identical (bytes differ)</strong>
               <dl>
                 <dt>Bytes</dt><dd>Different PNG encoding (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-                <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
+                <dt>Dimensions</dt><dd>${diff.width}×${diff.height}</dd>
                 <dt>Pixels</dt><dd>All channels match within threshold ${PIXEL_THRESHOLD}</dd>
               </dl>
             </div>
           `
         }
 
+        const regions = diff.regions
+          .map((r) => `<li>${r.width}×${r.height} at (${r.x}, ${r.y}), ${r.changedPixels.toLocaleString()} px changed</li>`)
+          .join("")
         return `
           <div class="report diff">
-            <strong>Visual diff detected</strong>
+            <strong>Visual diff detected: ${diff.regions.length} changed region${diff.regions.length === 1 ? "" : "s"}</strong>
             <dl>
-              <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-              <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
-              <dt>Changed pixels</dt><dd>${pixel.changedPixels.toLocaleString()} (${pixel.changedPercent}%)</dd>
+              ${bytes}
+              <dt>Dimensions</dt><dd>${diff.width}×${diff.height}</dd>
+              <dt>Changed pixels</dt><dd>${diff.changedPixels.toLocaleString()} (${diff.changedPercent}%)</dd>
               <dt>Threshold</dt><dd>±${PIXEL_THRESHOLD} per RGBA channel</dd>
             </dl>
-          </div>
-          <div class="controls">
-            <label><input type="checkbox" id="diff-only" /> Diff only (hide unchanged pixels)</label>
-            <label><input type="checkbox" id="diff-overlay" checked /> Tint changed pixels on before/after</label>
+            <ol class="region-list">${regions}</ol>
           </div>
         `
       }
@@ -584,63 +735,52 @@
 
       // IMPORTANT: never assign canvas via innerHTML/outerHTML — that drops
       // putImageData pixels and leaves a blank canvas (broke pairs 05–08).
-      function mountCanvas(container, imageData, label) {
+      function mountCanvas(container, imageData, label, item) {
         container.replaceChildren()
         const figure = document.createElement("figure")
         figure.className = "panel"
         const header = document.createElement("header")
         header.textContent = label
+        const shot = document.createElement("div")
+        shot.className = "shot"
         const canvas = document.createElement("canvas")
         canvas.width = imageData.width
         canvas.height = imageData.height
         // Keep CSS from collapsing the canvas before layout.
         canvas.style.aspectRatio = `${imageData.width} / ${imageData.height}`
         canvas.getContext("2d").putImageData(imageData, 0, 0)
-        figure.append(header, canvas)
+        // Region boxes are static markup, so appending them after the canvas
+        // is safe (the warning above is about the canvas itself).
+        shot.append(canvas)
+        shot.insertAdjacentHTML("beforeend", regionsHtml(item))
+        figure.append(header, shot)
         container.appendChild(figure)
         return canvas
       }
 
-      async function comparePair(item) {
-        if (item.byteIdentical) {
-          return { pending: false, byteIdentical: true, pixelIdentical: true }
-        }
+      // Caches the promise, so revisiting a pair mid-load reuses it.
+      function comparePair(item) {
+        if (!pixelCache.has(item.id)) pixelCache.set(item.id, readPair(item))
+        return pixelCache.get(item.id)
+      }
 
-        if (pixelCache.has(item.id)) return pixelCache.get(item.id)
-
-        const pending = { pending: true }
-        pixelCache.set(item.id, pending)
-
-        const beforeUrl = shotSrc(item.before)
-        const afterUrl = shotSrc(item.after)
-        const [beforeImg, afterImg] = await Promise.all([loadImage(beforeUrl), loadImage(afterUrl)])
+      async function readPair(item) {
+        const [beforeImg, afterImg] = await Promise.all([loadImage(shotSrc(item.before)), loadImage(shotSrc(item.after))])
 
         if (beforeImg.naturalWidth !== afterImg.naturalWidth || beforeImg.naturalHeight !== afterImg.naturalHeight) {
-          const result = {
-            pending: false,
-            dimensionMismatch: true,
-            beforeWidth: beforeImg.naturalWidth,
-            beforeHeight: beforeImg.naturalHeight,
-            afterWidth: afterImg.naturalWidth,
-            afterHeight: afterImg.naturalHeight
-          }
-          pixelCache.set(item.id, result)
-          return result
+          return { dimensionMismatch: true }
         }
 
         const beforeData = readPixels(beforeImg)
         const afterData = readPixels(afterImg)
-        const result = {
-          pending: false,
+        return {
           ...pixelDiff(beforeData, afterData, PIXEL_THRESHOLD),
           beforeData,
           afterData
         }
-        pixelCache.set(item.id, result)
-        return result
       }
 
-      function wireDiffControls(pixel) {
+      function wireDiffControls(pixel, item) {
         const diffOnly = document.getElementById("diff-only")
         const diffOverlay = document.getElementById("diff-overlay")
         const diffHost = document.getElementById("diff-canvas-host")
@@ -662,19 +802,21 @@
           }
 
           if (diffHost) {
-            mountCanvas(diffHost, diffImage, `Diff map (${pixel.changedPercent}% changed)`)
+            mountCanvas(diffHost, diffImage, `Diff map (${pixel.changedPercent}% changed)`, item)
           }
 
           if (beforeHost && afterHost) {
             mountCanvas(
               beforeHost,
               overlayDiff(pixel.beforeData, pixel.imageData, showOverlay),
-              "Before (highlighted)"
+              "Before (tinted)",
+              item
             )
             mountCanvas(
               afterHost,
               overlayDiff(pixel.afterData, pixel.imageData, showOverlay),
-              "After (highlighted)"
+              "After (tinted)",
+              item
             )
           }
         }
@@ -684,19 +826,49 @@
         redraw()
       }
 
+      function wireViewControls(item) {
+        const viewHost = document.getElementById("view-host")
+        const stage = document.getElementById("stage")
+
+        function wireSlider() {
+          document.getElementById("slider-pos")?.addEventListener("input", (event) => {
+            document.getElementById("slider").style.setProperty("--pos", `${event.target.value}%`)
+          })
+        }
+
+        function setMode(mode) {
+          viewMode = mode
+          viewHost.innerHTML = viewHtml(item)
+          for (const radio of document.querySelectorAll('input[name="view-mode"]')) radio.checked = radio.value === mode
+          wireSlider()
+        }
+
+        for (const radio of document.querySelectorAll('input[name="view-mode"]')) {
+          radio.addEventListener("change", () => setMode(radio.value))
+        }
+        document.getElementById("show-regions")?.addEventListener("change", (event) => {
+          showRegions = event.target.checked
+          stage.classList.toggle("hide-regions", !showRegions)
+        })
+        viewHost.addEventListener("click", (event) => {
+          if (!event.target.closest("[data-toggle-actual]")) return
+          setMode(viewMode === "actual" ? "side" : "actual")
+        })
+        wireSlider()
+      }
+
       async function renderStage(item) {
         const stage = document.getElementById("stage")
         document.getElementById("title").textContent = item.title
+        stage.classList.toggle("hide-regions", !showRegions)
 
         if (item.kind === "pair") {
-          // Always keep the real <img> panels visible. Diff highlighting is
-          // an extra row — never replace the photos with canvases.
+          // Always keep the real <img> panels visible. The tinted canvases and
+          // diff map are an extra row — never replace the photos with canvases.
           stage.innerHTML = `
-            <div id="diff-report-wrap">${reportHtml(item, { pending: !item.byteIdentical })}</div>
-            <div class="compare">
-              ${panel("Before", shotSrc(item.before), `${item.title} before`)}
-              ${panel("After", shotSrc(item.after), `${item.title} after`)}
-            </div>
+            <div id="diff-report-wrap">${reportHtml(item)}</div>
+            ${viewControlsHtml(item)}
+            <div id="view-host">${viewHtml(item)}</div>
             <div class="compare" id="highlight-row" hidden>
               <div id="before-canvas-host"></div>
               <div id="after-canvas-host"></div>
@@ -704,22 +876,18 @@
             <div class="compare diff-row" id="diff-row" hidden>
               <div id="diff-canvas-host"></div>
             </div>
-            <p class="hint">Magenta = changed pixels (±${PIXEL_THRESHOLD} per channel). Arrow keys: previous / next set.</p>
+            <p class="hint">Boxes mark clusters of changed pixels (±${PIXEL_THRESHOLD} per channel); they locate changes but don't replace looking at both images. Click a screenshot for actual size. Arrow keys: previous / next set.</p>
           `
 
-          renderNav(document.getElementById("search").value)
-
-          if (item.byteIdentical) return
+          wireViewControls(item)
+          if (!hasRegions(item)) return
 
           const pixel = await comparePair(item)
-          document.getElementById("diff-report-wrap").innerHTML = reportHtml(item, pixel)
-          renderNav(document.getElementById("search").value)
-
-          if (pixel.dimensionMismatch || pixel.pixelIdentical) return
+          if (activeId !== item.id || pixel.dimensionMismatch || pixel.pixelIdentical) return
 
           document.getElementById("highlight-row").hidden = false
           document.getElementById("diff-row").hidden = false
-          wireDiffControls(pixel)
+          wireDiffControls(pixel, item)
           return
         }
 
@@ -767,7 +935,7 @@
 
         const summary = manifest.summary || {}
         document.getElementById("subtitle").textContent =
-          `${summary.pairs || manifest.groups.length} pairs (${summary.byteIdentical || 0} byte-identical, ${summary.byteDifferent || 0} different), ${manifest.singles.length} singles — ${manifest.shotDir}/`
+          `${summary.pairs || manifest.groups.length} pairs (${summary.byteIdentical || 0} byte-identical, ${summary.byteDifferent || 0} different, ${summary.visuallyDifferent || 0} with visual changes), ${manifest.singles.length} singles — ${manifest.shotDir}/`
 
         renderNav()
         if (items.length) select(items[0].id)

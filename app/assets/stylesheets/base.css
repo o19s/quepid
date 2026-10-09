@@ -1,0 +1,29 @@
+/*
+ * Page skin shared by both bundles (application and core). build_css.js
+ * loads it right after Bootstrap and the fonts, so each bundle's own files
+ * can extend these rules (e.g. core-additions.css makes body a flex column).
+ */
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+footer {
+  font-size: 14px;
+}
+
+/* Flash messages overlay the bottom of the page. The full-width bar lets
+ * clicks through to the page underneath; only the alerts themselves catch
+ * them. */
+#flash-messages {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#flash-messages .alert {
+  pointer-events: auto;
+  margin-bottom: 0;
+}

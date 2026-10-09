@@ -420,7 +420,7 @@ yarn screenshots:view
 # if host Node engines block yarn: node test/playwright/screenshot-viewer-server.mjs
 ```
 
-Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
+Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder and pairs before/after. Manifest generation diffs each pair's pixels (±8 per channel, `test/playwright/png-diff.mjs`) and records **changed regions**: padded boxes, in screenshot pixels, around each cluster of changes, under each pair's `diff.regions` in `test/playwright/screenshot-manifest.json`. The viewer draws the numbered boxes on both images in side-by-side, slider and actual-size views (click a screenshot for actual size), lists their coordinates, and adds a tinted overlay and diff map. Sidebar badges: `byte =` (identical files), `pixel =` (same image, different PNG encoding), `N boxes` (changed), `size ≠` (different dimensions). Boxes locate changes; they don't replace looking at both images. Diffs are cached in `.playwright-mcp/.diff-cache.json` by file size and mtime. Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
 
 ### Combined lint check
 
@@ -1315,7 +1315,11 @@ During incremental development, use a representative sample of affected browser
 flows per meaningful batch, including a success and an error path when relevant.
 A full manual sweep is not required for every commit. Record the sampled coverage
 and deferred flows in the task doc, and update only scenarios actually exercised.
-Keep before/after screenshots for the sampled UI states and inspect them. Run the
+Keep before/after screenshots for the sampled UI states and inspect them. For
+scenarios that `ruby bin/branch_ui_scenarios` reports as affected by the branch,
+the "before" comes from the diff baseline at the merge-base (see
+[AGENTS.md — Before/after pairs](AGENTS.md#beforeafter-pairs--do-not-break-the-working-tree)).
+Run the
 broader pass separately before declaring full manual coverage; expand the sample
 when a failure or a higher-risk behavior change warrants it.
 

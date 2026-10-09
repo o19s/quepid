@@ -1,10 +1,10 @@
 /*
- * Bootstrap 5 overrides and page skin for the application (dashboard, books,
- * judgements, ...) and admin bundles. The core case bundle uses
+ * Bootstrap 5 overrides and page skin for the application bundle (dashboard,
+ * books, judgements, admin, ...). The core case bundle uses
  * bootstrap5-compat.css instead.
  */
 
-/* Shared page spacing for the application and admin bundles. */
+/* Shared page spacing for the application and admin layouts. */
 main > .container {
   padding: 20px 15px 0;
 }
@@ -19,28 +19,6 @@ main > .container {
 
 .centered-form {
   max-width: 960px;
-}
-
-body {
-  background: url('blue_bg.jpg') top center repeat;
-}
-
-footer {
-  font-size: 14px;
-}
-
-/* Announcements stay in the page flow; one-time flashes overlay the bottom. */
-#flash-messages {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 100;
-  pointer-events: none;
-}
-
-#flash-messages .alert {
-  pointer-events: auto;
-  margin-bottom: 0;
 }
 
 /*
@@ -68,4 +46,53 @@ footer {
 /* Slow down Bootstrap spinner animation */
 .spinner-border {
   animation-duration: 1.5s;
+}
+
+/* Base heading style for every application-bundle page (dashboard, books,
+ * judgements, sign-in, admin, ...). */
+h2,
+h3 {
+  font-family: Aller, sans-serif;
+  color: #036;
+  margin: 10px 0 20px 0;
+  padding: 0;
+}
+
+h2 {
+  font-size: 24px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+.public-share .clipboard-icon {
+  visibility: hidden;
+}
+
+.public-share:hover .clipboard-icon {
+  visibility: visible;
+}
+
+.turbo-progress-bar {
+  height: 5px;
+  background-color: gold;
+}
+
+/* For the kraken image */
+.fade-out {
+  animation: fadeOut 4s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Bootstrap's .visually-hidden is position:absolute. Inside a table cell with no positioned ancestor it
+   escapes the .table-responsive scroller and stretches the whole page horizontally (e.g. /cases at 768px),
+   so make the scroller the containing block. */
+.table-responsive {
+  position: relative;
 }

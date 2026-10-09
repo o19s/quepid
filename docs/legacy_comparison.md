@@ -49,8 +49,8 @@ baseline commit and fixture differences with the verification evidence. Existing
 modern Playwright specs may depend on Stimulus markup and newer API contracts;
 they are not automatically compatible with the historical app.
 
-Do not use `bin/ui_diff_db_restore` for this workflow: it overwrites the current
-development database. Do not switch source files in the current checkout to replay
+Do not use `bin/ui_diff_db_sync` for this workflow: it copies the current
+development database into the diff baseline's database, not the historical one. Do not switch source files in the current checkout to replay
 historical behavior. Run historical commands in its existing app container:
 
 ```bash

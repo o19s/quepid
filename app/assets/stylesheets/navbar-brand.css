@@ -1,9 +1,9 @@
 /*
- * Quepid navbar brand skin shared by all three bundles: the core
+ * Quepid navbar brand skin shared by both bundles: the core
  * header (_header_core_app.html.erb, styled the rest of the way by
  * bootstrap5-compat.css) and the application header (_header.html.erb,
- * used by both the dashboard/cases bundle and the admin bundle, styled the
- * rest of the way by bootstrap5-add.css).
+ * used by the application and admin layouts, styled the rest of the way by
+ * bootstrap5-add.css).
  */
 
 .navbar-brand {

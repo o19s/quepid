@@ -1,0 +1,145 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Refreshes the diff baseline's own database (quepid_ui_diff_development for MySQL/PostgreSQL,
+# tmp/ui_diff/storage/development.sqlite3 for SQLite, used by the :3003
+# instance bin/ui_diff_up starts) with a copy of the dev database, so before/after passes start
+# from identical data. Writes made on :3003 stay in the copy and never reach the dev database.
+#
+# bin/ui_diff_up runs this when the copy doesn't exist yet. Rerun it whenever the baseline should
+# match current dev data again; it replaces everything in the copy, including anything set up on
+# :3003. The copy keeps the dev database's schema, so a baseline older than the branch's
+# migrations runs against the newer schema, as before.
+#
+# Usage:
+#   bin/ui_diff_db_sync
+#   bin/ui_diff_db_sync --if-missing   # initialize only, preserving an existing copy
+
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+cd "$APP_ROOT"
+
+set -a
+source .env
+set +a
+
+# config/database.yml's development entry is "${DB_NAME}_development", not DB_NAME itself.
+SOURCE_DB="${DB_NAME:-quepid}_development"
+TARGET_DB="quepid_ui_diff_development"
+DB_USERNAME="${DB_USERNAME:-root}"
+DB_PASSWORD="${DB_PASSWORD:-password}"
+CONTAINER_NAME="quepid_app_ui_diff"
+DB_ADAPTER="${DB_ADAPTER:-mysql2}"
+
+case "$DB_ADAPTER" in
+  mysql2|postgresql|sqlite3) ;;
+  *) echo "Unsupported DB_ADAPTER: $DB_ADAPTER" >&2; exit 1 ;;
+esac
+
+if [ "${1:-}" = "--if-missing" ]; then
+  case "$DB_ADAPTER" in
+    mysql2)
+      EXISTS=$(docker compose exec -T -e MYSQL_PWD="$DB_PASSWORD" mysql \
+        mysql -u"$DB_USERNAME" -N -e "SELECT SCHEMA_NAME FROM information_schema.schemata WHERE SCHEMA_NAME = '$TARGET_DB'")
+      ;;
+    postgresql)
+      EXISTS=$(docker compose exec -T -e PGPASSWORD="$DB_PASSWORD" postgres \
+        psql -U "$DB_USERNAME" -d postgres -Atc "SELECT datname FROM pg_database WHERE datname = '$TARGET_DB'")
+      ;;
+    sqlite3)
+      EXISTS=""
+      [ ! -f "$APP_ROOT/tmp/ui_diff/storage/development.sqlite3" ] || EXISTS=1
+      ;;
+  esac
+  [ -z "$EXISTS" ] || exit 0
+fi
+
+if [ "$DB_ADAPTER" = "sqlite3" ]; then
+  # The wrapper uses compose run, so locate the live app by its published host port.
+  SOURCE_CONTAINER=$(docker ps --filter "publish=${APP_PORT:-3000}" \
+    --filter label=com.docker.compose.service=app --format '{{.ID}}')
+  if [ -z "$SOURCE_CONTAINER" ] || [[ "$SOURCE_CONTAINER" == *$'\n'* ]]; then
+    echo "Expected one current app container serving port ${APP_PORT:-3000} for SQLite backup" >&2
+    exit 1
+  fi
+fi
+
+running() {
+  [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME" 2>/dev/null)" = "true" ]
+}
+
+# Stop the baseline while its database is replaced, so its job worker doesn't poll half-loaded
+# tables.
+WAS_RUNNING=0
+if running; then
+  WAS_RUNNING=1
+  echo "==> Stopping $CONTAINER_NAME during the copy"
+  docker stop "$CONTAINER_NAME" >/dev/null
+fi
+
+case "$DB_ADAPTER" in
+mysql2)
+echo "==> Copying $SOURCE_DB to $TARGET_DB (mysql service)"
+docker compose exec -T -e MYSQL_PWD="$DB_PASSWORD" -e DB_USERNAME="$DB_USERNAME" \
+  -e SOURCE_DB="$SOURCE_DB" -e TARGET_DB="$TARGET_DB" mysql bash -s <<'SH'
+set -euo pipefail
+mysql -u"$DB_USERNAME" -e "DROP DATABASE IF EXISTS \`$TARGET_DB\`; CREATE DATABASE \`$TARGET_DB\` CHARACTER SET utf8mb4 COLLATE utf8mb4_bin"
+mysqldump -u"$DB_USERNAME" --single-transaction --no-tablespaces "$SOURCE_DB" | mysql -u"$DB_USERNAME" "$TARGET_DB"
+# Start with an empty job queue: copied jobs belong to the dev server's worker (running them
+# again here would repeat their side effects, e.g. LLM calls), and copied process rows are its.
+TRUNCATES=$(mysql -u"$DB_USERNAME" -N -e "SELECT CONCAT('TRUNCATE TABLE \`', table_name, '\`;') FROM information_schema.tables WHERE table_schema = '$TARGET_DB' AND table_name LIKE 'solid\\_queue\\_%'")
+mysql -u"$DB_USERNAME" "$TARGET_DB" -e "SET FOREIGN_KEY_CHECKS = 0; $TRUNCATES"
+SH
+;;
+postgresql)
+echo "==> Copying $SOURCE_DB to $TARGET_DB (postgres service)"
+docker compose exec -T -e PGPASSWORD="$DB_PASSWORD" -e DB_USERNAME="$DB_USERNAME" \
+  -e SOURCE_DB="$SOURCE_DB" -e TARGET_DB="$TARGET_DB" postgres bash -s <<'SH'
+set -euo pipefail
+dropdb -U "$DB_USERNAME" --if-exists --force "$TARGET_DB"
+createdb -U "$DB_USERNAME" "$TARGET_DB"
+pg_dump -U "$DB_USERNAME" --no-owner --no-privileges "$SOURCE_DB" | psql -U "$DB_USERNAME" -d "$TARGET_DB" -v ON_ERROR_STOP=1 >/dev/null
+# Copied jobs and worker registrations belong to the current server.
+psql -U "$DB_USERNAME" -d "$TARGET_DB" -v ON_ERROR_STOP=1 <<'SQL'
+SELECT 'TRUNCATE TABLE ' || string_agg(format('%I.%I', schemaname, tablename), ', ') || ' CASCADE;'
+FROM pg_tables WHERE schemaname = 'public' AND starts_with(tablename, 'solid_queue_')
+\gexec
+SQL
+SH
+;;
+sqlite3)
+echo "==> Copying SQLite database to tmp/ui_diff/storage/development.sqlite3"
+docker exec -i "$SOURCE_CONTAINER" ruby -rsqlite3 -rfileutils <<'RUBY'
+source_path = "storage/development.sqlite3"
+target_path = "tmp/ui_diff/storage/development.sqlite3"
+raise "Missing SQLite source: #{source_path}" unless File.file?(source_path)
+FileUtils.mkdir_p(File.dirname(target_path))
+source = SQLite3::Database.new(source_path, readonly: true)
+target = SQLite3::Database.new(target_path)
+backup = SQLite3::Backup.new(target, "main", source, "main")
+begin
+  result = backup.step(-1)
+  raise "SQLite backup did not complete (code #{result})" unless result == SQLite3::Constants::ErrorCode::DONE
+ensure
+  backup.finish
+end
+target.execute("PRAGMA foreign_keys = OFF")
+target.execute("SELECT name FROM sqlite_master WHERE type = 'table'").flatten
+      .select { |name| name.start_with?("solid_queue_") }
+      .each { |name| target.execute(%(DELETE FROM "#{name.gsub('"', '""')}")) }
+target.close
+source.close
+RUBY
+;;
+esac
+
+if [ "$WAS_RUNNING" = "1" ]; then
+  echo "==> Restarting $CONTAINER_NAME"
+  docker start "$CONTAINER_NAME" >/dev/null
+  PORT=$(docker port "$CONTAINER_NAME" 3000/tcp | head -1 | sed 's/.*://')
+  for _ in $(seq 1 90); do
+    curl -sf -o /dev/null "http://localhost:$PORT" 2>/dev/null && break
+    sleep 2
+  done
+  curl -sf -o /dev/null "http://localhost:$PORT" || { echo "http://localhost:$PORT isn't answering; see docker logs $CONTAINER_NAME" >&2; exit 1; }
+fi
+echo "==> Copy complete"

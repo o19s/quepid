@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # Points the permanent "diff baseline" Quepid instance at a BASE ref's code. It runs on its own
-# port, sharing the same mysql/keycloak/ollama containers as your primary `bin/docker s` dev
-# server, so you can screenshot "before" (this instance) vs "after" (your live dev server) without
-# ever touching your working tree. It is one of three long-lived instances: current (:3000),
+# port, sharing the same database service/keycloak/ollama containers as your primary `bin/docker s` dev
+# server but with its own database (a copy of the dev database made by
+# bin/ui_diff_db_sync) and its own job worker, so you can screenshot "before" (this instance) vs
+# "after" (your live dev server) without ever touching your working tree or the dev data. It is one of three long-lived instances: current (:3000),
 # historical (bin/legacy, :3001) and this one (:3003).
 #
 # Usage:
@@ -20,6 +21,10 @@ set -euo pipefail
 
 APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$APP_ROOT"
+
+set -a
+source .env
+set +a
 
 RESET=0
 if [ "${1:-}" = "--reset" ]; then
@@ -41,9 +46,12 @@ BASE_SHA=$(git rev-parse "$BASE_REF")
 
 WORKTREE_DIR="$(dirname "$APP_ROOT")/quepid-ui-diff-worktree"
 STATE_DIR="$APP_ROOT/tmp/ui_diff"
-CURRENT_FILE="$STATE_DIR/current"          # "<sha> <port>" the running container was started with
+CURRENT_FILE="$STATE_DIR/current"          # "<sha> <port> <database> <adapter>"
 OVERRIDE_FILE="$STATE_DIR/docker-compose.override.yml"
 CONTAINER_NAME="quepid_app_ui_diff"
+# For MySQL/PostgreSQL, database.yml appends "_development"; SQLite uses an isolated storage mount.
+DIFF_DB_NAME="quepid_ui_diff"
+DIFF_DB_ADAPTER="${DB_ADAPTER:-mysql2}"
 
 mkdir -p "$STATE_DIR"
 
@@ -63,7 +71,7 @@ CURRENT=""
 [ -f "$CURRENT_FILE" ] && CURRENT=$(cat "$CURRENT_FILE")
 
 # --- already serving this ref? -----------------------------------------------------------------
-if [ "$RESET" = "0" ] && running && [ "$CURRENT" = "$BASE_SHA $PORT" ]; then
+if [ "$RESET" = "0" ] && running && [ "$CURRENT" = "$BASE_SHA $PORT $DIFF_DB_NAME $DIFF_DB_ADAPTER" ]; then
   if worktree_dirty; then
     echo "==> Note: the worktree has local edits (a pre-fix baseline?). Pass --reset to discard them."
   fi
@@ -90,7 +98,12 @@ if [ "$RESET" = "0" ] && worktree_dirty; then
 fi
 
 if running && [ -n "$CURRENT" ]; then
-  echo "==> Switching the baseline from ${CURRENT% *} (port ${CURRENT#* }) to $BASE_SHA (port $PORT)"
+  read -r CURRENT_SHA CURRENT_PORT _ <<< "$CURRENT"
+  if [ "$CURRENT_SHA $CURRENT_PORT" = "$BASE_SHA $PORT" ]; then
+    echo "==> Recreating the baseline at $BASE_SHA (port $PORT)"
+  else
+    echo "==> Switching the baseline from $CURRENT_SHA (port $CURRENT_PORT) to $BASE_SHA (port $PORT)"
+  fi
 fi
 
 # --- worktree: create or move to the requested ref ---------------------------------------------
@@ -117,6 +130,9 @@ fi
 docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
 rm -f "$CURRENT_FILE"
 
+# --- the baseline's own database: copy the dev database the first time --------------------------
+"$APP_ROOT/bin/ui_diff_db_sync" --if-missing
+
 # --- compose override: point the `app` service's volume at the worktree instead of `.` ---------
 cat > "$OVERRIDE_FILE" <<YAML
 services:
@@ -125,6 +141,9 @@ services:
       - $WORKTREE_DIR:/srv/app:cached
       - ./log:/log
 YAML
+if [ "$DIFF_DB_ADAPTER" = "sqlite3" ]; then
+  echo "      - ./tmp/ui_diff/storage:/srv/app/storage" >> "$OVERRIDE_FILE"
+fi
 
 # The build marker lives in the worktree's gitignored tmp/, so it survives checkouts and a
 # container restart only rebuilds when the ref actually changed. --reset forces a rebuild.
@@ -144,13 +163,14 @@ echo "==> Starting app container ($CONTAINER_NAME) on port $PORT"
 APP_PORT="$PORT" docker compose \
   -f docker-compose.yml -f "$OVERRIDE_FILE" \
   run --detach --service-ports --name "$CONTAINER_NAME" -e "UI_DIFF_SHA=$BASE_SHA" \
+  -e "DB_NAME=$DIFF_DB_NAME" -e SOLID_QUEUE_IN_PUMA=1 \
   app bash -c "$CONTAINER_CMD" >/dev/null
 docker update --restart unless-stopped "$CONTAINER_NAME" >/dev/null
 
 echo "==> Waiting for http://localhost:$PORT to respond (log: docker logs $CONTAINER_NAME)"
 for _ in $(seq 1 180); do
   if curl -sf -o /dev/null "http://localhost:$PORT" 2>/dev/null; then
-    echo "$BASE_SHA $PORT" > "$CURRENT_FILE"
+    echo "$BASE_SHA $PORT $DIFF_DB_NAME $DIFF_DB_ADAPTER" > "$CURRENT_FILE"
     echo "==> Ready: http://localhost:$PORT  (base ref $BASE_REF)"
     exit 0
   fi

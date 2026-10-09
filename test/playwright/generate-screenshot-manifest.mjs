@@ -9,17 +9,27 @@
  *
  * Flat files in `.playwright-mcp/` still work (topic = "(root)").
  *
+ * Each pair whose bytes differ gets a `diff`: changed-pixel stats plus
+ * `regions`, padded boxes in screenshot pixels around each cluster of
+ * changes (png-diff.mjs). The viewer draws them; agents can read them to find
+ * what changed.
+ *
  * Run via: yarn screenshots:view  (or node test/playwright/generate-screenshot-manifest.mjs)
  */
 
 import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { decodePng, diffRegions } from "./png-diff.mjs"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "../..")
 const shotDir = path.join(repoRoot, ".playwright-mcp")
 const manifestPath = path.join(__dirname, "screenshot-manifest.json")
+// Decoding every pair takes minutes, so pixel diffs are cached by file size
+// and mtime. Bump DIFF_VERSION when png-diff.mjs's output changes.
+const diffCachePath = path.join(shotDir, ".diff-cache.json")
+const DIFF_VERSION = 1
 
 function titleize(stem) {
   return stem
@@ -40,11 +50,52 @@ function compareFiles(beforeRel, afterRel) {
   const beforeBytes = fs.readFileSync(path.join(shotDir, beforeRel))
   const afterBytes = fs.readFileSync(path.join(shotDir, afterRel))
 
+  const byteIdentical = buffersEqual(beforeBytes, afterBytes)
+
   return {
     beforeSize: beforeBytes.length,
     afterSize: afterBytes.length,
-    byteIdentical: buffersEqual(beforeBytes, afterBytes)
+    byteIdentical,
+    diff: byteIdentical ? null : pixelDiff(beforeRel, afterRel, beforeBytes, afterBytes)
   }
+}
+
+function loadDiffCache() {
+  try {
+    const cache = JSON.parse(fs.readFileSync(diffCachePath, "utf8"))
+    return cache.version === DIFF_VERSION ? cache.entries : {}
+  } catch {
+    return {}
+  }
+}
+
+const diffCache = loadDiffCache()
+const usedCacheKeys = new Set()
+
+function fileStamp(rel) {
+  const stat = fs.statSync(path.join(shotDir, rel))
+  return `${stat.size}:${stat.mtimeMs}`
+}
+
+function pixelDiff(beforeRel, afterRel, beforeBytes, afterBytes) {
+  const key = `${beforeRel}|${afterRel}`
+  const stamp = `${fileStamp(beforeRel)}|${fileStamp(afterRel)}`
+  usedCacheKeys.add(key)
+  if (diffCache[key]?.stamp === stamp) return diffCache[key].diff
+
+  let diff
+  try {
+    diff = diffRegions(decodePng(beforeBytes), decodePng(afterBytes))
+  } catch (error) {
+    diff = { error: error.message, regions: [] }
+  }
+  diffCache[key] = { stamp, diff }
+  return diff
+}
+
+function saveDiffCache() {
+  const entries = Object.fromEntries(Object.entries(diffCache).filter(([key]) => usedCacheKeys.has(key)))
+  fs.writeFileSync(diffCachePath, JSON.stringify({ version: DIFF_VERSION, entries }))
 }
 
 /** Recursively list PNG paths relative to shotDir (posix-style). */
@@ -81,7 +132,7 @@ function buildManifest() {
     return {
       generatedAt: new Date().toISOString(),
       shotDir: ".playwright-mcp",
-      summary: { pairs: 0, byteIdentical: 0, byteDifferent: 0, topics: 0 },
+      summary: { pairs: 0, byteIdentical: 0, byteDifferent: 0, visuallyDifferent: 0, topics: 0 },
       topics: [],
       groups: [],
       singles: []
@@ -147,6 +198,7 @@ function buildManifest() {
   const singles = []
   let byteIdentical = 0
   let byteDifferent = 0
+  let visuallyDifferent = 0
   const topicSet = new Set()
 
   for (const entry of byKey.values()) {
@@ -157,6 +209,7 @@ function buildManifest() {
       const comparison = compareFiles(entry.before, entry.after)
       if (comparison.byteIdentical) byteIdentical++
       else byteDifferent++
+      if (comparison.diff && !comparison.diff.pixelIdentical) visuallyDifferent++
 
       groups.push({
         id,
@@ -217,6 +270,7 @@ function buildManifest() {
       pairs: groups.length,
       byteIdentical,
       byteDifferent,
+      visuallyDifferent,
       topics: topics.length
     },
     topics,
@@ -226,7 +280,8 @@ function buildManifest() {
 }
 
 const manifest = buildManifest()
+if (fs.existsSync(shotDir)) saveDiffCache()
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
 console.log(
-  `Wrote ${manifest.groups.length} comparison(s) (${manifest.summary.byteIdentical} byte-identical, ${manifest.summary.byteDifferent} different) and ${manifest.singles.length} single image(s) across ${manifest.topics.length} topic folder(s) to ${path.relative(repoRoot, manifestPath)}`
+  `Wrote ${manifest.groups.length} comparison(s) (${manifest.summary.byteIdentical} byte-identical, ${manifest.summary.byteDifferent} different, ${manifest.summary.visuallyDifferent} with visual changes) and ${manifest.singles.length} single image(s) across ${manifest.topics.length} topic folder(s) to ${path.relative(repoRoot, manifestPath)}`
 )
