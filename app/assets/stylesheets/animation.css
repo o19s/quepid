@@ -34,7 +34,7 @@
     width: 16px;
     height: 16px;
     border: 5px solid lightgray; /* Background color */
-    border-top: 5px solid #007bff; /* Spinner color */
+    border-top: 5px solid var(--q-brand-blue); /* Spinner color */
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 8px auto; /* Center the spinner */

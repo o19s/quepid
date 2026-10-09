@@ -19,7 +19,7 @@
 }
 
 .notes-box label {
-    font-family: 'allerregular';
+    font-family: Aller, sans-serif;
     font-size: 20px;
     color: #222;
 }
@@ -34,10 +34,6 @@
 
 .notes-content {
     margin: 0;
-}
-
-.query-score-label {
-    font-size: x-small;
 }
 
 .wiz_new_query {

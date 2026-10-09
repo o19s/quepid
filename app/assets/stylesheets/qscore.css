@@ -8,6 +8,7 @@
   --qscore-border-width: 1px;
   --qscore-border-width-thick: 2px;
   --qscore-highlight-width: 4px;
+  --qscore-divider-color: #eee;
 }
 
 /*
@@ -19,12 +20,18 @@
   flush against the next.
 */
 .case-score {
+  display: block;
   padding: 0;
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
 .case-score:last-child {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
+}
+
+.query-score-label {
+  display: block;
+  font-size: x-small;
 }
 
 /* Header rating styles */
@@ -51,7 +58,9 @@
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
   color: #fff;
-  font-family: 'allerbold_italic';
+  font-family: Aller, sans-serif;
+  font-weight: 700;
+  font-style: italic;
   font-size: 22px;
   text-align: center;
   border-top-left-radius: var(--qscore-border-radius);
@@ -102,7 +111,7 @@
 .diff-header {
   display: flex;
   margin-bottom: var(--qscore-spacing-xl);
-  border-bottom: var(--qscore-border-width-thick) solid #eee;
+  border-bottom: var(--qscore-border-width-thick) solid var(--qscore-divider-color);
 }
 
 .diff-header .diff-column {
@@ -112,13 +121,13 @@
 .diff-row {
   display: flex;
   min-height: 200px;
-  border-bottom: var(--qscore-border-width) solid #f0f0f0;
+  border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
   margin-bottom: var(--qscore-spacing-xl);
 }
 
 .diff-column {
   flex: 1;
-  border-right: var(--qscore-border-width) solid #eee;
+  border-right: var(--qscore-border-width) solid var(--qscore-divider-color);
   padding: 0 var(--qscore-spacing-lg);
   text-align: left;
 }
@@ -130,7 +139,7 @@
 .diff-actions {
   text-align: center;
   padding-top: var(--qscore-spacing-xl);
-  border-top: var(--qscore-border-width) solid #eee;
+  border-top: var(--qscore-border-width) solid var(--qscore-divider-color);
 }
 
 /* Search result highlighting */
@@ -143,7 +152,7 @@
 }
 
 .search-result.new {
-  border-left: var(--qscore-highlight-width) solid #28a745;
+  border-left: var(--qscore-highlight-width) solid var(--bs-success);
 }
 
 /* Responsive design */
@@ -155,7 +164,7 @@
 
   .diff-column {
     border-right: none;
-    border-bottom: var(--qscore-border-width) solid #eee;
+    border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
     margin-bottom: var(--qscore-spacing-lg);
     padding: var(--qscore-spacing-lg) 0;
   }

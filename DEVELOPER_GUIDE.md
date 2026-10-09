@@ -1087,7 +1087,8 @@ The remaining globals are `window.Stimulus` (Playwright specs look up controller
 
 ## Fonts
 
-The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  
+The *Aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.
+Declare its regular, italic, bold and bold-italic faces under one family in `fonts.css`; use `Aller, sans-serif` with CSS weight/style at call sites.
 
 ## How to develop Jupyterlite
 

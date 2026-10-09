@@ -8,7 +8,8 @@ description: >-
   uses Playwright MCP (headed) to capture each affected scenario against the
   old instance ("before") and the current dev server ("after"). Use when
   asked for visual before/after proof of a branch's changes, or to sanity-check
-  a PR's UI impact before opening it.
+  a PR's UI impact before opening it. Also use for comparison galleries of
+  proposed UI changes.
 ---
 
 # Branch UI diff (before/after screenshots)
@@ -57,6 +58,14 @@ scenario batches to multiple subagents, running them **in parallel makes them hi
 navigation**. Always run Playwright-driving batches **sequentially** — launch one, wait for it to
 finish, launch the next. Only non-Playwright work (e.g. reading tracking.yml, editing docs)
 is safe to parallelize.
+
+## Comparison galleries
+
+For a requested gallery, read [Comparison gallery workflow](references/comparison-gallery.md).
+It covers proposed alternatives as well as branch changes, isolated variants,
+matching highlight boxes, and an interactive, portable review artifact.
+For proposals without an existing diff, use its candidate/state mapping instead
+of the branch-diff scenario discovery below.
 
 ## Steps
 

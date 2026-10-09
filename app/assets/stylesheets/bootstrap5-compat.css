@@ -184,7 +184,7 @@ label {
   --bs-nav-link-padding-y: 8px;
 }
 .nav-link:focus-visible {
-  box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.25);
+  box-shadow: 0 0 0 4px rgba(var(--q-brand-blue-rgb), 0.25);
 }
 
 /* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
@@ -441,7 +441,7 @@ header .dropdown-toggle .bi {
 }
 
 .sub-results .btn-toolbar .active {
-	background: #2872bc;
+	background: var(--q-brand-blue);
 	color: #FFF;
 }
 
@@ -514,7 +514,7 @@ header .dropdown-toggle .bi {
 }
 
 .results-pane-toggle {
-	color: #2872bc;
+	color: var(--q-brand-blue);
 	font-weight: bold;
 	font-size: 16px;
 	margin-right: 8px;

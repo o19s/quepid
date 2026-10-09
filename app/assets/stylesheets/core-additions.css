@@ -136,7 +136,7 @@ header .dropdown-item:focus {
 }
 
 .results-control :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
-  font-family: 'allerregular', sans-serif;
+  font-family: Aller, sans-serif;
 }
 
 /* These containers have no side padding, so BS5's negative .row margin
@@ -180,10 +180,6 @@ header .dropdown-item:focus {
   background: #eee;
 }
 
-.case-score {
-  display: block;
-}
-
 .results-title {
 	color:       #222;
 	cursor:      pointer;
@@ -208,10 +204,6 @@ header .dropdown-item:focus {
   font-size: 60%;
 }
 
-.query-score-label {
-  display: block;
-}
-
 .results .error-warning {
 	display: none;
 }
@@ -222,8 +214,13 @@ header .dropdown-item:focus {
 	color: var(--q-query-error-icon-color);
 }
 
+/* Shared cursor; positioning and appearance apply only inside results. */
+.toggleSign {
+  cursor: pointer;
+}
+
 .results .toggleSign {
-	color: #2872bc;
+	color: var(--q-brand-blue);
 	position: absolute;
 	top: 50%;
 	right: 19px;
@@ -231,10 +228,6 @@ header .dropdown-item:focus {
 	font-weight: bold;
 	border-radius: 3px;
 	font-size: 16px;
-}
-
-.toggleSign {
-  cursor: pointer;
 }
 
 
@@ -366,7 +359,7 @@ header .dropdown-item:focus {
 }
 
 .col-summary .subfields li.subTitle {
-	font-family: 'allerregular';
+	font-family: Aller, sans-serif;
 	font-size: 18px;
 }
 
@@ -499,7 +492,7 @@ header .dropdown-item:focus {
 	border-bottom: 1px solid var(--bs-border-color);
 	background: #666;
 	overflow-wrap: break-word;
-    position: relative;
+	position: relative;
 }
 .history-list li:hover {
 	background: #555;
@@ -514,7 +507,9 @@ header .dropdown-item:focus {
 .history-list li span:not([data-try-query]) {
 	display: block;
 	text-align: left;
-	font-family: 'allerbold_italic';
+	font-family: Aller, sans-serif;
+	font-weight: 700;
+	font-style: italic;
 	font-size: 16px;
 	color: #CCC;
 	padding: 3px 0 8px 0;
@@ -541,24 +536,6 @@ header .dropdown-item:focus {
 footer {
   margin-top: 30px;
   font-size: 14px;
-}
-
-/* Keep the existing pane footer visible without moving or duplicating its DOM. */
-.pane_main {
-  display: flex;
-  flex-direction: column;
-}
-
-.pane_main > * {
-  flex-shrink: 0;
-}
-
-.pane_main > footer {
-  position: sticky;
-  bottom: 0;
-  margin-top: auto;
-  background-color: #fff;
-  z-index: 5;
 }
 
 .matches-popper:hover {

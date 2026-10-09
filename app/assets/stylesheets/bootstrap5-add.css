@@ -4,6 +4,11 @@
  * bootstrap5-compat.css instead.
  */
 
+/* Shared page spacing for the application and admin bundles. */
+main > .container {
+  padding: 20px 15px 0;
+}
+
 .centered-form {
   max-width: 960px;
 }

@@ -3,7 +3,7 @@
  * also bundled into admin.css. */
 h2,
 h3 {
-  font-family: 'allerregular';
+  font-family: Aller, sans-serif;
   color: #036;
   margin: 10px 0 20px 0;
   padding: 0;
@@ -26,11 +26,6 @@ h3 {
   .turbo-progress-bar {
 	 height: 5px;
 	 background-color: gold;
- }
- 
- /* give some space to the top of pages that have bootstrap 5 container */
- main > .container {
-	 padding: 20px 15px 0;
  }
  
  /* For the kraken image */
