@@ -11,19 +11,3 @@ body {
 footer {
   font-size: 14px;
 }
-
-/* Flash messages overlay the bottom of the page. The full-width bar lets
- * clicks through to the page underneath; only the alerts themselves catch
- * them. */
-#flash-messages {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 100;
-  pointer-events: none;
-}
-
-#flash-messages .alert {
-  pointer-events: auto;
-  margin-bottom: 0;
-}

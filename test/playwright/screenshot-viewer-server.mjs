@@ -10,6 +10,10 @@ import path from "node:path"
 import { spawn } from "node:child_process"
 import { fileURLToPath } from "node:url"
 
+import { screenshotReviews, setScreenshotApproval } from "./screenshot-reviews.mjs"
+
+import { CaptureJobs } from "./capture-jobs.mjs"
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "../..")
 const port = Number(process.env.SCREENSHOT_VIEWER_PORT || 3456)
@@ -48,8 +52,48 @@ function safePath(urlPath) {
 }
 
 await runManifestGenerator()
+const captures = new CaptureJobs(repoRoot, runManifestGenerator)
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
+  if (req.url === "/api/reviews" || req.url === "/api/captures" || req.url.startsWith("/api/captures/")) {
+    res.setHeader("Content-Type", "application/json; charset=utf-8")
+    res.setHeader("Cache-Control", "no-store")
+    try {
+      if (req.method === "GET") {
+        const data = req.url === "/api/reviews" ? screenshotReviews(repoRoot) : req.url.startsWith("/api/captures/") ? captures.get(req.url.slice("/api/captures/".length)) : captures.active()
+        res.end(JSON.stringify(data))
+        return
+      }
+      if (req.method !== "POST") {
+        res.writeHead(405, { Allow: "GET, POST" })
+        res.end(JSON.stringify({ error: "Method not allowed" }))
+        return
+      }
+      if (req.headers.origin !== `http://${req.headers.host}` || req.headers["content-type"] !== "application/json") {
+        res.writeHead(403)
+        res.end(JSON.stringify({ error: "Viewer actions require a same-origin JSON request" }))
+        return
+      }
+      let body = ""
+      for await (const chunk of req) {
+        body += chunk
+        if (Buffer.byteLength(body) > 16384) throw new Error("Request too large")
+      }
+      if (req.url !== "/api/reviews" && req.url !== "/api/captures") throw new Error("Invalid action URL")
+      const data = req.url === "/api/captures" ? captures.start(JSON.parse(body)) : setScreenshotApproval(repoRoot, JSON.parse(body))
+      res.writeHead(req.url === "/api/captures" ? 202 : 200)
+      res.end(JSON.stringify(data))
+    } catch (error) {
+      res.writeHead(409)
+      res.end(JSON.stringify({ error: error.message }))
+    }
+    return
+  }
+  if (req.method !== "GET" && req.method !== "HEAD") {
+    res.writeHead(405, { Allow: "GET, HEAD" })
+    res.end("Method not allowed")
+    return
+  }
   let target
   try {
     target = safePath(req.url === "/" ? "/test/playwright/screenshot-viewer.html" : req.url)

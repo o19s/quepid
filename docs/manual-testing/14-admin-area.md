@@ -13,7 +13,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - [ ] **Steps:**
   1. Log in as a non-admin user. Confirm no "Admin Home" nav link appears anywhere in the UI.
   2. Attempt to navigate directly to `/admin`.
-- **Expected:** Redirected to the home page with an alert like "You must be a Quepid Administrator."
+- **Expected:** Redirected to the home page with an alert like "You must be a Quepid Administrator." below the navbar in the page flow.
 - **Edge cases:**
   - [ ] Repeat for each admin sub-page directly by URL (`/admin/users`, `/admin/announcements`, `/admin/websocket_tester`) — confirm all are equally gated, not just the index.
 

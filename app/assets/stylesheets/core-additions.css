@@ -4,7 +4,7 @@
  * toolbars, `#dev-settings` tabs, modals, annotations, dropdown shims, etc.)
  * live in bootstrap5-compat.css; the navbar brand skin (`.navbar-brand`,
  * `.navbar-secondary`, header `.nav-link`) lives in navbar-brand.css; the page
- * background, footer size and `#flash-messages` bar live in base.css.
+ * background and footer size live in base.css.
  *
  * Exceptions that do touch Bootstrap classes but stay here with their layout:
  * the header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
@@ -590,6 +590,21 @@ footer {
 
 .search-feedback {
   margin: 20px 0;
+}
+
+/* Case workspace flashes overlay the bottom of the viewport. Ordinary
+ * Rails page flashes remain in the page flow below the navbar. */
+#flash-messages {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#flash-messages .alert {
+  pointer-events: auto;
+  margin-bottom: 0;
 }
 
 /*

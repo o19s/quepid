@@ -3,6 +3,7 @@ import path from "node:path"
 import crypto from "node:crypto"
 import { execFileSync } from "node:child_process"
 import { decodePng } from "./png-diff.mjs"
+import { screenshotSourceFiles, screenshotSourceCurrent, snapshotFingerprint } from "./screenshot-dependencies.mjs"
 
 const digest = (value) => crypto.createHash("sha256").update(value).digest("hex")
 const git = (root, ...args) => execFileSync("git", ["-C", root, ...args], { encoding: "utf8" }).trim()
@@ -63,7 +64,7 @@ export function sourceFingerprint(root, paths) {
   return hash.digest("hex")
 }
 
-export function recordScreen(root, { id, title, area, paths, image, source, legacyImage, legacyRef, legacyAbsent, capturedAt, legacyCapturedAt }) {
+export function recordScreen(root, { id, title, area, paths, image, source, legacyImage, legacyRef, legacyAbsent, capturedAt, legacyCapturedAt, recapture = false, expectedBranch, expectedCurrent, capture }) {
   if (!id || !title || !area) throw new Error("Screen ID, title and application area are required")
   const captureTime = (value) => {
     const date = value === undefined ? new Date() : new Date(value)
@@ -77,11 +78,17 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
   const lock = path.join(location.directory, "record.lock")
   const descriptor = fs.openSync(lock, "wx")
   try {
+    if (expectedBranch !== undefined && location.branch !== expectedBranch) throw new Error("Branch changed during capture; retry on the selected branch")
     const fingerprint = sourceFingerprint(root, paths)
     if (source !== fingerprint) throw new Error("Source changed since the capture was prepared; recapture against current code")
+    const sourceFiles = screenshotSourceFiles(root, paths)
+    if (snapshotFingerprint(paths, sourceFiles) !== fingerprint) throw new Error("Source changed while recording its file fingerprints; recapture against current code")
     const history = readHistory(root)
     const existing = history.screens[id]
-    const unchanged = existing?.versions.at(-1)?.source === fingerprint
+    if (expectedCurrent !== undefined && JSON.stringify(existing?.versions.at(-1)) !== JSON.stringify(expectedCurrent)) {
+      throw new Error("Current capture changed during replay; reload before retrying")
+    }
+    const unchanged = screenshotSourceCurrent(root, existing, paths, fingerprint) && !recapture
     if (unchanged) {
       const current = existing.versions.at(-1)
       const target = path.join(root, ".playwright-mcp", current.image)
@@ -115,14 +122,20 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
       capturedAt: legacyTime
     } : null
     if (!unchanged && !image) throw new Error("A screenshot is required for changed source")
-    Object.assign(screen, { title, area, paths })
+    Object.assign(screen, { title, area, ...(!unchanged ? { paths } : {}) })
     if (!unchanged) screen.versions.push({
       image: copyImage(image, screen.versions.length + 1),
       source: fingerprint,
+      sourcePaths: paths,
+      sourceFiles,
       commit: git(root, "rev-parse", "HEAD"),
       dirty: Boolean(git(root, "status", "--porcelain", "--", ...paths)),
       capturedAt: currentTime
     })
+    if (recapture) {
+      delete screen.approval
+      if (capture) screen.versions.at(-1).capture = capture
+    }
     if (legacy) screen.legacy = legacy
     history.screens[id] = screen
     const temporary = path.join(location.directory, "index.json.tmp")

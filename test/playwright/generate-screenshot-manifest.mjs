@@ -22,7 +22,8 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { decodePng, diffRegions } from "./png-diff.mjs"
 import { readHistory, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
-import { linkedScreenshotStatus } from "./screenshot-tracker.mjs"
+import { linkedScreenshotStatus, readScreenshotTracker } from "./screenshot-tracker.mjs"
+import { screenshotPaths, screenshotSourceCurrent } from "./screenshot-dependencies.mjs"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "../..")
@@ -283,7 +284,8 @@ function buildManifest() {
 
 const manifest = buildManifest()
 const history = readHistory(repoRoot)
-const linkedScreens = linkedScreenshotStatus(repoRoot, undefined, history)
+const tracker = readScreenshotTracker(repoRoot)
+const linkedScreens = linkedScreenshotStatus(repoRoot, tracker, history)
 manifest.screenshots = linkedScreens
 const linkedById = new Map(linkedScreens.map((screen) => [screen.id, screen]))
 const imageExists = (image) => image && storedImageStatus(repoRoot, { image }).status === "available"
@@ -296,7 +298,8 @@ for (const screen of Object.values(history.screens)) {
   let stale = true
   const linked = linkedById.get(screen.id)
   try {
-    stale = linked ? linked.current.status === "stale" : sourceFingerprint(repoRoot, screen.paths) !== now.source
+    const paths = screenshotPaths(screen.id, screen.paths, tracker)
+    stale = linked ? linked.current.status === "stale" : !screenshotSourceCurrent(repoRoot, screen, paths, sourceFingerprint(repoRoot, paths))
   } catch {
     // Removed source remains visibly pending until a replacement capture is recorded.
   }

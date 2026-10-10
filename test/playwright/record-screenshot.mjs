@@ -3,6 +3,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { readHistory, recordScreen, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 import { scenarioCaptureOptions } from "./screenshot-tracker.mjs"
+import { screenshotSourceCurrent } from "./screenshot-dependencies.mjs"
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 const options = { paths: [] }
@@ -33,9 +34,10 @@ if (options.scenario) {
 if (!options.id || !options.title || !options.area) throw new Error("Use --scenario ID --state NAME, or supply --id, --title, --area and --path")
 const source = sourceFingerprint(root, options.paths)
 if (options.check) {
-  const previous = readHistory(root).screens[options.id]?.versions.at(-1)
+  const screen = readHistory(root).screens[options.id]
+  const previous = screen?.versions.at(-1)
   const missing = storedImageStatus(root, previous).status !== "available"
-  console.log(JSON.stringify({ id: options.id, source, needsCapture: missing || previous.source !== source }))
+  console.log(JSON.stringify({ id: options.id, source, needsCapture: missing || !screenshotSourceCurrent(root, screen, options.paths, source) }))
 } else {
   if (!options.source) throw new Error("Use --check before capture, then pass its --source fingerprint when recording")
   console.log(JSON.stringify(recordScreen(root, options)))

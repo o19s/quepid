@@ -53,6 +53,74 @@
 policy:
   default_max_age_days: 90
 
+
+# Screenshot-only surface scope; manual scenario paths remain unchanged.
+# State overrides cover scenarios that cross layout boundaries. Unknown parts
+# keep conservative directory dependencies until their surface is mapped.
+screenshot_surfaces:
+  parts:
+    "01": application
+    "02": application
+    "03": application
+    "04": core
+    "05": core
+    "06": core
+    "07": application
+    "08": application
+    "09": application
+    "10": application
+    "11": application
+    "12": application
+    "13": analytics
+    "14": admin
+    "15": application
+    "16": core
+  scenarios:
+    "3.2": core
+    "3.2b": core
+    "6.10": application
+    "14.11": conservative
+    "14.13": conservative
+    "16.2": core
+    "17.1": core
+    "17.2": core
+    "17.3": application
+    "17.4": application
+    "17.5": core
+    "17.6": application
+    "17.7": core
+    "17.8": application
+    "17.9": core
+    "17.10": application
+    "17.11": viewer
+  screens:
+    "2.2/case-card-opened": core
+    "2.2/case-card-opened-settled": core
+    "3.3/json-import-complete": core
+    "3.3/current-export-compatibility": core
+    "3.4/imported-snapshot-picker": core
+    "7.12/qdrant-results": core
+    "7.12/qdrant-rated": core
+    "7.12/qdrant-rated-lookup": core
+    "7.12/qdrant-rated-only": core
+    "7.13/required-case-controls": core
+    "7.13/required-case-validation-error": core
+    "7.13/required-case-fields": core
+    "7.13/required-case-finished": core
+    "7.13/required-existing-rejected": core
+    "7.13/required-existing-finished": core
+    "13.1/returned-case": core
+    "14.1/denied": application
+    "14.5/login-denied": application
+    "14.9/banner": application
+    "14.9/seen": application
+    "14.9/overlap": application
+    "14.11/sql": blazer
+    "15.2/core-menu": core
+    "15.2/narrow-menu": core
+    "16.2/narrow-list": application
+    "16.2/narrow-judgements": application
+
 parts:
   "01":
     file: 01-environment-setup-and-accounts.md
@@ -1672,10 +1740,10 @@ parts:
         title: "Admin access gating"
         screenshots:
           denied: "14.1/denied"
-        last_run: 2026-10-10T13:20:56Z
-        result: pass
-        notes: "All three non-admin fixture sessions redirected /admin to home with administrator alert and no admin links. Three captures inspected; Current uses bottom flash, historical top flash. Dashboard card counts differ through prior independent fixture runs. Screenshot review: Legacy retains dashboard loading skeletons; denial alert is covered, settled dashboard comparison is deferred. Partial: other admin subroutes deferred to mounted-engine checks."
-        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb"]
+        last_run: 2026-10-10T16:34:14Z
+        result: pass_with_fixes
+        notes: "Restored Rails-page flash placement below the navbar in page flow. OSC member /admin denial redirected home with the administrator alert and no admin links; dismissal removed the alert. Inspected matching viewport before/after captures in Archive flash-placement: alert moved from bottom to below navbar, dashboard shifted down; random greeting and chart rendering differ between navigations. Refreshed linked Current with an inspected full-page capture at the original 1440x1000 viewport; previous Current retained as Previous. Replacement non-admin OSC member has different dashboard records/counts and a shorter page than the original Updated Screenshot User fixture; those are fixture differences, not layout regressions. Case 6/try 32 retains fixed bottom flashes, verified via diagnostic flash event and screenshot. CSS build/lint passed. Earlier three-instance captures cover denial; Legacy dashboard loading skeletons prevent a settled dashboard parity claim. Partial: other admin subroutes deferred."
+        paths: ["app/controllers/admin/admin_controller.rb", "app/controllers/admin/websocket_tester_controller.rb", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/base.css", "build_css.js"]
       "14.2":
         title: "Admin Home dashboard"
         screenshots:
@@ -1690,9 +1758,9 @@ parts:
           empty: "14.3/empty"
           filtered: "14.3/filtered"
           users: "14.3/users"
-        last_run: 2026-10-10T13:20:57Z
+        last_run: 2026-10-10T20:32:04Z
         result: blocked
-        notes: "Nine inspected PNGs: Current/Legacy users lists, all three fullcapture filters and empty searches. Base unfiltered index raises SubclassNotFound AiJudge from copied newer STI data; filtered fixtures render. No baseline DB rewrite attempted. Exports/pagination not exercised yet."
+        notes: "Current MCP replay at 1440x1000: admin Users list, submitted screenshot-no-such-user-20261010 filter, zero rows and existing empty-results alert; screenshot inspected. Automatic recipe verified in the running server. Exports, pagination and populated filtered results deferred this batch; historical Base blocker remains. Earlier coverage: nine inspected PNGs: Current/Legacy users lists, all three fullcapture filters and empty searches. Base unfiltered index raises SubclassNotFound AiJudge from copied newer STI data; filtered fixtures render. No baseline DB rewrite attempted. Exports/pagination not exercised yet."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/index.html.erb", "app/views/admin/users/index.csv.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.4":
         title: "User show page & Pulse activity"
@@ -2064,11 +2132,15 @@ parts:
       "17.11":
         title: "Screenshot viewer and screen history"
         screenshots:
+          claude-ready: "17.11/claude-ready"
+          recapture: "17.11/recapture"
+          capture-failure: "17.11/capture-failure"
+          approval: "17.11/approval"
           archive: "17.11/archive"
           history: "17.11/history"
           legacy: "17.11/legacy"
           sections: "17.11/sections"
-        last_run: 2026-10-10T15:33:48Z
-        result: pass
-        notes: "Covered live: collapsed application sections, Current/Legacy switching, mouse/keyboard selection, first-capture Previous message, one-screen History and nested Archive. Final viewer resolves supplemental 6.5 at 13bf23fff separately from primary 8ceb absence; Current remains fixed when switching comparisons. All 753 linked Current states are fresh; 650 Legacy images resolve, 101 states explicitly absent, and OAuth failure/list-sharing selection remain unrecorded historical gaps. Audited 6,393 PNG files / 2,227 distinct images, including Oct9 and raw intermediates, across 62 inspected sheets; all decode and reconcile to history or Archive in .playwright-mcp/all-screen-history/capture-audit.json. Separate 5.4 evidence records preserve original 4.14 images/capture times and avoid dependency-scope false staleness. Previous remains actual source history; no code-version change fabricated. Batch fixtures removed on all four databases with unrelated record IDs unchanged; servers remain healthy. Delayed-overlay race and branch switching not exercised. Follow-up tooling checks: 17 Node regressions and focused sharing/annotation Playwright tests pass; disposable clones removed and source sharing/annotation IDs unchanged. Current-only MCP viewer sample covers collapsed sections, Legacy switching, diff overlays, screen History, nested Archive and controlled corrupt-file messaging. Viewer binds to loopback; repository secrets return 404 and malformed paths 400. Four viewer states recaptured at their original viewport sizes; count changes reflect additional inventory; Legacy sidebar expansion differs between captures and is not a UI regression. Final manifest has 745 fresh Current states and eight 6.2 states stale from test-fixture changes; all four new viewer states are fresh with real Previous captures, no image corruption or Archive decode errors. Prior full-batch audit remains historical evidence; 6.2 recapture, branch switching, exhaustive capture-state matching and long-session memory profiling deferred. Subsequent focused 6.2 refresh completed: eight new Current states, retained Previous/Legacy, and 753 fresh Current states; remaining tooling deferrals unchanged."
-        paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-status.mjs"]
+        last_run: 2026-10-10T23:16:52Z
+        result: pass_with_fixes
+        notes: "Covered live: scoped freshness on :3456 using the existing approved Admin Home capture. A temporary core-only froggy.css edit expired approval in the old viewer; the same edit leaves Current fresh and approval intact with surface scoping. Inspected the before/after pair under freshness-scope and refreshed 17.11/approval Current at its original 1280x720 viewport; temporary CSS restored and rebuilt, no fixture records created. All 49 focused tooling/recipe checks pass, including shared/explicit/new dependencies, source provenance and history preservation. Local Claude/MCP also published Books combined-filter and archived-list captures before the superseded bulk queue was stopped; equivalent account/filter differences are recorded in their contracts, no fixture rows created. Not covered live: populated Users fallback replay, all other viewer states, exhaustive keyboard/history/baseline controls or a full application recapture. Earlier fallback approval blocker is resolved by the authorized successful publications; deferred state coverage remains pending."
+        paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-dependencies.mjs", "test/playwright/screenshot-status.mjs", "test/playwright/screenshot-reviews.mjs", "test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs", "test/playwright/capture-jobs.mjs", "test/playwright/capture-recipes.test.mjs", "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs", "test/playwright/capture-agent.md", "test/playwright/capture-claude.test.mjs"]

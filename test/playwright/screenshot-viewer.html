@@ -393,6 +393,28 @@
         font-size: 0.85rem;
       }
 
+      .review-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 1.25rem;
+      }
+
+      .review-controls[hidden] { display: none; }
+
+      .review-controls button, .review-controls select {
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem;
+      }
+
+      .review-controls button:disabled { opacity: 0.5; }
+      #review-status { color: var(--warn); }
+      #review-status.approved { color: var(--ok); }
+
       .empty {
         color: var(--muted);
         padding: 2rem;
@@ -442,6 +464,18 @@
           <a class="history-link" id="archive-link" href="?view=archive">Archive</a>
           <input class="search" id="search" type="search" placeholder="Filter screenshots…" />
         </header>
+        <div class="review-controls" id="review-controls" hidden>
+          <label for="review-filter">Review status</label>
+          <select id="review-filter">
+            <option value="all">All screens</option>
+            <option value="needs_review">Needs review</option>
+            <option value="approved">Approved</option>
+          </select>
+          <button type="button" id="recapture-current" disabled>Recapture Current</button>
+          <button type="button" id="approve-current" disabled>Approve Current</button>
+          <button type="button" id="refresh-reviews">Check status</button>
+          <span id="review-status" role="status" aria-live="polite"></span>
+        </div>
         <div class="baseline-tabs" id="baseline-tabs" role="tablist" aria-label="Left comparison" hidden></div>
         <div class="stage" id="stage">
           <div class="empty">Pick a screenshot set from the sidebar.</div>
@@ -467,6 +501,166 @@
       let navFiltered = false
       const baselineModes = new Map()
       let stageRenderVersion = 0
+
+      let reviewLoading = false
+      let captureJob = null
+      let captureError = null
+
+      function matchesReview(item) {
+        const filter = document.getElementById("review-filter").value
+        return archiveView || filter === "all" || (filter === "approved" ? item.review?.status === "approved" : item.review?.status !== "approved")
+      }
+
+      function renderReview(item) {
+        if (archiveView) return
+        const status = document.getElementById("review-status")
+        const button = document.getElementById("approve-current")
+        const review = item?.review
+        const recapture = document.getElementById("recapture-current")
+        const busy = captureJob?.state === "running"
+        recapture.textContent = captureError && captureError.id === item?.id ? "Retry capture" : "Recapture Current"
+        recapture.disabled = busy || reviewLoading || !review?.canRecapture
+        recapture.title = review?.canRecapture ? review.captureMethod === "claude" ? "Capture this screen using local Claude and Playwright MCP" : "Capture a new image of this screen" : "No recorded screen to recapture"
+        document.getElementById("refresh-reviews").disabled = busy || reviewLoading
+        status.classList.toggle("approved", review?.status === "approved")
+        status.textContent = !item ? "No screens match this filter." : reviewLoading ? "Checking review status…" : !review ? "Review status unavailable or the capture changed. Reload the viewer or check status." : review.status === "approved" ? `Approved · ${review.approvedAt}` : review.captureStatus !== "current" ? "Capture due — record a new screenshot before review." : "Needs review"
+        if (busy) status.textContent = captureJob.message
+        else if (captureError && captureError.id === item?.id) status.textContent = captureError.message
+        else if (item && !review?.canRecapture) status.append(" · Automatic capture not configured for this screen.")
+        button.textContent = review?.status === "approved" ? "Undo approval" : "Approve Current"
+        button.disabled = busy || reviewLoading || !review || review.captureStatus !== "current"
+      }
+
+      function applyReviews(data) {
+        for (const item of items) {
+          const review = data.screens.find((screen) => screen.id === item.screenId)
+          if (data.partial && !review && data.branch === manifest.current?.branch) continue
+          item.review = data.branch === manifest.current?.branch && review?.source === item.now?.source && review?.image === item.now?.image && review?.capturedAt === item.now?.capturedAt ? review : null
+          if (item.review) {
+            item.captureStatus = review.captureStatus
+            item.stale = review.captureStatus === "stale"
+          }
+        }
+      }
+
+      async function refreshReviews() {
+        if (archiveView || reviewLoading || captureJob?.state === "running") return
+        reviewLoading = true
+        renderReview(items.find((item) => item.id === activeId))
+        try {
+          const response = await fetch("/api/reviews", { cache: "no-store" })
+          if (!response.ok) throw new Error("Could not load review status")
+          applyReviews(await response.json())
+        } catch {
+          for (const item of items) item.review = null
+        } finally {
+          reviewLoading = false
+          renderNav(document.getElementById("search").value)
+          renderReview(items.find((item) => item.id === activeId))
+        }
+      }
+
+      async function approveCurrent() {
+        const item = items.find((item) => item.id === activeId)
+        if (!item?.review || reviewLoading || captureJob?.state === "running") return
+        reviewLoading = true
+        renderReview(item)
+        let errorMessage
+        try {
+          const response = await fetch("/api/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branch: manifest.current.branch, id: item.screenId, source: item.now.source, image: item.now.image, capturedAt: item.now.capturedAt, approved: item.review.status !== "approved" })
+          })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not save approval")
+          applyReviews(data)
+        } catch (error) {
+          item.review = null
+          errorMessage = error.message
+        } finally {
+          reviewLoading = false
+          renderNav(document.getElementById("search").value)
+          renderReview(items.find((entry) => entry.id === activeId))
+          if (errorMessage) document.getElementById("review-status").textContent = errorMessage
+        }
+      }
+
+      async function watchCapture() {
+        while (captureJob.state === "running") {
+          renderReview(items.find((entry) => entry.id === activeId))
+          await new Promise((resolve) => setTimeout(resolve, 750))
+          const response = await fetch(`/api/captures/${encodeURIComponent(captureJob.jobId)}`, { cache: "no-store" })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not check capture progress")
+          captureJob = data
+        }
+      }
+
+      async function resumeCapture() {
+        if (archiveView || captureJob) return
+        try {
+          const saved = JSON.parse(sessionStorage.getItem("screenshotCapture") || "null")
+          const response = await fetch(saved ? `/api/captures/${encodeURIComponent(saved.jobId)}` : "/api/captures", { cache: "no-store" })
+          if (!response.ok) return
+          const job = await response.json()
+          if (!job) return
+          captureJob = job
+          if (saved && items.some((item) => item.id === saved.id)) {
+            document.getElementById("search").value = saved.search
+            document.getElementById("review-filter").value = saved.filter
+            baselineModes.set(saved.id, saved.baseline)
+            viewMode = saved.viewMode
+            showRegions = saved.showRegions
+            select(saved.id)
+          }
+          await watchCapture()
+          if (captureJob.state !== "succeeded") {
+            sessionStorage.removeItem("screenshotCapture")
+            throw new Error(captureJob.message)
+          }
+          sessionStorage.removeItem("screenshotCapture")
+          pixelCache.clear()
+          await init(true)
+        } catch (error) {
+          captureError = { id: captureJob?.id, message: `Capture failed: ${error.message}` }
+        } finally {
+          captureJob = null
+          renderReview(items.find((entry) => entry.id === activeId))
+        }
+      }
+
+      async function recaptureCurrent() {
+        const item = items.find((entry) => entry.id === activeId)
+        if (!item?.review?.canRecapture || captureJob?.state === "running" || reviewLoading) return
+        captureError = null
+        captureJob = { state: "running", message: "Starting capture…", id: item.id }
+        renderReview(item)
+        try {
+          const response = await fetch("/api/captures", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branch: manifest.current.branch, id: item.screenId, source: item.now.source, image: item.now.image, capturedAt: item.now.capturedAt })
+          })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not start capture")
+          captureJob = data
+          sessionStorage.setItem("screenshotCapture", JSON.stringify({ jobId: data.jobId, id: item.id, search: document.getElementById("search").value, filter: document.getElementById("review-filter").value, baseline: baselineModes.get(item.id) || "previous", viewMode, showRegions }))
+          await watchCapture()
+          if (captureJob.state !== "succeeded") {
+            sessionStorage.removeItem("screenshotCapture")
+            throw new Error(captureJob.message)
+          }
+          sessionStorage.removeItem("screenshotCapture")
+          pixelCache.clear()
+          await init(true)
+        } catch (error) {
+          captureError = { id: item.id, message: `Capture failed: ${error.message}` }
+        } finally {
+          captureJob = null
+          renderReview(items.find((entry) => entry.id === activeId))
+        }
+      }
 
       function shotSrc(relPath) {
         return (
@@ -526,12 +720,12 @@
           })
         }
         const q = filter.trim().toLowerCase()
-        navFiltered = Boolean(q)
-        const match = (item) =>
+        navFiltered = Boolean(q) || document.getElementById("review-filter").value !== "all"
+        const match = (item) => matchesReview(item) && (
           !q ||
           item.title.toLowerCase().includes(q) ||
           item.id.toLowerCase().includes(q) ||
-          (item.topic || "").toLowerCase().includes(q)
+          (item.topic || "").toLowerCase().includes(q))
 
         const topicNavs = document.getElementById("topic-navs")
         const singlesList = document.getElementById("singles-list")
@@ -575,6 +769,7 @@
             label.textContent = item.title
             const badge = document.createElement("span")
             badge.innerHTML = ["missing", "corrupt"].includes(item.captureStatus) ? `<span class="badge diff">capture ${item.captureStatus}</span>` : item.stale ? '<span class="badge diff">capture due</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
+            if (!archiveView) badge.insertAdjacentHTML("beforeend", item.review?.status === "approved" ? '<span class="badge identical">approved</span>' : '<span class="badge diff">needs review</span>')
             btn.append(label, badge)
             btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
             btn.addEventListener("click", () => select(item.id))
@@ -941,6 +1136,7 @@
 
       async function renderStage(item) {
         const renderVersion = ++stageRenderVersion
+        renderReview(item)
         const original = item
         const tabs = document.getElementById("baseline-tabs")
         tabs.replaceChildren()
@@ -1066,7 +1262,7 @@
       function selectRelative(delta) {
         const visible = items.filter((item) => {
           const q = document.getElementById("search").value.trim().toLowerCase()
-          return !q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
+          return matchesReview(item) && (!q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q))
         })
         if (!visible.length) return
         const idx = Math.max(0, visible.findIndex((item) => item.id === activeId))
@@ -1074,8 +1270,9 @@
         select(next.id)
       }
 
-      async function init() {
-        const res = await fetch(manifestUrl)
+      async function init(preserveSelection = false) {
+        const selectedId = preserveSelection ? activeId : null
+        const res = await fetch(manifestUrl, { cache: "no-store" })
         if (!res.ok) {
           document.getElementById("subtitle").textContent = "Manifest missing — run: yarn screenshots:view"
           document.getElementById("stage").innerHTML =
@@ -1103,8 +1300,10 @@
             ? `${historyScreen ? "Screen history" : "Archive — older captures; legacy folders have no recorded source version"} · ${items.length} entries`
             : `${manifest.current?.branch || "Current branch"} · ${items.length} screens · Left: Previous or Legacy · Right: Current`
 
-        renderNav()
-        if (items.length) select(items[0].id)
+        document.getElementById("review-controls").hidden = archiveView
+        await refreshReviews()
+        renderNav(document.getElementById("search").value)
+        if (items.length) select(items.some((item) => item.id === selectedId) ? selectedId : items[0].id)
         else {
           document.getElementById("stage").textContent = "No screens recorded for this branch yet. Record a capture with yarn screenshots:record; existing captures remain in Archive."
         }
@@ -1113,6 +1312,25 @@
       document.getElementById("search").addEventListener("input", (event) => {
         renderNav(event.target.value)
       })
+
+      document.getElementById("recapture-current").addEventListener("click", recaptureCurrent)
+      document.getElementById("approve-current").addEventListener("click", approveCurrent)
+      document.getElementById("refresh-reviews").addEventListener("click", refreshReviews)
+      document.getElementById("review-filter").addEventListener("change", () => {
+        renderNav(document.getElementById("search").value)
+        const current = items.find((item) => item.id === activeId)
+        if (current && matchesReview(current)) return
+        const next = items.find(matchesReview)
+        if (next) select(next.id)
+        else {
+          activeId = null
+          ++stageRenderVersion
+          document.getElementById("stage").textContent = "No screens match this filter."
+          document.getElementById("baseline-tabs").hidden = true
+          renderReview(null)
+        }
+      })
+      window.addEventListener("focus", refreshReviews)
 
       window.addEventListener("keydown", (event) => {
         if (event.target.matches("input, textarea")) return
@@ -1126,7 +1344,7 @@
         }
       })
 
-      init()
+      init().then(resumeCapture)
     </script>
   </body>
 </html>

@@ -213,6 +213,8 @@ work across turns, and never close another session's browser without permission.
 
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
+Refresh the affected Current screen-history entries after verifying a UI change; Archive captures alone do not complete the update. If the original account or fixture is unavailable or unsuitable, use an equivalent account or fixture for the same scenario/state, document the differences, and record the new Current capture following [Screen capture history](docs/screenshot_review.md#screen-capture-history). Do not leave Current stale solely because fixtures differ.
+
 Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the captured flows. Use the actual running server's configured host port when it differs from the example URL.
 
 The Playwright MCP tools may be exposed as deferred tools rather than a direct namespace. In that case, discover `mcp__playwright__*` from the tool catalog and invoke them through the tool orchestrator; do not treat an empty computer-surface/browser inventory as proof that Playwright is unavailable. Start with `mcp__playwright__browser_tabs` (`action: "list"`), then use the browser snapshot/click/fill/screenshot tools for the required flow.

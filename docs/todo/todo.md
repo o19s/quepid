@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-08
+**Last updated:** 2026-10-10
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -794,3 +794,24 @@ This review supplies priorities, not a migration acceptance plan or proof that o
 Start with CI parity and documentation drift; pursue structural changes where they reduce an observed maintenance cost. A wholesale runtime rewrite, controller-wide refactor, forced importmap/esbuild consolidation or deletion of migration evidence is outside these recommendations.
 
 Deliberately deferred or declined items live in [NOT-DOING.md](NOT-DOING.md).
+
+## Someday
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Evaluate modern screenshot comparison and review options
+
+Consider replacing the screenshot viewer's custom per-channel comparison with
+[Pixelmatch](https://github.com/mapbox/pixelmatch) (open source, ISC license),
+evaluating perceptual thresholds, antialiasing filtering, configurable diff
+colors, contextual diff backgrounds and optional masks. Evaluate
+[Percy-style review controls](https://www.browserstack.com/docs/test-companion/visual-analysis):
+stacked before/after overlay, adjustable tint strength and optional diagnostic
+panels alongside the existing side-by-side, slider and actual-size views.
+
+**Future evaluation only:** preserve original screenshots and capture history;
+keep manifest region detection and viewer highlighting consistent. Compare
+representative text, color, spacing and layout changes before choosing defaults,
+so noise filtering does not conceal meaningful regressions. See
+[Screenshot capture and diffing](../screenshot_review.md).
+
+Revisit when rendering noise slows screenshot reviews or automated visual
+regression coverage expands.
