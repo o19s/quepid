@@ -24,12 +24,16 @@ export function decodePng(buffer) {
   if (buffer.subarray(0, 8).toString("hex") !== signature) throw new Error("not a PNG")
 
   let width, height, bitDepth, colorType, interlace
+  let ended = false
   const idat = []
   for (let offset = 8; offset < buffer.length; ) {
+    if (offset + 12 > buffer.length) throw new Error("truncated PNG chunk")
     const length = buffer.readUInt32BE(offset)
+    if (offset + length + 12 > buffer.length) throw new Error("truncated PNG chunk")
     const type = buffer.toString("latin1", offset + 4, offset + 8)
     const body = buffer.subarray(offset + 8, offset + 8 + length)
     if (type === "IHDR") {
+      if (length !== 13 || width !== undefined) throw new Error("invalid PNG header")
       width = body.readUInt32BE(0)
       height = body.readUInt32BE(4)
       bitDepth = body[8]
@@ -38,10 +42,12 @@ export function decodePng(buffer) {
     } else if (type === "IDAT") {
       idat.push(body)
     } else if (type === "IEND") {
+      ended = true
       break
     }
     offset += length + 12
   }
+  if (!ended || !width || !height || !idat.length) throw new Error("incomplete PNG")
 
   const channels = CHANNELS[colorType]
   if (bitDepth !== 8 || !channels || interlace !== 0) {
@@ -50,9 +56,11 @@ export function decodePng(buffer) {
 
   const raw = zlib.inflateSync(Buffer.concat(idat))
   const stride = width * channels
+  if (raw.length !== (stride + 1) * height) throw new Error("invalid PNG pixel data length")
   const pixels = Buffer.alloc(stride * height)
   for (let y = 0; y < height; y++) {
     const filter = raw[y * (stride + 1)]
+    if (filter > 4) throw new Error("invalid PNG filter")
     const src = y * (stride + 1) + 1
     const dst = y * stride
     for (let x = 0; x < stride; x++) {

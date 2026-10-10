@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path"
-import fs from "node:fs"
 import { fileURLToPath } from "node:url"
-import { readHistory, recordScreen, sourceFingerprint } from "./screen-history.mjs"
+import { readHistory, recordScreen, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 import { scenarioCaptureOptions } from "./screenshot-tracker.mjs"
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
@@ -15,6 +14,8 @@ while (args.length) {
   else if (flag === "--legacy-image") options.legacyImage = args.shift()
   else if (flag === "--legacy-ref") options.legacyRef = args.shift()
   else if (flag === "--path") options.paths.push(args.shift())
+  else if (flag === "--captured-at") options.capturedAt = args.shift()
+  else if (flag === "--legacy-captured-at") options.legacyCapturedAt = args.shift()
   else if (["--id", "--title", "--area", "--image", "--source", "--scenario", "--state"].includes(flag)) {
     options[flag.slice(2)] = args.shift()
   } else throw new Error(`Unknown option: ${flag}`)
@@ -33,7 +34,7 @@ if (!options.id || !options.title || !options.area) throw new Error("Use --scena
 const source = sourceFingerprint(root, options.paths)
 if (options.check) {
   const previous = readHistory(root).screens[options.id]?.versions.at(-1)
-  const missing = !previous || !fs.existsSync(path.join(root, ".playwright-mcp", previous.image))
+  const missing = storedImageStatus(root, previous).status !== "available"
   console.log(JSON.stringify({ id: options.id, source, needsCapture: missing || previous.source !== source }))
 } else {
   if (!options.source) throw new Error("Use --check before capture, then pass its --source fingerprint when recording")

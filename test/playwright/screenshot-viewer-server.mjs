@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url"
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const repoRoot = path.resolve(__dirname, "../..")
 const port = Number(process.env.SCREENSHOT_VIEWER_PORT || 3456)
+const host = process.env.SCREENSHOT_VIEWER_HOST || "127.0.0.1"
 
 function contentType(filePath) {
   if (filePath.endsWith(".html")) return "text/html; charset=utf-8"
@@ -37,25 +38,38 @@ function safePath(urlPath) {
   const relative = decoded.replace(/^\/+/, "")
   const absolute = path.resolve(repoRoot, relative)
   if (absolute !== repoRoot && !absolute.startsWith(repoRoot + path.sep)) return null
+  if (!["test/playwright/screenshot-viewer.html", "test/playwright/screenshot-manifest.json"].includes(relative) &&
+      !(relative.startsWith(".playwright-mcp/") && /\.(png|webp)$/.test(relative))) return null
+  if (!fs.existsSync(absolute)) return null
+  const real = fs.realpathSync(absolute)
+  if (!real.startsWith(repoRoot + path.sep)) return null
+  if (relative.startsWith(".playwright-mcp/") && !real.startsWith(path.join(repoRoot, ".playwright-mcp") + path.sep)) return null
   return absolute
 }
 
 await runManifestGenerator()
 
 const server = http.createServer((req, res) => {
-  const target = safePath(req.url === "/" ? "/test/playwright/screenshot-viewer.html" : req.url)
+  let target
+  try {
+    target = safePath(req.url === "/" ? "/test/playwright/screenshot-viewer.html" : req.url)
+  } catch {
+    res.writeHead(400)
+    res.end("Invalid path")
+    return
+  }
   if (!target || !fs.existsSync(target) || fs.statSync(target).isDirectory()) {
     res.writeHead(404, { "Content-Type": "text/plain; charset=utf-8" })
     res.end("Not found")
     return
   }
 
-  res.writeHead(200, { "Content-Type": contentType(target) })
-  fs.createReadStream(target).pipe(res)
+  res.writeHead(200, { "Content-Type": contentType(target), "Cache-Control": "no-store" })
+  fs.createReadStream(target).on("error", () => res.destroy()).pipe(res)
 })
 
-server.listen(port, () => {
-  const url = `http://localhost:${port}/test/playwright/screenshot-viewer.html`
+server.listen(port, host, () => {
+  const url = `http://${host}:${port}/test/playwright/screenshot-viewer.html`
   console.log(`Screenshot viewer: ${url}`)
   console.log("Ctrl+C to stop.")
 })

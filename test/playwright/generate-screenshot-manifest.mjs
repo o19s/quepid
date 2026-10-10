@@ -21,7 +21,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { decodePng, diffRegions } from "./png-diff.mjs"
-import { readHistory, sourceFingerprint } from "./screen-history.mjs"
+import { readHistory, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 import { linkedScreenshotStatus } from "./screenshot-tracker.mjs"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -31,7 +31,7 @@ const manifestPath = path.join(__dirname, "screenshot-manifest.json")
 // Decoding every pair takes minutes, so pixel diffs are cached by file size
 // and mtime. Bump DIFF_VERSION when png-diff.mjs's output changes.
 const diffCachePath = path.join(shotDir, ".diff-cache.json")
-const DIFF_VERSION = 1
+const DIFF_VERSION = 2
 
 function titleize(stem) {
   return stem
@@ -286,7 +286,7 @@ const history = readHistory(repoRoot)
 const linkedScreens = linkedScreenshotStatus(repoRoot, undefined, history)
 manifest.screenshots = linkedScreens
 const linkedById = new Map(linkedScreens.map((screen) => [screen.id, screen]))
-const imageExists = (image) => image && fs.existsSync(path.join(shotDir, image))
+const imageExists = (image) => image && storedImageStatus(repoRoot, { image }).status === "available"
 const current = { groups: [], singles: [], branch: history.branch }
 const revisions = []
 for (const screen of Object.values(history.screens)) {
@@ -296,7 +296,7 @@ for (const screen of Object.values(history.screens)) {
   let stale = true
   const linked = linkedById.get(screen.id)
   try {
-    stale = sourceFingerprint(repoRoot, linked?.paths || screen.paths) !== now.source
+    stale = linked ? linked.current.status === "stale" : sourceFingerprint(repoRoot, screen.paths) !== now.source
   } catch {
     // Removed source remains visibly pending until a replacement capture is recorded.
   }

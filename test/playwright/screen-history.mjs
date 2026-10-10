@@ -21,6 +21,19 @@ export function readHistory(root) {
     : { version: 1, branch: location.branch, screens: {} }
 }
 
+export function storedImageStatus(root, version) {
+  if (!version) return { status: "not_recorded", image: null }
+  const image = `.playwright-mcp/${version.image}`
+  const filename = path.join(root, image)
+  if (!fs.existsSync(filename)) return { status: "missing", image }
+  try {
+    const bytes = fs.readFileSync(filename)
+    return { status: filename.endsWith(`-${digest(bytes).slice(0, 16)}.png`) ? "available" : "corrupt", image }
+  } catch {
+    return { status: "corrupt", image }
+  }
+}
+
 export function sourceFingerprint(root, paths) {
   if (!paths?.length) throw new Error("At least one source path is required")
   for (const source of paths) {
@@ -50,8 +63,15 @@ export function sourceFingerprint(root, paths) {
   return hash.digest("hex")
 }
 
-export function recordScreen(root, { id, title, area, paths, image, source, legacyImage, legacyRef, legacyAbsent }) {
+export function recordScreen(root, { id, title, area, paths, image, source, legacyImage, legacyRef, legacyAbsent, capturedAt, legacyCapturedAt }) {
   if (!id || !title || !area) throw new Error("Screen ID, title and application area are required")
+  const captureTime = (value) => {
+    const date = value === undefined ? new Date() : new Date(value)
+    if (!Number.isFinite(date.getTime()) || date > new Date()) throw new Error("Capture time must be a valid past timestamp")
+    return date.toISOString()
+  }
+  const currentTime = captureTime(capturedAt)
+  const legacyTime = captureTime(legacyCapturedAt)
   const location = historyLocation(root)
   fs.mkdirSync(location.directory, { recursive: true })
   const lock = path.join(location.directory, "record.lock")
@@ -65,14 +85,14 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
     if (unchanged) {
       const current = existing.versions.at(-1)
       const target = path.join(root, ".playwright-mcp", current.image)
-      if (!fs.existsSync(target)) {
+      if (storedImageStatus(root, current).status !== "available") {
         if (!image) throw new Error("Stored current screenshot is missing; restore the original image")
         const bytes = fs.readFileSync(image)
         decodePng(bytes)
         if (!current.image.endsWith(`-${digest(bytes).slice(0, 16)}.png`)) {
           throw new Error("Source is unchanged; restoring a missing screenshot requires the original image bytes")
         }
-        fs.writeFileSync(target, bytes, { flag: "wx" })
+        fs.writeFileSync(target, bytes)
       }
       if (!legacyImage && !legacyAbsent) return { updated: false, id, source: fingerprint }
     }
@@ -92,7 +112,7 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
       image: legacyImage ? copyImage(legacyImage, "legacy") : null,
       absent: Boolean(legacyAbsent),
       ref: git(root, "rev-parse", "--verify", `${legacyRef}^{commit}`),
-      capturedAt: new Date().toISOString()
+      capturedAt: legacyTime
     } : null
     if (!unchanged && !image) throw new Error("A screenshot is required for changed source")
     Object.assign(screen, { title, area, paths })
@@ -101,7 +121,7 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
       source: fingerprint,
       commit: git(root, "rev-parse", "HEAD"),
       dirty: Boolean(git(root, "status", "--porcelain", "--", ...paths)),
-      capturedAt: new Date().toISOString()
+      capturedAt: currentTime
     })
     if (legacy) screen.legacy = legacy
     history.screens[id] = screen

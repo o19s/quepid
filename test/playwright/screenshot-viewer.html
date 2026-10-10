@@ -574,7 +574,7 @@
             const label = document.createElement("span")
             label.textContent = item.title
             const badge = document.createElement("span")
-            badge.innerHTML = item.captureStatus === "missing" ? '<span class="badge diff">capture missing</span>' : item.stale ? '<span class="badge diff">capture due</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
+            badge.innerHTML = ["missing", "corrupt"].includes(item.captureStatus) ? `<span class="badge diff">capture ${item.captureStatus}</span>` : item.stale ? '<span class="badge diff">capture due</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
             btn.append(label, badge)
             btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
             btn.addEventListener("click", () => select(item.id))
@@ -835,7 +835,14 @@
       // Caches the promise, so revisiting a pair mid-load reuses it.
       function comparePair(item) {
         const key = `${item.before}\0${item.after}`
-        if (!pixelCache.has(key)) pixelCache.set(key, readPair(item))
+        if (!pixelCache.has(key)) {
+          const promise = readPair(item).catch((error) => {
+            if (pixelCache.get(key) === promise) pixelCache.delete(key)
+            throw error
+          })
+          pixelCache.set(key, promise)
+          if (pixelCache.size > 3) pixelCache.delete(pixelCache.keys().next().value)
+        }
         return pixelCache.get(key)
       }
 
@@ -1008,7 +1015,15 @@
           wireViewControls(item)
           if (!hasRegions(item)) return
 
-          const pixel = await comparePair(item)
+          let pixel
+          try {
+            pixel = await comparePair(item)
+          } catch {
+            if (renderVersion === stageRenderVersion) {
+              document.getElementById("diff-report-wrap").textContent = "Could not load comparison images. Restore the files and select this screen again."
+            }
+            return
+          }
           if (activeId !== item.id || renderVersion !== stageRenderVersion || pixel.dimensionMismatch || pixel.pixelIdentical) return
 
           document.getElementById("highlight-row").hidden = false
@@ -1018,17 +1033,17 @@
         }
 
         let baselineMessage
-        if (item.captureStatus === "missing") {
-          baselineMessage = "The Current screenshot file is missing. Restore it to compare recorded captures."
+        if (["missing", "corrupt"].includes(item.captureStatus)) {
+          baselineMessage = "The Current screenshot file is missing or corrupt. Restore the original bytes to compare recorded captures."
         } else if (baseline === "legacy") {
           baselineMessage = item.legacy?.absent
             ? "This screen did not exist on the recorded legacy baseline."
             : item.legacy?.image
-              ? "The recorded Legacy screenshot file is missing. Restore the original image."
+              ? "The recorded Legacy screenshot file is missing or corrupt. Restore the original image."
               : "Legacy capture not recorded yet."
         } else {
           baselineMessage = item.versions?.at(-2)
-            ? "The recorded Previous screenshot file is missing. Restore the original image."
+            ? "The recorded Previous screenshot file is missing or corrupt. Restore the original image."
             : "No previous code version has been captured yet."
         }
         stage.innerHTML = `
@@ -1036,7 +1051,7 @@
             ${archiveView ? "" : `<figure class="panel"><header>${baseline === "legacy" ? "Legacy" : "Previous"}</header><div class="empty">${baselineMessage}</div></figure>`}
             ${panel(archiveView ? item.note || "Image" : "Current", shotSrc(item.image), item.title)}
           </div>
-          <p class="hint">${archiveView ? "Single image — no pair to compare." : item.captureStatus === "missing" || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Its next relevant code change will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
+          <p class="hint">${archiveView ? "Single image — no pair to compare." : ["missing", "corrupt"].includes(item.captureStatus) || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Its next relevant code change will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
         `
       }
 

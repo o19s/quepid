@@ -1,7 +1,6 @@
-import fs from "node:fs"
 import path from "node:path"
 import { execFileSync } from "node:child_process"
-import { readHistory, sourceFingerprint } from "./screen-history.mjs"
+import { readHistory, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 
 export function readScreenshotTracker(root) {
   const script = `require 'yaml'; require 'json'; require 'date'; data = YAML.safe_load_file(ARGV[0], permitted_classes: [Date, Time], aliases: true); puts JSON.generate(data)`
@@ -27,10 +26,12 @@ export function scenarioCaptureOptions(root, scenarioId, state, extraPaths = [],
 
 export function linkedScreenshotStatus(root, tracker = readScreenshotTracker(root), history = readHistory(root)) {
   const rows = []
-  const imageStatus = (version) => {
-    if (!version) return { status: "not_recorded", image: null }
-    const image = `.playwright-mcp/${version.image}`
-    return { status: fs.existsSync(path.join(root, image)) ? "available" : "missing", image }
+  const imageStatus = (version) => storedImageStatus(root, version)
+  const fingerprints = new Map()
+  const fingerprint = (paths) => {
+    const key = JSON.stringify([...paths].sort())
+    if (!fingerprints.has(key)) fingerprints.set(key, sourceFingerprint(root, paths))
+    return fingerprints.get(key)
   }
   for (const [partId, part] of Object.entries(tracker.parts || {})) {
     for (const [scenarioId, scenario] of Object.entries(part.scenarios || {})) {
@@ -43,7 +44,7 @@ export function linkedScreenshotStatus(root, tracker = readScreenshotTracker(roo
         if (current.status === "not_recorded") current.status = "missing"
         if (current.status === "available") {
           try {
-            current.status = sourceFingerprint(root, paths) === now.source ? "current" : "stale"
+            current.status = fingerprint(paths) === now.source ? "current" : "stale"
           } catch {
             current.status = "stale"
           }

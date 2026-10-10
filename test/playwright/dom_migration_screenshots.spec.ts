@@ -1,14 +1,17 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_RICH_CASE_ID } from './case_helpers';
+import { DEFAULT_RICH_CASE_ID, deleteCaseViaApi } from './case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
-/** Case with teams for share-case shots (fresh seed: case 1, one user team). */
-const SHARE_CASE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
+/** Configured cases are read-only sources; all mutations use disposable clones. */
+const SHARE_SOURCE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
 /** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
-const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
+const QUERIES_SOURCE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
+let SHARE_CASE_ID: number;
+let QUERIES_CASE_ID: number;
+const createdCaseIds: number[] = [];
 /**
  * Topic subfolder under `.playwright-mcp/` so the screenshot viewer can group
  * this PR's shots separately from older captures. Override with MIGRATION_SHOT_TOPIC.
@@ -16,10 +19,8 @@ const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT
  */
 const TOPIC = process.env.MIGRATION_SHOT_TOPIC || '';
 
-// NOTE: the share-case migration-diff tests that used to live here were moved to
-// share_case.spec.ts as permanent regression coverage — commit 9eebf95c deleted the
-// legacy share_case component entirely, so there is no more "before" for this
-// surface to diff against. See that file's header comment for details.
+// share_case.spec.ts also provides checked-in visual baselines and behavioral
+// regression coverage; this file retains ad-hoc sharing captures.
 
 async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CASE_ID) {
   await page.goto(`case/${caseId}`);
@@ -35,9 +36,8 @@ async function expandFirstQuery(page: import('@playwright/test').Page) {
 }
 
 async function apiHeaders(page: import('@playwright/test').Page) {
-  if (!page.url().includes('/case/')) {
-    await page.goto(`case/${SHARE_CASE_ID}`);
-    await page.waitForSelector('#case-actions', { timeout: 20_000 });
+  if (await page.locator('meta[name="csrf-token"]').count() === 0) {
+    await page.goto('cases');
   }
   const csrf = await page.evaluate(() =>
     document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
@@ -164,20 +164,37 @@ async function openHelpPopover(
 }
 
 test.describe(`DOM migration shots (${PHASE})`, () => {
-  /*
-   * Several tests below share SHARE_CASE_ID with a team (ensureCaseSharedWithOneTeam /
-   * shareCaseWithAllTeams) and the last of them never unshares, so the spec used to leave a
-   * teams_cases row behind in the shared dev DB. That row is invisible within a run but breaks
-   * the *next* one: 'share-case modal with shareable' needs at least one team NOT yet sharing
-   * the case, and with a single team configured there is none left.
-   *
-   * Reset the sharing state on the way out, per DEVELOPER_GUIDE.md's Playwright E2E cleanup rule.
-   */
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto('cases');
+      for (const sourceId of [SHARE_SOURCE_ID, QUERIES_SOURCE_ID]) {
+        const response = await page.request.post('api/clone/cases', {
+          headers: await apiHeaders(page),
+          data: {
+            case_id: sourceId,
+            case_name: `Playwright Migration Shots ${sourceId} ${Date.now()}`,
+            preserve_history: true,
+            clone_queries: true,
+            clone_ratings: true
+          }
+        });
+        expect(response.ok(), `Clone source ${sourceId}: ${response.status()}`).toBeTruthy();
+        const id = Number((await response.json()).case_id);
+        expect(id).toBeGreaterThan(0);
+        createdCaseIds.push(id);
+      }
+      [SHARE_CASE_ID, QUERIES_CASE_ID] = createdCaseIds;
+    } finally {
+      await page.close();
+    }
+  });
+
   test.afterAll(async ({ browser }) => {
     const page = await browser.newPage();
     try {
       await page.goto('cases');
-      await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+      for (const id of createdCaseIds) await deleteCaseViaApi(page, id);
     } finally {
       await page.close();
     }

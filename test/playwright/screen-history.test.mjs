@@ -9,6 +9,7 @@ import crypto from "node:crypto"
 import { runInNewContext } from "node:vm"
 import { readHistory, recordScreen, sourceFingerprint } from "./screen-history.mjs"
 import { linkedScreenshotStatus, scenarioCaptureOptions, readScreenshotTracker } from "./screenshot-tracker.mjs"
+import { decodePng } from "./png-diff.mjs"
 
 const fixture = path.join(path.dirname(fileURLToPath(import.meta.url)), "baselines/core_smoke.spec.ts/snapshot-modal.png")
 
@@ -175,4 +176,77 @@ test("tracker reader retains screenshot mappings and parses YAML verification da
   fs.mkdirSync(path.join(root, "docs/manual-testing"), { recursive: true })
   fs.writeFileSync(path.join(root, "docs/manual-testing/tracking.yml"), 'parts:\n  "01":\n    file: 01-accounts.md\n    scenarios:\n      "1.2":\n        last_run: 2026-10-09T22:00:00Z\n        screenshots:\n          login-form: stable-login\n')
   assert.equal(readScreenshotTracker(root).parts["01"].scenarios["1.2"].screenshots["login-form"], "stable-login")
+})
+
+test("corrupt stored images are detected and restored only from original bytes", (t) => {
+  const { root, record } = setup(t)
+  record({ legacyImage: fixture, legacyRef: "HEAD" })
+  const original = readHistory(root)
+  const [status] = linkedScreenshotStatus(root, tracker())
+  fs.writeFileSync(path.join(root, status.current.image), "corrupt")
+  fs.writeFileSync(path.join(root, status.legacy.image), "corrupt")
+  const [corrupt] = linkedScreenshotStatus(root, tracker())
+  assert.equal(corrupt.current.status, "corrupt")
+  assert.equal(corrupt.legacy.status, "corrupt")
+  assert.equal(record().updated, false)
+  assert.deepEqual(readHistory(root), original)
+  assert.equal(linkedScreenshotStatus(root, tracker())[0].current.status, "current")
+})
+
+test("explicit capture times survive registration and invalid times are rejected", (t) => {
+  const { root, record } = setup(t)
+  record({ capturedAt: "2020-01-01T12:00:00Z", legacyCapturedAt: "2019-01-01T12:00:00Z", legacyImage: fixture, legacyRef: "HEAD" })
+  const screen = readHistory(root).screens["1.2/login"]
+  assert.equal(screen.versions[0].capturedAt, "2020-01-01T12:00:00.000Z")
+  assert.equal(screen.legacy.capturedAt, "2019-01-01T12:00:00.000Z")
+  assert.throws(() => record({ capturedAt: "invalid" }), /Capture time/)
+  assert.throws(() => record({ capturedAt: "2999-01-01" }), /Capture time/)
+})
+
+test("PNG decoding rejects missing end chunks and truncated chunks", () => {
+  const bytes = fs.readFileSync(fixture)
+  assert.throws(() => decodePng(bytes.subarray(0, bytes.length - 12)), /incomplete PNG/)
+  assert.throws(() => decodePng(bytes.subarray(0, 30)), /truncated PNG/)
+})
+
+test("viewer bounds decoded comparisons and retries failed image loads", async () => {
+  const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "screenshot-viewer.html"), "utf8")
+  const source = html.slice(html.indexOf("      function comparePair(item)"), html.indexOf("      async function readPair(item)"))
+  const cache = new Map()
+  let reads = 0
+  const compare = runInNewContext(`${source}; comparePair`, {
+    pixelCache: cache,
+    readPair: async (item) => {
+      reads++
+      if (item.before === "broken") throw new Error("missing image")
+      return item
+    }
+  })
+  const item = (before) => ({ before, after: "current" })
+  await compare(item("one"))
+  await compare(item("one"))
+  assert.equal(reads, 1)
+  for (const key of ["two", "three", "four"]) await compare(item(key))
+  assert.equal(cache.size, 3)
+  assert.equal(cache.has("one\0current"), false)
+  await assert.rejects(compare(item("broken")), /missing image/)
+  await assert.rejects(compare(item("broken")), /missing image/)
+  assert.equal(reads, 6)
+})
+
+test("viewer routes reject repository secrets, traversal and screenshot symlinks", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "quepid-viewer-routes-"))
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }))
+  fs.mkdirSync(path.join(root, ".playwright-mcp"))
+  fs.writeFileSync(path.join(root, ".env"), "private fixture")
+  fs.copyFileSync(fixture, path.join(root, ".playwright-mcp", "image.png"))
+  fs.symlinkSync(path.join(root, ".env"), path.join(root, ".playwright-mcp", "secret.png"))
+  const script = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "screenshot-viewer-server.mjs"), "utf8")
+  const source = script.slice(script.indexOf("function safePath("), script.indexOf("await runManifestGenerator()"))
+  const resolve = runInNewContext(`${source}; safePath`, { fs, path, repoRoot: root })
+  assert.equal(resolve("/.playwright-mcp/image.png"), path.join(root, ".playwright-mcp", "image.png"))
+  for (const url of ["/.env", "/.git/HEAD", "/.playwright-mcp/../.env", "/.playwright-mcp/secret.png", "/../outside.png"]) {
+    assert.equal(resolve(url), null)
+  }
+  assert.throws(() => resolve("/%ZZ"), /URI malformed/)
 })
