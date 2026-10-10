@@ -204,6 +204,13 @@ record the blocker if permission is declined. A standalone Playwright script
 launching its own headless browser is a fallback for captures, not for
 interactive scenario steps.
 
+Check the active client's MCP launch arguments include `--isolated`; repository
+instructions alone do not configure the MCP server. Isolation is per browser
+session, not per Quepid app port.
+When a browser task finishes or stops at a blocker, call `browser_close` to
+release that session's browser before handing back. Keep it open during ongoing
+work across turns, and never close another session's browser without permission.
+
 For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
 
 Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the captured flows. Use the actual running server's configured host port when it differs from the example URL.

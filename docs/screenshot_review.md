@@ -44,6 +44,7 @@ and replay using these conventions.
 ## Capture and verification
 
 - **Before & after**: capture the affected flow before editing, then repeat the identical steps after. Capture every relevant state (modal open/closed, accordion expanded, error vs success, etc.). `browser_snapshot` is only for driving clicks; `browser_take_screenshot` is the proof.
+- Wait for loading, numeric count animations and CSS transitions to finish before capturing a completed state; a success flash can appear before the screen settles.
 - **Capturing a screenshot is not verifying it.** Before claiming two states match or differ, actually open and look at every before/after pair (Read tool or equivalent) — don't infer "identical" from the code diff not touching that template, and don't treat a console-log error as a substitute for looking at what the page actually rendered.
 - **Frame big** (screenshots have come out too small): shoot the **full viewport**, not element crops.
     - Quepid modals scroll *internally*, so `fullPage:true` does NOT reach below their fold — instead `browser_resize` the viewport to roughly match the modal so it fills the frame, then screenshot the viewport.
@@ -72,6 +73,8 @@ Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — the def
 
 Each branch has one entry per stable scenario/state ID. The left image switches between Previous (the last recorded relevant source version) and Legacy (the historical Angular/Bootstrap 3 instance); Current stays on the right. A first capture has no Previous. Legacy remains fixed once recorded; explicitly mark screens absent only after checking the historical implementation. History links retain every recorded version. Existing folder captures lack source provenance and remain in Archive; do not infer their code versions from timestamps.
 
+The viewer defaults to Previous. An empty Previous does not mean Legacy is missing: select the Legacy tab and check `screenshots:status` before reporting a gap. Keep supplemental Base comparisons in Archive; they do not become Previous or Legacy. If an explicitly authorized supplemental historical ref supplies additional coverage, give it separate state IDs and record its ref without replacing the primary Legacy evidence or absence record.
+
 Link each captured state in its scenario's `tracking.yml` entry before recording:
 
 ```yaml
@@ -95,9 +98,23 @@ docker compose exec app yarn screenshots:record --scenario 1.2 --state login-for
 
 The recorder hashes scenario `paths`, including staged, unstaged and untracked source content; file timestamps and unrelated commits do not advance history. Add `--path` for shared layouts, styles, runtime or other dependencies missing from the scenario's mapping. Previously recorded dependencies are retained when checking or recording a linked state. For a screen outside the manual tracker, provide `--id`, `--title`, `--area` and repeated `--path` values instead. Keep state IDs, viewport, fixture data, scroll and interaction steps stable; use a separate ID for a different state. This mapping is a dependency heuristic, not proof that every possible source dependency is covered.
 
+Share an ID across scenarios only when their state and source dependencies agree. Otherwise use separate IDs. When reusing an existing image, retain its actual capture time, source provenance and originating history entry; registration time is not capture time. Never invent Previous history to fill an empty comparison.
+
 Use `yarn screenshots:status` (or `node test/playwright/screenshot-status.mjs`) to resolve linked screenshots to their Current, Previous and Legacy file locations. `--scenario 1.2` scopes the report, `--due-only` lists missing/stale Current captures, and `--json` provides machine-readable results. Freshness uses source content independently of `last_run`: retesting without a code change does not replace images. Missing local files are reported even if source is unchanged; restore the original bytes without advancing history. A first capture's Previous is `not_recorded`; Legacy distinguishes `not_recorded`, `missing` and explicitly `absent`. The manifest includes these resolutions under `screenshots` and uses the current tracker dependencies to flag stale captures.
 
 Unchanged source leaves stored images untouched. Changed source appends a version and makes the preceding Current the new Previous; the recorder rejects source changes between preparation and recording. The viewer labels unrecaptured source changes `capture due`. It never captures automatically. Add `--legacy-image <file> --legacy-ref <commit>` after driving the same state on the historical instance, or `--legacy-absent --legacy-ref <commit>` after confirming it did not exist. Legacy can also be attached to an existing current capture without advancing its history. Never record the current server's image as Legacy or promote a baseline-server capture as Current.
 
 Regenerate the manifest after recording and refresh the viewer. Histories live under `.playwright-mcp/.screen-history/`, so they survive commits but are local to this checkout; a renamed branch starts a separate history. Focused tooling checks: `docker compose exec app node --test test/playwright/screen-history.test.mjs`.
+
+## Completing a screenshot batch
+
+Keep a fixture ledger with the server/database, IDs and identifying attributes of records created for the batch. Reuse those fixtures and running servers throughout; do not synchronize databases after their fixture states have diverged for the replay.
+
+Before declaring the requested batch complete:
+
+- Reconcile every captured image, including intermediate and earlier captures in the session, with a stable history entry or an explicit Archive entry. Open and inspect all distinct images; byte-identical copies may share an inspection. Record unrecoverable overwritten captures and remaining gaps explicitly. Loading, error and mismatched-state captures must not stand in for completed-state evidence.
+- Run unscoped `screenshots:status`, regenerate the manifest and check the viewer's Current, Previous and Legacy resolutions. Resolve unexpected missing/stale images and record supported absence separately from coverage that remains unrecorded. Update tracker links and actual coverage as each scenario finishes, following the [manual testing tracker](../DEVELOPER_GUIDE.md#manual-testing-tracker).
+- Remove only fixtures identified by the ledger. Check ownership and dependencies before deleting, remove dependent fixture records in a safe order, and verify both fixture removal and preservation of unrelated records. Restore temporary configuration exactly; leave the app servers running.
+
+Report incomplete coverage and concrete blockers without claiming a full pass. Retain the image audit and cleanup evidence with the local capture artifacts so the next session can reconcile the batch.
 
