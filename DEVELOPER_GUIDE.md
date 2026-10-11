@@ -381,22 +381,22 @@ The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Require
 Golden-path and visual-regression tests against a running app, under `test/playwright/`. These hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
 
 ```bash
-bin/docker r yarn test:e2e             # run the suite
-bin/docker r yarn test:e2e:ui          # Playwright's interactive UI runner
-bin/docker r yarn test:e2e:update-baselines   # regenerate baseline screenshots
+docker compose exec app yarn test:e2e             # run the suite
+docker compose exec app yarn test:e2e:ui          # Playwright's interactive UI runner
+docker compose exec app yarn test:e2e:update-baselines   # regenerate baseline screenshots
 ```
 
 One-time setup: the Playwright browser binaries aren't part of `node_modules` and don't ship in the app image, so install them once (they only need to be reinstalled if `@playwright/test`'s version changes):
 
 ```bash
-bin/docker r npx playwright install chromium
+docker compose exec app npx playwright install chromium
 ```
 
 Environment variables (all optional, sensible defaults baked in):
 
 * `QUEPID_BASE_URL` — defaults to `http://localhost:3000` when run inside the app container, or `http://localhost:${APP_PORT:-3000}` from the host (see `test/playwright/env.ts`). Override for a different host/port. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:3000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
-* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `DEFAULT_RICH_CASE_ID` in `test/playwright/case_helpers.ts` (`"E2E Static Fixture (10s of Queries)"` in the shared dev DB — a clone of case 6 whose try uses a `static` search endpoint, so results are deterministic; that constant's comment explains how to recreate it). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `bin/docker r bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `DEFAULT_RICH_CASE_ID` in `test/playwright/case_helpers.ts` (`"E2E Static Fixture (10s of Queries)"` in the shared dev DB — a clone of case 6 whose try uses a `static` search endpoint, so results are deterministic; that constant's comment explains how to recreate it). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `docker compose exec app bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
 
 Structure:
 
@@ -415,6 +415,39 @@ Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.t
 
 For ad-hoc screenshots, the comparison viewer, and branch-specific capture history,
 see [Screenshot capture and diffing](docs/screenshot_review.md).
+
+### Routine visual regression checks
+
+For CSS/layout changes, run `yarn test:visual` inside the existing server container
+(`docker compose exec app`, or `docker exec <actual-server-name>` for a wrapper-started
+server). This focused suite compares 20 representative desktop/narrow captures
+using native Playwright/Pixelmatch; the full behavioral E2E suite remains separate.
+The screenshot viewer retains dated manual/migration evidence and is not this gate.
+
+The suite uses the existing static-search case selected by `QUEPID_E2E_CASE_ID`,
+blocks external browser requests, and exercises forms without submitting writes.
+It never changes wizard completion, ratings, teams or case contents; background
+score PUTs are fulfilled locally while the browser still calculates real scores. The selected
+case must retain the static snapshot and expected queries; an unavailable/drifted
+fixture is a setup failure, not permission to accept different baselines. Run in
+the same container/browser environment as baseline generation. Real external
+search, persistence and wider migration parity remain covered separately.
+
+Inspect failures in Playwright's HTML report at
+`test/playwright/test-results/visual-report/index.html` (host-mounted, gitignored).
+Run `yarn test:visual:report` on the host to serve it; if the host Node version is
+outside the package engine range, use
+`node node_modules/@playwright/test/cli.js show-report test/playwright/test-results/visual-report`. Review expected/actual/diff images. For an intentional change,
+run `yarn test:visual:update --grep '<affected test>'`, inspect every resulting PNG
+change, then rerun `yarn test:visual`. Update only the affected tests; do not accept
+an unexplained failure by increasing tolerance or masking the affected UI. The
+suite allows at most 100 changed pixels per image, disables animations and hides
+carets; result content, scores and alerts remain visible.
+
+When changing this suite, run it twice unchanged and temporarily introduce a
+visible CSS regression to confirm comparison fails. Restore the CSS and rebuild
+before the final passing run. Add states for observed regression risk rather than
+turning the historical screenshot inventory into a continual recapture queue.
 
 ### Combined lint check
 

@@ -30,7 +30,8 @@ export function screenshotReviews(root, tracker = readScreenshotTracker(root), h
         }
       }
       const approval = screen.approval
-      const approved = captureStatus === "current" && approval?.source === now?.source && approval?.image === now?.image && approval?.capturedAt === now?.capturedAt
+      const available = ["current", "stale"].includes(captureStatus)
+      const approved = available && approval?.source === now?.source && approval?.image === now?.image && approval?.capturedAt === now?.capturedAt
       return {
         id: screen.id,
         canRecapture: Boolean(now),
@@ -39,7 +40,7 @@ export function screenshotReviews(root, tracker = readScreenshotTracker(root), h
         image: now?.image,
         capturedAt: now?.capturedAt,
         captureStatus,
-        status: captureStatus !== "current" ? "capture_due" : approved ? "approved" : "needs_review",
+        status: !available ? "capture_due" : approved ? "approved" : "needs_review",
         approvedAt: approved ? approval.approvedAt : null
       }
     })
@@ -57,13 +58,13 @@ export function setScreenshotApproval(root, { branch, id, source, image, capture
     if (branch !== reviews.branch || !current || current.source !== source || current.image !== image || current.capturedAt !== capturedAt) {
       throw new Error("The displayed capture changed; regenerate the manifest and reload before reviewing")
     }
-    if (approved && current.captureStatus !== "current") throw new Error("Relevant code changed or the image is unavailable; record a fresh Current capture before approving")
+    if (approved && !["current", "stale"].includes(current.captureStatus)) throw new Error("The capture image is unavailable; restore it before approving")
     if (approved) history.screens[id].approval = { source, image, capturedAt, approvedAt: new Date().toISOString() }
     else delete history.screens[id].approval
     const temporary = path.join(location.directory, "index.json.tmp")
     fs.writeFileSync(temporary, `${JSON.stringify(history, null, 2)}\n`)
     fs.renameSync(temporary, path.join(location.directory, "index.json"))
-    current.status = current.captureStatus !== "current" ? "capture_due" : approved ? "approved" : "needs_review"
+    current.status = !["current", "stale"].includes(current.captureStatus) ? "capture_due" : approved ? "approved" : "needs_review"
     current.approvedAt = approved ? history.screens[id].approval.approvedAt : null
     return { ...reviews, partial: true }
   } finally {

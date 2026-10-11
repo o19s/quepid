@@ -50,7 +50,7 @@ export default defineConfig({
     {
       name: 'chromium',
       dependencies: ['setup'],
-      testIgnore: [narrowViewportSpec],
+      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },

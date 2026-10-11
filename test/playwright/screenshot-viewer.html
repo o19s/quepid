@@ -465,14 +465,14 @@
           <input class="search" id="search" type="search" placeholder="Filter screenshots…" />
         </header>
         <div class="review-controls" id="review-controls" hidden>
-          <label for="review-filter">Review status</label>
+          <label for="review-filter">Capture review</label>
           <select id="review-filter">
             <option value="all">All screens</option>
-            <option value="needs_review">Needs review</option>
+            <option value="needs_review">Unreviewed captures</option>
             <option value="approved">Approved</option>
           </select>
           <button type="button" id="recapture-current" disabled>Recapture Current</button>
-          <button type="button" id="approve-current" disabled>Approve Current</button>
+          <button type="button" id="approve-current" disabled>Approve capture</button>
           <button type="button" id="refresh-reviews">Check status</button>
           <span id="review-status" role="status" aria-live="polite"></span>
         </div>
@@ -523,12 +523,13 @@
         recapture.title = review?.canRecapture ? review.captureMethod === "claude" ? "Capture this screen using local Claude and Playwright MCP" : "Capture a new image of this screen" : "No recorded screen to recapture"
         document.getElementById("refresh-reviews").disabled = busy || reviewLoading
         status.classList.toggle("approved", review?.status === "approved")
-        status.textContent = !item ? "No screens match this filter." : reviewLoading ? "Checking review status…" : !review ? "Review status unavailable or the capture changed. Reload the viewer or check status." : review.status === "approved" ? `Approved · ${review.approvedAt}` : review.captureStatus !== "current" ? "Capture due — record a new screenshot before review." : "Needs review"
+        status.textContent = !item ? "No screens match this filter." : reviewLoading ? "Checking review status…" : !review ? "Review status unavailable or the capture changed. Reload the viewer or check status." : review.status === "approved" ? `Approved · ${review.approvedAt}` : !["current", "stale"].includes(review.captureStatus) ? "Capture image unavailable — restore it before review." : "Unreviewed capture"
+        if (review?.captureStatus === "stale") status.append(" · Source changed since capture (advisory).")
         if (busy) status.textContent = captureJob.message
         else if (captureError && captureError.id === item?.id) status.textContent = captureError.message
         else if (item && !review?.canRecapture) status.append(" · Automatic capture not configured for this screen.")
-        button.textContent = review?.status === "approved" ? "Undo approval" : "Approve Current"
-        button.disabled = busy || reviewLoading || !review || review.captureStatus !== "current"
+        button.textContent = review?.status === "approved" ? "Undo approval" : "Approve capture"
+        button.disabled = busy || reviewLoading || !review || !["current", "stale"].includes(review.captureStatus)
       }
 
       function applyReviews(data) {
@@ -768,8 +769,8 @@
             const label = document.createElement("span")
             label.textContent = item.title
             const badge = document.createElement("span")
-            badge.innerHTML = ["missing", "corrupt"].includes(item.captureStatus) ? `<span class="badge diff">capture ${item.captureStatus}</span>` : item.stale ? '<span class="badge diff">capture due</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
-            if (!archiveView) badge.insertAdjacentHTML("beforeend", item.review?.status === "approved" ? '<span class="badge identical">approved</span>' : '<span class="badge diff">needs review</span>')
+            badge.innerHTML = ["missing", "corrupt"].includes(item.captureStatus) ? `<span class="badge diff">capture ${item.captureStatus}</span>` : item.stale ? '<span class="badge single">source changed</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
+            if (!archiveView) badge.insertAdjacentHTML("beforeend", item.review?.status === "approved" ? '<span class="badge identical">approved</span>' : '<span class="badge single">unreviewed capture</span>')
             btn.append(label, badge)
             btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
             btn.addEventListener("click", () => select(item.id))
@@ -1183,7 +1184,7 @@
         if (item.now) {
           const describe = (version) => `${version.capturedAt} · ${version.commit.slice(0, 8)}${version.dirty ? " + edits" : ""}`
           const before = item.versions.at(-2)
-          info.append(`${baseline === "legacy" && item.legacy?.image ? `Legacy: ${item.legacy.ref.slice(0, 8)} · ` : before ? `Previous: ${describe(before)} · ` : ""}Current: ${describe(item.now)}${item.stale ? " · Relevant code changed; capture pending" : ""} · `)
+          info.append(`${baseline === "legacy" && item.legacy?.image ? `Legacy: ${item.legacy.ref.slice(0, 8)} · ` : before ? `Previous: ${describe(before)} · ` : ""}Current: ${describe(item.now)}${item.stale ? " · Source changed since capture (advisory)" : ""} · `)
           const link = document.createElement("a")
           link.href = `?view=archive&screen=${encodeURIComponent(item.screenId)}`
           link.textContent = `History (${item.versions.length})`
@@ -1247,7 +1248,7 @@
             ${archiveView ? "" : `<figure class="panel"><header>${baseline === "legacy" ? "Legacy" : "Previous"}</header><div class="empty">${baselineMessage}</div></figure>`}
             ${panel(archiveView ? item.note || "Image" : "Current", shotSrc(item.image), item.title)}
           </div>
-          <p class="hint">${archiveView ? "Single image — no pair to compare." : ["missing", "corrupt"].includes(item.captureStatus) || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Its next relevant code change will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
+          <p class="hint">${archiveView ? "Single image — no pair to compare." : ["missing", "corrupt"].includes(item.captureStatus) || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Recording another capture will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
         `
       }
 

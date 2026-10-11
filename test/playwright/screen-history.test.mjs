@@ -274,27 +274,28 @@ test("approval persists across reads and unchanged recordings, unrelated changes
   assert.equal(approve(root, false).screens[0].status, "needs_review")
 })
 
-test("changed code expires approval before recapture and a new capture needs review", (t) => {
+test("source changes are advisory; approval belongs to the image and new captures need review", (t) => {
   const { root, record } = setup(t)
   record()
   approve(root)
   const prior = readHistory(root).screens["1.2/login"].versions[0]
   fs.writeFileSync(path.join(root, "app/view.html"), "Changed")
-  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "capture_due")
-  assert.throws(() => approve(root), /fresh Current capture/)
+  assert.equal(screenshotReviews(root, tracker()).screens[0].status, "approved")
+  assert.equal(screenshotReviews(root, tracker()).screens[0].captureStatus, "stale")
+  assert.equal(approve(root).screens[0].status, "approved")
   record()
   assert.equal(screenshotReviews(root, tracker()).screens[0].status, "needs_review")
   assert.throws(() => approve(root, true, prior), /displayed capture changed/)
   assert.equal(approve(root).screens[0].status, "approved")
 })
 
-test("approvals reject wrong branches, missing/corrupt images and added tracker dependencies", (t) => {
+test("approvals reject wrong branches and unavailable images; dependency changes are advisory", (t) => {
   const { root, record } = setup(t)
   record()
   approve(root)
   assert.throws(() => approve(root, true, { branch: "other" }), /displayed capture changed/)
   fs.writeFileSync(path.join(root, "dependency.css"), "New dependency")
-  assert.equal(screenshotReviews(root, tracker(["app/", "dependency.css"])).screens[0].status, "capture_due")
+  assert.equal(screenshotReviews(root, tracker(["app/", "dependency.css"])).screens[0].status, "approved")
   const current = readHistory(root).screens["1.2/login"].versions[0]
   fs.writeFileSync(path.join(root, ".playwright-mcp", current.image), "Corrupt")
   assert.equal(screenshotReviews(root, tracker()).screens[0].status, "capture_due")
@@ -304,16 +305,16 @@ test("approvals reject wrong branches, missing/corrupt images and added tracker 
   assert.throws(() => approve(root, "true"), /boolean/)
 })
 
-test("shared screen IDs require all linked scenarios to be fresh and unlinked screens can be approved", (t) => {
+test("shared screen IDs report all dependency changes without expiring image approvals", (t) => {
   const { root, record } = setup(t)
   record()
   approve(root)
   fs.writeFileSync(path.join(root, "dependency.css"), "New dependency")
   const shared = tracker()
   shared.parts["01"].scenarios["1.3"] = { paths: ["app/", "dependency.css"], screenshots: { form: "1.2/login" } }
-  assert.equal(screenshotReviews(root, shared).screens[0].status, "capture_due")
+  assert.equal(screenshotReviews(root, shared).screens[0].status, "approved")
   const current = readHistory(root).screens["1.2/login"].versions.at(-1)
-  assert.throws(() => setScreenshotApproval(root, { branch: "example", id: "1.2/login", ...current, approved: true }, shared), /fresh Current capture/)
+  assert.equal(setScreenshotApproval(root, { branch: "example", id: "1.2/login", ...current, approved: true }, shared).screens[0].status, "approved")
   assert.equal(screenshotReviews(root, { parts: {} }).screens[0].status, "approved")
 })
 
