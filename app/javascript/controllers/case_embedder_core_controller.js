@@ -9,6 +9,11 @@ const VECTORS_EVENT = "quepid:query-vectors-changed"
 const POLL_MS = 3000
 const STATUS_LABELS = { current: "current", pending: "pending", stale: "outdated", failed: "failed" }
 
+function describe(embedder) {
+  const size = embedder.dimensions ? `${embedder.dimensions} dims` : "model default size"
+  return `${embedder.provider} · ${embedder.model} · ${size}`
+}
+
 /**
  * Picks the case's embedder from the core case toolbar. New on core (there was no
  * Angular version); laid out like the Angular scorer picker (views/pick_scorer.html),
@@ -44,9 +49,7 @@ export default class extends ModalTriggerControllerBase {
     vectorizeUrlTemplate: String
   }
 
-  get modalElementId() {
-    return "caseEmbedderModal"
-  }
+  modalElementId = "caseEmbedderModal"
 
   // --- case header instance ---
 
@@ -125,9 +128,9 @@ export default class extends ModalTriggerControllerBase {
   renderList() {
     const { embedder: current, embedders } = this.state
     const items = [{ embedder_id: 0, name: "None", detail: "Don't vectorize this case's queries" }]
-    embedders.forEach((embedder) => items.push({ ...embedder, detail: this.describe(embedder) }))
+    embedders.forEach((embedder) => items.push({ ...embedder, detail: describe(embedder) }))
     // A teammate may have picked one that isn't shared with you: still show it as current.
-    if (current && !current.accessible) items.push({ ...current, detail: this.describe(current) })
+    if (current && !current.accessible) items.push({ ...current, detail: describe(current) })
 
     this.listTarget.innerHTML = items
       .map(
@@ -185,11 +188,6 @@ export default class extends ModalTriggerControllerBase {
       this.showAlert(error.message, "danger")
       this.revectorizeButtonTarget.disabled = false
     }
-  }
-
-  describe(embedder) {
-    const size = embedder.dimensions ? `${embedder.dimensions} dims` : "model default size"
-    return `${embedder.provider} · ${embedder.model} · ${size}`
   }
 
   select(event) {
