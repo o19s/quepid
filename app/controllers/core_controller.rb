@@ -24,7 +24,7 @@ class CoreController < ApplicationController
   def set_case_or_bootstrap
     @case = if params[:id].present?
               # load the explicitly listed case.
-              current_user.cases_involved_with.where(id: params[:id]).first
+              current_user.cases_involved_with.find_by(id: params[:id])
             else
               # load a case/try if the user has access to one
               current_user.cases_involved_with.not_archived.last

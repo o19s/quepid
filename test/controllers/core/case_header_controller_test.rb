@@ -34,6 +34,13 @@ module Core
 
         assert_response :not_found
       end
+
+      test 'is not found for a missing case' do
+        get case_header_path(id: 0)
+
+        assert_response :not_found
+        assert_equal 'Case not found', response.body
+      end
     end
 
     describe '#rename_case' do

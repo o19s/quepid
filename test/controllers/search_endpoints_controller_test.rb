@@ -221,6 +221,25 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test 'a missing endpoint retains the permission redirect' do
+    get search_endpoint_url(id: 0)
+
+    assert_redirected_to search_endpoints_url
+    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:notice]
+  end
+
+  test 'an inaccessible endpoint retains the permission redirect' do
+    endpoint = SearchEndpoint.create!(
+      name: 'Private endpoint', owner: users(:doug), search_engine: 'solr',
+      endpoint_url: 'http://example.test/search', api_method: 'GET'
+    )
+
+    get search_endpoint_url(endpoint)
+
+    assert_redirected_to search_endpoints_url
+    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:notice]
+  end
+
   test 'should update search_endpoint' do
     patch search_endpoint_url(@search_endpoint),
           params: { search_endpoint: {

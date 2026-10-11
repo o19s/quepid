@@ -57,7 +57,7 @@ module Core
     end
 
     def set_case
-      @case = current_user.cases_involved_with.where(id: params[:id]).first
+      @case = current_user.cases_involved_with.find_by(id: params[:id])
 
       render plain: 'Case not found', status: :not_found if @case.nil?
     end

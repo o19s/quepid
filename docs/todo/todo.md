@@ -566,7 +566,13 @@ building is different: it drifts from the client and is buggy.
 **Fix:** one substitution helper, a small `FieldSpec` value object on `Try`, and
 multi-valued GET params.
 
-Identical field-spec parsing can be extracted without changing scores.
+**Field-spec investigation — extraction deferred:** Isolated probes found only
+token splitting shared between Ruby's RRE-export ID lookup and Solr field-list
+builder. Browser rules differ for missing IDs, multiple aliases, `+` separators,
+JSON definitions and function fields. Unifying them can change fetched fields,
+exports and scores; preserving separate rules offers little duplication reduction.
+No live search verification performed.
+
 Substitution, multi-valued filters and server escaping fixes change fetched
 results and background scores; verify them separately.
 
@@ -768,9 +774,11 @@ hosts in `script-src`, or a per-request allow-list. Either remove
   every instantiated record whose `scorer_id` is nil. Move the `archived`
   default into the migration (as a column default) or into an `attribute`
   default, and set the scorer `before_validation on: :create` instead.
-- [PREEXISTING] P3 I0 C1 — **`where(...).first`.** There are 21 uses where `find_by` (or `find`, when
-  a 404 is the intended response) is the idiom, e.g.
-  `core_controller.rb:24` and `search_endpoints_controller.rb:92`.
+- [PREEXISTING] P3 I0 C1 — **`where(...).first`.** Review remaining scalar-primary-key
+  lookups for scoped `find_by`, retaining authorization and existing nil/redirect/404
+  handling. Leave non-unique try-number/document-ID, ordered/history and ambiguous
+  email-or-ID selection unchanged. The three selected lookups in CoreController,
+  Core::CaseHeaderController and SearchEndpointsController no longer need conversion.
 
 ## [MIGRATION-FOLLOWUP] Developer Experience Review
 
