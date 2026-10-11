@@ -6,7 +6,13 @@ module Core
   class ModalCatalogsControllerTest < ActionController::TestCase
     before do
       @controller = Core::ModalCatalogsController.new
+      @original_communal_scorers_only = Rails.application.config.communal_scorers_only
+      Rails.application.config.communal_scorers_only = false
       login_user users(:doug)
+    end
+
+    after do
+      Rails.application.config.communal_scorers_only = @original_communal_scorers_only
     end
 
     test 'sharing renders only member teams and partitions the case membership' do

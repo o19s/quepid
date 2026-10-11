@@ -117,13 +117,13 @@
     {
       "warning_type": "SQL Injection",
       "warning_code": 0,
-      "fingerprint": "bc747ae0ded48ea1e3385abd57bf4f2ee6453585d9a21653b21924c142ccc52b",
+      "fingerprint": "1d46af3e8b672f4190847dac126d4f642b556d5a647ce36096d007c1ab6729b9",
       "check_name": "SQL",
       "message": "Possible SQL injection",
       "file": "app/controllers/books_controller.rb",
       "line": 466,
       "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
-      "code": "current_user.books_involved_with.where(:id => params[:id]).first.judgements.where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE judgements.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE judgements.rating END\"}\")",
+      "code": "current_user.books_involved_with.find_by(:id => params[:id]).judgements.where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE judgements.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE judgements.rating END\"}\")",
       "render_path": null,
       "location": {
         "type": "method",
@@ -140,13 +140,13 @@
     {
       "warning_type": "SQL Injection",
       "warning_code": 0,
-      "fingerprint": "40bf22b9d788476746bf03d4f46b50bc6850ed2e6e6348920fc94e8d4d086eba",
+      "fingerprint": "ac300e2875440eb6ab56438947fa851a408dff2fe4ac664989b71d3e6ef61d27",
       "check_name": "SQL",
       "message": "Possible SQL injection",
       "file": "app/controllers/books_controller.rb",
       "line": 472,
       "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
-      "code": "Rating.joins(:query => :case).where(:cases => ({ :book_id => current_user.books_involved_with.where(:id => params[:id]).first.id })).where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE ratings.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE ratings.rating END\"}\")",
+      "code": "Rating.joins(:query => :case).where(:cases => ({ :book_id => current_user.books_involved_with.find_by(:id => params[:id]).id })).where(:rating => (params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.keys).update_all(\"rating = #{\"CASE ratings.rating #{(params[:rating_map] or {}).to_unsafe_h.each_with_object({}) do\n next if (new_rating.blank? or (old_rating.to_r == new_rating.to_r))\nacc[old_rating.to_f] = new_rating.to_f\n end.map do\n \"WHEN #{old} THEN #{new_val}\"\n end.join(\" \")} ELSE ratings.rating END\"}\")",
       "render_path": null,
       "location": {
         "type": "method",

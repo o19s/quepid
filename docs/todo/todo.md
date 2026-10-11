@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-10
+**Last updated:** 2026-10-11
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -77,11 +77,7 @@ scoring while moving persisted UI and navigation into Rails/Hotwire.
 `diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
 in JS. They could become partials loaded through lazy
 `<turbo-frame src=...>`, like `DropdownController#cases_core`, and modal form
-posts could be answered with Turbo Streams. The annotations list
-(`annotations_controller.js`) now uses server-rendered persisted rows;
-creation still captures live browser scores. Its UI endpoints now return rendered
-rows while retaining JSON request payloads and dispatching `annotations:changed`
-for `qgraph`; the existing JSON API remains available.
+posts could be answered with Turbo Streams.
 
 Case Frames/Streams already work with Drive disabled. Keep the workspace's
 full-document navigation boundary and prove annotation list and edit-modal parity
@@ -629,10 +625,8 @@ Caller-specific failure policies are documented in
 
 Each one also builds its import URL differently.
 
-The two snapshot import controllers and document-field exclusion share
-`SNAPSHOT_CSV_HEADERS` from `snapshot_import.js`. "Required headers present,
-no parse errors, not empty" validation exists three times with different
-messages (the third is `wizard_contracts.js#validateStaticHeaders`).
+"Required headers present, no parse errors, not empty" validation exists three
+times with different messages (the third is `wizard_contracts.js#validateStaticHeaders`).
 
 **Defer upload-loop consolidation.** Preserve each caller's continue/stop
 policy, payloads, order, and error messages. Choosing one failure or validation
@@ -771,9 +765,7 @@ hosts in `script-src`, or a per-request allow-list. Either remove
 - [PREEXISTING] P3 I0 C1 — **`where(...).first`.** Review remaining scalar-primary-key
   lookups for scoped `find_by`, retaining authorization and existing nil/redirect/404
   handling. Leave non-unique try-number/document-ID, ordered/history and ambiguous
-  email-or-ID selection unchanged. Selected lookups in CoreController,
-  Core::CaseHeaderController, SearchEndpointsController and BooksController's route-ID
-  lookups no longer need conversion. Optional/request-parameter IDs remain deferred
+  email-or-ID selection unchanged. Optional/request-parameter IDs remain deferred
   because arrays can match multiple rows and `find_by` drops implicit ID ordering.
 
 ## [MIGRATION-FOLLOWUP] Developer Experience Review
