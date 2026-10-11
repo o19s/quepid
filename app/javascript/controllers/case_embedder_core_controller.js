@@ -134,11 +134,10 @@ export default class extends ModalTriggerControllerBase {
 
     this.listTarget.innerHTML = items
       .map(
-        (item) =>
-          `<button type="button" class="list-group-item list-group-item-action" data-embedder-id="${item.embedder_id}"` +
-          ` data-action="click->case-embedder-core#select">` +
-          `<div>${escapeHtml(item.name)}</div>` +
-          `<small class="text-muted">${escapeHtml(item.detail)}</small></button>`
+        (item) => `<button type="button" class="list-group-item list-group-item-action"
+            data-embedder-id="${item.embedder_id}" data-action="click->case-embedder-core#select">
+            <div>${escapeHtml(item.name)}</div>
+            <small class="text-muted">${escapeHtml(item.detail)}</small></button>`
       )
       .join("")
 
