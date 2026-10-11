@@ -36,6 +36,7 @@ module Api
                 query = Query.new query_text: missing_query, case: @case
                 query.save!
               end
+              VectorizeCaseQueriesJob.enqueue_for(@case) if missing_queries.any?
               missing_queries.clear
             end
 

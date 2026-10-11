@@ -77,6 +77,17 @@ module Api
         let(:joey)                { users(:joey) }
         let(:public_case)         { cases(:public_case) }
 
+        test 'includes the embedder_id' do
+          acase = cases(:shared_with_team)
+          acase.update!(embedder: embedders(:openai_small))
+          login_user users(:random)
+
+          get :show, params: { case_id: acase.id }
+
+          assert_response :ok
+          assert_equal embedders(:openai_small).id, response.parsed_body['embedder_id']
+        end
+
         test "returns a not found error if the case is not in the signed in user's case list" do
           get :show, params: { case_id: matt_case.id }
           assert_response :not_found

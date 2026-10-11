@@ -189,9 +189,9 @@ parts:
     scenarios:
       "4.1":
         title: "Rename case / rename try"
-        last_run: 2026-09-15T16:38:00Z
+        last_run: 2026-10-05T19:05:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP on a disposable clone (case 6840). Double-clicked the case name to enter edit mode, renamed to 'Manual Test Part4 Renamed Case', clicked Rename — applied immediately in the header. Double-clicked the try name, renamed 'Try 20' to 'Manual Test Try Renamed', Rename applied immediately. Reloaded the page — both names persisted correctly. Did not re-test the blank-name guard this pass (confirmed previously)."
+        notes: "Partial re-check after adding the embedder name to the case header (queriesLayout.html): double-clicking the try name still opened the rename input with the current name, and Cancel closed it; no console errors. Nothing was renamed this pass, and case-name rename was not re-driven."
         paths: ["app/assets/javascripts/controllers/case.js", "app/assets/javascripts/controllers/currSettings.js", "app/assets/templates/views/queriesLayout.html", "app/models/case.rb"]
       "4.2":
         title: "Add a query (single)"
@@ -503,9 +503,9 @@ parts:
     scenarios:
       "9.1":
         title: "Create, rename, and browse teams"
-        last_run: 2026-09-15T17:02:00Z
+        last_run: 2026-10-05T19:45:00Z
         result: pass
-        notes: "Re-verified via Playwright MCP: created 'Manual Test Team 20260915' (creator auto-added as member), then renamed it to 'Manual Test Team Renamed 20260915' via the Rename Team form — flash 'Team renamed.', heading updated immediately. Left the team in place (no delete-team option found in the UI) as harmless test data, same as other pre-existing test fixtures on this instance."
+        notes: "Partial: only browsing re-checked, after adding the Embedders card -- team OSC page rendered members, cases, books, search endpoints, the new Embedders card and scorers, header counts including Embedders, no console errors (before/after shots in .playwright-mcp/team-embedders/). Creating and renaming a team were not re-driven this pass."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb"]
       "9.2":
         title: "Add a team member (existing user)"
@@ -811,9 +811,9 @@ parts:
     scenarios:
       "15.1":
         title: "Left icon sidebar"
-        last_run: 2026-09-27T23:02:00Z
-        result: pass_with_fixes
-        notes: "Re-verified via Playwright MCP this pass on the Home dashboard, and found/fixed a new bug in two tries: on any short-content page, the sidebar stopped at the bottom of the main content instead of reaching the footer, and the avatar/profile-dropdown (pushed to the bottom of the sidebar's own flex column via mb-auto on the nav <ul>) sat right after the last icon with a large dead gap below it down to the footer. First attempt (flex-grow-1 on .container-fluid + h-100 on .row) got the sidebar's background to visually reach the footer, but the avatar stayed stuck above a gap — h-100 (a percentage height) doesn't reliably resolve against a parent whose height only comes from flex-grow, so .row silently kept its content-driven height and mb-auto had no extra space to distribute. Fixed by replacing the percentage-height with a pure flex-grow chain: .container-fluid is now itself `d-flex flex-column`, and .row is `flex-grow-1` (not h-100) — matching the pattern already documented and used in admin.html.erb for the identical reason. Verified via getBoundingClientRect that the avatar dropdown's bottom edge exactly equals the footer's top edge (0px gap) both on the short Home dashboard and after injecting 2000px of filler into main (the row grows to fit taller content exactly as before, no clipping/overlap). Did not re-test tooltip hover behavior or active-state highlighting this pass; prior pass (2026-09-15) fixed sidebar icon tooltips never appearing on hover (dead BS5 tooltip-init script in _sidebar.html.erb, replaced with the existing bs-tooltip Stimulus controller) and confirmed active-state highlighting/click-navigation for all 7 icons — neither touched by this pass's change."
+        last_run: 2026-10-05T18:45:00Z
+        result: pass
+        notes: "Re-checked after adding the Embedders entry (custom [::] SVG icon, between AI Judges and Scorers): screenshots show it highlighted white on blue on /embedders and cornflower blue like its neighbours on /search_endpoints, and the link navigates to /embedders. Sidebar height/avatar placement looked unchanged in the screenshots but was not measured; tooltip hover not re-tested."
         paths: ["app/views/layouts/_sidebar.html.erb", "app/views/layouts/application.html.erb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
@@ -885,3 +885,30 @@ parts:
         result: pass
         notes: "New scenario, verified via Playwright MCP against case 10 (single query, so naturally short content): before the fix, footer.js's #footer-copy clone sat in .pane_main's normal scroll flow, so the footer landed wherever the query list ended rather than at the viewport bottom. Fixed by pinning #footer-copy with position:fixed;bottom:0 (core-additions.css) and having footer.js set .pane_main's padding-bottom to the clone's height (recalculated on resize too). Verified flush-to-bottom at 1400x900 and at a squeezed 1400x400 viewport, and verified via injected filler content that padding-bottom keeps scrolled content from being hidden behind the fixed footer. Did not test against a real case with enough queries to naturally overflow .pane_main (none existed in this environment's seed data) — used synthetic DOM content instead."
         paths: ["app/assets/javascripts/footer.js", "app/assets/stylesheets/core-additions.css", "app/views/layouts/core.html.erb"]
+  "17":
+    file: 17-embedders.md
+    scenarios:
+      "17.1":
+        title: "Create an embedder and test it"
+        last_run: 2026-10-05T19:30:00Z
+        result: pass
+        notes: "New scenario, driven with a Playwright script against localhost:3000. Checked: OpenAI shows key and hides instruction fields; switching to Ollama filled the configured URL, hid the key and showed Instruction/Input template; Ollama all-minilm with native 128 dims and an instruction tested live (128 dimensions, instruction template in the sent text) and saved. Voyage with 300 dims showed the allowed-sizes error. Not covered: live OpenAI/Voyage/OpenAI-compatible calls (no keys/servers here; covered by WebMock tests), client-side truncation live, a failing provider live."
+        paths: ["app/controllers/embedders_controller.rb", "app/controllers/embedders/tests_controller.rb", "app/views/embedders/_form.html.erb", "app/javascript/controllers/embedder_form_controller.js", "app/models/embedder.rb", "app/models/embedder_provider.rb", "app/services/embedder_adapters"]
+      "17.2":
+        title: "Edit, clone, share and delete an embedder"
+        last_run: 2026-10-05T19:45:00Z
+        result: pass
+        notes: "Partially driven. Team page part (steps 7-8) with a Playwright script on team OSC: the Embedders card listed the shared embedder with provider/model/128/owner/0 Cases and a Create Embedder button; removing it via the confirm dialog showed the notice and emptied the card; header count went to 0. Earlier pass: Test on the saved embedder with a blank key worked. Clone keeping the key, blank-key update and sharing from the form are covered by controller tests but were not clicked through this pass."
+        paths: ["app/controllers/embedders_controller.rb", "app/views/embedders/index.html.erb", "app/views/embedders/_form.html.erb", "app/views/teams/_embedders.html.erb", "app/controllers/teams_controller.rb"]
+      "17.3":
+        title: "Pick a case's embedder"
+        last_run: 2026-10-05T19:30:00Z
+        result: pass
+        notes: "Re-exercised with phase 3 in the user's Chrome on case 6: the picker opened with the status summary (20 pending) and Re-vectorize all; the user switched the case to another embedder with it, and the header and badges followed. The earlier full pass (pick, header shows it, survives reload, set back to None) was on case 1 with a Playwright script. Not covered live: the not-shared-with-you warning, Create New Embedder, clone (Vitest/model tests cover the warning and clone)."
+        paths: ["app/javascript/controllers/case_embedder_core_controller.js", "app/views/shared/_case_embedder_core_modal.html.erb", "app/controllers/api/v1/case_embedders_controller.rb", "app/assets/templates/views/queriesLayout.html", "app/javascript/core_stimulus.js"]
+      "17.4":
+        title: "Vectorise a case's queries"
+        last_run: 2026-10-05T19:25:00Z
+        result: pass_with_fixes
+        notes: "Driven in the user's Chrome on case 6 (20 queries, Ollama all-minilm, 128 dims): rows showed pending badges; Re-vectorize all ran through the SolidQueue worker and the badges cleared without a reload. First pass found that the page never received the vectors (queriesSvc.fetchOptions JSON.parse'd an object the API already returns parsed and silently kept the old options); fixed, re-driven: all 20 queries current with 128-dim query_vec and query_vec_meta in the page, shown in Set Options (closed with Cancel). The user switched the case to a keyless OpenAI embedder: 20 failed badges with OpenAI's 401 in the tooltip, as intended. Not covered live: stale after editing an embedder (model/job tests cover it), adding a query with sync vectorisation (controller test covers it)."
+        paths: ["app/services/query_vectorizer.rb", "app/jobs/vectorize_case_queries_job.rb", "app/models/query_vector_status.rb", "app/models/query.rb", "app/assets/javascripts/services/queriesSvc.js", "app/assets/templates/views/searchResults.html", "app/javascript/controllers/case_embedder_core_controller.js", "app/controllers/api/v1/case_embedders_controller.rb", "app/controllers/api/v1/queries_controller.rb"]

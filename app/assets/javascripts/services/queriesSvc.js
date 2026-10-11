@@ -514,6 +514,10 @@ angular.module('QuepidApp')
         self.ratedDocsUnsupported  = false;
         self.numFound       = 0;
         self.options        = queryWithRatings.options == null ? {} : queryWithRatings.options;
+        // Whether options.query_vec matches the case's embedder (QueryVectorStatus on the
+        // server); drives the badge on the query row. Updated by applyVectorStatuses().
+        self.vectorStatus       = queryWithRatings.vector_status || 'none';
+        self.vectorStatusReason = queryWithRatings.vector_status_reason || null;
         self.notes          = queryWithRatings.notes;
         self.modifiedAt      = queryWithRatings.modified_at;
 
@@ -1051,7 +1055,9 @@ angular.module('QuepidApp')
 
           return $http.get(url)
             .then(function(response) {
-              that.options = JSON.parse(response.data.options);
+              // The API returns options as a JSON object; older responses held a string.
+              var options = response.data.options;
+              that.options = typeof options === 'string' ? JSON.parse(options) : (options || {});
             }, function(response) {
               $log.debug('Failed to load options: ', response);
               return response;
@@ -1352,6 +1358,13 @@ angular.module('QuepidApp')
 
                 query.queryId = addedQuery.query_id;
                 query.ratingsStore.setQueryId(addedQuery.queryId);
+                // The server may already have vectorised it (options.query_vec), and the
+                // first search runs right after this resolves.
+                if (addedQuery.options) {
+                  query.options = addedQuery.options;
+                }
+                query.vectorStatus       = addedQuery.vector_status || 'none';
+                query.vectorStatusReason = addedQuery.vector_status_reason || null;
 
                 self.queries[query.queryId] = query;
                 svcVersion++;
@@ -1408,6 +1421,45 @@ angular.module('QuepidApp')
 
         return deferred.promise;
       };
+
+      // Vector statuses from the case embedder picker / poller (case_embedder_core_controller.js),
+      // keyed by query id. A query whose vector just became current gets its options
+      // (with the new query_vec) reloaded and is searched again, since a template using
+      // #$qOption.query_vec## needs it.
+      this.applyVectorStatuses = function(statuses) {
+        let refreshed = [];
+
+        angular.forEach(svc.queries, function(query) {
+          let next = statuses[query.queryId];
+          if (!next) {
+            return;
+          }
+          let becameCurrent = next.status === 'current' && query.vectorStatus !== 'current';
+          query.vectorStatus       = next.status;
+          query.vectorStatusReason = next.reason;
+          if (becameCurrent) {
+            refreshed.push(query.fetchOptions().then(function() {
+              return query.searchAndScore();
+            }));
+          }
+        });
+
+        if (refreshed.length > 0) {
+          $q.all(refreshed).then(function() {
+            svc.updateScores();
+          });
+        }
+      };
+
+      document.addEventListener('quepid:query-vectors-changed', function(event) {
+        let detail = event.detail || {};
+        if (Number(detail.caseNo) !== Number(caseNo)) {
+          return;
+        }
+        $scope.$applyAsync(function() {
+          svc.applyVectorStatuses(detail.queries || {});
+        });
+      });
 
       // get the full list of queries sorted by create/manual order
       // only call this when our version() changes

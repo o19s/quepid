@@ -13,6 +13,10 @@ if acase.scorer.present?
   end
 end
 
+# Name only: embedder ids aren't portable between installs, and the import
+# leaves the case without an embedder.
+json.embedder_name acase.embedder.name if acase.embedder.present?
+
 json.queries do
   json.array! acase.queries, partial: 'query', as: :query
 end

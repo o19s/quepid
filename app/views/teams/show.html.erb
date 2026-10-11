@@ -8,6 +8,8 @@
     &nbsp;&nbsp;
     <small class="text-muted">Search Endpoints: <strong><%= @search_endpoints_count %></strong></small>
     &nbsp;&nbsp;
+    <small class="text-muted">Embedders: <strong><%= @embedders.size %></strong></small>
+    &nbsp;&nbsp;
     <small class="text-muted">Scorers: <strong><%= @scorers_count %></strong></small>
   </div>
 <% end %>
@@ -204,6 +206,10 @@
 
   <div class="col-12 mb-3">
     <%= render partial: 'teams/search_endpoints' %>
+  </div>
+
+  <div class="col-12 mb-3">
+    <%= render partial: 'teams/embedders' %>
   </div>
   
   <div class="col-12 mb-3">

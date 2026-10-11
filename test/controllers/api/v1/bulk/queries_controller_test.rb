@@ -6,6 +6,8 @@ module Api
   module V1
     module Bulk
       class QueriesControllerTest < ActionController::TestCase
+        include ActiveJob::TestHelper
+
         let(:user)  { users(:random) }
         let(:acase) { cases(:queries_case) }
 
@@ -18,6 +20,15 @@ module Api
         end
 
         describe 'Adds an array of queries' do
+          test 'asks for the new queries\' vectors when the case has an embedder' do
+            acase.update!(embedder: embedders(:openai_small))
+
+            assert_enqueued_with(job: VectorizeCaseQueriesJob, args: [ acase, { force: false } ]) do
+              post :create, params: { case_id: acase.id, queries: %w[one two] }
+            end
+            assert_equal %w[pending pending], response.parsed_body['queries'].pluck('vector_status')
+          end
+
           test 'adds all queries provided' do
             data = {
               case_id: acase.id,

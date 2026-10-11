@@ -40,6 +40,7 @@ Use the checkboxes (`- [ ]`) to track your pass through each test case; check th
 | 14 | [Admin Area](14-admin-area.md) | User management, announcements, websocket tester, job/SQL admin tools |
 | 15 | [Global Navigation & Notebooks](15-global-navigation-and-notebooks.md) | Sidebar, navbar quick-access dropdowns, avatar menu, API Docs, cookies page, the JupyterLite Notebooks integration |
 | 16 | [Cross-Cutting: BS5, Responsive & Accessibility](16-cross-cutting-bs5-responsive-and-accessibility.md) | Bootstrap 3→5 migration regression checks, narrow-viewport reflow, modal accessibility |
+| 17 | [Embedders](17-embedders.md) | Connecting text-embedding APIs (OpenAI, Voyage, Ollama, OpenAI-compatible), testing them, sharing with teams |
 
 ## General testing notes
 

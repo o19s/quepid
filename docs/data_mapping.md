@@ -40,6 +40,14 @@ Unlike a `Case` datamodel that is meant for live interaction with a SearchEndpoi
 
 The data modeled by a Book can be imported back into a Case.  We take all the Judgements for a QueryDocPair, and average them, and then use that to populate the Rating for the corresponding Query in the Case.
 
+## Embedders
+
+An `Embedder` is a connection to an external API that turns text into a vector embedding (OpenAI, Voyage AI, Ollama, or any OpenAI-compatible server). Like a `SearchEndpoint`, it has an owner and is shared with teams through the `teams_embedders` join table. It stores the `provider` key, `service_url`, `model`, an encrypted `api_key`, and how to size the vectors (`dimensions` with `truncation`: `none`, `native` to ask the provider, or `client` to cut and re-normalize). Models that take an `instruction` get their input built from `input_template`. What each provider supports lives in code (`EmbedderProvider`), not in the database. `Embedder#fingerprint` changes whenever a setting that affects the vectors changes, so vectors produced earlier can be recognised as stale.
+
+A `Case` can point at one embedder through `embedder_id`, the same way it points at its `Scorer`. Books have no embedder.
+
+Vectorising a case's queries stores, in each `Query`'s `options`, `query_vec` (the vector, readable by search templates as `#$qOption.query_vec##`) and `query_vec_meta` (which embedder, provider, model, size and settings fingerprint produced it, a digest of the exact text sent, and when), or `query_vec_error` after a failed attempt. `QueryVectorStatus` compares these with the case's embedder to say whether each query's vector is current, pending, stale or failed. These keys are not copied into a book's query/doc pairs.
+
 ## Other
 
 Quepid provides scorers that are written by the OSC team for everyone to use, those `Scorer`'s are tagged with the `communal` flag as `true`, and the default scorers are created when seeding the db (using `bin/rake db:seed` or `bin/rake db:setup`).

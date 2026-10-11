@@ -9,6 +9,23 @@ class PopulateBookJobTest < ActiveJob::TestCase
   let(:acase) { cases(:case_with_book) }
 
   describe 'populating an existing book' do
+    test 'copies query options into the book without the vectors' do
+      acase.queries.create!(query_text: 'vector query', options: {
+        'boost' => 2, 'query_vec' => [ 0.1 ], 'query_vec_meta' => { 'embedder_id' => 1 }, 'query_vec_error' => { 'message' => 'x' }
+      })
+      data = { query_doc_pairs: [ { query_text: 'vector query', doc_id: 'doc_1', position: 0, document_fields: { title: 'Doc' } } ] }
+      blob = ActiveStorage::Blob.create_and_upload!(
+        io:           StringIO.new(Zlib::Deflate.deflate(Marshal.dump(data))),
+        filename:     "test_populate_vectors_#{book.id}.bin.zip",
+        content_type: 'application/zip'
+      )
+
+      PopulateBookJob.perform_now(book, acase, blob)
+
+      pair = book.query_doc_pairs.find_by(query_text: 'vector query')
+      assert_equal({ 'boost' => 2 }, pair.options)
+    end
+
     test 'ensure that position value is unique per query' do
       # Position is only persisted mid-loop when the query still exists on the
       # case (see PopulateBookJob#perform); fix_duplicate_positions runs before

@@ -94,7 +94,13 @@
           Number of Queries: {{ queriesList.length }}
         </div>
         <div class="pe-3">
-          <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter' />
+          <!-- Chrome's password manager takes this box for a username field and fills in the saved
+               login (ignoring autocomplete="off"), which silently filters every query out of the list.
+               Browsers never autofill a readonly field, so it stays readonly until focused; the
+               data-* attributes do the same for 1Password, LastPass and Bitwarden. -->
+          <input type="search" ng-model="queryFilter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id='queries-filter'
+                 name="queries-filter" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"
+                 data-1p-ignore data-lpignore="true" data-bwignore data-form-type="other" />
         </div>
         <div class="pe-3">
           <frog-report

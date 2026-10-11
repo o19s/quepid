@@ -85,6 +85,12 @@ class User < ApplicationRecord
            inverse_of:  :owner,
            dependent:   :nullify
 
+  has_many :owned_embedders,
+           class_name:  'Embedder',
+           foreign_key: :owner_id,
+           inverse_of:  :owner,
+           dependent:   :nullify
+
   # too late now!
   # rubocop:disable-next Rails/HasAndBelongsToMany
   has_and_belongs_to_many :teams,
@@ -258,6 +264,11 @@ class User < ApplicationRecord
   # This method returns all the search_endpoints that the user has access as owner or via a team.
   def search_endpoints_involved_with
     SearchEndpoint.for_user(self)
+  end
+
+  # All the embedders the user owns or that are shared with one of their teams.
+  def embedders_involved_with
+    Embedder.for_user(self)
   end
 
   def locked?

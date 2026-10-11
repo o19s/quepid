@@ -1,0 +1,7 @@
+<div class="container centered-form">
+  <div class="row mb-3">
+    <%= form_with model: @embedder, url: embedder_path(@embedder) do |form| %>
+      <%= render 'form', embedder: @embedder, form: form %>
+    <% end %>
+  </div>
+</div>

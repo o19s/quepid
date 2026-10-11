@@ -1,0 +1,103 @@
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1><%= render 'icon' %> Embedders<%= render 'beta' %></h1>
+  <div class="btn-toolbar mb-2 mb-md-0">
+    <%= link_to new_embedder_path, class: 'btn btn-success' do %>
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create Embedder
+    <% end %>
+  </div>
+</div>
+
+<div class="alert alert-info" role="alert">
+  <i class="bi bi-info-circle-fill" aria-hidden="true"></i>
+  An Embedder is a connection to an external API that turns query text into a vector embedding (OpenAI, Voyage AI, Cohere,
+  Ollama, or any OpenAI-compatible server such as vLLM or TEI). Embedders are owned by a user and shared with teams, like
+  search endpoints.
+  They let you test vector search against search engines that can't turn text into vectors themselves, such as
+  Elasticsearch without a paid licence or a self-hosted Qdrant: Quepid vectorizes each query and sends the vector in.
+</div>
+
+<div class="card">
+  <div class="card-body">
+    <% if @embedders.any? %>
+      <div class="table-responsive">
+        <table class="table table-sm table-hover">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Provider</th>
+              <th>Model</th>
+              <th>Dimensions</th>
+              <th>Owner</th>
+              <th>Teams</th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @embedders.each do |embedder| %>
+              <tr>
+                <td>
+                  <%= link_to embedder.name, edit_embedder_path(embedder) %>
+                  <% if embedder.archived %>
+                    <span class="badge bg-secondary">Archived</span>
+                  <% end %>
+                </td>
+                <td><%= embedder.provider_definition&.label || embedder.provider %></td>
+                <td><code><%= embedder.model %></code></td>
+                <td>
+                  <% if embedder.dimensions %>
+                    <%= embedder.dimensions %>
+                    <span class="text-muted small">(<%= 'client' == embedder.truncation ? 'client-side' : 'native' %>)</span>
+                  <% else %>
+                    <span class="text-muted">model default</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if embedder.owner == current_user %>
+                    <span class="badge bg-secondary">You</span>
+                  <% elsif embedder.owner %>
+                    <%= embedder.owner.fullname %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if embedder.teams.any? %>
+                    <%= embedder.teams.map(&:name).to_sentence %>
+                  <% else %>
+                    <span class="text-muted">&mdash;</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group btn-group-sm" role="group">
+                    <%= link_to edit_embedder_path(embedder), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
+                      <i class="bi bi-pencil" aria-hidden="true"></i>
+                    <% end %>
+                    <%= link_to clone_embedder_path(embedder), class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
+                      <i class="bi bi-copy" aria-hidden="true"></i>
+                    <% end %>
+                    <button type="button"
+                            class="btn btn-link text-danger p-0"
+                            title="Delete"
+                            aria-label="Delete"
+                            data-controller="confirm-delete"
+                            data-action="click->confirm-delete#open"
+                            data-confirm-delete-url-value="<%= embedder_path(embedder) %>"
+                            data-confirm-delete-message-value="<%= h("Delete embedder #{embedder.name}?") %>"
+                            data-confirm-delete-method-value="delete">
+                      <i class="bi bi-x-circle" aria-hidden="true"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-muted mb-0">
+        You don't have any embedders yet. <%= link_to 'Create one', new_embedder_path %> to turn query text into
+        vectors for vector and hybrid search.
+      </p>
+    <% end %>
+  </div>
+</div>
