@@ -863,7 +863,6 @@ AngularJS has been removed. There is no `angular` package, Angular build script 
 - `scoring-guidelines` - Auto-populates guidelines when scale changes (2-point vs 4-point presets)
 - `user-activity` - Renders GitHub-style Cal Heatmap on admin user pulse pages
 - `confetti` - Triggers `party-js` confetti animation on the "Kraken Unleashed" celebration modal
-- `prompt-form` - Handles AI judge prompt submission with loading spinner
 
 ### Routes
 

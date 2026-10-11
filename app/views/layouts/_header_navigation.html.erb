@@ -42,7 +42,9 @@
     </li>
   <% end %>
 
-  <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
+  <% unless desktop_mode? %>
+    <li class="nav-item"><%= link_to "Teams", teams_path, class: "nav-link" %></li>
+  <% end %>
   <li class="nav-item"><%= link_to "AI Judges", ai_judges_path, class: "nav-link" %></li>
   <li class="nav-item"><%= link_to "Scorers", scorers_path, class: "nav-link" %></li>
   <li class="nav-item"><a class="nav-link" href="<%= root_path %>notebooks/lab/index.html" target="_blank" rel="noopener noreferrer">Notebooks</a></li>

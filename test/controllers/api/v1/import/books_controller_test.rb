@@ -122,6 +122,7 @@ module Api
 
             assert_equal 3, @book.query_doc_pairs.count
             assert_equal 3, @book.judgements.count
+            assert_equal user, @book.owner
 
             response.parsed_body
           end

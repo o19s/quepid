@@ -113,6 +113,10 @@ module ApplicationHelper
     nil
   end
 
+  def desktop_mode?
+    Rails.application.config.desktop_mode
+  end
+
   def require_proxy_for_all_search_endpoints?
     Rails.application.config.require_proxy_for_all_search_endpoints
   end

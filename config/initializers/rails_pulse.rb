@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
-# rubocop:disable-next Metrics/BlockLength
+# rubocop:disable Metrics/BlockLength
+
 RailsPulse.configure do |config|
   # ====================================================================================================
   #                                         GLOBAL CONFIGURATION
   # ====================================================================================================
 
-  # Enable or disable Rails Pulse
-  config.enabled = true
+  # Enable or disable Rails Pulse (disabled in test - its tracking writes pollute SQL-count assertions)
+  config.enabled = !Rails.env.test?
 
   # Tracking writes happen on a background thread by default (see `config.async`
   # under ADVANCED). Transactional tests share one database connection across
@@ -471,3 +472,5 @@ RailsPulse.configure do |config|
   # Useful for standalone/API-only deployments that use a separate dashboard app.
   # config.mount_dashboard = true
 end
+
+# rubocop:enable Metrics/BlockLength

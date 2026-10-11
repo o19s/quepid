@@ -10,6 +10,23 @@
   box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 
+/* 11rem (176px) is reasonable on desktop but eats ~45% of a phone-width
+   screen - shrink the sidebar itself (not just its content) below Bootstrap's
+   sm breakpoint, and tighten each link's own padding/size to match so the
+   longer labels (Websocket Tester, SQL Analytics) still read cleanly
+   wrapped to two lines instead of looking cramped at the wider spacing. */
+@media (max-width: 575.98px) {
+  .admin-sidebar {
+    width: 7rem;
+  }
+
+  .admin-sidebar .nav-link {
+    padding-left: .5rem !important;
+    padding-right: .5rem !important;
+    font-size: .8rem;
+  }
+}
+
 /* Matches the icon colors in layouts/_sidebar.html.erb: cornflowerblue when
    inactive, white when active (on the nav-pills blue active background). */
 .admin-sidebar .nav-link {

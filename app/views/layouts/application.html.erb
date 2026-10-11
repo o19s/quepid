@@ -95,19 +95,19 @@
 <% else %>
 <%= render 'layouts/header' %>
 
-<%# Continue the flex chain so the sidebar reaches the footer on short pages. %>
-<div class="container-fluid flex-shrink-0 flex-grow-1 d-flex flex-column">
-  <div class="row flex-grow-1">
+<%# Continue the flex chain so the sidebar reaches the footer on short pages.
+    Flex directly on the container, not a .row: .row's "> *" rule gives every
+    child width:100%, which put main underneath the fixed-width sidebar below md. %>
+<div class="container-fluid flex-shrink-0 flex-grow-1 d-flex ps-0">
 
-    <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
-      <%= render 'layouts/sidebar' %>
-    <% end %>
+  <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
+    <%= render(sidebar_partial) %>
+  <% end %>
 
-    <!-- Begin page content -->
-    <main class="col-md-10 ms-sm-auto col-lg-<%= @current_user ? '11' : '12' %> px-md-5">
-      <%= yield %>
-    </main>
-  </div>
+  <!-- Begin page content -->
+  <main class="flex-grow-1 ps-3 px-md-5" style="min-width: 0;">
+    <%= yield %>
+  </main>
 </div>
 
 <%= render 'layouts/footer' %>

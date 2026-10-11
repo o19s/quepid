@@ -143,13 +143,4 @@ class AiJudgesOwnershipControllerTest
     assert_response :see_other
     assert_empty AiJudge.order(:id).last.teams
   end
-
-  test 'legacy prompt editing is scoped to the requesting user' do
-    owned = AiJudge.create!(name: 'Private', owner: users(:doug), system_prompt: 'Judge it.')
-    get edit_ai_judge_prompt_url(owned)
-    assert_response :not_found
-    patch ai_judge_prompt_url(owned), params: { user: { system_prompt: 'Changed' }, query_doc_pair: { document_fields: '{}' } }
-    assert_response :not_found
-    assert_equal 'Judge it.', owned.reload.system_prompt
-  end
 end

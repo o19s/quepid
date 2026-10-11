@@ -15,8 +15,9 @@ module AvatarHelper
   # - if the user is an AI judge, badges the avatar with a robot icon
   #
   # @param user [User] the user object to render an avatar for
-  # @param size [Symbol] the size key (:small, :medium, :big)
+  # @param size [Symbol, Integer] a size key (:small, :medium, :big) or an exact pixel size
   # @param classes [String] additional CSS classes for the wrapper
+  # @param id [String, nil] optional id attribute for the wrapper
   # @return [String] HTML-safe string containing the avatar image
   def avatar_tag user, size: :medium, classes: '', id: nil
     return content_tag(:div, '?', class: 'avatar-placeholder') if user.nil?

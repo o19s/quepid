@@ -50,9 +50,7 @@ class MapperWizardService
 
     chat.with_instructions(generation_prompt)
 
-    sample_html = strip_boilerplate(html_content)
-    truncated = sample_html.length > 50_000
-    truncated_html = sample_html[0...50_000]
+    truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 50_000)
 
     response = chat.ask(<<~PROMPT)
       Analyze this HTML from a search results page and generate the JavaScript mapper functions.
@@ -119,9 +117,7 @@ class MapperWizardService
 
     chat = RubyLLM.chat(model: 'gpt-4o')
 
-    sample_html = strip_boilerplate(html_content)
-    truncated = sample_html.length > 30_000
-    truncated_html = sample_html[0...30_000]
+    truncated_html, truncated = truncate_for_llm(strip_boilerplate(html_content), 30_000)
 
     response = chat.ask(<<~PROMPT)
       You are improving a JavaScript #{mapper_type} function for parsing search results HTML or JSON.
@@ -188,6 +184,12 @@ class MapperWizardService
     else
       { success: false, error: 'Could not extract improved code from AI response' }
     end
+  end
+
+  def truncate_for_llm text, limit
+    return [ text, false ] if text.length <= limit
+
+    [ text[0...limit], true ]
   end
 
   def strip_boilerplate html

@@ -111,9 +111,6 @@ Rails.application.routes.draw do
       get :clone, on: :member
     end
   end
-  resources :ai_judges, only: [] do
-    resource :prompt, only: [ :show, :edit, :update ], module: :ai_judges
-  end
 
   resources :cases, only: [] do
     resource :book

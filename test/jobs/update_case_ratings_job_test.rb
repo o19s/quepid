@@ -35,4 +35,17 @@ class UpdateCaseRatingsJobTest < ActiveJob::TestCase
     rating = case_with_book.queries.where(query_text: 'my search').first.ratings.where(doc_id: 'DOC123456').first
     assert_in_delta(3.0, rating.rating)
   end
+
+  test 'a queued job whose query_doc_pair has since been deleted does not blow up the Linked Cases check' do
+    query_doc_pair = QueryDocPair.create(query_text: 'my search', doc_id: 'DOC123456')
+    book.query_doc_pairs << query_doc_pair
+    book.save
+
+    UpdateCaseRatingsJob.perform_later(query_doc_pair)
+    query_doc_pair.destroy
+
+    assert_nothing_raised do
+      assert_not UpdateCaseRatingsJob.actively_syncing?(book, case_with_book)
+    end
+  end
 end

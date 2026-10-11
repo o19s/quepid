@@ -8,6 +8,7 @@ module Api
       let(:team) { teams(:shared) }
       let(:multiple_raters) { selection_strategies(:multiple_raters) }
       let(:quepid_default_scorer) { scorers(:quepid_default_scorer) }
+      let(:communal_scorer) { scorers(:communal_scorer) }
 
       before do
         @controller = Api::V1::BooksController.new
@@ -59,6 +60,28 @@ module Api
           get :index, params: { archived: false }
           assert_response :ok
           assert_empty response.parsed_body['all_books']
+        end
+
+        test 'owned=true excludes books only accessible via a team' do
+          owned_book = books(:james_bond_movies) # owner: doug
+          team_only_book = books(:book_of_star_wars_judgements) # no owner, shared via doug's "shared" team
+
+          get :index, params: { owned: true }
+
+          assert_response :ok
+          book_names = response.parsed_body['all_books'].map { |b| b['name'] }
+          assert_includes book_names, owned_book.name
+          assert_not_includes book_names, team_only_book.name
+        end
+
+        test 'without owned, books accessible via a team are included' do
+          team_only_book = books(:book_of_star_wars_judgements)
+
+          get :index
+
+          assert_response :ok
+          book_names = response.parsed_body['all_books'].map { |b| b['name'] }
+          assert_includes book_names, team_only_book.name
         end
       end
 
@@ -112,6 +135,16 @@ module Api
           assert_equal response.parsed_body['name'], book_name
 
           assert_equal doug.books_involved_with.count, count + 1
+          assert_equal doug, assigns(:book).owner
+        end
+
+        test 'applies the chosen scorer_id, copying its scale onto the book' do
+          post :create, params: {
+            book: { name: 'test book', scorer_id: quepid_default_scorer.id },
+          }
+
+          assert_response :ok
+          assert_equal quepid_default_scorer.scale, assigns(:book).scale
         end
       end
 
@@ -132,6 +165,22 @@ module Api
 
             the_book.reload
             assert_equal 'New Name', the_book.name
+          end
+        end
+
+        describe 'when changing the scorer' do
+          # A book with existing judgements can't have its scale changed (see
+          # Book#scale_cannot_be_changed_if_judgements_exist), so this needs a
+          # judgement-free book rather than the_book (james_bond_movies).
+          test 'applies the chosen scorer_id, copying its scale onto the book' do
+            empty_book = books(:empty_book)
+            assert_not_equal communal_scorer.scale, empty_book.scale
+
+            patch :update, params: { id: empty_book.id, book: { scorer_id: communal_scorer.id } }
+            assert_response :ok
+
+            empty_book.reload
+            assert_equal communal_scorer.scale, empty_book.scale
           end
         end
 

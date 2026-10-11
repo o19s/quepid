@@ -17,9 +17,13 @@ class RailsPulseTest < ActionDispatch::IntegrationTest
     @bullet_enabled = Bullet.enable?
     Bullet.enable = false
     RailsPulse::SchemaCheck.reset!
+    # Disabled in test by default (config/initializers/rails_pulse.rb); this suite exercises it directly.
+    @rails_pulse_enabled = RailsPulse.configuration.enabled
+    RailsPulse.configuration.enabled = true
   end
 
   teardown do
+    RailsPulse.configuration.enabled = @rails_pulse_enabled
     Rails.application.env_config['action_dispatch.show_exceptions'] = @show_exceptions
     Bullet.enable = @bullet_enabled
     RequestStore.clear!

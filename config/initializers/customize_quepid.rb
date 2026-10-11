@@ -55,6 +55,12 @@ Rails.application.config.signup_enabled = bool.deserialize(ENV.fetch('SIGNUP_ENA
 # This parameter controls whether or not signing in using email/password is supported
 Rails.application.config.email_login_enabled = bool.deserialize(ENV.fetch('EMAIL_LOGIN_ENABLED', true))
 
+# The packaged macOS application enables Desktop Mode explicitly. Normal
+# hosted and Docker deployments retain the existing account behavior.
+Rails.application.config.desktop_mode = bool.deserialize(ENV.fetch('QUEPID_DESKTOP_MODE', false))
+Rails.application.config.desktop_user_id = ENV['QUEPID_DESKTOP_USER_ID'].presence
+Rails.application.config.desktop_user_name = ENV['QUEPID_DESKTOP_USER_NAME'].presence
+
 # == Communal Scorers Only
 # Users can normally create custom scorers which run embedded javascript, this is a potential
 # security flaw as malicious javascript could be entered. This setting restricts users to

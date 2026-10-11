@@ -203,8 +203,12 @@ class BooksController < ApplicationController
 
     assign_book_memberships if params[:book]
 
-    if params[:scorer_id]
-      scorer = current_user.scorers_involved_with.find_by(id: params[:scorer_id])
+    @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
+
+    # Explicit scorer_id wins; otherwise default to the origin case's own scorer.
+    scorer_id = params[:scorer_id] || @origin_case&.scorer_id
+    if scorer_id
+      scorer = current_user.scorers_involved_with.find_by(id: scorer_id)
       if scorer
         @book.scale = scorer.scale
         @book.scale_with_labels = scorer.scale_with_labels
@@ -214,8 +218,6 @@ class BooksController < ApplicationController
     end
 
     @ai_judges = accessible_ai_judges
-
-    @origin_case = current_user.cases_involved_with.where(id: params[:origin_case_id]).first if params[:origin_case_id]
 
     if @origin_case
       @book.name = "Book for #{@origin_case.case_name}"

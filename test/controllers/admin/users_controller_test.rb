@@ -19,6 +19,13 @@ module Admin
       assert_not_nil assigns(:users)
     end
 
+    test 'index excludes AI judges' do
+      get :index
+
+      assert_response :success
+      assert_not_includes assigns(:users), users(:judge_judy)
+    end
+
     test 'an authorized user should NOT gain access' do
       user = users(:random)
       login_user user
