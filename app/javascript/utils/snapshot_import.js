@@ -1,5 +1,14 @@
 import { postJson } from "api/json"
 
+export const SNAPSHOT_CSV_HEADERS = [
+  "Snapshot Name",
+  "Snapshot Time",
+  "Case ID",
+  "Query Text",
+  "Doc ID",
+  "Doc Position"
+]
+
 function snapshotTime(value, rowNumber) {
   // Static wizard CSVs omit this column and retain the server's default time.
   if (value == null) return value
@@ -57,17 +66,7 @@ export function buildSnapshotImportGroups(rows, targetCaseId, { includeFields = 
     }
     if (includeFields) {
       document.fields = Object.fromEntries(
-        Object.entries(doc).filter(
-          ([key]) =>
-            ![
-              "Doc ID",
-              "Doc Position",
-              "Snapshot Name",
-              "Snapshot Time",
-              "Case ID",
-              "Query Text"
-            ].includes(key)
-        )
+        Object.entries(doc).filter(([key]) => !SNAPSHOT_CSV_HEADERS.includes(key))
       )
     }
     snapshot.queries[queryText].docs.push(document)

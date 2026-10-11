@@ -89,6 +89,40 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe '#save' do
+    [ :unrateable, :judge_later ].each do |flag|
+      test "rating zero clears #{flag} and preserves the judgement identity" do
+        judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, flag => true)
+
+        assert_no_difference 'Judgement.count' do
+          post book_judge_bulk_save_path(book),
+               params: { query_doc_pair_id: query_doc_pair.id, rating: 0 },
+               as:     :json
+        end
+
+        assert_response :success
+        assert_equal judgement.id, response.parsed_body['judgement_id']
+        assert_equal 0, judgement.reload.rating
+        assert_not judgement.unrateable
+        assert_not judgement.judge_later
+      end
+
+      test "explanation-only saves preserve #{flag} with absent or blank ratings" do
+        judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, flag => true)
+
+        [ {}, { rating: nil }, { rating: '' } ].each do |rating_params|
+          post book_judge_bulk_save_path(book),
+               params: { query_doc_pair_id: query_doc_pair.id, explanation: 'Needs review' }.merge(rating_params),
+               as:     :json
+
+          assert_response :success
+          assert_equal judgement.id, response.parsed_body['judgement_id']
+          assert_nil judgement.reload.rating
+          assert judgement.public_send(flag)
+          assert_equal 'Needs review', judgement.explanation
+        end
+      end
+    end
+
     test 'creates a new judgement with rating' do
       assert_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),

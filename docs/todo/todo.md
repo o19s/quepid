@@ -270,10 +270,6 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 The separate coercion/aggregation decision is in [Judgement coercion and aggregation semantics](#preexisting-p2-i2-c3--judgement-coercion-and-aggregation-semantics).
 
-The explicit `unrateable`/`judge_later` resets in `BulkJudgeController#save`
-are redundant: `Judgement#rating=` already clears both for a non-nil rating.
-[PREEXISTING] P3 I1 C1 — Removing just those resets is a separate small no-op cleanup.
-
 ---
 
 
@@ -633,16 +629,14 @@ Caller-specific failure policies are documented in
 
 Each one also builds its import URL differently.
 
-The snapshot column list is written three times: the excluded-fields list in
-`snapshot_import.js`, `expectedHeaders` in `import_snapshot`, and
-`REQUIRED_HEADERS.snapshots` in `import_ratings_core`. "Required headers present,
+The two snapshot import controllers and document-field exclusion share
+`SNAPSHOT_CSV_HEADERS` from `snapshot_import.js`. "Required headers present,
 no parse errors, not empty" validation exists three times with different
 messages (the third is `wizard_contracts.js#validateStaticHeaders`).
 
 **Defer upload-loop consolidation.** Preserve each caller's continue/stop
-policy, payloads, order, and error messages. Shared column constants may be a
-small safe cleanup after checking that the lists serve the same purpose;
-choosing one failure or validation policy is a behavior change.
+policy, payloads, order, and error messages. Choosing one failure or validation
+policy is a behavior change.
 
 ### [MIGRATION-FOLLOWUP] P3 I1 C2 — Server-owned URLs and template replacement — deferred
 
@@ -777,8 +771,10 @@ hosts in `script-src`, or a per-request allow-list. Either remove
 - [PREEXISTING] P3 I0 C1 — **`where(...).first`.** Review remaining scalar-primary-key
   lookups for scoped `find_by`, retaining authorization and existing nil/redirect/404
   handling. Leave non-unique try-number/document-ID, ordered/history and ambiguous
-  email-or-ID selection unchanged. The three selected lookups in CoreController,
-  Core::CaseHeaderController and SearchEndpointsController no longer need conversion.
+  email-or-ID selection unchanged. Selected lookups in CoreController,
+  Core::CaseHeaderController, SearchEndpointsController and BooksController's route-ID
+  lookups no longer need conversion. Optional/request-parameter IDs remain deferred
+  because arrays can match multiple rows and `find_by` drops implicit ID ordering.
 
 ## [MIGRATION-FOLLOWUP] Developer Experience Review
 

@@ -6,12 +6,12 @@ import { HttpError } from "api/http_error"
 import { caseNameFromHeader } from "utils/case_header"
 import coreFlash from "utils/core_flash"
 import { parseCsv } from "utils/csv"
-import { buildSnapshotImportGroups } from "utils/snapshot_import"
+import { buildSnapshotImportGroups, SNAPSHOT_CSV_HEADERS } from "utils/snapshot_import"
 
 const REQUIRED_HEADERS = {
   csv: ["query", "docid", "rating"],
   information_needs: ["query", "information_need"],
-  snapshots: ["Snapshot Name", "Snapshot Time", "Case ID", "Query Text", "Doc ID", "Doc Position"]
+  snapshots: SNAPSHOT_CSV_HEADERS
 }
 
 /** Core case import modal. Keeps the established core import formats and wording. */

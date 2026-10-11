@@ -9,6 +9,47 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'an existing book outside the user scope redirects without recording a view' do
+    login_user_for_integration_test user
+    private_book = Book.create!(name: 'Private book', owner: users(:doug), scale: [ 0, 1 ])
+
+    assert_no_enqueued_jobs only: TrackBookViewedJob do
+      get book_path(private_book)
+    end
+
+    assert_response :found
+    assert_redirected_to books_path
+    assert_equal "Could not retrieve book #{private_book.id}. Confirm that the book has been shared with you via a team you are a member of!", flash[:alert]
+  end
+
+  test 'running an unknown judge redirects without enqueueing evaluation' do
+    login_user_for_integration_test user
+
+    assert_no_enqueued_jobs only: RunJudgeJudyJob do
+      patch run_judge_judy_book_path(james_bond_movies, ai_judge_id: 999_999_999)
+    end
+
+    assert_response :see_other
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'AI Judge not found.', flash[:alert]
+  end
+
+  test 'running and cancelling reject a judge outside the selected book' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges.delete(judge_judy)
+
+    assert_no_enqueued_jobs only: RunJudgeJudyJob do
+      [ run_judge_judy_book_path(james_bond_movies, ai_judge_id: judge_judy.id),
+        cancel_judge_judy_book_path(james_bond_movies, ai_judge_id: judge_judy.id) ].each do |path|
+        patch path
+
+        assert_response :see_other
+        assert_redirected_to book_path(james_bond_movies)
+        assert_equal 'AI Judge not found.', flash[:alert]
+      end
+    end
+  end
+
   test 'invalid settings update renders populated edit data and preserves persisted settings' do
     login_user_for_integration_test user
     james_bond_movies.update!(owner: user)

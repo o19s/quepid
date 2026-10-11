@@ -2,7 +2,7 @@ import ImportFormControllerBase from "controllers/import_form_controller_base"
 import { postJson } from "api/json"
 import { HttpError } from "api/http_error"
 import { parseCsv } from "utils/csv"
-import { buildSnapshotImportGroups } from "utils/snapshot_import"
+import { buildSnapshotImportGroups, SNAPSHOT_CSV_HEADERS } from "utils/snapshot_import"
 
 export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
@@ -51,11 +51,7 @@ export default class extends ImportFormControllerBase {
       return { valid: false, error: 'CSV file is empty or has no data rows.' }
     }
 
-    const expectedHeaders = [
-      'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
-    ]
-
-    const missingHeaders = expectedHeaders.filter(header => !headers.includes(header))
+    const missingHeaders = SNAPSHOT_CSV_HEADERS.filter(header => !headers.includes(header))
     
     if (missingHeaders.length > 0) {
       return {

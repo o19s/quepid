@@ -90,11 +90,7 @@ class BulkJudgeController < ApplicationController
       render json: { status: 'success' }
     else
       # Update rating if provided
-      if params[:rating].present?
-        judgement.rating = params[:rating]
-        judgement.unrateable = false
-        judgement.judge_later = false
-      end
+      judgement.rating = params[:rating] if params[:rating].present?
 
       # Always update explanation if provided
       judgement.explanation = params[:explanation] if params.key?(:explanation)

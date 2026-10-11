@@ -336,7 +336,7 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
 
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
@@ -352,7 +352,7 @@ class BooksController < ApplicationController
   end
 
   def cancel_judge_judy
-    ai_judge = @book.ai_judges.where(id: params[:ai_judge_id]).first
+    ai_judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
       return
@@ -528,7 +528,7 @@ class BooksController < ApplicationController
 
   # This set_book is different because we use :id, not :book_id.
   def set_book
-    @book = current_user.books_involved_with.where(id: params[:id]).first
+    @book = current_user.books_involved_with.find_by(id: params[:id])
 
     unless @book
       redirect_to books_path,
