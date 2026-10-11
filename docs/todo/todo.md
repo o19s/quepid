@@ -46,7 +46,7 @@ Browser coverage and actual verification timestamps live in
 `docs/manual-testing/tracking.yml`.
 Line numbers may drift — re-check cited files before fixing.
 
-### [PREEXISTING] P1 I0 C2 — Resolve stored mapper input compatibility
+### [PREEXISTING] P1 I0 C2 — Resolve stored mapper input compatibility - EP review needed
 
 Manual scenario 7.9: stored `JSON.parse(data)` mappers work on historical
 `8ceb99e9` but fail on current because `lib/v8_mapper_executor.rb` pre-parses JSON
@@ -339,7 +339,7 @@ and scores, so keep it separate from behavior-preserving cleanup.
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
 
-### [PREEXISTING] P1 I0 C1 — `FetchService` query substitution treats `\0`/`\1` as backreferences
+### [PREEXISTING] P1 I0 C1 — `FetchService` query substitution treats `\0`/`\1` as backreferences - EP review needed
 
 **Location:** `app/services/fetch_service.rb` — `build_get_params`
 
@@ -352,7 +352,15 @@ silently differ from the case page.
 **Fix direction:** Use the block form (or a shared substitution helper) and add
 a test with backslash sequences in the query text.
 
-### [PREEXISTING] P1 I0 C2 — `FetchService` drops repeated GET params such as Solr `fq`
+**Investigation:** Isolated Ruby/browser-template probes confirmed ordinary text,
+quotes, Unicode and URL characters are preserved by block substitution, matching
+existing POST and browser Solr handling. Current GET substitution also collapses
+doubled backslashes and raises on `\k<name>`. Queries compensating for this
+corruption may produce different future background results/scores after the fix;
+stored queries and historical scores remain unchanged. No full suite or live
+search verification performed.
+
+### [PREEXISTING] P1 I0 C2 — `FetchService` drops repeated GET params such as Solr `fq` - EP review needed
 
 **Location:** `app/services/fetch_service.rb` — `build_get_params`
 
@@ -364,6 +372,15 @@ with fewer filters than the browser search and produce different scores.
 repeated params; add a test with multiple `fq` values. This changes fetched
 results and background scores, so verify against a client search for the same
 try.
+
+**Investigation — fix deferred:** Present since FetchService's introduction
+(`3bfa92d7`, 2025-01-16). Stubbed HTTP/browser-code probes confirm lost filters
+and facets; arrays require flat encoding to avoid `fq[]`. Single-value encoding
+matched; repeated values/order were preserved with flat encoding. Scope encoding
+to FetchService; endpoint-URL duplicates also collapse in the shared client and
+need separate scope. Future multi-filter runs may change results/scores; no data
+migration or historical recalculation is needed, though normal recent-score updates
+and snapshot retention still apply. No live search or full suite verification.
 
 ### [PREEXISTING] P2 I0 C3 — Mapper wizard function extraction is not lexical-aware
 
@@ -377,11 +394,12 @@ those can be truncated before it is saved.
 V8/parser path, and add regression cases for braces in strings, comments, and
 regular expressions.
 
-### [PREEXISTING] P1 I0 C2 — Safe LLM judgement handling misses malformed success bodies
+### [PREEXISTING] P1 I0 C2 — Safe LLM judgement handling misses malformed success bodies - EP review needed
 
-**Location:** `app/services/llm_service.rb:32-40,209-220`
+**Location:** `app/services/llm_service.rb` — `perform_safe_judgement`;
+`app/services/llm_judge_adapters/base.rb` — `extract_judgement`
 
-`parse_response` calls `JSON.parse` on model content, but
+`extract_judgement` calls `JSON.parse` on model content, but
 `perform_safe_judgement` does not rescue `JSON::ParserError` or a missing
 content value. A successful HTTP response with malformed model output can
 escape the safe-judgement path and leave the job unhandled.
@@ -389,6 +407,16 @@ escape the safe-judgement path and leave the job unhandled.
 **Fix direction:** Treat malformed/missing content as an unrateable judgement
 with the same recorded explanation as other safe-judgement failures, and add
 tests for malformed JSON and missing provider content.
+
+**Impact/question:** Stubbed service/adapter/middleware probes confirmed malformed
+model JSON, missing content and non-object JSON escape handling. The job stops
+before saving that judgement or broadcasting completion; earlier judgements remain
+saved, with no configured automatic job retry for these errors. Recording Unrateable
+would let the run continue but exclude that pair from normal selection for the same
+judge until reset/removal. Should these failures follow that existing policy or
+remain eligible for an explicit retry? Prefer a specific adapter response error
+over rescuing programming errors broadly. Persistence effects were source-traced;
+no full suite or live provider verification performed.
 
 ### [PREEXISTING] P2 I0 C1 — Whitespace-prefixed JSON takes the bare-query path
 
@@ -462,19 +490,6 @@ deleted (`DeserializationError`), but `retry_on` remains commented out.
 Decide on a default retry policy for the jobs that take Active Record arguments.
 
 ---
-
-## [PREEXISTING] P2 — Performance
-
-### [PREEXISTING] P2 I1 C2 — Dashboard case list latest-score queries bypass eager loading
-
-`Case#last_score` calls `scores.last_one`, whose ordering/limit scope issues a
-separate lookup per call. `home/_case.html.erb` reads it repeatedly and its user,
-while `HomeController#show` preloads only metadata. The team-list portion is
-resolved; dashboard loading remains outside that approved direct-fix batch.
-
-Measure the endpoint with a query-count test, then load only the latest score and
-its user per case. Avoid loading every historical score merely to render one
-badge; Bullet is available in development/test.
 
 ## [PREEXISTING] RuboCop deferrals
 

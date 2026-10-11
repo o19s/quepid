@@ -293,10 +293,10 @@ parts:
         screenshots:
           view-all-cases: "2.6/view-all-cases"
           cases-table: "2.6/cases-table"
-        last_run: 2026-10-09T23:50:57Z
+        last_run: 2026-10-11T14:31:21Z
         result: pass
-        notes: "Covered live: matching three-row dashboard Cases table, required columns, scored/never-run rows and View all Cases navigation on Current/Base86e3de9f/Legacy8ceb99e9. Reused inspected 2.2 dashboard PNGs; destination images inspected and both states registered with comparison pairs. Current/Base Rails Cases list differs from Legacy Angular list (tabs vs Archived checkbox, ordering, owner full name vs email/Me, score formatting and controls); nav/sidebar/footer differ. IDs, relative static score times are independent fixture differences. Base Static score becomes1.000 after reopening while Current/Legacy remain0; dashboard captures preceded this, cause/parity unresolved. Ten-row limit not exercised; cleanup pending."
-        paths: ["app/controllers/home_controller.rb"]
+        notes: "2026-10-11: Current realisticActivity nine-row dashboard, scored/unscored cells, dates, users/Nightly and View all Cases navigation verified. Same-account before/after PNGs inspected; table content/order unchanged, randomized greeting differs. Cases-table and navigation Current captures refreshed; ten-row limit and timestamp ties verified in Rails tests, not live. No dev fixtures created. Empty account/team variants deferred. Prior 2026-10-09 comparison: Covered live: matching three-row dashboard Cases table, required columns, scored/never-run rows and View all Cases navigation on Current/Base86e3de9f/Legacy8ceb99e9. Reused inspected 2.2 dashboard PNGs; destination images inspected and both states registered with comparison pairs. Current/Base Rails Cases list differs from Legacy Angular list (tabs vs Archived checkbox, ordering, owner full name vs email/Me, score formatting and controls); nav/sidebar/footer differ. IDs, relative static score times are independent fixture differences. Base Static score becomes1.000 after reopening while Current/Legacy remain0; dashboard captures preceded this, cause/parity unresolved. Ten-row limit not exercised; cleanup pending."
+        paths: ["app/controllers/home_controller.rb", "app/views/home/_case.html.erb", "app/models/case.rb", "app/models/score.rb", "app/services/latest_case_scores.rb"]
       "2.7":
         title: "Cookie consent toast"
         screenshots:

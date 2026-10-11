@@ -22,6 +22,8 @@ class HomeController < ApplicationController
                       'case_metadata.last_viewed_at DESC, cases.id DESC'))
       .limit(10)
 
+    LatestCaseScores.preload(@cases)
+
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
     @most_recent_books = recent_books(4)

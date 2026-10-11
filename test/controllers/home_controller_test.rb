@@ -10,6 +10,58 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  test 'dashboard preserves latest score rows with one bounded score query' do
+    owner = users(:joe)
+    older = Time.utc(2020, 1, 1)
+    newer = Time.utc(2021, 1, 1)
+    cases = Array.new(11) { |index| owner.cases.create!(case_name: "Dashboard case #{index}") }
+    expected_scores = {}
+    cases[0...10].each do |kase|
+      kase.scores.create!(score: 0.1, created_at: newer, updated_at: older)
+      kase.scores.create!(score: 0.2, created_at: older, updated_at: newer)
+      kase.scores.create!(score: 0.3, created_at: newer, updated_at: newer)
+      expected_scores[kase.id] = kase.scores.create!(
+        score: 0.4, user: kase == cases[8] ? nil : owner,
+        created_at: newer, updated_at: newer
+      )
+    end
+    login_user_for_integration_test owner
+
+    score_queries = []
+    hydrated_scores = 0
+    queries = lambda do |*args|
+      payload = args.last
+      score_queries << payload[:sql] if !payload[:cached] && payload[:sql].match?(/\ASELECT.*FROM [`"]?case_scores/i)
+    end
+    instantiations = lambda do |*args|
+      hydrated_scores += args.last[:record_count] if 'Score' == args.last[:class_name]
+    end
+    ActiveSupport::Notifications.subscribed(queries, 'sql.active_record') do
+      ActiveSupport::Notifications.subscribed(instantiations, 'instantiation.active_record') do
+        get root_url
+      end
+    end
+
+    assert_response :success
+    assert_select 'table tbody tr', count: 10 do |rows|
+      displayed_ids = rows.map { |row| row.at_css('th').text.to_i }
+      assert_equal cases.reverse.first(10).map(&:id), displayed_ids
+      rows.each do |row|
+        score = expected_scores[row.at_css('th').text.to_i]
+        cells = row.css('td')
+        assert_equal score ? '0.40' : '', cells[1].text.strip
+        assert_equal score ? (score.user&.name.presence || 'Nightly') : '', cells[3].text.strip
+        if score
+          assert_equal score.created_at.iso8601, cells[2].at_css('time')['datetime']
+        else
+          assert_empty cells[2].text.strip
+        end
+      end
+    end
+    assert_equal 1, score_queries.size, "Expected one score preload, got #{score_queries.size} score queries"
+    assert_equal 9, hydrated_scores, 'Only the latest score for each displayed scored case should be loaded'
+  end
+
   describe 'announcements' do
     let(:user) { users(:random) }
 
