@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { escapeAttribute, escapeHtml, sanitizeHtml, sanitizeSnippetHtml } from "utils/html"
+import { escapeHtml, sanitizeHtml, sanitizeSnippetHtml } from "utils/html"
 
 describe("html escaping", () => {
   it("escapes &, <, >, and both quote types", () => {
@@ -13,7 +13,7 @@ describe("html escaping", () => {
 
   it("makes attribute-breakout payloads inert", () => {
     const div = document.createElement("div")
-    div.innerHTML = `<span data-x="${escapeAttribute('"><img src=x onerror=alert(1)>')}"></span>`
+    div.innerHTML = `<span data-x="${escapeHtml('"><img src=x onerror=alert(1)>')}"></span>`
     expect(div.querySelector("img")).toBeNull()
     expect(div.firstElementChild.dataset.x).toBe('"><img src=x onerror=alert(1)>')
   })

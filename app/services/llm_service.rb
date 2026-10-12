@@ -16,10 +16,6 @@ class LlmService
     }
   end.freeze
 
-  def self.image_urls_supported? provider
-    false != LlmProvider.find(provider)&.supports_images?
-  end
-
   def initialize llm_key, opts = {}
     @llm_key = llm_key
     @options = DEFAULT_OPTIONS.merge(opts.deep_symbolize_keys)

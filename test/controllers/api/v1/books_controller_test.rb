@@ -55,7 +55,7 @@ module Api
 
         test 'returns empty array when no books match filter' do
           # Archive all books except the already archived one
-          doug.books_involved_with.active.each(&:archive!)
+          doug.books_involved_with.active.each { |book| book.update!(archived: true) }
 
           get :index, params: { archived: false }
           assert_response :ok

@@ -72,21 +72,6 @@ class ApiKeyTest < ActiveSupport::TestCase
     end
   end
 
-  describe '.authenticate_by_token' do
-    test 'returns the api key matching the raw token' do
-      raw_token = SecureRandom.hex
-      api_key = ApiKey.create! user: user, token: raw_token
-
-      found = ApiKey.authenticate_by_token(raw_token)
-
-      assert_equal api_key, found
-    end
-
-    test 'returns nil instead of raising when no api key matches' do
-      assert_nil ApiKey.authenticate_by_token('some-bogus-token')
-    end
-  end
-
   describe '#serializable_hash' do
     test 'includes the virtual token right after creation and excludes the digest' do
       raw_token = SecureRandom.hex

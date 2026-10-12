@@ -353,7 +353,7 @@ Stores raw request/response for snapshot queries (debugging).
 
 **Concerns:** `Profile` - avatar_url (Gravatar), display_name
 
-**Other:** agreed/agreed_time (T&C), company, email_marketing, profile_pic, num_logins; scope :only_ai_judges; judge_options (from options['judge_options']); unseen_app_notifications
+**Other:** agreed/agreed_time (T&C), company, email_marketing, profile_pic, num_logins; scope :only_ai_judges; judge_options (from options['judge_options'])
 
 #### Team ([app/models/team.rb](app/models/team.rb))
 

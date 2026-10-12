@@ -61,31 +61,6 @@ class BooksHelperTest < ActionView::TestCase
     end
   end
 
-  describe '#available_ai_judges_for_book?' do
-    it 'returns false when no AI judges are available to the viewer' do
-      # book_of_comedy_films belongs to another_shared_team which has no AI judges
-      book = books(:book_of_comedy_films)
-      assert_not available_ai_judges_for_book?(book, users(:random_2))
-    end
-
-    it 'returns false for a viewer with no judges' do
-      teamless_book = Book.create!(name: 'Teamless Book')
-      assert_not available_ai_judges_for_book?(teamless_book, users(:case_finder_user))
-    end
-
-    it 'returns true when AI judges are available' do
-      # Use empty_book which has shared team with judge_judy but no AI judges assigned
-      book = books(:empty_book)
-      assert available_ai_judges_for_book?(book, users(:doug))
-    end
-
-    it 'returns false when all team AI judges are already assigned' do
-      # james_bond_movies already has judge_judy assigned
-      book = books(:james_bond_movies)
-      assert_not available_ai_judges_for_book?(book, users(:doug))
-    end
-  end
-
   describe '#scorer_scale_lengths' do
     it 'returns a hash mapping scorer ids to scale lengths' do
       user = users(:doug)

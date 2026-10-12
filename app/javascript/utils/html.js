@@ -13,9 +13,6 @@ export function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ESCAPES[char])
 }
 
-// Safe for interpolation inside a quoted attribute value.
-export const escapeAttribute = escapeHtml
-
 /**
  * Allow-list sanitizer for response-controlled HTML (search snippets, document
  * fields). Every surviving element loses all attributes; links keep only an

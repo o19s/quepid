@@ -5,7 +5,6 @@ import {
   matchesQueryFilter,
   orderedQueries,
   paginate,
-  queryDisplayPositions,
   queryLifecycleState,
   queryResultCount,
   queryStateClass,
@@ -75,24 +74,6 @@ describe("query_state", () => {
   it("paginates a list using one-based page numbers", () => {
     expect(paginate([1, 2, 3, 4, 5], 2, 2)).toEqual([3, 4])
   })
-
-  it("calculates display positions across a paginated, reversible list", () => {
-    expect(queryDisplayPositions({
-      oldIndex: 1,
-      newIndex: 0,
-      currentPage: 2,
-      pageSize: 15,
-      reverse: false
-    })).toEqual({ fromIndex: 16, toIndex: 15, reverse: true })
-
-    expect(queryDisplayPositions({
-      oldIndex: 0,
-      newIndex: 1,
-      currentPage: 1,
-      pageSize: 15,
-      reverse: true
-    })).toEqual({ fromIndex: 0, toIndex: 1, reverse: true })
-  })
 })
 
 describe("query state edge cases", () => {
@@ -102,12 +83,5 @@ describe("query state edge cases", () => {
     expect(isImageUrl("https://x/a.png.html")).toBe(false)
     expect(isImageUrl("https://x/a.png/more")).toBe(false)
     expect(isImageUrl(null)).toBe(false)
-  })
-
-  it("reverses only when an item moves up the list", () => {
-    expect(queryDisplayPositions({ oldIndex: 3, newIndex: 1 }).reverse).toBe(true)
-    expect(queryDisplayPositions({ oldIndex: 1, newIndex: 3 }).reverse).toBe(false)
-    expect(queryDisplayPositions({ oldIndex: 2, newIndex: 2 }).reverse).toBe(false)
-    expect(queryDisplayPositions({ oldIndex: 2, newIndex: 2, reverse: true }).reverse).toBe(true)
   })
 })

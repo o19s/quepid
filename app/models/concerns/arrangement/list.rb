@@ -56,13 +56,6 @@ module Arrangement
         start_position + (distance_to_next / 2)
       end
 
-      def new_position_small start_position, distance_to_next
-        number_of_digits  = distance_to_next.to_s.size
-        increment         = (10**number_of_digits) / 100
-
-        start_position + distance_to_next - increment
-      end
-
       # Evenly space the nodes
       def normalize sorted_nodes
         range = ENDING_POSITION - STARTING_POSITION

@@ -87,11 +87,6 @@ module BooksHelper
     AiJudge.for_owner(user).where.not(id: book.ai_judges.select(:id))
   end
 
-  # Returns true if there are AI judges available to add to this book
-  def available_ai_judges_for_book? book, user
-    available_ai_judges_for_book(book, user).exists?
-  end
-
   # Returns a hash mapping scorer_id to scale_length for use in JavaScript
   # @param user [User] The user to get scorers for
   # @return [Hash] Hash of scorer_id => scale_length

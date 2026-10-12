@@ -128,14 +128,6 @@ class Book < ApplicationRecord
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }
 
-  def archive!
-    update(archived: true)
-  end
-
-  def unarchive!
-    update(archived: false)
-  end
-
   validates :name, presence: true
 
   # Custom validation to prevent scale changes but allow label changes

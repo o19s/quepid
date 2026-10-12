@@ -274,10 +274,6 @@ class User < ApplicationRecord
     is_a?(AiJudge)
   end
 
-  def num_queries
-    queries.count
-  end
-
   # All the scorers that you have access to, either as communal or as owner or via a team.
   def scorers_involved_with
     Scorer.for_user(self)
@@ -327,13 +323,6 @@ class User < ApplicationRecord
 
   def pending_invite?
     created_by_invite? && !invitation_accepted? && password.blank?
-  end
-
-  def unseen_app_notifications
-    Announcement
-      .left_outer_joins(:announcement_viewed)
-      .where('user_id != ? OR user_id IS NULL', id)
-      .order(:created_at)
   end
 
   def judge_options

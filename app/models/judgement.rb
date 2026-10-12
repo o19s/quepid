@@ -40,9 +40,6 @@ class Judgement < ApplicationRecord
 
   scope :rateable, -> { where(unrateable: false).where(judge_later: false) }
 
-  def check_unrateable_for_rating
-  end
-
   def rating= val
     self.unrateable = false unless val.nil?
     self.judge_later = false unless val.nil?
