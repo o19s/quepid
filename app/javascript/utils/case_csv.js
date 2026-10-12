@@ -10,6 +10,9 @@ import { formatShortDate } from "utils/date_format"
 const EOL = "\r\n"
 const TEXT_DELIMITER = '"'
 const LEADING_CHARS_NEEDING_ESCAPE = ["=", "@", "+", "-"]
+// Matches CsvExport::NUMERIC: a plain number can't carry a formula, and escaping it
+// would break external tools that join on numeric ids such as doc ids.
+const NUMERIC = /^[-+]?\d+(\.\d+)?$/
 
 function escapeJsonStringForCsv(input) {
   if (typeof input === "string") {
@@ -29,7 +32,7 @@ export function csvField(value) {
     // Neutralize spreadsheet formulas before adding CSV quoting. Otherwise a
     // value such as =HYPERLINK("...", "...") starts with a quote after
     // escaping and bypasses this check.
-    if (LEADING_CHARS_NEEDING_ESCAPE.includes(data[0])) {
+    if (LEADING_CHARS_NEEDING_ESCAPE.includes(data[0]) && !NUMERIC.test(data)) {
       data = ` ${data}`
     }
 

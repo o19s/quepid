@@ -75,13 +75,13 @@
 <div class="container centered-form">
   <div class="row mb-3">
     <hr>
-    <%= form_with( model: current_user, url: profile_path) do |f| %>
+    <%= form_with( model: @profile_user || current_user, url: profile_path) do |f| %>
 
       <h2>
         Profile
       </h2>
       <% if :profile == active_error_section %>
-        <%= render "shared/error_messages", record: current_user, subject: "", id: "error_explanation_profile" %>
+        <%= render "shared/error_messages", record: @profile_user, subject: "", id: "error_explanation_profile" %>
       <% end %>
 
       <div class="form-floating mb-3">

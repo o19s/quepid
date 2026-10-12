@@ -9,6 +9,11 @@ class CsvExportTest < ActiveSupport::TestCase
     assert_equal ' =1+1', CsvExport.field(CsvExport.field('=1+1'))
   end
 
+  test 'leaves plain numeric strings unescaped' do
+    assert_equal [ '-1', '+2', '-3.5', ' -4abc', ' -1+1', '-1 ' ],
+                 CSV.parse_line(CsvExport.line([ '-1', '+2', '-3.5', '-4abc', '-1+1', '-1 ' ]))
+  end
+
   # Shared with test/javascript/utils/csv_cross_language.test.js, which proves the
   # JS importer reads this exporter's output. If this fails because the exporter
   # changed on purpose, regenerate the fixture and re-run the Vitest spec.

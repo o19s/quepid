@@ -3,10 +3,17 @@
 require 'csv'
 
 module CsvExport
-  def self.field value
-    return value unless value.is_a?(String) && value.lstrip.match?(/\A[=+\-@]/)
+  # A plain number can't carry a formula, and escaping it would break external tools that
+  # join on numeric ids such as doc ids.
+  NUMERIC = /\A[-+]?\d+(\.\d+)?\z/
 
-    " #{value.lstrip}"
+  def self.field value
+    return value unless value.is_a?(String)
+
+    stripped = value.lstrip
+    return value unless stripped.match?(/\A[=+\-@]/) && !stripped.rstrip.match?(NUMERIC)
+
+    " #{stripped}"
   end
 
   def self.line values

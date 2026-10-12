@@ -140,6 +140,10 @@ describe("csvField", () => {
   it("serializes non-null objects as escaped JSON", () => {
     expect(csvField({ foo: 'bar"baz' })).toBe('"{""foo"":""bar\\""baz""}"')
   })
+
+  it("leaves plain numeric strings unescaped, like CsvExport", () => {
+    expect(["-1", "+2", "-3.5", "-4abc", "-1+1", "-1 "].map(csvField)).toEqual(["-1", "+2", "-3.5", " -4abc", " -1+1", "-1"])
+  })
 })
 
 describe("formatDownloadFileName", () => {

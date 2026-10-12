@@ -42,6 +42,6 @@
       "a\rb",
       "tab\there"
     ],
-    "ruby_csv": "\" =HYPERLINK(\"\"http://x\"\",\"\"y\"\")\", -1,\"a\rb\",tab\there\n"
+    "ruby_csv": "\" =HYPERLINK(\"\"http://x\"\",\"\"y\"\")\",-1,\"a\rb\",tab\there\n"
   }
 ]

@@ -230,6 +230,16 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ## [PREEXISTING] P2 — Product bugs
 
+### [PREEXISTING] P3 I0 C1 — Book settings 422 page loses the scorer and the settings tab
+
+**Location:** `app/controllers/books_controller.rb` (`update`), `app/helpers/books_helper.rb` (`book_settings_active?`)
+
+**Observed:** When `update` fails validation, `respond_with` re-renders the edit form. `update` never sets the `scorer_id` virtual attribute the way `edit` does (`matching_scorer_id_for_book`), so the scorer dropdown can come back blank. `book_settings_active?` only matches `action_name == 'edit'`, so the settings nav item isn't highlighted on the re-rendered page. At the `be9b319a` baseline, `update` also didn't set `scorer_id`. The tab helper came from #1792, a feature PR rather than migration work.
+
+**Fix direction:** Set `@book.scorer_id` in `update` when errors are present (unless the submitted value is already set), and treat `update` as the settings page in `book_settings_active?`. Add a controller test for the failed-update render.
+
+---
+
 ### [PREEXISTING] P2 I0 C1 — TREC export with a snapshot 500s on any unrated snapshot doc
 
 **Location:** `app/views/api/v1/export/ratings/show_trec_snapshot.txt.erb:3`
@@ -330,6 +340,28 @@ and scores, so keep it separate from behavior-preserving cleanup.
 ---
 
 ## [PREEXISTING] P1 — Backend correctness and authorization
+
+### [PREEXISTING] P1 I0 C1 — Book update saves memberships even when the update fails
+
+**Location:** `app/controllers/books_controller.rb` (`update`)
+
+**Observed:** `update` writes team and AI-judge memberships (`assign_book_memberships`: `TeamSharing#assign_teams`, `@book.ai_judges =` and auto-run flag saves) before calling `@book.update`. Those association writes persist immediately. If the update then fails validation, the 422 page shows errors, but the membership changes are already saved and the other field changes aren't. The user sees "failed" while part of the form is saved. At the `be9b319a` baseline, `update` had the same order (`@book.teams.replace` and `@book.ai_judges <<` before `update`).
+
+**Fix direction:** Wrap the membership changes and `update` in `Book.transaction` and roll back when `update` returns false. Keep the file purges outside the transaction or after it succeeds. Add a controller test where a failing update leaves teams and AI judges unchanged.
+
+---
+
+### [PREEXISTING] P2 I0 C2 — Core search-endpoint lookup matches archived and other users' endpoints
+
+**Location:** `app/controllers/core_controller.rb` (`populate_from_params`)
+
+**Observed:** When `/case/:id` gets `searchEngine` params, it calls `SearchEndpoint.find_or_create_by(search_engine:, endpoint_url:, api_method:, basic_auth_credential:)`. That lookup is global: an archived endpoint, or one owned by a team or user the current user can't see, can be attached to the try. The baseline `be9b319a` had the identical call.
+
+**Fix direction:** Add `.not_archived` to the lookup, and scope it to `current_user.search_endpoints_involved_with`. Creating a new endpoint should then set the owner. Add a controller test with an archived endpoint that matches.
+
+**Decision needed:** How matching should treat credentials when the matched endpoint belongs to someone else (reuse it, ignore the submitted credentials, or always create a user-owned endpoint). Settle this before broadening the scope beyond `.not_archived`.
+
+---
 
 ### [PREEXISTING] P1 I0 C1 — `FetchService` query substitution treats `\0`/`\1` as backreferences - EP review needed
 

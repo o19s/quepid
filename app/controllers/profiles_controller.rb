@@ -4,14 +4,18 @@ class ProfilesController < ApplicationController
   def show; end
 
   def update
+    # Update a separate copy so a failed save doesn't leave unsaved values on current_user,
+    # which the layout's navbar renders.
+    @profile_user = User.find(current_user.id)
+
     respond_to do |format|
-      if current_user.update user_params
-        Analytics::Tracker.track_user_updated_profile_event current_user
+      if @profile_user.update user_params
+        Analytics::Tracker.track_user_updated_profile_event @profile_user
         format.html { redirect_to profile_path, notice: 'Profile updated successfully.', status: :see_other }
-        format.json { render :show, status: :ok, location: current_user }
+        format.json { render :show, status: :ok, location: @profile_user }
       else
         format.html { render :show, status: :unprocessable_content, locals: { active_error_section: :profile } }
-        format.json { render json: current_user.errors, status: :unprocessable_content }
+        format.json { render json: @profile_user.errors, status: :unprocessable_content }
       end
     end
   end
