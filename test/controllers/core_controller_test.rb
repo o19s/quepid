@@ -21,7 +21,9 @@ class CoreControllerTest < ActionController::TestCase
       get :index, params: { id: cases(:one).id, try_number: tries(:one).try_number }
 
       assert_response :success
-      assert_select 'body[data-controller="snapshot-bridge core-bootstrap query-command-bridge"]'
+      %w[snapshot-bridge core-bootstrap query-command-bridge].each do |identifier|
+        assert_select 'body[data-controller~=?]', identifier
+      end
       assert_select 'body[data-core-bootstrap-case-no-value=?]', cases(:one).id.to_s
       assert_select 'body[data-core-bootstrap-try-no-value=?]', tries(:one).try_number.to_s
       assert_select 'body[data-core-bootstrap-case-toolbar-outlet="#case-actions"]'

@@ -235,10 +235,7 @@ class JavascriptExtractorTest < ActiveSupport::TestCase
   end
 
   test 'works with fixture file' do
-    fixture_path = Rails.root.join('test/fixtures/files/llm_generated_response.md')
-    skip('Fixture file not found') unless File.exist?(fixture_path)
-
-    markdown_content = File.read(fixture_path)
+    markdown_content = file_fixture('llm_generated_response.md').read
     result = @tool.execute(markdown_content: markdown_content)
 
     assert_kind_of String, result, 'Should extract JavaScript from fixture file'

@@ -6,7 +6,7 @@ require 'test_helper'
 # method missing etc magic to let us build up a AREL object.
 # That doesn't seem to be as needed now with Scopes.  The
 # tests are here to verify things still work without the class.
-class UserTeamFinderTest < ActiveSupport::TestCase
+class UserTeamScopesTest < ActiveSupport::TestCase
   let(:user)          { users(:team_finder_user) }
   let(:owned_team)    { teams(:owned_team) }
   let(:shared_team)   { teams(:shared_team) }

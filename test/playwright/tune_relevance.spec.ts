@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createDisposableCase, deleteCaseViaApi } from './case_helpers';
 
 const EDITABLE_CASE_ID = Number(process.env.QUEPID_E2E_EDITABLE_CASE_ID || 2);
 
@@ -18,32 +19,14 @@ test('query edits survive knob extraction and tab changes', async ({ page }) => 
   await expect(page.locator('[data-tune-relevance-target="curatorVars"] input')).toHaveValue('8');
 });
 
-test('generated endpoint and history controls route through Stimulus', async ({ page }) => {
+test('engine settings sections, endpoint suggestions and background evaluation', async ({ page }) => {
   await page.route(`**/api/cases/${EDITABLE_CASE_ID}/search_endpoints`, route => route.fulfill({
     json: { search_endpoints: [{ search_endpoint_id: 987654, name: 'Routing test endpoint', search_engine: 'solr' }] }
   }));
   await page.goto(`case/${EDITABLE_CASE_ID}`);
   await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
-  await expect(page.locator('[data-tune-relevance-target="historyList"] li').first()).toBeAttached();
-
   await expect(page.locator('[data-tune-relevance-target="endpointSelect"] option[value="987654"]')).toBeAttached();
 
-  // Keep this routing check in the browser without saving endpoint changes or navigating away.
-  await page.evaluate(() => {
-    const root = document.querySelector('[data-controller="tune-relevance"]') as HTMLElement;
-    const controller = (window as any).Stimulus.getControllerForElementAndIdentifier(root, 'tune-relevance');
-    controller.selectEndpoint = (endpoint: { id: number }) => { root.dataset.selectedEndpoint = String(endpoint.id); };
-    controller.capability.navigation.goToTry = (tryNo: number) => { root.dataset.navigatedTry = String(tryNo); };
-    // Stimulus resolves action methods at dispatch time, so these stubs record
-    // routing for handlers that would otherwise persist changes.
-    const calls: string[] = (window as any).__tuneActionCalls = [];
-    for (const name of ['save', 'updateNightly', 'runEvaluation', 'renameTry', 'duplicateTry', 'deleteTry']) {
-      controller[name] = () => { calls.push(name); };
-    }
-  });
-  const actionCalls = () => page.evaluate(() => (window as any).__tuneActionCalls);
-
-  const root = page.locator('[data-controller="tune-relevance"]');
   await page.locator('[data-tune-relevance-tab-param="engineSettings"]').click();
   // Search Endpoints, Evaluate Nightly and Escape Queries start collapsed, as they did in the Angular drawer.
   for (const section of ['search', 'nightly', 'escape']) {
@@ -51,9 +34,12 @@ test('generated endpoint and history controls route through Stimulus', async ({ 
   }
   await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
   await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
+
+  // Choosing a suggestion only changes the unsaved settings, so nothing persists.
   await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Routing test');
   await page.locator('[data-tune-relevance-target="endpointSuggestions"] button').click();
-  await expect(root).toHaveAttribute('data-selected-endpoint', '987654');
+  await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toHaveValue('987654');
+  await expect(page.locator('[data-tune-relevance-target="endpointName"]')).toHaveText('Routing test endpoint');
 
   const fieldsHeader = page.locator('.dev-header[data-tune-relevance-section-param="fields"]');
   const fieldsBody = page.locator('[data-tune-relevance-target="sectionBody"][data-section-body="fields"]');
@@ -61,43 +47,102 @@ test('generated endpoint and history controls route through Stimulus', async ({ 
   await expect(fieldsBody).toHaveClass(/d-none/);
   await fieldsHeader.click();
   await expect(fieldsBody).not.toHaveClass(/d-none/);
-  await page.locator('[data-tune-relevance-target~="nightly"]').click();
-  await page.locator('[data-tune-relevance-target~="runEvaluation"]').click();
-  await page.locator('[data-tune-relevance-target~="saveButton"]').click();
-  expect(await actionCalls()).toEqual(['updateNightly', 'runEvaluation', 'save']);
 
-  await page.locator('[data-tune-relevance-tab-param="history"]').click();
-  const row = page.locator('[data-tune-relevance-target="historyList"] li').first();
-  const tryNo = await row.getAttribute('data-try-no');
-  await row.locator('[data-try-name]').click();
-  await expect(root).toHaveAttribute('data-navigated-try', tryNo!);
-  await root.evaluate(element => { delete (element as HTMLElement).dataset.navigatedTry; });
-  await row.hover();
-  await row.locator('[data-try-details]').click();
-  const modal = page.locator('[data-tune-relevance-target="tryModal"]');
-  await expect(modal).toBeVisible();
-  await expect(root).not.toHaveAttribute('data-navigated-try');
-
-  // Real clicks: the modal renders outside the pane so the backdrop stays behind it.
-  const renameAction = modal.locator('[data-tune-relevance-target="tryRenameAction"]');
-  const renameForm = modal.locator('[data-tune-relevance-target="tryRenameForm"]');
-  await expect(renameForm).toBeHidden();
-  await renameAction.click();
-  await expect(renameForm).toBeVisible();
-  await expect(renameAction).toHaveText('Cancel Rename');
-  const url = page.url();
-  await modal.locator('[data-tune-relevance-target="tryNameInput"]').fill('Routing test name');
-  await renameForm.locator('button[type="submit"]').click();
-  await modal.getByRole('button', { name: 'Duplicate' }).click();
-  await modal.locator('[data-tune-relevance-target="tryDelete"]').evaluate(button => {
-    (button as HTMLButtonElement).disabled = false;
-    button.click();
+  // Answer the job-queue POST so no background evaluation is queued against the shared case.
+  let evaluationRequests = 0;
+  await page.route(`**/api/cases/${EDITABLE_CASE_ID}/run_evaluation**`, route => {
+    evaluationRequests += 1;
+    return route.fulfill({ json: {} });
   });
-  expect(await actionCalls()).toEqual(['updateNightly', 'runEvaluation', 'save', 'renameTry', 'duplicateTry', 'deleteTry']);
-  expect(page.url()).toBe(url);
-  await renameAction.click();
-  await expect(renameForm).toBeHidden();
-  await expect(renameAction).toHaveText('Rename');
-  await modal.locator('.modal-footer').getByRole('button', { name: 'Dismiss' }).click();
-  await expect(modal).toBeHidden();
+  await page.locator('[data-tune-relevance-target~="runEvaluation"]').click();
+  await expect(page).not.toHaveURL(/\/case\//);
+  expect(evaluationRequests).toBe(1);
+});
+
+test.describe('try management on a disposable case', () => {
+  let caseId: number | undefined;
+
+  test.afterAll(async ({ browser }) => {
+    if (caseId === undefined) return;
+    const page = await browser.newPage();
+    await page.goto('cases');
+    await deleteCaseViaApi(page, caseId);
+    await page.close();
+  });
+
+  test('nightly persists, and tries can be duplicated, renamed and deleted', async ({ page }) => {
+    caseId = await createDisposableCase(page, 'Tune Relevance');
+    const historyRows = page.locator('[data-tune-relevance-target="historyList"] li');
+    const modal = page.locator('[data-tune-relevance-target="tryModal"]');
+
+    const openTuneRelevance = async (tab: string) => {
+      await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+      await page.locator(`[data-tune-relevance-tab-param="${tab}"]`).click();
+    };
+    const openTryDetails = async (tryNo: string) => {
+      const row = historyRows.and(page.locator(`[data-try-no="${tryNo}"]`));
+      await row.hover();
+      await row.locator('[data-try-details]').click();
+      await expect(modal).toBeVisible();
+    };
+
+    await page.goto(`case/${caseId}`);
+    await openTuneRelevance('engineSettings');
+    await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
+    const nightly = page.locator('[data-tune-relevance-target~="nightly"]');
+    await expect(nightly).not.toBeChecked();
+    const nightlySaved = page.waitForResponse(response =>
+      response.url().includes(`/api/cases/${caseId}`) && response.request().method() === 'PUT');
+    await nightly.check();
+    expect((await nightlySaved).ok()).toBeTruthy();
+
+    await page.reload();
+    await openTuneRelevance('engineSettings');
+    await expect(nightly).toBeChecked();
+
+    await page.locator('[data-tune-relevance-tab-param="history"]').click();
+    await expect(historyRows).toHaveCount(1);
+    const activeTryNo = (await historyRows.first().getAttribute('data-try-no'))!;
+    await openTryDetails(activeTryNo);
+    // The only try can never be deleted.
+    await expect(modal.locator('[data-tune-relevance-target="tryDelete"]')).toBeDisabled();
+
+    await modal.getByRole('button', { name: 'Duplicate' }).click();
+    await expect(modal).toBeHidden();
+    await expect(historyRows).toHaveCount(2);
+    const duplicateTryNo = (await historyRows.first().getAttribute('data-try-no'))!;
+    expect(duplicateTryNo).not.toBe(activeTryNo);
+    // Duplicating does not switch the active try.
+    await expect(page).not.toHaveURL(new RegExp(`/try/${duplicateTryNo}\\b`));
+
+    await openTryDetails(duplicateTryNo);
+    await modal.locator('[data-tune-relevance-target="tryRenameAction"]').click();
+    const renamed = `Renamed try ${Date.now()}`;
+    await modal.locator('[data-tune-relevance-target="tryNameInput"]').fill(renamed);
+    await modal.locator('[data-tune-relevance-target="tryRenameForm"] button[type="submit"]').click();
+    await expect(modal).toBeHidden();
+
+    // Without a try in the URL the case opens on its newest try, so pin the original one.
+    await page.goto(`case/${caseId}/try/${activeTryNo}`);
+    await openTuneRelevance('history');
+    await expect(historyRows.and(page.locator(`[data-try-no="${duplicateTryNo}"]`))).toContainText(renamed);
+
+    // The active try cannot be deleted while it is selected.
+    await openTryDetails(activeTryNo);
+    await modal.locator('[data-tune-relevance-target="tryDelete"]').click();
+    await expect(modal).toBeHidden();
+    await expect(page.locator('#flash-messages')).toContainText('You can not delete the currently active try');
+    await expect(historyRows).toHaveCount(2);
+
+    await openTryDetails(duplicateTryNo);
+    page.once('dialog', dialog => dialog.accept());
+    await modal.locator('[data-tune-relevance-target="tryDelete"]').click();
+    await expect(modal).toBeHidden();
+    await expect(historyRows).toHaveCount(1);
+
+    await page.reload();
+    await openTuneRelevance('history');
+    await expect(historyRows).toHaveCount(1);
+    await expect(historyRows.first()).toHaveAttribute('data-try-no', activeTryNo);
+  });
 });

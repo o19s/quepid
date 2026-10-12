@@ -76,6 +76,9 @@ function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "tru
   return trigger
 }
 
+// openFor starts the snapshot load without awaiting it; let it settle.
+const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+
 function okJsonResponse(body) {
   return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
 }
@@ -130,7 +133,7 @@ describe("ExportCaseCoreController", () => {
     expect(controller.supportsDetailedExport).toBe(false)
   })
 
-  it("_loadSnapshots populates every snapshot select with a date-prefixed label", async () => {
+  it("opening populates every snapshot select with a date-prefixed label", async () => {
     apiFetch.mockResolvedValue(okJsonResponse({
       snapshots: [
         { id: 1, name: "Weekly", time: "2026-03-05T12:00:00Z" },
@@ -138,10 +141,11 @@ describe("ExportCaseCoreController", () => {
       ]
     }))
     const controller = buildModalController()
-    controller.currentCaseId = "5"
 
-    await controller._loadSnapshots()
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
 
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/snapshots", expect.any(Object))
     expect(controller.snapshotSelectTarget.children).toHaveLength(3) // blank + 2
     expect(controller.basicSnapshotSelectTarget.children).toHaveLength(3)
     expect(controller.apiSnapshotSelectTarget.children).toHaveLength(3)
@@ -153,33 +157,36 @@ describe("ExportCaseCoreController", () => {
   it.each([
     ["an HTTP error", () => Promise.resolve({ ok: false, status: 500, statusText: "Server Error", json: () => Promise.resolve(null) })],
     ["a network failure", () => Promise.reject(new TypeError("Failed to fetch"))]
-  ])("_loadSnapshots shows an error after %s, and clears it on the next successful load", async (_label, failure) => {
+  ])("opening shows a snapshot error after %s, and reopening clears it on success", async (_label, failure) => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     apiFetch.mockImplementationOnce(failure)
     const controller = buildModalController()
-    controller.currentCaseId = "5"
 
-    await controller._loadSnapshots()
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
 
     expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(false)
     expect(controller.snapshotSelectTarget.children).toHaveLength(1)
 
     apiFetch.mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
-    await controller._loadSnapshots()
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
     expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
   })
 
-  it("_loadSnapshots does not report a stale failure for a case the modal has moved off", async () => {
+  it("does not report a stale snapshot failure for a case the modal has moved off", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     let fail
-    apiFetch.mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject }))
+    apiFetch
+      .mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject }))
+      .mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
     const controller = buildModalController()
-    controller.currentCaseId = "5"
 
-    const loading = controller._loadSnapshots()
-    controller.currentCaseId = "6"
+    controller.openFor(buildTrigger({ id: "5" }))
+    controller.openFor(buildTrigger({ id: "6" }))
+    await settle()
     fail(new TypeError("Failed to fetch"))
-    await loading
+    await settle()
 
     expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
   })

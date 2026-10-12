@@ -45,6 +45,12 @@ function buildModalController(overrides = {}) {
   return controller
 }
 
+// Open the modal for case 5 with this scorer catalog.
+async function openWithCatalog(controller, catalog, currentScorerId = "") {
+  apiFetch.mockResolvedValue({ ok: true, text: async () => scorerCatalogHtml(catalog) })
+  await controller.openFor({ dataset: { pickScorerCoreIdValue: "5", pickScorerCoreCurrentScorerIdValue: currentScorerId } })
+}
+
 describe("PickScorerCoreController", () => {
   it("publishes the submitted scorer if selection changes while saving", async () => {
     const selected = { scorer_id: 1, name: "A" }
@@ -60,26 +66,24 @@ describe("PickScorerCoreController", () => {
     expect(changed.mock.calls[0][0].detail).toEqual({ caseId: 5, scorer: selected })
     document.removeEventListener("pick-scorer:selected", changed)
   })
-  it("updates scorer targets without changing unrelated list items", () => {
+  it("updates scorer targets without changing unrelated list items", async () => {
     const controller = buildModalController()
-    const scorer = new DOMParser().parseFromString(scorerCatalogHtml({ communal_scorers: [{ scorer_id: 8, name: "Scorer" }] }), "text/html").querySelector("li")
-    controller.communalListTarget.append(scorer)
+    await openWithCatalog(controller, { communal_scorers: [{ scorer_id: 8, name: "Scorer" }, { scorer_id: 9, name: "Other" }] })
     const unrelated = document.createElement("li")
     unrelated.className = "list-group-item active"
     controller.element.append(unrelated)
-    controller.selectedScorer = { scorer_id: 8 }
-    controller._refreshListActive()
+    controller.selectScorer({ params: { scorerId: 8 } })
+    const [scorer, other] = controller.communalListTarget.children
     expect(scorer.classList.contains("active")).toBe(true)
+    expect(other.classList.contains("active")).toBe(false)
     expect(unrelated.classList.contains("active")).toBe(true)
   })
 
-  it("renders scorer names as text using the shipped row action", () => {
+  it("renders scorer names as text using the shipped row action", async () => {
     const controller = buildModalController()
     const name = '<img src=x onerror="alert(1)">'
-    const html = scorerCatalogHtml({ user_scorers: [{ scorer_id: 8, name }] })
-    const catalog = () => new DOMParser().parseFromString(html, "text/html").querySelector("[data-scorer-catalog]")
-    controller._renderLists(catalog())
-    controller._renderLists(catalog())
+    await openWithCatalog(controller, { user_scorers: [{ scorer_id: 8, name }] })
+    await openWithCatalog(controller, { user_scorers: [{ scorer_id: 8, name }] })
     const item = controller.customListTarget.firstElementChild
     expect(item.textContent).toBe(name)
     expect(item.querySelector("img")).toBeNull()

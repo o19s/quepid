@@ -61,7 +61,19 @@ export async function gotoCase(page: Page, query: string = '', caseId: number = 
   // explain-modal test) needs real headroom for 20 queries against a real
   // external host; the default static fixture settles almost immediately,
   // but the wait is harmless there too.
-  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
+  await waitForSearchSettled(page);
+}
+
+/**
+ * Wait until both `.search-feedback` elements are hidden (queries finished
+ * running). Fails rather than continuing on a timeout, so later steps never
+ * race an unsettled page.
+ */
+export async function waitForSearchSettled(page: Page, timeout = 40_000): Promise<void> {
+  await expect(
+    page.locator('.search-feedback:visible'),
+    'precondition: query searches should finish (.search-feedback hidden) before the test continues'
+  ).toHaveCount(0, { timeout });
 }
 
 /** Expand the first query row unless results are already visible. */
@@ -138,6 +150,26 @@ export async function createDisposableCase(page: Page, label: string): Promise<n
   await page.goto('cases');
   await page.waitForSelector('body', { timeout: 15_000 });
   return createCaseViaApi(page, `Playwright ${label} Scratch ${Date.now()}`);
+}
+
+/**
+ * Clone CASE_ID (queries, ratings and its static-search try) into a disposable case and open it.
+ * The caller deletes the returned case in an afterAll.
+ */
+export async function cloneRichCase(page: Page, label: string): Promise<number> {
+  await page.goto(`case/${CASE_ID}`);
+  const headers = await apiHeaders(page, { 'Content-Type': 'application/json' });
+  const source = await page.request.get(`api/cases/${CASE_ID}`, { headers });
+  expect(source.ok()).toBeTruthy();
+  const response = await page.request.post('api/clone/cases', {
+    headers,
+    data: { case_id: CASE_ID, case_name: `Playwright ${label} Scratch ${Date.now()}`, clone_queries: true,
+      clone_ratings: true, preserve_history: false, try_number: Number((await source.json()).last_try_number) }
+  });
+  expect(response.ok()).toBeTruthy();
+  const caseId = Number((await response.json()).case_id);
+  expect(caseId).toBeGreaterThan(0);
+  return caseId;
 }
 
 /**

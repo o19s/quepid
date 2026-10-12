@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { DEFAULT_RICH_CASE_ID } from './case_helpers';
+import { DEFAULT_RICH_CASE_ID, apiHeaders, waitForSearchSettled } from './case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
@@ -25,19 +25,13 @@ async function gotoSnapshotCase(page: Page): Promise<void> {
   // to clear before proceeding -- see the identical wait in case_helpers.ts's
   // gotoCase() for why `state: 'hidden'` alone isn't enough (two elements share the
   // class). Without this, clicking "Take Snapshot" before the query runtime's state has
-  // actually settled can race the snapshot POST silently -- easy to miss when the
-  // case was slow (live Solr always left enough slack), much easier to hit once the
-  // case's search is instant (a local static/snapshot endpoint).
-  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 20_000 }).catch(() => {});
+  // actually settled can race the snapshot POST silently, which is easy to hit now
+  // that the case's search is instant (a local static/snapshot endpoint).
+  await waitForSearchSettled(page, 20_000);
 }
 
 test.describe('snapshots', () => {
   test('creating a snapshot lists it in the compare-snapshots picker', async ({ page }) => {
-    // The save serializes explain data for every query/doc in the case by
-    // fetching it from SNAPSHOT_CASE_ID's live search endpoint (a real
-    // external Solr host, not a fixture) -- give this one more headroom than
-    // the default 30s test timeout to absorb that host's real-world latency.
-    test.setTimeout(120_000);
     await gotoSnapshotCase(page);
 
     const snapshotName = `Playwright snapshot ${Date.now()}`;
@@ -50,18 +44,13 @@ test.describe('snapshots', () => {
 
       await snapshotModal.locator('#snapshotName').fill(snapshotName);
 
-      // Wait on the actual snapshot bridge POST rather than only
-      // the modal's closing animation — the save serializes explain data for
-      // every query/doc in the case, so its response time varies with server
-      // load. This is a stronger, faster-resolving signal than #flash-messages
-      // too, since case 5's background query auto-refresh periodically emits
-      // its own "All queries finished successfully!" flash that can race with
-      // (and overwrite) the single-slot flash before this assertion samples it.
+      // Wait on the actual snapshot bridge POST rather than only the modal's
+      // closing animation or #flash-messages: the query run's own "All queries
+      // finished successfully!" flash can overwrite the single-slot flash first.
       const snapshotSaved = page.waitForResponse(
         response =>
           response.url().includes(`/api/cases/${SNAPSHOT_CASE_ID}/snapshots`) &&
-          'POST' === response.request().method(),
-        { timeout: 100_000 }
+          'POST' === response.request().method()
       );
       await snapshotModal.getByRole('button', { name: 'Take Snapshot', exact: true }).click();
       const snapshotResponse = await snapshotSaved;
@@ -103,14 +92,12 @@ test.describe('snapshots', () => {
       // fixture reset) — clean up after ourselves so repeated runs don't pile
       // up snapshots, each carrying full explain-data for every query/doc,
       // which otherwise bloats the case and slows every later run's save.
+      // Relative to baseURL, so it also works under RAILS_RELATIVE_URL_ROOT.
       if (snapshotId) {
-        await page.evaluate(async ({ caseId, id }) => {
-          const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-          await fetch(`/api/cases/${caseId}/snapshots/${id}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-Token': token || '' }
-          });
-        }, { caseId: SNAPSHOT_CASE_ID, id: snapshotId });
+        const response = await page.request.delete(`api/cases/${SNAPSHOT_CASE_ID}/snapshots/${snapshotId}`, {
+          headers: await apiHeaders(page)
+        });
+        expect(response.ok(), `Snapshot ${snapshotId} cleanup failed: ${response.status()}`).toBeTruthy();
       }
     }
   });

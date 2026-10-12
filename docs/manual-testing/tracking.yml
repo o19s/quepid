@@ -473,12 +473,16 @@ parts:
       "4.8":
         title: "Select a scorer for the case"
         screenshots:
+          custom-selected: "4.8/custom-selected"
+          inaccessible-selection: "4.8/inaccessible-selection"
+          empty-catalog: "4.8/empty-catalog"
+          communal-only-browser: "4.8/communal-only-browser"
           scorer-saved: "4.8/scorer-saved"
           scorer-selected: "4.8/scorer-selected"
           scorer-picker: "4.8/scorer-picker"
-        last_run: 2026-10-10T00:39:05Z
+        last_run: 2026-10-12T13:51:03Z
         result: pass
-        notes: "Playwright MCP: opened default scorer catalog with AP@10 selected, selected nDCG@10, submitted actual API save, hard reload retained nDCG@10 and completed searches on Current :3000, Base :3003 (86e3de9), Legacy :3001 (8ceb99e). Three states inspected/registered per version (1100x1300 picker; 1440x1000 persisted outcome); restored AP@10 via UI all three afterward. Modal list internally scrolls; custom scorers absent in disposable account and custom area not framed. Current/Base same catalog/default selection; legacy older styling. Current maximum labels/AI Judges, query order/source import ordering, footer and document-field layout differ; Base picker background expanded versus Current/Legacy collapsed. Actual golden-path persistence now covered; custom/communal-only catalogs and pending/failure edges deferred (older mocked coverage retained in history)."
+        notes: "Covered live: real Clone of P@10 custom row selection enables submit; Create New Scorer navigates to /scorers. Injected catalog without current scorer shows AP@10 warning, disables placeholder submit and permits accessible selection; empty catalog shows custom empty text with submit disabled. Browser-only communal flag hides custom rows/Create and retains seven communal rows. Four PNGs inspected. No scorer saved; reload restored browser flag and routes removed. Not covered live: deployment-level communal configuration/server filtering, actual inaccessible ownership, custom save/persistence and pending/failure saves."
         paths: ["app/controllers/core/modal_catalogs_controller.rb", "config/routes.rb", "app/javascript/controllers/pick_scorer_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_pick_scorer_core_modal.html.erb", "app/views/core/_scorer_list_template.html.erb", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "app/models/scorer.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.9":
         title: "Missing Documents finder"
@@ -701,37 +705,41 @@ parts:
       "5.3":
         title: "Compare snapshots (diff)"
         screenshots:
+          three-snapshot-popover: "5.3/three-snapshot-popover"
+          processing-warning-injected: "5.3/processing-warning-injected"
           comparison-cleared: "5.3/comparison-cleared"
           selection-cleared: "5.3/selection-cleared"
           comparison-applied: "5.3/comparison-applied"
           comparison-limit: "5.3/comparison-limit"
           duplicate-warning: "5.3/duplicate-warning"
           snapshot-picker: "5.3/snapshot-picker"
-        last_run: 2026-10-10T02:52:21Z
+        last_run: 2026-10-12T13:53:25Z
         result: fail
-        notes: "Current/Base/Legacy 8ceb six states per server inspected and registered: two-snapshot picker, duplicate warning, actual five-row limit with Add hidden (Base/Legacy explanatory copy still says 1\u20133), applied fields/score badges, remove one selection, Clear Comparison View. Baseline and Rated snapshots persist; live ratings reset afterward. Historical-score expectation is unsupported by all three: resetting ratings makes both snapshot scores 0.00; Legacy live replay and app/assets/javascripts/services/diffResultsSvc.js query.scoreOthers, matching Current utils/diff_results.js, confirm rescoring historical docs with current ratings rather than frozen historical ratings. Existing comparison columns squeeze explain text and long badge labels; not treated as a migration regression. Forced catalog/apply/delete failures, pending snapshot and destructive deletion remain unverified."
+        notes: "Covered live: case 6 real snapshots 959136751/24/959136747 apply in selected order; swap first two and header order follows. Expanded meetings row has live plus three snapshot columns; snapshot document rating popover paints labels/Reset. Clear removes all comparison badges/popovers. Existing Fetch [BEGUN] 121 has has_snapshot_file:false and no processing warning; injected true flag shows warning (not an actual running job). Two PNG states inspected. Not covered live: other-query background refresh with popover open, distinguishable result sets, actual large/processing captures, other engines or failures/deletion. Unresolved 2026-10-10T02:52:21Z expectation failure retained: snapshots rescore historical documents with current ratings on Current/Base/Legacy 8ceb rather than frozen historical scores; historical live/source evidence remains in prior tracker revision. No production defect established by this pass."
         paths: ["app/views/core/_snapshot_selection_template.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "app/javascript/utils/parse_explain.js", "test/javascript/utils/date_format.test.js", "test/javascript/utils/parse_explain.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "5.4":
         title: "Annotations"
         screenshots:
+          settled-empty-case: "5.4/settled-empty-case"
           annotations-empty: "5.4/annotations-empty"
           annotation-draft: "5.4/annotation-draft"
           annotation-created: "5.4/annotation-created"
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-10T01:23:51Z
+        last_run: 2026-10-12T13:49:57Z
         result: pass
-        notes: "Reuses the actual three-version 4.14 golden-path verification and eighteen inspected registered images: empty list, draft, create, edit, saved after reload, delete. last_run preserves that verification time; linking evidence is not a new test. Final audit gives 5.4 separate evidence IDs for its broader tracked dependencies, retaining original images and actual capture times; 4.14 history stays intact. Current score stays 0.00 and displays Try No 7; Base/Legacy display score 0 and internal try id. Old edit updates background draft before save; Current retains original. Cancel, failures, disabled-before-search and concurrency remain unverified."
+        notes: "Covered live: pending-score DOM Create disabled with query bootstrap aborted (toolbar also gated); settled zero-query case 260 is Unrated with Create enabled. Case 6 real annotation create/delete updates list and graph; fixture 980190998 removed. Not covered live: new edit/cancel/failure/concurrency pass; no-score pending state used response abort, not a normally accessible drawer."
         paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         screenshots:
+          live-annotation-tooltip: "5.5/live-annotation-tooltip"
           annotation-tooltip: "5.5/annotation-tooltip"
           score-graph: "5.5/score-graph"
-        last_run: 2026-10-10T03:04:12Z
+        last_run: 2026-10-12T13:49:57Z
         result: pass
-        notes: "Current/Base/Legacy: populated ten-point score graph and hovered persisted annotation marker; tooltip displays Screenshot capture baseline annotation (Vega on Current/Base, D3 on Legacy). Both states captured and registered for all three versions. Partial: zero/one-score absence and live-update flicker not exercised."
+        notes: "Covered live: real zero-history case 260 and injected one-score response hide graph with zero SVGs; case 6 real new annotation marker mouse hover shows its message, create/delete each leaves exactly one graph and deletion removes marker. Tooltip PNG inspected. Not covered live: dense history, sustained update/resize flicker; one-score history injected, not persisted."
         paths: ["app/views/core/index.html.erb", "app/javascript/controllers/qgraph_controller.js", "app/javascript/utils/qgraph.js", "app/assets/stylesheets/qgraph.css", "app/assets/stylesheets/qscore.css", "app/controllers/api/v1/case_scores_controller.rb", "test/javascript/utils/qgraph.test.js", "app/javascript/api/json.js"]
 
   "06":

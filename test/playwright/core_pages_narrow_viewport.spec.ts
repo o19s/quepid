@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import {
   expandFirstQuery,
-  expandedCaseScreenshotOpts,
   gotoCase,
   headerDropdownMenu,
   resetCompletedCaseWizard,
@@ -12,9 +11,8 @@ import {
  * Catches grid/gutter and header layout regressions that often pass at 1280×900 alone.
  *
  * Subset of `core_pages.spec.ts`: **wizard endpoint step on a `?showWizard=true` load**, then cases
- * list + dropdown + share modal.
- *
- * Baselines: `yarn test:e2e:update-baselines` (Docker: `bin/docker r yarn test:e2e:update-baselines`).
+ * list + collapsed-nav dropdown + share modal. Pixel baselines for the narrow layout live in
+ * `visual_smoke.spec.ts` (`yarn test:visual`).
  */
 test.describe('Core case — narrow viewport slice (768×900)', () => {
   test('wizard endpoint step + cases list reflow', async ({ page }) => {
@@ -31,13 +29,11 @@ test.describe('Core case — narrow viewport slice (768×900)', () => {
     await modal.getByLabel('New Case Name:').fill('Playwright narrow tour');
     await continueButton.click();
     await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
-    await expect(page).toHaveScreenshot('narrow-01-wizard-endpoint-step.png', expandedCaseScreenshotOpts(page));
 
     // Don't close the wizard: the ✕ and Cancel both offer to delete the case, and CASE_ID is
     // the shared fixture most specs use. Reloading the case page below dismisses it without finishing.
     await gotoCase(page);
     await expandFirstQuery(page);
-    await expect(page).toHaveScreenshot('narrow-02-case-loaded.png', expandedCaseScreenshotOpts(page));
 
     // Below the `lg` breakpoint the header's nav now lives behind a collapsed
     // `.navbar-collapse` (see 16.2 in docs/manual-testing/tracking.yml) — open the
@@ -50,7 +46,6 @@ test.describe('Core case — narrow viewport slice (768×900)', () => {
 
     await page.getByText('Share case', { exact: true }).click();
     await expect(page.locator('.modal.show')).toContainText(/Share Case/i);
-    await expect(page).toHaveScreenshot('narrow-04-share-case-modal.png', expandedCaseScreenshotOpts(page));
     await page.locator('.modal.show').locator('.btn-close').click();
     await expect(page.locator('.modal.show')).toHaveCount(0);
   });

@@ -9,9 +9,9 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
   let(:score_data) do
     {
-      all_rated:  [ true, false ].sample,
+      all_rated:  true,
       queries:    {},
-      score:      (1..100).to_a.sample,
+      score:      42,
       try_number: the_try.try_number,
       user_id:    user.id,
     }
@@ -70,7 +70,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         }
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1 # otherwise the updated_at doesn't change'
+            travel 1.second # otherwise the updated_at doesn't change
             service.update score_data
 
             the_case.reload
@@ -280,7 +280,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload
@@ -307,7 +307,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:score] = 0.99
         assert_no_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload
@@ -322,7 +322,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:score] = 0.91
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload

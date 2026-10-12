@@ -163,16 +163,33 @@ describe("QscoreCaseController", () => {
     expect(labelEl.textContent).not.toBe("NDCG@10")
   })
 
-  it("does not persist the unrated '--' sentinel as a case score", () => {
-    const fetch = vi.fn()
-    vi.stubGlobal("fetch", fetch)
-    const controller = buildController(element)
-    controller.persistScore({
-      caseScore: { score: "--", allRated: false },
-      queryScores: { 1: { score: "--" } }
+  // Parity with Angular caseSvc: only a real numeric score over at least one
+  // query is saved. A score URL is set so the guards, not a missing URL, decide.
+  describe("score persistence guards", () => {
+    function persist(snapshot) {
+      const fetch = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null, ok: true })
+      vi.stubGlobal("fetch", fetch)
+      const controller = buildController(element)
+      controller.scoreUrlValue = "api/cases/1/scores"
+      controller.hasScoreUrlValue = true
+      controller.persistScore(snapshot)
+      return fetch
+    }
+
+    it("persists a score of 0", () => {
+      const fetch = persist({ caseScore: { score: 0, allRated: true }, queryScores: { 1: 0 } })
+
+      expect(fetch).toHaveBeenCalledWith("api/cases/1/scores", expect.objectContaining({ method: "PUT" }))
+      expect(JSON.parse(fetch.mock.calls[0][1].body).case_score.score).toBe(0)
     })
 
-    expect(fetch).not.toHaveBeenCalled()
+    it.each([
+      ["the unrated '--' sentinel", { caseScore: { score: "--", allRated: false }, queryScores: { 1: "--" } }],
+      ["the -1 sentinel", { caseScore: { score: -1, allRated: false }, queryScores: { 1: -1 } }],
+      ["empty queryScores", { caseScore: { score: 0.5, allRated: true }, queryScores: {} }]
+    ])("does not persist %s", (_label, snapshot) => {
+      expect(persist(snapshot)).not.toHaveBeenCalled()
+    })
   })
 
   it("persists a scored case through the server-owned score URL", async () => {

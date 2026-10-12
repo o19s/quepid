@@ -22,8 +22,16 @@ function controllerNamesUsedBy(source) {
 
 describe("core Stimulus registration", () => {
   it("registers every controller referenced by the core surface", () => {
+    // Core modals and the dynamic-modal templates live in app/views/shared but
+    // only render on the case page.
+    const sharedCoreViews = readdirSync(path.join(repoRoot, "app/views/shared"))
+      .filter(name => /^_.+_core_modal\.html\.erb$/.test(name) || name === "_dynamic_modal_templates.html.erb")
+      .map(name => path.join(repoRoot, "app/views/shared", name))
+    expect(sharedCoreViews.length).toBeGreaterThan(1)
+
     const coreSources = [
       ...sourceFiles(path.join(repoRoot, "app/views/core")),
+      ...sharedCoreViews,
       path.join(repoRoot, "app/views/layouts/_case_head.html.erb"),
       path.join(repoRoot, "app/views/layouts/_case_workspace.html.erb")
     ].map(filePath => readFileSync(filePath, "utf8"))

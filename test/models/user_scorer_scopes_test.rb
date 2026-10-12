@@ -7,7 +7,7 @@ require 'test_helper'
 # That doesn't seem to be as needed now with Scopes.  The
 # tests are here to verify things still work without the class.
 
-class UserScorerFinderTest < ActiveSupport::TestCase
+class UserScorerScopesTest < ActiveSupport::TestCase
   let(:user)                  { users(:doug) }
   let(:owned_scorer)          { scorers(:owned_scorer) }
   let(:shared_scorer)         { scorers(:shared_scorer) }

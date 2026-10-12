@@ -8,6 +8,7 @@ let bookId: number | undefined;
 let caseId: number | undefined;
 let providerUrl: string;
 let requests = 0;
+let inFlight = 0;
 let delay = 200;
 let failProvider = false;
 const name = `Book activity E2E ${Date.now()}`;
@@ -18,11 +19,16 @@ test.beforeAll(async () => {
   server = createServer(async (req, res) => {
     for await (const _chunk of req) { /* consume request */ }
     requests++;
-    await new Promise(resolve => setTimeout(resolve, delay));
-    res.writeHead(failProvider ? 401 : 200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(failProvider ? { error: { message: 'Provider unavailable' } } : {
-      choices: [{ message: { content: JSON.stringify({ judgment: 3, explanation: 'Fixture relevance' }) } }]
-    }));
+    inFlight++;
+    try {
+      await new Promise(resolve => setTimeout(resolve, delay));
+      res.writeHead(failProvider ? 401 : 200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(failProvider ? { error: { message: 'Provider unavailable' } } : {
+        choices: [{ message: { content: JSON.stringify({ judgment: 3, explanation: 'Fixture relevance' }) } }]
+      }));
+    } finally {
+      inFlight--;
+    }
   });
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve));
   const address = server.address();
@@ -130,10 +136,23 @@ test('automatic judging, live activity, cancellation, synchronization and recove
   await page.locator(`#judge-status-${judgeId} button[title="Cancel judging"]`).click();
   await expect(page.getByText(/has been cancelled\./)).toBeVisible();
   await expect(page.locator(`#judge-status-${judgeId}`)).toHaveAttribute('data-actively-judging', 'false');
-  await page.waitForTimeout(1800);
-  const stoppedAt = await count.innerText();
-  await page.waitForTimeout(1600);
+  // Let the provider call that was in flight at cancellation finish, then wait for the
+  // count to stop changing; no further provider calls may start after that. Each sample
+  // spans several provider delays so the job's save-and-broadcast after the last response
+  // lands before two readings can match.
+  await expect.poll(() => inFlight).toBe(0);
+  const requestsAtStop = requests;
+  let previousCount: string | undefined;
+  await expect(async () => {
+    const current = await count.innerText();
+    const previous = previousCount;
+    previousCount = current;
+    expect(current).toBe(previous);
+  }).toPass({ intervals: [delay * 4] });
+  const stoppedAt = previousCount!;
+  await page.reload();
   await expect(count).toHaveText(stoppedAt);
+  expect(requests).toBe(requestsAtStop);
   expect(Number(stoppedAt)).toBeLessThan(9);
 
   // Human first activity is also pushed to an already-open overview.

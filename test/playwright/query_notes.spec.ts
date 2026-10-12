@@ -70,6 +70,8 @@ test.describe('query notes: failed save', () => {
       return route.continue();
     });
 
+    const notesLoaded = page.waitForResponse(response =>
+      /\/api\/cases\/\d+\/queries\/\d+\/notes/.test(response.url()) && response.request().method() === 'GET');
     await page.getByRole('button', { name: 'Toggle Notes', exact: true }).first().click();
 
     const notes = page.locator('textarea:visible').first();
@@ -78,8 +80,9 @@ test.describe('query notes: failed save', () => {
     const typed = `typed while loading ${Date.now()}`;
     await notes.fill(typed);
 
-    // Wait past the held response: the value must still be what was typed, not what came back.
-    await page.waitForTimeout(3_000);
+    // After the held response lands, the value must still be what was typed, not what came back.
+    await notesLoaded;
+    await page.evaluate(() => new Promise(requestAnimationFrame));
     await expect(notes).toHaveValue(typed);
   });
 });

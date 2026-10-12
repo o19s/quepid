@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders, dynamicRegions, stubEmptyBookCatalog } from './case_helpers';
+import { apiHeaders, dynamicRegions, stubEmptyBookCatalog, waitForSearchSettled } from './case_helpers';
 
 /**
  * Permanent regression coverage for case sharing: the Stimulus
@@ -30,7 +30,7 @@ async function gotoCase(page: Page, caseId = SHARE_CASE_ID) {
   // `d-none`, so while visible it occupies real layout space -- see the identical wait in
   // case_helpers.ts's gotoCase() for why `state: 'hidden'` alone
   // isn't enough (two elements share the class).
-  await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
+  await waitForSearchSettled(page);
 }
 
 // Narrow the index to this case's row; it need not be on the first page.

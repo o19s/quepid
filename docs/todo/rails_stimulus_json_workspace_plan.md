@@ -1,8 +1,7 @@
 # Remaining case-workspace follow-ups while keeping JSON APIs
 
-The earlier selected simplification batches are complete. This file retains the
-completed modal-list batch, conditional follow-ups and deferred verification; actual browser coverage remains in the
-[manual testing tracker](../manual-testing/tracking.yml).
+This file retains conditional follow-ups and deferred verification; actual browser
+coverage remains in the [manual testing tracker](../manual-testing/tracking.yml).
 
 Keep Rails responsible for static structure, authorization and URLs; Stimulus
 owns interactions and JSON requests. Browser modules/stores retain direct search,
@@ -13,56 +12,6 @@ and [case-page lifecycle contract](../../DEVELOPER_GUIDE.md#turbo-on-the-case-pa
 Preserve behavior; product changes and pre-existing defect fixes require separate
 authorization. Targeted HTML endpoints for persisted case UI are permitted;
 existing JSON API contracts and browser-owned state remain intact.
-
-## First HTML conversion: annotations list — complete
-
-`CaseAnnotationsController` returns Rails-rendered rows for list/create/update;
-Stimulus mounts the fragments and retains browser score capture, relative timestamps,
-`annotations:changed` and the existing edit modal lifecycle. Writes retain JSON
-payloads; the separate JSON API retains its response contracts. Shared creation
-logic preserves persistence and parameter filtering.
-
-This uses explicit fragment requests rather than frame navigation: create prepends
-one row and edit retains its position, while a full list reload follows persisted
-ordering. The modal shell stays outside replacement. Success/error UI and drafts
-remain controller-owned. No second read is needed after a successful write.
-
-Verified create, edit/cancel, failure/retry, reload, delete and graph refresh;
-matched screenshot pairs are in `.playwright-mcp/annotations-html/`. Rails contracts,
-controller unit tests and the annotation E2E passed. The tracker records partial
-coverage; no-score browser state and graph tooltip/empty-state checks remain deferred.
-
-Review follow-up: edit responses now match rows by ID after an intervening delete;
-the regression test and updated core-page assertions pass (32 Rails tests,
-8 JavaScript tests, ESLint). Browser verification passed against a separate
-pre-fix worktree at `/private/tmp/quepid-annotations-review`: overlapping delete/edit
-leaves stale text before and displays the saved edit after. Matched viewport
-screenshots were inspected in `.playwright-mcp/annotations-edit-race/`;
-reload retained the edit and temporary annotations were removed.
-
-## Selected batch: server-rendered modal catalogs — complete
-
-Implemented sharing lists, judgements catalog and scorer lists. Rails
-renders persisted lists; Stimulus retains selection, drafts, modal lifecycle and
-workspace events. Preserve existing JSON APIs and full-document navigation.
-HTML fragments do not require converting writes to Turbo forms.
-
-- [x] Sharing: render the initial shared/shareable lists; retain selection toggles, share/unshare ordering and events.
-- [x] Judgements: consolidate owned/team book catalog loading and render rows;
-  retain current settings refresh, ordering, drafts and Populate/Refresh/Sync behavior.
-- [x] Scorers: render accessible lists and retain inaccessible-current-scorer
-  behavior and the complete scorer payload for immediate browser rescoring.
-- [x] Acceptance: relevant Rails/Vitest tests, lint/build and matched, inspected
-  before/after screenshots. Representative browser coverage includes open/reopen,
-  selection/cancel, successful writes and failure/retry; record deferred coverage
-  and update only actually exercised tracker entries.
-
-Verified 22 Rails tests (198 assertions), 46 controller tests, the targeted
-Playwright batch (4 passed including auth setup), ESLint, RuboCop and the core build.
-Inspected 12 before/after modal screenshot pairs against isolated `ca2d1d4f` in
-`.playwright-mcp/modal-catalogs/`; background search state differs. The tracker
-records sampled and deferred coverage. Snapshot comparison and Export remain
-outside this batch.
 
 ## Conditional follow-ups
 
@@ -104,8 +53,10 @@ and unrated-snapshot TREC export defects remain `[PREEXISTING]` work in
 These are coverage gaps, not established defects or incomplete implementation batches.
 Use representative samples and record actual results in the tracker.
 
-- Scorer selection: custom/inaccessible scorers, empty catalogs, communal-only
-  configuration and Create New Scorer navigation.
+- Annotations: sustained graph-update/resize flicker and pending-score access beyond
+  the bootstrap-gated control check.
+- Scorer selection: custom save/persistence, actual inaccessible ownership and
+  communal-only deployment/server filtering.
 - Bootstrap/settings/history: zero-case onboarding, endpoint swaps, fields/escape/
   nightly combinations, TLS/static and other engines, remaining history failures,
   Scores/Ratings links and visualizer.
@@ -114,8 +65,8 @@ Use representative samples and record actual results in the tracker.
   translations/embeds and full JSON-tree interactions.
 - Judgements: real Populate/Refresh/Sync, jobs, Create/Judge shortcuts and multi-team
   catalogs.
-- Snapshots: distinct multi-snapshot ordering, processing/large/background captures,
-  expanded comparisons/popovers and other engines.
+- Snapshots: distinguishable result-set ordering, real processing/large/background
+  captures, other-query refresh with a comparison popover open and other engines.
 - Sharing: multi-team mutual exclusion, same-case response races, team creation and
   management mutation/redirect flows.
 - Broader scoring, search, export, snapshot and management sweeps remain separate

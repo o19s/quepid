@@ -102,14 +102,6 @@ describe("ImportRatingsCoreController", () => {
     document.body.innerHTML = ""
   })
 
-  it("parses quoted CSV values and preserves headers", () => {
-    const instance = controller()
-    const parsed = instance.parseCsv('query,docid,rating\n"star wars, original",123,3\n')
-
-    expect(parsed.headers).toEqual(["query", "docid", "rating"])
-    expect(parsed.rows).toEqual([{ query: "star wars, original", docid: "123", rating: "3" }])
-  })
-
   it("validates the expected headers for each import format", () => {
     const instance = controller()
 

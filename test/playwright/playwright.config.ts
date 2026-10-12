@@ -50,7 +50,8 @@ export default defineConfig({
     {
       name: 'chromium',
       dependencies: ['setup'],
-      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts'],
+      // *.test.mjs files are node:test suites for the screenshot tooling, not browser specs.
+      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts', '**/*.test.mjs'],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },

@@ -38,6 +38,23 @@ async function closeModal(page: Page) {
   await expect(modal).toHaveCount(0);
 }
 
+// The account's teams are shared dev-DB state; serve a fixed catalog (one shared, one not).
+async function openShareCase(page: Page) {
+  await page.route(`**/cases/${CASE_ID}/modal_catalogs/sharing`, route => route.fulfill({
+    status: 200,
+    contentType: 'text/html',
+    body: `<div data-share-catalog>
+      <div data-catalog-list="shareable"><button type="button" class="list-group-item list-group-item-action" data-team-id="900001" data-team-order="0" data-share-case-core-team-id-param="900001" data-action="click->share-case-core#selectShareTeam">Visual Team A</button></div>
+      <div data-catalog-list="shared"><button type="button" class="list-group-item list-group-item-action list-group-item-success" data-team-id="900002" data-team-order="1" data-share-case-core-team-id-param="900002" data-action="click->share-case-core#selectSharedTeam">Visual Team B</button></div>
+    </div>`
+  }));
+  await page.getByText('Share case', { exact: true }).click();
+  const modal = page.locator('.modal.show');
+  await expect(modal).toContainText(/Share Case/i);
+  await expect(modal).toContainText('Visual Team A');
+  await expect(modal).toContainText('Visual Team B');
+}
+
 test.beforeEach(async ({ page, baseURL }) => {
   await page.clock.setFixedTime(new Date('2026-01-15T12:00:00Z'));
 
@@ -87,6 +104,16 @@ test('core workspace and widgets', async ({ page }) => {
   await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
   await expect(page.locator('#takeSnapshotModal.show')).toBeVisible();
   await shot(page, 'core-snapshot');
+  await closeModal(page);
+
+  await openShareCase(page);
+  await shot(page, 'core-share-case');
+  await closeModal(page);
+
+  await page.getByRole('button', { name: 'Toggle Notes', exact: true }).first().click();
+  const notes = page.locator('textarea[data-query-notes-target="notes"]:visible').first();
+  await expect(notes).toBeVisible();
+  await shot(page, 'core-query-notes');
 });
 
 test('wizard name and endpoint forms', async ({ page }) => {
@@ -145,6 +172,9 @@ test('narrow core and Rails form', async ({ page }) => {
   await page.setViewportSize({ width: 768, height: 900 });
   await core(page);
   await shot(page, 'narrow-core');
+  await openShareCase(page);
+  await shot(page, 'narrow-share-case');
+  await closeModal(page);
   await page.goto('teams/new');
   await expect(page.getByRole('heading', { name: 'New Team', exact: true })).toBeVisible();
   await shot(page, 'narrow-team-form');

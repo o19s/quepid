@@ -9,7 +9,7 @@ import { fileURLToPath } from "node:url"
 import { askClaude, claudeArguments, validateClaudeCapture } from "./capture-claude.mjs"
 import { decodePng } from "./png-diff.mjs"
 
-const fixture = path.join(path.dirname(fileURLToPath(import.meta.url)), "baselines/core_smoke.spec.ts/snapshot-modal.png")
+const fixture = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures/capture-tooling.png")
 const png = decodePng(fs.readFileSync(fixture))
 const contract = { target: "http://localhost:3000/admin/users?q=quepid", accountRole: "administrator", viewport: { width: png.width, height: png.height }, fullPage: false, scroll: { x: 0, y: 0 }, state: "populated filtered users", steps: ["Sign in", "Submit user filter"] }
 

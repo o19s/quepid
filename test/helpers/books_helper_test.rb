@@ -75,9 +75,7 @@ class BooksHelperTest < ActionView::TestCase
 
     it 'correctly identifies 4-point scales' do
       user = users(:doug)
-      # Find a scorer with a 4-point scale
-      scorer = user.scorers_involved_with.find { |s| 4 == s.scale&.length }
-      skip 'No 4-point scale scorer found for test user' unless scorer
+      scorer = scorers(:valid) # owned by doug, scale 1, 2, 3, 4
 
       result = scorer_scale_lengths(user)
       assert_equal 4, result[scorer.id]

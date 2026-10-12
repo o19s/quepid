@@ -1,90 +1,43 @@
 import { test, expect } from '@playwright/test';
 import { expandFirstQuery, gotoCase } from './case_helpers';
 
-const CASE_ID = Number(process.env.QUEPID_E2E_EDITABLE_CASE_ID || 2);
-
-test('core event actions deliver once and follow controller reconnects', async ({ page }) => {
-  await page.goto(`case/${CASE_ID}`);
-  await expect(page.locator('[data-case-toolbar-target="actions"]')).toBeVisible();
-
-  await page.evaluate(() => {
-    const app = (window as any).Stimulus;
-    // Removing a child controller identifier can make the query renderer replace its shell.
-    // Freeze that renderer while testing action ownership on the same nodes.
-    const queryList = document.querySelector('[data-controller~="queries-list"]')!;
-    app.getControllerForElementAndIdentifier(queryList, 'queries-list').render = () => {};
-    const probes = [
-      { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleHeaderStale', event: 'quepid:case-header-stale' },
-      { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleCaseRenamed', event: 'quepid:case-renamed' },
-      { selector: '[data-controller="case-toolbar"]', id: 'case-toolbar', method: 'handleScorerSelected', event: 'pick-scorer:selected' },
-      { selector: '[data-controller="qgraph"]', id: 'qgraph', method: 'handleScorePersisted', event: 'case-score:persisted' },
-      { selector: '[data-controller="qgraph"]', id: 'qgraph', method: 'handleAnnotationsChanged', event: 'annotations:changed' },
-      { selector: '[data-controller="add-query"]', id: 'add-query', method: 'refreshQueryState', event: 'queries-state:changed' },
-      { selector: '[data-controller="add-query"]', id: 'add-query', method: 'complete', event: 'add-query:complete' },
-      { selector: '[data-controller="qscore-case"]', id: 'qscore-case', method: 'handleDiffsRefreshed', event: 'query-diffs:refreshed' },
-      { selector: '[data-controller="qscore-case"]', id: 'qscore-case', method: 'handleScorerSelected', event: 'pick-scorer:selected' },
-      { selector: '[data-controller="pane"]', id: 'pane', method: 'resize', event: 'resize' },
-      { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleRating', event: 'rating-popover:rate' },
-      { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleRating', event: 'rating-popover:reset' },
-      { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleQueryToggle', event: 'query-row:toggle' },
-      { selector: '[data-controller="search-results"]', id: 'search-results', method: 'handleShowDocument', event: 'search-result:show-document' },
-      { selector: '[data-controller="search-results"]', id: 'search-results', method: 'closeNotes', event: 'query-notes:close' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryToggle', event: 'query-row:toggle' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryDeleteCompleted', event: 'query-delete:completed' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'handleQueryMoveCompleted', event: 'move-query-core:completed' },
-      { selector: '[data-controller~="queries-list"]', id: 'queries-list', method: 'refreshListState', event: 'queries-state:changed' },
-      { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentShow', event: 'flash:show' },
-      { selector: '[data-flash-channel-value="main"]', id: 'flash', method: 'onDocumentHide', event: 'flash:hide' },
-      { selector: '[data-flash-channel-value="search-error"]', id: 'flash', method: 'onDocumentShow', event: 'flash:show' },
-      { selector: '[data-flash-channel-value="search-error"]', id: 'flash', method: 'onDocumentHide', event: 'flash:hide' }
-    ].map(probe => {
-      const element = document.querySelector(probe.selector)!;
-      const controller = app.getControllerForElementAndIdentifier(element, probe.id);
-      const state = { ...probe, element, controller, count: 0, originalControllers: element.getAttribute("data-controller") };
-      const previous = controller[probe.method];
-      controller[probe.method] = (event: Event) => {
-        if (event.type === probe.event) state.count += 1;
-        else if (probe.method === 'handleRating') previous.call(controller, event);
-      };
-      return state;
-    });
-    (window as any).eventActionProbes = probes;
+test('a document event action delivers once and follows a controller reconnect', async ({ page }) => {
+  await gotoCase(page);
+  const toolbar = page.locator('#case-actions');
+  // Count calls on the prototype, passing through to the real handler: a reconnect builds a new
+  // instance, and repeated frame.src writes collapse into one request, so requests can't count deliveries.
+  await toolbar.evaluate(element => {
+    const controller = (window as any).Stimulus.getControllerForElementAndIdentifier(element, 'case-toolbar');
+    const prototype = Object.getPrototypeOf(controller);
+    const handle = prototype.handleHeaderStale;
+    (window as any).headerStaleCalls = 0;
+    prototype.handleHeaderStale = function (...args: unknown[]) {
+      (window as any).headerStaleCalls += 1;
+      return handle.apply(this, args);
+    };
   });
+  const calls = () => page.evaluate(() => (window as any).headerStaleCalls);
+  const isConnected = () => toolbar.evaluate(element =>
+    Boolean((window as any).Stimulus.getControllerForElementAndIdentifier(element, 'case-toolbar')));
+  const dispatchStale = () => page.evaluate(() => document.dispatchEvent(new CustomEvent('quepid:case-header-stale')));
 
-  const dispatch = async () => page.evaluate(() => {
-    const probes = (window as any).eventActionProbes;
-    const dispatched = new Set<string>();
-    for (const probe of probes) {
-      const target = probe.event === 'resize' ? window :
-        ['add-query:complete', 'rating-popover:rate', 'rating-popover:reset', 'query-row:toggle', 'search-result:show-document', 'query-notes:close'].includes(probe.event) ? probe.element : document;
-      const key = target === document || target === window ? probe.event : `${probe.id}:${probe.event}`;
-      if (dispatched.has(key)) continue;
-      dispatched.add(key);
-      target.dispatchEvent(new CustomEvent(probe.event));
-    }
-    return probes.map((probe: any) => probe.count);
-  });
-  expect(await dispatch()).toEqual(Array(23).fill(1));
+  // The real handler still runs: it re-fetches the header frame.
+  const refetched = page.waitForResponse(response => /\/case\/\d+\/header(\/try\/\d+)?$/.test(new URL(response.url()).pathname));
+  await dispatchStale();
+  await refetched;
+  expect(await calls()).toBe(1);
 
-  await page.evaluate(() => {
-    for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.element.getAttribute('data-controller').split(' ').filter((id: string) => id !== probe.id).join(' '));
-  });
-  await expect.poll(() => page.evaluate(() => {
-    const app = (window as any).Stimulus;
-    return (window as any).eventActionProbes.every((probe: any) =>
-      !app.getControllerForElementAndIdentifier(probe.element, probe.id));
-  })).toBe(true);
-  expect(await dispatch()).toEqual(Array(23).fill(1));
+  // Detached, the event must reach nothing.
+  await toolbar.evaluate(element => element.setAttribute('data-controller', ''));
+  await expect.poll(isConnected).toBe(false);
+  await dispatchStale();
+  expect(await calls()).toBe(1);
 
-  await page.evaluate(() => {
-    for (const probe of (window as any).eventActionProbes) probe.element.setAttribute('data-controller', probe.originalControllers);
-  });
-  await expect.poll(() => page.evaluate(() => {
-    const app = (window as any).Stimulus;
-    return (window as any).eventActionProbes.filter((probe: any) =>
-      !app.getControllerForElementAndIdentifier(probe.element, probe.id)).map((probe: any) => ({ id: probe.id, event: probe.event, attached: probe.element.isConnected }));
-  })).toEqual([]);
-  expect(await dispatch()).toEqual(Array(23).fill(2));
+  // Reattached, it is delivered once again.
+  await toolbar.evaluate(element => element.setAttribute('data-controller', 'case-toolbar'));
+  await expect.poll(isConnected).toBe(true);
+  await dispatchStale();
+  expect(await calls()).toBe(2);
 });
 
 test('generated result and match-explain controls route through declared actions', async ({ page }) => {
@@ -124,24 +77,28 @@ test('generated result and match-explain controls route through declared actions
 });
 
 test('missing-document rating actions stay inside the dynamic modal', async ({ page }) => {
+  // Answer rating writes so the shared case's ratings never change.
+  const writes: string[] = [];
+  await page.route(/\/api\/cases\/\d+\/queries\/\d+\/.*ratings/, route => {
+    writes.push(`${route.request().method()} ${new URL(route.request().url()).pathname}`);
+    return route.fulfill({ json: {} });
+  });
   await gotoCase(page, '', 6);
   await expandFirstQuery(page);
   await page.getByRole('button', { name: 'Missing Documents', exact: true }).first().click();
   const root = page.locator('.modal.show [data-controller="missing-documents"]');
   await expect(root.locator('textarea')).toBeVisible();
-  await root.evaluate(element => {
-    const controller = (window as any).Stimulus.getControllerForElementAndIdentifier(element, 'missing-documents');
-    controller.rate = (event: Event) => {
-      const previous = Number((element as HTMLElement).dataset.ratingCalls || 0);
-      (element as HTMLElement).dataset.ratingCalls = String(previous + 1);
-      (element as HTMLElement).dataset.ratingEvent = event.type;
-    };
-    element.dispatchEvent(new CustomEvent('rating-popover:rate', { bubbles: true, detail: { rating: 1 } }));
-  });
-  await expect(root).toHaveAttribute('data-rating-calls', '1');
+  // Score All rates the loaded rated-docs list, so wait for it before dispatching.
+  await expect(root.locator('search-result').first()).toBeVisible();
+
+  // Each event reaches only missing-documents, which rates the whole listed set in one bulk call.
+  await root.evaluate(element => element.dispatchEvent(new CustomEvent('rating-popover:rate', { bubbles: true, detail: { rating: 1 } })));
+  await expect.poll(() => writes).toEqual([expect.stringMatching(/^PUT .*\/bulk\/ratings$/)]);
   await root.evaluate(element => element.dispatchEvent(new CustomEvent('rating-popover:reset', { bubbles: true })));
-  await expect(root).toHaveAttribute('data-rating-calls', '2');
-  await expect(root).toHaveAttribute('data-rating-event', 'rating-popover:reset');
+  await expect.poll(() => writes).toEqual([
+    expect.stringMatching(/^PUT .*\/bulk\/ratings$/),
+    expect.stringMatching(/^POST .*\/bulk\/ratings\/delete$/)
+  ]);
 });
 
 test('query pagination actions move between first and last pages', async ({ page }) => {

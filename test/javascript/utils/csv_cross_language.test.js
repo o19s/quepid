@@ -23,13 +23,27 @@ describe("CSV contract between the Ruby exporter and the JS importer", () => {
     }
   )
 
-  it.each(cases.map((c, index) => [index, c]))(
-    "JS csvField output parses to the same row as the Ruby output (case %i)",
+  // Known divergence: csvField trims each value and writes a blank bare, while
+  // CsvExport keeps surrounding whitespace and quotes a blank as "". Both parse
+  // to the same row, so those cases are compared after parsing; every other
+  // case must match byte for byte.
+  const whitespaceSensitive = ({ values }) => values.some((value) => value === "" || value !== value.trim())
+
+  // parseCsv trims fields, so comparing parsed rows would let a leading-space
+  // divergence such as " -1" vs "-1" through.
+  it.each(cases.map((c, index) => [index, c]).filter(([, c]) => !whitespaceSensitive(c)))(
+    "JS csvField writes the same bytes as Ruby CsvExport.line (case %i)",
+    (_index, { values, ruby_csv: rubyCsv }) => {
+      expect(values.map(csvField).join(",")).toBe(rubyCsv.replace(/\r?\n$/, ""))
+    }
+  )
+
+  it.each(cases.map((c, index) => [index, c]).filter(([, c]) => whitespaceSensitive(c)))(
+    "JS csvField output parses to the same row as the Ruby output (whitespace case %i)",
     (_index, { values, ruby_csv: rubyCsv }) => {
       const head = `${headers(values).join(",")}\n`
-      const jsCsv = values.map(csvField).join(",")
 
-      expect(parseCsv(head + jsCsv)).toEqual(parseCsv(head + rubyCsv))
+      expect(parseCsv(head + values.map(csvField).join(","))).toEqual(parseCsv(head + rubyCsv))
     }
   )
 })

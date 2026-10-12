@@ -68,17 +68,21 @@ async function responseText() {
   return data.books ? bookCatalogHtml(data.books) : JSON.stringify(data)
 }
 
-function renderBooks(controller, books) {
-  const catalog = new DOMParser().parseFromString(bookCatalogHtml(books), "text/html").querySelector("[data-book-catalog]")
-  controller._renderBooks([...catalog.children])
+// Open the modal for case 42 with this book catalog and saved book.
+async function openWithBooks(controller, books, bookId = null) {
+  apiFetch.mockImplementation(async (url) => ({
+    ok: true,
+    text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: bookId }) : bookCatalogHtml(books)
+  }))
+  await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
 }
 
 describe("JudgementsCoreController", () => {
-  it("renders names safely and replaces rows without losing the current selection", () => {
+  it("renders names safely and replaces rows without losing the current selection", async () => {
     const name = '<img src=x onerror="alert(1)">'
-    const controller = buildModalController({ books: [{ id: 2, name }], activeBookId: 2 })
-    renderBooks(controller, controller.books || [])
-    renderBooks(controller, controller.books || [])
+    const controller = buildModalController()
+    await openWithBooks(controller, [{ id: 2, name }], 2)
+    await openWithBooks(controller, [{ id: 2, name }], 2)
 
     expect(controller.itemTargets).toHaveLength(2)
     const row = controller.itemTargets[1]
@@ -90,18 +94,16 @@ describe("JudgementsCoreController", () => {
     expect(controller.itemTargets[0].querySelector("em").textContent).toBe("None (disconnect from any book)")
   })
 
-  it("shows the selection hint only with available books and no active book", () => {
-    const controller = buildModalController({ books: [], activeBookId: null })
-    controller._refreshIntegrationVisibility()
+  it("shows the selection hint only with available books and no active book", async () => {
+    const controller = buildModalController()
+    await openWithBooks(controller, [])
     expect(controller.selectHintTarget.classList.contains("d-none")).toBe(true)
     expect(controller.integrationTarget.classList.contains("d-none")).toBe(true)
 
-    controller.books = [{ id: 2, name: "Catalog" }]
-    controller._refreshIntegrationVisibility()
+    await openWithBooks(controller, [{ id: 2, name: "Catalog" }])
     expect(controller.selectHintTarget.classList.contains("d-none")).toBe(false)
 
-    controller.activeBookId = 2
-    controller._refreshIntegrationVisibility()
+    controller.selectBook({ params: { bookId: 2 } })
     expect(controller.selectHintTarget.classList.contains("d-none")).toBe(true)
     expect(controller.integrationTarget.classList.contains("d-none")).toBe(false)
   })
@@ -121,9 +123,9 @@ describe("JudgementsCoreController", () => {
     expect(shareCaseCore.openFromExternal).toHaveBeenCalledWith(7)
   })
 
-  it("keeps View navigation independent of book selection", () => {
-    const controller = buildModalController({ books: [{ id: 2, name: "Catalog" }] })
-    renderBooks(controller, controller.books || [])
+  it("keeps View navigation independent of book selection", async () => {
+    const controller = buildModalController()
+    await openWithBooks(controller, [{ id: 2, name: "Catalog" }])
     const link = controller.bookListTarget.querySelector("a")
     expect(link.getAttribute("href")).toBe("books/2")
     expect(link.dataset.action).toBe("click->judgements-core#viewBook")
@@ -133,14 +135,11 @@ describe("JudgementsCoreController", () => {
     expect(event.preventDefault).not.toHaveBeenCalled()
   })
 
-  it("highlights only the selected book target, including None", () => {
+  it("highlights only the selected book target, including None", async () => {
     const controller = buildModalController()
-    controller.books = [{ id: 8, name: "Book" }]
-    controller.activeBookId = 8
-    renderBooks(controller, controller.books || [])
+    await openWithBooks(controller, [{ id: 8, name: "Book" }], 8)
     expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([false, true])
-    controller.activeBookId = null
-    controller._refreshBookSelection()
+    controller.selectBook({ params: { bookId: "" } })
     expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([true, false])
   })
 

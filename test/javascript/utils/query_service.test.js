@@ -249,22 +249,32 @@ describe("query service helpers", () => {
     expect(calls).toHaveLength(12)
   })
 
-  it("runs a rate-limited queue sequentially", async () => {
+  it("runs a rate-limited queue sequentially, one task per interval", async () => {
     vi.useFakeTimers()
-    const calls = []
-    const promise = pAll(
-      [
-        async () => calls.push(1),
-        async () => calls.push(2),
-        async () => calls.push(3)
-      ],
-      60000
-    )
+    try {
+      const calls = []
+      // 60 requests per minute: one task every 1000 ms.
+      const promise = pAll(
+        [
+          async () => calls.push(1),
+          async () => calls.push(2),
+          async () => calls.push(3)
+        ],
+        60
+      )
 
-    await vi.runAllTimersAsync()
-    await expect(promise).resolves.toEqual([1, 2, 3])
-    expect(calls).toEqual([1, 2, 3])
-    vi.useRealTimers()
+      await vi.advanceTimersByTimeAsync(0)
+      expect(calls).toEqual([1])
+      await vi.advanceTimersByTimeAsync(999)
+      expect(calls).toEqual([1])
+      await vi.advanceTimersByTimeAsync(1)
+      expect(calls).toEqual([1, 2])
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(calls).toEqual([1, 2, 3])
+      await expect(promise).resolves.toEqual([1, 2, 3])
+    } finally {
+      vi.useRealTimers()
+    }
   })
 
   it("drains a failing batch without exceeding ten concurrent tasks or rejecting early", async () => {

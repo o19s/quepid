@@ -16,7 +16,7 @@ import { captureOptions, captureScenarioContext } from "./capture-options.mjs"
 import { screenshotReviews, setScreenshotApproval } from "./screenshot-reviews.mjs"
 import { decodePng } from "./png-diff.mjs"
 
-const fixture = path.join(path.dirname(fileURLToPath(import.meta.url)), "baselines/core_smoke.spec.ts/snapshot-modal.png")
+const fixture = path.join(path.dirname(fileURLToPath(import.meta.url)), "fixtures/capture-tooling.png")
 
 function setup(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "quepid-screen-history-"))

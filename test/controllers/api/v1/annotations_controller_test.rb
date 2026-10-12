@@ -38,8 +38,8 @@ module Api
         test 'creates a new score ' do
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {
@@ -63,8 +63,8 @@ module Api
 
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {
@@ -82,8 +82,8 @@ module Api
         test 'creates a new annotation' do
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {

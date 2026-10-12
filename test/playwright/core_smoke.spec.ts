@@ -1,45 +1,53 @@
 import { test, expect, type Page } from '@playwright/test';
 import {
   CASE_ID,
-  dynamicRegions,
+  cloneRichCase,
+  deleteCaseViaApi,
   expandFirstQuery,
-  expandedCaseScreenshotOpts,
   gotoCase,
 } from './case_helpers';
 
 // Golden-path smoke suite for the core case UI (case branch of application.html.erb).
-// Each test ends in a baseline screenshot so the BS3 -> BS5 migration's
-// per-template PRs have a regression net for "invisible-but-present"
-// failures (CLAUDE.md trap #5: popover element exists, aria-describedby set,
-// but display/opacity/transform are wrong — Capybara assert_selector won't
-// catch this, a pixel diff will).
+// Assertions are behavioural (toBeVisible checks real visibility, which catches
+// CLAUDE.md trap #5's "present but invisible" popovers). Pixel baselines for these
+// states live in visual_smoke.spec.ts (`yarn test:visual`).
 
 test.describe('core layout golden paths', () => {
+  const disposableCaseIds: number[] = [];
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto('cases');
+      for (const id of disposableCaseIds) await deleteCaseViaApi(page, id);
+    } finally {
+      await page.close();
+    }
+  });
+
   test('open case', async ({ page }) => {
     await gotoCase(page);
+    await expect(page.locator('.results-list-element li')).not.toHaveCount(0);
+    await expect(page.locator('[data-queries-list-target="count"]')).not.toHaveText('0');
     await expandFirstQuery(page);
-    await expect(page).toHaveScreenshot('open-case.png', expandedCaseScreenshotOpts(page));
+    await expect(page.locator('search-result').first()).toBeVisible();
   });
 
   test('explain modal — switch tabs', async ({ page }) => {
     // Deliberately pinned to live-Solr case 6, not the suite's default static
-    // fixture (case 219): the "Parsing" tab renders Solr's debug/explain
-    // payload, which a static/snapshot search endpoint never captures or
-    // replays (see case_helpers.ts's DEFAULT_RICH_CASE_ID comment).
-    // Static search would leave this tab permanently empty, silently losing
-    // its value as a regression net for that pane's rendering. Accepting the
-    // small residual live-network flake risk for this one test only.
+    // fixture (case 219): the "Parsing" tab renders Solr's debug payload, which
+    // a static search endpoint never returns (see case_helpers.ts's
+    // DEFAULT_RICH_CASE_ID comment).
     await gotoCase(page, '', 6);
     await expandFirstQuery(page);
 
     await page.getByRole('button', { name: 'Explain Query', exact: true }).first().click();
 
-    // Modal tab IDs from app/assets/javascripts/components/query_explain/_modal.html
+    // Tab and pane ids from the query-explain template in shared/_dynamic_modal_templates.html.erb.
     await expect(page.locator('#query-explain-tab-params')).toBeVisible();
     await page.locator('#query-explain-tab-parsing').click();
-    await expect(page.locator('#query-explain-pane-parsing')).toBeVisible();
-
-    await expect(page).toHaveScreenshot('explain-modal-parsing-tab.png', expandedCaseScreenshotOpts(page));
+    const parsing = page.locator('#query-explain-pane-parsing');
+    await expect(parsing).toBeVisible();
+    await expect(parsing).toContainText('parsedquery');
   });
 
   test('open wizard', async ({ page }) => {
@@ -49,7 +57,6 @@ test.describe('core layout golden paths', () => {
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await expect(modal).toContainText(/Name Your Case|Wizard/i);
-    await expect(page).toHaveScreenshot('wizard-open.png', expandedCaseScreenshotOpts(page));
   });
 
   test('query results render', async ({ page }) => {
@@ -68,7 +75,6 @@ test.describe('core layout golden paths', () => {
     const expandedResults = page.locator('.sub-results:visible').first();
     await expect(expandedResults.locator('[data-search-results-target="footer"]')).toBeVisible();
     await expect(expandedResults.locator('[data-search-results-target="nextPage"]')).toHaveCount(1);
-    await expect(page).toHaveScreenshot('query-results.png', expandedCaseScreenshotOpts(page));
   });
 
   test('frog report is Stimulus-owned', async ({ page }) => {
@@ -99,17 +105,9 @@ test.describe('core layout golden paths', () => {
   });
 
   test('query options saves through the Stimulus modal', async ({ page }) => {
-    let optionsRequest: { url: string; body: string } | undefined;
-    await page.route('**/api/cases/*/queries/*/options', async route => {
-      if (route.request().method() !== 'PUT') {
-        await route.continue();
-        return;
-      }
-      optionsRequest = { url: route.request().url(), body: route.request().postData() || '' };
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
-    });
-
-    await gotoCase(page);
+    const caseId = await cloneRichCase(page, 'Query Options');
+    disposableCaseIds.push(caseId);
+    await gotoCase(page, '', caseId);
     await expandFirstQuery(page);
     await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
 
@@ -124,8 +122,12 @@ test.describe('core layout golden paths', () => {
     await modal.getByRole('button', { name: 'Set Options', exact: true }).click();
     await expect(modal).toBeHidden();
     await expect(page.locator('.flash:visible')).toContainText('Query options saved successfully.');
-    expect(optionsRequest?.url).toMatch(/\/api\/cases\/\d+\/queries\/\d+\/options$/);
-    expect(optionsRequest?.body).toContain('"boost":2');
+
+    await gotoCase(page, '', caseId);
+    await expandFirstQuery(page);
+    await page.getByRole('button', { name: 'Set Options', exact: true }).first().click();
+    await expect(modal.locator('.cm-content')).toContainText('"boost"');
+    await expect(modal.locator('.cm-content')).toContainText('2');
   });
 
   test('detailed document modal uses the Stimulus results path', async ({ page }) => {
@@ -253,31 +255,28 @@ test.describe('core layout golden paths', () => {
   });
 
   test('delete query persists through the Stimulus controller', async ({ page }) => {
-    let deleteRequest: string | undefined;
-    await page.route('**/api/cases/*/queries/*', async route => {
-      if (route.request().method() !== 'DELETE') {
-        await route.continue();
-        return;
-      }
-
-      deleteRequest = route.request().url();
-      await route.fulfill({ status: 204 });
-    });
-
-    await gotoCase(page, '', 6);
-    await expandFirstQuery(page);
+    const caseId = await cloneRichCase(page, 'Delete Query');
+    disposableCaseIds.push(caseId);
+    await gotoCase(page, '', caseId);
 
     const row = page.locator('.results-list-element li').first();
     const queryText = (await row.locator('[data-query-row-target="text"]').textContent())?.trim();
     expect(queryText).toBeTruthy();
-    await page.once('dialog', dialog => {
+    const queryCount = page.locator('[data-queries-list-target="count"]');
+    const countBefore = (await queryCount.textContent())?.trim();
+    page.once('dialog', dialog => {
       expect(dialog.message()).toBe('Are you absolutely sure you want to delete?');
       void dialog.accept();
     });
+    await expandFirstQuery(page);
     await row.getByRole('button', { name: 'Delete Query', exact: true }).click();
-
-    await expect.poll(() => deleteRequest).toMatch(/\/api\/cases\/\d+\/queries\/\d+$/);
     await expect(page.locator('[data-query-row-target="text"]', { hasText: queryText })).toHaveCount(0);
+    await expect(queryCount).not.toHaveText(countBefore!);
+
+    await gotoCase(page, '', caseId);
+    await expect(page.locator('[data-query-row-target="text"]').first()).toBeVisible();
+    await expect(page.locator('[data-query-row-target="text"]', { hasText: queryText })).toHaveCount(0);
+    await expect(queryCount).not.toHaveText(countBefore!);
   });
 
   test('add query reports a persistence failure', async ({ page }) => {
@@ -311,8 +310,6 @@ test.describe('core layout golden paths', () => {
     // ratings popover (views/ratings/popover.html).
     await page.locator('search-result .single-rating').first().click();
     await expect(page.locator('.popover, [class*="popover"]').first()).toBeVisible({ timeout: 5_000 });
-
-    await expect(page).toHaveScreenshot('judgement-popover.png', expandedCaseScreenshotOpts(page));
   });
 
   test.describe('rating a result', () => {
@@ -418,17 +415,6 @@ test.describe('core layout golden paths', () => {
       await expect.poll(async () => (await queryScore.textContent())?.trim()).not.toBe(scoreBeforeRating?.trim());
       await expect.poll(async () => (await caseScore.textContent())?.trim()).not.toBe(caseScoreBeforeRating?.trim());
       await expect.poll(async () => await resultRating.locator('button').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(badgeColorBeforeRating);
-    });
-  });
-
-  test('take a snapshot', async ({ page }) => {
-    await gotoCase(page);
-    // queriesLayout.html — Stimulus take-snapshot-core toolbar trigger
-    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
-    await expect(page.locator('#takeSnapshotModal.show, .modal.show').first()).toBeVisible({ timeout: 5_000 });
-    await expect(page).toHaveScreenshot('snapshot-modal.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.065,
     });
   });
 

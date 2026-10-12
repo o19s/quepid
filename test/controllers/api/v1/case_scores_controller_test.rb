@@ -29,7 +29,7 @@ module Api
         test 'returns no content if the score is empty' do
           data = {
             score:      0,
-            all_rated:  [ true, false ].sample,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 
@@ -40,8 +40,8 @@ module Api
 
         test 'creates a new score if the case does not already have one' do
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 
@@ -68,8 +68,8 @@ module Api
 
         test 'saves hash of query scores' do
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
             queries:    {
               '1' => {
@@ -95,8 +95,8 @@ module Api
           old_score = acase.scores.create(user_id: user.id, try_id: first_try.id, score: 80, scorer_id: acase.scorer.id)
 
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
             scorer_id:  acase.scorer.id,
           }
@@ -127,8 +127,8 @@ module Api
           )
 
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 

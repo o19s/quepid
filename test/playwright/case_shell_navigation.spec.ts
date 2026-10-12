@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { createDisposableCase, deleteCaseViaApi } from './case_helpers';
+import { createDisposableCase, deleteCaseViaApi, waitForSearchSettled } from './case_helpers';
 
 /**
  * E2E coverage for the core-case-shell migration: `ngRoute` was removed,
@@ -67,19 +67,25 @@ test.describe('core case shell: boot without ngRoute', () => {
 });
 
 test.describe('core case shell: 404 handling without a client-side 404 route', () => {
-  test('bare /case loads a workbench instead of the old dead-code "Not Found" page', async ({ page }) => {
-    // Bare /case falls back to the user's own most-recent case server-side
-    // (CoreController#index) -- assert it boots a real workbench rather
-    // than asserting which specific case, since "most recent" depends on
-    // shared account state this test doesn't own.
+  test('bare /case loads the most recent case instead of the old dead-code "Not Found" page', async ({ page }) => {
+    // Bare /case falls back server-side (CoreController#set_case_or_bootstrap) to the
+    // newest non-archived case the user is involved with, which is the one just created.
     const caseId = await createDisposableCase(page, 'Shell-Bare-Case');
+    const consoleErrors: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') consoleErrors.push(msg.text());
+    });
 
     try {
-      await gotoCase(page, caseId); // register as most-recently-viewed
       await page.goto('case');
 
       await expect(page.locator('#case-actions')).toBeVisible({ timeout: 20_000 });
+      // The fallback renders in place (the URL stays /case), so identify the case from the page.
+      await expect(page).toHaveURL(/\/case$/);
+      await expect(page.locator(`[data-qscore-case-case-id-value="${caseId}"]`)).toHaveCount(1);
       await expect(page.getByText('Not found', { exact: false })).toHaveCount(0);
+      await waitForSearchSettled(page);
+      expect(consoleErrors).toEqual([]);
     } finally {
       await deleteCaseViaApi(page, caseId);
     }

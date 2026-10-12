@@ -5,9 +5,9 @@ require 'test_helper'
 class JavascriptScorerTest < ActiveSupport::TestCase
   let(:score_data) do
     {
-      all_rated:  [ true, false ].sample,
+      all_rated:  true,
       queries:    {},
-      score:      (1..100).to_a.sample,
+      score:      42,
       try_number: the_try.try_number,
       user_id:    user.id,
     }
