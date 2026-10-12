@@ -403,7 +403,7 @@ export function fromTextArea(textarea, options = {}) {
       JSON.parse(textarea.value);
       // Format after a small delay to ensure editor is fully initialized
       formatTimer = setTimeout(() => editor.formatJSON(), 0)
-    } catch (e) {
+    } catch {
       // If invalid JSON, don't attempt to format
       console.log("Initial JSON content is invalid, skipping auto-formatting");
     }

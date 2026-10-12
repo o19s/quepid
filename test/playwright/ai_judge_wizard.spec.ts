@@ -112,7 +112,7 @@ test('tests drafts, handles errors, saves via Turbo, and selects owned books wit
   bookId = undefined;
   await page.goto('ai_judges');
   await page.locator('tr').filter({ hasText: name }).getByRole('button', { name: 'Delete', exact: true }).click();
-  const confirmation = page.locator('#confirmDeleteModal');
+  const confirmation = page.locator('#confirmModal');
   await expect(confirmation).toContainText(name);
   await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
   await expect(confirmation).toBeHidden();

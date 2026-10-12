@@ -44,6 +44,23 @@ describe("JudgeActivityPollController", () => {
     controller.disconnect()
   })
 
+  it("polls as soon as a stream source subscribes, not on disconnect", async () => {
+    const source = document.createElement("turbo-cable-stream-source")
+    document.body.append(source)
+    const controller = buildController()
+    controller.connect()
+    source.setAttribute("connected", "")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    source.removeAttribute("connected")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
+    controller.disconnect()
+    source.setAttribute("connected", "")
+    await vi.advanceTimersByTimeAsync(0)
+    expect(fetch).toHaveBeenCalledTimes(1)
+  })
+
   it("stops polling on disconnect", async () => {
     const controller = buildController()
     controller.connect()

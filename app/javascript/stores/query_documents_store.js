@@ -116,7 +116,7 @@ export class QueryDocumentsStore extends EventTarget {
   }
 
   snapshot(queryId) {
-    const queries = Object.fromEntries([...this._queries.keys()].map(key => [key, this.query(key)]).filter(([_key, query]) => query))
+    const queries = Object.fromEntries([...this._queries.keys()].map(key => [key, this.query(key)]).filter(([, query]) => query))
     return {
       queryId: queryId == null ? null : Number(queryId),
       showOnlyRated: this.collection.showOnlyRated,
@@ -144,7 +144,7 @@ export function snapshotDocument(doc, state = {}) {
         docId: doc.id,
         docScore: doc.score?.() ?? null
       }
-    } catch (_error) {
+    } catch {
       // Explain data is optional display enhancement; a failed explanation
       // must not prevent the search result itself from rendering.
       matchExplain = null

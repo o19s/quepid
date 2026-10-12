@@ -33,7 +33,7 @@ That tree includes:
 
 Importmap bare imports (`api/fetch`, `utils/quepid_root`, npm pins) are not Node-resolvable; we do not use `eslint-plugin-import`.
 
-ESLint `no-unused-vars` and `no-console` are off during migration (unused `catch (e)`, Stimulus action params, debug `console.log`). The server-side scorer and mapper files also disable rules that assume ordinary module scope because MiniRacer supplies their globals and evaluates user code in the same sandbox. Those files are still parsed and checked for standard syntax errors.
+ESLint `no-unused-vars` is enforced throughout the linted `app/javascript/` tree, JavaScript tests, and build/config scripts. It remains off in server-side sandboxes, where declarations may be consumed outside the file. Use optional catch binding (`catch { ... }`) when the error is unused. `no-console` remains off. The server-side scorer and mapper files also disable rules that assume ordinary module scope because MiniRacer supplies their globals and evaluates user code in the same sandbox. Those files are still parsed and checked for standard syntax errors.
 
 ### Formatting conventions
 

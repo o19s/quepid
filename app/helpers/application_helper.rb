@@ -78,6 +78,16 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
+  # Icon button_to inside a .btn-group, confirmed through the shared modal.
+  # The form is itself a nested .btn-group so Bootstrap's `> .btn` sizing and
+  # -1px overlap still apply; ms-0 cancels the extra overlap the hidden
+  # _method input of a PATCH/DELETE form would otherwise add.
+  def group_button_to(url, confirm:, button_class:, confirm_style: nil, **html_options, &)
+    form_data = { turbo_confirm: confirm, turbo_confirm_style: confirm_style }.compact
+    button_to(url, html_options.merge(class: "btn btn-link ms-0 #{button_class}",
+                                      form:  { class: 'btn-group btn-group-sm', data: form_data }), &)
+  end
+
   # Flash keys that are structural flags consumed by a dedicated partial/controller,
   # not user-facing messages, so the generic flash banner must not render them.
   NON_DISPLAYABLE_FLASH_KEYS = %w[unfurl kraken_unleashed].freeze

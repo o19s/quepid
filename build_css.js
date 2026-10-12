@@ -200,7 +200,7 @@ function main() {
         debouncedRebuild();
       });
 
-      watcher.on('add', (path) => {
+      watcher.on('add', () => {
         debouncedRebuild();
       });
 

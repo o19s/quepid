@@ -132,8 +132,8 @@ test('automatic judging, live activity, cancellation, synchronization and recove
   await page.locator('#successModal').getByRole('button', { name: 'Close', exact: true }).click();
   await expect.poll(() => requests).toBeGreaterThan(previousRequests);
   await expect(page.locator(`#judge-status-${judgeId}`)).toHaveAttribute('data-actively-judging', 'true');
-  page.once("dialog", dialog => dialog.accept());
   await page.locator(`#judge-status-${judgeId} button[title="Cancel judging"]`).click();
+  await page.locator('#confirmModal').getByRole('button', { name: 'Confirm', exact: true }).click();
   await expect(page.getByText(/has been cancelled\./)).toBeVisible();
   await expect(page.locator(`#judge-status-${judgeId}`)).toHaveAttribute('data-actively-judging', 'false');
   // Let the provider call that was in flight at cancellation finish, then wait for the

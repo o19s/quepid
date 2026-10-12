@@ -21,6 +21,27 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_not make_active?(path: 'teams')
   end
 
+  test 'group_button_to nests its form as a btn-group carrying the Turbo confirmation' do
+    html = group_button_to('/books/1/unarchive', method: :patch, button_class: 'text-success p-0',
+                           title: 'Unarchive book', confirm: 'Unarchive Book 1?', confirm_style: 'primary') { 'icon' }
+    form = Nokogiri::HTML.fragment(html).at_css('form')
+
+    assert_equal 'btn-group btn-group-sm', form['class']
+    assert_equal 'Unarchive Book 1?', form['data-turbo-confirm']
+    assert_equal 'primary', form['data-turbo-confirm-style']
+    assert_equal 'patch', form.at_css('input[name=_method]')['value']
+    button = form.at_css('button')
+    assert_equal 'btn btn-link ms-0 text-success p-0', button['class']
+    assert_equal 'Unarchive book', button['title']
+  end
+
+  test 'group_button_to omits the confirm style when none is given' do
+    form = Nokogiri::HTML.fragment(group_button_to('/books/1/archive', method: :patch, button_class: 'p-0',
+                                                   confirm: 'Archive?') { 'icon' }).at_css('form')
+
+    assert_nil form['data-turbo-confirm-style']
+  end
+
   test 'quepid_root_url returns application root without trailing slash' do
     assert_equal root_url.chomp('/'), quepid_root_url
   end

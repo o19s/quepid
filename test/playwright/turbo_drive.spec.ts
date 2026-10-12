@@ -86,14 +86,18 @@ test('archive confirmation cancels without issuing a write', async ({ page }) =>
   page.on('request', request => {
     if (request.method() !== 'GET' && /\/books\/1\/archive$/.test(new URL(request.url()).pathname)) writes++;
   });
-  let dialogs = 0;
+  let nativeDialogs = 0;
   page.on('dialog', async dialog => {
-    dialogs++;
-    expect(dialog.message()).toBe('Are you sure you want to archive this book?');
+    nativeDialogs++;
     await dialog.dismiss();
   });
   await page.getByRole('button', { name: 'Archive', exact: true }).click();
-  await expect.poll(() => dialogs).toBe(1);
+  const confirmation = page.locator('#confirmModal');
+  await expect(confirmation).toBeVisible();
+  await expect(confirmation.locator('.confirm-message')).toHaveText('Are you sure you want to archive this book?');
+  await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+  await expect(confirmation).toBeHidden();
+  expect(nativeDialogs).toBe(0);
   expect(writes).toBe(0);
   await expect(page).toHaveURL(/\/books\/1$/);
 });

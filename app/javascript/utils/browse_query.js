@@ -12,7 +12,7 @@ function encodeQueryString(url) {
     const parsed = new URL(url)
     parsed.search = parsed.searchParams.toString()
     return parsed.toString()
-  } catch (error) {
+  } catch {
     return url
   }
 }

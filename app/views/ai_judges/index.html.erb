@@ -47,18 +47,14 @@
                     <%= link_to edit_ai_judge_path(ai_judge), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                       <i class="bi bi-pencil" aria-hidden="true"></i>
                     <% end %>
-                    <button type="button"
-                            class="btn btn-link text-danger p-0"
-                            title="Delete"
-                            aria-label="Delete"
-                            data-controller="confirm-delete"
-                            data-confirm-delete-confirm-delete-dialog-outlet="#confirmDeleteModal"
-                            data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= ai_judge_path(ai_judge) %>"
-                            data-confirm-delete-message-value="<%= h("Delete AI judge #{ai_judge.name}?") %>"
-                            data-confirm-delete-method-value="delete">
+                    <%= group_button_to ai_judge_path(ai_judge),
+                                        method: :delete,
+                                        button_class: "text-danger p-0",
+                                        title: "Delete",
+                                        aria: { label: "Delete" },
+                                        confirm: "Delete AI judge #{ai_judge.name}?" do %>
                       <i class="bi bi-x-circle" aria-hidden="true"></i>
-                    </button>
+                    <% end %>
                   </div>
                 </td>
               </tr>

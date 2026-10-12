@@ -82,7 +82,7 @@ export default class extends CoreModalControllerBase {
       this.errors[type] = this.validate(type, content)
       this.renderPreview(type, content, event.currentTarget)
       this.refreshUi()
-    } catch (error) {
+    } catch {
       this.errors[type] = "Unable to read this file. Please try again."
       this.refreshUi()
     }
@@ -155,7 +155,7 @@ export default class extends CoreModalControllerBase {
 
   validate(type, content) {
     if (type === "rre") {
-      try { JSON.parse(content) } catch (_) { return "Invalid RRE JSON file." }
+      try { JSON.parse(content) } catch { return "Invalid RRE JSON file." }
       return ""
     }
     if (type === "ltr") {

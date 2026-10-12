@@ -56,7 +56,7 @@ export default class extends CoreModalControllerBase {
       const payload = await getJson(`${this.snapshotsUrlValue}?shallow=true`)
       this.snapshots = payload.snapshots || []
       this.renderSelections()
-    } catch (error) {
+    } catch {
       this.showError("Could not load available snapshots.")
       this.snapshots = []
       this.renderSelections()

@@ -43,7 +43,7 @@ export default class extends Controller {
    * Handle input changes
    * Debounces the search to avoid excessive API calls
    */
-  search(event) {
+  search() {
     this.clearDebounce()
     this.abortRequest()
     const query = this.inputTarget.value.trim()

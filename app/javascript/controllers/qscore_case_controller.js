@@ -168,7 +168,7 @@ export default class extends Controller {
 
       const maxScore = this.store.caseScore?.maxScore || 1
       documentsStore.setCaseDiffs(buildCaseDiffScores(queries, maxScore))
-    } catch (error) {
+    } catch {
       if (refreshGeneration === this.diffRefreshGeneration) {
         documentsStore.clearCaseDiffs()
       }

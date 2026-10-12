@@ -39,7 +39,7 @@ export default class extends ImportFormControllerBase {
       
       try {
         caseData = JSON.parse(fileContent)
-      } catch (e) {
+      } catch {
         this.showAlert('Invalid JSON file. Please check the file format.', 'danger')
         this.setLoading(false)
         return

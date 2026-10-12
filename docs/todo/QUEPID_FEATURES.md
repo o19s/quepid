@@ -1285,7 +1285,7 @@ Used for:
 
 | Tool | Purpose |
 |------|---------|
-| RuboCop | Ruby linting (with Rails, Minitest, Capybara plugins) |
+| RuboCop | Ruby linting (with Rails, Minitest plugins) |
 | ESLint + Prettier | JavaScript linting and formatting |
 | Stylelint | CSS linting |
 | DatabaseConsistency | Schema validation |

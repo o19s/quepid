@@ -110,7 +110,7 @@ export default class extends withStatusMessages(Controller) {
     if (customHeaders) {
       try {
         JSON.parse(customHeaders)
-      } catch (e) {
+      } catch {
         this.showStatus("Custom headers must be valid JSON", "error")
         return
       }
@@ -120,7 +120,7 @@ export default class extends withStatusMessages(Controller) {
     if (httpMethod === 'POST' && testQuery) {
       try {
         JSON.parse(testQuery)
-      } catch (e) {
+      } catch {
         this.showStatus("Test query must be valid JSON for POST requests", "error")
         return
       }

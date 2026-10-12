@@ -47,8 +47,6 @@ export default [
       eqeqeq: ['error', 'always', { null: 'ignore' }],
       // Relaxed during migration — revisit when cleaning debug logging.
       'no-console': 'off',
-      // Relaxed during migration — revisit when cleaning debug logging.
-      'no-unused-vars': 'off',
     },
   },
   {
@@ -83,7 +81,6 @@ export default [
     rules: {
       ...recommendedRules,
       'no-console': 'off',
-      'no-unused-vars': 'off',
     },
   },
   {
@@ -108,7 +105,6 @@ export default [
     rules: {
       ...recommendedRules,
       'no-console': 'off',
-      'no-unused-vars': 'off',
       'no-useless-escape': 'off',
     },
   },

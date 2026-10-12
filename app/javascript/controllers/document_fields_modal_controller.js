@@ -18,7 +18,7 @@ export default class extends Controller {
 
     try {
       this.contentTarget.textContent = prettyPrintJson(documentFields)
-    } catch (e) {
+    } catch {
       // Fallback: show raw content if JSON parsing fails
       this.contentTarget.textContent = documentFields
     }

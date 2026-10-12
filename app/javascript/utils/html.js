@@ -99,7 +99,7 @@ function setSafeLink(element, href) {
       element.setAttribute("target", "_blank")
       element.setAttribute("rel", "noopener noreferrer")
     }
-  } catch (_error) {
+  } catch {
     // Drop malformed links while preserving their visible text.
   }
 }

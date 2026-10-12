@@ -51,7 +51,8 @@ describe("snapshot import runtime", () => {
   })
 
   it("keeps the static wizard contract when Snapshot Time is omitted", () => {
-    const { "Snapshot Time": _time, ...row } = rows[0]
+    const row = { ...rows[0] }
+    delete row["Snapshot Time"]
     expect(buildSnapshotImportGroups([row], 7)[7].snapshots.Weekly.created_at).toBeUndefined()
   })
 

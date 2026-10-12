@@ -109,8 +109,8 @@ test.describe('search endpoints management', () => {
     await expect(page.locator('table tbody tr', { hasText: endpointName })).toBeVisible();
 
     await page.goto(`search_endpoints/${endpointId}/edit`);
-    page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: 'Archive' }).click();
+    await page.locator('#confirmModal').getByRole('button', { name: 'Confirm', exact: true }).click();
 
     await expect(page).toHaveURL(/\/search_endpoints$/);
     await expect(page.locator('#flash-messages')).toContainText('Search Endpoint was archived.');

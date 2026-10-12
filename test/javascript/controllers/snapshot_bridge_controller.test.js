@@ -29,7 +29,7 @@ const snapshotHydration = vi.hoisted(() => ({
 vi.mock("utils/snapshot_hydration", () => snapshotHydration)
 vi.mock("utils/snapshot_model", () => ({ createSnapshotModel: vi.fn() }))
 
-function buildController(services) {
+function buildController() {
   const controller = buildControllerFixture(SnapshotBridgeController)
   return controller
 }
@@ -82,7 +82,7 @@ describe("SnapshotBridgeController", () => {
         disable: vi.fn()
       }
     }
-    controller = buildController(services)
+    controller = buildController()
   })
 
   afterEach(() => {

@@ -38,7 +38,7 @@ export default class extends ImportFormControllerBase {
         this.showPreview(fileContent)
         this.submitButtonTarget.disabled = false
       }
-    } catch (error) {
+    } catch {
       this.showAlert('Error reading file. Please try again.', 'danger')
       this.submitButtonTarget.disabled = true
       this.hidePreview()

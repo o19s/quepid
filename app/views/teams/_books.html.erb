@@ -70,23 +70,24 @@
                   <% end %>
 
                   <% if book.archived? %>
-                    <button type="button" class="btn btn-link text-success p-0 me-2" title="Unarchive book" aria-label="Unarchive book"
-                            data-controller="confirm-delete"
-                            data-confirm-delete-confirm-delete-dialog-outlet="#confirmDeleteModal" data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= unarchive_book_path(book) %>"
-                            data-confirm-delete-method-value="patch"
-                            data-confirm-delete-message-value="<%= h("Unarchive #{book.name}?") %>">
+                    <%= group_button_to unarchive_book_path(book),
+                                        method: :patch,
+                                        button_class: "text-success p-0 me-2",
+                                        title: "Unarchive book",
+                                        aria: { label: "Unarchive book" },
+                                        confirm: "Unarchive #{book.name}?",
+                                        confirm_style: "primary" do %>
                       <i class="bi bi-folder-check" aria-hidden="true"></i>
-                    </button>
+                    <% end %>
                   <% else %>
-                    <button type="button" class="btn btn-link text-warning p-0 me-2" title="Archive book" aria-label="Archive book"
-                            data-controller="confirm-delete"
-                            data-confirm-delete-confirm-delete-dialog-outlet="#confirmDeleteModal" data-action="click->confirm-delete#open"
-                            data-confirm-delete-url-value="<%= archive_book_path(book) %>"
-                            data-confirm-delete-method-value="patch"
-                            data-confirm-delete-message-value="<%= h("Archive #{book.name}?") %>">
+                    <%= group_button_to archive_book_path(book),
+                                        method: :patch,
+                                        button_class: "text-warning p-0 me-2",
+                                        title: "Archive book",
+                                        aria: { label: "Archive book" },
+                                        confirm: "Archive #{book.name}?" do %>
                       <i class="bi bi-folder-check" aria-hidden="true"></i>
-                    </button>
+                    <% end %>
                   <% end %>
                 </div>
               </td>

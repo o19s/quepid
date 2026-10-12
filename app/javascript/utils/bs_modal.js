@@ -1,6 +1,6 @@
 /**
  * Bootstrap 5 modal helpers shared by Stimulus controllers that boot a
- * `window.bootstrap.Modal` (confirm-delete, document-fields, share-case-core).
+ * `window.bootstrap.Modal` (confirm-dialog, document-fields, share-case-core).
  */
 
 export function getBootstrapModal() {

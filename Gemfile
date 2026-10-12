@@ -84,7 +84,6 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'rubocop-capybara', require: false
   gem 'brakeman', require: false
   gem 'bundler-audit', require: false
   gem 'rails-erd'
@@ -96,10 +95,6 @@ group :test do
   gem 'simplecov', require: false
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
-
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem 'capybara'
-  gem 'selenium-webdriver'
 end
 
 gem 'rubocop-minitest'

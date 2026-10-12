@@ -580,7 +580,7 @@ describe("queries_list_controller", () => {
   })
 
   it("restores the original DOM order when reorder persistence fails", async () => {
-    const { controller, element } = controllerFor()
+    const { controller } = controllerFor()
     controller.listTarget.innerHTML = `
       <li data-query-id="11"></li>
       <li data-query-id="12"></li>

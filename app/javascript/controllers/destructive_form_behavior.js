@@ -1,6 +1,6 @@
 import { getCsrfToken } from "api/fetch"
 
-// Case and opted-out management actions retain their native full-page submission.
+// Core case actions submit natively: Turbo Drive is off on the case page.
 export function withDestructiveForm(Base) {
   return class extends Base {
     submitDestructiveForm(url, method = "delete") {

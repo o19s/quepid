@@ -171,19 +171,15 @@
                     <i class="bi bi-pencil" aria-hidden="true"></i>
                   <% end %>
                 <% end %>
-                <button type="button"
-                        class="btn btn-link text-danger p-0"
-                        title="Remove member"
-                        aria-label="Remove member"
-                        data-controller="confirm-delete"
-                        data-confirm-delete-confirm-delete-dialog-outlet="#confirmDeleteModal"
-                        data-action="click->confirm-delete#open"
-                        data-confirm-delete-url-value="<%= member_team_path(@team, member_id: member.id) %>"
-                        data-confirm-delete-message-value="<%= h("Remove #{member.fullname} from this team?") %>"
-                        data-confirm-delete-method-value="delete">
+                <%= button_to member_team_path(@team, member_id: member.id),
+                              method: :delete,
+                              class: "btn btn-link text-danger p-0",
+                              title: "Remove member",
+                              aria: { label: "Remove member" },
+                              form: { class: "d-inline", data: { turbo_confirm: "Remove #{member.fullname} from this team?" } } do %>
                   <i class="bi bi-x-circle" aria-hidden="true"></i>
                   <span class="visually-hidden">Remove member</span>
-                </button>
+                <% end %>
                 
               </div>
             </div>

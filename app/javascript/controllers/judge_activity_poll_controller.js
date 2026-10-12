@@ -8,10 +8,23 @@ export default class extends Controller {
 
   connect() {
     this.startPolling()
+    this.reconcileOnSubscribe()
   }
 
   disconnect() {
     this.stopPolling()
+    this.streamObserver?.disconnect()
+  }
+
+  // Broadcasts sent before a stream source (re)subscribes are lost, e.g. a job
+  // finishing during a Turbo visit; reconcile as soon as each one connects.
+  reconcileOnSubscribe() {
+    this.streamObserver = new MutationObserver(records => {
+      if (records.some(record => record.target.hasAttribute("connected"))) this.poll()
+    })
+    document.querySelectorAll("turbo-cable-stream-source").forEach(source => {
+      this.streamObserver.observe(source, { attributes: true, attributeFilter: ["connected"] })
+    })
   }
 
   startPolling() {

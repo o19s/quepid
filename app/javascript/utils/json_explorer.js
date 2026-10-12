@@ -79,7 +79,7 @@ export function renderJsonExplorer(container, jsonString, { collapsed = false } 
   let data
   try {
     data = JSON.parse(jsonString)
-  } catch (e) {
+  } catch {
     data = { error: "invalid json" }
   }
 
