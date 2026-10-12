@@ -411,7 +411,9 @@ Baseline screenshots live under `test/playwright/baselines/` and **are checked i
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
-**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern).
+**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern). Restore state a test changes on an existing row (sharing, ratings) in `test.afterEach`, not in the test's last lines, which a failure skips.
+
+**Screenshot only what the static fixture controls.** A `toHaveScreenshot()` must not capture account-wide data that other specs or manual sessions change: header "recent cases/books" dropdowns, the cases index, live-search results. Assert those surfaces behaviorally instead, and stub a catalog (`page.route`) when a test needs a specific empty/non-empty precondition.
 
 For ad-hoc screenshots, the comparison viewer, and branch-specific capture history,
 see [Screenshot capture and diffing](docs/screenshot_review.md).

@@ -50,15 +50,37 @@ for (const width of [1280, 768]) {
     await expect(page.locator('nav #dropdown_cases')).toHaveAttribute('src', /dropdown\/cases$/);
     await expect(page.locator('nav #dropdown_books')).toHaveAttribute('src', /dropdown\/books$/);
     const managementCases = await openMenu(page, 'body > nav', 'Relevancy Cases');
-    await expect(managementCases.getByRole('link', { name: 'Create a case' })).toHaveAttribute('data-turbo', 'false');
     await expect(managementCases.locator('small')).toHaveCount(0);
+    // Already on /cases, so the URL can't show the Turbo visit finished; wait for its body swap.
+    await page.evaluate(() => { document.body.dataset.e2eBeforeVisit = 'true'; });
     await managementCases.getByRole('link', { name: 'View all cases' }).click();
+    await expect(page.locator('body[data-e2e-before-visit]')).toHaveCount(0);
     await expect(page).toHaveURL(/\/cases$/);
     if (width < 992) await page.locator('body > nav .navbar-toggler').click();
     await page.locator('body > nav').getByRole('link', { name: 'Teams', exact: true }).click();
     await expect(page).toHaveURL(/\/teams$/);
   });
 }
+
+// "Create a case" is a Turbo link on management pages; the case page's turbo-visit-control
+// reload must land on the created case without replaying the case-creating GET.
+test('management "Create a case" creates exactly one case and opens its wizard', async ({ page }) => {
+  await page.goto('cases');
+  let createRequests = 0;
+  page.on('request', request => {
+    if (request.method() === 'GET' && new URL(request.url()).pathname.endsWith('/cases/new')) createRequests += 1;
+  });
+  page.on('framenavigated', frame => {
+    if (frame !== page.mainFrame()) return;
+    const match = new URL(frame.url()).pathname.match(/\/case\/(\d+)\/try\//);
+    if (match) createdCases.add(Number(match[1]));
+  });
+  const cases = await openMenu(page, 'body > nav', 'Relevancy Cases');
+  await cases.getByRole('link', { name: 'Create a case' }).click();
+  await expect(page).toHaveURL(/\/case\/\d+\/try\/1\?showWizard=true$/);
+  await expect(page.getByRole('dialog', { name: 'Create a Quepid case' })).toBeVisible();
+  expect(createRequests).toBe(1);
+});
 
 test('case header launches the new-case wizard and keeps its footer in the pane', async ({ page }) => {
   await gotoCase(page);

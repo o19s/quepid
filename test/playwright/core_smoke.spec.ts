@@ -179,7 +179,7 @@ test.describe('core layout golden paths', () => {
     await page.locator('#queries-filter').fill('');
     await expect(rows.first()).toBeVisible();
 
-    await queryList.locator('a[data-sort-field="query"]').click();
+    await queryList.locator('button[data-queries-list-target="sortLink"][data-sort-field="query"]').click();
     await expect(queryList).toHaveAttribute('data-queries-list-sort-name-value', 'query');
 
     await expandFirstQuery(page);
@@ -407,7 +407,7 @@ test.describe('core layout golden paths', () => {
 
       const scoreBeforeRating = await queryScore.textContent();
       const caseScoreBeforeRating = await caseScore.textContent();
-      const badgeColorBeforeRating = await resultRating.locator('span.btn').evaluate((el) => getComputedStyle(el).backgroundColor);
+      const badgeColorBeforeRating = await resultRating.locator('button').evaluate((el) => getComputedStyle(el).backgroundColor);
 
       await resultRating.click();
       const ratingOption = visiblePopover().locator('.ratingNum').last();
@@ -417,7 +417,7 @@ test.describe('core layout golden paths', () => {
 
       await expect.poll(async () => (await queryScore.textContent())?.trim()).not.toBe(scoreBeforeRating?.trim());
       await expect.poll(async () => (await caseScore.textContent())?.trim()).not.toBe(caseScoreBeforeRating?.trim());
-      await expect.poll(async () => await resultRating.locator('span.btn').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(badgeColorBeforeRating);
+      await expect.poll(async () => await resultRating.locator('button').evaluate((el) => getComputedStyle(el).backgroundColor)).not.toBe(badgeColorBeforeRating);
     });
   });
 

@@ -153,8 +153,11 @@ test('automatic judging, live activity, cancellation, synchronization and recove
   failProvider = true;
   await page.request.patch(`books/${bookId}/run_judge_judy/${judgeId}`, { headers: { ...headers, Accept: 'text/html' }, data: { number_of_pairs: 1 } });
   await expect.poll(() => requests).toBeGreaterThan(previousRequests + 1);
-  await page.goto(`books/${bookId}/judgements?filtered=true&unrateable=true`);
-  await expect(page.locator('main')).toContainText('BOOM:', { timeout: 15000 });
+  // The provider sees the request before the job saves the unrateable judgement; reload until it lands.
+  await expect(async () => {
+    await page.goto(`books/${bookId}/judgements?filtered=true&unrateable=true`);
+    await expect(page.locator('main')).toContainText('BOOM:', { timeout: 2_000 });
+  }).toPass({ timeout: 15_000 });
   await page.goto(`books/${bookId}`);
   await expect(count).toHaveText(String(Number(stoppedAt) + 1));
   const ratingsBeforeRetry = Object.keys(await ratings()).length;

@@ -100,7 +100,7 @@ test('generated result and match-explain controls route through declared actions
   const bar = page.locator('search-result .match-explain-bar').first();
   await expect(bar).toBeVisible();
   await bar.click();
-  await expect(page.locator('.modal.show [data-modal-target="json"]')).toBeVisible();
+  await expect(page.locator('.modal.show [data-match-explain-modal-target="json"]')).toBeVisible();
   // This modal has no close button; Bootstrap ignores Esc until its fade-in ends.
   await expect(async () => {
     await page.keyboard.press('Escape');

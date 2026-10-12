@@ -140,6 +140,19 @@ export async function createDisposableCase(page: Page, label: string): Promise<n
   return createCaseViaApi(page, `Playwright ${label} Scratch ${Date.now()}`);
 }
 
+/**
+ * The judgements modal offers "share case" only when the user has no books and the case no
+ * teams. The account's books are shared dev-DB state, so serve the catalog's empty form
+ * (only the leading "None" row) rather than depend on how many books exist.
+ */
+export async function stubEmptyBookCatalog(page: Page, caseId: number) {
+  await page.route(`**/cases/${caseId}/modal_catalogs/books`, route => route.fulfill({
+    status: 200,
+    contentType: 'text/html',
+    body: '<ul data-book-catalog><li data-judgements-core-target=item data-judgements-core-book-id-param="" data-action="click->judgements-core#selectBook"><em>None (disconnect from any book)</em></li></ul>',
+  }));
+}
+
 /** The caller supplies an authenticated page with a CSRF-producing navigation. */
 export async function deleteCaseViaApi(page: Page, caseId: number): Promise<void> {
   const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });

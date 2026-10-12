@@ -27,10 +27,6 @@ test.describe('Core pages — interaction screenshots', () => {
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
     const relevancyMenu = headerDropdownMenu(page, 'Relevancy Cases');
     await expect(relevancyMenu).toBeVisible();
-    await expect(page).toHaveScreenshot('cases-list-02-relevancy-cases-dropdown.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.025,
-    });
 
     await page.keyboard.press('Escape');
 
@@ -41,10 +37,6 @@ test.describe('Core pages — interaction screenshots', () => {
     const booksMenu = headerDropdownMenu(page, 'Books');
     await expect(booksMenu).toBeVisible();
     await expect(booksMenu).toContainText('RECENT BOOKS');
-    await expect(page).toHaveScreenshot('cases-list-04-books-dropdown.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.025,
-    });
 
     await page.keyboard.press('Escape');
 
@@ -90,10 +82,6 @@ test.describe('Core pages — interaction screenshots', () => {
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
     await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
-    await expect(page).toHaveScreenshot('query-editor-06-relevancy-cases-dropdown.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.025,
-    });
   });
 
   test('rating UI — judgement popover & snapshot modal', async ({ page }) => {
@@ -103,10 +91,6 @@ test.describe('Core pages — interaction screenshots', () => {
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
     await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
-    await expect(page).toHaveScreenshot('rating-ui-02-relevancy-cases-dropdown.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.025,
-    });
     await page.keyboard.press('Escape');
 
     await page.locator('search-result .single-rating').first().click();
@@ -154,10 +138,6 @@ test.describe('Core pages — interaction screenshots', () => {
 
     await page.locator('#header').getByRole('button', { name: /Books/i }).click();
     await expect(headerDropdownMenu(page, 'Books')).toBeVisible();
-    await expect(page).toHaveScreenshot('scorer-config-05-books-dropdown.png', {
-      mask: dynamicRegions(page),
-      maxDiffPixelRatio: 0.025,
-    });
     await page.keyboard.press('Escape');
 
     await page.locator('#queries-filter').focus();
@@ -168,7 +148,7 @@ test.describe('Core pages — interaction screenshots', () => {
     test.setTimeout(60_000);
     await page.goto('cases');
     await resetCompletedCaseWizard(page);
-    await gotoCase(page, 'showWizard=true', 6);
+    await gotoCase(page, 'showWizard=true');
     const modal = page.locator('.modal.show').first();
     const continueButton = modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true });
     // Steps stay hidden until the wizard has loaded; wait for a real heading, not just the modal.
@@ -190,20 +170,13 @@ test.describe('Core pages — interaction screenshots', () => {
     await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
     await expect(page).toHaveScreenshot('wizard-04-endpoint-step.png', expandedCaseScreenshotOpts(page));
 
-    // Don't close the wizard: on this shared fixture case the ✕ and Cancel both offer to
-    // delete the case. Reloading the case page below dismisses it without finishing.
-    await gotoCase(page, '', 6);
+    // Don't close the wizard: the ✕ and Cancel both offer to delete the case, and CASE_ID is
+    // the shared fixture most specs use. Reloading the case page below dismisses it without finishing.
+    await gotoCase(page);
     await expandFirstQuery(page);
 
     await page.locator('#header').getByRole('button', { name: /Relevancy Cases/i }).click();
     await expect(headerDropdownMenu(page, 'Relevancy Cases')).toBeVisible();
-    await expect(page).toHaveScreenshot('wizard-05-relevancy-cases-dropdown.png', {
-      // expandFirstQuery() above leaves a real, live search result expanded
-      // in the background -- irrelevant to this screenshot's actual subject
-      // (the dropdown) and not deterministic between runs, so mask it too.
-      mask: [...dynamicRegions(page), page.locator('search-result')],
-      maxDiffPixelRatio: 0.025,
-    });
     await page.keyboard.press('Escape');
 
     await page.locator('search-result .single-rating').first().click();

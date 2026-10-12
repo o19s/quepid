@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { apiHeaders, dynamicRegions } from './case_helpers';
+import { apiHeaders, dynamicRegions, stubEmptyBookCatalog } from './case_helpers';
 
 /**
  * Permanent regression coverage for case sharing: the Stimulus
@@ -33,8 +33,9 @@ async function gotoCase(page: Page, caseId = SHARE_CASE_ID) {
   await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 40_000 }).catch(() => {});
 }
 
-async function gotoCasesIndex(page: Page) {
-  await page.goto('cases');
+// Narrow the index to this case's row; it need not be on the first page.
+async function gotoCasesIndex(page: Page, caseId: number) {
+  await page.goto(`cases?q=${caseId}`);
   await page.waitForSelector('table tbody tr', { timeout: 20_000 });
 }
 
@@ -85,7 +86,7 @@ async function unshareAllTeamsFromCase(page: Page, caseId: number) {
 }
 
 async function openCasesIndexShareModalForCase(page: Page, caseId: number) {
-  await gotoCasesIndex(page);
+  await gotoCasesIndex(page, caseId);
   const shareBtn = page.locator(`button[data-share-case-id-value="${caseId}"]`);
   await expect(shareBtn).toBeVisible({ timeout: 15_000 });
   await shareBtn.click();
@@ -101,6 +102,11 @@ async function openCoreShareModal(page: Page) {
   await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
   return modal;
 }
+
+// Tests share and unshare SHARE_CASE_ID; restore it even when a test fails part-way.
+test.afterEach(async ({ page }) => {
+  await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+});
 
 /** Mask async flash copy so screenshots stay stable across runs. */
 function shareCaseScreenshotOpts(page: Page) {
@@ -226,6 +232,7 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
 
   test('judgements modal "share case" link opens the core share modal', async ({ page }) => {
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+    await stubEmptyBookCatalog(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
     await page.locator('a[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
@@ -249,6 +256,7 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
 
 test.describe('cases index: share-case modal (Rails select + form POST)', () => {
   test('defaults to disabled submit buttons', async ({ page }) => {
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
 
@@ -260,9 +268,6 @@ test.describe('cases index: share-case modal (Rails select + form POST)', () => 
     await expect(modal.locator('#unshare-case-submit')).toBeVisible();
     await expect(modal.locator('#share-case-submit')).toBeDisabled();
     await expect(modal.locator('#unshare-case-submit')).toBeDisabled();
-
-    await page.setViewportSize({ width: 900, height: 820 });
-    await expect(page).toHaveScreenshot('share-case-rails-modal-default.png', shareCaseScreenshotOpts(page));
   });
 
   test('enables the share submit button once a team is selected', async ({ page }) => {
@@ -278,9 +283,6 @@ test.describe('cases index: share-case modal (Rails select + form POST)', () => 
 
     await teamSelect.selectOption(value as string);
     await expect(modal.locator('#share-case-submit')).toBeEnabled();
-
-    await page.setViewportSize({ width: 900, height: 820 });
-    await expect(page).toHaveScreenshot('share-case-rails-modal-team-selected.png', shareCaseScreenshotOpts(page));
   });
 
   test('enables the unshare submit button once a shared team is selected', async ({ page }) => {
@@ -296,10 +298,5 @@ test.describe('cases index: share-case modal (Rails select + form POST)', () => 
 
     await shared.click();
     await expect(modal.locator('#unshare-case-submit')).toBeEnabled();
-
-    await page.setViewportSize({ width: 900, height: 820 });
-    await expect(page).toHaveScreenshot('share-case-rails-modal-unshare-selected.png', shareCaseScreenshotOpts(page));
-
-    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
   });
 });

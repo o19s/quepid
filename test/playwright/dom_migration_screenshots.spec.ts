@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_RICH_CASE_ID, deleteCaseViaApi } from './case_helpers';
+import { DEFAULT_RICH_CASE_ID, deleteCaseViaApi, stubEmptyBookCatalog } from './case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
@@ -89,8 +89,9 @@ async function ensureCaseSharedWithOneTeam(page: import('@playwright/test').Page
   await shareCaseWithTeam(page, caseId, teams[0].id);
 }
 
-async function gotoCasesIndex(page: import('@playwright/test').Page) {
-  await page.goto('cases');
+// Disposable clones sort past the index's first page; narrow the index to this case's row.
+async function gotoCasesIndex(page: import('@playwright/test').Page, caseId: number) {
+  await page.goto(`cases?q=${caseId}`);
   await page.waitForSelector('table tbody tr', { timeout: 20_000 });
 }
 
@@ -106,7 +107,7 @@ async function unshareAllTeamsFromCase(page: import('@playwright/test').Page, ca
 }
 
 async function openCasesIndexShareModalForCase(page: import('@playwright/test').Page, caseId: number) {
-  await gotoCasesIndex(page);
+  await gotoCasesIndex(page, caseId);
   const shareBtn = page.locator(`button[data-share-case-id-value="${caseId}"]`);
   await expect(shareBtn).toBeVisible({ timeout: 15_000 });
   await shareBtn.click();
@@ -133,7 +134,7 @@ async function openHelpPopover(
     : modal.locator('.bi-question-circle-fill').first();
 
   if (PHASE === 'after') {
-    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'mouseenter');
+    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'hover focus');
     await expect(help).toHaveAttribute('data-bs-popover-placement-value', 'right');
   }
 
@@ -336,6 +337,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
 
   test('judgements share case opens core modal', async ({ page }) => {
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+    await stubEmptyBookCatalog(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
     await page.locator('a[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
@@ -375,7 +377,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
     await page.setViewportSize({ width: 900, height: 820 });
-    await openHelpPopover(page, modal, /All the Books related to all the Teams/);
+    await openHelpPopover(page, modal, /Your own Books and the Books shared with this Case's teams/);
     await shot(page, 'judgements-popover');
   });
 
