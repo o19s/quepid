@@ -6,6 +6,7 @@
 <% end %>
 <head>
   <%= render 'layouts/head_common' %>
+  <%= yield :head %>
   <% if case_page %>
     <%= render 'layouts/case_head' %>
   <% else %>

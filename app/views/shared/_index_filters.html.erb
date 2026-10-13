@@ -69,7 +69,8 @@
     <%= controls %>
   <% end %>
 <% else %>
-  <%= form_with url: url, method: :get, local: true, html: { class: variant == :team ? 'row g-2 align-items-center' : 'd-flex align-items-center' } do %>
+  <%= form_with url: url, method: :get, local: true, data: local_assigns[:form_data],
+                html: { class: variant == :team ? 'row g-2 align-items-center' : 'd-flex align-items-center' } do %>
     <%= controls %>
   <% end %>
 <% end %>

@@ -41,6 +41,15 @@ class SessionsControllerTest < ActionController::TestCase
     assert_nil session[:current_user_id], 'does not set a user'
   end
 
+  test 'login page makes Turbo load it in full, including from a frame request' do
+    get :new
+    assert_select 'head meta[name="turbo-visit-control"][content="reload"]'
+
+    request.headers['Turbo-Frame'] = 'team_lists'
+    get :new
+    assert_select 'head meta[name="turbo-visit-control"][content="reload"]'
+  end
+
   test 'should not create session for unknown user' do
     post :create, params: { user: { email: 'floyd@example.com', password: 'floydster' }, format: :json }
     assert_response :unprocessable_entity

@@ -120,7 +120,9 @@
   </div>
 </div>
 
-<div class="row">
+<%# The four lists share one frame: a filter or pager reloads them together, so
+    every section's hidden filters and pager links stay in step with the URL. %>
+<%= turbo_frame_tag 'team_lists', target: '_top', class: 'row', data: { turbo_action: 'advance' } do %>
   <div class="col-12 mb-3">
     <%= render 'teams/cases', cases: @cases, filters: team_filters, last_scores: @last_scores, pagy_cases: @pagy_cases,
                               ratings_counts: @ratings_counts, team: @team %>
@@ -141,7 +143,7 @@
     <%= render 'teams/scorers', filters: team_filters, pagy_scorers: @pagy_scorers, scorer_cases_counts: @scorer_cases_counts,
                                 scorers: @scorers, team: @team %>
   </div>
-</div>
+<% end %>
 
   <%= render 'shared/share_case_modal' %>
   <%= render 'shared/share_book_modal' %>

@@ -192,7 +192,20 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_equal 2, assigns(:pagy_cases).page
       assert_equal 1, assigns(:pagy_books).page
       assert_equal 1, assigns(:cases).size
-      assert_select 'nav a[href*="cases_page=1"]'
+      assert_select 'turbo-frame#team_lists nav a[href*="cases_page=1"][data-turbo-frame="team_lists"]'
+    end
+
+    it 'reloads the lists frame from each section filter form and sends other navigation to the page' do
+      Bullet.enable = false
+      get team_path(@team)
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'turbo-frame#team_lists[target=_top][data-turbo-action=advance]' do
+        %w[cases books search_endpoints scorers].each do |section|
+          assert_select "form[data-turbo-frame=team_lists]:has(input[name=#{section}_q])"
+        end
+      end
     end
 
     it 'carries the other sections filters along in each filter form' do

@@ -62,9 +62,10 @@ export default class extends Controller {
     this.frameTarget.setAttribute("src", url)
   }
 
-  // turbo:frame-missing (an error page or the login page came back) and
-  // turbo:fetch-request-error (the request itself failed). Aborted loads, such as
-  // one superseded by reopening the modal, dispatch neither.
+  // turbo:frame-missing (an error page came back) and turbo:fetch-request-error
+  // (the request itself failed). The login page never reaches here: its
+  // turbo-visit-control meta makes Turbo load it as a full page instead. Aborted
+  // loads, such as one superseded by reopening the modal, dispatch neither.
   loadFailed(event) {
     // Stop Turbo replacing the frame with its own "Content missing" message.
     if (event.type === "turbo:frame-missing") event.preventDefault()
