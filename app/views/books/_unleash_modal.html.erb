@@ -1,5 +1,6 @@
+<%# locals: (book:, ai_judge:) %>
 <% modal_body = capture do %>
-  <%= form_with(url: run_judge_judy_book_path(@book, ai_judge_id: ai_judge.id), method: :patch) do |form| %>
+  <%= form_with(url: run_judge_judy_book_path(book, ai_judge_id: ai_judge.id), method: :patch) do |form| %>
     <div class="row mb-3">
 
       <%= form.label :number_of_pairs, "Query Doc Pairs to Judge",

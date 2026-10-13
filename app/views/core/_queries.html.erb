@@ -1,3 +1,4 @@
+<%# locals: (kase:) %>
 <div
   class="results"
   id="query-container"
@@ -28,7 +29,7 @@
 
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
         <li class="list-inline-item" data-queries-list-target="ratedLabel">
-          <input type="checkbox" class="align-top" data-queries-list-target="ratedCheckbox" data-action="change->queries-list#toggleShowOnlyRated" />
+          <input type="checkbox" class="align-top" data-queries-list-target="ratedCheckbox" data-action="change->queries-list#toggleShowOnlyRated">
           <a href="" data-action="click->queries-list#toggleShowOnlyRated">Show only rated</a>
         </li>
 
@@ -61,7 +62,7 @@
       <div class="clearfix"></div>
       <div class="d-flex flex-row-reverse flex-wrap">
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
-        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id="queries-filter" /></div>
+        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id="queries-filter"></div>
         <div class="pe-3">
           <button type="button" class="btn btn-link p-0" data-controller="frog-report" data-action="click->frog-report#open"
                   data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">

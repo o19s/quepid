@@ -1,3 +1,4 @@
+<%# locals: (kase:) %>
 <%# Core case workspace — list UI, query-state mutation through the temporary live-query adapter. %>
 <% modal_body = capture do %>
   <div data-move-query-core-target="loading" class="text-center py-3">
@@ -24,7 +25,7 @@
                                    controller: "move-query-core",
                                    action: "show.bs.modal->move-query-core#open",
                                    move_query_core_cases_url_value: api_cases_path,
-                                   move_query_core_case_id_value: @case&.id,
+                                   move_query_core_case_id_value: kase&.id,
                                    move_query_core_query_command_bridge_outlet: "body"
                                  },
                                  title_data: { move_query_core_target: "title" },

@@ -50,6 +50,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
     - A port-3000 bind error is not permission to stop anything, retry, or create a throwaway app. Resolve the exact owner and report it.
 - **Run commands inside the existing server container.** 
     - Use `docker compose exec app` for the Compose service container, or `docker exec <actual-server-container-name>` for a server started by `bin/docker s` / `q`. For example, run Rails tests in that container rather than starting a new app-run container.
+    - While the diff baseline runs, `docker compose exec app` can land in `quepid_app_ui_diff`, which mounts `../quepid-ui-diff-worktree` and its own database. Confirm the container mounting this checkout at `/srv/app` and use `docker exec <that-name>` instead.
 - For an authorized server image update, preserve the inspected startup command. Compose does not retain command overrides from a previous `run`; the dev server uses `foreman s -f Procfile.dev`. Reuse the wrapper startup command with `--no-deps` when dependency configuration has changed, so an app runtime update cannot also recreate a database service.
 - Wait for tests and other commands in the server container to finish before restarting it; a restart terminates those checks.
 - Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.

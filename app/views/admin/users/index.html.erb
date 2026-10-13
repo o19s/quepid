@@ -17,10 +17,10 @@
 <% end %>
 
 <div class="card">
-  <div class="card-header">   
-    <%= form_tag(admin_users_path, { method: :get }) do %> 
+  <div class="card-header">
+    <%= form_tag(admin_users_path, { method: :get }) do %>
       <div class="mb-0 d-flex fs-6 ">
-          
+
         <div class="input-group">
           <%= text_field_tag :q, params[:q], 
               class: 'form-control form-control-sm', 
@@ -31,13 +31,10 @@
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-        
-        
       </div>
     <% end %>
   </div>
-  
+
   <div class="card-body">
     <div class="table-responsive">
     <table class="table table-hover table-sm">
@@ -52,8 +49,8 @@
           <th colspan="2"></th>
         </tr>
       </thead>
-  
-      <tbody>      
+
+      <tbody>
         <% @users.each do |user| %>
           <tr>
             <td>

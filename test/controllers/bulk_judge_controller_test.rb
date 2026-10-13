@@ -21,6 +21,21 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       Bullet.enable = true
     end
 
+    test 'renders reset buttons for rated pairs and the template the controller clones' do
+      Bullet.enable = false
+      Judgement.create!(user: user, query_doc_pair: query_doc_pair, rating: 1)
+
+      get book_judge_bulk_path(book), params: { only_unrated: false }
+
+      assert_response :success
+      assert_select "#qdp_#{query_doc_pair.id} button[data-action=\"click->bulk-judgement#resetRating\"][data-query-doc-pair-id=\"#{query_doc_pair.id}\"]", count: 1
+      assert_select '[data-controller="bulk-judgement"] template[data-bulk-judgement-target="resetButtonTemplate"]' do
+        assert_select 'button[data-action="click->bulk-judgement#resetRating"]:not([data-query-doc-pair-id])', count: 1
+      end
+    ensure
+      Bullet.enable = true
+    end
+
     test 'filters by query text when provided' do
       get book_judge_bulk_path(book), params: { query_text: 'funny' }
       assert_response :success
@@ -114,6 +129,23 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_not_nil assigns(:judgements)
       assert_instance_of Hash, assigns(:judgements)
+      Bullet.enable = true
+    end
+
+    test 'numbers documents continuously across query groups and pages' do
+      Bullet.enable = false
+      empty_book = books(:empty_book)
+      15.times { |i| empty_book.query_doc_pairs.create!(query_text: 'alpha', position: i + 1, doc_id: "a#{i}") }
+      15.times { |i| empty_book.query_doc_pairs.create!(query_text: 'beta', position: i + 1, doc_id: "b#{i}") }
+
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false, rank_depth: '' }
+      assert_response :success
+      assert_select '.query-group-card', count: 2
+      assert_equal (1..25).map { |n| "##{n}" }, css_select('.document-card .badge.bg-primary').map(&:text)
+
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false, rank_depth: '', page: 2 }
+      assert_equal (26..30).map { |n| "##{n}" }, css_select('.document-card .badge.bg-primary').map(&:text)
+    ensure
       Bullet.enable = true
     end
   end

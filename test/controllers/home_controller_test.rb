@@ -74,6 +74,20 @@ class HomeControllerTest < ActionDispatch::IntegrationTest
       assert_includes response.body, announcements(:active_announcement).text
     end
 
+    test 'renders announcement HTML in the banner but strips scripts and event handlers' do
+      announcements(:active_announcement).update!(
+        text: '<strong>New</strong> <img src="x" onerror="steal()"><script>alert(1)</script>'
+      )
+      login_user_for_integration_test user
+
+      get root_url
+
+      assert_response :success
+      assert_select '.alert-dismissible strong', text: 'New'
+      assert_select '.alert-dismissible [onerror]', count: 0
+      assert_select '.alert-dismissible script', count: 0
+    end
+
     test 'does not show an announcement that has expired' do
       # Only the expired announcement is unseen for this user in this test, so if
       # filtering failed we'd see it here.

@@ -42,6 +42,28 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_nil form['data-turbo-confirm-style']
   end
 
+  test 'sanitize_announcement keeps class, safe inline style and images' do
+    text = '<p class="text-danger" style="color: red; position: fixed; background-image: url(javascript:alert(1))">Hi</p>' \
+           '<img src="https://example.com/a.png" alt="A" class="img-fluid" onerror="steal()">'
+    html = Nokogiri::HTML5.fragment(sanitize_announcement(text))
+
+    paragraph = html.at_css('p.text-danger')
+    assert_equal 'color:red;', paragraph['style']
+    image = html.at_css('img.img-fluid')
+    assert_equal 'https://example.com/a.png', image['src']
+    assert_equal 'A', image['alt']
+    assert_nil image['onerror']
+  end
+
+  test 'sanitize_announcement strips scripts and javascript URLs' do
+    text = '<a href="javascript:alert(1)">x</a><img src="javascript:alert(1)"><script>alert(1)</script>'
+    html = Nokogiri::HTML5.fragment(sanitize_announcement(text))
+
+    assert_nil html.at_css('a')['href']
+    assert_nil html.at_css('img')['src']
+    assert_nil html.at_css('script')
+  end
+
   test 'quepid_root_url returns application root without trailing slash' do
     assert_equal root_url.chomp('/'), quepid_root_url
   end

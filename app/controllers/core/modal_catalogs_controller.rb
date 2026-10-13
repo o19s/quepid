@@ -7,14 +7,14 @@ module Core
     def sharing
       @teams = current_user.teams.to_a
       @shared_team_ids = @case.teams.where(id: @teams.map(&:id)).pluck(:id)
-      render partial: 'shared/share_case_core_team_templates'
+      render partial: 'shared/share_case_core_team_templates', locals: { teams: @teams, shared_team_ids: @shared_team_ids }
     end
 
     def books
       # The case JSON and team-book APIs expose only teams the user belongs to.
       teams = @case.teams.where(id: current_user.teams.select(:id)).preload(:books)
       @books = (current_user.books.active.to_a + teams.flat_map(&:books)).uniq(&:id)
-      render partial: 'core/judgement_book_templates'
+      render partial: 'core/judgement_book_templates', locals: { books: @books }
     end
 
     def scorers
@@ -24,7 +24,7 @@ module Core
                       else
                         current_user.scorers_involved_with.reject(&:communal?)
                       end
-      render partial: 'core/scorer_list_template'
+      render partial: 'core/scorer_list_template', locals: { communal_scorers: @communal_scorers, user_scorers: @user_scorers }
     end
   end
 end

@@ -1,27 +1,28 @@
+<%# locals: (books_archived:, books_q:, cases:, cases_archived:, cases_q:, last_scores:, page_cases:, pagy_cases:, ratings_counts:, scorers_q:, search_endpoints_archived:, search_endpoints_q:, team:) %>
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">Cases</h5>
     <div class="table-responsive">
       <div class="mb-3">
-        <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :cases_q, search_value: @cases_q, placeholder: "Filter by case name or id", small: true, search_label: "Search" } do %>
+        <%= render layout: "shared/index_filters", locals: { url: team_path(team), variant: :team, search_name: :cases_q, search_value: cases_q, placeholder: "Filter by case name or id", small: true, search_label: "Search" } do %>
           <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-            <%= check_box_tag :cases_archived, '1', @cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+            <%= check_box_tag :cases_archived, '1', cases_archived, class: 'form-check-input', id: 'archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
             <%= label_tag 'archived-cases-checkbox', 'Archived Cases', class: 'form-check-label ms-2' %>
           </div>
           <%# Preserve other filters %>
-          <% if @books_q.present? %>
-            <%= hidden_field_tag :books_q, @books_q %>
+          <% if books_q.present? %>
+            <%= hidden_field_tag :books_q, books_q %>
           <% end %>
-          <% if @books_archived %>
+          <% if books_archived %>
             <%= hidden_field_tag :books_archived, '1' %>
           <% end %>
-          <% if @scorers_q.present? %>
-            <%= hidden_field_tag :scorers_q, @scorers_q %>
+          <% if scorers_q.present? %>
+            <%= hidden_field_tag :scorers_q, scorers_q %>
           <% end %>
-          <% if @search_endpoints_q.present? %>
-            <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
+          <% if search_endpoints_q.present? %>
+            <%= hidden_field_tag :search_endpoints_q, search_endpoints_q %>
           <% end %>
-          <% if @search_endpoints_archived %>
+          <% if search_endpoints_archived %>
             <%= hidden_field_tag :search_endpoints_archived, '1' %>
           <% end %>
         <% end %>
@@ -44,8 +45,8 @@
           </tr>
         </thead>
         <tbody>
-          <% @cases.each do |kase| %>
-            <% last_score = @last_scores[kase.id] %>
+          <% cases.each do |kase| %>
+            <% last_score = last_scores[kase.id] %>
             <tr>
               <td><%= kase.id %></td>
               <td><%= link_to kase.case_name, case_core_path(kase) %></td>
@@ -72,11 +73,11 @@
                   —
                 <% end %>
               </td>
-              <td><%= @ratings_counts.fetch(kase.id, 0) %></td>
+              <td><%= ratings_counts.fetch(kase.id, 0) %></td>
               <td><%= kase.owner&.fullname || '—' %></td>
               <td>
                 <span class="badge rounded-pill bg-secondary"><%= kase.teams.length %> Teams</span>
-              </td>              
+              </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
@@ -94,7 +95,7 @@
                   <% end %>
 
                   <% if kase.archived? %>
-                    <%= group_button_to unarchive_case_team_path(@team, case_id: kase.id),
+                    <%= group_button_to unarchive_case_team_path(team, case_id: kase.id),
                                         method: :post,
                                         button_class: "text-success p-0 me-3",
                                         title: "Unarchive case",
@@ -105,7 +106,7 @@
                       <span class="visually-hidden">Unarchive case</span>
                     <% end %>
                   <% else %>
-                    <%= group_button_to archive_case_team_path(@team, case_id: kase.id),
+                    <%= group_button_to archive_case_team_path(team, case_id: kase.id),
                                         method: :post,
                                         button_class: "text-warning p-0 me-3",
                                         title: "Archive case",
@@ -124,15 +125,15 @@
         </tbody>
       </table>
 
-      <% if @cases.empty? %>
+      <% if cases.empty? %>
         <div class="text-center text-muted py-3">
           <p>No cases found for this team.</p>
         </div>
       <% end %>
-      
-      <% if defined?(pagy_nav) && @page_cases %>
+
+      <% if defined?(pagy_nav) && page_cases %>
         <div class="mt-2">
-          <%= pagy_nav(@pagy_cases) %>
+          <%= pagy_nav(pagy_cases) %>
         </div>
       <% end %>
     </div>

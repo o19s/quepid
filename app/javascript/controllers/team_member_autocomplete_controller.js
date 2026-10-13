@@ -13,6 +13,7 @@ import { Controller } from "@hotwired/stimulus"
  * Targets:
  *   - input: The email input field
  *   - suggestions: The dropdown container for suggestions
+ *   - itemTemplate: Markup for one suggestion row
  * 
  * Values:
  *   - url: API endpoint for fetching suggestions
@@ -20,7 +21,7 @@ import { Controller } from "@hotwired/stimulus"
  *   - debounceDelay: Delay in ms before making API request (default: 300)
  */
 export default class extends Controller {
-  static targets = ["input", "suggestions", "spinner"]
+  static targets = ["input", "suggestions", "spinner", "itemTemplate"]
   static values = {
     url: String,
     minLength: { type: Number, default: 2 },
@@ -128,35 +129,22 @@ export default class extends Controller {
    * @returns {HTMLElement} The suggestion item element
    */
   createSuggestionItem(user) {
-    const item = document.createElement('div')
-    item.className = 'autocomplete-item'
+    const item = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
     item.dataset.email = user.email
-    item.dataset.action = 'click->team-member-autocomplete#select'
 
-    const avatar = document.createElement('img')
+    const avatar = item.querySelector(".autocomplete-avatar")
     avatar.src = user.avatar_url
     avatar.alt = user.display_name
-    avatar.className = 'autocomplete-avatar'
 
-    const details = document.createElement('div')
-    details.className = 'autocomplete-details'
-
-    const name = document.createElement('div')
-    name.className = 'autocomplete-name'
-    name.textContent = user.display_name
-
-    details.appendChild(name)
+    item.querySelector(".autocomplete-name").textContent = user.display_name
 
     // Only show email if the match was on email, not on name
-    if (user.matched_on === 'email') {
-      const email = document.createElement('div')
-      email.className = 'autocomplete-email'
+    const email = item.querySelector(".autocomplete-email")
+    if (user.matched_on === "email") {
       email.textContent = user.email
-      details.appendChild(email)
+    } else {
+      email.remove()
     }
-
-    item.appendChild(avatar)
-    item.appendChild(details)
 
     return item
   }

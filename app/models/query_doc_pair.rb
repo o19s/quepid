@@ -45,6 +45,13 @@ class QueryDocPair < ApplicationRecord
   scope :has_judgements, -> { joins(:judgements) }
   after_create_commit :queue_auto_run_ai_judges
 
+  # A thumb key takes precedence over image, including nil or blank values.
+  def image_url
+    return unless document_fields.is_a?(Hash)
+
+    document_fields.key?('thumb') ? document_fields['thumb'] : document_fields['image']
+  end
+
   private
 
   def queue_auto_run_ai_judges

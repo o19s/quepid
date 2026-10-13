@@ -57,7 +57,7 @@
 
         <div class="row">
           <div class="col-12 mb-3">
-            <%= render partial: 'scorers/list' %>
+            <%= render partial: 'scorers/list', locals: { scorers: @scorers, pagy: @pagy } %>
           </div>
         </div>
 

@@ -36,8 +36,8 @@
                   id="httpMethod"
                   data-mapper-wizard-target="httpMethod"
                   data-action="change->mapper-wizard#updateTestQueryHint">
-            <option value="GET" <%= @search_endpoint.api_method == 'GET' || !@search_endpoint.persisted? ? 'selected' : '' %>>GET</option>
-            <option value="POST" <%= @search_endpoint.api_method == 'POST' ? 'selected' : '' %>>POST</option>
+            <%= tag.option 'GET', value: 'GET', selected: @search_endpoint.api_method == 'GET' || !@search_endpoint.persisted? %>
+            <%= tag.option 'POST', value: 'POST', selected: @search_endpoint.api_method == 'POST' %>
           </select>
         </div>
         <div class="col-md-8">
@@ -80,7 +80,7 @@
           <% end %>
           <%= tag.div class: 'form-text', hidden: post_test_query,
                       data: { mapper_wizard_target: 'testQueryHint', http_method: 'GET', placeholder: get_placeholder } do %>
-            Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
+            Enter query params (e.g., <code>q=test&amp;rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
           <% end %>
         </div>
       </div>
@@ -284,11 +284,9 @@
         <div class="col-md-6">
           <label class="form-label">Options</label>
           <div class="form-check form-switch">
-            <input type="checkbox"
-                   class="form-check-input"
-                   id="proxyRequests"
-                   data-mapper-wizard-target="proxyRequests"
-                   <%= @search_endpoint.proxy_requests? || !@search_endpoint.persisted? ? 'checked' : '' %>>
+            <%= tag.input type: 'checkbox', class: 'form-check-input', id: 'proxyRequests',
+                          data: { mapper_wizard_target: 'proxyRequests' },
+                          checked: @search_endpoint.proxy_requests? || !@search_endpoint.persisted? %>
             <label class="form-check-label" for="proxyRequests">Proxy requests through Quepid</label>
           </div>
           <div class="form-text">Recommended for avoiding CORS issues with external search APIs.</div>
@@ -305,12 +303,9 @@
               <% auto_check_single = @current_user.teams.count == 1 && !@search_endpoint.persisted? %>
               <% @current_user.teams.each do |team| %>
                 <div class="form-check">
-                  <input type="checkbox"
-                         class="form-check-input"
-                         id="team_<%= team.id %>"
-                         value="<%= team.id %>"
-                         data-mapper-wizard-target="teamCheckbox"
-                         <%= existing_team_ids.include?(team.id) || auto_check_single ? 'checked' : '' %>>
+                  <%= tag.input type: 'checkbox', class: 'form-check-input', id: "team_#{team.id}", value: team.id,
+                                data: { mapper_wizard_target: 'teamCheckbox' },
+                                checked: existing_team_ids.include?(team.id) || auto_check_single %>
                   <label class="form-check-label" for="team_<%= team.id %>"><%= team.name %></label>
                 </div>
               <% end %>

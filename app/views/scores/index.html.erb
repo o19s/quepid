@@ -1,8 +1,8 @@
 <%= page_header "Scores for #{case_title @case}" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
-      <%= link_to "Understand Score Duplication", analytics_case_duplicate_scores_path(@case), class: "btn btn-sm btn-outline-secondary"  %>
+      <%= link_to "Back to Case", case_core_path(@case), class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to "Understand Score Duplication", analytics_case_duplicate_scores_path(@case), class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
 <% end %>
@@ -12,14 +12,14 @@
 </p>
 
 <div class="card" data-controller="score-selection">
-  <div class="card-header">   
+  <div class="card-header">
       <div class="mb-0 d-flex fs-6">
         <div class="d-flex align-items-center">
-          <input type="checkbox" class="ms-2 form-check-input" name="check_all" id="check_all" data-score-selection-target="all" data-action="score-selection#toggleAll"/>
+          <input type="checkbox" class="ms-2 form-check-input" name="check_all" id="check_all" data-score-selection-target="all" data-action="score-selection#toggleAll">
         </div>
-        
+
         <!-- form to handle filters -->
-        <%= form_tag(case_scores_path(@case), { method: :get } ) do %>         
+        <%= form_tag(case_scores_path(@case), { method: :get } ) do %>
           <div class="d-flex mx-2">
             <%= select_tag 'scorer_id', 
               options_for_select(
@@ -32,34 +32,36 @@
             %>
           </div>
         <% end %>
-        
-        <!-- form to handle deletes -->
-        <%= form_tag(destroy_multiple_case_scores_path(@case), method: :delete, data: { turbo_confirm: "Are you sure you want to delete these scores?" } ) do %>
-        <%= hidden_field_tag :scorer_id, params[:scorer_id] %>
-        <div class="d-flex align-items-center">
-          <%= submit_tag 'Delete', class: "btn btn-sm btn-outline-danger", id:"delete_button", data: { score_selection_target: "delete" }, disabled: true %>
-        </div>
+
+        <%# The row checkboxes below join this form through their form attribute. %>
+        <%= form_tag(destroy_multiple_case_scores_path(@case), method: :delete, id: 'delete-scores-form', data: { turbo_confirm: "Are you sure you want to delete these scores?" } ) do %>
+          <%= hidden_field_tag :scorer_id, params[:scorer_id], id: nil %>
+          <div class="d-flex align-items-center">
+            <%= submit_tag 'Delete', class: "btn btn-sm btn-outline-danger", id:"delete_button", data: { score_selection_target: "delete" }, disabled: true %>
+          </div>
+        <% end %>
       </div>
   </div>
-  
+
   <div class="card-body">
     <table class="table table-hover table-sm">
       <thead>
-        <tr>  
-          <th/>        
+        <tr>
+          <th></th>
           <th>Scorer</th>
           <th>Try Number</th>
-          <th>Score</th>          
+          <th>Score</th>
           <th>Day</th>
         </tr>
       </thead>
-  
+
       <tbody>
       <% @scores.each do |score| %>
           <tr>
             <td>
               <%= check_box_tag "score_ids[]",
                   score.id, false,
+                  form: 'delete-scores-form',
                   data: { score_selection_target: "score", action: "score-selection#sync" },
                   class: "form-check-input"
               %>
@@ -72,18 +74,16 @@
             </td>
             <td>
               <%= score.score %>
-            </td>            
+            </td>
             <td>
               <%= score.updated_at %>
-            </td>      
+            </td>
           </tr>
-      <% end %>
-      <!-- end form to handle deletes -->
       <% end %>
       </tbody>
     </table>
   </div>
   <div class="card-footer d-flex justify-content-center">
-    <%== @pagy.series_nav(:bootstrap) %>    
+    <%== @pagy.series_nav(:bootstrap) %>
   </div>
 </div>

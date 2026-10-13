@@ -15,11 +15,11 @@
   <div class="card-body">
     <h5 class="card-title">Import Query Doc Pairs</h5>
     <p class="card-text">
-      The format for importing query doc pair data is the same as that for exporting it: <code><%= link_to api_book_query_doc_pairs_path(@book), api_book_query_doc_pairs_path(@book) %></code>. 
-      
-      <code>
-        <pre>
-  {
+      The format for importing query doc pair data is the same as that for exporting it: <code><%= link_to api_book_query_doc_pairs_path(@book), api_book_query_doc_pairs_path(@book) %></code>.
+
+    </p>
+
+    <pre><code>  {
     "query_doc_pairs":
       [
         {
@@ -39,37 +39,37 @@
         // Additional query doc pair entries would appear here
       ]
     }
-        </pre>
-      </code>
+        </code></pre>
+
+    <p class="card-text">
       If you do NOT provide a <code>query_doc_pair_id</code> then the <code>query_text</code> and <code>doc_id</code> must both be present and will be used to upsert the query doc pair.
     </p>
 
     <%= render "shared/error_messages", record: @book, subject: "book", id: "error_explanation_query_doc_pairs" %>
 
     <% if @book.errors.any? %>
-      <div class="alert alert-warning" role="alert" >
+      <div class="alert alert-warning" role="alert">
         You will need to pick the file to be imported again.
       </div>
     <% end %>
-    
+
     <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
       <%= render "upload_fields", form: form %>
-      
+
       <%= form.submit "Upload", class: 'btn btn-primary' %>
     <% end %>
 
   </div>
 </div>
-<p/>
-<div class="card" style="">
+<div class="card mt-3">
   <div class="card-body">
     <h5 class="card-title">Import Judgements</h5>
     <p class="card-text">
-      The format for importing Judgement data is the same as that for exporting it: <code><%= link_to api_book_judgements_path(@book), api_book_judgements_path(@book) %></code>. 
-      
-      <code>
-        <pre>
-          {
+      The format for importing Judgement data is the same as that for exporting it: <code><%= link_to api_book_judgements_path(@book), api_book_judgements_path(@book) %></code>.
+
+    </p>
+
+    <pre><code>          {
             "judgements": [                     // Array containing all judgement entries
               {
                 "rating": 3.0,                      // Numerical rating score (e.g., on a scale of 1-5)
@@ -82,20 +82,21 @@
               // Additional judgement entries would appear here
             ]
           }
-        </pre>
-      </code>    
-      
+        </code></pre>
+
+    <p class="card-text">
+
         The legacy <code>all_judgements</code> envelope is also accepted.
         If you provide a <code>email</code> instead of <code>user_id</code> then that will be used to identify the judge.
         If you do NOT provide a <code>query_doc_pair_id</code> then you must provide <code>query_text</code> and <code>doc_id</code> to be used to upsert the query doc pair.
     </p>
-    
+
     <p>
       You may want to import Query Doc Pair information with your Judgements.   You can do this by specifying a <code>query_doc_pair</code> JSON object:
-      
-      <code>
-        <pre>
-          {
+
+    </p>
+
+    <pre><code>          {
             "judgements": [                     // Array containing all judgement entries
               {
                 "rating": 3.0,                      // Numerical rating score (e.g., on a scale of 1-5)
@@ -109,21 +110,19 @@
 
             ]
           }
-        </pre>
-      </code>
-    </p>
+        </code></pre>
 
     <%= render "shared/error_messages", record: @book, subject: "book", id: "error_explanation_judgements" %>
 
     <% if @book.errors.any? %>
-      <div class="alert alert-warning" role="alert" >
+      <div class="alert alert-warning" role="alert">
         You will need to pick the file to be imported again.
       </div>
     <% end %>
-    
+
     <%= form_with model: @book, url: books_import_path(@book), method: :patch do |form| %>
       <%= render "upload_fields", form: form, force_create_users: true %>
-      
+
       <%= form.submit "Upload", class: 'btn btn-primary' %>
     <% end %>
 

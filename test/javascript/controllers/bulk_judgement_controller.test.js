@@ -10,6 +10,7 @@ const QDP = "7"
 function mount() {
   const element = document.createElement("div")
   element.innerHTML = `
+    <template data-target="resetButtonTemplate"><button type="button" class="btn btn-sm btn-outline-secondary ms-3" title="Clear rating" data-action="click->bulk-judgement#resetRating"><i class="bi bi-x-circle"></i> Reset</button></template>
     <div id="qdp_${QDP}">
       <div class="rating-buttons-container">
         <input type="radio" id="r0" name="judgement_${QDP}" value="0">
@@ -24,6 +25,9 @@ function mount() {
   document.body.appendChild(element)
   const controller = buildControllerFixture(BulkJudgementController, {
     element,
+    targets: {
+      resetButtonTemplate: element.querySelector('[data-target="resetButtonTemplate"]')
+    },
     values: {
       saveUrl: "books/3/judge/bulk/save",
       deleteUrl: "books/3/judge/bulk/delete"

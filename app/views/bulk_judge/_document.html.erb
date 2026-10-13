@@ -1,0 +1,33 @@
+<%# locals: (query_doc_pair:, position:, judgement:, rating_buttons:, show_explanations:) %>
+<% image_url = query_doc_pair.image_url %>
+<div class="document-card mb-3 p-3 border-bottom" id="qdp_<%= query_doc_pair.id %>">
+  <div class="document-header mb-3 d-flex align-items-center">
+    <div class="flex-shrink-0 d-flex align-items-center" style="min-width: 150px;">
+      <span class="badge bg-primary">#<%= position %></span>
+    </div>
+    <div class="flex-grow-1 text-center mx-4">
+      <strong>Document ID:</strong> <%= query_doc_pair.doc_id %>
+      <span class="ms-4"><strong>Rank:</strong> <%= query_doc_pair.position %></span>
+    </div>
+    <div class="flex-shrink-0" style="min-width: 150px;">
+      <!-- Spacer for balance -->
+    </div>
+  </div>
+
+  <div class="row">
+    <% if image_url %>
+      <div class="col-md-3">
+        <%= tag.img src: image_url.to_s, class: 'img-fluid rounded', alt: 'Thumbnail' %>
+      </div>
+    <% end %>
+    <%= tag.div class: (image_url ? 'col-md-9' : 'col-12') do %>
+      <div class="document-content mb-3">
+        <%= render 'query_doc_pairs/document_fields', document_fields: query_doc_pair.document_fields,
+                                                      except: %w[title thumb image], compact: true %>
+      </div>
+
+      <%= render 'bulk_judge/rating', query_doc_pair:, judgement:, rating_buttons: %>
+      <%= render 'bulk_judge/explanation', query_doc_pair:, judgement:, show_explanations: %>
+    <% end %>
+  </div>
+</div>

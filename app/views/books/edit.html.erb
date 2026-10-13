@@ -10,12 +10,15 @@
 <% end %>
 
 <%= render 'tabs', book: @book %>
-<p/>
-<%= render 'form', book: @book %>
+<div class="mt-3">
+  <%= render 'form', book: @book, origin_case: @origin_case, link_the_case: @link_the_case,
+                   auto_populate_book_pairs: @auto_populate_book_pairs,
+                   auto_populate_case_judgements: @auto_populate_case_judgements,
+                   ai_judges: @ai_judges, viewer: @current_user %>
+</div>
 
-<hr/>
-<p/>
-<h3>Populate This Book from other Books</h3>
+<hr>
+<h3 class="mt-3">Populate This Book from other Books</h3>
 <p class="form-text">
   Combine the query/doc pairs and individual ratings from other books into this book.
   It will update any missing query/doc pairs and merge in ratings.
@@ -23,10 +26,10 @@
 
 
 <%= form_for(@book, url: combine_book_path(@book)) do |form| %>
-  <ul class="list-group">  
+  <ul class="list-group">
     <% @other_books.each do |book| %>
       <li class="list-group-item list-group-item-action">
-        <div class="d-flex w-100 justify-content-between align-items-center">        
+        <div class="d-flex w-100 justify-content-between align-items-center">
           <h5 class="mb-1">
             <%= check_box('book_ids', book.id, class: 'form-check-input me-1', disabled: book.rated_query_doc_pairs.empty?) %>
             <label for="book_ids_<%= book.id %>" class="form-check-label">
@@ -44,19 +47,16 @@
       </li>
     <% end %>
   </ul>
-  <p>
-  <div class="actions">
+  <div class="actions my-3">
     <%= form.submit 'Merge these Books into this Book' %>
   </div>
-  </p>
 <% end %>
 
-<hr/>
+<hr>
 <div class="alert alert-danger" role="alert">
   Danger Zone!
 </div>
-<p/>
-<h3>Assign Anonymous Judgements & Ratings to a User</h3>
+<h3 class="mt-3">Assign Anonymous Judgements &amp; Ratings to a User</h3>
 
 <p class="form-text">
   If you used Quepid before version 7.6, then ratings on the main Case page were all anonymous.
@@ -72,29 +72,25 @@
   <%= form.label :assignee_id, class: 'form-label' %>
   <%= select_tag "assignee_id", options_from_collection_for_select(@book.teams.flat_map(&:members).uniq, :id, :name, params[:assignee_id]), required: true, prompt: "Please select assignee", class: 'form-control' %>
 </div>
-<p>
-<div class="actions">
+<div class="actions my-3">
   <%= form.submit 'Assign Ratings and Judgements' %>
 </div>
-</p>
 <% end %>
 
 <h3>Delete Judgements by User</h3>
 
 <p class="form-text">
-  Let's you delete judgements made by a single user. 
+  Let's you delete judgements made by a single user.
 </p>
- 
+
 <%= form_for(@book, url: delete_ratings_by_assignee_book_path(@book), method: :delete, data: { turbo_confirm: "Are you sure?" }) do |form| %>
 <div class="mb-3">
   <%= form.label :user_id, class: 'form-label' %>
   <%= select_tag "user_id", options_from_collection_for_select(@book.judges, :id, :fullname, params[:user_id]), required: true, prompt: "Please select judge", class: 'form-control' %>
 </div>
-<p>
-<div class="actions">
+<div class="actions my-3">
   <%= form.submit 'Delete Judgements' %>
 </div>
-</p>
 <% end %>
 
 <h3>Delete Query Doc Pairs Below a Rank</h3>
@@ -107,11 +103,9 @@
   <%= form.label :position, class: 'form-label' %>
   <%= select_tag "position", options_for_select(@book.query_doc_pairs.distinct.pluck(:position).compact.sort), required: true, prompt: "Please select rank to delete below", class: 'form-control' %>
 </div>
-<p>
-<div class="actions">
+<div class="actions my-3">
   <%= form.submit 'Delete Query Doc Pairs' %>
 </div>
-</p>
 <% end %>
 
 <h3>Assign Rating to Judge Later Judgements</h3>
@@ -124,11 +118,9 @@
   <%= form.label :rating, class: 'form-label' %>
   <%= select_tag "rating", options_for_select(@book.scale.sort), required: true, prompt: "Please select rating to assign", class: 'form-control' %>
 </div>
-<p>
-<div class="actions">
+<div class="actions my-3">
   <%= form.submit 'Assign Rating and Clear Judge Later' %>
 </div>
-</p>
 <% end %>
 
 <h3>Remap Judgement Ratings</h3>
@@ -160,12 +152,8 @@
         <% end %>
       </tbody>
     </table>
-    <p>
-    <div class="actions">
+    <div class="actions my-3">
       <%= form.submit 'Remap Ratings' %>
     </div>
-    </p>
   <% end %>
 <% end %>
-
-</div>

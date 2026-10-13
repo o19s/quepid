@@ -31,7 +31,7 @@
 
     <hr>
     <p class="h5">Already shared with:</p>
-    <div id="<%= prefix %>-shared-list" class="list-group mt-2" data-<%= target_key %>="sharedList">
+    <%= tag.div id: "#{prefix}-shared-list", class: 'list-group mt-2', data: { target_key => 'sharedList' } do %>
       <% if @shared_teams.empty? %>
         <p class="text-muted mb-0">Not shared with any teams yet.</p>
       <% else %>
@@ -46,7 +46,7 @@
                          } %>
         <% end %>
       <% end %>
-    </div>
+    <% end %>
 
     <%= form_with url: @unshare_path, method: :post, local: true, html: { id: "un#{prefix}-form", class: 'mt-3' } do %>
       <%= hidden_field_tag record_param, @record.id, id: "un#{prefix}-id" %>

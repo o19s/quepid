@@ -12,7 +12,7 @@ const STATUS_VARIANT_CLASSES = [
 ]
 
 export default class extends withStatusMessages(Controller) {
-  static targets = ["rating", "explanation", "status", "savedIndicator"]
+  static targets = ["rating", "explanation", "status", "savedIndicator", "resetButtonTemplate"]
   static values = { saveUrl: String, deleteUrl: String }
 
   connect() {
@@ -187,13 +187,8 @@ export default class extends withStatusMessages(Controller) {
       // Create reset button dynamically
       const ratingContainer = this.element.querySelector(`#qdp_${queryDocPairId} .rating-buttons .d-flex`)
       if (ratingContainer) {
-        const resetButton = document.createElement('button')
-        resetButton.type = 'button'
-        resetButton.className = 'btn btn-sm btn-outline-secondary ms-3'
-        resetButton.setAttribute('data-action', 'click->bulk-judgement#resetRating')
-        resetButton.setAttribute('data-query-doc-pair-id', queryDocPairId)
-        resetButton.title = 'Clear rating'
-        resetButton.innerHTML = '<i class="bi bi-x-circle"></i> Reset'
+        const resetButton = this.resetButtonTemplateTarget.content.firstElementChild.cloneNode(true)
+        resetButton.dataset.queryDocPairId = queryDocPairId
         ratingContainer.appendChild(resetButton)
       }
     }

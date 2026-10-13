@@ -12,6 +12,17 @@ module Admin
       login_user admin
     end
 
+    test 'index renders announcement HTML but strips scripts and event handlers' do
+      announcement.update!(text: '<a href="https://example.com" onclick="steal()">Notes</a><script>alert(1)</script>')
+
+      get :index
+
+      assert_response :success
+      assert_select 'td a[href="https://example.com"]', text: 'Notes'
+      assert_select 'td a[onclick]', count: 0
+      assert_select 'td script', count: 0
+    end
+
     test 'update with an invalid date range does not save and shows the errors' do
       patch :update, params: {
         id:           announcement,

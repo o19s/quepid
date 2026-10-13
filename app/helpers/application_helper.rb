@@ -9,6 +9,12 @@ module ApplicationHelper
     "#{request.base_url}#{request.script_name}".chomp('/')
   end
 
+  # Announcements are admin-authored HTML. The default safe list already allows
+  # class and img; add inline style, whose CSS Loofah filters to safe properties.
+  def sanitize_announcement text
+    sanitize text, attributes: Rails::HTML5::SafeListSanitizer.allowed_attributes + [ 'style' ]
+  end
+
   def book_title book
     if book.name.downcase.starts_with?('book')
       book.name.titleize

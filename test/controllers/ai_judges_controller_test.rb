@@ -174,6 +174,30 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'provider help preserves formatting and links while removing unsafe markup' do
+    provider = LlmProvider.find('openai')
+    provider.help_html = <<~HTML
+      <strong onclick="alert(1)">Provider</strong><br><b>URL:</b><code>example</code>
+      <a href="https://example.com/help" target="_blank" rel="noopener">Help</a>
+      <a href="javascript:alert(1)">Unsafe link</a><img src="x" onerror="alert(1)">
+    HTML
+
+    template = File.readlines(Rails.root.join('app/views/ai_judges/_form.html.erb')).find do |line|
+      line.include?('entry.help_html')
+    end
+    html = ApplicationController.render(inline: template, locals: { entry: provider })
+
+    assert_select Nokogiri::HTML5.fragment(html), 'template[data-provider="openai"]' do
+      assert_select 'strong', text: 'Provider'
+      assert_select 'br', count: 1
+      assert_select 'b', text: 'URL:'
+      assert_select 'code', text: 'example'
+      assert_select 'a[href="https://example.com/help"][target="_blank"][rel="noopener"]', text: 'Help'
+      assert_select 'a:not([href])', text: 'Unsafe link'
+      assert_select 'img, [onclick], [onerror]', count: 0
+    end
+  end
+
   test 'a saved Jev judge renders a disabled preview without an accessible scale' do
     ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
     get edit_ai_judge_url(ai_judge)

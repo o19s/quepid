@@ -9,24 +9,22 @@
       <p class="card-text">Configure Quepid to work for your users.</p>
 
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><%= link_to 'Users', admin_users_path %>
-        <li class="list-group-item"><%= link_to 'Announcements', admin_announcements_path %>
+        <li class="list-group-item"><%= link_to 'Users', admin_users_path %></li>
+        <li class="list-group-item"><%= link_to 'Announcements', admin_announcements_path %></li>
       </ul>
     </div>
   </div>
-  <p/>
-  <div class="card" style="">
+  <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title">Analytics</h5>
       <p class="card-text">Dig into the data being collected by users.</p>
 
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path, data: { turbo: false } %>
+        <li class="list-group-item"><%= link_to 'SQL Analytics', blazer_path, data: { turbo: false } %></li>
       </ul>
     </div>
   </div>
-  <p/>
-  <div class="card" style="">
+  <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title">Background Jobs &amp; Performance Monitoring</h5>
       <p class="card-text">Manage background jobs and track request, query, and job performance over time.</p>

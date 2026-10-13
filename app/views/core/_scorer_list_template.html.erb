@@ -1,5 +1,6 @@
+<%# locals: (communal_scorers:, user_scorers:) %>
 <div data-scorer-catalog>
-  <% { communal: @communal_scorers, custom: @user_scorers }.each do |kind, scorers| %>
+  <% { communal: communal_scorers, custom: user_scorers }.each do |kind, scorers| %>
     <ul data-catalog-list="<%= kind %>">
       <% scorers.each do |scorer| %>
         <li class="list-group-item"

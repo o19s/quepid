@@ -47,7 +47,7 @@ This part covers the actual human judging experience: the one-at-a-time judging 
 
 - [ ] **Steps:**
   1. Judge roughly 50 pairs in one session (or as many as feasible).
-  2. On the 50th, confirm a "party time" screen: confetti, a progress bar, a leaderboard chart, and an **"I'm Ready for More!"** button that resumes judging.
+  2. On the 50th, confirm a "party time" screen: confetti, a progress bar labeled **"Judging progress"**, a leaderboard chart, and an **"I'm Ready for More!"** link that resumes judging.
   3. Use **Go Back to Previous Query/Doc Pair** to reopen and re-rate the immediately prior pair.
   4. Use browser Back/Forward; confirm existing judgements remain and no write is replayed. Hover Judge/resume links must not advance the session counter.
   5. Click **Quit Judging** — confirm it returns to your personal Judge Overview without losing already-saved judgements (new, edit and completed judgement screens).

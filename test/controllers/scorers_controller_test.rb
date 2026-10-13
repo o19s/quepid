@@ -64,6 +64,23 @@ class ScorersControllerTest < ActionController::TestCase
         assert_equal scorer, assigns(:scorer)
       end
 
+      test 'renders saved scale labels and the label template the scale controller clones' do
+        scorer = scorers(:random_scorer)
+        scorer.update!(owner: user, scale: [ 0, 1 ], scale_with_labels: { '0' => 'Bad', '1' => 'Good' })
+
+        get :edit, params: { id: scorer.id }
+
+        assert_response :success
+        assert_select '[data-scorer-scale-target="scaleLabels"] label.scorer-scale-label', count: 2
+        assert_select '[data-scorer-scale-target="scaleLabels"] input[name="scorer[scale_with_labels][1]"][value="Good"]'
+        assert_select '[data-controller="scorer-scale"] template[data-scorer-scale-target="labelTemplate"]' do
+          assert_select 'label.scorer-scale-label', count: 1 do
+            assert_select '[data-scale-value]', count: 1
+            assert_select 'input.form-control', count: 1
+          end
+        end
+      end
+
       test 'cannot edit communal scorer' do
         get :edit, params: { id: communal_scorer.id }
 

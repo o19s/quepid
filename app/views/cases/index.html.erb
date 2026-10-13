@@ -37,7 +37,7 @@ Cases are a group of queries that you are evaluating and experimenting with.
       checkboxes: [{ name: :archived, value: '1', checked: @archived, label: 'Archived' }],
       team_options: current_user.teams.map { |team| [team.name, team.id] }, team_label: true %>
   </div>
-  
+
   <div class="card-body">
     <div class="table-responsive">
     <table class="table table-hover table-sm">
@@ -56,8 +56,8 @@ Cases are a group of queries that you are evaluating and experimenting with.
           <th class="text-end"></th>
         </tr>
       </thead>
-  
-      <tbody>      
+
+      <tbody>
         <% @cases.each do |kase| %>
           <% last_score = @last_scores[kase.id] %>
           <tr>
@@ -97,7 +97,7 @@ Cases are a group of queries that you are evaluating and experimenting with.
                 —
               <% end %>
             </td>
-            
+
             <td>
               <% if kase.teams.any? %>
                 <%= safe_join(kase.teams.map { |t| link_to t.name, team_path(t) }, ', ') %>

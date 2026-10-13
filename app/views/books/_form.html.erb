@@ -1,11 +1,12 @@
+<%# locals: (book:, origin_case:, link_the_case:, auto_populate_book_pairs:, auto_populate_case_judgements:, ai_judges:, viewer:) %>
 <%= form_with(model: book) do |form| %>
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Settings</h5>
 
-      <% if @origin_case %>
+      <% if origin_case %>
         <div class="alert alert-primary" role="alert">
-          This book has defaults sourced from <i class="bi bi-briefcase"></i> <%= case_title(@origin_case) %>.
+          This book has defaults sourced from <i class="bi bi-briefcase"></i> <%= case_title(origin_case) %>.
         </div>
       <% end %>
 
@@ -24,8 +25,8 @@
       </div>
 
 
-      <% if @origin_case %>
-        <div class="card" data-controller="case-book-synchronization">
+      <% if origin_case %>
+        <div class="card mb-3" data-controller="case-book-synchronization">
           <h5 class="card-header">Case Integration</h5>
           <div class="card-body">
             <div class="alert alert-info mb-3" role="alert">
@@ -42,11 +43,11 @@
               <h6 class="fw-bold">Enable Synchronization</h6>
               <div class="form-check form-switch">
                 <%= form.label :link_the_case, "Link the Case ", class:'form-check-label' %>
-                <%= form.check_box :link_the_case, class:'form-check-input', checked: @link_the_case.nil? ? true : @link_the_case,
+                <%= form.check_box :link_the_case, class:'form-check-input', checked: link_the_case.nil? ? true : link_the_case,
                       data: { case_book_synchronization_target: 'linkTheCase', action: 'change->case-book-synchronization#toggleOptions' } %>
-                <i class="bi bi-briefcase"></i> <%= @origin_case.case_name %> to this book
+                <i class="bi bi-briefcase"></i> <%= origin_case.case_name %> to this book
               </div>
-              <%= form.hidden_field :origin_case_id, :value => @origin_case.id %>
+              <%= form.hidden_field :origin_case_id, :value => origin_case.id %>
               <div class="form-text">Creates the connection needed for automatic data syncing below.</div>
             </div>
 
@@ -56,12 +57,12 @@
                 <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
                 <%= form.hidden_field :auto_populate_book_pairs, value: '0', id: nil,
                       data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: @auto_populate_book_pairs.nil? ? book.new_record? : @auto_populate_book_pairs,
+                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: auto_populate_book_pairs.nil? ? book.new_record? : auto_populate_book_pairs,
                       data: { case_book_synchronization_target: 'synchronizationOption' } %>
               </div>
               <div class="form-text">
                 <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
-                <br/>
+                <br>
                 <strong>Off:</strong> Manually trigger updates to the Book when needed.
               </div>
             </div>
@@ -72,24 +73,23 @@
                 <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
                 <%= form.hidden_field :auto_populate_case_judgements, value: '0', id: nil,
                       data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: @auto_populate_case_judgements.nil? ? true : @auto_populate_case_judgements,
+                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: auto_populate_case_judgements.nil? ? true : auto_populate_case_judgements,
                       data: { case_book_synchronization_target: 'synchronizationOption' } %>
               </div>
               <div class="form-text">
                 <strong>On:</strong> Case ratings update immediately as judgements are made.
-                <br/>
+                <br>
                 <strong>Off:</strong> Manually import judgements when ready to test.
               </div>
             </div>
           </div>
         </div>
-        <p/>
       <% end %>
 
       <div class="mb-3">
         <i class="bi bi-robot"></i>
         <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
-        <%= form.collection_check_boxes(:ai_judge_ids, @ai_judges, :id, :name) do |b| %>
+        <%= form.collection_check_boxes(:ai_judge_ids, ai_judges, :id, :name) do |b| %>
           <div>
             <%= b.check_box %>
             <%= b.label %>
@@ -131,10 +131,10 @@
       <div data-controller="scoring-guidelines"
            data-scoring-guidelines-four-point-value="<%= Book::FOUR_POINT_GUIDELINES.strip %>"
            data-scoring-guidelines-two-point-value="<%= Book::TWO_POINT_GUIDELINES.strip %>"
-           data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(@current_user).to_json %>">
+           data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(viewer).to_json %>">
         <div class="mb-3">
           <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
-          <%= form.select(:scorer_id, scorer_options_for_select(@current_user),
+          <%= form.select(:scorer_id, scorer_options_for_select(viewer),
                 {
                   prompt: "Select a rating scale...",
                   include_blank: true
@@ -169,17 +169,17 @@
         </div>
       </div>
 
-      <% unless @book.new_record? %>
+      <% unless book.new_record? %>
         <div class="mb-3">
           <div class="form-check">
-            <%= form.check_box :delete_import_file, class: 'form-check-input', checked: false, disabled: !@book.import_file.attached? %>
+            <%= form.check_box :delete_import_file, class: 'form-check-input', checked: false, disabled: !book.import_file.attached? %>
             <%= form.label :delete_import_file, "Delete Import File", class: 'form-check-label' %>
             <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
           </div>
         </div>
         <div class="mb-3">
           <div class="form-check">
-            <%= form.check_box :delete_export_file, class: 'form-check-input', checked: false, disabled: !@book.export_file.attached? %>
+            <%= form.check_box :delete_export_file, class: 'form-check-input', checked: false, disabled: !book.export_file.attached? %>
             <%= form.label :delete_export_file, "Delete Export File", class: 'form-check-label' %>
             <div class="form-text">If enabled you have an associated file.  Check this to delete it.</div>
           </div>

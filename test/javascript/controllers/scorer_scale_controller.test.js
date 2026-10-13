@@ -9,12 +9,14 @@ function mount() {
     <input type="radio" name="scale_preset" value="graded">
     <input type="radio" name="scale_preset" value="custom">
     <input type="text" data-target="list">
-    <div data-target="labels"></div>`
+    <div data-target="labels"></div>
+    <template data-target="labelTemplate"><label class="scorer-scale-label d-inline-block me-2"><span data-scale-value></span>: <input class="form-control d-inline-block" type="text" name="scorer[scale_with_labels][]" value=""></label></template>`
   const controller = buildControllerFixture(ScorerScaleController, {
     element,
     targets: {
       scaleList: element.querySelector('[data-target="list"]'),
-      scaleLabels: element.querySelector('[data-target="labels"]')
+      scaleLabels: element.querySelector('[data-target="labels"]'),
+      labelTemplate: element.querySelector('[data-target="labelTemplate"]')
     }
   })
   return { controller, element }

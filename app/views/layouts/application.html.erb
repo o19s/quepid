@@ -12,8 +12,8 @@
   <%# Some legacy GET actions change state; defer speculative visits until those routes are audited. %>
   <meta name="turbo-prefetch" content="false">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <%= action_cable_meta_tag %>
 
 
@@ -25,7 +25,7 @@
   <!-- facebook open graph tags -->
   <meta property="og:type" content="website">
   <% if flash[:unfurl]["id"] %>
-    <meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>">
+    <meta property="og:url" content="<%= case_core_url(id: flash[:unfurl]["id"] ) %>">
   <% end %>
   <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>">
   <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here.">
@@ -34,14 +34,14 @@
   <!-- twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@quepid_search">
-  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>">
+  <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>">
   <meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>">
   <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here">
   <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>">
   <% if flash[:unfurl]["id"] %>
-    <meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>">
+    <meta name="twitter:url" value="<%= case_core_url(id: flash[:unfurl]["id"] ) %>">
     <meta name="twitter:label1" value="Latest Try">
-    <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>">
+    <meta name="twitter:data1" value="<%= Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>">
   <% end %>
 <% else %>
 
@@ -76,24 +76,30 @@
   <% end %>
 </head>
 
-<% if case_page %>
-<body data-controller="snapshot-bridge core-bootstrap query-command-bridge"
-      data-core-bootstrap-case-toolbar-outlet="#case-actions"
-      data-core-bootstrap-case-no-value="<%= @case&.id || 0 %>"
-      data-core-bootstrap-initial-value="<%= String.new(render(partial: 'core/bootstrap', formats: [:json])) %>"
-      data-snapshot-bridge-snapshots-url-value="<%= api_case_snapshots_path(@case) if @case %>"
-      <%# Preserve an explicitly requested missing try so core-bootstrap can report it. %>
-      data-core-bootstrap-try-no-value="<%= params[:try_number].presence || @try&.try_number || '' %>"
-      data-quepid-root-url="<%= quepid_root_url %>">
-<% else %>
-<body data-controller="page-cache" data-action="turbo:before-cache@document->page-cache#prepare" class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
+<%
+  body_attributes = if case_page
+    { data: {
+      controller:                          'snapshot-bridge core-bootstrap query-command-bridge',
+      core_bootstrap_case_toolbar_outlet:  '#case-actions',
+      core_bootstrap_case_no_value:        @case&.id || 0,
+      # String.new drops html_safe so the JSON is attribute-escaped.
+      core_bootstrap_initial_value:        String.new(render(partial: 'core/bootstrap', formats: [:json], locals: { kase: @case })),
+      snapshot_bridge_snapshots_url_value: @case ? api_case_snapshots_path(@case) : '',
+      # Preserve an explicitly requested missing try so core-bootstrap can report it.
+      core_bootstrap_try_no_value:         params[:try_number].presence || @try&.try_number || '',
+      quepid_root_url:                     quepid_root_url,
+    } }
+  else
+    { class: 'd-flex flex-column min-vh-100',
+      data:  { controller: 'page-cache', action: 'turbo:before-cache@document->page-cache#prepare', quepid_root_url: quepid_root_url } }
+  end
+%>
+<body <%= tag.attributes(body_attributes) %>>
 
-<% end %>
-
 <% if case_page %>
-  <%= render 'layouts/case_workspace' %>
+  <%= render 'layouts/case_workspace', kase: @case %>
 <% else %>
-<%= render 'layouts/header' %>
+<%= render 'layouts/header', announcement: @announcement %>
 
 <%# Continue the flex chain so the sidebar reaches the footer on short pages.
     Flex directly on the container, not a .row: .row's "> *" rule gives every

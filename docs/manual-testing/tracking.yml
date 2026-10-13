@@ -540,9 +540,9 @@ parts:
           ratings-page: "4.13/ratings-page"
           scores-page: "4.13/scores-page"
           history-list: "4.13/history-list"
-        last_run: 2026-10-10T01:18:22Z
+        last_run: 2026-10-13T17:07:34Z
         result: pass
-        notes: "Golden-path smoke: twelve inspected PNGs registered/linked across Current/Base/Legacy: seven-try History drawer, actual Check Scores populated table, Check Ratings empty table and Visualize your tries seven-node graph navigation. Current ratings heading is Ratings; Base/Legacy say Scores (baseline behavior). History lower rows scroll beyond frame; score timestamps reflect separate runs. Populated ratings/filter checks remain pending; score deletion and analytics controls deferred to their detailed scenarios."
+        notes: "Partial, Current :3000 only, after the scores delete form became self-contained with checkboxes joined via form=delete-scores-form. Case 219 Scores: 25 rows; checking one enables Delete and the form payload carries exactly that score_ids[] plus scorer_id; Check All then unchecking one leaves Check All unchecked and submits 24 ids; turbo confirm attribute present. Actual deletion not submitted (dev data kept). History drawer, ratings page, Base/Legacy not re-run. Earlier coverage: Golden-path smoke: twelve inspected PNGs registered/linked across Current/Base/Legacy: seven-try History drawer, actual Check Scores populated table, Check Ratings empty table and Visualize your tries seven-node graph navigation. Current ratings heading is Ratings; Base/Legacy say Scores (baseline behavior). History lower rows scroll beyond frame; score timestamps reflect separate runs. Populated ratings/filter checks remain pending; score deletion and analytics controls deferred to their detailed scenarios."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/fonts.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -957,9 +957,9 @@ parts:
           unshared-endpoint: "7.6/unshared-endpoint"
           shared-endpoint: "7.6/shared-endpoint"
           share-form: "7.6/share-form"
-        last_run: 2026-10-13T02:25:20Z
+        last_run: 2026-10-13T18:13:01Z
         result: pass
-        notes: "Covered live (Current, Rails-rendered Turbo Frame modal): search endpoints index Vespa endpoint shared with OSC, notice and redirect to /search_endpoints, reopened shared list, row-selected unshare with notice, reopened empty state; fixture left unshared. Team-page endpoint modals opened for two records with correct ids and reset selection. Not covered live: duplicate share/unshare alerts, inaccessible endpoint, Base/Legacy comparison, Current screen-history refresh. branch-ui-diff vs 9bb93f57 on :3003: endpoint 7 form, selected, shared and unshared states pixel-identical."
+        notes: "Additional partial Herb verification on Current :3000: endpoint 5 (Edinburgh) is an equivalent unshared fixture; Turbo Frame modal loads, empty shared list renders, selecting OSC enables Share with team. Screenshot inspected and Current share-form refreshed. No share/unshare writes; populated shared-list DOM verified by existing tests and pre-edit parity check. Earlier coverage: Covered live (Current, Rails-rendered Turbo Frame modal): search endpoints index Vespa endpoint shared with OSC, notice and redirect to /search_endpoints, reopened shared list, row-selected unshare with notice, reopened empty state; fixture left unshared. Team-page endpoint modals opened for two records with correct ids and reset selection. Not covered live: duplicate share/unshare alerts, inaccessible endpoint, Base/Legacy comparison, Current screen-history refresh. branch-ui-diff vs 9bb93f57 on :3003: endpoint 7 form, selected, shared and unshared states pixel-identical."
         paths: ["app/views/shared/_share_search_endpoint_modal.html.erb", "app/javascript/controllers/share_search_endpoint_controller.js", "app/javascript/controllers/share_entity_controller_base.js", "app/views/search_endpoints/index.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/codemirror_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/controllers/share_modals_controller.rb", "app/views/share_modals/show.html.erb", "app/views/shared/_share_entity_modal.html.erb"]
       "7.7":
         title: "Mapper Wizard — Step 1: Fetch Search Results"
@@ -968,9 +968,9 @@ parts:
           mapper-fetch-error: "7.7/mapper-fetch-error"
           mapper-fetch: "7.7/mapper-fetch"
           mapper-entry: "7.7/mapper-entry"
-        last_run: 2026-10-10T05:30:50Z
+        last_run: 2026-10-13T18:12:23Z
         result: pass
-        notes: "Partial: four states each on Current/Base/Legacy inspected and registered. New wizard, visible empty-URL validation, Advanced options and real Solr GET fetch verified with 32263-character JSON preview. Current displays Steps 2/3 headings before fetch; Base/Legacy hide entire steps until prerequisites. Clipboard insecure-origin failure/success, POST, slow/unreachable and malformed headers branches pending."
+        notes: "Additional partial Herb verification on Current :3000: new mapper shows GET selected, proxy checked, and sole OSC team checked; the q=test&rows=10 hint is unchanged. Empty Fetch shows Please enter a search URL. Mapper entry screenshot inspected and Current refreshed. No network fetch, AI generation or save in this sample. Earlier coverage: Partial: four states each on Current/Base/Legacy inspected and registered. New wizard, visible empty-URL validation, Advanced options and real Solr GET fetch verified with 32263-character JSON preview. Current displays Steps 2/3 headings before fetch; Base/Legacy hide entire steps until prerequisites. Clipboard insecure-origin failure/success, POST, slow/unreachable and malformed headers branches pending."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/utils/clipboard.js"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
@@ -998,9 +998,9 @@ parts:
           mapper-reopened: "7.10/mapper-reopened"
           mapper-saved-endpoint: "7.10/mapper-saved-endpoint"
           mapper-save-form: "7.10/mapper-save-form"
-        last_run: 2026-10-10T05:56:32Z
+        last_run: 2026-10-13T18:13:27Z
         result: pass
-        notes: "Save form, saved endpoint and reopened wizard captured/inspected/registered on Current/Base/Legacy. Existing disposable Search API endpoint updated through wizard: GET public Solr URL, test query, combined mappers, proxy true and selected team persisted. Reopening restores code/settings and empty fetched preview; Current/Base show username:******, Legacy exposes dummy fixture password (historical behavior). Missing URL/header validation and ownership/foreign/hidden-team edge cases pending; partial coverage."
+        notes: "Additional partial Herb verification on Current :3000: saved endpoint 5 mapper form retains GET, checked proxy and unchecked OSC (unshared), with existing mapper editors populated; inspected full-page screenshot. New form auto-checks the sole team. No saves or fetches in this sample; POST and unchecked-proxy DOM parity covered in the test database. Earlier coverage: Save form, saved endpoint and reopened wizard captured/inspected/registered on Current/Base/Legacy. Existing disposable Search API endpoint updated through wizard: GET public Solr URL, test query, combined mappers, proxy true and selected team persisted. Reopening restores code/settings and empty fetched preview; Current/Base show username:******, Legacy exposes dummy fixture password (historical behavior). Missing URL/header validation and ownership/foreign/hidden-team edge cases pending; partial coverage."
         paths: ["app/controllers/mapper_wizards_controller.rb"]
       "7.11":
         title: "Quepid proxy: SSRF guard"
@@ -1079,10 +1079,10 @@ parts:
           scorer-type-error: "8.3/scorer-type-error"
           scorer-length-error: "8.3/scorer-length-error"
           scorer-form: "8.3/scorer-form"
-        last_run: 2026-10-10T06:42:53Z
+        last_run: 2026-10-13T15:32:50Z
         result: pass
-        notes: "Current, Base, Legacy: captured form, >10-value validation, noninteger submission, label rebuild, spaced custom scale saved and explicitly blank name auto-assigned. Six states registered across all three. Current retains Binary labels when expanding scale; Base and primary Legacy lose labels and return SerializationTypeMismatch 500 on nonintegers (live preexisting evidence). Disposable custom and auto-name scorers retained for subsequent edit/share/delete checks. Partial: removing a scale value and form tampering pending."
-        paths: ["app/validators/scale_validator.rb", "app/controllers/scorers_controller.rb", "app/models/scorer.rb", "app/views/scorers/new.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
+        notes: "Partial (scale labels cloned from ERB template): Covered live: /scorers/new on Current3000; empty scale renders no labels, Binary builds 0/1 inputs and a typed label for 0 survives switching to Graded (4 inputs). Not covered live: saving, validation errors, auto-name, custom spaced scale, Base/Legacy comparison, screenshots. Earlier coverage: Current, Base, Legacy: captured form, >10-value validation, noninteger submission, label rebuild, spaced custom scale saved and explicitly blank name auto-assigned. Six states registered across all three. Current retains Binary labels when expanding scale; Base and primary Legacy lose labels and return SerializationTypeMismatch 500 on nonintegers (live preexisting evidence). Disposable custom and auto-name scorers retained for subsequent edit/share/delete checks. Partial: removing a scale value and form tampering pending."
+        paths: ["app/validators/scale_validator.rb", "app/controllers/scorers_controller.rb", "app/models/scorer.rb", "app/views/scorers/new.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "8.4":
         title: "Edit a scorer"
         screenshots:
@@ -1091,10 +1091,10 @@ parts:
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-10T06:49:01Z
+        last_run: 2026-10-13T16:52:01Z
         result: pass
-        notes: "Current, Base and Legacy: changed custom name/code/scale/labels, saved and reloaded with exact values retained; non-admin communal and another fixture user private edit both return 404. Five states registered. Current preserves labels on adding/removing scale values; Base/Legacy rebuild all labels blank before manually refilling (preexisting live evidence). Partial: admin communal edit not exercised."
-        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
+        notes: "Additional partial-locals verification: /scorers/21/edit renders scorer form and saved scale labels after adding strict locals; inspected 1440x1000 screenshot. Current scorer-edit refreshed with the full-page capture; no save in this sample. Partial (scale labels rendered from shared ERB partial and template, inline styles replaced by utilities and .scorer-scale-label: 118x38 labels and 100px inputs unchanged, gap now 8px (me-2) instead of 10px): Covered live: /scorers/21/edit on Current3000; server-rendered 0/1 labels show saved values, an edited label survives switching to Graded (4 inputs, sizes unchanged) and typing '0, 5,,<b>x</b>' (blank skipped, markup shown as text). Not covered live: saving and reloading, edit-permission 404s, admin communal edit, Base/Legacy comparison, registered screenshots. Earlier coverage: Current, Base and Legacy: changed custom name/code/scale/labels, saved and reloaded with exact values retained; non-admin communal and another fixture user private edit both return 404. Five states registered. Current preserves labels on adding/removing scale values; Base/Legacy rebuild all labels blank before manually refilling (preexisting live evidence). Partial: admin communal edit not exercised."
+        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js"]
       "8.5":
         title: "Clone a scorer"
         screenshots:
@@ -1164,10 +1164,10 @@ parts:
           member-duplicate: "9.2/member-duplicate"
           member-added: "9.2/member-added"
           member-autocomplete: "9.2/member-autocomplete"
-        last_run: 2026-10-10T07:21:14Z
+        last_run: 2026-10-13T15:45:50Z
         result: pass
-        notes: "Three states captured/inspected/registered each Current, Base86e3de9 and Legacy8ceb99e. Current/Base autocomplete suggests existing same-domain invitee; selecting suggestion and Add user persists second member, duplicate produces already-member alert without third membership. Legacy has plain email input with no autocomplete controller (source show.erb23); exact email Add user and duplicate both work. New lifecycle teams retained for sharing/revocation. Different-domain privacy partial/exact boundary not replayed in this batch; prior Current-only coverage remains historical."
-        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
+        notes: "Partial (suggestion rows cloned from ERB template; styles moved to bootstrap5-add.css with computed styles and screenshot unchanged): Covered live: /teams/1 on Current3000 as realisticactivity; name match 'admin' shows avatar and name without email, email match 'quepid+adm' adds the email line, clicking the suggestion fills the input and hides the dropdown. Not covered live: Add user submission, duplicate alert, different-domain privacy boundary, Base/Legacy comparison, registered screenshots. Earlier coverage: Three states captured/inspected/registered each Current, Base86e3de9 and Legacy8ceb99e. Current/Base autocomplete suggests existing same-domain invitee; selecting suggestion and Add user persists second member, duplicate produces already-member alert without third membership. Legacy has plain email input with no autocomplete controller (source show.erb23); exact email Add user and duplicate both work. New lifecycle teams retained for sharing/revocation. Different-domain privacy partial/exact boundary not replayed in this batch; prior Current-only coverage remains historical."
+        paths: ["app/controllers/teams_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb", "app/views/teams/show.html.erb", "app/javascript/controllers/team_member_autocomplete_controller.js"]
       "9.3":
         title: "Invite a new (non-existing) user"
         screenshots:
@@ -1436,9 +1436,9 @@ parts:
           explanation: "11.1/explanation"
           guidelines-open: "11.1/guidelines-open"
           single-pair: "11.1/single-pair"
-        last_run: 2026-10-10T10:54:32Z
+        last_run: 2026-10-13T17:07:02Z
         result: pass
-        notes: "Current/Base/Legacy: five states captured, inspected and registered. Mouse Good2 saves explanation and advances; expanded audit after reload confirms persisted rating/explanation on all three. Scoring guidelines expanded. Partial coverage: linked-case sync and rapid duplicate clicks pending."
+        notes: "Partial, Current :3000 only, after judgements/_form tag balancing (row/col wrapper always rendered, document fields in div.card-text instead of p). book 10 judgement edit for image pair 640: thumbnail col-md-4 plus col-md-8, fields render, mouse Irrelevant click saved rating 0; book 1 judge pair without image renders col-12, title, fields, two rating buttons. Disposable judgement on 640 removed via bulk Reset. Not covered: advance-after-rate on /judge, linked-case sync, rapid duplicate clicks, Base/Legacy. Earlier coverage: Current/Base/Legacy: five states captured, inspected and registered. Mouse Good2 saves explanation and advances; expanded audit after reload confirms persisted rating/explanation on all three. Scoring guidelines expanded. Partial coverage: linked-case sync and rapid duplicate clicks pending."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/_form.html.erb", "app/models/judgement.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.2":
         title: "Keyboard-shortcut rating"
@@ -1482,9 +1482,9 @@ parts:
           resumed: "11.5/resumed"
           milestone: "11.5/milestone"
           session-start: "11.5/session-start"
-        last_run: 2026-10-10T11:08:44Z
+        last_run: 2026-10-13T17:35:03Z
         result: pass
-        notes: "Current/Base/Legacy seven states inspected and registered. Actual51 mouse ratings on isolated private fixtures; milestone/confetti/progress/leaderboard at49 saved ratings (50th screen entry), resume, Previous Pair edit re-rated Perfect, Quit retained50 then final rating exhausted51 and completion notice. Current Quit personal Judge Overview; historical Quit ordinary Overview. Foreign-judge warning opened without modifying invitee rating. Rank hidden in private fixture and shown in shared fixture. Partial: Back/Forward and hover session-counter replay pending; observed milestone timing retained as pre-existing comparison evidence."
+        notes: "Partial Current :3000 cleanup verification: seeded book 1 (200 pairs, existing 49 owner ratings), 1440x1000, milestone reached through page visits without rating writes. Confetti/chart visible; mt-3 preserves the measured alert and card positions; accessible progress label and resume link semantics checked; clicking resume restores form. Empty heading removed from normal form. Current milestone refreshed with this equivalent fixture. Rating saves, previous/quit/completion, narrow viewport and Base/Legacy deferred this batch. Native visual suite: four tests pass, two fail on shared-header differences in Teams form/Admin home, unrelated to this template. Earlier coverage: Current/Base/Legacy seven states inspected and registered. Actual51 mouse ratings on isolated private fixtures; milestone/confetti/progress/leaderboard at49 saved ratings (50th screen entry), resume, Previous Pair edit re-rated Perfect, Quit retained50 then final rating exhausted51 and completion notice. Current Quit personal Judge Overview; historical Quit ordinary Overview. Foreign-judge warning opened without modifying invitee rating. Rank hidden in private fixture and shown in shared fixture. Partial: Back/Forward and hover session-counter replay pending; observed milestone timing retained as pre-existing comparison evidence."
         paths: ["app/views/judgements/new.html.erb", "app/views/judgements/edit.html.erb", "app/views/judgements/show.html.erb", "app/views/books/judge_overview.html.erb", "app/controllers/judgements_controller.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/controllers/books_controller.rb", "app/views/books/show.html.erb"]
       "11.6":
         title: "Judgements list (audit view)"
@@ -1515,6 +1515,7 @@ parts:
       "11.8":
         title: "Bulk Judge (grid mode)"
         screenshots:
+          thumbnail-grid: "11.8/thumbnail-grid"
           pagination-next: "11.8/pagination-next"
           pagination-first: "11.8/pagination-first"
           filter-cleared: "11.8/filter-cleared"
@@ -1530,10 +1531,10 @@ parts:
           rating-persisted: "11.8/rating-persisted"
           rating-selected: "11.8/rating-selected"
           unrated-grid: "11.8/unrated-grid"
-        last_run: 2026-10-10T11:28:48Z
+        last_run: 2026-10-13T17:01:58Z
         result: fail
-        notes: "Current/Base 86e3de9/Legacy 8ceb99e: 15 states each captured, inspected and registered. AJAX Good rating persisted after reload, Reset removed it, rated explanation autosaved and rendered read-only, Unrated/all toggles, rank 1/All, empty query and clear link verified. 51-pair fixture pages 1/2 each rendered 25 documents in the same query group (viewport pagination screenshots). Current returns to personal Judge Overview; historical versions return to Judgements. Explanation-only saves on unrated documents visibly fail on all three; historical replay confirms pre-existing behavior. Partial: deeper/unranked default-cutoff fixture, pagination uniqueness, two-row debounce and forced invalid/failure edges not exercised."
-        paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/new.html.erb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js", "app/javascript/controllers/status_message_behavior.js"]
+        notes: "Thumbnail precedence fix: model tests verify present nil/blank thumb does not fall back to image; Current :3000 book 10/star wars browser sample renders 20 cards and 10 populated thumbnail columns, screenshot inspected. Nil/blank edge rendering verified by model tests rather than a live fixture; broader judging workflows deferred. Additional partial-locals verification on Current :3000 as realisticactivity: default book 1 summary and 25 cards render, Show Explanations auto-submit exposes 25 textareas, unmatched query displays active filters and Clear query filter restores cards while retaining explanations. Inspected and registered Current unrated-grid, explanation-edit and empty-filter screenshots (1440x1000; book 1 fixture). No writes; save/failure/pagination coverage from this cleanup deferred. Partial (new.html.erb split into _filters/_summary/_query_group/_document/_rating/_explanation/_no_results partials; QueryDocPair#image_url). Covered live on Current :3000 as realisticactivity, Playwright MCP: book 1 only_unrated=false renders summary, 3 groups/25 cards numbered #1.., preselected ratings, no console errors; rated unrated pair 48 (Irrelevant), reload kept selection plus server-rendered Reset, Reset cleared it and removed the button; show_explanations=true renders 25 textareas, typed explanation on rated pair 46 autosaved and showed read-only with explanations off, then cleared (dev DB restored); book 10 query star wars renders thumbnails in col-md-3/col-md-9, imageless cards col-12. Whitespace-normalized HTML parity vs pre-split checked in tests. Not covered live: filters/auto-submit, pagination nav, empty-filter alert, Base/Legacy, screen-history captures. Unresolved failure retained (verified 2026-10-10T11:28:48Z): explanation-only saves on unrated documents visibly fail on Current, Base 86e3de9 and Legacy 8ceb99e; historical replay confirms pre-existing behavior. Earlier coverage: Current/Base 86e3de9/Legacy 8ceb99e: 15 states each captured, inspected and registered. AJAX Good rating persisted after reload, Reset removed it, rated explanation autosaved and rendered read-only, Unrated/all toggles, rank 1/All, empty query and clear link verified. 51-pair fixture pages 1/2 each rendered 25 documents in the same query group (viewport pagination screenshots). Current returns to personal Judge Overview; historical versions return to Judgements. Explanation-only saves on unrated documents visibly fail on all three; historical replay confirms pre-existing behavior. Partial: deeper/unranked default-cutoff fixture, pagination uniqueness, two-row debounce and forced invalid/failure edges not exercised."
+        paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/", "app/models/query_doc_pair.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "11.9":
         title: "Query/Doc Pairs management"
         screenshots:
@@ -1776,9 +1777,9 @@ parts:
         screenshots:
           pending-invite: "14.4/pending-invite"
           activity: "14.4/activity"
-        last_run: 2026-10-10T13:25:48Z
+        last_run: 2026-10-13T17:37:47Z
         result: pass
-        notes: "Six inspected PNGs: owner fixture fields and six activity chart sections populated; pending-invite fixture replaces charts with explanatory alert on all three. Current hides password hash; Base/Legacy display it (pre-existing historical behavior). Chart layouts and counts differ with historical renderer/independent activity. Pending fixtures created without sending mail and retained for cleanup."
+        notes: "Partial avatar accessibility check on Current :3000: pending-invite user 42, 1440x1000; heading retains displayed identity, avatar remains 96x96 with empty alt and no title. No user data changed; populated charts and management actions deferred. Current pending-invite capture refreshed. Earlier coverage: Partial, Current :3000 only, after admin/users/show card-body close moved out of the else branch. Pending-invite user 42: Pulse card shows the explanatory alert, card is the last element in main, footer outside main. Populated-user charts not re-checked; Base/Legacy not re-run. Before that: Six inspected PNGs: owner fixture fields and six activity chart sections populated; pending-invite fixture replaces charts with explanatory alert on all three. Current hides password hash; Base/Legacy display it (pre-existing historical behavior). Chart layouts and counts differ with historical renderer/independent activity. Pending fixtures created without sending mail and retained for cleanup."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/show.html.erb", "app/controllers/admin/users/pulses_controller.rb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb", "app/javascript/controllers/user_activity_controller.js"]
       "14.5":
         title: "Lock / unlock a user"
@@ -1796,9 +1797,9 @@ parts:
           demoted: "14.6/demoted"
           promoted: "14.6/promoted"
           edit: "14.6/edit"
-        last_run: 2026-10-10T13:23:52Z
+        last_run: 2026-10-13T17:38:20Z
         result: pass
-        notes: "Nine inspected captures: admin edit, promoted fixture reaching /admin200, demoted fixture denied/redirected with alert on all three. Password updated through UI to capture-admin-password and login succeeded. All disposable fixtures restored non-admin. Historical header/footer/forms differ; unrelated existing announcement banners appear in modern demotion captures (state evidence, not clone data). Partial: self-demotion not exercised."
+        notes: "Partial avatar accessibility check on Current :3000: existing user 42 as equivalent human-user edit fixture, 1440x1000; avatar has empty alt, no title, remains 96x96, and heading announces user identity without avatar text. Current edit capture refreshed; no fields submitted or records changed. Save/validation/password/promotion/demotion and AI-judge exclusion not re-tested. Native visual suite retains the two previously observed Teams/Admin shared-header differences; four tests pass. Earlier coverage: Nine inspected captures: admin edit, promoted fixture reaching /admin200, demoted fixture denied/redirected with alert on all three. Password updated through UI to capture-admin-password and login succeeded. All disposable fixtures restored non-admin. Historical header/footer/forms differ; unrelated existing announcement banners appear in modern demotion captures (state evidence, not clone data). Partial: self-demotion not exercised."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.7":
         title: "Assign judgements to anonymous user (admin-level)"
@@ -1827,10 +1828,10 @@ parts:
           banner: "14.9/banner"
           live: "14.9/live"
           new: "14.9/new"
-        last_run: 2026-10-10T13:34:45Z
+        last_run: 2026-10-13T16:32:46Z
         result: pass
-        notes: "Completed two simultaneous own live announcements: fresh encrypted-fixture login showed the newest overlap text on all three instances. Deleted both identified announcement fixtures through admin UI; retained unrelated existing announcements. Earlier captures cover HTML/emoji create, live schedule or Legacy Make Live, home banner dismissal/reload and Views increment. Date-boundary/expired scheduling not exercised."
-        paths: ["app/views/admin/announcements/_fields.html.erb", "app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb", "app/views/admin/announcements/index.html.erb", "app/views/admin/announcements/new.html.erb", "app/models/concerns/text_search.rb"]
+        notes: "Partial (announcement text rendered through sanitize_announcement: default safe list plus inline style): Covered live on Current3000 as realisticactivity: form help text lists allowed HTML; an announcement with emoji, a Bootstrap badge with style, and an img with onerror previewed in the edit-page banner with class, color style and image kept, position:fixed and onerror removed; deleted via Edit > Delete > Confirm. Earlier pass this session: link kept, onclick and <script> removed in admin list and home banner. Not covered live: scheduling/date bounds, overlap, Views count, dismissal, Base/Legacy comparison, screenshots registry. Earlier coverage: Completed two simultaneous own live announcements: fresh encrypted-fixture login showed the newest overlap text on all three instances. Deleted both identified announcement fixtures through admin UI; retained unrelated existing announcements. Earlier captures cover HTML/emoji create, live schedule or Legacy Make Live, home banner dismissal/reload and Views increment. Date-boundary/expired scheduling not exercised."
+        paths: ["app/views/admin/announcements/_fields.html.erb", "app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb", "app/views/admin/announcements/index.html.erb", "app/views/admin/announcements/new.html.erb", "app/models/concerns/text_search.rb", "app/views/layouts/_header.html.erb", "app/helpers/application_helper.rb"]
       "14.10":
         title: "Websocket Tester"
         screenshots:
@@ -1858,9 +1859,9 @@ parts:
           created: "14.12/created"
           validation: "14.12/validation"
           new: "14.12/new"
-        last_run: 2026-10-10T13:24:59Z
+        last_run: 2026-10-13T17:07:50Z
         result: pass
-        notes: "Twelve inspected captures: New form, mismatched-password errors, successful plain-password creation, and pre-encrypted-password creation on all three. Both users logged in successfully; admin promotion exercised in 14.6. Historical show exposes known fixture hash; Current omits password hashes. Disposable IDs recorded for cleanup. Partial: duplicate/blank-email validation not exercised."
+        notes: "Partial, Current :3000 only, after admin/users/_form fix (form_for closes inside its card, shared _password_fields partial). New form renders attributes plus password/confirmation/OR/encrypted; plain-password creation redirected to show with bcrypt matching; edit page password form changed it again (verified). Disposable user deleted. Not covered: encrypted-hash creation, validation errors, login as new user, Base/Legacy. Earlier coverage: Twelve inspected captures: New form, mismatched-password errors, successful plain-password creation, and pre-encrypted-password creation on all three. Both users logged in successfully; admin promotion exercised in 14.6. Historical show exposes known fixture hash; Current omits password hashes. Disposable IDs recorded for cleanup. Partial: duplicate/blank-email validation not exercised."
         paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/new.html.erb", "app/views/admin/users/_form.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
 
       "14.13":
@@ -1893,10 +1894,10 @@ parts:
           core-menu: "15.2/core-menu"
           books-menu: "15.2/books-menu"
           cases-menu: "15.2/cases-menu"
-        last_run: 2026-10-10T13:43:43Z
+        last_run: 2026-10-13T18:31:00Z
         result: pass
-        notes: "Expanded populated management/core case/book menus and core counts all3; inspected 768px expanded Current hamburger containing Manual/Wiki/avatar. Base no hamburger and body overflow1007px at768; Legacy wraps old navbar. Created book link retained case context in core, ordinary link management; full create navigation/empty-menu edge not exercised."
-        paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/controllers/dropdown_controller.rb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
+        notes: "Re-run after recent_cases was restored to CurrentCaseManager: Current :3000 realisticactivity, management home and core case 219 Relevancy Cases menus open (aria-expanded true) with RECENT CASES, four recent cases, View all cases (39 active on core) and Create a case; /dropdown/cases and /api/dropdown/cases return 200; dropdown controller tests pass. Tagline and avatar images now alt=\"\". Previous run: Partial, Current :3000 only, after _header_navigation moved to tag.a/tag.ul (shared toggle ids, aria-labelledby now points at each toggle; aria-expanded on both surfaces). Books menu verified on management home and core case 219: opens, aria-expanded true, RECENT BOOKS (strong on core), four lazy-loaded books, View all books / Create a book (core shows 8 active); management keeps p-2 and 250px width. FAIL: Relevancy Cases menu raises NoMethodError recent_cases in DropdownController#cases (API cases dropdown calls it too); 5e205c1f removed CurrentCaseManager#recent_cases with the sparklines. Not covered: 768px, empty-state edge, Base/Legacy. Earlier coverage: Expanded populated management/core case/book menus and core counts all3; inspected 768px expanded Current hamburger containing Manual/Wiki/avatar. Base no hamburger and body overflow1007px at768; Legacy wraps old navbar. Created book link retained case context in core, ordinary link management; full create navigation/empty-menu edge not exercised."
+        paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_page_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/controllers/dropdown_controller.rb", "app/controllers/api/v1/cases/dropdown_controller.rb", "app/controllers/concerns/authentication/current_case_manager.rb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.3":
         title: "External links (User Manual, Wiki, API Docs)"
         screenshots:
@@ -1910,9 +1911,9 @@ parts:
         screenshots:
           admin-menu: "15.4/admin-menu"
           owner-menu: "15.4/owner-menu"
-        last_run: 2026-10-10T13:36:17Z
+        last_run: 2026-10-13T16:52:43Z
         result: pass
-        notes: "Inspected ordinary and admin avatar menus on all3: admin shortcuts present only admin; unauthorized admin/engine requests checked14.1/14.11. Current logout is a form; historical link remains."
+        notes: "Additional partial-locals verification: Current :3000 realisticactivity (admin-enabled fixture) management header and avatar dropdown render profile, logout, API Docs and admin shortcuts after announcement became an explicit local. Current admin-menu screenshot inspected and registered using the admin-enabled realisticactivity fixture on scorer 21 edit; non-admin menu and logout deferred in this sample. Inspected ordinary and admin avatar menus on all3: admin shortcuts present only admin; unauthorized admin/engine requests checked14.1/14.11. Current logout is a form; historical link remains."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.5":
         title: "Cookies static page"

@@ -1,5 +1,6 @@
+<%# locals: (search_endpoint:, cloned_from_id: nil) %>
 <%= form_with(model: search_endpoint) do |form| %>
-  <%= hidden_field_tag :clone_of, local_assigns[:cloned_from_id] if local_assigns[:cloned_from_id] %>
+  <%= hidden_field_tag :clone_of, cloned_from_id if cloned_from_id %>
   <div class="card">
     <div class="card-body">
       <%= render "shared/error_messages", record: search_endpoint, subject: "Search Endpoint" %>
@@ -44,7 +45,7 @@
         </div>
         <div class="form-text">
           Proxied requests avoids CORS and other browser security issues, however Quepid must be able to reach your Search Endpoint.
-          Requests will come from Quepid in the form of <code><%= "#{proxy_fetch_url}?url=[ENDPOINT_URL]" %></code>.
+          Requests will come from Quepid in the form of <code><%= proxy_fetch_url %>?url=[ENDPOINT_URL]</code>.
         </div>
         <% end %>
       </div>
@@ -73,7 +74,7 @@
         <%= form.label :test_query, class: 'form-label' %>
         <div class="form-text">
           <strong>Search API only.</strong> A sample query used by the Mapper Wizard for testing mappers.
-          For GET requests, use query params format (e.g., <code>q=test&rows=10</code>).
+          For GET requests, use query params format (e.g., <code>q=test&amp;rows=10</code>).
           For POST requests, use JSON format (e.g., <code>{"query": "test"}</code>).
         </div>
         <%= form.text_area :test_query, rows: 3, class: 'form-control' %>

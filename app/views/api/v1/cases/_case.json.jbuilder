@@ -5,6 +5,7 @@ no_tries  ||= false
 no_teams  ||= false
 no_scores ||= false
 no_queries ||= false
+sampled_case_scores ||= nil
 
 json.case_name        acase.case_name
 json.case_id          acase.id
@@ -44,8 +45,8 @@ if !no_scores && (last_score = acase.last_score).present?
 end
 
 unless shallow
-  sampled_scores = if @sampled_case_scores
-                     @sampled_case_scores.fetch(acase.id, [])
+  sampled_scores = if sampled_case_scores
+                     sampled_case_scores.fetch(acase.id, [])
                    else
                      acase.scores.sampled(acase.id, 10).includes(:annotation).limit(10)
                    end

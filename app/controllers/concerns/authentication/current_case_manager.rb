@@ -36,6 +36,17 @@ module Authentication
       raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', case_id)
     end
 
+    # Most recently viewed active cases first; never-viewed cases last, newest first.
+    def recent_cases count
+      return [] unless current_user
+
+      current_user.cases_involved_with.not_archived.with_counts
+        .includes([ :metadata ])
+        .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
+                        'case_metadata.last_viewed_at DESC, cases.id DESC'))
+        .limit(count)
+    end
+
     def public_case_read_access?
       request.get? || request.head?
     end

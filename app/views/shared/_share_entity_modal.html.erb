@@ -1,3 +1,4 @@
+<%# locals: (record_type:) %>
 <%# Index / team page share modal for a case, book, scorer or search endpoint:
     `<select>`, form POST, redirect. ShareModalsController renders the forms into
     the frame each time the modal opens; the footer buttons submit them by id.
@@ -22,12 +23,12 @@
                         target_key => 'frame',
                         action: "turbo:frame-missing->#{prefix}#loadFailed turbo:fetch-request-error->#{prefix}#loadFailed",
                       } %>
-  <template data-<%= target_key %>="loading">
+  <%= tag.template data: { target_key => 'loading' } do %>
     <p class="text-muted mb-0" role="status">Loading teams…</p>
-  </template>
-  <template data-<%= target_key %>="loadError">
+  <% end %>
+  <%= tag.template data: { target_key => 'loadError' } do %>
     <div class="alert alert-danger mb-0" role="alert">Unable to load teams. Please try again.</div>
-  </template>
+  <% end %>
 <% end %>
 
 <%= render "shared/modal_shell", id: "share#{record_type.camelize}Modal", title: "Share #{record_type.titleize}",

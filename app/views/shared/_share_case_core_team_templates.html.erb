@@ -1,8 +1,9 @@
+<%# locals: (teams:, shared_team_ids:) %>
 <div data-share-catalog>
   <% [false, true].each do |shared| %>
     <div data-catalog-list="<%= shared ? 'shared' : 'shareable' %>">
-      <% @teams.each_with_index do |team, index| %>
-        <% next unless @shared_team_ids.include?(team.id) == shared %>
+      <% teams.each_with_index do |team, index| %>
+        <% next unless shared_team_ids.include?(team.id) == shared %>
         <button type="button"
                 class="list-group-item list-group-item-action<%= ' list-group-item-success' if shared %>"
                 data-team-id="<%= team.id %>" data-team-order="<%= index %>"

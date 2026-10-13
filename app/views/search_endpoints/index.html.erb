@@ -27,7 +27,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                      { name: :archived, value: true, checked: params[:archived].present?, label: 'Archived' }],
         team_options: @current_user.teams.map { |team| [team.name, team.id] }, team_label: true %>
     </div>
-    
+
     <div class="card-body">
       <div class="table-responsive">
       <table class="table table-hover table-sm">
@@ -39,8 +39,8 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
             <th class="text-end"></th>
           </tr>
         </thead>
-    
-        <tbody>      
+
+        <tbody>
           <% @search_endpoints.each do |search_endpoint| %>
             <tr>
               <td><%= link_to search_endpoint.fullname, search_endpoint_path(search_endpoint) %></td>

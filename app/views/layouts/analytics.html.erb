@@ -16,7 +16,7 @@
   </head>
   <body class="d-flex flex-column h-100">
     <header>
-      <%= render 'layouts/header' %>
+      <%= render 'layouts/header', announcement: @announcement %>
       <% if @case.public? || @current_user %>
         <div class="container d-flex align-items-center gap-2 py-2">
           <% if @case.public? %>

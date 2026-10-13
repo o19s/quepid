@@ -1,0 +1,39 @@
+<%# locals: (book:, query_text:, only_unrated:, rank_depth:, show_explanations:) %>
+<div class="alert alert-warning">
+  <h5 class="alert-heading"><i class="bi bi-funnel"></i> No documents match your current filters</h5>
+  <hr>
+  <p>Current filters applied:</p>
+  <ul class="mb-3">
+    <% if query_text.present? %>
+      <li>Query text contains: "<strong><%= query_text %></strong>"</li>
+    <% end %>
+    <% if only_unrated %>
+      <li>Showing only <strong>unrated</strong> documents</li>
+    <% end %>
+    <% if rank_depth.present? %>
+      <li>Rank depth limited to: <strong>≤ <%= rank_depth %></strong></li>
+    <% end %>
+  </ul>
+
+  <p class="mb-0">Try adjusting your filters:</p>
+  <div class="mt-2">
+    <% if only_unrated %>
+      <%= link_to "Show all documents (including rated)",
+          book_judge_bulk_path(book, query_text: query_text, only_unrated: false, rank_depth: rank_depth, show_explanations: show_explanations),
+          class: "btn btn-sm btn-outline-primary me-2" %>
+    <% end %>
+    <% if rank_depth.present? %>
+      <%= link_to "Remove rank depth filter",
+          book_judge_bulk_path(book, query_text: query_text, only_unrated: only_unrated, show_explanations: show_explanations),
+          class: "btn btn-sm btn-outline-primary me-2" %>
+    <% end %>
+    <% if query_text.present? %>
+      <%= link_to "Clear query filter",
+          book_judge_bulk_path(book, only_unrated: only_unrated, rank_depth: rank_depth, show_explanations: show_explanations),
+          class: "btn btn-sm btn-outline-primary me-2" %>
+    <% end %>
+    <%= link_to "Clear all filters",
+        book_judge_bulk_path(book),
+        class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+</div>

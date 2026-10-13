@@ -1,11 +1,12 @@
+<%# locals: (ai_judge:, form:, book:, book_id:, submitted_options:) %>
 <% option_defaults = LlmService::DEFAULT_OPTIONS.merge(llm_provider: 'openai', llm_api_version: '') %>
 <div class="card" data-controller="ai-judge-form ai-judge-wizard"
-     data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
-     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: @book_id) %>"
+     data-ai-judge-wizard-sample-url-value="<%= ai_judge_sample_query_doc_pair_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id) %>"
+     data-ai-judge-wizard-test-url-value="<%= ai_judge_test_prompt_path(ai_judge.persisted? ? ai_judge.id : 'new', book_id: book_id) %>"
      data-ai-judge-form-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-form-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>"
      data-ai-judge-form-option-defaults-value="<%= option_defaults.to_json %>"
-     data-ai-judge-form-has-scale-value="<%= !JudgeScale.for(@book).empty? %>"
+     data-ai-judge-form-has-scale-value="<%= !JudgeScale.for(book).empty? %>"
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>" data-action="shown.bs.tab->ai-judge-form#syncTab">
   <div class="card-header">
     <h5 class="card-title"><i class="bi bi-robot"></i> AI Judge</h5>
@@ -24,12 +25,12 @@
     <% end %>
     <div data-ai-judge-wizard-target="status" class="alert" style="display:none"></div>
     <% provider = LlmProvider.find(ai_judge.judge_options[:llm_provider]) %>
-    <% scale = JudgeScale.for(@book) %>
+    <% scale = JudgeScale.for(book) %>
     <% images_supported = provider.nil? || provider.supports_images? %>
     <% specs = LlmProvider.option_field_specs %>
     <h4><span class="badge bg-primary">1</span> Configure AI Judge</h4>
     <%= render 'shared/team_picker', form: form, label: 'Teams to Share this AI Judge With', selected_ids: params.dig(:user, :team_ids), help_text: "Leave unchecked to keep this judge private. Team members can use and edit shared judges." %>
-    <%= hidden_field_tag :book_id, @book_id if @book_id %>
+    <%= hidden_field_tag :book_id, book_id if book_id %>
 
     <div class="row mb-3">
       <%= form.label :name, class: 'col-sm-2 col-form-label' %>
@@ -60,10 +61,10 @@
     <div class="tab-content" id="pills-tabContent">
       <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
 
-        <% sorted_judge_options = option_defaults.merge(@ai_judge.judge_options).except(:llm_include_images).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+        <% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
         <% sorted_judge_options.each do |key, value| %>
           <% spec = specs[key.to_s] %>
-          <div class="row mb-3 <%= 'provider-option-field' if spec %>" data-provider="<%= spec&.dig(:provider) %>" <%= 'data-ai-judge-form-target=providerOptionField' if spec %>>
+          <div class="row mb-3 <%= 'provider-option-field' if spec %>" data-provider="<%= spec&.dig(:provider) %>" <% if spec %>data-ai-judge-form-target="providerOptionField"<% end %>>
             <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
             <div class="col-sm-4">
               <% if key.to_s == 'llm_provider' %>
@@ -89,7 +90,7 @@
         <div class="row mb-3">
           <div class="col-sm-2">Images</div>
           <div class="col-sm-4">
-            <% image_setting = @ai_judge.judge_options[:llm_include_images] %>
+            <% image_setting = ai_judge.judge_options[:llm_include_images] %>
             <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
             <%= hidden_field_tag 'user[judge_options][llm_include_images]', images_supported ? 'false' : include_images.to_s, data: { ai_judge_form_target: 'structured imagesHidden' } %>
             <div class="form-check">
@@ -106,7 +107,7 @@
           </div>
         </div>
         <% LlmProvider.each do |entry| %>
-          <template data-ai-judge-form-target="preset" data-provider="<%= entry.key %>"><%= entry.help_html.html_safe %></template>
+          <template data-ai-judge-form-target="preset" data-provider="<%= entry.key %>"><%= sanitize entry.help_html, tags: %w[strong b br code a], attributes: %w[href target rel] %></template>
         <% end %>
         <div id="provider-help" data-ai-judge-form-target="help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
         </div>
@@ -117,7 +118,7 @@
             This the raw JSON stored as <code>options</code> for the Judge.
             Make sure you are editing under the <code>judge_options</code> key.
           </div>
-          <%= form.text_area :options, value: @submitted_options || format_json(@ai_judge.options),
+          <%= form.text_area :options, value: submitted_options || format_json(ai_judge.options),
             class: 'form-control', rows: 10, disabled: true, data: { ai_judge_form_target: "json", action: "input->ai-judge-form#jsonChanged" } %>
         </div>
       </div>
@@ -193,7 +194,7 @@
             <% unless scale.empty? %>
               <div class="mb-3">
                 <div data-ai-judge-form-target="criteriaTable" style="display:<%= provider&.scale_as_criteria? ? 'block' : 'none' %>">
-                  <h6>Criteria sent with the question — from <%= link_to @book.name, book_path(@book) %>'s scale</h6>
+                  <h6>Criteria sent with the question — from <%= link_to book.name, book_path(book) %>'s scale</h6>
                   <table class="table table-sm table-borderless small w-auto"><tbody>
                     <% scale.values.zip(scale.criteria).each_with_index do |(value, criterion), level| %>
                       <tr><td>level <%= level %> → rating <strong><%= value %></strong></td><td><%= criterion %></td></tr>
@@ -201,7 +202,7 @@
                   </tbody></table>
                 </div>
                 <div data-ai-judge-form-target="criteriaProse" style="display:<%= provider&.scale_as_criteria? ? 'none' : 'block' %>">
-                  <h6>Rating scale added to the prompt — from <%= link_to @book.name, book_path(@book) %>'s scale</h6>
+                  <h6>Rating scale added to the prompt — from <%= link_to book.name, book_path(book) %>'s scale</h6>
                   <p class="small"><%= scale.describe %></p>
                 </div>
               </div>
@@ -209,7 +210,7 @@
             <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= provider&.needs_scale? && scale.empty? ? 'block' : 'none' %>">
               This provider rates against a book's scale. Open this judge from a book with a scale on its Judgement Stats page (Refine Prompt).
             </div>
-            <button type="button" class="btn btn-primary" <%= 'disabled' if provider&.needs_scale? && scale.empty? %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+            <button type="button" class="btn btn-primary" <% if provider&.needs_scale? && scale.empty? %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
 
             <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
               <div class="spinner-border text-primary" role="status">

@@ -9,6 +9,19 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test @user
   end
 
+  test 'renders the suggestion row template the member autocomplete fills in' do
+    get team_path(@team)
+
+    assert_response :success
+    assert_select '[data-controller="team-member-autocomplete"] template[data-team-member-autocomplete-target="itemTemplate"]' do
+      assert_select '.autocomplete-item[data-action="click->team-member-autocomplete#select"]', count: 1 do
+        assert_select 'img.autocomplete-avatar', count: 1
+        assert_select '.autocomplete-details .autocomplete-name', count: 1
+        assert_select '.autocomplete-details .autocomplete-email', count: 1
+      end
+    end
+  end
+
   test 'case list loads latest score summaries in one query and preserves displayed values' do
     previous_bullet = Bullet.enable?
     Bullet.enable = false

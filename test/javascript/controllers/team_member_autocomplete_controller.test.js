@@ -8,7 +8,10 @@ function buildController({ spinner = true } = {}) {
   const suggestions = document.createElement("div")
   const spinnerTarget = document.createElement("span")
   spinnerTarget.style.display = "none"
-  element.append(input, suggestions, spinnerTarget)
+  const itemTemplate = document.createElement("template")
+  itemTemplate.innerHTML =
+    '<div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar"><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div>'
+  element.append(input, suggestions, spinnerTarget, itemTemplate)
   document.body.appendChild(element)
 
   const controller = buildControllerFixture(TeamMemberAutocompleteController, {
@@ -16,7 +19,8 @@ function buildController({ spinner = true } = {}) {
     targets: {
       input,
       suggestions,
-      spinner: spinnerTarget
+      spinner: spinnerTarget,
+      itemTemplate
     },
     values: {
       url: "/teams/3/suggest_members",

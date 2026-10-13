@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 shallow ||= false
+sampled_case_scores ||= nil
 
 json.id             team.id
 json.name           team.name
@@ -10,7 +11,7 @@ json.members_count  team.has_attribute?(:members_count) ? team.members_count : t
 
 # Listing of individual cases and scorers is required to support the sharing of cases and scores in the core app
 json.cases do
-  json.array! active_cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_queries: true, no_scores: true, no_teams: true, no_tries: true }
+  json.array! active_cases, partial: 'api/v1/cases/case', as: :acase, locals: { shallow: shallow, no_queries: true, no_scores: true, no_teams: true, no_tries: true, sampled_case_scores: sampled_case_scores }
 end
 
 json.scorers do

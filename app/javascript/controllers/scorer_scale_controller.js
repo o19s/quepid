@@ -1,7 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["scaleList", "scaleLabels"]
+  static targets = ["scaleList", "scaleLabels", "labelTemplate"]
 
   handleScaleListInput(event) {
     const scaleValue = event.target.value.trim()
@@ -51,19 +51,11 @@ export default class extends Controller {
     labelsContainer.innerHTML = ''
     
     values.forEach(value => {
-      const label = document.createElement('label')
-      label.className = 'clearfix'
-      label.style.display = 'inline-block'
-      label.style.marginRight = '10px'
-      label.append(`${value}: `)
-      const input = document.createElement('input')
-      input.className = 'form-control clearfix'
-      input.type = 'text'
+      const label = this.labelTemplateTarget.content.firstElementChild.cloneNode(true)
+      label.querySelector("[data-scale-value]").textContent = value
+      const input = label.querySelector("input")
       input.name = `scorer[scale_with_labels][${value}]`
       input.value = labels.get(input.name) || ""
-      input.style.width = '100px'
-      input.style.display = 'inline-block'
-      label.appendChild(input)
       labelsContainer.appendChild(label)
     })
   }

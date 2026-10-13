@@ -1,26 +1,27 @@
+<%# locals: (book_cases_counts:, book_judgements_counts:, books:, books_archived:, books_q:, cases_archived:, cases_q:, pagy_books:, scorers_q:, search_endpoints_archived:, search_endpoints_q:, team:) %>
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">Books</h5>
     <div class="mb-3">
-      <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :books_q, search_value: @books_q, placeholder: "Filter books by name", small: false, search_label: "Search books" } do %>
+      <%= render layout: "shared/index_filters", locals: { url: team_path(team), variant: :team, search_name: :books_q, search_value: books_q, placeholder: "Filter books by name", small: false, search_label: "Search books" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-          <%= check_box_tag :books_archived, '1', @books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+          <%= check_box_tag :books_archived, '1', books_archived, class: 'form-check-input', id: 'books-archived-cases-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           <%= label_tag 'books-archived-cases-checkbox', 'Archived Books', class: 'form-check-label ms-2' %>
         </div>
         <%# Preserve other filters when submitting books form %>
-        <% if @cases_q.present? %>
-          <%= hidden_field_tag :cases_q, @cases_q %>
+        <% if cases_q.present? %>
+          <%= hidden_field_tag :cases_q, cases_q %>
         <% end %>
-        <% if @cases_archived %>
+        <% if cases_archived %>
           <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
-        <% if @scorers_q.present? %>
-          <%= hidden_field_tag :scorers_q, @scorers_q %>
+        <% if scorers_q.present? %>
+          <%= hidden_field_tag :scorers_q, scorers_q %>
         <% end %>
-        <% if @search_endpoints_q.present? %>
-          <%= hidden_field_tag :search_endpoints_q, @search_endpoints_q %>
+        <% if search_endpoints_q.present? %>
+          <%= hidden_field_tag :search_endpoints_q, search_endpoints_q %>
         <% end %>
-        <% if @search_endpoints_archived %>
+        <% if search_endpoints_archived %>
           <%= hidden_field_tag :search_endpoints_archived, '1' %>
         <% end %>
       <% end %>
@@ -39,19 +40,19 @@
           </tr>
         </thead>
         <tbody>
-          <% @books.each do |book| %>
+          <% books.each do |book| %>
             <tr>
               <td><%= book.id %></td>
               <td><%= link_to book.name, book_path(book) %></td>
               <td>
                 <span class="badge bg-primary rounded-pill"><%= book.query_doc_pairs_count %> Query/Doc Pairs</span>
-                <span class="badge bg-primary rounded-pill"><%= @book_judgements_counts.fetch(book.id, 0) %> Judgements</span>
+                <span class="badge bg-primary rounded-pill"><%= book_judgements_counts.fetch(book.id, 0) %> Judgements</span>
               </td>
               <td><%= book.owner&.fullname || '—' %></td>
               <td>
-                <span class="badge rounded-pill bg-secondary"><%= @book_cases_counts.fetch(book.id, 0) %> Cases</span>
+                <span class="badge rounded-pill bg-secondary"><%= book_cases_counts.fetch(book.id, 0) %> Cases</span>
                 <span class="badge rounded-pill bg-secondary"><%= book.teams.length %> Teams</span>
-              </td>              
+              </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
@@ -95,15 +96,15 @@
         </tbody>
       </table>
 
-      <% if @books.empty? %>
+      <% if books.empty? %>
         <div class="text-center text-muted py-3">
           <p>No books found for this team.</p>
         </div>
       <% end %>
 
-      <% if defined?(pagy_nav) && @pagy_books %>
+      <% if defined?(pagy_nav) && pagy_books %>
         <div class="mt-2">
-          <%= pagy_nav(@pagy_books) %>
+          <%= pagy_nav(pagy_books) %>
         </div>
       <% end %>
     </div>

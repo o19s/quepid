@@ -11,9 +11,8 @@
 <% end %>
 
 <%= render 'tabs', book: @book %>
-<p/>
 
-<div class="card">
+<div class="card mt-3">
   <div class="card-body">
     <h5 class="card-title">Export Data</h5>
     <p class="card-text">There are a number of ways to export the Book data.</p>
@@ -23,7 +22,7 @@
 
       <li class="list-group-item">Export the entire Book in JSON format.
         <% if @book.export_job %>
-          The book is currently being exported.  The status is <code><%=@book.export_job%></code>.
+          The book is currently being exported.  The status is <code><%= @book.export_job %></code>.
         <% else %>
           <%= button_to "#{@book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(@book), method: :put, data: { turbo: false }, class: "btn btn-outline-primary btn-sm #{@book.export_job.nil? ? '' : 'disabled'}" %>
         <% end %>
@@ -31,7 +30,7 @@
           <p>
           There is an export file created <%= time_ago_in_words @book.export_file.created_at %> ago
 
-            <%=link_to rails_blob_path(@book.export_file.blob, only_path: true) do %>
+            <%= link_to rails_blob_path(@book.export_file.blob, only_path: true) do %>
               available to download <i class="bi bi-file-earmark-arrow-down-fill"></i>
             <% end %>.
         </p>

@@ -21,14 +21,14 @@
                    { name: :unrateable, value: true, checked: params[:unrateable].present?, label: 'Unrateable' },
                    { name: :judge_later, value: true, checked: params[:judge_later].present?, label: 'Later' }] %>
   </div>
-  
+
   <div class="card-body">
     <div class="table-responsive">
     <table class="table table-hover table-sm">
       <thead>
         <tr>
           <th>Query</th>
-          <th>Query Doc ID</th>   
+          <th>Query Doc ID</th>
           <th>Doc ID</th>
           <th>ID</th>
           <% unless @compact %>
@@ -43,12 +43,12 @@
           <% unless @compact %>
             <th>Explanation</th>
             <th>Created At</th>
-            <th>Updated At</th>      
+            <th>Updated At</th>
           <% end %>
-    
+
         </tr>
       </thead>
-  
+
       <tbody>
       <%
       last_query_doc_pair_id = nil
@@ -64,9 +64,9 @@
           <tr class="<%= table_row_style %>">
             <td>
               <%= judgement.query_doc_pair.query_text %>
-            </td>            
+            </td>
             <td>
-              <%= judgement.query_doc_pair.id %> 
+              <%= judgement.query_doc_pair.id %>
             </td>
             <td>
               <%= judgement.query_doc_pair.doc_id %>
@@ -75,10 +75,10 @@
               <%= link_to judgement.id, edit_book_query_doc_pair_judgement_path(@book, judgement.query_doc_pair, judgement) %>
             </td>
             <% unless @compact %>
-            <td>            
+            <td>
               <%= truncate(judgement.query_doc_pair.document_fields.to_json, length: 150) %>
             </td>
-            <% end %> 
+            <% end %>
             <td>
               <%= judgement.rating %>
             </td>
@@ -102,7 +102,7 @@
               </td>
               <td>
                 <%= judgement.updated_at %>
-              </td>  
+              </td>
             <% end %>
           </tr>
       <% end %>

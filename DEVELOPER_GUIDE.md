@@ -863,7 +863,9 @@ For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads
 ### Partial inputs
 
 Declare strict locals (`<%# locals: (form:) %>`) in new or substantially changed
-ERB partials, and pass their inputs explicitly from each caller.
+ERB partials, and pass their inputs explicitly from each caller. When changing an
+existing partial for another task, also replace its instance-variable dependencies
+and temporary state with locals, updating all callers while preserving behavior.
 
 ### Stimulus HTTP conventions
 

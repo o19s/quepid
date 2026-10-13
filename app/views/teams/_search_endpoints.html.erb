@@ -1,32 +1,33 @@
+<%# locals: (books_archived:, books_q:, cases_archived:, cases_q:, pagy_search_endpoints:, scorers_q:, search_endpoint_cases_counts:, search_endpoints:, search_endpoints_archived:, search_endpoints_q:, team:) %>
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">
-      Search Endpoints 
+      Search Endpoints
       <small class="text-muted ms-2">
         <%= link_to "See all search endpoints", search_endpoints_path, class: "text-decoration-none" %>
       </small>
     </h5>
     <div class="mb-3">
-      <%= render layout: "shared/index_filters", locals: { url: team_path(@team), variant: :team, search_name: :search_endpoints_q, search_value: @search_endpoints_q, placeholder: "Filter search endpoints by name or URL", small: false, search_label: "Search search endpoints" } do %>
+      <%= render layout: "shared/index_filters", locals: { url: team_path(team), variant: :team, search_name: :search_endpoints_q, search_value: search_endpoints_q, placeholder: "Filter search endpoints by name or URL", small: false, search_label: "Search search endpoints" } do %>
         <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
-          <%= check_box_tag :search_endpoints_archived, '1', @search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+          <%= check_box_tag :search_endpoints_archived, '1', search_endpoints_archived, class: 'form-check-input', id: 'search-endpoints-archived-checkbox', data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
           <%= label_tag 'search-endpoints-archived-checkbox', 'Archived Search Endpoints', class: 'form-check-label ms-2' %>
         </div>
         <%# Preserve other filters when submitting search endpoints form %>
-        <% if @cases_q.present? %>
-          <%= hidden_field_tag :cases_q, @cases_q %>
+        <% if cases_q.present? %>
+          <%= hidden_field_tag :cases_q, cases_q %>
         <% end %>
-        <% if @cases_archived %>
+        <% if cases_archived %>
           <%= hidden_field_tag :cases_archived, '1' %>
         <% end %>
-        <% if @books_q.present? %>
-          <%= hidden_field_tag :books_q, @books_q %>
+        <% if books_q.present? %>
+          <%= hidden_field_tag :books_q, books_q %>
         <% end %>
-        <% if @books_archived %>
+        <% if books_archived %>
           <%= hidden_field_tag :books_archived, '1' %>
         <% end %>
-        <% if @scorers_q.present? %>
-          <%= hidden_field_tag :scorers_q, @scorers_q %>
+        <% if scorers_q.present? %>
+          <%= hidden_field_tag :scorers_q, scorers_q %>
         <% end %>
       <% end %>
     </div>
@@ -39,13 +40,13 @@
             <th>Search Engine</th>
             <th>Endpoint URL</th>
             <th>API Method</th>
-            <th>Owner</th>            
+            <th>Owner</th>
             <th>Shared</th>
             <th class="text-end"></th>
           </tr>
         </thead>
         <tbody>
-          <% @search_endpoints.each do |search_endpoint| %>
+          <% search_endpoints.each do |search_endpoint| %>
             <tr>
               <td>
                 <%= link_to search_endpoint.name.presence || search_endpoint.fullname, search_endpoint_path(search_endpoint) %>
@@ -64,11 +65,11 @@
               <td>
                 <span class="badge bg-info text-dark"><%= search_endpoint.api_method || '—' %></span>
               </td>
-              <td><%= search_endpoint.owner&.fullname || '—' %></td>  
+              <td><%= search_endpoint.owner&.fullname || '—' %></td>
               <td>
-                <span class="badge rounded-pill bg-secondary"><%= @search_endpoint_cases_counts.fetch(search_endpoint.id, 0) %> Cases</span>
+                <span class="badge rounded-pill bg-secondary"><%= search_endpoint_cases_counts.fetch(search_endpoint.id, 0) %> Cases</span>
                 <span class="badge rounded-pill bg-secondary"><%= search_endpoint.teams.length %> Teams</span>
-              </td>            
+              </td>
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">
                   <%= button_tag type: 'button',
@@ -86,7 +87,7 @@
                   <% end %>
 
                   <% if search_endpoint.archived? %>
-                    <%= group_button_to unarchive_search_endpoint_team_path(@team, search_endpoint_id: search_endpoint.id),
+                    <%= group_button_to unarchive_search_endpoint_team_path(team, search_endpoint_id: search_endpoint.id),
                                         method: :post,
                                         button_class: "text-success p-0 me-3",
                                         title: "Unarchive search endpoint",
@@ -97,7 +98,7 @@
                       <span class="visually-hidden">Unarchive search endpoint</span>
                     <% end %>
                   <% else %>
-                    <%= group_button_to archive_search_endpoint_team_path(@team, search_endpoint_id: search_endpoint.id),
+                    <%= group_button_to archive_search_endpoint_team_path(team, search_endpoint_id: search_endpoint.id),
                                         method: :post,
                                         button_class: "text-warning p-0 me-3",
                                         title: "Archive search endpoint",
@@ -114,15 +115,15 @@
         </tbody>
       </table>
 
-      <% if (@search_endpoints || []).empty? %>
+      <% if (search_endpoints || []).empty? %>
         <div class="text-center text-muted py-3">
           <p>No search endpoints found for this team.</p>
         </div>
       <% end %>
 
-      <% if defined?(pagy_nav) && @pagy_search_endpoints %>
+      <% if defined?(pagy_nav) && pagy_search_endpoints %>
         <div class="mt-2">
-          <%= pagy_nav(@pagy_search_endpoints) %>
+          <%= pagy_nav(pagy_search_endpoints) %>
         </div>
       <% end %>
     </div>

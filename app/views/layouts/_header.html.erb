@@ -1,8 +1,9 @@
+<%# locals: (announcement:) %>
 <nav class="navbar navbar-expand-lg navbar-dark navbar-secondary">
   <div class="container-fluid">
     <%= link_to root_path, class: "navbar-brand" do %>
       Quepid
-      <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love" %></span>
+      <span class="hover"><%= image_tag 'tagline-sm.png', title: "Give your queries some love", alt: "" %></span>
     <% end %>
     <% if current_user.present? %>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +16,7 @@
           <%= render 'layouts/header_help_links' %>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-              <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', title: 'Avatar image' %>
+              <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', alt: '' %>
               <span data-display-name><%= current_user.display_name %> </span>
             </a>
             <ul class="dropdown-menu" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
@@ -28,9 +29,9 @@
   </div>
 </nav>
 
-<% if @announcement&.persisted? %>
+<% if announcement&.persisted? %>
     <div class="alert alert-light alert-dismissible text-center fade show" role="alert" data-turbo-temporary>
-      <%= @announcement.text.html_safe %>
+      <%= sanitize_announcement announcement.text %>
       <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <% end %>

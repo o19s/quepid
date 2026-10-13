@@ -84,4 +84,26 @@ class QueryDocPairTest < ActiveSupport::TestCase
       end
     end
   end
+
+  describe '#image_url' do
+    test 'prefers thumb over image' do
+      qdp = QueryDocPair.new(document_fields: { 'thumb' => 't.png', 'image' => 'i.png' })
+
+      assert_equal 't.png', qdp.image_url
+    end
+
+    test 'falls back to image' do
+      assert_equal 'i.png', QueryDocPair.new(document_fields: { 'image' => 'i.png' }).image_url
+    end
+
+    test 'preserves a nil or blank thumb instead of falling back to image' do
+      assert_nil QueryDocPair.new(document_fields: { 'thumb' => nil, 'image' => 'i.png' }).image_url
+      assert_equal '', QueryDocPair.new(document_fields: { 'thumb' => '', 'image' => 'i.png' }).image_url
+      assert_equal '', QueryDocPair.new(document_fields: { 'thumb' => '' }).image_url
+    end
+
+    test 'is nil without either field' do
+      assert_nil QueryDocPair.new(document_fields: { 'title' => 'x' }).image_url
+    end
+  end
 end

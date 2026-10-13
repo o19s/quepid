@@ -24,6 +24,14 @@ class ScoresControllerTest < ActionController::TestCase
       assert_equal [ score_for_try_1, score_for_try_2 ].sort_by(&:id), assigns(:scores).to_a.sort_by(&:id)
     end
 
+    test 'row checkboxes submit with the delete form' do
+      get :index, params: { case_id: case_with_score.id }
+
+      assert_select 'form#delete-scores-form[action=?]', destroy_multiple_case_scores_path(case_with_score)
+      assert_select 'input[name="score_ids[]"]', count: 2
+      assert_select 'input[name="score_ids[]"]:not([form="delete-scores-form"])', count: 0
+    end
+
     test 'filters by scorer_id when provided' do
       other_scorer_score = scores(:score_for_first_try)
       other_scorer_score.update! case: case_with_score, scorer: scorers(:valid)

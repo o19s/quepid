@@ -1,5 +1,7 @@
 {
   "rubocop.mode": "onlyRunGlobally",
   "rubocop.commandPath": "bundle",
-  "rubocop.commandArgs": ["exec", "rubocop"]
+  "rubocop.commandArgs": ["exec", "rubocop"],
+  "css.validate": false,
+  "stylelint.validate": ["css"]
 }

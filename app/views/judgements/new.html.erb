@@ -1,24 +1,22 @@
 <turbo-frame id="query_doc_pair_card">
 <% if @party_time %>
-  <p/>
-  <div id="party_here" class="alert alert-success" role="alert" data-controller="confetti">
+  <div id="party_here" class="alert alert-success mt-3" role="alert" data-controller="confetti">
     Yay!  You just finished another batch of 50 ratings!   Time to take a mental break.
   </div>
-  
-  <div class="float-end">    
-    <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), data: { turbo_prefetch: false }, class: 'btn btn-info m-1', role: 'button' %>
+
+  <div class="float-end">
+    <%= link_to "I'm Ready for More!", book_skip_judging_path(@book), data: { turbo_prefetch: false }, class: 'btn btn-info m-1' %>
   </div>
   <div class="card">
     <div class="card-body">
       <h5 class="card-title">Your Progress</h5>
       <h6 class="card-subtitle mb-2 text-body-secondary">Judge all the documents to chase the frogs out of the pond!</h6>
-      <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="<%= @judged_by_user %>" aria-valuemin="0" aria-valuemax="<%= @total_pool_of_judgements%>">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: <%=number_to_percentage((@judged_by_user / @total_pool_of_judgements) * 100, precision: 0)%>  "></div>
+      <div class="progress" role="progressbar" aria-label="Judging progress" aria-valuenow="<%= @judged_by_user %>" aria-valuemin="0" aria-valuemax="<%= @total_pool_of_judgements %>">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: <%= number_to_percentage((@judged_by_user / @total_pool_of_judgements) * 100, precision: 0) %>  "></div>
       </div>
     </div>
   </div>
-  <p/>
-  <div class="card">
+  <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title">Leaderboard</h5>
       <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
@@ -36,19 +34,17 @@
   </div>
 
 <% else %>
-  
-  <h2></h2>
-  
-  <%= render 'form', judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
-  
+
+  <%= render 'form', book: @book, viewer: @current_user, judgement: @judgement, query_doc_pair: @query_doc_pair, url_for_form: book_query_doc_pair_judgements_path(@book, @query_doc_pair) %>
+
   <br>
-  
+
   <% if @previous_judgement %>
     <%= button_to 'Go Back to Previous Query/Doc Pair', edit_book_query_doc_pair_judgement_path(@book, @previous_judgement.query_doc_pair, @previous_judgement), method: :get, class: 'btn btn-sm btn-outline-secondary' %>
     <br>
   <% end %>
   <%= button_to 'Quit Judging', judge_overview_book_path(@book), method: :get, data: { turbo: false }, class: 'btn btn-sm btn-outline-secondary' %>
   <br>
-  
+
 <% end %>
 </turbo-frame>

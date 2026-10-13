@@ -14,21 +14,21 @@
     <h5 class="card-title">Import Book</h5>
     <p class="card-text">
       Importing a Quepid Book is useful when you are migrating between Quepid installs or if you want to create your Book outside of Quepid.
-      
-      Your best option for understanding the format is to just export an existing Book and use that as template. Importing will create a brand new Book and then load the data as a background job. Before the Book is created, Quepid will validate your Book data structure to ensure you have formatted it properly.    
+
+      Your best option for understanding the format is to just export an existing Book and use that as template. Importing will create a brand new Book and then load the data as a background job. Before the Book is created, Quepid will validate your Book data structure to ensure you have formatted it properly.
     </p>
-  
+
     <%= render "shared/error_messages", record: @book, subject: "book" %>
 
     <% if @book.errors.any? %>
-      <div class="alert alert-warning" role="alert" >
+      <div class="alert alert-warning" role="alert">
         You will need to pick the file to be imported again.
       </div>
     <% end %>
-    
+
     <%= form_with model: @book, url: books_import_index_path do |form| %>
       <%= render "upload_fields", form: form, force_create_users: true %>
-      
+
       <%= form.submit "Upload", class: 'btn btn-primary' %>
     <% end %>
 
