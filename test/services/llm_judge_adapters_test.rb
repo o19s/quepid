@@ -44,7 +44,6 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
       body = envelope[:body]
 
-      assert_in_delta(0.7, body[:temperature])
       assert_equal 'gpt-4o', body[:model]
       assert_equal({ type: 'json_object' }, body[:response_format])
       assert_equal 'Judge it.', body[:messages][0][:content]
@@ -52,6 +51,12 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
       assert_equal 'user', body[:messages][1][:role]
       assert_equal 'text', body[:messages][1][:content][0][:type]
       assert_equal 'image_url', body[:messages][1][:content][1][:type]
+    end
+
+    test 'sends no temperature, which reasoning models reject unless it is the default' do
+      body = openai.request_envelope(query_doc_pair, system_prompt: 'Judge it.')[:body]
+
+      assert_not body.key?(:temperature)
     end
 
     test 'carries the book scale into the system prompt' do
