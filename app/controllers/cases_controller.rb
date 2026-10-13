@@ -49,7 +49,7 @@ class CasesController < ApplicationController
     Analytics::Tracker.track_case_archived_event(current_user, @case)
     flash[:notice] = "Case #{@case.case_name} archived."
 
-    redirect_to cases_path
+    redirect_to cases_path, status: :see_other
   end
 
   # Unarchive a case
@@ -58,7 +58,7 @@ class CasesController < ApplicationController
     @case.save
     flash[:notice] = "Case #{@case.case_name} unarchived."
 
-    redirect_to cases_path
+    redirect_to cases_path, status: :see_other
   end
 
   # Permanently delete a case
@@ -68,7 +68,7 @@ class CasesController < ApplicationController
     Analytics::Tracker.track_case_deleted_event(current_user, @case)
     flash[:notice] = "Case #{case_name} deleted."
 
-    redirect_to cases_path
+    redirect_to cases_path, status: :see_other
   end
 
   # Delete all queries (and their ratings) for a case
@@ -76,7 +76,7 @@ class CasesController < ApplicationController
     @case.queries.destroy_all
     flash[:notice] = "All queries deleted for case #{@case.case_name}."
 
-    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number)
+    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number), status: :see_other
   end
 
   private
@@ -87,6 +87,6 @@ class CasesController < ApplicationController
     return if @case
 
     flash[:alert] = 'Case not found.'
-    redirect_to cases_path
+    redirect_to cases_path, status: :see_other
   end
 end

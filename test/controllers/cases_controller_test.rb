@@ -136,6 +136,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     end
     Bullet.enable = true
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert_nil Case.find_by(id: kase.id)
   end
@@ -147,6 +148,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
       delete case_url(kase)
     end
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert_not_nil Case.find_by(id: kase.id)
   end
@@ -160,6 +162,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     end
     Bullet.enable = true
 
+    assert_response :see_other
     assert_redirected_to case_core_path(id: kase.id, try_number: kase.last_try_number)
     assert_not_nil Case.find_by(id: kase.id)
   end
@@ -169,6 +172,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     delete case_queries_url(kase)
 
+    assert_response :see_other
     assert_redirected_to cases_path
   end
 
@@ -177,6 +181,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     post archive_case_url(kase)
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert kase.reload.archived
     assert_equal user, kase.owner
@@ -187,6 +192,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     post archive_case_url(kase)
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert_not kase.reload.archived
   end
@@ -197,6 +203,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     post unarchive_case_url(kase)
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert_not kase.reload.archived
   end
@@ -207,6 +214,7 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
 
     post unarchive_case_url(kase)
 
+    assert_response :see_other
     assert_redirected_to cases_path
     assert kase.reload.archived
   end
