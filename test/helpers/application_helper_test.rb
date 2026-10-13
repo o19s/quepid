@@ -42,6 +42,47 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_nil form['data-turbo-confirm-style']
   end
 
+  test 'share_modal_button targets the record type modal and carries the values its controller reads' do
+    search_endpoint = SearchEndpoint.new(id: 7)
+    button = Nokogiri::HTML.fragment(share_modal_button('search_endpoint', search_endpoint, name: 'Solr', url: '/share/7',
+                                                        button_class: 'me-2')).at_css('button')
+
+    assert_equal 'btn btn-link p-0 me-2', button['class']
+    assert_equal '#shareSearchEndpointModal', button['data-bs-target']
+    assert_equal '7', button['data-share-search-endpoint-id-value']
+    assert_equal 'Solr', button['data-share-search-endpoint-name-value']
+    assert_equal '/share/7', button['data-share-search-endpoint-url-value']
+  end
+
+  test 'archive_toggle_button picks the url, label and confirm style from the archived state' do
+    urls = { archive: '/cases/1/archive', unarchive: '/cases/1/unarchive' }
+
+    archived = Nokogiri::HTML.fragment(archive_toggle_button(Case.new(archived: true), name: 'Movies', urls: urls)).at_css('form')
+    assert_equal '/cases/1/unarchive', archived['action']
+    assert_equal 'Unarchive Movies?', archived['data-turbo-confirm']
+    assert_equal 'primary', archived['data-turbo-confirm-style']
+    assert_equal 'Unarchive case', archived.at_css('button')['aria-label']
+
+    active = Nokogiri::HTML.fragment(archive_toggle_button(Case.new(archived: false), name: 'Movies', urls: urls,
+                                                           group: false)).at_css('form')
+    assert_equal '/cases/1/archive', active['action']
+    assert_equal 'd-inline', active['class']
+    assert_nil active['data-turbo-confirm-style']
+    assert_equal 'btn btn-link text-warning p-0', active.at_css('button')['class']
+  end
+
+  test 'metric_card colors the value, icon and border and renders the block below the caption' do
+    html = metric_card('42%', 'Fully Judged', '3 of 7 pairs', icon: 'bi-trophy', color: 'success') { 'extra' }
+    card = Nokogiri::HTML.fragment(html).at_css('.card')
+
+    assert_includes card['class'], 'border-success'
+    assert_equal '42%', card.at_css('.display-5.text-success').text
+    assert_equal 'Fully Judged', card.at_css('h6').text.strip
+    assert card.at_css('h6 i.bi.bi-trophy.text-success')
+    assert_equal '3 of 7 pairs', card.at_css('p.card-text').text
+    assert_equal 'extra', card.at_css('.card-body').children.last.text.strip
+  end
+
   test 'sanitize_announcement keeps class, safe inline style and images' do
     text = '<p class="text-danger" style="color: red; position: fixed; background-image: url(javascript:alert(1))">Hi</p>' \
            '<img src="https://example.com/a.png" alt="A" class="img-fluid" onerror="steal()">'

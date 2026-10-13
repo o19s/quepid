@@ -6,13 +6,7 @@
 
 <%= turbo_frame_tag "modal" %>
 
-<% title = capture do %>
-  <i class="bi bi-book"></i> <%= book_title @book %>
-  <% if @book.archived? %>
-    <span class="badge bg-warning">Archived</span>
-  <% end %>
-<% end %>
-<%= page_header title do %>
+<%= book_page_header @book do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <% if @book.archived? %>
@@ -27,8 +21,6 @@
     </div>
   </div>
 <% end %>
-
-<%= render 'tabs', book: @book %>
 <p class="text-muted mt-2">
   Books organize the query/doc pairs needed for evaluating search queries.
   This book has <%= pluralize(@book.queries_count, 'query') %> and <%= pluralize(@book.query_doc_pairs.count, 'query/doc pair') %>.
@@ -77,36 +69,23 @@
   <div class="row g-3 mb-4">
 
     <div class="col-md-4">
-      <div class="card h-100 text-center border-success">
-        <div class="card-body">
-          <div class="display-5 fw-bold text-success"><%= @coverage_pct %>%</div>
-          <h6 class="card-title mt-1"><i class="bi bi-trophy text-success"></i> Fully Judged</h6>
-          <p class="card-text text-muted small"><%= @complete_count %> of <%= @total_pairs %> pairs have 3+ judgements — best practice met</p>
-          <div class="progress mt-2" style="height:6px;">
-            <div class="progress-bar bg-success" style="width:<%= @coverage_pct %>%"></div>
-          </div>
+      <%= metric_card "#{@coverage_pct}%", 'Fully Judged',
+                      "#{@complete_count} of #{@total_pairs} pairs have 3+ judgements — best practice met",
+                      icon: 'bi-trophy', color: 'success' do %>
+        <div class="progress mt-2" style="height:6px;">
+          <div class="progress-bar bg-success" style="width:<%= @coverage_pct %>%"></div>
         </div>
-      </div>
+      <% end %>
     </div>
 
     <div class="col-md-4">
-      <div class="card h-100 text-center border-danger">
-        <div class="card-body">
-          <div class="display-5 fw-bold text-danger"><%= @zero_judgement_count %></div>
-          <h6 class="card-title mt-1"><i class="bi bi-exclamation-circle text-danger"></i> Not Started</h6>
-          <p class="card-text text-muted small">Pairs with no judgements — highest priority</p>
-        </div>
-      </div>
+      <%= metric_card @zero_judgement_count, 'Not Started', 'Pairs with no judgements — highest priority',
+                      icon: 'bi-exclamation-circle', color: 'danger' %>
     </div>
 
     <div class="col-md-4">
-      <div class="card h-100 text-center border-warning">
-        <div class="card-body">
-          <div class="display-5 fw-bold text-warning"><%= @partial_count %></div>
-          <h6 class="card-title mt-1"><i class="bi bi-hourglass-split text-warning"></i> In Progress</h6>
-          <p class="card-text text-muted small">Pairs with 1–2 judgements, need more</p>
-        </div>
-      </div>
+      <%= metric_card @partial_count, 'In Progress', 'Pairs with 1–2 judgements, need more',
+                      icon: 'bi-hourglass-split', color: 'warning' %>
     </div>
 
   </div>

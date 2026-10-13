@@ -9,6 +9,8 @@ class TeamsController < ApplicationController
     redirect_to teams_path, status: :see_other
   end
 
+  helper_method :team_filters
+
   before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
 
   # Remove a case from the team
@@ -152,7 +154,7 @@ class TeamsController < ApplicationController
     cases_query = @team.cases
     cases_query = cases_query.search_by(@cases_q, :case_name).or(cases_query.where(id: @cases_q.to_i)) if @cases_q.present?
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
-    @pagy_cases, @cases = pagy(cases_query.order(:id).with_counts.includes(:owner, :teams))
+    @pagy_cases, @cases = pagy(cases_query.order(:id).with_counts.includes(:owner, :teams), page_key: 'cases_page')
     @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
 
     # Books filtering
@@ -164,13 +166,13 @@ class TeamsController < ApplicationController
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
     books_query = books_query.search_by(@books_q, :name) if @books_q.present?
 
-    @pagy_books, @books = pagy(books_query.order(:id).includes(:owner, :teams))
+    @pagy_books, @books = pagy(books_query.order(:id).includes(:owner, :teams), page_key: 'books_page')
 
     # Scorers filtering
     @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
     scorers_query = scorers_query.search_by(@scorers_q, :name) if @scorers_q.present?
-    @pagy_scorers, @scorers = pagy(scorers_query.order(:name).includes(:owner, :teams), page_param: :scorers_page)
+    @pagy_scorers, @scorers = pagy(scorers_query.order(:name).includes(:owner, :teams), page_key: 'scorers_page')
 
     # Search Endpoints filtering
     @search_endpoints_q = params[:search_endpoints_q].to_s.strip
@@ -179,7 +181,7 @@ class TeamsController < ApplicationController
     search_endpoints_query = @team.search_endpoints.includes(:owner, :teams)
     search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
     search_endpoints_query = search_endpoints_query.search_by(@search_endpoints_q, :name, :endpoint_url) if @search_endpoints_q.present?
-    @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
+    @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_key: 'search_endpoints_page')
     load_list_counts
   end
 
@@ -401,6 +403,20 @@ class TeamsController < ApplicationController
     @book_cases_counts = Book.cases_count_by_book_id(book_ids)
     @scorer_cases_counts = Scorer.cases_count_by_scorer_id(@scorers.map(&:id))
     @search_endpoint_cases_counts = SearchEndpoint.cases_count_by_search_endpoint_id(@search_endpoints.map(&:id))
+  end
+
+  # The team page's list filters, as params. Each section's filter form carries
+  # the other sections' filters along as hidden fields.
+  def team_filters
+    {
+      cases_q:                   @cases_q.presence,
+      cases_archived:            ('1' if @cases_archived),
+      books_q:                   @books_q.presence,
+      books_archived:            ('1' if @books_archived),
+      scorers_q:                 @scorers_q.presence,
+      search_endpoints_q:        @search_endpoints_q.presence,
+      search_endpoints_archived: ('1' if @search_endpoints_archived),
+    }.compact
   end
 
   def set_team

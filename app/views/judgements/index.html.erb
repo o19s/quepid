@@ -1,15 +1,10 @@
-<% title = capture do %>
-  Judgements for <i class="bi bi-book"></i> <%= book_title @book %>
-<% end %>
-<%= page_header title do %>
+<%= book_page_header @book, prefix: 'Judgements for' do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'Bulk Judge', book_judge_bulk_path(@book), class: "btn btn-sm btn-primary" %>
     </div>
   </div>
 <% end %>
-
-<%= render 'books/tabs', book: @book %>
 
 <div class="card">
   <div class="card-header">

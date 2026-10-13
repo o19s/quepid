@@ -1,6 +1,6 @@
 <div id="successModal" class="modal" data-controller="kraken" data-turbo-temporary data-action="click@document->kraken#close">
   <div class="modal-content">
-    <%= image_tag "kraken.png", id: 'kraken', class: "img-fluid fade-out", data: { action: "animationend->kraken#removeImage" } %>
+    <%= image_tag "kraken.png", id: 'kraken', class: "img-fluid fade-out", data: { action: "animationend->kraken#removeImage" }, alt: "" %>
     <button type="button" data-action="kraken#close">Close</button>
   </div>
 </div>

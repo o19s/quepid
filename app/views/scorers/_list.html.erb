@@ -39,19 +39,7 @@
                   </div>
                 <% else %>
                   <div class="btn-group btn-group-sm" role="group">
-                    <%= button_tag type: 'button',
-                                   class: 'btn btn-link p-0 me-2',
-                                   title: 'Share',
-                                   'aria-label': 'Share',
-                                   data: {
-                                     bs_toggle: 'modal',
-                                     bs_target: '#shareScorerModal',
-                                     share_scorer_id_value: scorer.id,
-                                     share_scorer_name_value: scorer.name,
-                                     share_scorer_url_value: share_modal_path('scorer', scorer)
-                                   } do %>
-                      <i class="bi bi-share" aria-hidden="true"></i>
-                    <% end %>
+                    <%= share_modal_button 'scorer', scorer, name: scorer.name, button_class: 'me-2' %>
                     <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                       <i class="bi bi-pencil" aria-hidden="true"></i>
                     <% end %>

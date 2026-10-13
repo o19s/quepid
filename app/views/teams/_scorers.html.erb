@@ -1,90 +1,36 @@
-<%# locals: (books_archived:, books_q:, cases_archived:, cases_q:, pagy_scorers:, scorer_cases_counts:, scorers:, scorers_q:, search_endpoints_archived:, search_endpoints_q:, team:) %>
-<div class="card">
-  <div class="card-body">
-    <h5 class="card-title">
-      Custom Scorers
-      <small class="text-muted ms-2">
-        <%= link_to "See communal scorers", scorers_path, class: "text-decoration-none" %>
-      </small>
-    </h5>
-    <div class="mb-3">
-      <%= render layout: "shared/index_filters", locals: { url: team_path(team), variant: :team, search_name: :scorers_q, search_value: scorers_q, placeholder: "Filter scorers by name", small: false, search_label: "Search scorers" } do %>
-        <%# Preserve other filters when submitting scorers form %>
-        <% if cases_q.present? %>
-          <%= hidden_field_tag :cases_q, cases_q %>
-        <% end %>
-        <% if cases_archived %>
-          <%= hidden_field_tag :cases_archived, '1' %>
-        <% end %>
-        <% if books_q.present? %>
-          <%= hidden_field_tag :books_q, books_q %>
-        <% end %>
-        <% if books_archived %>
-          <%= hidden_field_tag :books_archived, '1' %>
-        <% end %>
-        <% if search_endpoints_q.present? %>
-          <%= hidden_field_tag :search_endpoints_q, search_endpoints_q %>
-        <% end %>
-        <% if search_endpoints_archived %>
-          <%= hidden_field_tag :search_endpoints_archived, '1' %>
-        <% end %>
+<%# locals: (filters:, pagy_scorers:, scorer_cases_counts:, scorers:, team:) %>
+<%= render layout: 'teams/section',
+           locals: { team: team, section: :scorers, title: 'Custom Scorers', filters: filters, pagy: pagy_scorers,
+                     empty: scorers.empty?, placeholder: 'Filter scorers by name', search_label: 'Search scorers',
+                     title_link: [ 'See communal scorers', scorers_path ] } do %>
+  <table class="table table-sm table-hover">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Scale</th>
+        <th>Owner</th>
+        <th>Shared</th>
+        <th class="text-end"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% scorers.each do |scorer| %>
+        <tr>
+          <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
+          <td><%= scorer.scale_list || '—' %></td>
+          <td><%= scorer.owner&.fullname || '—' %></td>
+          <td>
+            <span class="badge rounded-pill bg-secondary"><%= scorer_cases_counts.fetch(scorer.id, 0) %> Cases</span>
+            <span class="badge rounded-pill bg-secondary"><%= scorer.teams.length %> Teams</span>
+          </td>
+          <td class="text-end">
+            <div class="btn-group btn-group-sm" role="group">
+              <%= share_modal_button 'scorer', scorer, name: scorer.name, button_class: 'me-2',
+                                     url: share_modal_path('scorer', scorer, team_id: team.id) %>
+            </div>
+          </td>
+        </tr>
       <% end %>
-    </div>
-
-    <div class="table-responsive">
-      <table class="table table-sm table-hover">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Scale</th>
-            <th>Owner</th>
-            <th>Shared</th>
-            <th class="text-end"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <% scorers.each do |scorer| %>
-            <tr>
-              <td><%= link_to scorer.name, edit_scorer_path(scorer) %></td>
-              <td><%= scorer.scale_list || '—' %></td>
-              <td><%= scorer.owner&.fullname || '—' %></td>
-              <td>
-                <span class="badge rounded-pill bg-secondary"><%= scorer_cases_counts.fetch(scorer.id, 0) %> Cases</span>
-                <span class="badge rounded-pill bg-secondary"><%= scorer.teams.length %> Teams</span>
-              </td>
-              <td class="text-end">
-                <div class="btn-group btn-group-sm" role="group">
-                  <%= button_tag type: 'button',
-                                 class: 'btn btn-link p-0 me-2',
-                                 title: 'Share',
-                                 'aria-label': 'Share',
-                                 data: {
-                                   bs_toggle: 'modal',
-                                   bs_target: '#shareScorerModal',
-                                   share_scorer_id_value: scorer.id,
-                                   share_scorer_name_value: scorer.name,
-                                   share_scorer_url_value: share_modal_path('scorer', scorer, team_id: team.id)
-                                 } do %>
-                    <i class="bi bi-share" aria-hidden="true"></i>
-                  <% end %>
-                </div>
-              </td>
-            </tr>
-          <% end %>
-        </tbody>
-      </table>
-
-      <% if scorers.empty? %>
-        <div class="text-center text-muted py-3">
-          <p>No scorers found for this team.</p>
-        </div>
-      <% end %>
-
-      <% if defined?(pagy_nav) && pagy_scorers %>
-        <div class="mt-2">
-          <%= pagy_nav(pagy_scorers) %>
-        </div>
-      <% end %>
-    </div>
-  </div>
-</div>
+    </tbody>
+  </table>
+<% end %>

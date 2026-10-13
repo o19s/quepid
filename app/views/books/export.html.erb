@@ -1,16 +1,4 @@
-<% title = capture do %>
-  <i class="bi bi-book"></i> <%= book_title @book %>
-<% end %>
-<%= page_header title do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-      <span data-feather="calendar" class="align-text-bottom"></span>
-      This week
-    </button>
-  </div>
-<% end %>
-
-<%= render 'tabs', book: @book %>
+<%= book_page_header @book %>
 
 <div class="card mt-3">
   <div class="card-body">

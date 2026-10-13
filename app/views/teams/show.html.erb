@@ -122,66 +122,24 @@
 
 <div class="row">
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/cases',
-               locals: { books_archived: @books_archived,
-                                        books_q: @books_q,
-                                        cases: @cases,
-                                        cases_archived: @cases_archived,
-                                        cases_q: @cases_q,
-                                        last_scores: @last_scores,
-                                        page_cases: @page_cases,
-                                        pagy_cases: @pagy_cases,
-                                        ratings_counts: @ratings_counts,
-                                        scorers_q: @scorers_q,
-                                        search_endpoints_archived: @search_endpoints_archived,
-                                        search_endpoints_q: @search_endpoints_q,
-                                        team: @team } %>
+    <%= render 'teams/cases', cases: @cases, filters: team_filters, last_scores: @last_scores, pagy_cases: @pagy_cases,
+                              ratings_counts: @ratings_counts, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/books',
-               locals: { book_cases_counts: @book_cases_counts,
-                                        book_judgements_counts: @book_judgements_counts,
-                                        books: @books,
-                                        books_archived: @books_archived,
-                                        books_q: @books_q,
-                                        cases_archived: @cases_archived,
-                                        cases_q: @cases_q,
-                                        pagy_books: @pagy_books,
-                                        scorers_q: @scorers_q,
-                                        search_endpoints_archived: @search_endpoints_archived,
-                                        search_endpoints_q: @search_endpoints_q,
-                                        team: @team } %>
+    <%= render 'teams/books', book_cases_counts: @book_cases_counts, book_judgements_counts: @book_judgements_counts,
+                              books: @books, filters: team_filters, pagy_books: @pagy_books, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/search_endpoints',
-               locals: { books_archived: @books_archived,
-                                        books_q: @books_q,
-                                        cases_archived: @cases_archived,
-                                        cases_q: @cases_q,
-                                        pagy_search_endpoints: @pagy_search_endpoints,
-                                        scorers_q: @scorers_q,
-                                        search_endpoint_cases_counts: @search_endpoint_cases_counts,
-                                        search_endpoints: @search_endpoints,
-                                        search_endpoints_archived: @search_endpoints_archived,
-                                        search_endpoints_q: @search_endpoints_q,
-                                        team: @team } %>
+    <%= render 'teams/search_endpoints', filters: team_filters, pagy_search_endpoints: @pagy_search_endpoints,
+                                         search_endpoint_cases_counts: @search_endpoint_cases_counts,
+                                         search_endpoints: @search_endpoints, team: @team %>
   </div>
 
   <div class="col-12 mb-3">
-    <%= render partial: 'teams/scorers',
-               locals: { books_archived: @books_archived,
-                                        books_q: @books_q,
-                                        cases_archived: @cases_archived,
-                                        cases_q: @cases_q,
-                                        pagy_scorers: @pagy_scorers,
-                                        scorer_cases_counts: @scorer_cases_counts,
-                                        scorers: @scorers,
-                                        scorers_q: @scorers_q,
-                                        search_endpoints_archived: @search_endpoints_archived,
-                                        search_endpoints_q: @search_endpoints_q,
-                                        team: @team } %>
+    <%= render 'teams/scorers', filters: team_filters, pagy_scorers: @pagy_scorers, scorer_cases_counts: @scorer_cases_counts,
+                                scorers: @scorers, team: @team %>
   </div>
 </div>
 

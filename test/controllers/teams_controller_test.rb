@@ -179,6 +179,40 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "https://www.example.com#{team_path(Team.last)}", response.location
   end
 
+  describe 'show sections' do
+    it 'paginates cases on their own page param and renders the pager' do
+      @team.cases.clear
+      (Pagy::OPTIONS[:limit] + 1).times { |index| @team.cases << Case.create!(case_name: "Paged case #{index}", owner: @user) }
+
+      Bullet.enable = false
+      get team_path(@team), params: { cases_page: 2 }
+      Bullet.enable = true
+
+      assert_response :success
+      assert_equal 2, assigns(:pagy_cases).page
+      assert_equal 1, assigns(:pagy_books).page
+      assert_equal 1, assigns(:cases).size
+      assert_select 'nav a[href*="cases_page=1"]'
+    end
+
+    it 'carries the other sections filters along in each filter form' do
+      Bullet.enable = false
+      get team_path(@team), params: { cases_q: 'foo', books_archived: '1' }
+      Bullet.enable = true
+
+      assert_response :success
+      assert_select 'form:has(input[name="cases_q"][type="text"])' do
+        assert_select 'input[type="hidden"][name="books_archived"][value="1"]'
+        assert_select 'input[type="hidden"][name="cases_q"]', count: 0
+      end
+      assert_select 'form:has(input[name="books_q"][type="text"])' do
+        assert_select 'input[type="hidden"][name="cases_q"][value="foo"]'
+        assert_select 'input[type="checkbox"][name="books_archived"][checked]'
+        assert_select 'input[type="hidden"][name="books_archived"]', count: 0
+      end
+    end
+  end
+
   describe 'cases search' do
     # `id` is an integer column. Matching it with LIKE made a search for "5"
     # return cases 15, 25 and 51 as well, and is a type error on PostgreSQL.

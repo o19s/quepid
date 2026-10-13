@@ -33,6 +33,13 @@ module ApplicationHelper
     render 'shared/page_header', title: title, actions: (block ? capture(&block) : nil)
   end
 
+  # Bordered stat card: a large colored value over an icon label and a muted
+  # caption. The block, if any, renders extra content (progress bar, actions) below.
+  def metric_card value, label, caption, icon:, color:, &block
+    render 'shared/metric_card', value: value, label: label, caption: caption, icon: icon, color: color,
+                                 extra: (block ? capture(&block) : nil)
+  end
+
   # Divider <li> for the shared account-dropdown menu (shared/_account_dropdown).
   # :hr is a standard Bootstrap divider (plain Rails nav). :separator is an
   # empty role="separator" <li> that core's header-scoped CSS
@@ -92,6 +99,40 @@ module ApplicationHelper
     form_data = { turbo_confirm: confirm, turbo_confirm_style: confirm_style }.compact
     button_to(url, html_options.merge(class: "btn btn-link ms-0 #{button_class}",
                                       form:  { class: 'btn-group btn-group-sm', data: form_data }), &)
+  end
+
+  # Row icon button opening the index/team share modal (shared/_share_entity_modal)
+  # for a "case", "book", "scorer" or "search_endpoint". The modal's controller reads
+  # the name and url values off the clicked button; specs find rows by the id value.
+  def share_modal_button record_type, record, name:, url: share_modal_path(record_type, record), button_class: nil
+    prefix = "share_#{record_type}"
+    data = { bs_toggle: 'modal', bs_target: "##{prefix.camelize(:lower)}Modal",
+             "#{prefix}_id_value": record.id, "#{prefix}_name_value": name, "#{prefix}_url_value": url }
+    button_tag type: 'button', class: [ 'btn btn-link p-0', button_class ].compact.join(' '),
+               title: 'Share', aria: { label: 'Share' }, data: data do
+      tag.i class: 'bi bi-share', aria: { hidden: true }
+    end
+  end
+
+  # Row icon button that archives or unarchives `record`, confirmed through the
+  # shared modal. `urls` holds the :archive and :unarchive paths. `group: false`
+  # renders it as a plain inline form instead of a nested .btn-group (see group_button_to).
+  def archive_toggle_button record, name:, urls:, method: :post, group: true
+    verb = record.archived? ? 'Unarchive' : 'Archive'
+    label = "#{verb} #{record.model_name.human.downcase}"
+    color = record.archived? ? 'text-success' : 'text-warning'
+    confirm_style = 'primary' if record.archived?
+    url = urls.fetch(record.archived? ? :unarchive : :archive)
+    icon = safe_join([ tag.i(class: 'bi bi-folder-check', aria: { hidden: true }), tag.span(label, class: 'visually-hidden') ])
+
+    if group
+      group_button_to(url, method: method, button_class: "#{color} p-0 me-3", title: label, aria: { label: label },
+                           confirm: "#{verb} #{name}?", confirm_style: confirm_style) { icon }
+    else
+      form_data = { turbo_confirm: "#{verb} #{name}?", turbo_confirm_style: confirm_style }.compact
+      button_to(url, method: method, class: "btn btn-link #{color} p-0", title: label, aria: { label: label },
+                     form: { class: 'd-inline', data: form_data }) { icon }
+    end
   end
 
   # Flash keys that are structural flags consumed by a dedicated partial/controller,

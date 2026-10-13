@@ -52,19 +52,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
               </td>
               <td><%= search_endpoint.endpoint_url %> </td>
               <td class="text-end">
-                <%= button_tag type: 'button',
-                               class: 'btn btn-link p-0',
-                               title: 'Share',
-                               'aria-label': 'Share',
-                               data: {
-                                 bs_toggle: 'modal',
-                                 bs_target: '#shareSearchEndpointModal',
-                                 share_search_endpoint_id_value: search_endpoint.id,
-                                 share_search_endpoint_name_value: search_endpoint.fullname,
-                                 share_search_endpoint_url_value: share_modal_path('search_endpoint', search_endpoint)
-                               } do %>
-                  <i class="bi bi-share" aria-hidden="true"></i>
-                <% end %>
+                <%= share_modal_button 'search_endpoint', search_endpoint, name: search_endpoint.fullname %>
               </td>
             </tr>
           <% end %>

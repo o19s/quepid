@@ -318,9 +318,9 @@ parts:
           cases-id-filter: "3.1/cases-id-filter"
           cases-name-filter: "3.1/cases-name-filter"
           cases-active: "3.1/cases-active"
-        last_run: 2026-10-13T02:51:08Z
+        last_run: 2026-10-13T19:06:13Z
         result: pass
-        notes: "Partial (grouped ratings count): Covered live: /cases on Current3000 as realisticactivity, steps 1-2 only; # of Queries, Associated Judgements badge/—, and Teams columns for all 25 rows match the DB, e.g. case 1 = 3, case 6 = 200 (OSC), others —. Not covered live: name/ID/team/archived filters, pagination, Base/Legacy comparison, screenshots."
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /cases and /cases?archived=true full-page before/after pixel-identical, so the share_modal_button/archive_toggle_button row icons render exactly as before. Not covered live: name/ID/team filters, pagination, archive/unarchive clicks (helper and CasesController tests cover the forms)."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -1154,10 +1154,10 @@ parts:
           team-validation: "9.1/team-validation"
           team-form: "9.1/team-form"
           team-list: "9.1/team-list"
-        last_run: 2026-10-13T14:00:38Z
+        last_run: 2026-10-13T19:06:10Z
         result: pass
-        notes: "Partial (grouped/preloaded list counts): Covered live: /teams/1 (OSC) on Current3000 as realisticactivity; search endpoint rows show 8/3/4/1 Cases, 1 Teams each and their owners, unchanged from before this change and matching the old per-row counts in a dev-DB check across all 13 endpoints. Not covered live: create/rename/validation, section filters, scorers table (team has no custom scorers; covered by TeamsControllerTest), Base/Legacy comparison, screenshots."
-        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb"]
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /teams/1 default and with all three archived filters checked. Differences all intended: Books columns shift a few px (archive icon now me-3 like the other lists), scorers empty state reads 'No custom scorers found', specks on AI-judge avatar badges are anti-aliasing noise; archived checkboxes stay checked across sections. Not covered live: create/rename/validation, typed section filters, pager (team has 4 cases; TeamsControllerTest covers per-section page keys and the pager), share/archive clicks."
+        paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb", "app/views/teams/_section.html.erb"]
       "9.2":
         title: "Add a team member (existing user)"
         screenshots:
@@ -1291,10 +1291,10 @@ parts:
           archived-membership: "10.4/archived-membership"
           book-archived: "10.4/book-archived"
           book-overview: "10.4/book-overview"
-        last_run: 2026-10-10T09:10:58Z
+        last_run: 2026-10-13T19:06:20Z
         result: pass
-        notes: "Full-capture checkpoint: Current (:3000), Base (86e3de9, :3003) and Legacy (8ceb99e, :3001) archive/unarchive driven through native confirmations; empty overview, archived badge, archived/active index membership and restored overview captured on all three. Temporary management books restored active. Populated overview captured separately using the existing three-pair book. Partial coverage: fully-judged, anonymous/import-in-progress, AI jobs and linked-case sync states remain pending; earlier verification evidence retained in history."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judge_count_cell.html.erb", "app/views/books/_judge_last_cell.html.erb", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/models/book.rb", "app/assets/stylesheets/judgements.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /books/1 (metric cards) and archived /books/10 (header badge, Unarchive button) full-page before/after pixel-identical. Not covered live: archive/unarchive confirmations, fully-judged, import-in-progress, AI job and linked-case sync states."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/show.html.erb", "app/views/books/_tabs.html.erb", "app/views/books/_case.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_linked_cases_list.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/_judge_count_cell.html.erb", "app/views/books/_judge_last_cell.html.erb", "app/javascript/controllers/judge_activity_poll_controller.js", "app/javascript/controllers/judge_activity_stats_controller.js", "app/javascript/controllers/judge_sparkline_controller.js", "app/jobs/broadcast_judge_activity_job.rb", "app/jobs/auto_run_judge_judy_job.rb", "app/jobs/broadcast_linked_cases_job.rb", "app/models/book.rb", "app/assets/stylesheets/judgements.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/views/shared/_metric_card.html.erb", "app/helpers/books_helper.rb"]
       "10.5":
         title: "Combine (merge) books"
         screenshots:
@@ -1420,10 +1420,10 @@ parts:
           judge-overview-after: "10.10/judge-overview-after"
           start-judging: "10.10/start-judging"
           judge-overview-before: "10.10/judge-overview-before"
-        last_run: 2026-10-10T10:42:08Z
+        last_run: 2026-10-13T19:06:25Z
         result: pass
-        notes: "Current: personal progress1/4\u21922/4 after mouse Good; Quit returns Judge Overview; rubric/activity chart and Bulk Judging link verified. Empty private book0 pairs disables judging links with explanation. Five Current states inspected/registered. Base86e3de9/Legacy8ceb99e have no Judge Overview route/link; three ordinary Overview screenshots inspected/registered as explicit absence comparison (no invented historical flow). Partial: rank-depth, selection strategies and completed state pending."
-        paths: ["app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/models/book.rb", "app/models/selection_strategy.rb", "app/assets/stylesheets/judgements.css", "app/assets/stylesheets/navbar-brand.css"]
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /books/1/judge_overview loads with header via book_page_header. Intended difference: Need Judging / Judged By You numbers now display-5 (was display-4) with mt-1 label spacing, matching Book Overview cards; alerts and Start/Bulk Judging buttons unchanged. Not covered live: judging clicks, empty book, rank-depth, selection strategies, completed state."
+        paths: ["app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/models/book.rb", "app/models/selection_strategy.rb", "app/assets/stylesheets/judgements.css", "app/assets/stylesheets/navbar-brand.css", "app/views/shared/_metric_card.html.erb", "app/helpers/books_helper.rb", "app/views/books/_tabs.html.erb"]
 
   "11":
     file: 11-judging-workflows.md
@@ -1498,9 +1498,9 @@ parts:
           field-search: "11.6/field-search"
           expanded-list: "11.6/expanded-list"
           compact-list: "11.6/compact-list"
-        last_run: 2026-10-10T11:12:39Z
+        last_run: 2026-10-13T19:06:28Z
         result: pass
-        notes: "Current/Base/Legacy nine states inspected and registered. Compact/expanded columns; pair-ID and doc-ID syntax each returned correct one row; free explanation text one row; invited judge only their row; Later/Unrateable individually one row and combined zero; ID link reopened owner Good2/explanation. Partial: query_text exact syntax and complete free-text field matrix pending; re-rating covered11.2/11.5."
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /books/1/judgements pixel-identical; archived /books/10/judgements now shows the Archived badge in the 'Judgements for' header (intended, +5px; badge is heading-sized as on Book Overview). Not covered live: filters, search syntax, edit/re-rate."
         paths: ["app/controllers/judgements_controller.rb", "app/views/judgements/", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/auto_submit_controller.js"]
       "11.7":
         title: "Judgement Stats (leaderboard)"
@@ -1508,9 +1508,9 @@ parts:
           later-reset: "11.7/later-reset"
           unrateable-reset: "11.7/unrateable-reset"
           multiuser-stats: "11.7/multiuser-stats"
-        last_run: 2026-10-10T11:18:12Z
+        last_run: 2026-10-13T19:06:29Z
         result: pass
-        notes: "Current/Base/Legacy three states inspected and registered. Two-human leaderboard/distribution; owner Unrateable1 and Later1 reset separately through UI. Reopened Stats after redirect to Overview:0 flags, no reset controls, retained owner Good2 and invitee Perfect3 (two total ratings). Partial: anonymous bucket and AI Refine Prompt access gating pending."
+        notes: "Covered live: Base HEAD 9af723f7 on :3003 (fresh dev-DB copy) vs Current :3000 as realisticactivity, ERB extraction pass (teams section layout, share/archive helpers, book_page_header, metric_card); /books/1/judgement_stats leaderboard unchanged; header's dead 'This week' dropdown button (no menu, feather icon not loaded) removed as intended. Not covered live: reset Unrateable/Later, anonymous bucket, AI Refine Prompt gating."
         paths: ["app/controllers/books_controller.rb", "app/views/books/judgement_stats.html.erb", "app/models/concerns/text_search.rb", "app/views/books/_judge_status_cell.html.erb"]
       "11.8":
         title: "Bulk Judge (grid mode)"

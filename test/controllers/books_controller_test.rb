@@ -526,6 +526,29 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_redirected_to books_path(archived: true)
     end
 
+    test 'book pages flag an archived book in the shared header above the tabs' do
+      login_user_for_integration_test doug
+
+      get book_judgements_path(archived_book)
+
+      assert_response :success
+      assert_select 'h1', text: /Judgements for\s+Book Iam Archived Book\s+Archived/ do
+        assert_select 'i.bi-book'
+        assert_select 'span.badge.bg-warning', text: 'Archived'
+      end
+      assert_select 'ul.nav-underline a[href=?]', judge_overview_book_path(archived_book)
+    end
+
+    test 'book pages leave an active book unflagged' do
+      login_user_for_integration_test doug
+
+      get judgement_stats_book_path(james_bond_movies)
+
+      assert_response :success
+      assert_select 'h1 i.bi-book'
+      assert_select 'h1 span.badge', count: 0
+    end
+
     test 'index shows active books by default' do
       login_user_for_integration_test doug
 
@@ -808,7 +831,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, assigns(:total_pairs)
     assert_equal 100, assigns(:user_progress_pct)
     assert_equal 3, assigns(:user_total_judgement_count)
-    assert_select 'div.display-4.text-success', text: '3'
+    assert_select 'div.display-5.text-success', text: '3'
 
     scoped_book.update!(rank_depth: nil)
     get judge_overview_book_path(scoped_book)

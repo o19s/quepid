@@ -1,7 +1,4 @@
-<% title = capture do %>
-  Query Doc Pairs for <i class="bi bi-book"></i> <%= book_title(@book) %>
-<% end %>
-<%= page_header title do %>
+<%= book_page_header @book, prefix: 'Query Doc Pairs for' do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <%= link_to 'New Query Doc Pair', new_book_query_doc_pair_path, class: 'btn btn-sm btn-outline-secondary' %>
@@ -9,8 +6,6 @@
     </div>
   </div>
 <% end %>
-
-<%= render 'books/tabs', book: @book %>
 
 <div class="card" data-controller="document-fields-modal">
   <div class="card-header">
