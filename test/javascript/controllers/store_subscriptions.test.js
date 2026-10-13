@@ -44,8 +44,7 @@ describe("controller store subscription lifecycles", () => {
     delete stores.scoring
     const controller = buildControllerFixture(Controller, {
       overrides: {
-        render: vi.fn(),
-        load: vi.fn()
+        render: vi.fn()
       }
     })
     expect(() => controller.connect()).not.toThrow()
@@ -74,7 +73,7 @@ describe("controller store subscription lifecycles", () => {
         modalRoot: true
       }
     })
-    for (const method of ["render", "renderScore", "renderLabel", "scheduleRender", "syncSortFromUrl", "setupSortable", "load", "updateCreateState", "renderFromStore", "handleSearchFailed", "handleSearchSettled", "persistScore", "refreshCaseDiffScores"]) {
+    for (const method of ["render", "renderScore", "renderLabel", "scheduleRender", "syncSortFromUrl", "setupSortable", "updateCreateState", "renderFromStore", "handleSearchFailed", "handleSearchSettled", "persistScore", "refreshCaseDiffScores"]) {
       controller[method] = vi.fn()
     }
     controller.initialize?.()
@@ -85,7 +84,7 @@ describe("controller store subscription lifecycles", () => {
       expect(stores.documents.addEventListener.mock.calls.map(([event]) => event)).toEqual(["change", "reset"])
     }
     // Initial work is owned by each controller, not by the subscription helper.
-    const initial = Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.load : controller.render
+    const initial = Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.updateCreateState : controller.render
     expect(initial).toHaveBeenCalledTimes(1)
     const observer = Controller === QueriesList ? controller.scheduleRender : Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.updateCreateState : Controller === SearchResults ? controller.renderFromStore : controller.render
     observer.mockClear()

@@ -57,8 +57,9 @@ Rails owns the picker row template; Stimulus populates selections and dynamic op
 
 ### 5.4 Annotations
 
-Rails renders persisted annotation rows through the case HTML endpoints; Stimulus
-captures the live score, mounts responses and retains the edit modal. The JSON API
+Rails renders persisted annotation rows with the case page and returns Turbo Stream
+responses for create, edit and delete; Stimulus captures the live score, renders the
+streams and retains the edit modal. The JSON API
 continues to supply the graph and external clients.
 
 - [ ] **Steps:**
@@ -71,7 +72,8 @@ continues to supply the graph and external clients.
 - **Edge cases:**
   - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), confirm the **Create** button is disabled until a case score exists, so no annotation can be created. (The controller's flash "Can't create a new annotation until searches have been run! Please rerun your searches." is a fallback that the disabled button normally keeps unreachable.)
   - [ ] Open Edit, change the message, then click **Cancel** — confirm the original message is restored (no partial edit leaks through).
-  - [ ] Force a load or save failure: load shows an error and empty list; failed create/edit retains the draft and allows retry. Reload after a successful edit to confirm persistence and score formatting.
+  - [ ] On a case with no annotations, confirm "No annotations yet." shows, hides after Create, and returns after deleting the last one.
+  - [ ] Force a save failure: failed create/edit retains the draft and allows retry. Reload after a successful edit to confirm persistence and score formatting.
   - [ ] Delay deletion of one annotation, then edit another. Let deletion finish while the edit is saving; confirm the successful edit displays its saved message and survives reload.
   - [ ] Delete an annotation — note there is no confirmation dialog on this action; confirm this is intentional (and mention it to the team if it feels too easy to trigger accidentally).
 

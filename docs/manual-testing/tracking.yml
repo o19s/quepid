@@ -728,10 +728,10 @@ parts:
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-12T13:49:57Z
+        last_run: 2026-10-13T14:27:00Z
         result: pass
-        notes: "Covered live: pending-score DOM Create disabled with query bootstrap aborted (toolbar also gated); settled zero-query case 260 is Unrated with Create enabled. Case 6 real annotation create/delete updates list and graph; fixture 980190998 removed. Not covered live: new edit/cancel/failure/concurrency pass; no-score pending state used response abort, not a normally accessible drawer."
-        paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
+        notes: "Rows render with the page (no annotations GET); create/edit/delete use Turbo Streams. Case 6: 3 rows with relative times, create prepends at 0.62, edit replaces in place, delete removes, each fires annotations:changed and the graph refetches; test row deleted. Case 260: empty state shows, hides after create, returns after delete. Prior run same day: forced 500 on edit kept draft, modal and row. Not covered live: cancel, concurrent delete/edit (unit-tested), no-score pending state, graph marker hover (5.5)."
+        paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core-additions.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         screenshots:

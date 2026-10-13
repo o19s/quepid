@@ -7,8 +7,10 @@ import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
 import { isSameId } from "utils/record_identity"
 
+const STREAM_TYPE = "text/vnd.turbo-stream.html"
+
 export default class extends Controller {
-  static targets = ["message", "createButton", "list", "empty", "editModal", "editMessage", "editSave"]
+  static targets = ["message", "createButton", "list", "editModal", "editMessage", "editSave"]
   static values = {
     url: String,
     annotationUrlTemplate: String,
@@ -21,21 +23,12 @@ export default class extends Controller {
     this.onEditSubmit = (event) => this.saveEdit(event)
     this.scoringStore = getCoreStores().scoring
     this.unsubscribeScoringStore = this.scoringStore && subscribeToStore(this.scoringStore, { change: this.onScoreChange })
-    this.load()
+    this.updateCreateState()
   }
 
   disconnect() {
     this.unsubscribeScoringStore?.()
     this.editForm?.removeEventListener("submit", this.onEditSubmit)
-  }
-
-  async load() {
-    try {
-      this.render(await this.requestRows(this.urlValue))
-    } catch {
-      this.render([])
-      coreFlash.show("error", "Unable to load annotations.")
-    }
   }
 
   async create(event) {
@@ -50,9 +43,7 @@ export default class extends Controller {
 
     this.createButtonTarget.disabled = true
     try {
-      const rows = await this.requestRows(this.urlValue, "POST", { annotation: { message }, score })
-
-      this.render([...rows, ...this.rows()])
+      await this.stream(this.urlValue, "POST", { annotation: { message }, score })
       this.messageTarget.value = ""
       this.notifyScoreConsumers()
       coreFlash.show("success", "New Annotation created successfully!")
@@ -95,8 +86,7 @@ export default class extends Controller {
     const editSave = this.editSaveElement || this.editSaveTarget
     editSave.disabled = true
     try {
-      const rows = await this.requestRows(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
-      this.render(this.rows().flatMap((item) => isSameId(item.dataset.annotationId, annotationId) ? rows : [item]))
+      await this.stream(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
       this.editModalInstance?.hide()
       this.notifyScoreConsumers()
       coreFlash.show("success", "Annotation updated successfully!")
@@ -114,9 +104,7 @@ export default class extends Controller {
 
     const annotationId = annotation.dataset.annotationId
     try {
-      await this.requestRows(this.annotationUrl(annotationId), "DELETE")
-
-      this.render(this.rows().filter((item) => !isSameId(item.dataset.annotationId, annotationId)))
+      await this.stream(this.annotationUrl(annotationId), "DELETE")
       this.notifyScoreConsumers()
       coreFlash.show("success", "Annotation deleted successfully!")
     } catch {
@@ -158,48 +146,20 @@ export default class extends Controller {
     return this.rows().find((row) => isSameId(row.dataset.annotationId, id))
   }
 
-  async requestRows(url, method = "GET", body) {
-    const headers = { Accept: "text/html" }
+  // Rails answers with prepend (create), replace (edit) or remove (delete)
+  // streams targeting the list and its rows. Turbo applies them after the next
+  // repaint, so the list has not changed yet when this resolves.
+  async stream(url, method, body) {
+    const headers = { Accept: STREAM_TYPE }
     const options = { method, headers }
     if (body) {
       headers["Content-Type"] = "application/json"
       options.body = JSON.stringify(body)
     }
     const response = await apiFetch(url, options)
-    if (!response.ok || response.redirected) throw new Error("Unable to load annotation rows")
-    if (response.status === 204) return []
-    const html = await response.text()
-    const document = new DOMParser().parseFromString(html, "text/html")
-    const rows = [...document.querySelectorAll("li.annotation")]
-    if (method !== "GET" && rows.length !== 1) throw new Error("Missing annotation row")
-    return rows
-  }
-
-  render(rows) {
-    // Rebuild the list as before, preserving create-at-top and edit-in-place order.
-    this.listTarget.replaceChildren(...rows.map((row) => row.cloneNode(true)))
-    this.listTarget.querySelectorAll(".annotations-time").forEach((time) => {
-      time.textContent = `${this.timeAgo(time.dataset.createdAt)} - `
-    })
-    this.emptyTarget.classList.toggle("d-none", rows.length > 0)
-    this.updateCreateState()
-  }
-
-  timeAgo(value) {
-    if (!value) return ""
-    const date = new Date(value)
-    if (Number.isNaN(date.getTime())) return ""
-    const units = [
-      ["year", 60 * 60 * 24 * 365],
-      ["month", 60 * 60 * 24 * 30],
-      ["week", 60 * 60 * 24 * 7],
-      ["day", 60 * 60 * 24],
-      ["hour", 60 * 60],
-      ["minute", 60],
-      ["second", 1]
-    ]
-    const deltaSeconds = Math.round((date.getTime() - Date.now()) / 1000)
-    const [unit, seconds] = units.find(([, size]) => Math.abs(deltaSeconds) >= size) || ["second", 1]
-    return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round(deltaSeconds / seconds), unit)
+    if (!response.ok || response.redirected || !response.headers.get("Content-Type")?.startsWith(STREAM_TYPE)) {
+      throw new Error("Unable to save annotation")
+    }
+    Turbo.renderStreamMessage(await response.text())
   }
 }

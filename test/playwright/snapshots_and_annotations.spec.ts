@@ -124,7 +124,7 @@ test.describe('annotations', () => {
 
     const savedResponse = await saved;
     expect(savedResponse.ok()).toBeTruthy();
-    expect(savedResponse.headers()['content-type']).toContain('text/html');
+    expect(savedResponse.headers()['content-type']).toContain('text/vnd.turbo-stream.html');
 
     const annotationItem = annotations.locator('li.annotation').filter({ hasText: message });
     await expect(annotationItem).toBeVisible({ timeout: 10_000 });

@@ -3,18 +3,16 @@
 class CaseAnnotationsController < ApplicationController
   include AnnotationPersistence
 
+  # The id of the annotation list in core/_tune_relevance.
+  LIST_ID = 'case-annotations'
+
   before_action :set_case
   before_action :set_annotation, only: [ :update, :destroy ]
-
-  def index
-    @annotations = @case.annotations.includes(:user, score: :try)
-    render partial: 'core/annotation', collection: @annotations, as: :annotation
-  end
 
   def create
     record = create_annotation_with_score
     if record.persisted?
-      render partial: 'core/annotation', locals: { annotation: @annotation }
+      render turbo_stream: turbo_stream.prepend(LIST_ID, partial: 'core/annotation', locals: { annotation: @annotation })
     else
       render json: record.errors, status: :bad_request
     end
@@ -22,7 +20,7 @@ class CaseAnnotationsController < ApplicationController
 
   def update
     if @annotation.update annotation_params
-      render partial: 'core/annotation', locals: { annotation: @annotation }
+      render turbo_stream: turbo_stream.replace(@annotation, partial: 'core/annotation', locals: { annotation: @annotation })
     else
       render json: @annotation.errors, status: :bad_request
     end
@@ -30,7 +28,7 @@ class CaseAnnotationsController < ApplicationController
 
   def destroy
     @annotation.destroy
-    head :no_content
+    render turbo_stream: turbo_stream.remove(@annotation)
   end
 
   private

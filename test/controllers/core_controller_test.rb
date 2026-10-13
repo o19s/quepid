@@ -183,7 +183,7 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '[data-controller="annotations"][data-annotations-url-value=?]', case_annotations_path(kase)
       assert_select '[data-controller="annotations"][data-annotations-annotation-url-template-value=?]',
                     case_annotation_path(kase, '__ANNOTATION_ID__')
-      assert_select '#annotations [data-annotations-target="list"]', 1
+      assert_select '#annotations #case-annotations[data-annotations-target="list"]', 1
       assert_select '#annotations #editAnnotationModal[data-annotations-target="editModal"]', 1
       assert_select "#diffModal template[data-diff-core-target='selectionTemplate']", 1
       assert_select '#shareCaseModal[data-share-case-core-catalog-url-template-value=?]',
@@ -205,6 +205,19 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'body[data-snapshot-bridge-snapshots-url-value=?]', "/api/cases/#{kase.id}/snapshots"
       assert_select '#wizardModal[data-wizard-snapshot-search-url-template-value=?]',
                     "http://test.host/api/cases/#{kase.id}/snapshots/__SNAPSHOT_ID__/search"
+    end
+
+    test 'renders the case annotations with the page' do
+      annotation = annotations(:one)
+      login_user annotation.user
+
+      get :index, params: { id: annotation.case.id }
+
+      assert_response :success
+      assert_select "#case-annotations li.annotation##{ActionView::RecordIdentifier.dom_id(annotation)}" do
+        assert_select '.annotation-message', text: annotation.message
+      end
+      assert_select '#annotations-list .annotations-empty', text: 'No annotations yet.'
     end
 
     test 'renames a case and updates its search endpoint settings' do

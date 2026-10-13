@@ -51,6 +51,7 @@ import MoveQueryCoreController from "controllers/move_query_core_controller"
 import FlashController from "controllers/flash_controller"
 import QueryNotesController from "controllers/query_notes_controller"
 import AnnotationsController from "controllers/annotations_controller"
+import RelativeTimeController from "controllers/relative_time_controller"
 import DiffCoreController from "controllers/diff_core_controller"
 import DiffScoreController from "controllers/diff_score_controller"
 import DiffCaseScoresController from "controllers/diff_case_scores_controller"
@@ -107,6 +108,7 @@ application.register("move-query-core", MoveQueryCoreController)
 application.register("flash", FlashController)
 application.register("query-notes", QueryNotesController)
 application.register("annotations", AnnotationsController)
+application.register("relative-time", RelativeTimeController)
 application.register("diff-core", DiffCoreController)
 application.register("diff-score", DiffScoreController)
 application.register("diff-case-scores", DiffCaseScoresController)

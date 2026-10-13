@@ -77,7 +77,7 @@ Rails.application.routes.draw do
     post :clone, on: :member
   end
   resources :cases, only: [] do
-    resources :annotations, only: [ :index, :create, :update, :destroy ], controller: :case_annotations
+    resources :annotations, only: [ :create, :update, :destroy ], controller: :case_annotations
     get 'modal_catalogs/sharing', to: 'core/modal_catalogs#sharing', as: :sharing_catalog
     get 'modal_catalogs/books', to: 'core/modal_catalogs#books', as: :books_catalog
   end

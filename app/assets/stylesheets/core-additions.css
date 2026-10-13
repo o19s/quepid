@@ -654,6 +654,10 @@ li.annotation {
   font-size: 0.7em;
 }
 
+#annotations-list:has(li.annotation) .annotations-empty {
+  display: none;
+}
+
 .annotation-source {
   font-size: 0.8em;
 }
