@@ -11,23 +11,17 @@
     <%= stylesheet_link_tag 'application', media: 'all' %>
     <%= csrf_meta_tags %>
     <%= javascript_importmap_tags 'vega_globals' %>
-    <%= javascript_include_tag 'analytics' %>
+    <%# Stimulus only: analytics keeps its full-page boundary, so no Turbo. %>
+    <%= javascript_import_module_tag 'controllers' %>
   </head>
   <body class="d-flex flex-column h-100">
     <header>
       <%= render 'layouts/header' %>
-      <% if @case.public? %>
-        <script>
-          document.addEventListener('DOMContentLoaded', function() {
-            new ClipboardJS('#public-url');
-          });
-        </script>
-      <% end %>
       <% if @case.public? || @current_user %>
         <div class="container d-flex align-items-center gap-2 py-2">
           <% if @case.public? %>
             <h3 class="public-share mb-0">
-              <a id="public-url" href="#" data-clipboard-text="<%= analytics_tries_visualization_path(@case.public_id) %>">
+              <a id="public-url" href="#" data-controller="clipboard" data-action="clipboard#copy" data-clipboard-text-value="<%= analytics_tries_visualization_path(@case.public_id) %>">
                 <span class="badge bg-success">Public</span>
                 <i
                   class="clipboard-icon bi bi-clipboard"

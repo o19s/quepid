@@ -279,7 +279,7 @@ parts:
         last_run: 2026-10-09T23:50:03Z
         result: pass
         notes: "Covered live: matching disposable five-day scores0.2/0.3/0.4/0.5/0.9 prepared directly, latest0.90/AP@10, Oct1-5 range, green80% trend and real mouse hover on purple annotation displays matching message. Desktop600px resize and desktop restore driven on all three; nine images inspected and registered with Base86e3de9f/Legacy8ceb99e9 pairs. Current SVG254x60 desktop/486x60 mobile, old254x90/542x90; all body widths600. Current sidebar reserves mobile width; Legacy overlays card left edge and Base has large top gap/overlap, historical responsive defects captured unchanged. Random greeting, IDs and static intraday times differ. Zero-score case renders without error. Negative/zero-changepoint/dense-history cases not exercised; fixtures retained, cleanup pending."
-        paths: ["app/views/home/", "app/controllers/analytics/sparkline_controller.rb", "app/views/analytics/sparkline/vega_data.csv.erb", "app/views/analytics/sparkline/vega_specification.json.erb", "app/services/csv_export.rb"]
+        paths: ["app/views/home/", "app/services/csv_export.rb"]
       "2.5":
         title: "Book summary detail"
         screenshots:
@@ -1717,10 +1717,10 @@ parts:
         screenshots:
           returned-case: "13.1/returned-case"
           graph: "13.1/graph"
-        last_run: 2026-10-10T13:18:13Z
+        last_run: 2026-10-13T14:58:34Z
         result: pass
-        notes: "All three instances rendered Try 1\u20137 graph and Return to Case loaded/searches completed with score 0.33; six PNGs inspected. Current includes AI Judges navigation, denominator and new footer/layout. Returned-case query ordering differs from historical manual order, an existing fixture state mismatch; scores and graph match. Partial: multiple roots/external parent edges not exercised."
-        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/views/layouts/analytics.html.erb", "app/views/analytics/tries_visualization/show.html.erb", "app/views/analytics/tries_visualization/vega_specification.json.erb"]
+        notes: "Partial (Current only, Stimulus mount): case 1 Try 1\u20134 graph and Vega bindings rendered via tries-visualization controller; Stimulus loaded, Turbo absent (full-page boundary kept), no window.tries_tree_view global, no console errors. Rechecked after the analytics.js bundle was removed: graph canvas still rendered, no analytics script loaded. Return to Case, Base/Legacy comparison and multiple roots/external parent edges not exercised this run. Registered screenshots are from the 2026-10-10 full three-instance run (Try 1–7 fixture); rendered UI is unchanged, so no new captures were registered."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/views/layouts/analytics.html.erb", "app/views/analytics/tries_visualization/show.html.erb", "app/views/analytics/tries_visualization/vega_specification.json.erb", "app/javascript/controllers/tries_visualization_controller.js"]
       "13.2":
         title: "Case visibility (Public / Private toggle)"
         screenshots:
@@ -1728,18 +1728,18 @@ parts:
           private: "13.2/private"
           anonymous: "13.2/anonymous"
           public: "13.2/public"
-        last_run: 2026-10-10T13:19:25Z
-        result: fail
-        notes: "Twelve inspected Current/Base/Legacy PNGs: clipboard readback matches public_id URL, anonymous graph returns 200 without visibility controls, Make Private removes badge and revokes access on refresh. Current returns 404; Base/Legacy return 500 undefined last_try_number for nil in analytics/tries_visualization/show, reproduced live on pre-Angular-removal 8ceb99e (pre-existing historical defect). All three fixture cases restored private. Header/footer positioning changes match Current layout; graph content equivalent."
-        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb", "app/controllers/analytics/cases/visibilities_controller.rb"]
+        last_run: 2026-10-13T14:58:34Z
+        result: pass
+        notes: "Partial (Current only, after ClipboardJS was replaced by the clipboard Stimulus controller and utils/clipboard copyText): case 1 Make public showed the badge; real badge click wrote the exact public_id URL via navigator.clipboard (resolved), and with navigator.clipboard hidden the execCommand fallback copied the same URL and removed its textarea. Click still follows href=\"#\" as before. Make Private removed the badge and restored Make public; no console errors. Not exercised this run: anonymous public view, access revocation on refresh, Base/Legacy comparison (previous run recorded Base/Legacy 500 on revoked access as a pre-existing historical defect; Current 404). Registered screenshots, including anonymous and revoked states, are from that 2026-10-10 full three-instance run; rendered UI is unchanged, so no new captures were registered."
+        paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb", "app/controllers/analytics/cases/visibilities_controller.rb", "app/views/layouts/analytics.html.erb", "app/javascript/controllers/clipboard_controller.js"]
       "13.3":
         title: "Duplicate scores diagnostic"
         screenshots:
           scores: "13.3/scores"
           diagnostic: "13.3/diagnostic"
-        last_run: 2026-10-10T13:19:25Z
+        last_run: 2026-10-13T15:04:13Z
         result: pass
-        notes: "Six inspected PNGs: clicked diagnostic from Scores, grouped Count/Try ID/Day/Score rendered, Back to Scores worked. Real fixture duplicate groups surfaced (Current counts 6/2, Base/Legacy 2/1); these reflect repeated runs in independent capture databases, not matched record counts. Current layout/footer differences intended. Partial: empty case and diagnostic visibility toggle not exercised."
+        notes: "Partial (Current only, after analytics layout moved to Stimulus and analytics.js was removed): case 1 Scores > Understand Score Duplication rendered Count/Try ID/Day/Score with 15 groups (real duplicates up to 5) and the Count of 1 caption; Back to Scores and Back to Case navigated correctly; no console errors. Visibility toggle edge case covered: Make public/Make Private work from this page, the public badge copy link wrote the public_id URL via navigator.clipboard, and case 1 was restored private. Toggle redirects to the tries visualization rather than back to this page (VisibilitiesController behavior unchanged since 2023). Empty never-scored case not exercised. Registered screenshots are from the 2026-10-10 three-instance run; rendered UI is unchanged."
         paths: ["app/controllers/analytics/cases/duplicate_scores_controller.rb", "app/views/analytics/cases/duplicate_scores/show.html.erb", "app/views/layouts/analytics.html.erb", "test/controllers/analytics/cases/duplicate_scores_test.rb"]
 
   "14":

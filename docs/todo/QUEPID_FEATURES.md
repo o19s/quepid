@@ -653,7 +653,6 @@ Exports fetch fresh data from the API before generating to capture other users' 
 | `GET /api/v1/export/queries/information_needs` | CSV |
 | `GET /api/v1/judgements` | CSV with per-judge columns (CSV injection protected) |
 | `GET /admin/users` | CSV or JSON |
-| `GET /analytics/sparkline/vega_data` | CSV |
 
 ### Import Formats
 
@@ -925,7 +924,6 @@ Doc lists detect two error conditions (undefined/missing ID field, duplicate IDs
 ```
 esbuild → core_vendor.js (vendor libs, CodeMirror, Bootstrap)
 esbuild → core_case.js (core_stimulus.js: case-page controllers and utils)
-esbuild → jquery bundle, analytics.js (Vega)
 Node.js → application.css, core.css (concatenated CSS)
 ```
 

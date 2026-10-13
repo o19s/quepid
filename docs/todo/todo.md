@@ -761,18 +761,6 @@ So a case can score differently in the UI and in a background evaluation.
 **Fix:** move input assembly (`bestDocs`) and case aggregation into the shared
 scorer module so both sides run the same code.
 
-### [PREEXISTING] P3 I1 C2 — Chart initialization and lifecycle ownership
-
-The remaining inline `<script>` blocks are on the isolated analytics surfaces
-(`layouts/analytics.html.erb`, `analytics/tries_visualization/show.html.erb`)
-and the standalone `home/sparklines` frame example. Defer extraction until
-analytics work or CSP hardening requires it. Verify chart initialization waits
-for Vega readiness; source inspection suggests a loading-order risk, not a
-reproduced failure. Use Stimulus for chart and clipboard lifecycle ownership
-when extracting. Analytics keeps an explicit full-page boundary. Confirm the
-sparklines example is maintained functionality before migrating its frame
-lifecycle.
-
 ### [PREEXISTING] P2 I0 C3 — The CSP is effectively off
 
 `config/initializers/content_security_policy.rb` sets only `font_src` and a
@@ -781,7 +769,7 @@ lifecycle.
 Rails 8's default is a nonce-based policy, and `javascript_importmap_tags`
 already supports nonces.
 
-**Fix (after moving the inline scripts into Stimulus):** enable `script_src :self`
+**Fix:** enable `script_src :self`
 plus nonces in report-only mode first, then enforce it. The core page's Solr JSONP needs the search endpoint
 hosts in `script-src`, or a per-request allow-list. Either remove
 `report_uri` or add the endpoint.

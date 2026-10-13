@@ -13,7 +13,7 @@ Quepid serves JavaScript through two mechanisms. Which one a page uses depends o
 |--------|-------|-------------------|
 | `application.html.erb` (non-case branch), `admin.html.erb` | Home, books, teams, admin, and other Rails pages | Importmap entry `application` (Turbo, Stimulus, all controllers via `controllers/index.js`, Bootstrap, CodeMirror, vega) |
 | `application.html.erb` (case branch, `controller_name == "core"`) | The case page (`/case/:id`) | `_case_head` loads the importmap for `vega_globals` and `bootstrap_globals` (not `application`); `_case_workspace` renders the page and then loads the `core_case.js` bundle (which includes the Shepherd tour in `modules/tour.js`) |
-| `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then bundle `analytics.js` |
+| `analytics.html.erb` | Analytics dashboards | Importmap for `vega_globals`, then `controllers` (Stimulus without Turbo) |
 
 ### Rails entry point
 
@@ -28,7 +28,6 @@ All defined in [esbuild.config.js](../esbuild.config.js):
 | Name | Entry | Output | Purpose |
 |------|-------|--------|---------|
 | `core-case` | `app/javascript/core_stimulus.js` | `core_case.js` | Case page: registers only the Stimulus controllers the case layout renders, plus runtime modules |
-| `analytics` | `app/javascript/analytics.js` | `analytics.js` | Analytics pages |
 
 Source files are shared with the importmap, so **imports in shared code must be bare names** (`utils/flash`, `controllers/application`). The `core-case` bundle teaches esbuild how to resolve those names through the `alias` maps in `esbuild.config.js`, and the importmap does the same in the browser through `config/importmap.rb`.
 
@@ -48,7 +47,6 @@ For a new npm package:
 ```bash
 docker compose exec app yarn build                # CSS + all JS bundles
 docker compose exec app yarn build:core           # core-case
-docker compose exec app yarn build:analytics
 docker compose exec app node esbuild.config.js core-case --watch   # one bundle, watching
 ```
 

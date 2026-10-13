@@ -980,8 +980,8 @@ JavaScript would already be retained.
 
 Keep full-page navigation for the case workspace until its stores, asynchronous
 searches, and bundle lifecycle support Drive visits. Preserve Solr JSONP's HTTP
-and protocol-switch requirements. Analytics retains its standalone chart and
-clipboard initialization until that lifecycle is migrated.
+and protocol-switch requirements. Analytics loads Stimulus for its chart and
+clipboard controllers but not Turbo, so its full-page boundary remains.
 
 Frames and Streams remain available on the case workspace. Turbo treats content
 inside a `<turbo-frame>` as navigatable regardless of the Drive setting, unless

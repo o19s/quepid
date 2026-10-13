@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // Builds the esbuild bundles into app/assets/builds/. Usage:
-//   node esbuild.config.js <core-case|analytics>... [--watch[=forever]]
+//   node esbuild.config.js <core-case>... [--watch[=forever]]
 // See docs/js_pipeline.md for how these bundles relate to the importmap.
 
 const esbuild = require('esbuild');
@@ -32,10 +32,6 @@ const BUNDLES = {
       quepid_search: `./${JS}/quepid_search.js`,
       quepid_store: `./${JS}/quepid_store.js`
     }
-  },
-  analytics: {
-    entryPoints: [`${JS}/analytics.js`],
-    outdir: 'app/assets/builds'
   }
 };
 

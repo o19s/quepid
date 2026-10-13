@@ -24,7 +24,7 @@ Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and 
 That tree includes:
 
 - `app/javascript/controllers/`, `api/`, `utils/`, `modules/`
-- Entry bundles: `application.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
+- Entry bundles: `application.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`
 
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 
