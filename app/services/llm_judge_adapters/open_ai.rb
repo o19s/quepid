@@ -25,7 +25,6 @@ module LlmJudgeAdapters
 
     def body_for user_prompt, system_prompt
       {
-        temperature:     0.7,
         model:           options[:llm_model],
         response_format: { type: 'json_object' },
         messages:        [
