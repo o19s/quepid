@@ -125,6 +125,31 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     Bullet.enable = bullet_enabled
   end
 
+  test 'index counts associated judgements for all displayed cases in one query' do
+    rated = Case.create!(case_name: 'Ratings badge rated', owner: user)
+    2.times do |index|
+      rated.queries.create!(query_text: "rated #{index}").ratings.create!(doc_id: 'doc', rating: 1)
+    end
+    Case.create!(case_name: 'Ratings badge unrated', owner: user)
+    ratings_queries = []
+    subscriber = lambda do |_name, _start, _finish, _id, payload|
+      ratings_queries << payload[:sql] if payload[:sql].match?(/FROM [`"]?ratings/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
+      get cases_url(q: 'Ratings badge')
+    end
+
+    assert_response :success
+    assert_equal 1, ratings_queries.size, ratings_queries.join("\n")
+    assert_select 'tr', text: /Ratings badge rated/ do
+      assert_select 'span.badge', text: '2'
+    end
+    assert_select 'tr', text: /Ratings badge unrated/ do
+      assert_select 'span.badge', count: 0
+    end
+  end
+
   test 'index displays Never Run and System for missing scores and score users' do
     kase = cases(:queries_case)
     kase.scores.delete_all

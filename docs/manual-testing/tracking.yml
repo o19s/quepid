@@ -318,9 +318,9 @@ parts:
           cases-id-filter: "3.1/cases-id-filter"
           cases-name-filter: "3.1/cases-name-filter"
           cases-active: "3.1/cases-active"
-        last_run: 2026-10-09T23:53:36Z
+        last_run: 2026-10-13T02:51:08Z
         result: pass
-        notes: "Covered live: matching active three-case lists, partial-name/exact-ID Solr search, Archived empty state, no-match and active restoration on Current/Base86e3de9f/Legacy8ceb99e9; Team dropdown narrows Current/Base to shared case then All restored. Seventeen MCP images inspected, six states registered with Base pairs; Team filter explicitly Legacy-absent after live/source check of Angular index. Legacy uses live search/tabs and Archived modal; Current/Base Rails table, pagination, controls, owner/score formatting differ. Base wrongly shows first-case prompt for Archived/no-match; Current suppresses it (existing branch correction). Base Static score1.000 vs Current/Legacy0 after reopen remains unresolved; independent IDs/times differ. Pagination/filter-combination/unrelated-account variants not exercised this pass; fixtures retained, cleanup pending."
+        notes: "Partial (grouped ratings count): Covered live: /cases on Current3000 as realisticactivity, steps 1-2 only; # of Queries, Associated Judgements badge/—, and Teams columns for all 25 rows match the DB, e.g. case 1 = 3, case 6 = 200 (OSC), others —. Not covered live: name/ID/team/archived filters, pagination, Base/Legacy comparison, screenshots."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -1154,9 +1154,9 @@ parts:
           team-validation: "9.1/team-validation"
           team-form: "9.1/team-form"
           team-list: "9.1/team-list"
-        last_run: 2026-10-10T07:16:25Z
+        last_run: 2026-10-13T02:51:12Z
         result: pass
-        notes: "11 matching states inspected/registered Current3000, Base3003/86e3de9 and Legacy3001/8ceb99e. Create adds creator; rename persists, same-name no-op and blank rename show correct flash. All four section searches plus three archive filters retain one another through sequential UI submits on all three (Legacy cases parameters q/archived). Blank/duplicate create visibly validate on Current; Base/Legacy status200 failed-create render leaves old form without errors under Turbo (live reproduced, pre-existing source render:new without422). Filtered empty list never claims zero teams. Zero-team explanation not replayed in this batch. Disposable teams retained for 9.2-9.6; cleanup pending."
+        notes: "Partial (grouped/preloaded list counts): Covered live: /teams/1 (OSC) on Current3000 as realisticactivity; case rows 6/473/586 show queries 20/0/4, judgements 200/0/10, 1 Teams, and Book of Ratings shows 260 Judgements, 0 Cases, 1 Teams, all matching direct DB counts. Not covered live: create/rename/validation, section filters, scorers table (team has no custom scorers; covered by TeamsControllerTest), Base/Legacy comparison, screenshots."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb"]
       "9.2":
         title: "Add a team member (existing user)"

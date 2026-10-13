@@ -43,6 +43,75 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     Bullet.enable = previous_bullet
   end
 
+  test 'case, book and scorer lists load their counts without a query per row' do
+    other_team = Team.create!(name: 'Count sharing team')
+    @team.cases.clear
+    @team.books.clear
+    @team.scorers.clear
+    3.times do |index|
+      owner = User.create!(name: "Count owner #{index}", email: "count-owner-#{index}@example.com", password: 'password')
+      kase = Case.create!(case_name: "Counted case #{index}", owner: owner)
+      @team.cases << kase
+      other_team.cases << kase if index.zero?
+      (index + 1).times do |query_index|
+        query = kase.queries.create!(query_text: "counted #{index}-#{query_index}")
+        query.ratings.create!(doc_id: 'doc', rating: 1)
+      end
+
+      book = Book.create!(name: "Counted book #{index}", owner: owner)
+      @team.books << book
+      other_team.books << book if index.zero?
+      (index + 2).times do |pair_index|
+        pair = book.query_doc_pairs.create!(query_text: 'counted', doc_id: "doc-#{pair_index}")
+        pair.judgements.create!(rating: 1, user: owner)
+      end
+      book.cases << kase
+
+      scorer = Scorer.create!(name: "Counted scorer #{index}", owner: owner, scale: [ 0, 1 ])
+      @team.scorers << scorer
+      other_team.scorers << scorer if index.zero?
+      kase.update!(scorer: scorer)
+    end
+    per_row_counts = []
+    subscriber = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      per_row_counts << sql if sql.match?(/\ASELECT COUNT\(\*\) .*[`"]?(?:case_id|book_id|scorer_id)[`"]? = (?:\d+|\?|\$\d+)\z/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
+      get team_path(@team)
+    end
+
+    assert_response :success
+    assert_empty per_row_counts, per_row_counts.join("\n")
+    assert_select 'tr', text: /Counted case 0/ do
+      assert_select 'td:nth-child(4)', text: '1' # queries
+      assert_select 'td:nth-child(8)', text: '1' # judgements
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted case 2/ do
+      assert_select 'td:nth-child(4)', text: '3'
+      assert_select 'td:nth-child(8)', text: '3'
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted book 0/ do
+      assert_select '.badge', text: '2 Judgements'
+      assert_select '.badge', text: '1 Cases'
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted book 2/ do
+      assert_select '.badge', text: '4 Judgements'
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted scorer 0/ do
+      assert_select '.badge', text: '1 Cases'
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted scorer 1/ do
+      assert_select '.badge', text: '1 Teams'
+    end
+  end
+
   test 'invalid creation renders validation errors with a Turbo-compatible status' do
     assert_no_difference 'Team.count' do
       post teams_path, params: { team: { name: '' } }

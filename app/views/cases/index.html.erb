@@ -90,8 +90,9 @@ Cases are a group of queries that you are evaluating and experimenting with.
               <% end %>
             </td>
             <td>
-              <% if kase.ratings.count > 0 %>
-                <span class="badge bg-primary rounded-pill"><%= kase.ratings.count %></span>
+              <% ratings_count = @ratings_counts.fetch(kase.id, 0) %>
+              <% if ratings_count > 0 %>
+                <span class="badge bg-primary rounded-pill"><%= ratings_count %></span>
               <% else %>
                 —
               <% end %>

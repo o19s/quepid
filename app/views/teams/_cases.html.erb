@@ -72,10 +72,10 @@
                   —
                 <% end %>
               </td>
-              <td><%= kase.ratings.count %></td>
+              <td><%= @ratings_counts.fetch(kase.id, 0) %></td>
               <td><%= kase.owner&.fullname || '—' %></td>
               <td>
-                <span class="badge rounded-pill bg-secondary"><%= kase.teams.count %> Teams</span>
+                <span class="badge rounded-pill bg-secondary"><%= kase.teams.length %> Teams</span>
               </td>              
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">

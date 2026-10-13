@@ -176,6 +176,18 @@ class Book < ApplicationRecord
     query_doc_pairs.select(:query_text).distinct.count
   end
 
+  # Judgements per book for list pages, in one grouped query. Books without
+  # judgements are absent from the returned hash.
+  def self.judgements_count_by_book_id book_ids
+    Judgement.joins(:query_doc_pair).where(query_doc_pairs: { book_id: book_ids })
+      .group('query_doc_pairs.book_id').count
+  end
+
+  # Cases per book for list pages, in one grouped query.
+  def self.cases_count_by_book_id book_ids
+    Case.where(book_id: book_ids).group(:book_id).count
+  end
+
   # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =
   # higher-ranked) judging and coverage metrics look. A nil depth means
   # unlimited - matches how position itself is nullable/unranked today.

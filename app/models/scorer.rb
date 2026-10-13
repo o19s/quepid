@@ -98,7 +98,8 @@ class Scorer < ApplicationRecord
     # rubocop:enable Style/SafeNavigation
   end
 
-  def cases_count
-    Case.where(scorer_id: id).count
+  # Cases per scorer for list pages, in one grouped query.
+  def self.cases_count_by_scorer_id scorer_ids
+    Case.where(scorer_id: scorer_ids).group(:scorer_id).count
   end
 end

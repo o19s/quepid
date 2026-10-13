@@ -152,7 +152,7 @@ class TeamsController < ApplicationController
     cases_query = @team.cases
     cases_query = cases_query.search_by(@cases_q, :case_name).or(cases_query.where(id: @cases_q.to_i)) if @cases_q.present?
     cases_query = @cases_archived ? cases_query.archived : cases_query.active
-    @pagy_cases, @cases = pagy(cases_query.order(:id).includes(:owner, :teams))
+    @pagy_cases, @cases = pagy(cases_query.order(:id).with_counts.includes(:owner, :teams))
     @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
 
     # Books filtering
@@ -164,13 +164,14 @@ class TeamsController < ApplicationController
     books_query = books_query.with_counts if books_query.respond_to?(:with_counts)
     books_query = books_query.search_by(@books_q, :name) if @books_q.present?
 
-    @pagy_books, @books = pagy(books_query.order(:id))
+    @pagy_books, @books = pagy(books_query.order(:id).includes(:owner, :teams))
 
     # Scorers filtering
     @scorers_q = params[:scorers_q].to_s.strip
     scorers_query = @team.scorers
     scorers_query = scorers_query.search_by(@scorers_q, :name) if @scorers_q.present?
-    @pagy_scorers, @scorers = pagy(scorers_query.order(:name), page_param: :scorers_page)
+    @pagy_scorers, @scorers = pagy(scorers_query.order(:name).includes(:owner, :teams), page_param: :scorers_page)
+    load_list_counts
 
     # Search Endpoints filtering
     @search_endpoints_q = params[:search_endpoints_q].to_s.strip
@@ -389,6 +390,16 @@ class TeamsController < ApplicationController
   def sharing_access_denied record
     flash[:alert] = "You do not have access to that #{record.class.model_name.human.downcase}."
     redirect_back_or_to(teams_path)
+  end
+
+  # Per-row counts for the team page's case, book and scorer tables, each in
+  # one grouped query rather than one query per row.
+  def load_list_counts
+    @ratings_counts = Case.ratings_count_by_case_id(@cases.map(&:id))
+    book_ids = @books.map(&:id)
+    @book_judgements_counts = Book.judgements_count_by_book_id(book_ids)
+    @book_cases_counts = Book.cases_count_by_book_id(book_ids)
+    @scorer_cases_counts = Scorer.cases_count_by_scorer_id(@scorers.map(&:id))
   end
 
   def set_team

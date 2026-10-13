@@ -37,6 +37,7 @@ class CasesController < ApplicationController
     # Paginate results
     @pagy, @cases = pagy(query)
     @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
+    @ratings_counts = Case.ratings_count_by_case_id(@cases.map(&:id))
   end
 
   # Archive a case (mark archived and set current_user as owner)

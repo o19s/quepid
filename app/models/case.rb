@@ -125,6 +125,12 @@ class Case < ApplicationRecord
                         SQL
                       }
 
+  # Ratings per case for list pages, in one grouped query. Cases without
+  # ratings are absent from the returned hash.
+  def self.ratings_count_by_case_id case_ids
+    Rating.joins(:query).where(queries: { case_id: case_ids }).group('queries.case_id').count
+  end
+
   # Not proud of this method, but it's the only way I can get the dependent
   # objects of a Case to actually delete!
   def really_destroy
