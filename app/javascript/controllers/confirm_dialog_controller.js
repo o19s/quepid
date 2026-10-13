@@ -17,6 +17,10 @@ export default class extends Controller {
     STYLES.forEach(name => this.acceptTarget.classList.toggle(`btn-${name}`, name === accepted))
     this.modal = getOrCreateBsModal(this.element)
     if (!this.modal) return Promise.resolve(window.confirm(message))
+    // Opened from code, so Bootstrap won't return focus on close; remember the
+    // opener ourselves. A re-ask while open keeps the original opener.
+    const active = document.activeElement
+    if (!this.element.contains(active)) this.opener = active
     return new Promise(resolve => {
       this.resolve = resolve
       this.modal.show()
@@ -34,6 +38,13 @@ export default class extends Controller {
     this.settle(false)
   }
 
+  // The opener may be gone (a re-render or navigation); then focus stays put.
+  restoreFocus() {
+    const opener = this.opener
+    this.opener = null
+    if (opener?.isConnected) opener.focus()
+  }
+
   settle(accepted) {
     const resolve = this.resolve
     this.resolve = null
@@ -49,6 +60,7 @@ export default class extends Controller {
 
   disconnect() {
     this.clear()
+    this.opener = null
     const modal = this.modal
     if (!modal) return
     const detached = !this.element.isConnected

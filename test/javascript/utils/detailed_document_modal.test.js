@@ -62,6 +62,7 @@ describe("detailed document modal", () => {
     })
 
     expect(openDynamicModal.mock.calls[0][0].templateId).toBe("detailed-document-modal-template")
+    expect(openDynamicModal.mock.calls[0][0].ariaLabelledBy).toBe("detailed-document-modal-title")
     expect(modal.element.querySelector("[data-detailed-document-target='title']").textContent).toBe("<unsafe>")
     expect(modal.element.querySelector("[data-detailed-document-target='rawFields']").textContent).toContain(
       "<raw>"

@@ -185,14 +185,15 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   1. Expand a query, click the **Copy query** (clipboard) icon.
   2. Paste the clipboard contents somewhere and confirm it's exactly the query text.
   3. Click **Delete Query**.
-  4. Confirm the browser's native `confirm()` dialog reads "Are you absolutely sure you want to delete?" — accept it.
+  4. Confirm the shared **Confirm** modal opens reading "Are you absolutely sure you want to delete?" with a red **Confirm** button — click **Confirm**.
   5. Confirm the query is removed from the list and the case rescopes/rescoes without it.
-  6. Repeat but click **Cancel** on the confirm dialog instead.
+  6. Repeat but click **Cancel** (or press Escape) on the confirm modal instead; confirm keyboard focus returns to **Delete Query**.
 - **Expected:** Copy always copies the raw query text. Delete Query removes only that single query (and, per the case model, its ratings/history) — this is a *different, narrower* action than the case-wide "Delete All Queries" option covered in Part 6.4. Cancelling the confirm dialog leaves the query untouched.
 - **Edge cases:**
   - [ ] Delete a query that has ratings/annotations tied to it and confirm the case score recalculates correctly afterward.
   - [ ] Delay a rated-document lookup, then delete or move that query. The delayed response must not restore the removed query.
-  - [ ] Confirm there is no secondary safety net beyond the one native confirm dialog — this is a single-click-plus-confirm irreversible action, worth flagging if a more deliberate confirmation (e.g., typing the query name) is ever expected here.
+  - [ ] Confirm there is no secondary safety net beyond the one confirm modal — this is a single-click-plus-confirm irreversible action, worth flagging if a more deliberate confirmation (e.g., typing the query name) is ever expected here.
+  - [ ] With a screen reader (or the accessibility tree), confirm the modal is announced as a dialog named "Confirm" with the question as its description.
 
 ### 4.16 Query Notes & Information Need
 

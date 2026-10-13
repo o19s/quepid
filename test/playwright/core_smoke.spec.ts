@@ -264,12 +264,20 @@ test.describe('core layout golden paths', () => {
     expect(queryText).toBeTruthy();
     const queryCount = page.locator('[data-queries-list-target="count"]');
     const countBefore = (await queryCount.textContent())?.trim();
-    page.once('dialog', dialog => {
-      expect(dialog.message()).toBe('Are you absolutely sure you want to delete?');
-      void dialog.accept();
-    });
     await expandFirstQuery(page);
-    await row.getByRole('button', { name: 'Delete Query', exact: true }).click();
+    const deleteButton = row.getByRole('button', { name: 'Delete Query', exact: true });
+    const confirmation = page.locator('#confirmModal');
+    await deleteButton.click();
+    await confirmation.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(confirmation).toBeHidden();
+    await expect(deleteButton).toBeFocused();
+    await expect(queryCount).toHaveText(countBefore!);
+
+    await deleteButton.click();
+    await expect(confirmation).toHaveAccessibleName('Confirm');
+    await expect(confirmation).toHaveAccessibleDescription('Are you absolutely sure you want to delete?');
+    await confirmation.getByRole('button', { name: 'Confirm', exact: true }).click();
+    await expect(confirmation).toBeHidden();
     await expect(page.locator('[data-query-row-target="text"]', { hasText: queryText })).toHaveCount(0);
     await expect(queryCount).not.toHaveText(countBefore!);
 

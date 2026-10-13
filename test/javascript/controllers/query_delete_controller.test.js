@@ -1,9 +1,11 @@
 import { buildControllerFixture } from "../support/controller_fixture"
 import coreFlash from "utils/core_flash"
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest"
+import { confirmDialog } from "utils/confirm_dialog"
 import QueryDeleteController from "controllers/query_delete_controller"
 
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+vi.mock("utils/confirm_dialog", () => ({ confirmDialog: vi.fn() }))
 beforeEach(() => {
   coreFlash.show = vi.fn()
   coreFlash.hide = vi.fn()
@@ -19,7 +21,7 @@ describe("query-delete controller", () => {
       outlets: { queryCommandBridge: { queryRemoved: vi.fn() } },
       overrides: { dispatch: vi.fn() }
     })
-    window.confirm = vi.fn()
+    confirmDialog.mockReset()
     window.fetch = vi.fn()
   })
 
@@ -28,7 +30,7 @@ describe("query-delete controller", () => {
   })
 
   it("dispatches the query id after confirmation", () => {
-    window.confirm.mockReturnValue(true)
+    confirmDialog.mockResolvedValue(true)
     window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: true })
 
     return controller.remove({ preventDefault: vi.fn() }).then(() => {
@@ -36,16 +38,16 @@ describe("query-delete controller", () => {
     })
   })
 
-  it("does not dispatch when confirmation is declined", () => {
-    window.confirm.mockReturnValue(false)
+  it("does not dispatch when confirmation is declined", async () => {
+    confirmDialog.mockResolvedValue(false)
 
-    controller.remove({ preventDefault: vi.fn() })
+    await controller.remove({ preventDefault: vi.fn() })
 
     expect(controller.dispatch).not.toHaveBeenCalled()
   })
 
   it("reports a failed request without dispatching completion", async () => {
-    window.confirm.mockReturnValue(true)
+    confirmDialog.mockResolvedValue(true)
     window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     controller.element = document.createElement("button")
     controller.element.disabled = false
@@ -61,14 +63,15 @@ describe("query-delete controller", () => {
   })
 
   it("deletes with DELETE, disables the button while pending, and tells the live list", async () => {
-    window.confirm.mockReturnValue(true)
+    confirmDialog.mockResolvedValue(true)
     let resolveFetch
     window.fetch.mockReturnValue(new Promise((resolve) => { resolveFetch = resolve }))
     const event = { preventDefault: vi.fn() }
 
     const pending = controller.remove(event)
     expect(event.preventDefault).toHaveBeenCalledOnce()
-    expect(controller.element.disabled).toBe(true)
+    expect(confirmDialog).toHaveBeenCalledWith("Are you absolutely sure you want to delete?")
+    await vi.waitFor(() => expect(controller.element.disabled).toBe(true))
     resolveFetch({ text: async () => "", json: async () => null,  ok: true })
     await pending
 
@@ -77,8 +80,30 @@ describe("query-delete controller", () => {
     expect(controller.dispatch).toHaveBeenCalledWith("completed", { target: document, detail: { queryId: 42 } })
   })
 
+  it("ignores a second delete of the same query while one is in flight", async () => {
+    confirmDialog.mockResolvedValue(true)
+    let resolveFetch
+    window.fetch.mockReturnValue(new Promise((resolve) => { resolveFetch = resolve }))
+    const rerendered = buildControllerFixture(QueryDeleteController, {
+      element: document.createElement("button"),
+      values: { queryId: 42, deleteUrl: "api/cases/1/queries/42" },
+      outlets: { queryCommandBridge: { queryRemoved: vi.fn() } },
+      overrides: { dispatch: vi.fn() }
+    })
+
+    const first = controller.remove({ preventDefault: vi.fn() })
+    await vi.waitFor(() => expect(window.fetch).toHaveBeenCalledOnce())
+    await rerendered.remove({ preventDefault: vi.fn() })
+    expect(confirmDialog).toHaveBeenCalledOnce()
+
+    resolveFetch({ text: async () => "", json: async () => null, ok: true })
+    await first
+    expect(window.fetch).toHaveBeenCalledOnce()
+    expect(rerendered.dispatch).not.toHaveBeenCalled()
+  })
+
   it("re-enables the button after a failed delete so the user can retry", async () => {
-    window.confirm.mockReturnValue(true)
+    confirmDialog.mockResolvedValue(true)
     window.fetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
     vi.spyOn(console, "error").mockImplementation(() => {})
 
@@ -88,8 +113,8 @@ describe("query-delete controller", () => {
   })
 
   it("does not request anything when declined, and reports a missing delete URL", async () => {
-    window.confirm.mockReturnValue(false)
-    controller.remove({ preventDefault: vi.fn() })
+    confirmDialog.mockResolvedValue(false)
+    await controller.remove({ preventDefault: vi.fn() })
     expect(window.fetch).not.toHaveBeenCalled()
 
     const flash = { show: vi.fn() }

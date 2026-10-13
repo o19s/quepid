@@ -4,7 +4,7 @@
 // Configure your import map in config/importmap.rb. Read more: https://github.com/rails/importmap-rails
 import "@hotwired/turbo-rails"
 import "controllers"
-import { application } from "controllers/application"
+import { confirmDialog } from "utils/confirm_dialog"
 
 import LocalTime from "local-time"
 LocalTime.start()
@@ -12,13 +12,9 @@ LocalTime.start()
 Turbo.config.drive.progressBarDelay = 500
 Turbo.session.drive = true
 
-// data-turbo-confirm uses the layout's shared modal; native confirm until it connects.
+// data-turbo-confirm uses the layout's shared modal.
 // The form's data-turbo-confirm-style picks the Confirm button colour.
-Turbo.config.forms.confirm = (message, form) => {
-  const element = document.getElementById("confirmModal")
-  const dialog = element && application.getControllerForElementAndIdentifier(element, "confirm-dialog")
-  return dialog ? dialog.ask(message, form?.dataset.turboConfirmStyle) : Promise.resolve(window.confirm(message))
-}
+Turbo.config.forms.confirm = (message, form) => confirmDialog(message, form?.dataset.turboConfirmStyle)
 
 import "vega_globals"
 

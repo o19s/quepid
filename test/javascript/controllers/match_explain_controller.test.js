@@ -241,6 +241,7 @@ describe("MatchExplainController", () => {
     expect(options.size).toBe("lg")
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-debug-modal-template")
+    expect(options.ariaLabelledBy).toBe("match-explain-debug-modal-title")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent).toBe("Some Doc")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent).toBe("doc-1")
 
@@ -260,6 +261,7 @@ describe("MatchExplainController", () => {
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-expand-modal-template")
+    expect(options.ariaLabelledBy).toBe("match-explain-expand-modal-title")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='score']").textContent).toBe("3.5")
     expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
   })

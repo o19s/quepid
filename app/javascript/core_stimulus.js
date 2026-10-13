@@ -66,6 +66,7 @@ import WizardController from "controllers/wizard_controller"
 import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
 import PaneController from "controllers/pane_controller"
+import ConfirmDialogController from "controllers/confirm_dialog_controller"
 import { installModalEscapeFallback } from "utils/bs_modal"
 
 Turbo.session.drive = false
@@ -121,3 +122,4 @@ application.register("wizard", WizardController)
 application.register("snapshot-bridge", SnapshotBridgeController)
 application.register("core-bootstrap", CoreBootstrapController)
 application.register("pane", PaneController)
+application.register("confirm-dialog", ConfirmDialogController)

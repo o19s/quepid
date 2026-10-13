@@ -11,6 +11,7 @@ test.describe('Workspace modal lifecycle', () => {
       await page.locator('search-result .subTitle a').first().click();
       const modal = page.locator('.modal.show');
       await expect(modal).toContainText('Detailed Document View of doc:');
+      await expect(modal).toHaveAccessibleName(/^Detailed Document View of doc: \S/);
       await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
       await modal.getByRole('link', { name: 'View All Fields', exact: true }).click();
       await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
@@ -140,6 +141,7 @@ test.describe('Workspace modal lifecycle', () => {
       await outer.locator('.match-explain-bar').first().click();
       const inner = page.locator('.full-screen-modal.show');
       await expect(inner).toContainText('Debug Explain for');
+      await expect(inner).toHaveAccessibleName(/^Debug Explain for \S.*\(id:\S+\)$/);
       await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(4);
       // Wait for the opening transition before dismissing via the backdrop.
       await expect.poll(() => page.evaluate(() => (window as any).nestedModalShown)).toBe(true);

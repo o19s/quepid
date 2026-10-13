@@ -77,6 +77,42 @@ describe("ConfirmDialogController", () => {
     expect(controller.element.isConnected).toBe(false)
   })
 
+  describe("focus return", () => {
+    afterEach(() => { document.body.innerHTML = "" })
+
+    function focusedButton() {
+      const button = document.body.appendChild(document.createElement("button"))
+      button.focus()
+      return button
+    }
+
+    it("returns focus to the original opener, even after a re-ask", () => {
+      const opener = focusedButton()
+      const controller = buildController()
+      document.body.appendChild(controller.element)
+      controller.ask(message)
+      controller.messageTarget.tabIndex = -1
+      controller.element.appendChild(controller.messageTarget).focus()
+
+      controller.ask("Remove member?")
+      controller.restoreFocus()
+
+      expect(document.activeElement).toBe(opener)
+    })
+
+    it("leaves focus alone when the opener has been removed", () => {
+      const opener = focusedButton()
+      const controller = buildController()
+      controller.ask(message)
+      opener.remove()
+      const elsewhere = focusedButton()
+
+      controller.restoreFocus()
+
+      expect(document.activeElement).toBe(elsewhere)
+    })
+  })
+
   it.each([
     [undefined, "btn-danger"],
     ["primary", "btn-primary"],

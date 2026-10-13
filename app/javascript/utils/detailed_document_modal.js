@@ -61,7 +61,11 @@ export function sanitizeDocumentHtml(value) {
 export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   if (!doc) return null
 
-  const modal = openDynamicModal({ templateId: "detailed-document-modal-template", size: "lg" })
+  const modal = openDynamicModal({
+    templateId: "detailed-document-modal-template",
+    size: "lg",
+    ariaLabelledBy: "detailed-document-modal-title"
+  })
   if (!modal) return null
   // Populate before Stimulus connects; the content controller owns rendering.
   modal.element.querySelector("[data-controller='detailed-document']").detailedDocumentData = {
