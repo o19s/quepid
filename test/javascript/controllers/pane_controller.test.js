@@ -25,6 +25,10 @@ function buildController() {
   return { controller, element, main, slider, east }
 }
 
+function pointerDownOn(slider, button = 0) {
+  return { pointerId: 1, button, currentTarget: slider, preventDefault: vi.fn() }
+}
+
 describe("PaneController", () => {
   beforeEach(() => {
     document.body.innerHTML = ""
@@ -88,13 +92,56 @@ describe("PaneController", () => {
     controller.disconnect()
   })
 
-  it("removes active drag listeners when disconnected", () => {
-    const { controller, main } = buildController()
+  it("only follows the pointer between grabbing and releasing the slider", () => {
+    const { controller, main, slider } = buildController()
     controller.connect()
     controller.toggle()
-    controller.grabSlider()
+    controller.dragSlider({ clientX: 300 })
+    expect(main.style.width).toBe("550px")
+
+    const event = pointerDownOn(slider)
+    controller.grabSlider(event)
+    expect(event.preventDefault).toHaveBeenCalled()
+    expect(slider.hasPointerCapture(1)).toBe(true)
+    controller.dragSlider({ clientX: 300 })
+    expect(main.style.width).toBe("300px")
+
+    controller.releaseSlider()
+    controller.dragSlider({ clientX: 400 })
+    expect(main.style.width).toBe("300px")
+  })
+
+  it("ignores the slider while collapsed", () => {
+    const { controller, main, slider } = buildController()
+    controller.connect()
+    controller.grabSlider(pointerDownOn(slider))
+    controller.dragSlider({ clientX: 300 })
+    expect(main.style.width).toBe("1000px")
+    expect(slider.hasPointerCapture(1)).toBe(false)
+  })
+
+  it("only starts a drag from the primary button", () => {
+    const { controller, main, slider } = buildController()
+    controller.connect()
+    controller.toggle()
+    controller.grabSlider(pointerDownOn(slider, 2))
+    controller.dragSlider({ clientX: 300 })
+    expect(main.style.width).toBe("550px")
+    expect(slider.hasPointerCapture(1)).toBe(false)
+  })
+
+  it("stops dragging when collapsed or disconnected mid-drag", () => {
+    const { controller, main, slider } = buildController()
+    controller.connect()
+    controller.toggle()
+    controller.grabSlider(pointerDownOn(slider))
+    controller.toggle()
+    expect(controller.dragging).toBe(false)
+
+    controller.toggle()
+    controller.grabSlider(pointerDownOn(slider))
     controller.disconnect()
-    document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300 }))
+    controller.dragSlider({ clientX: 300 })
     expect(main.style.width).toBe("550px")
   })
 
@@ -103,8 +150,8 @@ describe("PaneController", () => {
     element.getBoundingClientRect = () => ({ left: -150 })
     controller.connect()
     controller.toggle()
-    controller.grabSlider()
-    document.dispatchEvent(new MouseEvent("mousemove", { clientX: 300 }))
+    controller.grabSlider(pointerDownOn(slider))
+    controller.dragSlider({ clientX: 300 })
     expect(slider.style.left).toBe("450px")
     expect(east.style.left).toBe("456px")
     expect(main.style.width).toBe("450px")
@@ -116,22 +163,18 @@ describe("PaneController", () => {
     try {
       const { controller, element, main } = buildController()
       Object.defineProperty(element, "offsetWidth", { configurable: true, value: 0 })
-      const addListener = vi.spyOn(document, "addEventListener")
       controller.connect()
       vi.advanceTimersByTime(400)
       expect(vi.getTimerCount()).toBe(1)
 
       controller.disconnect()
-      addListener.mockClear()
       Object.defineProperty(element, "offsetWidth", { configurable: true, value: 1000 })
       vi.advanceTimersByTime(1000)
 
       expect(vi.getTimerCount()).toBe(0)
-      expect(addListener).not.toHaveBeenCalledWith("mouseup", expect.anything())
       expect(main.style.width).toBe("")
     } finally {
       vi.useRealTimers()
-      vi.restoreAllMocks()
     }
   })
 

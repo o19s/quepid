@@ -45,6 +45,8 @@
 	 display: none;
 	 position: absolute;
 	 top: 0;
+	 touch-action: none;
+	 user-select: none;
 	 width: 6px;
 	 z-index: 99;
 }

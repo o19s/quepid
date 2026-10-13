@@ -90,7 +90,7 @@
             <%= render 'layouts/footer_core_app' %>
           </div>
 
-          <div class="east-slider" data-pane-target="slider">
+          <div class="east-slider" data-pane-target="slider" data-action="pointerdown->pane#grabSlider pointermove->pane#dragSlider pointerup->pane#releaseSlider lostpointercapture->pane#releaseSlider">
           </div>
 
           <div class="pane_east" data-pane-target="east"

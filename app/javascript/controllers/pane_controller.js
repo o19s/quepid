@@ -11,7 +11,7 @@ export default class extends Controller {
   connect() {
     this.toggled = false
     this.eastPaneWidth = DEFAULT_EAST_PANE_WIDTH
-    this.onMouseUp = this.releaseSlider.bind(this)
+    this.dragging = false
 
     // Also read by the drawer's content (the tune-relevance outlet) to restore its own state.
     const kept = this.handoff = takeKeptOpen()
@@ -26,7 +26,6 @@ export default class extends Controller {
   disconnect() {
     this.cancelRefreshRetry()
     this.releaseSlider()
-    document.removeEventListener("mouseup", this.onMouseUp)
   }
 
   refreshElements() {
@@ -37,9 +36,6 @@ export default class extends Controller {
     this.slider = this.hasSliderTarget ? this.sliderTarget : null
 
     if (!this.container || !this.east || !this.main || !this.slider) return
-
-    this.slider.onmousedown = this.grabSlider.bind(this)
-    document.addEventListener("mouseup", this.onMouseUp)
 
     // A hidden container has no width to lay out against yet; retry until it is shown.
     if (this.container.offsetWidth === 0) {
@@ -76,29 +72,34 @@ export default class extends Controller {
     if (!this.container || !this.east || !this.main || !this.slider) return
 
     if (this.toggled) {
-      this.slider.onmousedown = this.grabSlider.bind(this)
       this.east.style.display = "block"
       this.moveEastTo(this.openEastX())
       this.slider.style.display = "block"
     } else {
-      this.slider.onmousedown = null
+      this.releaseSlider()
       this.slider.style.display = "none"
       this.east.style.display = "none"
       this.moveEastTo(this.container.offsetWidth)
     }
   }
 
-  grabSlider() {
-    this.onDrag = this.drag.bind(this)
-    document.addEventListener("mousemove", this.onDrag)
-    this.east.style.display = "block"
-    return false
+  // The slider captures the pointer, so its own pointermove/pointerup actions keep firing while
+  // the pointer is over the results, an iframe or outside the window, until the drag ends.
+  grabSlider(event) {
+    // A right-click opens the context menu, which can swallow the pointerup that ends the drag.
+    if (!this.toggled || event.button !== 0) return
+    // Keep the drag from starting a text selection.
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    this.dragging = true
+  }
+
+  dragSlider(event) {
+    if (this.dragging) this.drag(event)
   }
 
   releaseSlider() {
-    if (!this.onDrag) return
-    document.removeEventListener("mousemove", this.onDrag)
-    this.onDrag = null
+    this.dragging = false
   }
 
   // Measured from the container, which a narrow window scrolls sideways.
