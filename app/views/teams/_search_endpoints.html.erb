@@ -66,8 +66,8 @@
               </td>
               <td><%= search_endpoint.owner&.fullname || '—' %></td>  
               <td>
-                <span class="badge rounded-pill bg-secondary"><%= search_endpoint.cases_count %> Cases</span>
-                <span class="badge rounded-pill bg-secondary"><%= search_endpoint.teams.count %> Teams</span>
+                <span class="badge rounded-pill bg-secondary"><%= @search_endpoint_cases_counts.fetch(search_endpoint.id, 0) %> Cases</span>
+                <span class="badge rounded-pill bg-secondary"><%= search_endpoint.teams.length %> Teams</span>
               </td>            
               <td class="text-end">
                 <div class="btn-group btn-group-sm" role="group">

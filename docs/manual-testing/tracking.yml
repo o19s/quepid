@@ -1154,9 +1154,9 @@ parts:
           team-validation: "9.1/team-validation"
           team-form: "9.1/team-form"
           team-list: "9.1/team-list"
-        last_run: 2026-10-13T02:51:12Z
+        last_run: 2026-10-13T14:00:38Z
         result: pass
-        notes: "Partial (grouped/preloaded list counts): Covered live: /teams/1 (OSC) on Current3000 as realisticactivity; case rows 6/473/586 show queries 20/0/4, judgements 200/0/10, 1 Teams, and Book of Ratings shows 260 Judgements, 0 Cases, 1 Teams, all matching direct DB counts. Not covered live: create/rename/validation, section filters, scorers table (team has no custom scorers; covered by TeamsControllerTest), Base/Legacy comparison, screenshots."
+        notes: "Partial (grouped/preloaded list counts): Covered live: /teams/1 (OSC) on Current3000 as realisticactivity; search endpoint rows show 8/3/4/1 Cases, 1 Teams each and their owners, unchanged from before this change and matching the old per-row counts in a dev-DB check across all 13 endpoints. Not covered live: create/rename/validation, section filters, scorers table (team has no custom scorers; covered by TeamsControllerTest), Base/Legacy comparison, screenshots."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb"]
       "9.2":
         title: "Add a team member (existing user)"

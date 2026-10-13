@@ -43,7 +43,7 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
     Bullet.enable = previous_bullet
   end
 
-  test 'case, book and scorer lists load their counts without a query per row' do
+  test 'case, book, scorer and search endpoint lists load their counts without a query per row' do
     other_team = Team.create!(name: 'Count sharing team')
     @team.cases.clear
     @team.books.clear
@@ -71,11 +71,18 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       @team.scorers << scorer
       other_team.scorers << scorer if index.zero?
       kase.update!(scorer: scorer)
+
+      endpoint = SearchEndpoint.create!(name: "Counted endpoint #{index}", owner: owner, search_engine: 'solr',
+                                        endpoint_url: "http://example.com/counted-#{index}", api_method: 'JSONP')
+      @team.search_endpoints << endpoint
+      other_team.search_endpoints << endpoint if index.zero?
+      kase.tries.first.update!(search_endpoint: endpoint)
+      kase.tries.create!(try_number: 2, search_endpoint: endpoint) if index.zero?
     end
     per_row_counts = []
     subscriber = lambda do |_name, _start, _finish, _id, payload|
       sql = payload[:sql]
-      per_row_counts << sql if sql.match?(/\ASELECT COUNT\(\*\) .*[`"]?(?:case_id|book_id|scorer_id)[`"]? = (?:\d+|\?|\$\d+)\z/i)
+      per_row_counts << sql if sql.match?(/\ASELECT COUNT\(.*[`"]?(?:case_id|book_id|scorer_id|search_endpoint_id)[`"]? = (?:\d+|\?|\$\d+)\z/i)
     end
 
     ActiveSupport::Notifications.subscribed(subscriber, 'sql.active_record') do
@@ -108,6 +115,14 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_select '.badge', text: '2 Teams'
     end
     assert_select 'tr', text: /Counted scorer 1/ do
+      assert_select '.badge', text: '1 Teams'
+    end
+    assert_select 'tr', text: /Counted endpoint 0/ do
+      assert_select '.badge', text: '1 Cases' # two tries, one case
+      assert_select '.badge', text: '2 Teams'
+    end
+    assert_select 'tr', text: /Counted endpoint 1/ do
+      assert_select '.badge', text: '1 Cases'
       assert_select '.badge', text: '1 Teams'
     end
   end

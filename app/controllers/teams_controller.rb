@@ -171,16 +171,16 @@ class TeamsController < ApplicationController
     scorers_query = @team.scorers
     scorers_query = scorers_query.search_by(@scorers_q, :name) if @scorers_q.present?
     @pagy_scorers, @scorers = pagy(scorers_query.order(:name).includes(:owner, :teams), page_param: :scorers_page)
-    load_list_counts
 
     # Search Endpoints filtering
     @search_endpoints_q = params[:search_endpoints_q].to_s.strip
     @search_endpoints_archived = deserialize_bool_param(params[:search_endpoints_archived])
 
-    search_endpoints_query = @team.search_endpoints.includes(:teams)
+    search_endpoints_query = @team.search_endpoints.includes(:owner, :teams)
     search_endpoints_query = @search_endpoints_archived ? search_endpoints_query.where(archived: true) : search_endpoints_query.not_archived
     search_endpoints_query = search_endpoints_query.search_by(@search_endpoints_q, :name, :endpoint_url) if @search_endpoints_q.present?
     @pagy_search_endpoints, @search_endpoints = pagy(search_endpoints_query.order(:id), page_param: :search_endpoints_page)
+    load_list_counts
   end
 
   # rubocop:enable Metrics/AbcSize
@@ -392,14 +392,15 @@ class TeamsController < ApplicationController
     redirect_back_or_to(teams_path)
   end
 
-  # Per-row counts for the team page's case, book and scorer tables, each in
-  # one grouped query rather than one query per row.
+  # Per-row counts for the team page's case, book, scorer and search endpoint
+  # tables, each in one grouped query rather than one query per row.
   def load_list_counts
     @ratings_counts = Case.ratings_count_by_case_id(@cases.map(&:id))
     book_ids = @books.map(&:id)
     @book_judgements_counts = Book.judgements_count_by_book_id(book_ids)
     @book_cases_counts = Book.cases_count_by_book_id(book_ids)
     @scorer_cases_counts = Scorer.cases_count_by_scorer_id(@scorers.map(&:id))
+    @search_endpoint_cases_counts = SearchEndpoint.cases_count_by_search_endpoint_id(@search_endpoints.map(&:id))
   end
 
   def set_team

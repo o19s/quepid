@@ -119,8 +119,11 @@ class SearchEndpoint < ApplicationRecord
     save
   end
 
-  def cases_count
-    Case.joins(:tries).where(tries: { search_endpoint_id: id }).distinct.count
+  # Cases per search endpoint for list pages, in one grouped query. A case is
+  # counted once however many of its tries use the endpoint.
+  def self.cases_count_by_search_endpoint_id search_endpoint_ids
+    Case.joins(:tries).where(tries: { search_endpoint_id: search_endpoint_ids })
+      .group('tries.search_endpoint_id').distinct.count(:id)
   end
 
   # Find an existing endpoint owned by or shared with the user, or build a new one.
