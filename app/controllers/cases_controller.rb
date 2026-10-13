@@ -37,9 +37,6 @@ class CasesController < ApplicationController
     # Paginate results
     @pagy, @cases = pagy(query)
     @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
-
-    # Get user's teams for the share modal
-    @user_teams = current_user.teams.order(:name)
   end
 
   # Archive a case (mark archived and set current_user as owner)

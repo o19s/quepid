@@ -1,57 +1,5 @@
-import { describe, expect, it, vi } from "vitest"
-import {
-  deactivateListItem,
-  parseTeamsJson,
-  unsharedTeams
-} from "utils/share_case_teams"
-
-describe("parseTeamsJson", () => {
-  it("parses a JSON array string", () => {
-    expect(parseTeamsJson('[{"id":1,"name":"A"}]')).toEqual([{ id: 1, name: "A" }])
-  })
-
-  it("returns [] without logging when input is empty, blank, or not a string", () => {
-    const error = vi.spyOn(console, "error").mockImplementation(() => {})
-
-    expect(parseTeamsJson("")).toEqual([])
-    expect(parseTeamsJson("   ")).toEqual([])
-    expect(parseTeamsJson({})).toEqual([])
-    expect(parseTeamsJson(null)).toEqual([])
-
-    expect(error).not.toHaveBeenCalled()
-  })
-
-  it("returns [] and logs when the input is a string but not valid JSON", () => {
-    const error = vi.spyOn(console, "error").mockImplementation(() => {})
-
-    expect(parseTeamsJson("not-json")).toEqual([])
-
-    expect(error).toHaveBeenCalledWith("share-case: invalid teams JSON", expect.any(Error))
-  })
-
-  it("returns [] when the JSON parses to something other than an array", () => {
-    expect(parseTeamsJson('{"id":1,"name":"A"}')).toEqual([])
-  })
-})
-
-describe("unsharedTeams", () => {
-  it("returns teams from allTeams not present in sharedTeams", () => {
-    const allTeams = [{ id: 1 }, { id: 2 }, { id: 3 }]
-    const sharedTeams = [{ id: 2 }]
-    expect(unsharedTeams(allTeams, sharedTeams).map((t) => t.id)).toEqual([1, 3])
-  })
-
-  it("compares ids as strings", () => {
-    const allTeams = [{ id: "1" }, { id: 2 }]
-    const sharedTeams = [{ id: 1 }]
-    expect(unsharedTeams(allTeams, sharedTeams)).toEqual([{ id: 2 }])
-  })
-
-  it("returns all teams when none are shared", () => {
-    const allTeams = [{ id: 1 }, { id: 2 }]
-    expect(unsharedTeams(allTeams, [])).toEqual(allTeams)
-  })
-})
+import { describe, expect, it } from "vitest"
+import { deactivateListItem } from "utils/share_case_teams"
 
 describe("deactivateListItem", () => {
   function buildList() {

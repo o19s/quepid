@@ -38,7 +38,6 @@
                   </div>
                 <% else %>
                   <div class="btn-group btn-group-sm" role="group">
-                    <% shared_teams = scorer.teams.where(id: @user_teams.select(:id)).select(:id, :name) %>
                     <%= button_tag type: 'button',
                                    class: 'btn btn-link p-0 me-2',
                                    title: 'Share',
@@ -48,8 +47,7 @@
                                      bs_target: '#shareScorerModal',
                                      share_scorer_id_value: scorer.id,
                                      share_scorer_name_value: scorer.name,
-                                     share_scorer_all_teams_json_value: @user_teams.map { |t| { id: t.id, name: t.name } }.to_json,
-                                     share_scorer_shared_teams_json_value: shared_teams.map { |t| { id: t.id, name: t.name } }.to_json
+                                     share_scorer_url_value: share_modal_path('scorer', scorer)
                                    } do %>
                       <i class="bi bi-share" aria-hidden="true"></i>
                     <% end %>

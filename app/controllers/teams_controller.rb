@@ -147,7 +147,6 @@ class TeamsController < ApplicationController
     @books_count = @team.books.count
     @scorers_count = @team.scorers.count
     @search_endpoints_count = @team.search_endpoints.count
-    @user_teams = current_user.teams.order(:name)
 
     # Cases filtering
     cases_query = @team.cases

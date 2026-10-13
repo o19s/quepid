@@ -51,9 +51,6 @@
   "app/javascript/controllers/share_case_core_controller.js": {
     "documentListener": 1
   },
-  "app/javascript/controllers/share_entity_controller_base.js": {
-    "innerHTML": 3
-  },
   "app/javascript/controllers/snapshot_bridge_controller.js": {
     "documentListener": 5
   },

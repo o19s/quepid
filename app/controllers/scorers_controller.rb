@@ -14,7 +14,7 @@ class ScorersController < ApplicationController
     @scorer_type_list = Array(@scorer_type).compact_blank
 
     # combined scorers: custom (communal = false) first, then communal scorers
-    combined_query = Scorer.for_user(current_user).includes(:owner, :teams)
+    combined_query = Scorer.for_user(current_user).includes(:owner)
     if 1 == @scorer_type_list.size
       if 'communal' == @scorer_type_list.first
         combined_query = combined_query.where(communal: true)
@@ -28,7 +28,6 @@ class ScorersController < ApplicationController
 
     @pagy, @scorers = pagy(combined_query)
     @combined_scorers = Scorer.for_user(current_user).order(Arel.sql('communal ASC, name'))
-    @user_teams = current_user.teams.order(:name)
 
     @default_scorer = current_user.default_scorer
 

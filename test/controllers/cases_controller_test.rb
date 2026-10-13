@@ -22,6 +22,22 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
                   '/api/cases/__CASE_ID__/snapshots/imports'
   end
 
+  test 'index share modal loads each case into a frame that reports load failures' do
+    Bullet.enable = false
+    get cases_url
+    Bullet.enable = true
+
+    assert_response :success
+    kase = user.cases_involved_with.where(archived: false).first
+    assert_select 'button[data-bs-target="#shareCaseModal"][data-share-case-url-value=?]', share_modal_path('case', kase)
+    assert_select '#shareCaseModal[data-controller="share-case"]' do
+      assert_select 'turbo-frame#share-case-frame[target="_top"][data-share-case-target="frame"][data-action=?]',
+                    'turbo:frame-missing->share-case#loadFailed turbo:fetch-request-error->share-case#loadFailed'
+      assert_select 'template[data-share-case-target="loading"]'
+      assert_select 'template[data-share-case-target="loadError"]'
+    end
+  end
+
   test 'preserves the management shell and exclusive asset entry under a base URL' do
     original_root = ENV.fetch('RAILS_RELATIVE_URL_ROOT', nil)
     ENV['RAILS_RELATIVE_URL_ROOT'] = '/quepid'

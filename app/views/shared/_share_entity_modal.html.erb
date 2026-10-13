@@ -1,0 +1,38 @@
+<%# Index / team page share modal for a case, book, scorer or search endpoint:
+    `<select>`, form POST, redirect. ShareModalsController renders the forms into
+    the frame each time the modal opens; the footer buttons submit them by id.
+
+    Locals:
+      record_type - "case", "book", "scorer" or "search_endpoint" %>
+<% prefix = "share-#{record_type.dasherize}" %>
+<% target_key = "#{prefix}-target" %>
+
+<% modal_footer = capture do %>
+  <a href="<%= new_team_path %>" class="btn btn-primary me-auto">+ Create a team</a>
+  <%= button_tag 'Share with team', name: nil, type: 'submit', form: "#{prefix}-form", id: "#{prefix}-submit",
+                                    class: 'btn btn-success', disabled: true, data: { target_key => 'submitButton' } %>
+  <%= button_tag 'Unshare from team', name: nil, type: 'submit', form: "un#{prefix}-form", id: "un#{prefix}-submit",
+                                      class: 'btn btn-success', disabled: true, data: { target_key => 'unshareButton' } %>
+<% end %>
+
+<% modal_body = capture do %>
+  <%= turbo_frame_tag "#{prefix}-frame",
+                      target: '_top',
+                      data: {
+                        target_key => 'frame',
+                        action: "turbo:frame-missing->#{prefix}#loadFailed turbo:fetch-request-error->#{prefix}#loadFailed",
+                      } %>
+  <template data-<%= target_key %>="loading">
+    <p class="text-muted mb-0" role="status">Loading teams…</p>
+  </template>
+  <template data-<%= target_key %>="loadError">
+    <div class="alert alert-danger mb-0" role="alert">Unable to load teams. Please try again.</div>
+  </template>
+<% end %>
+
+<%= render "shared/modal_shell", id: "share#{record_type.camelize}Modal", title: "Share #{record_type.titleize}",
+                                 dialog_class: "modal-lg",
+                                 data: { controller: prefix, action: "show.bs.modal->#{prefix}#open" },
+                                 title_data: { target_key => "title" },
+                                 footer: modal_footer,
+                                 body: modal_body %>

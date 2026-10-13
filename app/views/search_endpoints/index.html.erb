@@ -61,8 +61,7 @@ Search Endpoints represents a search engine (or API!) that is receiving queries 
                                  bs_target: '#shareSearchEndpointModal',
                                  share_search_endpoint_id_value: search_endpoint.id,
                                  share_search_endpoint_name_value: search_endpoint.fullname,
-                                 share_search_endpoint_all_teams_json_value: @current_user.teams.select(:id, :name).order(:name).to_json,
-                                 share_search_endpoint_shared_teams_json_value: search_endpoint.teams.select(:id, :name).to_json
+                                 share_search_endpoint_url_value: share_modal_path('search_endpoint', search_endpoint)
                                } do %>
                   <i class="bi bi-share" aria-hidden="true"></i>
                 <% end %>

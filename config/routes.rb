@@ -85,6 +85,8 @@ Rails.application.routes.draw do
   post '/scorers/default' => 'scorers#update_default', as: :update_default_scorers
   post '/scorers/share' => 'scorers#share', as: :share_scorers
   post '/scorers/unshare' => 'scorers#unshare', as: :unshare_scorers
+  get 'share_modals/:record_type/:id' => 'share_modals#show', as: :share_modal,
+      constraints: { record_type: /case|book|scorer|search_endpoint/ }
 
   get '/dropdown/cases' => 'dropdown#cases'
   get '/dropdown/books' => 'dropdown#books'

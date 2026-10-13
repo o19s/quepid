@@ -62,8 +62,7 @@
                                    bs_target: '#shareScorerModal',
                                    share_scorer_id_value: scorer.id,
                                    share_scorer_name_value: scorer.name,
-                                   share_scorer_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
-                                   share_scorer_shared_teams_json_value: scorer.teams.select(:id, :name).to_json
+                                   share_scorer_url_value: share_modal_path('scorer', scorer, team_id: @team.id)
                                  } do %>
                     <i class="bi bi-share" aria-hidden="true"></i>
                   <% end %>
