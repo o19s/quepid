@@ -90,7 +90,7 @@
     <div class="alert alert-warning d-none" data-missing-documents-target="unsupported">Finding and rating missing documents isn't supported for the <strong data-missing-documents-target="engineName"></strong> search engine yet.</div>
     <div data-missing-documents-target="status"></div>
     <div data-missing-documents-target="results"></div>
-    <div class="row paging-row">
+    <div class="d-flex align-items-center">
       <button type="button" class="btn btn-outline-secondary d-none" data-missing-documents-target="next" data-action="missing-documents#paginate">Peek at the next page of results</button>
       <span class="ms-2 d-none" data-missing-documents-target="spinner"><i class="bi bi-arrow-repeat spintime"></i></span>
     </div>
@@ -145,7 +145,7 @@
     <h3 id="detailed-document-modal-title">Detailed Document View of doc: <span data-detailed-document-target="docId"></span></h3>
     <h4 data-detailed-document-target="title"></h4>
     <div data-detailed-document-target="fields"></div>
-    <div data-detailed-document-target="allFields" class="row detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
+    <div data-detailed-document-target="allFields" class="detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
       <pre data-detailed-document-target="rawFields"></pre>
     </div>
     <button class="btn btn-primary detailed-doc-view" data-detailed-document-target="viewButton" data-action="detailed-document#view">View Document</button>

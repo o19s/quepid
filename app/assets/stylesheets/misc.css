@@ -42,16 +42,3 @@
 	 border-color: #ddd;
 }
 
-/* This modal uses .row as a wrapper, not a grid. BS5's gutter margin and
-   padding would indent the <h4>s but not the .list-groups (which cancel
-   it), misaligning them. Zero both so every child sits on the modal padding. */
- .pick-scorer-modal .row {
-	 margin-left: 0;
-	 margin-right: 0;
-}
-
- .pick-scorer-modal .row > * {
-	 padding-left: 0;
-	 padding-right: 0;
-}
-

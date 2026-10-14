@@ -178,7 +178,7 @@ header .dropdown-item:focus {
 }
 
 .result-header {
-  overflow: auto;
+  display: flex;
   position: relative;
   padding: 10px 20px;
 }
@@ -193,13 +193,9 @@ header .dropdown-item:focus {
 	font-weight: normal;
 	line-height: 1.5em;
 	margin:      0;
-  display:    block;
-  float:      left;
 }
 
 .results .total-results {
-  display:      block;
-  float:        right;
   line-height:  30px;
   margin-right: 50px;
   text-align:   right;
@@ -269,7 +265,6 @@ header .dropdown-item:focus {
 }
 
 .results-pane-toggle {
-	margin-right: 8px;
 	cursor: pointer;
 }
 
@@ -292,7 +287,6 @@ header .dropdown-item:focus {
 */
 
 .sub-results {
-	clear: both;
 	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
 	padding: 75px 15px 15px 15px;
 	position: relative;

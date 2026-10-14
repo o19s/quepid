@@ -37,6 +37,7 @@ export default class extends Controller {
     container.className = "ratingContainer"
 
     const list = document.createElement("ul")
+    list.className = "d-flex flex-wrap align-items-center list-unstyled m-0 p-0"
 
     Object.keys(this.scaleValue).forEach((rating) => {
       const entry = this.scaleValue[rating] || {}

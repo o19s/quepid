@@ -476,22 +476,6 @@ header .dropdown-toggle .bi {
 	position: relative;
 }
 
-/* BS5's `.row > * { width: 100% }` would stack this footer's children,
- * which aren't grid columns. Let them sit inline as under BS3. */
-.results-pane-footer > * {
-	width: auto;
-}
-
-/* Same BS5 .row > * { width: 100% } trap as .results-pane-footer above:
- * the "peek at next page" link and paging spinner aren't grid columns, so
- * they should sit side by side instead of stacking. */
-.paging-row {
-	align-items: center;
-}
-.paging-row > * {
-	width: auto;
-}
-
 .single-rating .btn {
 	min-width: 60px;
 	white-space: nowrap;

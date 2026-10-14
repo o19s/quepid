@@ -8,22 +8,24 @@
       <div class="results-score qscore-query-badge" data-controller="qscore-query" data-slot="score">
         <span class="scorable-score" data-qscore-query-target="value"></span>
       </div>
-      <div data-query-row-target="diffScores" data-slot="diffScores"></div>
-      <h2 class="results-title" data-action="click->query-row#toggle">
+      <div class="d-flex" data-query-row-target="diffScores" data-slot="diffScores"></div>
+      <h2 class="results-title align-self-start" data-action="click->query-row#toggle">
         <span data-controller="bs-tooltip" data-query-row-target="query" data-slot="label" data-bs-tooltip-delay-value="1000" data-bs-tooltip-placement-value="right">
           <img class="img-thumbnail query-thumbnail d-none" data-query-row-target="image" alt="">
           <span data-query-row-target="text">&nbsp;</span>
         </span>
       </h2>
-      <span class="float-end total-results">
-        <span data-query-row-target="resultCount" data-controller="count-up" data-slot="resultCount"></span>
-        <small class="text-muted" data-query-row-target="resultLabel"></small>
-      </span>
       <i class="error-warning bi bi-exclamation-triangle-fill ms-2" role="img" aria-label="Query failed" title="Query failed"></i>
-      <span class="float-end d-none" style="margin-right: 20px;" title="Hop to it!  There are unrated results!" data-controller="query-unrated-badge" data-slot="unratedBadge">
-        <div class="icon-container"><i class="frog-icon">🐸</i><div class="notification-bubble" data-query-unrated-badge-target="count"></div></div>
-      </span>
-      <span class="float-end d-none" style="margin-right: 20px;" title="Querqy Strikes Again!" data-query-row-target="querqy"><i class="querqy-icon"></i></span>
+      <div class="d-flex align-items-start ms-auto">
+        <span class="d-none me-4" title="Querqy Strikes Again!" data-query-row-target="querqy"><i class="querqy-icon"></i></span>
+        <span class="d-none me-4" title="Hop to it!  There are unrated results!" data-controller="query-unrated-badge" data-slot="unratedBadge">
+          <div class="icon-container"><i class="frog-icon">🐸</i><div class="notification-bubble" data-query-unrated-badge-target="count"></div></div>
+        </span>
+        <span class="total-results">
+          <span data-query-row-target="resultCount" data-controller="count-up" data-slot="resultCount"></span>
+          <small class="text-muted" data-query-row-target="resultLabel"></small>
+        </span>
+      </div>
       <i class="toggleSign bi" data-query-row-target="toggle" data-action="click->query-row#toggle"></i>
     </div>
     <div data-query-row-target="expanded"></div>
@@ -80,7 +82,7 @@
       <div data-search-results-target="error" class="alert alert-danger d-none" role="alert"></div>
 
       <div data-search-results-target="results"></div>
-      <div data-search-results-target="footer" class="row results-pane-footer d-none">
+      <div data-search-results-target="footer" class="d-flex flex-wrap align-items-center gap-2 d-none">
         <button type="button" class="btn btn-link p-0 results-pane-toggle" aria-label="Close the results pane" data-action="click->search-results#collapse" data-controller="bs-popover" data-bs-popover-content-value="Close the results pane">
           <i class="bi bi-caret-up-fill" aria-hidden="true"></i>
         </button>
@@ -114,7 +116,7 @@
     the expanded-query shell above, so keep slot names distinct from its slots. %>
 <template id="search-result-template">
   <div class="row">
-    <div class="col-md-10" style="position: relative">
+    <div class="col-md-10 position-relative">
       <div class="col-ratings"><div class="ratings" data-slot="ratings"></div></div>
       <div class="col-summary d-flex">
         <div class="result-thumb-col flex-shrink-0 text-center me-2 d-none" data-slot="thumbColumn"><img class="img-thumbnail result-thumbnail" data-slot="thumb"></div>

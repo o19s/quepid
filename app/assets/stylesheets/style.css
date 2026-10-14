@@ -12,18 +12,6 @@
     cursor: pointer;
 }
 
-/* BS5 Reboot's `ul { margin-bottom: 1rem }` default is left over here since
- * nothing else resets it, adding ~14px of unwanted space below the rating
- * buttons inside the "Score All" popover. */
-.ratingContainer ul {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
 .ratingContainer .ratingNum {
     box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
 }

@@ -46,13 +46,13 @@
   vertical-align: top;
 }
 
-/* Primary per-query score badge (Stimulus `qscore-query`), floated at the left edge
-   of the query row. The styled element carries `data-controller` itself; an outer
-   wrapper would leave the float un-styled. */
+/* Primary per-query score badge (Stimulus `qscore-query`), a flex item at the left
+   edge of the query row (.result-header). It stretches to the row's full height; the
+   negative margins below extend it over the row padding. The styled element carries
+   `data-controller` itself; an outer wrapper would leave it un-styled. */
 .qscore-query-badge {
-  display: block;
-  float: left;
-  height: 100%;
+  align-self: stretch;
+  flex-shrink: 0;
   width: 90px;
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
@@ -66,7 +66,7 @@
   border-bottom-left-radius: var(--qscore-border-radius);
 }
 
-/* Per-query diff badge: a .qscore-query-badge (so it floats beside the primary badge) that butts
+/* Per-query diff badge: a .qscore-query-badge (so it sits beside the primary badge) that butts
    against its neighbor on the left and is rounded on the right. */
 .qscore-query-badge.diff-score {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
