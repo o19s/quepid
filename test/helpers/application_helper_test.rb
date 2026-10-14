@@ -113,6 +113,15 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_equal 'extra', card.at_css('.card-body').children.last.text.strip
   end
 
+  test 'layout_body_attributes gives non-case pages the flex shell and page cache' do
+    attributes = layout_body_attributes(case_page: false)
+
+    assert_equal 'd-flex flex-column min-vh-100', attributes[:class]
+    assert_equal 'page-cache', attributes[:data][:controller]
+    assert_equal 'turbo:before-cache@document->page-cache#prepare', attributes[:data][:action]
+    assert_equal quepid_root_url, attributes[:data][:quepid_root_url]
+  end
+
   test 'sanitize_announcement keeps class, safe inline style and images' do
     text = '<p class="text-danger" style="color: red; position: fixed; background-image: url(javascript:alert(1))">Hi</p>' \
            '<img src="https://example.com/a.png" alt="A" class="img-fluid" onerror="steal()">'

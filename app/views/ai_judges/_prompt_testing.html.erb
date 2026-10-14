@@ -30,12 +30,12 @@
 
         <div>
           <label>Document Fields</label> <small>JSON</small><br>
-          <textarea <%= tag.attributes class: "form-control", data: codemirror_data(mode: "json", height: 300, before_cache: false, ai_judge_wizard_target: "documentFields") %>></textarea>
+          <%= tag.textarea class: "form-control", data: codemirror_data(mode: "json", height: 300, before_cache: false, ai_judge_wizard_target: "documentFields") %>
         </div>
 
         <div>
           <label>Options</label> <small>JSON</small><br>
-          <textarea <%= tag.attributes class: "form-control", data: codemirror_data(mode: "json", height: 150, before_cache: false, ai_judge_wizard_target: "options") %>></textarea>
+          <%= tag.textarea class: "form-control", data: codemirror_data(mode: "json", height: 150, before_cache: false, ai_judge_wizard_target: "options") %>
         </div>
 
         <div>
@@ -45,7 +45,7 @@
 
         <div>
           <label>Position</label>
-          <input type="text" class="form-control" data-ai-judge-wizard-target="position">
+          <input type="text" class="form-control" data-ai-judge-wizard-target="position" autocomplete="off">
         </div>
       </div>
       <div class="col-md-6">

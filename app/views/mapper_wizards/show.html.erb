@@ -109,9 +109,10 @@
             </div>
             <div class="mt-2">
               <label for="customHeaders" class="form-label">Custom HTTP Headers (JSON)</label>
-              <textarea <%= tag.attributes class: "form-control", id: "customHeaders", rows: 3,
-                       placeholder: '{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}',
-                       data: codemirror_data(mode: "application/json", height: 100, line_numbers: true, mapper_wizard_target: "customHeaders") %>><%= format_json(existing_headers) %></textarea>
+              <%= tag.textarea format_json(existing_headers),
+                    class: "form-control", id: "customHeaders", rows: 3,
+                    placeholder: '{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}',
+                    data: codemirror_data(mode: "application/json", height: 100, line_numbers: true, mapper_wizard_target: "customHeaders") %>
               <div class="form-text">Optional. Add custom headers as JSON object (e.g., API keys, authentication tokens). These will be saved with the search endpoint.</div>
             </div>
           </div>

@@ -18,7 +18,7 @@
     </div>
   </div>
   <div class="card-body">
-    <textarea <%= tag.attributes data: codemirror_data(mode: "javascript", height: editor_height, line_numbers: true, mapper_wizard_target: name) %>><%= code %></textarea>
+    <%= tag.textarea code, data: codemirror_data(mode: "javascript", height: editor_height, line_numbers: true, mapper_wizard_target: name) %>
     <div class="mt-2">
       <strong>Test Result:</strong>
       <div data-mapper-wizard-target="<%= result_target %>" class="p-2 bg-light border rounded"<% if result_style %> style="<%= result_style %>"<% end %>>

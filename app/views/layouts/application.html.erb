@@ -77,25 +77,7 @@
   <% end %>
 </head>
 
-<%
-  body_attributes = if case_page
-    { data: {
-      controller:                          'snapshot-bridge core-bootstrap query-command-bridge',
-      core_bootstrap_case_toolbar_outlet:  '#case-actions',
-      core_bootstrap_case_no_value:        @case&.id || 0,
-      # String.new drops html_safe so the JSON is attribute-escaped.
-      core_bootstrap_initial_value:        String.new(render(partial: 'core/bootstrap', formats: [:json], locals: { kase: @case })),
-      snapshot_bridge_snapshots_url_value: @case ? api_case_snapshots_path(@case) : '',
-      # Preserve an explicitly requested missing try so core-bootstrap can report it.
-      core_bootstrap_try_no_value:         params[:try_number].presence || @try&.try_number || '',
-      quepid_root_url:                     quepid_root_url,
-    } }
-  else
-    { class: 'd-flex flex-column min-vh-100',
-      data:  { controller: 'page-cache', action: 'turbo:before-cache@document->page-cache#prepare', quepid_root_url: quepid_root_url } }
-  end
-%>
-<body <%= tag.attributes(body_attributes) %>>
+<body <%= tag.attributes(layout_body_attributes(case_page: case_page, kase: @case, try: @try)) %>>
 
 <% if case_page %>
   <%= render 'layouts/case_workspace', kase: @case %>

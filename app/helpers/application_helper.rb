@@ -9,6 +9,30 @@ module ApplicationHelper
     "#{request.base_url}#{request.script_name}".chomp('/')
   end
 
+  # <body> attributes for the application layout. The core case page boots its
+  # Stimulus bridges from these values; every other page gets the flex shell
+  # and the Turbo page cache.
+  def layout_body_attributes case_page:, kase: nil, try: nil
+    unless case_page
+      return { class: 'd-flex flex-column min-vh-100',
+               data:  { controller: 'page-cache', action: 'turbo:before-cache@document->page-cache#prepare',
+                        quepid_root_url: quepid_root_url } }
+    end
+
+    { data: {
+      controller:                          'snapshot-bridge core-bootstrap query-command-bridge',
+      core_bootstrap_case_toolbar_outlet:  '#case-actions',
+      core_bootstrap_case_no_value:        kase&.id || 0,
+      # String.new drops html_safe so the JSON is attribute-escaped.
+      core_bootstrap_initial_value:        String.new(render(partial: 'core/bootstrap', formats: [ :json ],
+                                                             locals: { kase: kase })),
+      snapshot_bridge_snapshots_url_value: kase ? api_case_snapshots_path(kase) : '',
+      # Preserve an explicitly requested missing try so core-bootstrap can report it.
+      core_bootstrap_try_no_value:         params[:try_number].presence || try&.try_number || '',
+      quepid_root_url:                     quepid_root_url,
+    } }
+  end
+
   # Announcements are admin-authored HTML. The default safe list already allows
   # class and img; add inline style, whose CSS Loofah filters to safe properties.
   def sanitize_announcement text
