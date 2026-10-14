@@ -240,16 +240,6 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ---
 
-### [PREEXISTING] P2 I0 C1 — TREC export with a snapshot 500s on any unrated snapshot doc
-
-**Location:** `app/views/api/v1/export/ratings/show_trec_snapshot.txt.erb:3`
-
-**Observed:** Export → TREC with a snapshot picked in the Basic/TREC dropdown calls `/api/export/ratings/:case_id.txt?file_format=trec_snapshot&snapshot_id=…`, which fails with `NoMethodError (undefined method 'rating' for nil)` whenever a snapshot doc has no rating. The modal then flashes "Export failed. Please try again." Reproduced 2026-10-04 on a clone of case 6 (snapshot 98); the template is identical at the `be9b319a` baseline. Plain TREC (no snapshot) works.
-
-**Fix direction:** Skip unrated docs (or write an explicit unrated value) instead of dereferencing a nil `Rating`, and add a controller test with an unrated snapshot doc.
-
----
-
 ### [PREEXISTING] P2 I0 C1 — A newly added query jumps from the bottom to the top on reload
 
 **Location:** `app/controllers/api/v1/queries_controller.rb` (`create`)

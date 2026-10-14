@@ -6,6 +6,8 @@ module Api
   module V1
     module Export
       class RatingsController < Api::ApiController
+        TEXT_TYPE = 'text/plain; charset=utf-8'
+
         before_action :set_case
 
         def show
@@ -21,12 +23,20 @@ module Api
               prepare_csv(file_format)
             end
             format.txt do
-              @snapshot = @case.snapshots.find_by(id: params[:snapshot_id]) if 'trec_snapshot' == file_format
-              headers['Content-Disposition'] = "attachment; filename=\"case_#{@case.id}_#{file_format}.txt\""
-              headers['Content-Type'] ||= 'text/plain'
+              case file_format&.downcase
+              when 'trec'
+                send_data TrecExport.generate_for_case(@case), filename: "case_#{@case.id}_trec.txt", type: TEXT_TYPE
+              when 'trec_snapshot'
+                snapshot = @case.snapshots.find_by(id: params[:snapshot_id])
+                return head :not_found unless snapshot
 
-              text_template = file_format.nil? ? 'show' : "show_#{file_format.downcase}"
-              render text_template, formats: :txt
+                send_data TrecExport.generate_for_snapshot(snapshot),
+                          filename: "case_#{@case.id}_trec_snapshot.txt", type: TEXT_TYPE
+              when 'ltr'
+                send_data LtrExport.generate_for_case(@case), filename: "case_#{@case.id}_ltr.txt", type: TEXT_TYPE
+              else
+                head :bad_request
+              end
             end
           end
         end
