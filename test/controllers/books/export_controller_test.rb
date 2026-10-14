@@ -23,7 +23,7 @@ module Books
 
       put books_export_url(book_id: book.id)
 
-      assert_redirected_to book_url(book)
+      assert_redirected_to export_book_url(book)
       assert_equal 'Queued up export of book as file.', flash[:notice]
       assert_enqueued_with(job: ExportBookJob, args: [ book ])
       assert book.reload.export_job.start_with?('queued at')
@@ -37,7 +37,7 @@ module Books
 
       put books_export_url(book_id: book.id)
 
-      assert_redirected_to book_url(book)
+      assert_redirected_to export_book_url(book)
       assert_match(/\ACurrently exporting book as file\.  Status is queued at/, flash[:notice])
       assert_enqueued_jobs 1, only: ExportBookJob
     end

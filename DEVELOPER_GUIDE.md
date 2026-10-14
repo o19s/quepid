@@ -936,6 +936,13 @@ action URL or proxy configuration.
   requests marked `X-Sec-Purpose`, `Sec-Purpose`, or `Purpose: prefetch` before
   their callbacks. Keep both guards until a separate prefetch decision; see the
   [GET side-effect audit](#get-side-effect-audit).
+- Broadcast `replace`/`update`/`append` streams, not refreshes. The layout's
+  `<base href>` (kept for relative URLs under `RAILS_RELATIVE_URL_ROOT`) makes
+  Turbo's refresh action visit the app root instead of reloading the page, so
+  `broadcast_refresh_to`, `broadcasts_refreshes` and `turbo_refreshes_with` do not
+  work here. Partials broadcast from jobs render without a request: they cannot
+  use `current_user` or the session, and their forms carry no authenticity token,
+  so keep those forms Turbo submissions, which send the page's CSRF meta token.
 - Keep explicit opt-outs for authentication/session changes, mounted engines, and
   the AI prompt tester's direct POST-rendered output. Downloads that are fetched
   by JavaScript continue to use the download helpers. Any new opt-out must have a

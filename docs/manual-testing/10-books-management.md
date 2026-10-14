@@ -141,10 +141,11 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 - [ ] **Steps:**
   1. On the **Export** tab, click the judgement-data CSV link — confirm it downloads correctly.
-  2. Click **Export** (or **Re-Export** if one already exists) — confirm notice "Queued up export of book as file." and that revisiting the tab shows "currently being exported" status while the job runs.
-  3. Once complete, confirm a download link with a "created X ago" timestamp appears, and the button now reads **Re-Export**.
-  4. Click Export/Re-Export a second time immediately (before the first job finishes) — confirm it's blocked/disabled rather than queuing a duplicate job.
-  5. Follow the "Quepid APIs" link to the OAS docs page.
+  2. Click **Export** (or **Re-Export** if one already exists) — confirm you land back on the **Export** tab with notice "Queued up export of book as file." and "currently being exported" status while the job runs.
+  3. Without reloading, confirm the page updates itself when the job finishes: a download link with a "created X ago" timestamp appears, and the button now reads **Re-Export**.
+  4. Click that **Re-Export** button (rendered by the live update, not a reload) — confirm it queues a new export rather than erroring.
+  5. Click Export/Re-Export a second time immediately (before the first job finishes) — confirm it's blocked/disabled rather than queuing a duplicate job.
+  6. Follow the "Quepid APIs" link to the OAS docs page.
 - **Expected:** Exactly one export job runs at a time per book; the resulting JSON file is a valid, complete book export (good candidate for reuse as an import template, per Part 10.7).
 
 ### 10.10 Judge Overview

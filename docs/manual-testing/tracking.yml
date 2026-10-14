@@ -1415,7 +1415,7 @@ parts:
         last_run: 2026-10-10T10:34:18Z
         result: fail
         notes: "Current/Base/Legacy: CSV links downloaded and parsed; queued JSON exports complete with timestamped download link and Re-Export. Downloaded ZIPs parse with scale/settings and all current pairs (4 Current, 3 Base/Legacy because old additional import fails). Re-Export completed. API docs load on Current/Legacy; Base docs.json returns500 and viewer shows error. Six states per version inspected and registered with Base pairs. Partial: tiny exports completed before in-flight disabled/duplicate-job gate could be observed; Base docs500 reports missing summary tag for preview_args; observed on 86e3de9 baseline, absent on Current/Legacy."
-        paths: ["app/controllers/books/export_controller.rb", "app/views/books/export.html.erb"]
+        paths: ["app/controllers/books/export_controller.rb", "app/views/books/export.html.erb", "app/views/books/_export_status.html.erb", "app/jobs/export_book_job.rb"]
 
       "10.10":
         title: "Judge Overview"
