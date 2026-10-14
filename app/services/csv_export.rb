@@ -19,4 +19,8 @@ module CsvExport
   def self.line values
     CSV.generate_line(values.map { |value| field(value) })
   end
+
+  def self.generate rows
+    rows.map { |values| line(values) }.join
+  end
 end

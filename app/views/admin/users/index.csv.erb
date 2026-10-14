@@ -1,7 +1,0 @@
-<%
-headers = [:id, :name, :email, :email_marketing, :agreed_time]
-%>
-<%= CsvExport.line(headers).html_safe %><%
-@users.each do |user|
-%><%= CsvExport.line(headers.map{ |attr| user.send(attr) }).html_safe %><%
-end %>

@@ -59,8 +59,7 @@ module Api
               @csv_array << row
             end
 
-            headers['Content-Disposition'] = "attachment; filename=\"book_#{@book.id}_judgements.csv\""
-            headers['Content-Type'] ||= 'text/csv'
+            send_data CsvExport.generate(@csv_array), filename: "book_#{@book.id}_judgements.csv", type: 'text/csv'
           end
         end
       end

@@ -26,6 +26,19 @@ module Admin
       assert_not_includes assigns(:users), users(:judge_judy)
     end
 
+    test 'index exports users as CSV' do
+      get :index, format: :csv
+
+      assert_response :success
+      assert_equal 'text/csv', response.media_type
+      assert_match 'filename="quepid_users.csv"', response.headers['Content-Disposition']
+
+      lines = response.body.lines
+      assert_equal "id,name,email,email_marketing,agreed_time\n", lines.first
+      assert_includes response.body, user.email
+      assert_not_includes response.body, users(:judge_judy).name
+    end
+
     test 'an authorized user should NOT gain access' do
       user = users(:random)
       login_user user

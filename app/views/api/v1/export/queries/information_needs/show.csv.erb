@@ -1,1 +1,0 @@
-<%= (CsvExport.line(["query", "information_need"]) + @case.queries.map { |query| CsvExport.line([query.query_text, query.information_need]) }.join).html_safe %>

@@ -6,6 +6,8 @@ module Admin
   class UsersController < Admin::AdminController
     include Pagy::Method
 
+    CSV_COLUMNS = [ :id, :name, :email, :email_marketing, :agreed_time ].freeze
+
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
     # GET /admin/users
@@ -23,9 +25,7 @@ module Admin
         format.html { @pagy, @users = pagy(query) }
         format.json { @users = query.all }
         format.csv do
-          @users = query.all
-          headers['Content-Disposition'] = 'attachment; filename=\"quepid_users.csv\"'
-          headers['Content-Type'] ||= 'text/csv'
+          send_data users_csv(query), filename: 'quepid_users.csv', type: 'text/csv'
         end
       end
     end
@@ -119,6 +119,10 @@ module Admin
     end
 
     private
+
+    def users_csv query
+      CsvExport.generate([ CSV_COLUMNS ] + query.map { |user| CSV_COLUMNS.map { |attr| user.public_send(attr) } })
+    end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_user

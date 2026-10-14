@@ -126,7 +126,7 @@ module Api
             assert_equal csv[0]['query'], the_case.queries[0].query_text
           end
 
-          test 'CSV response should not have a trailing line feed' do
+          test 'CSV response ends with a single line feed, not a blank line' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_case.queries.count + 1 # include csv header line!
 
@@ -134,6 +134,8 @@ module Api
 
             raw_text = response.body
             assert_equal lines_expected, raw_text.lines.size
+            assert raw_text.end_with?("\n")
+            assert_not raw_text.end_with?("\n\n")
           end
 
           test 'adds space when cell begins with =' do
@@ -181,11 +183,11 @@ module Api
             assert_includes rows, [ 'A Query', 'doc_b', nil ]
             assert_includes rows, [ ' =empty', nil, nil ]
             assert(rows.all? { |row| 3 == row.size })
-            assert_equal "attachment; filename=\"case_#{the_case.id}_snapshot_judgements.csv\"",
+            assert_match "attachment; filename=\"case_#{the_case.id}_snapshot_judgements.csv\"",
                          response.headers['Content-Disposition']
           end
 
-          test 'CSV response doesnt have a trailing line feed' do
+          test 'snapshot CSV response ends with a single line feed, not a blank line' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_snapshot.snapshot_queries.map do |sq|
               sq.snapshot_docs.count
@@ -197,6 +199,8 @@ file_format: 'basic_snapshot' }
 
             raw_text = response.body
             assert_equal lines_expected, raw_text.lines.size
+            assert raw_text.end_with?("\n")
+            assert_not raw_text.end_with?("\n\n")
           end
         end
 
@@ -204,19 +208,14 @@ file_format: 'basic_snapshot' }
           let(:the_case) { cases(:one) }
 
           test 'returns case info' do
+            query  = the_case.queries.first
+            rating = query.ratings.create!(doc_id: 'ltr_doc', rating: 3)
+
             get :show, params: { case_id: the_case.id, format: :txt, file_format: 'ltr' }
             assert_response :ok
 
-            # rubocop:disable  Lint/UselessAssignment
-            query  = the_case.queries.first
-            rating = query.ratings.first
-
-            # For whatever reason the response.body is blank.
-            # We want to test both the format of the lines and
-            # that specifically for LTR that the export is based on the qid.
-            # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %> <%=query.query_text%>")
-
-            # rubocop:enable  Lint/UselessAssignment
+            # LTR lines are keyed on the query id.
+            assert_includes response.body, "#{rating.rating} qid:#{query.id} # #{rating.doc_id} #{query.query_text}\n"
 
             assert_equal 'text/plain; charset=utf-8', response.content_type
           end

@@ -38,9 +38,7 @@ module Api
         private
 
         def prepare_csv file_format
-          # We have crazy rendering formatting in the view because we don't want a trailing LF at the end of the
-          # CSV, it messes with Quaerite, however the render() call adds a LF, so we need to format our CSV with
-          # line feeds on each line except the very last one!
+          # Quaerite breaks on a blank last line (#354); CsvExport.generate ends with exactly one LF.
           @csv_array = [ %w[query docid rating] ]
           if 'basic_snapshot' == file_format
             csv_filename = "case_#{@case.id}_snapshot_judgements.csv"
@@ -52,8 +50,7 @@ module Api
 
           # pad out each row so we get three columns in our resulting CSV.
           @csv_array.each { |row| padright!(row, 3, nil) }
-          headers['Content-Disposition'] = "attachment; filename=\"#{csv_filename}\""
-          headers['Content-Type'] ||= 'text/csv'
+          send_data CsvExport.generate(@csv_array), filename: csv_filename, type: 'text/csv'
         end
 
         def append_snapshot_csv_rows
