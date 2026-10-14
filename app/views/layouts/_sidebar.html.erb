@@ -88,9 +88,9 @@
       <% end %>
     </ul>
     <div class="dropdown border-top">
-      <a href="#" class="d-flex align-items-center justify-content-center p-3 link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <button type="button" class="d-flex align-items-center justify-content-center w-100 p-3 border-0 bg-transparent link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
         <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded-circle', alt:'Current user avatar' %>
-      </a>
+      </button>
       <ul class="dropdown-menu shadow">
         <li><%= link_to "Create case...", case_new_path, class:'dropdown-item', data: { turbo: false } %></li>
         <li><%= link_to "Profile", profile_path, class:'dropdown-item' %></li>

@@ -13,7 +13,8 @@
   </div>
   <div class="row">
     <div class="col-sm-3">Search Endpoint</div>
-    <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer" hidden>Browse Search Endpoint</a></div>
+    <%# tune-relevance supplies href; an unavailable endpoint reads as plain text and its browse link stays hidden. %>
+    <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer" hidden>Browse Search Endpoint</a></div> <%# herb:disable html-anchor-require-href %>
   </div>
   <div class="row">
     <div class="col-sm-3">Displayed Fields</div>

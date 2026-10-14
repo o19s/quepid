@@ -24,11 +24,14 @@
   flex-shrink: 0;
 }
 
+/* The shared footer's py-2 is fully hidden behind the bottom-docked flash on
+   the case page; the extra height keeps its first line visible above it. */
 .pane_main > footer {
   position: sticky;
   bottom: 0;
   margin-top: auto;
-  background-color: #fff;
+  padding-top: 1.5rem !important;
+  padding-bottom: 2.5rem !important;
   z-index: 5;
 }
 

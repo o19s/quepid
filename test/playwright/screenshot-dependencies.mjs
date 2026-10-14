@@ -16,7 +16,7 @@ const captureInfrastructure = new Set([
 ])
 const surfacePaths = {
   application: [...applicationStyles.map(name => `${styles}${name}.css`), ...["application", "_head_common", "_sidebar", ...sharedLayouts].map(name => `${layouts}${name}.html.erb`)],
-  core: [...coreStyles.map(name => `${styles}${name}.css`), ...["application", "_head_common", "_case_head", "_case_workspace", "_header_core_app", "_header_core_actions", "_footer_core_app", "_header_navigation", "_header_help_links"].map(name => `${layouts}${name}.html.erb`)],
+  core: [...coreStyles.map(name => `${styles}${name}.css`), ...["application", "_head_common", "_case_head", "_case_workspace", "_header_core_app", "_header_core_actions", "_footer", "_header_navigation", "_header_help_links"].map(name => `${layouts}${name}.html.erb`)],
   admin: [...applicationStyles.map(name => `${styles}${name}.css`), ...["admin", "_admin_sidebar", ...sharedLayouts].map(name => `${layouts}${name}.html.erb`)],
   analytics: [...applicationStyles.map(name => `${styles}${name}.css`), ...["analytics", ...sharedLayouts].map(name => `${layouts}${name}.html.erb`)],
   viewer: [],

@@ -79,10 +79,8 @@ class CoreControllerTest < ActionController::TestCase
       get :index, params: { id: cases(:one).id }
 
       assert_select 'body > footer', 0
-      assert_select '.pane_main footer.pt-4.pb-4', 1
-      assert_select '.pane_main footer a[href="http://opensourceconnections.com"]' do |links|
-        assert_nil links.first['target']
-      end
+      assert_select '.pane_main footer', 1
+      assert_select '.pane_main footer a[href="http://opensourceconnections.com"][target="_blank"][rel="noopener noreferrer"]'
       assert_select '.pane_main footer a[href=?][target="_blank"]', oas_rails_path
       assert_select '.pane_main footer a[href="http://www.opensourceconnections.com/slack"][rel="noopener noreferrer"]'
       assert_select '.pane_main footer', text: /For community support and discussion/

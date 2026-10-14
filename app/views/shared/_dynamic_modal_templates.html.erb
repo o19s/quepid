@@ -21,7 +21,8 @@
       <i class="bi bi-copy" data-browse-query-target="copyIcon"></i>
       <span data-browse-query-target="copyLabel" aria-live="polite">Copy curl command</span>
     </button>
-    <a class="btn btn-outline-secondary float-start me-2 d-none" data-browse-query-target="directLink" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> Open URL directly</a>
+    <%# browse-query supplies href before showing this link. %>
+    <a class="btn btn-outline-secondary float-start me-2 d-none" data-browse-query-target="directLink" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> Open URL directly</a> <%# herb:disable html-anchor-require-href %>
     <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
   </div>
 </template>

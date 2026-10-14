@@ -386,8 +386,12 @@ header .dropdown-toggle .bi {
   margin-right: 0.5em;
 }
 
-/* Annotation dropdown — markup in components/annotation/annotation.html. */
-.annotation .dropdown > a.dropdown-toggle:hover {
+/* Annotation dropdown — markup in core/_annotation.html.erb. */
+.annotation .dropdown > .dropdown-toggle {
+	color: var(--bs-link-color);
+}
+
+.annotation .dropdown > .dropdown-toggle:hover {
 	color: #888;
 }
 

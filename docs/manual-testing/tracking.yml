@@ -547,16 +547,17 @@ parts:
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
         screenshots:
+          annotation-actions: "4.14/annotation-actions"
           annotation-deleted: "4.14/annotation-deleted"
           annotation-updated: "4.14/annotation-updated"
           annotation-edit: "4.14/annotation-edit"
           annotation-created: "4.14/annotation-created"
           annotation-draft: "4.14/annotation-draft"
           annotations-empty: "4.14/annotations-empty"
-        last_run: 2026-10-10T14:27:48Z
+        last_run: 2026-10-14T14:30:43Z
         result: pass
-        notes: "Initial golden path covered eighteen inspected Current/Base/Legacy states. Final audit replayed Current create/edit/reload/delete and inspected six fresh raw captures. Recorder check confirms unchanged source and correctly retains original stable Current images without advancing Previous; replay images remain in Archive. Fixture advanced during background evaluation, so replay score is 0.33 versus original/historical 0.00; intentional data-state difference. New annotation removed. Historical Angular edit mutates background message before save; Current retains original until saved. Cancel/failure/concurrency edges deferred to 5.4."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
+        notes: "Current annotation-actions capture registered. Base 0d6e7538 comparison retains equivalent annotation menu but search errors/unscored state and old footer obscure lower content; exact pre-fix Current pair isolates the menu change. Partial href cleanup, Current :3000 static case 219 existing annotation: actions button opens Edit/Delete with click and Space; Escape dismisses/restores focus, URL unchanged. Inspected before/after icon and menu appearance; button hitbox is now 14x21px versus the inline anchor 14x16px, moving the flipped menu up 2px (intentional button geometry). Annotation CRUD deferred. Initial golden path covered eighteen inspected Current/Base/Legacy states. Final audit replayed Current create/edit/reload/delete and inspected six fresh raw captures. Recorder check confirms unchanged source and correctly retains original stable Current images without advancing Previous; replay images remain in Archive. Fixture advanced during background evaluation, so replay score is 0.33 versus original/historical 0.00; intentional data-state difference. New annotation removed. Historical Angular edit mutates background message before save; Current retains original until saved. Cancel/failure/concurrency edges deferred to 5.4."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_annotation.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
         screenshots:
@@ -1888,10 +1889,11 @@ parts:
       "15.1":
         title: "Left icon sidebar"
         screenshots:
+          account-menu: "15.1/account-menu"
           sidebar: "15.1/sidebar"
-        last_run: 2026-10-13T20:03:41Z
+        last_run: 2026-10-14T14:29:18Z
         result: pass
-        notes: "Additional partial ERB extraction check on Current :3000: inspected matching cases-sidebar before/after captures with visible Search Endpoints tooltip; eight links retain URLs, labels, icons, active colors, prefetch flags and notebook new-tab/full-page attributes. Clicked Search Endpoints through Turbo and verified its active item. Full click-through, notebook launch and desktop-mode replay deferred. Earlier coverage: Inspected cases sidebar active state on Current/Base; Legacy Angular cases has its own sidebar-less layout. AI Judges icon exists Current only. Full click-through/tooltip coverage continues in Part16."
+        notes: "Before/after and Base 0d6e7538 comparison PNGs in href-cleanup; sidebar pair is byte-identical. Partial href cleanup, Current :3000 cases: sidebar account button retains 56x56px box, 16px padding and existing font; click and Enter open Create case/Profile/Log out, Escape dismisses and restores focus, URL unchanged. Wider sidebar navigation and narrow coverage deferred. Additional partial ERB extraction check on Current :3000: inspected matching cases-sidebar before/after captures with visible Search Endpoints tooltip; eight links retain URLs, labels, icons, active colors, prefetch flags and notebook new-tab/full-page attributes. Clicked Search Endpoints through Turbo and verified its active item. Full click-through, notebook launch and desktop-mode replay deferred. Earlier coverage: Inspected cases sidebar active state on Current/Base; Legacy Angular cases has its own sidebar-less layout. AI Judges icon exists Current only. Full click-through/tooltip coverage continues in Part16."
         paths: ["app/views/layouts/_sidebar.html.erb", "app/views/layouts/_sidebar_item.html.erb", "app/views/search_endpoints/index.html.erb", "app/views/search_endpoints/_search_endpoint.html.erb", "app/assets/images/qdrant-icon.png", "app/helpers/application_helper.rb"]
       "15.2":
         title: "Top navbar quick-access dropdowns"
@@ -1915,11 +1917,13 @@ parts:
       "15.4":
         title: "Avatar dropdown & admin shortcuts"
         screenshots:
+          management-account-menu: "15.4/management-account-menu"
+          core-account-menu: "15.4/core-account-menu"
           admin-menu: "15.4/admin-menu"
           owner-menu: "15.4/owner-menu"
-        last_run: 2026-10-13T16:52:43Z
+        last_run: 2026-10-14T14:30:00Z
         result: pass
-        notes: "Additional partial-locals verification: Current :3000 realisticactivity (admin-enabled fixture) management header and avatar dropdown render profile, logout, API Docs and admin shortcuts after announcement became an explicit local. Current admin-menu screenshot inspected and registered using the admin-enabled realisticactivity fixture on scorer 21 edit; non-admin menu and logout deferred in this sample. Inspected ordinary and admin avatar menus on all3: admin shortcuts present only admin; unauthorized admin/engine requests checked14.1/14.11. Current logout is a form; historical link remains."
+        notes: "Current menu captures registered; cropped Base 0d6e7538 header pairs are byte-identical. Full dashboard pair has recent-case ordering differences from visiting cases; the core pair differs only in the transient search-success flash (state mismatches, outside menus). Partial href cleanup, Current :3000 realisticactivity: management and core account buttons retain their original boxes, fonts, padding and menu contents. Click and Space/Enter open; Escape dismisses and restores button focus; URLs stay unchanged. Non-admin filtering, shortcut navigation and logout deferred. Additional partial-locals verification: Current :3000 realisticactivity (admin-enabled fixture) management header and avatar dropdown render profile, logout, API Docs and admin shortcuts after announcement became an explicit local. Current admin-menu screenshot inspected and registered using the admin-enabled realisticactivity fixture on scorer 21 edit; non-admin menu and logout deferred in this sample. Inspected ordinary and admin avatar menus on all3: admin shortcuts present only admin; unauthorized admin/engine requests checked14.1/14.11. Current logout is a form; historical link remains."
         paths: ["app/views/layouts/_header.html.erb", "app/views/shared/_account_dropdown.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "15.5":
         title: "Cookies static page"
@@ -1946,7 +1950,7 @@ parts:
         last_run: 2026-10-10T13:36:18Z
         result: pass
         notes: "Inspected management Cases/Teams footer placement and content all3; Current light single footer with API/community, Base old blue footer, Legacy surface-specific old footer. Admin and analytics placement covered14/13; core/narrow continues16.6. Configured policy/version deployment unavailable."
-        paths: ["app/views/layouts/_footer.html.erb", "app/views/shared/_osc_copyright.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/assets/stylesheets/bootstrap5-add.css"]
+        paths: ["app/views/layouts/_footer.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/admin.html.erb", "app/views/layouts/analytics.html.erb", "app/assets/stylesheets/bootstrap5-add.css"]
 
       "15.8":
         title: "Turbo Drive navigation and lifecycle"
@@ -2050,7 +2054,7 @@ parts:
         last_run: 2026-10-10T13:46:06Z
         result: pass
         notes: "Inspected bottom of expanded query pane1280x900, Tune Relevance open,600x900 and empty shared fixture all3. Current single footer follows pane and wraps with drawer; API/version/community visible1280. At600 inherited workspace minimum width clips text on Current/Base; Legacy old expanded navbar occupies viewport and footer is below captured viewport. Baseline screenshots retained separately. Configured policies and multi-page pagination not exercised."
-        paths: ["app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_footer_core_app.html.erb", "app/views/shared/_osc_copyright.html.erb", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/core-additions.css"]
+        paths: ["app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_footer.html.erb", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/core-additions.css"]
 
   "17":
     file: 17-documentation-coverage.md
@@ -2162,7 +2166,7 @@ parts:
         paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-dependencies.mjs", "test/playwright/screenshot-status.mjs", "test/playwright/screenshot-reviews.mjs", "test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs", "test/playwright/capture-jobs.mjs", "test/playwright/capture-recipes.test.mjs", "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs", "test/playwright/capture-agent.md", "test/playwright/capture-claude.test.mjs"]
       "17.12":
         title: "Routine visual regression suite"
-        last_run: 2026-10-11T00:28:07Z
-        result: pass
-        notes: "Follow-up: latest-try fixture guard corrected; all 6 native visual tests passed (26.7s), covering all 20 captures without updating baselines. CSS fault injection and report inspection were not repeated in this follow-up. Pilot complete: inspected all 20 native baselines; repeated unchanged runs passed (26.4s/26.9s), final component/report configuration passed twice (25.1s/26.2s). Temporary 8px red card border failed Rails team-form comparison with 21,267 changed pixels; inspected expected/actual/diff and the native HTML failure report through MCP. Restored exact original CSS bytes, rebuilt and full suite passed. Static fixture checks, external request blocking and local score-PUT fulfillment retain real visible content without creating fixture rows. Wider migration parity, live search, persistence and additional responsive layouts remain separate/deferred."
+        last_run: 2026-10-14T14:33:08Z
+        result: fail
+        notes: "Href cleanup verification: native suite Current :3000, 3 passed/3 failed (19.8s). Inspected core-workspace, narrow-core and team-form differences: existing footer/link-underline baseline drift plus broken-avatar paint. Unchanged Base 0d6e7538 has the identical 120-pixel team-form avatar difference; core checks there are blocked by unavailable search-result content (15s timeout). Baselines untouched. Smallest prerequisite for a clean gate: reconcile the existing footer/link styling baselines and avatar rendering environment; repair the Base static snapshot fixture for full comparison. Current failure evidence retained under tmp/href-cleanup/current-visual-runs. Follow-up: latest-try fixture guard corrected; all 6 native visual tests passed (26.7s), covering all 20 captures without updating baselines. CSS fault injection and report inspection were not repeated in this follow-up. Pilot complete: inspected all 20 native baselines; repeated unchanged runs passed (26.4s/26.9s), final component/report configuration passed twice (25.1s/26.2s). Temporary 8px red card border failed Rails team-form comparison with 21,267 changed pixels; inspected expected/actual/diff and the native HTML failure report through MCP. Restored exact original CSS bytes, rebuilt and full suite passed. Static fixture checks, external request blocking and local score-PUT fulfillment retain real visible content without creating fixture rows. Wider migration parity, live search, persistence and additional responsive layouts remain separate/deferred."
         paths: ["package.json", "test/playwright/visual.config.ts", "test/playwright/visual_smoke.spec.ts", "test/playwright/baselines/visual_smoke.spec.ts/", "test/playwright/playwright.config.ts", "test/playwright/auth.setup.ts", "test/playwright/case_helpers.ts"]

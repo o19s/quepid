@@ -15,10 +15,10 @@
         <ul class="nav navbar-nav">
           <%= render 'layouts/header_help_links' %>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+            <button type="button" class="nav-link dropdown-toggle" id="navbarDropdown" data-bs-toggle="dropdown" aria-expanded="false">
               <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', alt: '' %>
               <span data-display-name><%= current_user.display_name %> </span>
-            </a>
+            </button>
             <ul class="dropdown-menu" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
               <%= render 'shared/account_dropdown', divider: account_dropdown_divider(:hr) %>
             </ul>

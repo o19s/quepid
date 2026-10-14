@@ -32,6 +32,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
     "@eslint/js": "^10.0.0",
+    "@herb-tools/linter": "^0.11.0",
     "@playwright/test": "^1.49.0",
     "@stryker-mutator/core": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-core-10.0.0.tgz",
     "@stryker-mutator/vitest-runner": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-vitest-runner-10.0.0.tgz",
@@ -60,6 +61,7 @@
     "audit:css": "node audit_css.js",
     "audit:css:host": "mkdir -p tmp/css-audit-host && CSS_AUDIT_DIR=tmp/css-audit-host node audit_css.js",
     "lint:css": "stylelint \"app/assets/stylesheets/**/*.css\"",
+    "lint:erb": "herb-lint",
     "lint:js": "eslint app/javascript test/javascript scripts config/javascript_lint_scope.mjs eslint.config.mjs stryker.config.mjs build_css.js audit_css.js esbuild.config.js vitest.config.js lib db/scorers db/mapper_based_search_engines",
     "format:js": "node scripts/javascript_lint.mjs write",
     "format:js:check": "node scripts/javascript_lint.mjs check",

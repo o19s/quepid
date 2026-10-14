@@ -12,12 +12,12 @@
       Create a book
     </a>
 
-    <a class="btn btn-outline-secondary d-none" target="_self"
-       <%= tag.attributes(href: kase.book_id && book_judge_path(kase.book_id)) %>
-       data-judgements-core-target="judgeLink actionButton">
+    <%= tag.a class: 'btn btn-outline-secondary d-none', target: '_self',
+              href: kase.book_id && book_judge_path(kase.book_id),
+              data: { judgements_core_target: 'judgeLink actionButton' } do %>
       <i class="bi bi-book-fill"></i>
       Judge Documents!
-    </a>
+    <% end %>
   </div>
   <button type="button" class="btn btn-success d-none"
           data-judgements-core-target="saveButton"
