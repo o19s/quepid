@@ -69,10 +69,9 @@ aligned when adding isolation.
 See [Persisted case UI](../app_structure.md#persisted-case-ui) for the accepted
 HTML-endpoint boundary.
 
-The broader proposed sequence for replacing the remaining SPA responsibilities
-is in [Rails/Hotwire workspace plan](rails_stimulus_json_workspace_plan.md). It starts
-with the endpoint-design decision below and preserves browser search and instant
-scoring while moving persisted UI and navigation into Rails/Hotwire.
+The [case-workspace follow-ups](rails_stimulus_json_workspace_plan.md) record
+modal regression evidence, focused fixes and remaining browser coverage while
+retaining the existing JSON mutation APIs.
 
 `diff_core` (snapshot selects) and `export_case_core` still build lists from JSON
 in JS. They could become partials loaded through lazy
@@ -855,3 +854,11 @@ so noise filtering does not conceal meaningful regressions. See
 
 Revisit when rendering noise slows screenshot reviews or automated visual
 regression coverage expands.
+
+### [PREEXISTING] P3 I1 C2 — Log skipped rows in TREC and similar exports for review
+
+`TrecExport` skips snapshot docs that have no rating, and the other text and CSV exports leave out or blank rows they can't render. Nothing tells the user or an admin that rows were dropped.
+
+**Future idea only:** record each skipped row (export format, case, snapshot, query, doc, reason) in a log or a small reviewable list, so people can see what an export left out. The export itself must keep succeeding; logging must never raise or block the download.
+
+Revisit if users report exports that look incomplete.

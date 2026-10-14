@@ -68,6 +68,11 @@ describe("bs_popover", () => {
     expect(instance._config.placement).toBe("right")
   })
 
+  it("passes a custom container through to Bootstrap", () => {
+    const { instance } = createPopover({ container: element, body: "Help" })
+    expect(instance._config.container).toBe(element)
+  })
+
   it("creates a text popover with title and body", () => {
     const { instance, setBody } = createPopover({
       trigger: "hover focus",

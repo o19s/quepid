@@ -71,6 +71,8 @@ This same modal pattern appears in two places for each resource type: on the res
   - [ ] Attempt to share a resource you don't have access to — expect "You do not have access to that {case/book/search endpoint/scorer}."
   - [ ] Note: **Scorers** may only support Share (no Unshare control wired into this particular list) — confirm current behavior and flag if unshare is unexpectedly missing.
   - [ ] Use the "+ Create a team" shortcut link inside the modal — confirm it takes you to `/teams/new` without losing context awkwardly.
+  - [ ] As a member of two teams, share one resource with both, then unshare from only one — confirm the other team keeps access and the modal's "Already shared with" list updates correctly.
+  - [ ] With two browser sessions, share/unshare the same resource at nearly the same time — confirm the final state is consistent (no duplicate share, no error page) and a stale modal shows an informational alert.
 
 ### 9.6 Archive / unarchive a Case or Search Endpoint from the team page
 

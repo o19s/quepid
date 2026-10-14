@@ -443,3 +443,100 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     expect(controller.currentCaseId).toBe("5")
   })
 })
+
+describe("ShareCaseCoreController — response ownership", () => {
+  beforeEach(() => vi.resetAllMocks())
+
+  const catalog = (teams) => ({
+    ok: true,
+    text: async () => teamCatalogHtml(teams, teams)
+  })
+
+  it.each(["success", "failure"])("ignores an older same-case catalog %s after a newer read", async (outcome) => {
+    const controller = buildController({ currentCaseId: "5" })
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const old = controller.loadTeams("5")
+    apiFetch.mockResolvedValueOnce(catalog([{ id: 1, name: "Fresh" }]))
+    await controller.loadTeams("5")
+    finish(outcome === "success" ? catalog([]) : { ok: false })
+    await old
+    expect(sharedTeams(controller)).toEqual([{ id: 1, name: "Fresh" }])
+    expect(controller.alertTarget.classList.contains("alert-danger")).toBe(false)
+    expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("reconciles a late %s success after reopen and publishes its completed write", async (method) => {
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, [{ id: 1, name: "OSC" }], method === "submitUnshare" ? [{ id: 1, name: "OSC" }] : [])
+    controller.selectedShareTeamId = 1
+    controller.selectedSharedTeamId = 1
+    const notification = vi.spyOn(controller, "dispatchCaseTeamChanged")
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    apiFetch.mockResolvedValue(catalog(method === "submitShare" ? [{ id: 1, name: "OSC" }] : []))
+    await controller.loadTeams("5")
+    finish({ ok: true, status: 200, text: async () => "{}" })
+    await mutation
+    expect(sharedTeams(controller)).toHaveLength(method === "submitShare" ? 1 : 0)
+    expect(notification).toHaveBeenCalledOnce()
+    expect(controller.alertTarget.textContent).toBe("")
+    expect(apiFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("ignores late %s errors and cleanup from a prior opening", async (method) => {
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, [{ id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
+    controller.selectedShareTeamId = 1
+    controller.selectedSharedTeamId = 1
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    controller.alertTarget.textContent = "New opening"
+    controller.submitButtonTarget.disabled = true
+    finish({ ok: false, status: 503, text: async () => "{}" })
+    await mutation
+    expect(controller.alertTarget.textContent).toBe("New opening")
+    expect(controller.submitButtonTarget.disabled).toBe(true)
+    expect(sharedTeams(controller)).toHaveLength(1)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("clears reopened selections when a late %s refresh replaces a two-team catalog", async (method) => {
+    const teams = [{ id: 1, name: "OSC" }, { id: 2, name: "Other" }]
+    const removing = method === "submitUnshare"
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, teams, removing ? teams : [])
+    controller.selectedShareTeamId = removing ? null : 1
+    controller.selectedSharedTeamId = removing ? 1 : null
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    controller.clearSelections()
+    mountTeams(controller, teams, removing ? teams : [])
+    const row = (removing ? controller.sharedListTarget : controller.shareableListTarget).firstElementChild
+    if (removing) controller.selectSharedTeam({ currentTarget: row })
+    else controller.selectShareTeam({ currentTarget: row })
+    apiFetch.mockResolvedValue({
+      ok: true,
+      text: async () => teamCatalogHtml(teams, removing ? [teams[1]] : [teams[0]])
+    })
+
+    finish({ ok: true, status: 200, text: async () => "{}" })
+    await mutation
+
+    expect(controller.selectedShareTeamId).toBeNull()
+    expect(controller.selectedSharedTeamId).toBeNull()
+    expect(controller.teamIdTarget.value).toBe("")
+    expect(controller.unshareTeamIdTarget.value).toBe("")
+    for (const button of [controller.submitButtonTarget, controller.unshareButtonTarget]) {
+      expect(button.disabled).toBe(true)
+      expect(button.classList.contains("d-none")).toBe(true)
+    }
+    expect(controller.sharedListTarget.children).toHaveLength(1)
+    expect(controller.shareableListTarget.children).toHaveLength(1)
+  })
+})

@@ -10,6 +10,33 @@ import { expandFirstQuery, gotoCase } from './case_helpers';
  */
 
 test.describe('BS3↔BS5 popover paint (trap #5)', () => {
+  test('finder rating choices are keyboard reachable and restore focus after saving', async ({ page }) => {
+    // The static fixture cannot look up rated documents; use the existing Solr case.
+    await gotoCase(page, '', 6);
+    await expandFirstQuery(page);
+    await page.getByRole('button', { name: 'Missing Documents', exact: true }).click();
+    const modal = page.locator('.modal.show');
+    const trigger = modal.locator('search-result .single-rating button').first();
+    const original = (await trigger.getAttribute('aria-label'))!.replace('Change rating: ', '');
+    await trigger.press('Enter');
+    const choices = modal.locator('.popover .ratingNum');
+    await expect(choices.first()).toBeVisible();
+    const choice = choices.filter({ hasText: new RegExp(`^${original}(?:\\D|$)`) });
+    for (let step = 0; step < 40 && !(await choice.evaluate(el => el === document.activeElement)); step++) {
+      await page.keyboard.press('Tab');
+    }
+    await expect(choice).toBeFocused();
+    const saved = page.waitForResponse(response => response.request().method() === 'PUT' && /\/ratings(?:\?|$)/.test(response.url()));
+    await page.keyboard.press('Enter');
+    expect((await saved).ok()).toBeTruthy();
+    await expect(modal.locator('.popover')).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+    await trigger.press('Enter');
+    await page.keyboard.press('Escape');
+    await expect(modal).toHaveCount(0);
+    await expect(page.locator('.popover')).toHaveCount(0);
+  });
+
   test('judgement popover tip is visible in computed style', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

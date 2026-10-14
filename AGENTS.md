@@ -118,6 +118,8 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Lint CSS via `docker compose exec app yarn lint:css` or `docker compose exec app rails test:stylelint` (config: `.stylelintrc.json`).
 
 ### E2E (Playwright)
+
+- For separate concurrent Playwright invocations, use distinct artifact/report directories and isolate writable auth/test state. Serialize invocations only while those resources remain shared; this does not restrict workers within one invocation.
 - Run Playwright E2E tests via `docker compose exec app yarn test:e2e`, with `docker compose exec app npx playwright install chromium` once. Requires the app already running via `bin/docker s`. **`bin/docker r` cannot run these** — E2E needs the live server and the browser install has to persist, which is exactly what a throwaway container breaks.
 - This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
 - **Any spec that creates a row in the shared dev DB (a user, a team, a case) must delete it in a `test.afterAll`** — See DEVELOPER_GUIDE.md's "Playwright E2E" section for the cleanup pattern to copy.

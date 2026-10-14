@@ -113,6 +113,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
   1. Expand a query, click **Missing Documents**.
   2. For Solr, enter a plain Lucene query such as `id:123` in the initially blank finder. Confirm explanations still describe the original query. For Elasticsearch/OpenSearch, edit the pre-filled query parameters.
   3. Rate the found document inline.
+     Open its rating popover with the keyboard and Tab to the rating choices and RESET; confirm focus stays inside the finder. Select a rating with Enter and confirm focus returns to that document's rebuilt rating button after saving. With the popover open, Escape dismisses the finder and removes the tip; check focus restoration to the launcher separately.
   4. Click **Reset to All Rated Docs**.
 - [ ] With a proxied/authenticated Solr endpoint, verify both finder requests retain proxying and credentials. Repeat with JSON query parameters and a small result limit: Next appends distinct documents at the configured page size; a failed page can be retried without skipping results.
 - **Expected:** Search returns matching documents with a count message (or a "no results" message); ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."

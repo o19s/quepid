@@ -17,6 +17,7 @@ export default class extends Controller {
     this.handle = createBsPopover(this.element, {
       trigger: "outside-click",
       placement: this.placementValue,
+      container: this.element.closest(".modal") || "body",
       html: true,
       body: this.renderBody()
     })
@@ -87,6 +88,11 @@ export default class extends Controller {
   }
 
   hide() {
+    const tipId = this.element.getAttribute("aria-describedby")
+    const tip = tipId && document.getElementById(tipId)
+    if (tip?.contains(document.activeElement)) {
+      this.element.querySelector("button")?.focus()
+    }
     if (this.handle && this.handle.instance) this.handle.instance.hide()
   }
 }

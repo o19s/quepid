@@ -213,6 +213,42 @@ describe("MissingDocumentsController", () => {
     expect(adapterMock.rateAll).toHaveBeenCalledWith(null)
   })
 
+  it.each([true, false])("preserves rating focus through redraw without stealing moved focus: %s", async (keepFocus) => {
+    let finish
+    const controller = buildController(adapter({
+      docs: [{ id: "doc-1", title: "A document", subSnippets: () => ({}) }],
+      numFound: 1,
+      rate: () => new Promise(resolve => { finish = resolve })
+    }))
+    // Child Stimulus controllers do not connect in this unit fixture.
+    const render = controller.render.bind(controller)
+    vi.spyOn(controller, "render").mockImplementation(() => {
+      render()
+      const rating = document.createElement("div")
+      rating.className = "single-rating"
+      rating.appendChild(document.createElement("button"))
+      controller.resultsTarget.querySelector("search-result").appendChild(rating)
+    })
+    controller.render()
+    const result = controller.resultsTarget.querySelector("search-result")
+    result.querySelector(".single-rating button").focus()
+    const pending = controller.rate({
+      type: "rating-popover:rate",
+      target: result,
+      detail: { source: "single-result", rating: "1" }
+    })
+    const otherControl = controller.element.querySelector(".modal-footer button")
+    if (!keepFocus) otherControl.focus()
+    finish()
+    await pending
+
+    const expected = keepFocus
+      ? controller.resultsTarget.querySelector("search-result .single-rating button")
+      : otherControl
+    expect(document.activeElement).toBe(expected)
+    controller.element.remove()
+  })
+
   it("re-renders only after the rating request has been applied", async () => {
     const adapterMock = adapter({ docs: [{ id: "doc-1", title: "A document", subSnippets: () => ({}) }], numFound: 1 })
     let resolveRating

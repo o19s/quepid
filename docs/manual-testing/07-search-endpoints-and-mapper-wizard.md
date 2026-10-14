@@ -48,6 +48,8 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Choose API Method = **JSONP** while **Proxy requests** is also enabled — expect an error ("cannot be JSONP when proxy_request is enabled").
   - [ ] If the environment requires proxy with basic auth, enter a Basic Auth Credential with Proxy off — expect a validation error.
   - [ ] With zero teams, confirm the team picker offers **Create a team** and the endpoint can still be saved privately. With teams, leaving them unchecked keeps the endpoint private.
+  - [ ] Switch the Search Engine type mid-form (e.g. Solr → Elasticsearch → Static File) — confirm engine-specific defaults/fields update, user-entered values (headers, options, credential) are not unexpectedly lost or overwritten, and the saved endpoint matches what is displayed.
+  - [ ] Create endpoints against an `https` engine with a self-signed/invalid certificate and a **Static File** endpoint — confirm each behaves sensibly (clear error or working search) and check the Basic Auth Credential and custom headers round-trip on Edit.
 
 ### 7.3 View / Edit a Search Endpoint
 

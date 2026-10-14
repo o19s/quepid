@@ -42,9 +42,20 @@ export default class extends CoreModalControllerBase {
     this.currentCaseId = null
     this.teamRows = []
     this.sharedRows = []
+    // openToken identifies the current opening; null while the modal is closed.
+    this.onHide = () => {
+      this.openToken = null
+    }
+    this.element.addEventListener("hide.bs.modal", this.onHide)
+  }
+
+  disconnect() {
+    this.onHide()
+    this.element.removeEventListener("hide.bs.modal", this.onHide)
   }
 
   async openFor(btn) {
+    this.openToken = Symbol()
     const caseId = this.triggerValue(btn, "id")
     const caseName = caseNameFromHeader()
 
@@ -186,6 +197,11 @@ export default class extends CoreModalControllerBase {
   }
 
   async loadTeams(caseId) {
+    const token = Symbol()
+    this.catalogToken = token
+    const openToken = this.openToken
+    const current = () => token === this.catalogToken && openToken === this.openToken &&
+      isSameId(caseId, this.currentCaseId)
     this.setLoading(true)
     try {
       const url = this.catalogUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
@@ -194,15 +210,15 @@ export default class extends CoreModalControllerBase {
       const html = new DOMParser().parseFromString(await response.text(), "text/html")
       const catalog = html.querySelector("[data-share-catalog]")
       if (!catalog) throw new Error("Missing team catalog")
-      // Retain the established guard for responses from another case.
-      if (!isSameId(caseId, this.currentCaseId)) return
+      if (!current()) return
       this.sharedRows = [...catalog.querySelector('[data-catalog-list="shared"]').children]
       this.teamRows = [...catalog.querySelectorAll("[data-team-id]")].sort(
         (a, b) => Number(a.dataset.teamOrder) - Number(b.dataset.teamOrder)
       )
+      this.clearSelections()
       this.renderTeamLists()
     } catch (error) {
-      if (!isSameId(caseId, this.currentCaseId)) return
+      if (!current()) return
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
       this.teamRows = []
@@ -214,7 +230,7 @@ export default class extends CoreModalControllerBase {
         this.toggleVisible(target, false)
       }
     } finally {
-      if (isSameId(caseId, this.currentCaseId)) this.setLoading(false)
+      if (current()) this.setLoading(false)
     }
   }
 
@@ -249,6 +265,8 @@ export default class extends CoreModalControllerBase {
     if (!teamId || !caseId) return
 
     const submittedRow = this.shareableListTarget.querySelector(`[data-team-id="${teamId}"]`)
+    const openToken = this.openToken
+    const selectedName = this.selectedShareTeamName
     this.setSubmitting(true)
     this.clearAlert()
 
@@ -258,21 +276,25 @@ export default class extends CoreModalControllerBase {
 
       const row = this.teamRows.find((item) => isSameId(item.dataset.teamId, teamId))
       const team = row ? this.teamFor(row) : {
-        id: Number(teamId), name: this.selectedShareTeamName || `Team ${teamId}`
+        id: Number(teamId), name: selectedName || `Team ${teamId}`
       }
-      // Retain append order and the previous overlapping-response semantics.
+      if (openToken !== this.openToken) return this.finishLateMutation("added", caseId, team)
+      // Preserve append order without duplicating membership from a fresh catalog.
       const sharedRow = row || submittedRow?.cloneNode(true)
       if (!row && sharedRow) sharedRow.textContent = team.name
-      if (sharedRow) this.sharedRows = [...this.sharedRows, sharedRow]
+      if (sharedRow && !this.sharedRows.some((item) => isSameId(item.dataset.teamId, teamId))) {
+        this.sharedRows = [...this.sharedRows, sharedRow]
+      }
       this.clearShareSelection()
       this.renderTeamLists()
       this.dispatchCaseTeamChanged("added", caseId, team)
       this.showAlert("Case shared with team successfully.", "success")
     } catch (error) {
+      if (openToken !== this.openToken) return
       console.error("share-case-core: share failed", error)
       this.showAlert(error.message || "Unable to share case with team.", "danger")
     } finally {
-      this.setSubmitting(false)
+      if (openToken === this.openToken) this.setSubmitting(false)
     }
   }
 
@@ -287,6 +309,8 @@ export default class extends CoreModalControllerBase {
       (this.hasUnshareCaseIdTarget ? this.unshareCaseIdTarget.value : null)
     if (!teamId || !caseId) return
 
+    const openToken = this.openToken
+    const selectedName = this.selectedSharedTeamName
     this.setSubmitting(true)
     this.clearAlert()
 
@@ -298,19 +322,28 @@ export default class extends CoreModalControllerBase {
 
       const row = this.sharedRows.find((item) => isSameId(item.dataset.teamId, teamId))
       const team = row ? this.teamFor(row) : {
-        id: Number(teamId), name: this.selectedSharedTeamName || `Team ${teamId}`
+        id: Number(teamId), name: selectedName || `Team ${teamId}`
       }
+      if (openToken !== this.openToken) return this.finishLateMutation("removed", caseId, team)
       this.sharedRows = this.sharedRows.filter((item) => !isSameId(item.dataset.teamId, teamId))
       this.clearSharedSelection()
       this.renderTeamLists()
       this.dispatchCaseTeamChanged("removed", caseId, team)
       this.showAlert("Case unshared from team successfully.", "success")
     } catch (error) {
+      if (openToken !== this.openToken) return
       console.error("share-case-core: unshare failed", error)
       this.showAlert(error.message || "Unable to unshare case from team.", "danger")
     } finally {
-      this.setSubmitting(false)
+      if (openToken === this.openToken) this.setSubmitting(false)
     }
+  }
+
+  // A write that finished after its modal opening ended still happened: tell the rest of
+  // the page, and refresh if a newer opening may have read the catalog before the write.
+  async finishLateMutation(action, caseId, team) {
+    this.dispatchCaseTeamChanged(action, caseId, team)
+    if (this.openToken && isSameId(caseId, this.currentCaseId)) await this.loadTeams(caseId)
   }
 
   dispatchCaseTeamChanged(action, caseNo, team) {

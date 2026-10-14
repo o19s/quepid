@@ -24,6 +24,10 @@ async function core(page: Page, wizard = false) {
   await expect(page.locator('.results-list-element li').first()).toBeVisible();
   // Unlike the older helper, never swallow a readiness timeout.
   await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 20_000 });
+  // The "All queries finished" flash auto-hides after 5s, so captures racing it are
+  // flaky. Let it appear and clear so every shot starts from the same settled state.
+  await page.locator('.flash.show').first().waitFor({ state: 'visible', timeout: 3_000 }).catch(() => {});
+  await expect(page.locator('.flash.show')).toHaveCount(0, { timeout: 10_000 });
   if (!wizard) {
     await expandFirstQuery(page);
     await expect(page.locator('search-result').first()).toBeVisible();
@@ -55,6 +59,10 @@ async function openShareCase(page: Page) {
   await expect(modal).toContainText('Visual Team B');
 }
 
+// Solid grey 1x1 PNG standing in for every user's avatar.
+const AVATAR_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGOor6//DwAGfAL+Dq5XTQAAAABJRU5ErkJggg==', 'base64');
+
 test.beforeEach(async ({ page, baseURL }) => {
   await page.clock.setFixedTime(new Date('2026-01-15T12:00:00Z'));
 
@@ -67,6 +75,11 @@ test.beforeEach(async ({ page, baseURL }) => {
     const url = new URL(route.request().url());
     return url.origin === new URL(baseURL!).origin ? route.fallback() : route.abort();
   });
+  // Gravatar is external and blocked above; a fixed local image keeps avatars from
+  // rendering as the browser's broken-image glyph (registered later, so it wins).
+  await page.route('https://secure.gravatar.com/**', route => route.fulfill({
+    status: 200, contentType: 'image/png', body: AVATAR_PNG,
+  }));
 });
 
 test('core workspace and widgets', async ({ page }) => {

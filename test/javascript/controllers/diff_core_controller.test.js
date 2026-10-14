@@ -208,12 +208,17 @@ describe("DiffCoreController", () => {
     controller.renderSelections()
     const second = controller.selectionsTarget.querySelectorAll("select")[1]
 
+    document.body.append(controller.element)
+    second.focus()
     second.value = "3"
     expect(second.dataset.action).toBe("change->diff-core#selectChanged")
     expect(second.dataset.diffCoreIndexParam).toBe("1")
     controller.selectChanged({ currentTarget: second, params: { index: 1 } })
 
     expect(controller.selectionValues).toEqual(["2", "3"])
+    expect(controller.selectionsTarget.querySelectorAll("select")[1]).toBe(second)
+    expect(document.activeElement).toBe(second)
+    controller.element.remove()
   })
 
   it("hides the remove and delete buttons on an empty row, and flags snapshots still processing", () => {

@@ -53,6 +53,7 @@ describe("RatingPopoverController", () => {
     expect(options.trigger).toBe("outside-click")
     expect(options.placement).toBe("right")
     expect(options.html).toBe(true)
+    expect(options.container).toBe("body")
 
     const items = options.body.querySelectorAll(".ratingNum")
     expect(items).toHaveLength(2)
@@ -61,6 +62,22 @@ describe("RatingPopoverController", () => {
     expect(items[0].textContent).toContain("1")
     expect(items[1].querySelector(".d-block").textContent).toBe("Relevant")
     expect(options.body.querySelector(".reset")).not.toBeNull()
+  })
+
+  it("keeps interactive ratings inside the nearest modal's focus trap", () => {
+    const outer = document.createElement("div")
+    outer.className = "modal"
+    const inner = document.createElement("div")
+    inner.className = "modal"
+    outer.appendChild(inner)
+    inner.appendChild(element)
+    document.body.appendChild(outer)
+
+    const controller = buildController(element)
+    controller.connect()
+    expect(createBsPopover.mock.calls[0][1].container).toBe(inner)
+    controller.disconnect()
+    outer.remove()
   })
 
   it("dispatches rating-popover:rate with the clicked rating and hides", () => {
@@ -116,6 +133,26 @@ describe("RatingPopoverController", () => {
     expect(handle.setBody).toHaveBeenCalledTimes(1)
     const newBody = handle.setBody.mock.calls[0][0]
     expect(newBody.querySelectorAll(".ratingNum")).toHaveLength(2)
+  })
+
+  it("returns keyboard focus to the rating trigger before removing its choices", () => {
+    const trigger = document.createElement("button")
+    element.appendChild(trigger)
+    const tip = document.createElement("div")
+    tip.id = "rating-tip"
+    element.setAttribute("aria-describedby", tip.id)
+    const choice = document.createElement("button")
+    tip.appendChild(choice)
+    document.body.appendChild(tip)
+    const controller = buildController(element)
+    controller.connect()
+    choice.focus()
+
+    controller.hide()
+
+    expect(document.activeElement).toBe(trigger)
+    expect(handle.instance.hide).toHaveBeenCalledTimes(1)
+    tip.remove()
   })
 
   it("disposes the popover on disconnect", () => {

@@ -54,7 +54,28 @@ export function hideBsModal(instance) {
 
 /** Show a modal above any currently visible Bootstrap modal. */
 export function showStackedModal(wrapper, modal) {
-  const index = document.querySelectorAll(".modal.show").length
+  const visible = [...document.querySelectorAll(".modal.show")]
+  const index = visible.length
+  const outer = visible[index - 1]
+  const returnFocus = document.activeElement
+  const outerModal = outer && getBootstrapModal().getInstance(outer)
+  // Bootstrap's document-wide focus handlers cannot serve two active traps.
+  // Keep this private Bootstrap integration confined to the stacking adapter.
+  outerModal?._focustrap?.deactivate()
+  if (outer) {
+    wrapper.addEventListener(
+      "hidden.bs.modal",
+      () => {
+        if (!outer.isConnected || !outer.classList.contains("show")) return
+        outerModal?._focustrap?.activate()
+        if (returnFocus?.isConnected && outer.contains(returnFocus) && !returnFocus.disabled) {
+          returnFocus.focus()
+        }
+        restoreModalBodyLock()
+      },
+      { once: true }
+    )
+  }
   if (index > 0) wrapper.style.zIndex = 1050 + index * 20
 
   modal.show()

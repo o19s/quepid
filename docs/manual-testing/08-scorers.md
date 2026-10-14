@@ -19,6 +19,7 @@ A Scorer is a JavaScript formula that turns a set of graded judgements into a si
 - **Edge cases:**
   - [ ] As a non-admin, confirm communal rows show a **Clone** icon but no **Edit** icon (Edit is admin-only for communal scorers).
   - [ ] As an admin, confirm communal rows show both **Edit** and **Clone**.
+  - [ ] On a deployment that allows only communal scorers (custom scorers disabled), confirm custom scorers are hidden/blocked in the list, counter and case scorer picker, and server-side (direct URL/POST) as well as in the UI. Also confirm a scorer you can't access via URL gives a clear not-found/denied result.
 
 ### 8.2 Set your default scorer
 
@@ -46,6 +47,7 @@ A Scorer is a JavaScript formula that turns a set of graded judgements into a si
   - [ ] Enter non-integer values in the scale list (e.g. `a,b,c`) — expect a type validation error.
   - [ ] Enter scale values with stray spaces (`0, 1, 2`) — confirm this is handled gracefully (not silently broken).
   - [ ] Enter labels for Binary values, then change the scale to `0,1,2`. Labels for 0 and 1 remain; the new value starts blank. Removing a value removes only its corresponding label field. Repeat on the Edit form.
+  - [ ] Save a **Custom** scale with labels, then reload the Edit page and select the scorer on a case — confirm the code, scale and labels all persisted and the case uses them.
 
 ### 8.4 Edit a scorer
 

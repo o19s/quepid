@@ -33,6 +33,7 @@ Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModa
 - **Edge cases:**
   - [ ] Force a server error — confirm it surfaces clearly rather than leaving the modal stuck on "in progress" forever.
   - [ ] Take a snapshot on a large case (many queries) — confirm the async/background behavior doesn't block the rest of the UI.
+  - [ ] Take a snapshot against an Elasticsearch/OpenSearch case (not only Solr) — confirm capture, the Record Document Fields toggle's presence/absence, and later comparison behave as for Solr.
 
 ### 5.3 Compare snapshots (diff)
 
@@ -40,7 +41,7 @@ Rails owns the picker row template; Stimulus populates selections and dynamic op
 
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
-  2. For "Snapshot 1", pick a snapshot from the dropdown.
+  2. For "Snapshot 1", pick a snapshot from the dropdown. Keyboard focus stays on that select; changing a second row or clearing its value also retains focus.
   3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum shown in the modal (currently 5). At the limit, Add Snapshot disappears.
   4. Click **Update Comparison Settings**.
   5. Confirm additional score badges (per query, and per case) appear reflecting each chosen snapshot.
@@ -49,6 +50,7 @@ Rails owns the picker row template; Stimulus populates selections and dynamic op
 - **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
 - **Edge cases:**
   - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
+  - [ ] Compare two snapshots whose result *order* differs for the same query (re-rank between captures) — confirm the diff shows distinguishable ordering, not just matching sets. Repeat with a snapshot taken on a non-Solr engine.
   - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot; reopen to verify persistence.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.

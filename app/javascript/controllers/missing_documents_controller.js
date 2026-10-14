@@ -141,7 +141,23 @@ export default class extends withStatusMessages(Controller) {
         await this.adapter.rateAll(rating)
       }
     } finally {
-      if (!this.disconnected) this.render()
+      if (!this.disconnected) {
+        const focusedRating = document.activeElement?.closest(".single-rating")
+        const restoreRatingFocus = this.resultsTarget.contains(focusedRating)
+        const docId = focusedRating?.closest("search-result")?.dataset.docId
+        this.render()
+        if (restoreRatingFocus) {
+          // Child search-result controllers rebuild the rating buttons on connect.
+          queueMicrotask(() => {
+            if (this.disconnected || document.activeElement !== document.body) return
+            const result = [...this.resultsTarget.querySelectorAll("search-result")]
+              .find(element => element.dataset.docId === docId)
+            const trigger = docId ? result?.querySelector(".single-rating button") : null
+            const focusTarget = trigger || this.element.closest(".modal")
+            focusTarget?.focus()
+          })
+        }
+      }
     }
   }
 

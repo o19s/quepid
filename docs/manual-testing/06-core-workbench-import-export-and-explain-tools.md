@@ -81,6 +81,7 @@ and stays on the workspace. The management surface in Part 3.6 retains its selec
 - **Expected:** Selection toggles off on a second click and is mutually exclusive across lists. Cancel/reopen resets selection. No-team users see Create a team; users whose teams all share the case see the shared list without the no-teams prompt.
 - **Edge cases:**
   - [ ] Force team-load failure and close/reopen to retry; force share/unshare failure and retry with selection retained. Check the Judgements modal’s share-case outlet.
+  - [ ] Delay an earlier catalog response, close/reopen the same case and let the newer catalog finish first. Older success/error responses must leave the newer list and loading state intact. Delay share/unshare completion across close/reopen; reconcile the completed write with the current catalog, without duplicate rows or stale alerts. With two teams available, select a team in the reopened modal before the old write completes; the refreshed catalog clears selections, hidden team IDs and both footer actions.
   - [ ] Click **Create a team** from inside this modal — confirm it navigates away to `/teams` and that no unsaved workbench state (e.g., an in-progress edit elsewhere on the page) is silently lost.
 
 ### 6.6 Judgements link (connect a case to a Book)
@@ -109,6 +110,8 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   - [ ] Force a book-list load failure, then close/reopen to retry; force a save
         failure and retry with the selected book and sync flags retained.
   - [ ] Use **Create a book** and **Judge Documents!** shortcuts — confirm they land you in the right place (Part 10/11).
+  - [ ] Against a real book with judgements, run **Populate Now**, **Refresh Ratings** and **Sync Queries** and confirm the book's pairs/ratings and the case's queries/scores actually change as described, not just that the buttons succeed. Check Mission Control/jobs for the background job on a 50+ query case.
+  - [ ] As a user in several teams, with the case shared to more than one, confirm the catalog lists each team's books once, and that a book from a team the case is no longer shared with is not offered.
 
 ### 6.7 Explain a query (Explain Query modal)
 
@@ -119,6 +122,7 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   4. **Query Template** tab — click it; if the query is templated, confirm the populated template renders; otherwise confirm "This is not a templated query." shows.
   5. Use the **Copy** icon to copy the active tab's content, then paste it somewhere to confirm it copied correctly.
   6. For a templated query, force a render failure and revisit the tab to retry. Delay a response, close/reopen the modal and confirm it cannot replace the new modal's content; when requests overlap, the latest request wins.
+  7. On a real Elasticsearch or OpenSearch case with a templated query, confirm the Query Template tab renders the engine's actual populated template (not just a stub), and that Params/Parsing tabs are accurate for that engine.
 - **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open). After **Copy**, the button reads "Copied!" for about two seconds and then returns to "Copy"; if the browser refuses the clipboard write, it reads "Copy failed" instead.
 
 ### 6.8 Explain a single document (Debug Explain)

@@ -93,7 +93,9 @@ export default class extends CoreModalControllerBase {
 
   selectChanged(event) {
     this.selectionValues[event.params.index] = event.currentTarget.value
-    this.renderSelections()
+    const row = event.currentTarget.closest(".snapshot-selection-row")
+    this.updateSelectionButtons(row, event.currentTarget.value)
+    this.renderSelectionWarnings()
   }
 
   async update() {
@@ -177,16 +179,27 @@ export default class extends CoreModalControllerBase {
 
       const remove = row.querySelector("[data-slot='remove']")
       const del = row.querySelector("[data-slot='delete']")
-      remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
-      remove.setAttribute("aria-label", remove.title)
       for (const button of [remove, del]) {
-        button.classList.toggle("d-none", !selected)
         button.dataset.diffCoreIndexParam = String(index)
       }
+      this.updateSelectionButtons(row, selected)
 
       this.selectionsTarget.append(row)
     })
 
+    this.renderSelectionWarnings()
+  }
+
+  updateSelectionButtons(row, selected) {
+    const remove = row.querySelector("[data-slot='remove']")
+    remove.title = this.selectionValues.length > 1 ? "Remove this snapshot selection" : "Clear this selection"
+    remove.setAttribute("aria-label", remove.title)
+    for (const button of [remove, row.querySelector("[data-slot='delete']")]) {
+      button.classList.toggle("d-none", !selected)
+    }
+  }
+
+  renderSelectionWarnings() {
     this.toggleVisible(this.addButtonTarget, this.selectionValues.length < this.maxSnapshotsValue)
     this.warningTarget.textContent = "You have selected the same snapshot multiple times. Each snapshot should be unique."
     this.toggleVisible(this.warningTarget, this.hasDuplicateSelections())

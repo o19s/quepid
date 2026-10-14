@@ -20,6 +20,11 @@ test.afterAll(async ({ browser }) => {
         bookId = (await listing.json()).all_books.find((book: { name: string }) => book.name === name)?.book_id;
       }
     } catch (error) { errors.push(error); }
+    // judgeId is only recorded after the save redirect; a failure before it must not leak the judge.
+    if (!judgeId) {
+      const href = await page.locator('tr').filter({ hasText: name }).getByTitle('Edit').getAttribute('href', { timeout: 2000 }).catch(() => null);
+      judgeId = href?.match(/ai_judges\/(\d+)/)?.[1];
+    }
     for (const url of [caseId && `api/cases/${caseId}`, bookId && `api/books/${bookId}`, judgeId && `ai_judges/${judgeId}`].filter(Boolean)) {
       try {
         if (url === `api/cases/${caseId}`) {

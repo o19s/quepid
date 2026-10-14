@@ -7,7 +7,8 @@ export function getBootstrapPopover() {
 /**
  * @param {Element} element
  * @param {{ trigger?: string, placement?: string, delayMs?: number,
- *   title?: string, body?: string | Element, html?: boolean }} options
+ *   title?: string, body?: string | Element, html?: boolean,
+ *   container?: string | Element }} options
  */
 export function createBsPopover(element, options = {}) {
   const Popover = getBootstrapPopover()
@@ -37,7 +38,7 @@ export function createBsPopover(element, options = {}) {
     trigger: bsTrigger,
     html: !!options.html,
     delay: Number.isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
-    container: "body",
+    container: options.container || "body",
     animation: false,
     title: " ",
     content: currentBody || " "

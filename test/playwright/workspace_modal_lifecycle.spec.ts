@@ -121,7 +121,7 @@ test.describe('Workspace modal lifecycle', () => {
     await expect(page.locator('#chart1')).not.toContainText('obsolete');
     await expect.poll(() => page.evaluate(() => (window as any).obsoleteChartFinalized)).toBe(true);
   });
-  test('nested debug backdrop closes only the inner modal and retains the finder scroll lock', async ({ page }) => {
+  test('nested debug restores focus and closes only the inner modal with Escape or backdrop', async ({ page }) => {
     test.setTimeout(60_000);
     // This flow needs the rated-document lookup and explain payload from Solr.
     await gotoCase(page, '', 6);
@@ -129,7 +129,7 @@ test.describe('Workspace modal lifecycle', () => {
     await page.getByRole('button', { name: 'Missing Documents', exact: true }).first().click();
     const outer = page.locator('.modal.show').filter({ hasText: 'Find and Rate Missing Documents' });
     await expect(outer.locator('.match-explain-bar').first()).toBeVisible();
-    for (let i = 0; i < 2; i++) {
+    for (const dismissal of ['escape', 'backdrop']) {
       await page.evaluate(() => {
         (window as any).nestedModalShown = false;
         document.addEventListener('shown.bs.modal', function shown(event) {
@@ -145,14 +145,89 @@ test.describe('Workspace modal lifecycle', () => {
       await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(4);
       // Wait for the opening transition before dismissing via the backdrop.
       await expect.poll(() => page.evaluate(() => (window as any).nestedModalShown)).toBe(true);
-      await inner.click({ position: { x: 5, y: 5 } });
+      await expect.poll(() => inner.evaluate(el => el.contains(document.activeElement))).toBe(true);
+      if (dismissal === 'escape') await page.keyboard.press('Escape');
+      else await inner.click({ position: { x: 5, y: 5 } });
       await expect(page.locator('.full-screen-modal')).toHaveCount(0);
       await expect(outer).toBeVisible();
+      await expect.poll(() => outer.evaluate(el => el.contains(document.activeElement))).toBe(true);
+      await page.keyboard.press('Tab');
+      await expect.poll(() => outer.evaluate(el => el.contains(document.activeElement))).toBe(true);
       await expect(page.locator('.modal-backdrop')).toHaveCount(1);
       await expect(page.locator('body')).toHaveClass(/modal-open/);
     }
     await outer.locator('.modal-footer [data-bs-dismiss="modal"]').click();
     await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(0);
+  });
+
+  test('snapshot selection retains the focused select and updates duplicate warnings', async ({ page }) => {
+    await gotoCase(page);
+    await page.route('**/snapshots?shallow=true', route => route.fulfill({
+      contentType: 'application/json', body: JSON.stringify({ snapshots: [{ id: 7, name: 'Focus check' }] })
+    }));
+    await page.getByText('Compare snapshots', { exact: false }).first().click();
+    const modal = page.locator('#diffModal.show');
+    const first = modal.locator('select').first();
+    await first.focus();
+    await first.selectOption('7');
+    await expect(first).toBeFocused();
+    await modal.getByRole('button', { name: 'Add Snapshot', exact: true }).click();
+    const second = modal.locator('select').nth(1);
+    await second.focus();
+    await second.selectOption('7');
+    await expect(second).toBeFocused();
+    await expect(modal.locator('[data-diff-core-target="warning"]')).toBeVisible();
+    await second.selectOption('');
+    await expect(second).toBeFocused();
+    await expect(modal.locator('[data-diff-core-target="warning"]')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(modal).toBeHidden();
+  });
+
+  test('sharing ignores an old catalog failure and reconciles a delayed share after reopen', async ({ page }) => {
+    await gotoCase(page);
+    const open = () => page.getByText('Share case', { exact: true }).click();
+    const modal = page.locator('#shareCaseModal');
+    const close = async () => {
+      await modal.locator('.modal-footer [data-bs-dismiss="modal"]').click();
+      await expect(modal).toBeHidden();
+    };
+    const catalog = (shared: boolean) => `<div data-share-catalog><div data-catalog-list="shared">${shared ? '<button type="button" data-team-id="1" data-team-order="0">OSC</button>' : ''}</div><div data-catalog-list="shareable">${shared ? '' : '<button type="button" data-team-id="1" data-team-order="0">OSC</button>'}<button type="button" data-team-id="2" data-team-order="1">Other</button></div></div>`;
+    let oldRead: any;
+    let heldWrite: any;
+    let reads = 0;
+    let shared = false;
+    await page.route('**/modal_catalogs/sharing', async route => {
+      if (++reads === 1) { oldRead = route; return; }
+      await route.fulfill({ contentType: 'text/html', body: catalog(shared) });
+    });
+    await page.route('**/api/teams/1/cases', route => { heldWrite = route; });
+    await open();
+    await expect.poll(() => Boolean(oldRead)).toBe(true);
+    await close();
+    await open();
+    const shareable = modal.locator('[data-share-case-core-target="shareableList"] button');
+    await expect(shareable).toHaveCount(2);
+    await oldRead.fulfill({ status: 503, body: '{}' });
+    await expect(shareable).toHaveCount(2);
+    await expect(modal.locator('[data-share-case-core-target="alert"]')).toBeHidden();
+    await shareable.filter({ hasText: 'OSC' }).click();
+    await modal.getByRole('button', { name: 'Share with OSC', exact: true }).click();
+    await expect.poll(() => Boolean(heldWrite)).toBe(true);
+    await close();
+    await open();
+    await shareable.filter({ hasText: 'OSC' }).click();
+    shared = true;
+    const sharedRows = modal.locator('[data-share-case-core-target="sharedList"] button');
+    await heldWrite.fulfill({ contentType: 'application/json', body: '{}' });
+    await expect.poll(() => reads).toBe(4);
+    await expect(sharedRows).toHaveCount(1);
+    await expect(shareable).toHaveCount(1);
+    await expect(modal.locator('[data-share-case-core-target="teamId"]')).toHaveValue('');
+    await expect(modal.locator('[data-share-case-core-target="submitButton"]')).toBeHidden();
+    await expect(modal.locator('[data-share-case-core-target="unshareButton"]')).toBeHidden();
+    await expect(modal.locator('[data-share-case-core-target="alert"]')).toBeHidden();
+    await close();
   });
 
 });
