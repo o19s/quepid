@@ -109,6 +109,43 @@ export function installModalEscapeFallback(doc = document) {
   })
 }
 
+const TABBABLE =
+  'a[href], button, input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])'
+
+function tabbableWithin(modal) {
+  return [...modal.querySelectorAll(TABBABLE)].filter(
+    (el) => !el.disabled && el.tabIndex >= 0 && (el.checkVisibility?.() ?? true)
+  )
+}
+
+/**
+ * Bootstrap's focus trap only reacts to `focusin`. Tabbing past the last
+ * control of the topmost modal hands focus to the browser chrome (`<body>`
+ * for one keypress) before the trap pulls it back. Wrap explicitly at the
+ * ends so focus never leaves the dialog.
+ *
+ * @param {Document} [doc]
+ */
+export function installModalTabWrap(doc = document) {
+  doc.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" || event.defaultPrevented) return
+
+    const modals = doc.querySelectorAll(".modal.show")
+    const modal = modals[modals.length - 1]
+    if (!modal || !modal.contains(event.target)) return
+
+    const tabbable = tabbableWithin(modal)
+    if (tabbable.length === 0) return
+    const edge = tabbable[event.shiftKey ? 0 : tabbable.length - 1]
+    // The dialog itself holds focus right after it opens (tabindex="-1").
+    const atStart = event.shiftKey && event.target === modal
+    if (!atStart && event.target !== edge && doc.activeElement !== edge) return
+
+    event.preventDefault()
+    tabbable[event.shiftKey ? tabbable.length - 1 : 0].focus()
+  })
+}
+
 /** Restore the outer modal's scroll lock after an inner modal closes. */
 export function restoreModalBodyLock() {
   if (document.querySelector(".modal.show")) document.body.classList.add("modal-open")

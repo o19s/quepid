@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBsModal, getOrCreateBsModal, hideBsModal, installModalEscapeFallback, showBsModal } from "utils/bs_modal"
+import { createBsModal, getOrCreateBsModal, hideBsModal, installModalEscapeFallback, installModalTabWrap, showBsModal } from "utils/bs_modal"
 
 describe("bs_modal", () => {
   let element
@@ -138,6 +138,61 @@ describe("bs_modal", () => {
       addModal()
       doc.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
       expect(received).toEqual([])
+    })
+  })
+
+  describe("installModalTabWrap", () => {
+    let doc
+    let modal
+    let first
+    let last
+
+    const pressTab = (target, shiftKey = false) => {
+      const event = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true })
+      target.dispatchEvent(event)
+      return event
+    }
+
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("")
+      installModalTabWrap(doc)
+      modal = doc.createElement("div")
+      modal.className = "modal show"
+      modal.innerHTML =
+        '<button id="first">A</button><button disabled>X</button><button id="last">B</button>'
+      doc.body.appendChild(modal)
+      first = modal.querySelector("#first")
+      last = modal.querySelector("#last")
+    })
+
+    it("wraps Tab from the last control to the first", () => {
+      last.focus()
+      expect(pressTab(last).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(first)
+    })
+
+    it("wraps Shift+Tab from the first control to the last", () => {
+      first.focus()
+      expect(pressTab(first, true).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(last)
+    })
+
+    it("wraps Shift+Tab from the dialog container to the last control", () => {
+      modal.tabIndex = -1
+      modal.focus()
+      expect(pressTab(modal, true).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(last)
+    })
+
+    it("leaves Tab between inner controls to the browser", () => {
+      first.focus()
+      expect(pressTab(first).defaultPrevented).toBe(false)
+    })
+
+    it("ignores Tab outside an open modal", () => {
+      const outside = doc.createElement("button")
+      doc.body.appendChild(outside)
+      expect(pressTab(outside).defaultPrevented).toBe(false)
     })
   })
 })

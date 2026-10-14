@@ -68,11 +68,12 @@ import SnapshotBridgeController from "controllers/snapshot_bridge_controller"
 import CoreBootstrapController from "controllers/core_bootstrap_controller"
 import PaneController from "controllers/pane_controller"
 import ConfirmDialogController from "controllers/confirm_dialog_controller"
-import { installModalEscapeFallback } from "utils/bs_modal"
+import { installModalEscapeFallback, installModalTabWrap } from "utils/bs_modal"
 
 Turbo.session.drive = false
 
 installModalEscapeFallback()
+installModalTabWrap()
 
 application.register("dynamic-modal", DynamicModalController)
 application.register("match-explain-modal", MatchExplainModalController)

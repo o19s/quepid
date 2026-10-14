@@ -74,10 +74,9 @@ for (const [name, id] of [['Export', 'exportCaseModal'], ['Compare snapshots', '
     await modal.getByRole('button', { name: 'Close', exact: true }).focus();
     for (let i = 0; i < 15; i++) {
       await page.keyboard.press('Tab');
-      // Chromium may move focus to BODY at its browser-chrome boundary.
-      // Background interactive controls must never receive focus.
+      // Focus must wrap inside the dialog: not to BODY, not to the page behind it.
       await expect.poll(() => modal.evaluate(el => ({
-        allowed: el.contains(document.activeElement) || document.activeElement === document.body,
+        allowed: el.contains(document.activeElement),
         focused: document.activeElement?.outerHTML.slice(0, 200)
       }))).toMatchObject({ allowed: true });
     }
