@@ -105,9 +105,9 @@ export default class extends Controller {
       more.className = `collapse${this.showAll ? " show" : ""} match-explain-more`
       rest.forEach((match) => more.appendChild(this.barElement(match)))
       wrapper.appendChild(more)
-      const toggle = document.createElement("a")
-      toggle.href = "#"
-      toggle.className = "match-explain-toggle"
+      const toggle = document.createElement("button")
+      toggle.type = "button"
+      toggle.className = "btn btn-link p-0 border-0 match-explain-toggle"
       toggle.style.fontSize = "10px"
       toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
       toggle.dataset.action = "match-explain#toggleMore"
@@ -175,14 +175,13 @@ export default class extends Controller {
     explanation.appendChild(pre)
     const actions = document.createElement("div")
     actions.className = "actions"
-    const debug = document.createElement("a")
-    debug.href = "#"
+    const debug = document.createElement("button")
+    debug.type = "button"
     debug.className = "btn btn-outline-secondary match-explain-debug"
     debug.textContent = "Debug"
-    debug.setAttribute("aria-disabled", String(!data.hasChildren))
-    if (!data.hasChildren) debug.classList.add("disabled")
-    const expand = document.createElement("a")
-    expand.href = "#"
+    debug.disabled = !data.hasChildren
+    const expand = document.createElement("button")
+    expand.type = "button"
     expand.className = "btn btn-outline-secondary match-explain-expand"
     expand.append("Expand ")
     const expandIcon = document.createElement("i")

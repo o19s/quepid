@@ -5,7 +5,7 @@ const EDITABLE_CASE_ID = Number(process.env.QUEPID_E2E_EDITABLE_CASE_ID || 2);
 
 test('query edits survive knob extraction and tab changes', async ({ page }) => {
   await page.goto(`case/${EDITABLE_CASE_ID}`);
-  await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+  await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
   const editor = page.locator('#query-params-editor .cm-content');
   const template = '{"query":{"multi_match":{"query":"#$query##","fields":["title^##titleBoost##"]}}}';
   await editor.fill(template);
@@ -24,7 +24,7 @@ test('engine settings sections, endpoint suggestions and background evaluation',
     json: { search_endpoints: [{ search_endpoint_id: 987654, name: 'Routing test endpoint', search_engine: 'solr' }] }
   }));
   await page.goto(`case/${EDITABLE_CASE_ID}`);
-  await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+  await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
   await expect(page.locator('[data-tune-relevance-target="endpointSelect"] option[value="987654"]')).toBeAttached();
 
   await page.locator('[data-tune-relevance-tab-param="engineSettings"]').click();
@@ -76,7 +76,7 @@ test.describe('try management on a disposable case', () => {
     const modal = page.locator('[data-tune-relevance-target="tryModal"]');
 
     const openTuneRelevance = async (tab: string) => {
-      await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+      await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
       await page.locator(`[data-tune-relevance-tab-param="${tab}"]`).click();
     };
     const openTryDetails = async (tryNo: string) => {

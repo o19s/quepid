@@ -43,11 +43,11 @@ describe("json_explorer", () => {
       expect(container.querySelector("script")).toBeNull()
     })
 
-    it("nests arrays and objects under a collapsible list with a collapser link", () => {
+    it("nests arrays and objects under a collapsible list with a collapser button", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      const collapsers = container.querySelectorAll("a.collapser")
+      const collapsers = container.querySelectorAll(".collapser")
       expect(collapsers.length).toBeGreaterThan(0)
       expect(container.querySelector("ul.array")).not.toBeNull()
     })
@@ -56,7 +56,7 @@ describe("json_explorer", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      expect(container.querySelector("a.collapser").textContent).toBe("-")
+      expect(container.querySelector(".collapser").textContent).toBe("-")
       expect(container.querySelector(".ellipsis").classList.contains("hidden")).toBe(true)
       expect(container.querySelector("ul.collapsible").classList.contains("hidden")).toBe(false)
     })
@@ -65,7 +65,7 @@ describe("json_explorer", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      const collapser = container.querySelector("a.collapser")
+      const collapser = container.querySelector(".collapser")
       collapser.click()
 
       expect(collapser.textContent).toBe("+")

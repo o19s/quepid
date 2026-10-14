@@ -58,14 +58,14 @@ describe("SearchResultController", () => {
   it("routes title clicks through a declared action that requests the rendered document", () => {
     const controller = buildController(snapshotFor({ id: 42 }), { depthOfRating: 0, ratingScale: {} })
     controller.render()
-    const titleLink = controller.contentTarget.querySelector(".subTitle a")
+    const titleButton = controller.contentTarget.querySelector(".subTitle button")
     const events = []
     document.body.addEventListener("search-result:show-document", event => events.push(event.detail))
     const event = { preventDefault: vi.fn() }
 
     controller.showDocument(event)
 
-    expect(titleLink.dataset.action).toBe("search-result#showDocument")
+    expect(titleButton.dataset.action).toBe("search-result#showDocument")
     expect(event.preventDefault).toHaveBeenCalled()
     expect(events).toEqual([{ docId: 42 }])
   })

@@ -440,14 +440,23 @@ describe("WizardController", () => {
       controller.capability.navigation.needToRedirectProtocol.mockReturnValue(true)
       controller.hasTlsWarningTarget = true
       controller.tlsWarningTarget = document.createElement("div")
-      controller.hasTlsReloadLinkTarget = true
-      controller.tlsReloadLinkTarget = document.createElement("a")
 
       await controller.validate()
 
       expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
       expect(controller.tlsWarningTarget.hidden).toBe(false)
-      expect(controller.tlsReloadLinkTarget.getAttribute("href")).toContain("showWizard=true")
+    })
+
+    it("reloads Quepid on the other protocol, reopening the wizard with its settings", () => {
+      const assign = vi.fn()
+      vi.stubGlobal("location", { assign })
+      const controller = mount({ step: STEPS.endpoint })
+
+      controller.reloadInOtherProtocol()
+
+      expect(assign).toHaveBeenCalledOnce()
+      expect(assign.mock.calls[0][0]).toContain("showWizard=true")
+      vi.unstubAllGlobals()
     })
 
     it("skipValidation jumps straight to the fields step", () => {

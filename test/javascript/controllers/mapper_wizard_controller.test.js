@@ -203,9 +203,7 @@ describe("MapperWizardController showStep3Manually", () => {
     controller.step3Target.style = {}
     controller.step3Target.scrollIntoView = vi.fn()
 
-    MapperWizardController.prototype.showStep3Manually.call(controller, {
-      preventDefault: vi.fn(),
-    })
+    MapperWizardController.prototype.showStep3Manually.call(controller)
 
     expect(controller.step2Target.style.display).toBe("block")
     expect(controller.step3Target.style.display).toBe("block")

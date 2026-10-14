@@ -25,8 +25,8 @@ function parseRaw(key, value) {
 
 function parseChildren(key, value, collapser, ellipsis, contents, open, close) {
   let html = key
-    ? `<span class="prop"><a href="#" class="collapser">${collapser}</a>${escapeHtml(key)}</span>: ${open}`
-    : `<span class="prop"><a href="#" class="collapser">${collapser}</a></span> ${open}`
+    ? `<span class="prop"><button type="button" class="collapser">${collapser}</button>${escapeHtml(key)}</span>: ${open}`
+    : `<span class="prop"><button type="button" class="collapser">${collapser}</button></span> ${open}`
   html += `<span class="ellipsis ${ellipsis}">...</span>`
   html += `<ul class="${open === "[" ? "array" : "object"} collapsible ${contents}">`
 
@@ -52,19 +52,18 @@ function parseValue(key, value, collapser, ellipsis, contents) {
 }
 
 function wireCollapsers(root) {
-  root.querySelectorAll("a.collapser").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault()
-      const ellipsisEl = link.parentElement.nextElementSibling
+  root.querySelectorAll(".collapser").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const ellipsisEl = toggle.parentElement.nextElementSibling
       const listEl = ellipsisEl.nextElementSibling
-      if (link.innerHTML === "+") {
+      if (toggle.innerHTML === "+") {
         ellipsisEl.classList.add("hidden")
         listEl.classList.remove("hidden")
-        link.innerHTML = "-"
+        toggle.innerHTML = "-"
       } else {
         ellipsisEl.classList.remove("hidden")
         listEl.classList.add("hidden")
-        link.innerHTML = "+"
+        toggle.innerHTML = "+"
       }
     })
   })

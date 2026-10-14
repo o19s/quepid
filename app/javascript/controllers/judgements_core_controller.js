@@ -52,21 +52,18 @@ export default class extends CoreModalControllerBase {
     caseUrlTemplate: String,
     catalogUrlTemplate: String,
     refreshUrlTemplate: String,
-    newBookUrlTemplate: String,
     judgeUrlTemplate: String
   }
 
   openFor(btn) {
     this.openGeneration = (this.openGeneration || 0) + 1
     const caseId = this.triggerValue(btn, "id")
-    const scorerId = this.triggerValue(btn, "scorerId")
     const bookId = this.triggerValue(btn, "bookId")
     const queriesCount = this.triggerValue(btn, "queriesCount")
     const autoPairs = this.triggerValue(btn, "autoPopulateBookPairs")
     const autoJudgements = this.triggerValue(btn, "autoPopulateCaseJudgements")
 
     this.currentCaseId = caseId || ""
-    this.scorerId = scorerId || ""
     this.queriesCount = Number(queriesCount || 0)
     this.savedBookId = bookId ? Number(bookId) : null
     this.activeBookId = this.savedBookId
@@ -85,7 +82,6 @@ export default class extends CoreModalControllerBase {
       this.autoPopulateCaseJudgementsTarget.checked = this.autoPopulateCaseJudgements
     }
 
-    this._updateCreateBookLinks()
     this.clearError()
     this.setProgress(false)
     this.setBusy(false)
@@ -253,7 +249,6 @@ export default class extends CoreModalControllerBase {
         this.savedBookId = caseData.book_id != null ? Number(caseData.book_id) : null
         this.activeBookId = this.savedBookId
       }
-      if (caseData.scorer_id != null) this.scorerId = String(caseData.scorer_id)
       if (caseData.queries_count != null) this.queriesCount = Number(caseData.queries_count)
       if (caseData.auto_populate_book_pairs != null) {
         this.autoPopulateBookPairs = !!caseData.auto_populate_book_pairs
@@ -270,8 +265,6 @@ export default class extends CoreModalControllerBase {
         }
       }
 
-      this._updateCreateBookLinks()
-
       const url = this.catalogUrlTemplateValue.replaceAll(CASE_ID_PLACEHOLDER, caseId)
       const response = await apiFetch(url, { headers: { Accept: "text/html" } })
       if (!response.ok) {
@@ -282,6 +275,7 @@ export default class extends CoreModalControllerBase {
       const catalog = html.querySelector("[data-book-catalog]")
       if (!catalog) throw new Error("Unable to load judgements settings.")
       if (this.openGeneration !== generation) return
+      this._updateCreateBookLinks(catalog.dataset.newBookUrl)
       this._renderBooks([...catalog.children])
       this.setLoading(false)
 
@@ -357,10 +351,8 @@ export default class extends CoreModalControllerBase {
     this.saveButtonTarget.disabled = this._busy || !hasChanges
   }
 
-  _updateCreateBookLinks() {
-    const href = this.newBookUrlTemplateValue
-      .replaceAll("__SCORER_ID__", this.scorerId || "")
-      .replaceAll(CASE_ID_PLACEHOLDER, this.currentCaseId || "")
+  _updateCreateBookLinks(href) {
+    if (!href) return
     if (this.hasCreateBookLinkTarget) this.createBookLinkTarget.href = href
     if (this.hasCreateBookEmptyLinkTarget) this.createBookEmptyLinkTarget.href = href
   }

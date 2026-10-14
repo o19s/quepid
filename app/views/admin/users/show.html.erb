@@ -101,65 +101,23 @@
     <% else %>
 
 
-      <h3>Cases viewed</h3>
-      <div
-        id="cases-viewed"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'metadata'} %>"
-        data-user-activity-label-value="cases viewed"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases viewed", id: "cases-viewed",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'metadata'}), label: "cases viewed" %>
 
-      <h3>Cases scored</h3>
-      <div
-        id="cases-scored"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'scores'} %>"
-        data-user-activity-label-value="cases scored"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases scored", id: "cases-scored",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'scores'}), label: "cases scored" %>
 
-      <h3>Cases created</h3>
-      <div
-        id="cases-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'cases-created'} %>"
-        data-user-activity-label-value="cases created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Cases created", id: "cases-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'cases-created'}), label: "cases created" %>
 
-      <h3>Queries created</h3>
-      <div
-        id="queries-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'queries-created'} %>"
-        data-user-activity-label-value="queries created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Queries created", id: "queries-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'queries-created'}), label: "queries created" %>
 
-      <h3>Books created</h3>
-      <div
-        id="books-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'books-created'} %>"
-        data-user-activity-label-value="books created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Books created", id: "books-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'books-created'}), label: "books created" %>
 
-      <h3>Judgements created</h3>
-      <div
-        id="judgements-created"
-        data-controller="user-activity"
-        data-user-activity-url-value="<%= url_for admin_user_pulse_path @user, params: {data: 'judgements-created'} %>"
-        data-user-activity-label-value="judgements created"
-        style="margin-bottom: 40px;"
-      >
-      </div>
+      <%= render "admin/users/activity_chart", heading: "Judgements created", id: "judgements-created",
+                 url: (url_for admin_user_pulse_path @user, params: {data: 'judgements-created'}), label: "judgements created" %>
     <% end %>
   </div>
 </div>

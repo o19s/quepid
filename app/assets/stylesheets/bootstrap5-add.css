@@ -66,6 +66,12 @@ h3 {
   font-size: 20px;
 }
 
+/* Size the copy button like the heading around it, not .btn's 1rem. */
+.public-share .btn-link {
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .public-share .clipboard-icon {
   visibility: hidden;
 }

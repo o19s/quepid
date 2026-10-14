@@ -36,6 +36,9 @@
 	user-select: none;
 	color: rgb(249, 39, 83);
 	text-decoration: none;
+	background: none;
+	border: 0;
+	padding: 0;
 }
 
 .json-explorer li {

@@ -23,11 +23,11 @@
                data-team-member-autocomplete-url-value="<%= suggest_members_team_path(@team) %>"
                data-action="click@window->team-member-autocomplete#clickOutside">
             <div class="position-relative">
-              <%= text_field_tag :email, nil, 
-                  class: 'form-control form-control-sm', 
-                  placeholder: 'User email address', 
+              <%= text_field_tag :email, nil,
+                  class: 'form-control form-control-sm',
+                  placeholder: 'User email address',
                   autocomplete: 'off',
-                  data: { 
+                  data: {
                     team_member_autocomplete_target: 'input',
                     action: 'input->team-member-autocomplete#search'
                   } %>
@@ -36,7 +36,7 @@
               </span>
             </div>
             <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
-            <template data-team-member-autocomplete-target="itemTemplate"><div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar"><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div></template>
+            <template data-team-member-autocomplete-target="itemTemplate"><div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar" alt=""><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div></template>
           </div>
           <div>
             <%= submit_tag 'Add user', class: 'btn btn-success btn-sm' %>

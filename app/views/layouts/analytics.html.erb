@@ -21,7 +21,7 @@
         <div class="container d-flex align-items-center gap-2 py-2">
           <% if @case.public? %>
             <h3 class="public-share mb-0">
-              <a id="public-url" href="#" data-controller="clipboard" data-action="clipboard#copy" data-clipboard-text-value="<%= analytics_tries_visualization_path(@case.public_id) %>">
+              <button type="button" id="public-url" class="btn btn-link p-0 border-0 align-baseline" data-controller="clipboard" data-action="clipboard#copy" data-clipboard-text-value="<%= analytics_tries_visualization_path(@case.public_id) %>">
                 <span class="badge bg-success">Public</span>
                 <i
                   class="clipboard-icon bi bi-clipboard"
@@ -29,7 +29,7 @@
                   title="Copy public url to your clipboard"
                   alt="Copy public url to your clipboard"
                 ></i>
-              </a>
+              </button>
             </h3>
           <% end %>
           <% if @current_user %>

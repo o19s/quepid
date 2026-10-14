@@ -29,9 +29,10 @@ export function teamCatalogHtml(allTeams, sharedTeams = []) {
   return catalog.outerHTML
 }
 
-export function bookCatalogHtml(books = []) {
+export function bookCatalogHtml(books = [], { newBookUrl = "books/new?scorer_id=7&origin_case_id=42" } = {}) {
   const catalog = document.createElement("ul")
   catalog.setAttribute("data-book-catalog", "")
+  catalog.dataset.newBookUrl = newBookUrl
   const attributes = {
     class: "list-group-item",
     "data-judgements-core-target": "item",

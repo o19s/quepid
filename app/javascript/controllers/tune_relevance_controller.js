@@ -9,10 +9,16 @@ import { isSameId } from "utils/record_identity"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
+// A link with nowhere to go loses its href (reads as plain text) rather than pointing at "#".
+function setLinkHref(link, url) {
+  if (url) link.href = url
+  else link.removeAttribute("href")
+}
+
 export default class extends Controller {
   static targets = [
     "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
-    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsReloadLink", "tlsProtocol",
+    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
@@ -225,12 +231,12 @@ export default class extends Controller {
     if (this.hasEndpointArchivedTarget) this.endpointArchivedTarget.hidden = !selected.endpointArchived
     if (this.hasEndpointMoreLinkTarget) {
       this.endpointMoreLinkTarget.hidden = !selected.searchEndpointId
-      this.endpointMoreLinkTarget.href = selected.searchEndpointId ? `search_endpoints/${selected.searchEndpointId}` : "#"
+      setLinkHref(this.endpointMoreLinkTarget, selected.searchEndpointId && `search_endpoints/${selected.searchEndpointId}`)
     }
     if (this.hasTroubleshootingLinkTarget) {
       const url = this.capability.settings.troubleshootingWikiUrl(selected.searchEngine, selected.mapperBasedSearchEngineId)
       this.troubleshootingLinkTarget.hidden = !url
-      this.troubleshootingLinkTarget.href = url || "#"
+      setLinkHref(this.troubleshootingLinkTarget, url)
     }
     if (this.hasTroubleshootingEngineTarget) {
       this.troubleshootingEngineTarget.textContent = searchEngineLabel(this.engineLabelsValue, selected.mapperBasedSearchEngineName || selected.searchEngine)
@@ -252,14 +258,16 @@ export default class extends Controller {
     const settings = this.settings || {}
     const mismatch = settings.proxyRequests !== true && this.capability.navigation.needToRedirectProtocol(settings.searchUrl)
     this.tlsWarningTarget.hidden = !mismatch
-    if (mismatch) {
-      const [url, protocol] = this.capability.navigation.swapUrlTls()
-      const params = new URLSearchParams({ searchEngine: settings.searchEngine || "", searchUrl: settings.searchUrl || "", showWizard: "false", apiMethod: settings.apiMethod || "", fieldSpec: settings.fieldSpec || "" })
-      this.tlsReloadLinkTarget.href = this.capability.navigation.appendQueryParams(url, params.toString())
-      this.tlsProtocolTarget.textContent = protocol
-    }
+    if (mismatch) this.tlsProtocolTarget.textContent = this.capability.navigation.swapUrlTls()[1]
     const save = this.hasSaveButtonTarget ? this.saveButtonTarget : null
     if (save) save.hidden = mismatch || !EDITABLE_TABS.has(this.tab)
+  }
+
+  reloadInOtherProtocol() {
+    const settings = this.settings || {}
+    const [url] = this.capability.navigation.swapUrlTls()
+    const params = new URLSearchParams({ searchEngine: settings.searchEngine || "", searchUrl: settings.searchUrl || "", showWizard: "false", apiMethod: settings.apiMethod || "", fieldSpec: settings.fieldSpec || "" })
+    window.location.assign(this.capability.navigation.appendQueryParams(url, params.toString()))
   }
 
   refreshHistory() {
@@ -365,9 +373,9 @@ export default class extends Controller {
     this.tryTitleTarget.textContent = item.name || "Try details"
     this.tryQueryParamsTarget.textContent = item.queryParams || ""
     this.tryEndpointLinkTarget.textContent = item.endpointName || ""
-    this.tryEndpointLinkTarget.href = item.searchEndpointId ? `search_endpoints/${item.searchEndpointId}` : "#"
+    setLinkHref(this.tryEndpointLinkTarget, item.searchEndpointId && `search_endpoints/${item.searchEndpointId}`)
     this.tryBrowseLinkTarget.hidden = !item.searchUrl
-    this.tryBrowseLinkTarget.href = item.searchUrl || "#"
+    setLinkHref(this.tryBrowseLinkTarget, item.searchUrl)
     this.tryFieldSpecTarget.textContent = item.fieldSpec || ""
     this.tryVariablesTarget.replaceChildren(...(item.curatorVars || []).map(variable => {
       const row = document.createElement("div")

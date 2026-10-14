@@ -59,7 +59,7 @@
             and this triggers your browser to prevent communication with the search endpoint.<br>
             Option 1: Reload Quepid to run on the correct protocol.<br>
             Option 2: Check <strong>Proxy requests through Quepid</strong> so Quepid's server talks to your search endpoint.
-            <a class="btn btn-primary form-control mt-2" data-wizard-target="tlsReloadLink"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in <code data-wizard-target="tlsProtocol"></code> Protocol</a>
+            <button type="button" class="btn btn-primary form-control mt-2" data-action="wizard#reloadInOtherProtocol"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in <code data-wizard-target="tlsProtocol"></code> Protocol</button>
           </div>
           <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton endpointContinue" data-action="wizard#next">Continue</button>
           <button type="button" class="btn btn-danger mt-3" data-wizard-target="skipButton" data-action="wizard#skipValidation">Skip Validation</button>

@@ -8,14 +8,14 @@ test.describe('Workspace modal lifecycle', () => {
     await gotoCase(page);
     await expandFirstQuery(page);
     for (const dismissal of ['close', 'escape', 'backdrop']) {
-      await page.locator('search-result .subTitle a').first().click();
+      await page.locator('search-result .subTitle button').first().click();
       const modal = page.locator('.modal.show');
       await expect(modal).toContainText('Detailed Document View of doc:');
       await expect(modal).toHaveAccessibleName(/^Detailed Document View of doc: \S/);
       await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
-      await modal.getByRole('link', { name: 'View All Fields', exact: true }).click();
+      await modal.getByRole('button', { name: 'View All Fields', exact: true }).click();
       await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
-      await modal.getByRole('link', { name: 'Hide All Fields', exact: true }).click();
+      await modal.getByRole('button', { name: 'Hide All Fields', exact: true }).click();
       await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
       if (dismissal === 'close') await modal.getByRole('button', { name: 'Close', exact: true }).click();
       if (dismissal === 'escape') await page.keyboard.press('Escape');

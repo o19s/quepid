@@ -3,6 +3,36 @@
 require 'test_helper'
 
 class ApplicationHelperTest < ActionView::TestCase
+  test 'codemirror data retains optional editor settings and caller targets' do
+    data = codemirror_data(mode: 'application/json', height: 100, width: 500, readonly: true,
+                           line_numbers: false, mapper_wizard_target: 'customHeaders')
+
+    assert_equal 'codemirror', data[:controller]
+    assert_equal 'application/json', data[:codemirror_mode]
+    assert_equal 100, data[:codemirror_height]
+    assert_equal 500, data[:codemirror_width]
+    assert data[:codemirror_readonly]
+    assert_not data[:codemirror_line_numbers]
+    assert data.key?(:codemirror_line_numbers)
+    assert_equal 'customHeaders', data[:mapper_wizard_target]
+    assert_equal 'turbo:before-cache@document->codemirror#teardown', data[:action]
+  end
+
+  test 'codemirror data leaves unspecified settings absent' do
+    data = codemirror_data(mode: 'javascript', height: 200)
+
+    assert_not data.key?(:codemirror_width)
+    assert_not data.key?(:codemirror_readonly)
+    assert_not data.key?(:codemirror_line_numbers)
+  end
+
+  test 'codemirror data preserves editors without a before-cache action' do
+    data = codemirror_data(mode: 'json', height: 300, before_cache: false, ai_judge_wizard_target: 'documentFields')
+
+    assert_not data.key?(:action)
+    assert_equal 'documentFields', data[:ai_judge_wizard_target]
+  end
+
   test 'active navigation ignores section names in query parameters' do
     @request.env['PATH_INFO'] = '/teams/1'
     @request.env['QUERY_STRING'] = 'cases_q=case&books_q=book&scorers_q=scorers&search_endpoints_q=search_endpoint'

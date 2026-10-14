@@ -27,7 +27,7 @@ export default class extends Controller {
     "idField", "additionalFields", "queryText", "queryList", "staticFile", "staticPreview",
     "staticAlert", "alert", "continueButton", "finishButton", "validation", "skipButton",
     "mapperEngines", "endpointDetails", "queryPattern", "fieldError", "staticSection",
-    "tlsWarning", "tlsReloadLink", "tlsProtocol", "endpointContinue", "loading"
+    "tlsWarning", "tlsProtocol", "endpointContinue", "loading"
   ]
 
   static values = { proxyRequired: Boolean, rootUrl: String, caseNo: String, snapshotSearchUrlTemplate: String }
@@ -417,7 +417,12 @@ export default class extends Controller {
     if (this.hasEndpointContinueTarget) this.endpointContinueTarget.hidden = mismatch
     if (this.hasSkipButtonTarget) this.skipButtonTarget.hidden = mismatch
     if (!mismatch) return
-    const [url, protocol] = this.capability.navigation.swapUrlTls()
+    const [, protocol] = this.capability.navigation.swapUrlTls()
+    this.tlsProtocolTargets.forEach((target) => { target.textContent = protocol })
+  }
+
+  reloadInOtherProtocol() {
+    const [url] = this.capability.navigation.swapUrlTls()
     const { searchEnginePreset, searchEngine, searchUrl, caseName, apiMethod, basicAuthCredential } = this.settings
     const params = new URLSearchParams({
       showWizard: "true",
@@ -427,8 +432,7 @@ export default class extends Controller {
       apiMethod: apiMethod || "",
       basicAuthCredential: basicAuthCredential || ""
     })
-    this.tlsReloadLinkTarget.href = this.capability.navigation.appendQueryParams(url, params.toString())
-    this.tlsProtocolTargets.forEach((target) => { target.textContent = protocol })
+    window.location.assign(this.capability.navigation.appendQueryParams(url, params.toString()))
   }
 
   render() {

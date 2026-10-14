@@ -40,6 +40,14 @@ module ApplicationHelper
                                  extra: (block ? capture(&block) : nil)
   end
 
+  # Keep editor configuration shared while callers own the textarea and its form data.
+  def codemirror_data mode:, height:, before_cache: true, **options
+    data = options.extract!(:width, :readonly, :line_numbers).transform_keys { |key| :"codemirror_#{key}" }
+    data.merge!(options, controller: 'codemirror', codemirror_mode: mode, codemirror_height: height)
+    data[:action] = 'turbo:before-cache@document->codemirror#teardown' if before_cache
+    data
+  end
+
   # Divider <li> for the shared account-dropdown menu (shared/_account_dropdown).
   # :hr is a standard Bootstrap divider (plain Rails nav). :separator is an
   # empty role="separator" <li> that core's header-scoped CSS

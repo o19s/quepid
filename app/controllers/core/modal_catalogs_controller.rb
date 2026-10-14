@@ -14,7 +14,7 @@ module Core
       # The case JSON and team-book APIs expose only teams the user belongs to.
       teams = @case.teams.where(id: current_user.teams.select(:id)).preload(:books)
       @books = (current_user.books.active.to_a + teams.flat_map(&:books)).uniq(&:id)
-      render partial: 'core/judgement_book_templates', locals: { books: @books }
+      render partial: 'core/judgement_book_templates', locals: { kase: @case, books: @books }
     end
 
     def scorers

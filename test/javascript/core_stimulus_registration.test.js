@@ -16,7 +16,9 @@ function controllerNamesUsedBy(source) {
   for (const match of source.matchAll(/data-controller\s*=\s*["']([^"']+)["']/g)) {
     match[1].split(/\s+/).filter(Boolean).forEach(name => names.add(name))
   }
-  for (const match of source.matchAll(/\bcontroller:\s*["']([^"']+)["']/g)) names.add(match[1])
+  for (const match of source.matchAll(/\bcontroller:\s*["']([^"']+)["']/g)) {
+    match[1].split(/\s+/).filter(Boolean).forEach(name => names.add(name))
+  }
   return names
 }
 
@@ -36,12 +38,13 @@ describe("core Stimulus registration", () => {
       path.join(repoRoot, "app/views/layouts/_case_workspace.html.erb")
     ].map(filePath => readFileSync(filePath, "utf8"))
 
-    // The shared layout also contains Rails-only controllers. Inspect its case
-    // body branch rather than treating the management body as core markup.
+    // The shared layout also contains Rails-only controllers. Inspect the case
+    // branch of its body attributes rather than treating the management body as
+    // core markup; the case body itself is _case_workspace, read above.
     const layout = readFileSync(path.join(repoRoot, "app/views/layouts/application.html.erb"), "utf8")
-    const caseBody = layout.match(/<% if case_page %>\s*(<body[\s\S]*?)<% else %>/)?.[1]
-    expect(caseBody).toBeTruthy()
-    coreSources.push(caseBody)
+    const caseBodyAttributes = layout.match(/body_attributes = if case_page\b([\s\S]*?)\n\s*else\n/)?.[1]
+    expect(caseBodyAttributes).toMatch(/\bcontroller:/)
+    coreSources.push(caseBodyAttributes)
 
     const used = new Set(coreSources.flatMap(source => [...controllerNamesUsedBy(source)]))
     const registeredSource = readFileSync(path.join(repoRoot, "app/javascript/core_stimulus.js"), "utf8")

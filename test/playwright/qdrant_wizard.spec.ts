@@ -141,7 +141,7 @@ for (const { idField, docId } of [
         await page.reload();
         await page.getByRole('heading', { name: 'matrix', exact: true }).click();
         await expect(result).toHaveAttribute('data-rating', '1');
-        await page.getByRole('link', { name: 'Show only rated', exact: true }).click();
+        await page.getByRole('button', { name: 'Show only rated', exact: true }).click();
         await expect.poll(() => bodies.some(body => body.filter?.must?.some(matches))).toBeTruthy();
         expect(bodies.some(body => body.query?.nearest?.text === 'matrix' && body.limit === 10)).toBeTruthy();
         await expect(result).toContainText('The Matrix');

@@ -128,13 +128,16 @@ header .dropdown-item:focus {
   font-family: var(--q-body-font);
 }
 
-/* BS3 underlined links only on hover/focus; BS5's Reboot always does. */
-.results-control a {
+/* BS3 underlined links only on hover/focus; BS5's Reboot and .btn-link always do. */
+.results-control a,
+.results-control .btn-link {
   text-decoration: none;
 }
 
 .results-control a:hover,
-.results-control a:focus {
+.results-control a:focus,
+.results-control .btn-link:hover,
+.results-control .btn-link:focus-visible {
   text-decoration: underline;
 }
 
@@ -393,6 +396,11 @@ header .dropdown-item:focus {
 .col-summary .subfields li.subTitle {
 	font-family: Aller, sans-serif;
 	font-size: 18px;
+}
+
+.col-summary .subfields li.subTitle .btn-link {
+	font-size: inherit;
+	line-height: inherit;
 }
 
 .col-summary .subfields li .subLabel {

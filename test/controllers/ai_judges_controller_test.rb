@@ -182,7 +182,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
       <a href="javascript:alert(1)">Unsafe link</a><img src="x" onerror="alert(1)">
     HTML
 
-    template = File.readlines(Rails.root.join('app/views/ai_judges/_form.html.erb')).find do |line|
+    template = File.readlines(Rails.root.join('app/views/ai_judges/_provider_options.html.erb')).find do |line|
       line.include?('entry.help_html')
     end
     html = ApplicationController.render(inline: template, locals: { entry: provider })

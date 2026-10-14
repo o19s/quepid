@@ -174,7 +174,7 @@ test('server-rendered scorer choices retain cancel, load/save retry and persiste
   const id = await cloneCase(page);
   const modal = page.locator('#pickScorerModal');
   const open = async () => {
-    await page.getByRole('link', { name: 'Select scorer', exact: true }).click();
+    await page.getByRole('button', { name: 'Select scorer', exact: true }).click();
     await expect(modal).toBeVisible();
   };
   const cancel = async () => { await modal.getByRole('button', { name: 'Cancel', exact: true }).click(); };

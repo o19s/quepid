@@ -221,8 +221,7 @@ describe("MatchExplainController", () => {
 
     const body = lastBody()
     expect(body.querySelector(".doc-score-explanation pre").textContent).toBe("{}")
-    expect(body.querySelector(".match-explain-debug").classList.contains("disabled")).toBe(true)
-    expect(body.querySelector(".match-explain-debug").getAttribute("aria-disabled")).toBe("true")
+    expect(body.querySelector(".match-explain-debug").disabled).toBe(true)
 
     body.querySelector(".match-explain-debug").click()
     expect(openDynamicModal).not.toHaveBeenCalled()

@@ -50,6 +50,8 @@ module Core
       get :books, params: { case_id: acase.id }
       assert_response :success
       assert_select '[data-book-catalog] li:first-child em', text: 'None (disconnect from any book)'
+      assert_select '[data-book-catalog][data-new-book-url=?]',
+                    new_book_path(scorer_id: acase.scorer_id, origin_case_id: acase.id)
       assert_select '[data-judgements-core-book-id-param=?]', book.id.to_s, count: 1 do
         assert_select '[data-slot="name"]', text: book.name
         assert_select 'a[href=?]', book_path(book, script_name: '').delete_prefix('/')

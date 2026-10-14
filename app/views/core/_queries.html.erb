@@ -20,7 +20,7 @@
         data-action="submit->add-query#submit queries-state:changed@document->add-query#refreshQueryState add-query:complete->add-query#complete">
         <div class="input-group">
           <input id="add-query" class="form-control" data-add-query-target="input"
-            type="text" data-action="input->add-query#input">
+            type="text" data-action="input->add-query#input" autocomplete="off">
           <input id="add-query-submit" class="btn btn-success" data-add-query-target="submit"
             type="submit" value="Add query">
         </div>
@@ -30,20 +30,20 @@
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
         <li class="list-inline-item" data-queries-list-target="ratedLabel">
           <input type="checkbox" class="align-top" data-queries-list-target="ratedCheckbox" data-action="change->queries-list#toggleShowOnlyRated">
-          <a href="" data-action="click->queries-list#toggleShowOnlyRated">Show only rated</a>
+          <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->queries-list#toggleShowOnlyRated">Show only rated</button>
         </li>
 
         <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
         <li class="list-inline-item">
-          <a data-action="click->queries-list#collapseAll" href="">Collapse all</a>
+          <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->queries-list#collapseAll">Collapse all</button>
         </li>
 
         <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
         <li class="list-inline-item">
           <span class="text-muted">Sort &nbsp;</span>
-          <ul class="list-inline" style="display:inline" role="group" aria-label="sort">
+          <ul class="list-inline" style="display:inline" role="group" aria-label="Sort">
             <li class="list-inline-item" data-queries-list-target="manualSortLink" data-sort-field="default">
               <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-action="click->queries-list#sort" data-sort-field="default">Manual <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="default" aria-hidden="true"></i></button>
             </li>
@@ -62,7 +62,7 @@
       <div class="clearfix"></div>
       <div class="d-flex flex-row-reverse flex-wrap">
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
-        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="filter queries" class="form-control form-control-sm" id="queries-filter"></div>
+        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="Filter queries" class="form-control form-control-sm" id="queries-filter" autocomplete="off"></div>
         <div class="pe-3">
           <button type="button" class="btn btn-link p-0" data-controller="frog-report" data-action="click->frog-report#open"
                   data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">

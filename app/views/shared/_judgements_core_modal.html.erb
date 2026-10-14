@@ -1,15 +1,19 @@
+<%# locals: (kase:) %>
 <%# Core case toolbar — judgements / book link modal. Populate-from-case reads
     the client-side
-    document store populated by the live search adapter. %>
+    document store populated by the live search adapter. The create-book links start
+    with this render's URL; the book catalog refreshes it each time the modal opens. %>
+<% new_book_url = new_book_path(scorer_id: kase.scorer_id, origin_case_id: kase.id) %>
 <% modal_footer = capture do %>
   <div class="d-flex gap-2 me-auto">
-    <a class="btn btn-primary" target="_self"
+    <a class="btn btn-primary" target="_self" href="<%= new_book_url %>"
        data-judgements-core-target="createBookLink actionButton">
       <i class="bi bi-plus" style="color: #FFF"></i>
       Create a book
     </a>
 
     <a class="btn btn-outline-secondary d-none" target="_self"
+       <%= tag.attributes(href: kase.book_id && book_judge_path(kase.book_id)) %>
        data-judgements-core-target="judgeLink actionButton">
       <i class="bi bi-book-fill"></i>
       Judge Documents!
@@ -48,9 +52,9 @@
   <div class="alert alert-info text-center d-none" role="alert" data-judgements-core-target="noTeams">
     <p>
       Create a book of your own below, or
-      <a href="#" data-action="click->judgements-core#goToTeamsPage">create a new team</a>
+      <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->judgements-core#goToTeamsPage">create a new team</button>
       or
-      <a href="#" data-action="click->judgements-core#openShareCase">share case</a> first.
+      <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->judgements-core#openShareCase">share case</button> first.
     </p>
   </div>
 
@@ -59,7 +63,7 @@
       You have not created any Books of Judgements yet, so go ahead and create a new Book!
     </p>
 
-    <a class="btn btn-primary btn-lg" target="_self"
+    <a class="btn btn-primary btn-lg" target="_self" href="<%= new_book_url %>"
        data-judgements-core-target="createBookEmptyLink">
       <i class="bi bi-plus-lg"></i>
       Create a book
@@ -184,7 +188,6 @@
                                    judgements_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__"),
                                    judgements_core_catalog_url_template_value: case_books_catalog_path(case_id: "__CASE_ID__"),
                                    judgements_core_refresh_url_template_value: api_book_refresh_path(book_id: "__BOOK_ID__", case_id: "__CASE_ID__", create_missing_queries: "__CREATE_MISSING__", process_in_background: "__BACKGROUND__"),
-                                   judgements_core_new_book_url_template_value: new_book_path(scorer_id: "__SCORER_ID__", origin_case_id: "__CASE_ID__"),
                                    judgements_core_judge_url_template_value: book_judge_path(book_id: "__BOOK_ID__")
                                  },
                                  title_data: { judgements_core_target: "title" },

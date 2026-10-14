@@ -96,7 +96,7 @@ test('tests drafts, handles errors, saves via Turbo, and selects owned books wit
   await expect(page.locator(`input[type=checkbox][value="${judgeId}"][name="book[ai_judge_ids][]"]`)).toBeChecked();
   await expect(page.locator('main')).toContainText(name);
   await page.goto(`case/${caseId}`);
-  await page.getByRole('link', { name: 'Judgements', exact: true }).click();
+  await page.getByRole('button', { name: 'Judgements', exact: true }).click();
   const modal = page.locator('#judgementsModal');
   await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeVisible();
   await modal.locator('[data-judgements-core-target="item"]').filter({ hasText: name }).click();

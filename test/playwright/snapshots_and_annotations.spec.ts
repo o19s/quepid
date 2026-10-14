@@ -38,7 +38,7 @@ test.describe('snapshots', () => {
     let snapshotId: number | undefined;
 
     try {
-      await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
+      await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
       const snapshotModal = page.locator('#takeSnapshotModal.show');
       await expect(snapshotModal).toBeVisible();
 
@@ -109,7 +109,7 @@ test.describe('annotations', () => {
 
     // "Tune Relevance" toggles the east dev-settings panel, whose Stimulus
     // "Annotations" tab hosts the annotation controller (create form + list).
-    await page.locator('#tune-relevance-link a').click();
+    await page.locator('#tune-relevance-link button').click();
     await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
 
     const annotations = page.locator('#annotations');
@@ -149,7 +149,7 @@ test.describe('annotations', () => {
       await expect(updatedItem.locator('.annotation-message')).toHaveText(editedMessage);
 
       await gotoSnapshotCase(page);
-      await page.locator('#tune-relevance-link a').click();
+      await page.locator('#tune-relevance-link button').click();
       await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
       await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible();
 

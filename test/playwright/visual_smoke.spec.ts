@@ -96,12 +96,12 @@ test('core workspace and widgets', async ({ page }) => {
   await page.locator('search-result .single-rating').first().click();
   await expect(page.locator('.popover')).toHaveCount(0);
 
-  await page.locator('a[data-bs-target="#pickScorerModal"]').click();
+  await page.locator('button[data-bs-target="#pickScorerModal"]').click();
   await expect(page.locator('#pickScorerModal.show')).toBeVisible();
   await shot(page, 'core-scorer');
   await closeModal(page);
 
-  await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
+  await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
   await expect(page.locator('#takeSnapshotModal.show')).toBeVisible();
   await shot(page, 'core-snapshot');
   await closeModal(page);

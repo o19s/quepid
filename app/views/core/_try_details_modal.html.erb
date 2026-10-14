@@ -4,7 +4,7 @@
 <% modal_body = capture do %>
   <form class="try-rename-form flex-wrap align-items-center gap-2 mb-3" data-tune-relevance-target="tryRenameForm" data-action="submit->tune-relevance#submitRename" hidden>
     <label for="tune-try-name">Name:</label>
-    <input id="tune-try-name" type="text" class="form-control w-auto flex-grow-1" data-tune-relevance-target="tryNameInput">
+    <input id="tune-try-name" type="text" class="form-control w-auto flex-grow-1" data-tune-relevance-target="tryNameInput" autocomplete="off">
     <button type="submit" class="btn btn-sm btn-primary">Rename</button>
   </form>
   <div class="row">
@@ -13,7 +13,7 @@
   </div>
   <div class="row">
     <div class="col-sm-3">Search Endpoint</div>
-    <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer">Browse Search Endpoint</a></div>
+    <div class="col-sm-9"><a data-tune-relevance-target="tryEndpointLink" target="_self"></a> -- <a data-tune-relevance-target="tryBrowseLink" target="_blank" rel="noopener noreferrer" hidden>Browse Search Endpoint</a></div>
   </div>
   <div class="row">
     <div class="col-sm-3">Displayed Fields</div>

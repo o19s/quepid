@@ -1,0 +1,39 @@
+<%# locals: (user:, error_record:, active_error_section:) %>
+<div class="row mb-3">
+  <hr>
+  <%= form_with( model: user, url: profile_path) do |f| %>
+
+    <h2>
+      Profile
+    </h2>
+    <% if :profile == active_error_section %>
+      <%= render "shared/error_messages", record: error_record, subject: "", id: "error_explanation_profile" %>
+    <% end %>
+
+    <div class="form-floating mb-3">
+
+      <%= f.email_field :email, class: "form-control", placeholder: "Email" %>
+      <label for="user_email" class="form-label">Email</label>
+      <div id="emailHelp" class="form-text">Your profile image displayed is sourced from <a href="http://gravatar.com" target="_blank" rel="noopener noreferrer">gravatar.com</a> based on your email address.</div>
+    </div>
+    <div class="form-floating mb-3">
+
+      <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+      <label for="user_name" class="form-label">Name</label>
+    </div>
+    <div class="form-floating mb-3">
+      <%= f.text_field :company, class: "form-control", placeholder: "Company Name" %>
+      <label for="user_company" class="form-label">Company Name</label>
+    </div>
+
+    <% if Rails.application.config.email_marketing_mode %>
+    <div class="mb-3 form-check">
+      <%= f.check_box :email_marketing, class: "form-check-input" %>
+      <label class="form-check-label" for="user_email_marketing">I want to receive updates about Quepid!</label>
+    </div>
+    <% end %>
+
+    <button type="submit" class="btn btn-primary">Update profile</button>
+
+  <% end %>
+</div>

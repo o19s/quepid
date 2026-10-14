@@ -89,7 +89,7 @@ test.describe('Core pages — interaction tour', () => {
 
     await page.keyboard.press('Escape');
 
-    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
+    await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
     await expect(page.locator('#takeSnapshotModal.show')).toBeVisible({ timeout: 5_000 });
 
     const snapshotModal = page.locator('#takeSnapshotModal.show');
@@ -104,7 +104,7 @@ test.describe('Core pages — interaction tour', () => {
     await gotoCase(page);
     await expandFirstQuery(page);
 
-    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
+    await page.locator('button[data-bs-target="#pickScorerModal"]').click();
     await expect(page.locator('#pickScorerModal.show')).toContainText(/How would you like to score/i);
 
     const picker = page.locator('#pickScorerModal.show');

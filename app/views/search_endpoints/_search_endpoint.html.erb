@@ -1,3 +1,4 @@
+<%# locals: (search_endpoint:) %>
 <div id="<%= dom_id search_endpoint %>">
   <p>
     <strong>Name:</strong>
@@ -7,7 +8,7 @@
   <p>
     <strong>Search engine:</strong>
     <% if search_endpoint.search_engine %>
-      <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %>
+      <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle', alt:'' %>
     <% end %>
     <%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.search_engine %>
   </p>
@@ -19,7 +20,7 @@
 
   <p>
     <strong>Custom headers:</strong>
-    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
 
   <p>
@@ -47,7 +48,7 @@
 
   <p>
     <strong>Options:</strong>
-    <%= text_area_tag 'options', format_json(search_endpoint.options), data: { controller: "codemirror", action: "turbo:before-cache@document->codemirror#teardown", codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+    <%= text_area_tag 'options', format_json(search_endpoint.options), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
 
   <% if search_endpoint.search_engine == 'searchapi' %>

@@ -540,7 +540,7 @@ There is no custom-headers component in the Settings tab. Headers belong to the 
 At the bottom of the dev settings panel (`#query-sandbox-action`, visible only on the Query, Tuning Knobs and Settings tabs):
 - Copies the editor, field spec, number of rows and escape flag onto the settings, validates them, and saves them as a new try (`settings.save()`)
 - The saved try triggers a re-run of all queries
-- If a TLS mismatch is detected, the button is replaced by a "Reload Quepid in {protocol} Protocol" link
+- If a TLS mismatch is detected, the button is replaced by a "Reload Quepid in {protocol} Protocol" button
 
 ---
 

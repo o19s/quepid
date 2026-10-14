@@ -45,7 +45,7 @@ test('generated result and match-explain controls route through declared actions
   await gotoCase(page, '', 6);
   await expandFirstQuery(page);
 
-  await page.locator('search-result').first().locator('.subTitle a').click();
+  await page.locator('search-result').first().locator('.subTitle button').click();
   await expect(page.locator('.modal.show')).toBeVisible();
   await page.locator('.modal.show').getByRole('button', { name: 'Close', exact: true }).click();
   await expect(page.locator('.modal.show')).toHaveCount(0);

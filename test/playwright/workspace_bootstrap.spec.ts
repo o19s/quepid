@@ -74,7 +74,7 @@ test.describe('Rails-provided workspace bootstrap', () => {
       await expect(page.locator('#case-actions')).toBeVisible();
       await expect(page.locator('#case-header')).toContainText(`Try ${tryNo}`);
     }
-    await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+    await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
     await page.getByRole('button', { name: 'History', exact: true }).click();
     await expect(page.locator('.history-list .try-history-item')).toHaveCount(2);
     await page.locator(`.history-list [data-try-no="${latestTry}"]`).click();

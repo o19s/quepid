@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-11
+**Last updated:** 2026-10-14
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -793,6 +793,25 @@ hosts in `script-src`, or a per-request allow-list. Either remove
 A review of Quepid's tooling, structure and architecture from four perspectives: software architect, pragmatic engineer, modern Rails/Hotwire engineer, and engineering leadership. The focus is readability, maintainability and ease of use.
 
 **Reviewed:** October 5, 2026. This snapshot includes the current working tree, including pending changes. Findings come from source, configuration and documentation inspection; no builds, test suites or browser flows were run for this documentation update. File counts describe source files, not runtime classes or test coverage.
+
+### [MIGRATION-FOLLOWUP] P3 I0 C2 — Patch upstream Stimulus LSP controller detection
+
+Submit an upstream [stimulus-parser](https://github.com/marcoroth/stimulus-parser)
+patch to resolve Rails importmap paths (`controllers/...`) and mixin inheritance
+such as `extends withStatusMessages(Controller)` and
+`extends withDestructiveForm(CoreModalControllerBase)`. Verify controller
+discovery, inherited actions, targets and values against Quepid's shared bases
+and ordinary `extends Controller` classes. Stimulus LSP 1.1.2's bundled parser
+misses these controllers; `.stimulus-lsp/config.json` temporarily suppresses
+`stimulus.controller.invalid` for the affected identifiers. Remove those ignores
+once an extension release detects them correctly.
+
+Also patch [Stimulus LSP](https://github.com/marcoroth/stimulus-lsp) to exclude
+Bootstrap's `data-bs-target` from Stimulus target validation; it currently
+reports a nonexistent `bs` controller. Verify Bootstrap targets produce no
+Stimulus diagnostics while real Stimulus target validation still works, then
+remove the temporary `data-bs-target` entry from `ignoredAttributes` in the
+same config.
 
 ### [PREEXISTING] P2 I2 C1 — 2. Reconcile onboarding, Docker and frontend documentation
 

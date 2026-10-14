@@ -26,87 +26,12 @@
 
 
       <% if origin_case %>
-        <div class="card mb-3" data-controller="case-book-synchronization">
-          <h5 class="card-header">Case Integration</h5>
-          <div class="card-body">
-            <div class="alert alert-info mb-3" role="alert">
-              <i class="bi bi-info-circle"></i>
-              <strong>About Book-Case Synchronization:</strong> Books and Cases sync data both ways.
-              Query/doc pairs from your Case send to the Book for judging, and Book ratings flow back into your Case.
-              Any ratings made directly in the Case view also sync to the Book.
-              <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_out">
-                Learn more <i class="bi bi-arrow-up-right-circle"></i>
-              </a>
-            </div>
-
-            <div class="mb-4">
-              <h6 class="fw-bold">Enable Synchronization</h6>
-              <div class="form-check form-switch">
-                <%= form.label :link_the_case, "Link the Case ", class:'form-check-label' %>
-                <%= form.check_box :link_the_case, class:'form-check-input', checked: link_the_case.nil? ? true : link_the_case,
-                      data: { case_book_synchronization_target: 'linkTheCase', action: 'change->case-book-synchronization#toggleOptions' } %>
-                <i class="bi bi-briefcase"></i> <%= origin_case.case_name %> to this book
-              </div>
-              <%= form.hidden_field :origin_case_id, :value => origin_case.id %>
-              <div class="form-text">Creates the connection needed for automatic data syncing below.</div>
-            </div>
-
-            <div class="mb-4">
-              <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
-              <div class="form-check form-switch">
-                <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
-                <%= form.hidden_field :auto_populate_book_pairs, value: '0', id: nil,
-                      data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-                <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: auto_populate_book_pairs.nil? ? book.new_record? : auto_populate_book_pairs,
-                      data: { case_book_synchronization_target: 'synchronizationOption' } %>
-              </div>
-              <div class="form-text">
-                <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
-                <br>
-                <strong>Off:</strong> Manually trigger updates to the Book when needed.
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <h6 class="fw-bold">Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings</h6>
-              <div class="form-check form-switch">
-                <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
-                <%= form.hidden_field :auto_populate_case_judgements, value: '0', id: nil,
-                      data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-                <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: auto_populate_case_judgements.nil? ? true : auto_populate_case_judgements,
-                      data: { case_book_synchronization_target: 'synchronizationOption' } %>
-              </div>
-              <div class="form-text">
-                <strong>On:</strong> Case ratings update immediately as judgements are made.
-                <br>
-                <strong>Off:</strong> Manually import judgements when ready to test.
-              </div>
-            </div>
-          </div>
-        </div>
+        <%= render "books/case_integration_fields", form: form, book: book, origin_case: origin_case,
+                   link_the_case: link_the_case, auto_populate_book_pairs: auto_populate_book_pairs,
+                   auto_populate_case_judgements: auto_populate_case_judgements %>
       <% end %>
 
-      <div class="mb-3">
-        <i class="bi bi-robot"></i>
-        <%= form.label :teams, "AI Judges Assigned to this Book", class: 'form-label' %>
-        <%= form.collection_check_boxes(:ai_judge_ids, ai_judges, :id, :name) do |b| %>
-          <div>
-            <%= b.check_box %>
-            <%= b.label %>
-            <div class="form-check ms-4">
-              <%= check_box_tag 'book[auto_run_ai_judge_ids][]', b.value,
-                    book.books_ai_judges.any? { |assignment| assignment.user_id == b.value && assignment.auto_run? },
-                    id: "auto_run_#{b.value}", class: 'form-check-input' %>
-              <%= label_tag "auto_run_#{b.value}", 'Auto-run on new pairs', class: 'form-check-label' %>
-            </div>
-          </div>
-        <% end %>
-        <%= hidden_field_tag 'book[auto_run_ai_judge_ids][]', '' %>
-        <div class="form-text">
-          Choose AI judges you own or that are shared with one of your teams.
-        </div>
-      </div>
-
+      <%= render "books/ai_judge_assignment_fields", form: form, book: book, ai_judges: ai_judges %>
 
       <div class="mb-3">
         <%= form.label :rank_depth, 'Rank Depth', class: 'form-label' %>
@@ -128,46 +53,7 @@
         <div class="form-text">Regular explicit judgements are on a ordinal scale, however implicit judgements are floats.  This controls how we import the judgements into the main Quepid Case screen.</div>
       </div>
 
-      <div data-controller="scoring-guidelines"
-           data-scoring-guidelines-four-point-value="<%= Book::FOUR_POINT_GUIDELINES.strip %>"
-           data-scoring-guidelines-two-point-value="<%= Book::TWO_POINT_GUIDELINES.strip %>"
-           data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(viewer).to_json %>">
-        <div class="mb-3">
-          <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
-          <%= form.select(:scorer_id, scorer_options_for_select(viewer),
-                {
-                  prompt: "Select a rating scale...",
-                  include_blank: true
-                },
-                {
-                  class: "form-control#{' is-invalid' if form.object.errors[:scorer_id].present?}",
-                  required: true,
-                  data: {
-                    scoring_guidelines_target: 'scorerSelect',
-                    action: 'scoring-guidelines#scaleChanged'
-                  }
-              }) %>
-          <% if form.object.errors[:scorer_id].present? %>
-            <div class="invalid-feedback d-block"><%= form.object.errors.full_messages_for(:scorer_id).to_sentence %></div>
-          <% end %>
-          <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
-        </div>
-
-        <div class="mb-3">
-          <%= form.label :scoring_guidelines, "Scoring Guidelines (Markdown)", class: 'form-label' %>
-          <%= form.text_area :scoring_guidelines,
-              class: 'form-control font-monospace',
-              rows: 10,
-              placeholder: 'Scoring guidelines will be auto-populated when you select a rating scale, or enter your own custom guidelines...',
-              data: {
-                scoring_guidelines_target: 'textarea'
-              } %>
-          <div class="form-text">
-            Provide guidelines to help judges understand how to rate documents. Supports markdown formatting (tables, bold, italic, links, etc.).
-            Leave blank to use the default guidelines based on the rating scale.
-          </div>
-        </div>
-      </div>
+      <%= render "books/scoring_guideline_fields", form: form, viewer: viewer %>
 
       <% unless book.new_record? %>
         <div class="mb-3">

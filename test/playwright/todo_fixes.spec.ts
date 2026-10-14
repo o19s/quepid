@@ -131,7 +131,7 @@ for (const format of ['Basic', 'TREC']) {
       await route.fulfill({ body: content, contentType: format === 'TREC' ? 'text/plain' : 'text/csv' });
     });
     await gotoCase(page, '', 6);
-    await page.getByRole('link', { name: 'Export', exact: true }).click();
+    await page.getByRole('button', { name: 'Export', exact: true }).click();
     const modal = page.getByRole('dialog');
     await modal.getByRole('radio', { name: format, exact: true }).check();
     await modal.locator('[data-export-case-core-target="basicSnapshotSelect"]').selectOption('9999');

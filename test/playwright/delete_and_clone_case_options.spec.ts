@@ -54,7 +54,7 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
       expect(await fetchQueryCount(page, caseId)).toBe(2);
 
       await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Delete', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
 
       const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
       await expect(modal).toContainText(/Delete Options for Case/i);
@@ -79,7 +79,7 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
 
     try {
       await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Delete', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
 
       const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
       await expect(modal).toContainText(/Delete Options for Case/i);
@@ -110,7 +110,7 @@ test.describe('core case toolbar: clone-case-core', () => {
       await addQuery(page, sourceCaseId, 'star wars');
 
       await gotoCase(page, sourceCaseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Clone', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Clone', exact: true }).click();
 
       const modal = page.locator('#cloneCaseModal.show, .modal.show').first();
       await expect(modal).toContainText(/Clone case/i);

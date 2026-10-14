@@ -44,7 +44,6 @@ function buildModalController(overrides = {}) {
     values: {
       caseUrlTemplate: "/api/cases/__CASE_ID__",
       catalogUrlTemplate: "/cases/__CASE_ID__/modal_catalogs/books",
-      newBookUrlTemplate: "books/new?scorer_id=__SCORER_ID__&origin_case_id=__CASE_ID__",
       judgeUrlTemplate: "books/__BOOK_ID__/judge"
     }
   })
@@ -143,6 +142,35 @@ describe("JudgementsCoreController", () => {
     expect(controller.itemTargets.map(item => item.classList.contains("active"))).toEqual([true, false])
   })
 
+  it("points Judge Documents at the selected book, even one missing from the catalog", async () => {
+    const controller = buildModalController()
+    await openWithBooks(controller, [{ id: 8, name: "Eight" }, { id: 9, name: "Nine" }], 8)
+    expect(controller.judgeLinkTarget.getAttribute("href")).toBe("books/8/judge")
+    expect(controller.judgeLinkTarget.classList.contains("d-none")).toBe(false)
+    controller.selectBook({ params: { bookId: 9 } })
+    expect(controller.judgeLinkTarget.getAttribute("href")).toBe("books/9/judge")
+    controller.selectBook({ params: { bookId: "" } })
+    expect(controller.judgeLinkTarget.classList.contains("d-none")).toBe(true)
+    // An archived owned book linked to the case is left out of the catalog.
+    await openWithBooks(controller, [{ id: 9, name: "Nine" }], 12)
+    expect(controller.judgeLinkTarget.getAttribute("href")).toBe("books/12/judge")
+  })
+
+  it("takes the create-book URL from each catalog load, so a changed scorer is picked up", async () => {
+    const controller = buildModalController()
+    const openWithNewBookUrl = async (newBookUrl) => {
+      apiFetch.mockImplementation(async (url) => ({
+        ok: true,
+        text: async () => url === "/api/cases/42" ? JSON.stringify({ teams: [{ id: 1 }], book_id: null }) : bookCatalogHtml([], { newBookUrl })
+      }))
+      await controller.openFor({ dataset: { judgementsCoreIdValue: "42" } })
+    }
+    await openWithNewBookUrl("books/new?scorer_id=7&origin_case_id=42")
+    await openWithNewBookUrl("books/new?scorer_id=11&origin_case_id=42")
+    expect(controller.createBookLinkTarget.getAttribute("href")).toBe("books/new?scorer_id=11&origin_case_id=42")
+    expect(controller.createBookEmptyLinkTarget.getAttribute("href")).toBe("books/new?scorer_id=11&origin_case_id=42")
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockReset()
@@ -163,7 +191,6 @@ describe("JudgementsCoreController", () => {
     const controller = buildModalController()
     const trigger = document.createElement("a")
     trigger.dataset.judgementsCoreIdValue = "42"
-    trigger.dataset.judgementsCoreScorerIdValue = "7"
 
     await controller.openFor(trigger)
 

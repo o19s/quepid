@@ -40,8 +40,9 @@
     <ul class="list-inline">
       <li class="list-inline-item">
         <i class="bi bi-card-list"></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#pickScorerModal"
           data-pick-scorer-core-id-value="<%= kase.id %>"
@@ -49,7 +50,7 @@
           data-pick-scorer-core-current-scorer-name-value="<%= kase.scorer&.name %>"
         >
           Select scorer
-        </a>
+        </button>
       </li>
       <li class="list-inline-item">
         <i
@@ -57,24 +58,25 @@
           aria-hidden="true"
           title="Judgements"
         ></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#judgementsModal"
           data-judgements-core-id-value="<%= kase.id %>"
-          data-judgements-core-scorer-id-value="<%= kase.scorer_id %>"
           data-judgements-core-book-id-value="<%= kase.book_id %>"
           data-judgements-core-queries-count-value="<%= kase.queries.count %>"
           data-judgements-core-auto-populate-book-pairs-value="<%= kase.auto_populate_book_pairs %>"
           data-judgements-core-auto-populate-case-judgements-value="<%= kase.auto_populate_case_judgements %>"
         >
           Judgements
-        </a>
+        </button>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-camera-fill"></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#takeSnapshotModal"
           data-take-snapshot-core-id-value="<%= kase.id %>"
@@ -83,19 +85,20 @@
           data-take-snapshot-core-mapper-engine-name-value="<%= a_try&.search_endpoint&.mapper_based_search_engine&.name %>"
         >
           Create snapshot
-        </a>
+        </button>
       </li>
       <li class="list-inline-item">
           <i class="bi bi-bar-chart-fill" aria-hidden="true"></i>
-          <a
-            href="#"
+          <button
+            type="button"
+            class="btn btn-link p-0 border-0 align-baseline"
             data-bs-toggle="modal"
             data-bs-target="#diffModal"
-          >Compare snapshots</a>
+          >Compare snapshots</button>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-file-earmark-arrow-down" aria-hidden="true"></i>
-        <a href="#" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</a>
+        <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-bs-toggle="modal" data-bs-target="#importRatingsModal">Import</button>
       </li>
       <li class="list-inline-item">
         <i
@@ -103,51 +106,55 @@
           aria-hidden="true"
           title="Share Case"
         ></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#shareCaseModal"
           data-share-case-core-id-value="<%= kase.id %>"
-        >Share case</a>
+        >Share case</button>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-copy" aria-hidden="true"></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#cloneCaseModal"
           data-clone-case-core-id-value="<%= kase.id %>"
           data-clone-case-core-last-try-value="<%= kase.last_try_number %>"
-        >Clone</a>
+        >Clone</button>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-x-lg" aria-hidden="true"></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#deleteCaseOptionsModal"
           data-delete-case-options-core-id-value="<%= kase.id %>"
-        >Delete</a>
+        >Delete</button>
       </li>
       <li class="list-inline-item">
         <i class="bi bi-file-earmark-arrow-up" aria-hidden="true"></i>
-        <a
-          href="#"
+        <button
+          type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-bs-toggle="modal"
           data-bs-target="#exportCaseModal"
           data-export-case-core-id-value="<%= kase.id %>"
           data-export-case-core-supports-detailed-export-value="true"
-        >Export</a>
+        >Export</button>
       </li>
       <li class="list-inline-item" id="tune-relevance-link">
         <i class="bi bi-wrench-adjustable"></i>
-        <a
-          href="#"
+        <button
           type="button"
+          class="btn btn-link p-0 border-0 align-baseline"
           data-action="click->case-toolbar#toggleTuneRelevance"
         >
           Tune Relevance
-        </a>
+        </button>
       </li>
     </ul>
   </div>

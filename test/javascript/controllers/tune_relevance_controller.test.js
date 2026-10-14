@@ -126,7 +126,6 @@ function mount(settingsOverrides) {
   target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="number" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
   target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
   target("tlsWarning", document.createElement("div"))
-  target("tlsReloadLink", document.createElement("a"))
   target("tlsProtocol", document.createElement("span"))
   target("endpointSelect", document.createElement("select"))
   target("endpointSearch", document.createElement("input"))
@@ -527,8 +526,18 @@ describe("TuneRelevanceController", () => {
 
       expect(controller.tlsWarningTarget.hidden).toBe(false)
       expect(controller.tlsProtocolTarget.textContent).toBe("https")
-      expect(controller.tlsReloadLinkTarget.getAttribute("href")).toContain("https://x?")
       expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(true)
+    })
+
+    it("reloads Quepid on the other protocol, carrying the endpoint settings", () => {
+      const assign = vi.fn()
+      vi.stubGlobal("location", { assign })
+      const { controller } = mount()
+
+      controller.reloadInOtherProtocol()
+
+      expect(assign).toHaveBeenCalledOnce()
+      expect(assign.mock.calls[0][0]).toMatch(/^https:\/\/x\?.*showWizard=false/)
     })
 
     it("does not warn when requests are proxied", () => {
@@ -636,6 +645,18 @@ describe("TuneRelevanceController", () => {
       controller.showTryDetails(settings.tries[0])
 
       expect(controller.tryDeleteTarget.disabled).toBe(true)
+    })
+
+    it("drops the endpoint and browse hrefs for a try without them, rather than linking to #", () => {
+      const { controller } = mount()
+      controller.showTryDetails(makeTry({ endpointName: "Old", searchEndpointId: 5, searchUrl: "http://x" }))
+      expect(controller.tryEndpointLinkTarget.getAttribute("href")).toBe("search_endpoints/5")
+
+      controller.showTryDetails(makeTry({ endpointName: "", searchEndpointId: null, searchUrl: "" }))
+
+      expect(controller.tryEndpointLinkTarget.hasAttribute("href")).toBe(false)
+      expect(controller.tryBrowseLinkTarget.hasAttribute("href")).toBe(false)
+      expect(controller.tryBrowseLinkTarget.hidden).toBe(true)
     })
 
     it("toggles the rename form", () => {

@@ -1,0 +1,74 @@
+<%# locals: (ai_judge:, form:, option_defaults:, images_supported:, specs:, submitted_options:) %>
+<ul class="nav nav-underline mb-3" id="pills-tab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active" id="pills-structured-fields-tab" data-bs-toggle="pill" data-bs-target="#pills-structured-fields" type="button" role="tab" aria-controls="pills-structured-fields" aria-selected="true">Structured Fields</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link" id="pills-json-tab" data-ai-judge-form-target="jsonTab" data-bs-toggle="pill" data-bs-target="#pills-json" type="button" role="tab" aria-controls="pills-json" aria-selected="false">JSON</button>
+  </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+  <div class="tab-pane fade show active" id="pills-structured-fields" role="tabpanel" aria-labelledby="pills-structured-fields-tab" tabindex="0">
+
+    <% sorted_judge_options = option_defaults.merge(ai_judge.judge_options).except(:llm_include_images).reverse_merge(specs.transform_values { nil }.transform_keys(&:to_sym)).sort_by { |k, _| k.to_s == 'llm_provider' ? 0 : 1 } %>
+    <% sorted_judge_options.each do |key, value| %>
+      <% spec = specs[key.to_s] %>
+      <div class="row mb-3 <%= 'provider-option-field' if spec %>" data-provider="<%= spec&.dig(:provider) %>" <% if spec %>data-ai-judge-form-target="providerOptionField"<% end %>>
+        <%= label_tag "judge_options[#{key}]", spec&.dig(:label) || key.to_s.humanize.titleize, class: 'col-sm-2 col-form-label' %>
+        <div class="col-sm-4">
+          <% if key.to_s == 'llm_provider' %>
+            <%= select_tag "user[judge_options][llm_provider]",
+                  options_for_select(LlmProvider.select_options, value.to_s),
+                  id: 'judge_options_llm_provider',
+                  class: 'form-select form-select-sm', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" }
+            %>
+          <% elsif spec&.dig(:type) == :number %>
+            <%= number_field_tag "user[judge_options][#{key}]", value,
+                  id: "judge_options_#{key}", class: 'form-control form-control-sm',
+                  min: spec[:min], max: spec[:max], step: spec[:step], data: { ai_judge_form_target: "structured" } %>
+            <div class="form-text"><%= spec[:hint] %></div>
+          <% else %>
+            <%= text_field_tag "user[judge_options][#{key}]", value,
+              id: "judge_options_#{key}",
+              class: 'form-control form-control-sm', data: { ai_judge_form_target: "structured #{ { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s]}" }
+            %>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+    <div class="row mb-3">
+      <div class="col-sm-2">Images</div>
+      <div class="col-sm-4">
+        <% image_setting = ai_judge.judge_options[:llm_include_images] %>
+        <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
+        <%= hidden_field_tag 'user[judge_options][llm_include_images]', images_supported ? 'false' : include_images.to_s, data: { ai_judge_form_target: 'structured imagesHidden' } %>
+        <div class="form-check">
+          <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images && images_supported,
+                id: 'judge_options_llm_include_images', class: 'form-check-input',
+                disabled: !images_supported,
+                data: { ai_judge_form_target: 'structured images', wanted: include_images.to_s, unsupported: (!images_supported).to_s } %>
+          <%= label_tag 'judge_options_llm_include_images', 'Judge with images', class: 'form-check-label' %>
+        </div>
+        <div class="form-text">Use the document image or thumbnail URL. Turn off for text-only models.</div>
+        <div class="form-text text-warning-emphasis" data-ai-judge-form-target="imagesNotice" style="display:none">
+          <span data-ai-judge-form-target="imagesNoticeProvider"></span> doesn't support images, so none are sent.
+        </div>
+      </div>
+    </div>
+    <% LlmProvider.each do |entry| %>
+      <template data-ai-judge-form-target="preset" data-provider="<%= entry.key %>"><%= sanitize entry.help_html, tags: %w[strong b br code a], attributes: %w[href target rel] %></template>
+    <% end %>
+    <div id="provider-help" data-ai-judge-form-target="help" class="alert alert-info mt-3 mb-0 small" style="display:none;">
+    </div>
+  </div>
+  <div class="tab-pane fade" id="pills-json" role="tabpanel" aria-labelledby="pills-json-tab" tabindex="0">
+    <div class="row mb-3">
+      <div class="form-text">
+        This the raw JSON stored as <code>options</code> for the Judge.
+        Make sure you are editing under the <code>judge_options</code> key.
+      </div>
+      <%= form.text_area :options, value: submitted_options || format_json(ai_judge.options),
+        class: 'form-control', rows: 10, disabled: true, data: { ai_judge_form_target: "json", action: "input->ai-judge-form#jsonChanged" } %>
+    </div>
+  </div>
+</div>

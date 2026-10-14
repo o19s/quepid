@@ -111,8 +111,8 @@ export default class extends Controller {
     )
     if (!supportsBrowse) return
 
-    const button = document.createElement("a")
-    button.href = "#"
+    const button = document.createElement("button")
+    button.type = "button"
     button.className = "btn btn-primary"
     button.dataset.controller = "browse-query"
     button.dataset.action = "click->browse-query#open"

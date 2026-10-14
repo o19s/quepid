@@ -103,7 +103,7 @@ function setupTour() {
     title: "Tune Relevance",
     text: 'There are many awesome things you can do, but the best place to start is by tuning your case.<br />So let\'s unlock a bunch of awesomeness by clicking the "Tune Relevance" link.',
     attachTo: { element: "#tune-relevance-link", on: "bottom" },
-    advanceOn: { selector: "#tune-relevance-link a", event: "click" },
+    advanceOn: { selector: "#tune-relevance-link button", event: "click" },
     buttons: [
       {
         text: "Back",
@@ -126,7 +126,7 @@ function setupTour() {
     "title" \
   ]</code> for Algolia, (adjust appropriately if you are not using the demo case).`,
     attachTo: { element: ".pane_east", on: "left" },
-    advanceOn: { selector: "#tune-relevance-link a", event: "click" },
+    advanceOn: { selector: "#tune-relevance-link button", event: "click" },
     buttons: [
       {
         text: "Back",

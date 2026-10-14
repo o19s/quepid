@@ -55,7 +55,7 @@ for (const [name, id] of [['Export', 'exportCaseModal'], ['Compare snapshots', '
   test(`${name} has labeled selects and ordered headings`, async ({ page }) => {
     if (id === 'judgementsModal') await page.goto('case/6');
     else await gotoCase(page);
-    await page.getByRole('link', { name, exact: true }).click();
+    await page.getByRole('button', { name, exact: true }).click();
     const modal = page.locator(`#${id}`);
     await expect(modal).toBeVisible();
     if (id === 'diffModal') {
@@ -88,8 +88,8 @@ for (const [name, id] of [['Export', 'exportCaseModal'], ['Compare snapshots', '
 
 test('Sort buttons can be reached and activated by keyboard', async ({ page }) => {
   await gotoCase(page);
-  const sort = page.getByRole('group', { name: 'sort', exact: true });
-  await page.getByRole('link', { name: 'Collapse all', exact: true }).focus();
+  const sort = page.getByRole('group', { name: 'Sort', exact: true });
+  await page.getByRole('button', { name: 'Collapse all', exact: true }).focus();
   for (const name of ['Manual', 'Name', 'Modified', 'Score', 'Errors']) {
     await page.keyboard.press('Tab');
     const button = sort.getByRole('button', { name: new RegExp(`^${name}`) });

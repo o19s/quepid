@@ -135,15 +135,15 @@ test.describe('core layout golden paths', () => {
     await expandFirstQuery(page);
 
     const result = page.locator('search-result').first();
-    await result.locator('.subTitle a').click();
+    await result.locator('.subTitle button').click();
 
     const modal = page.locator('.modal.show').filter({ hasText: 'Detailed Document View of doc:' }).last();
     await expect(modal).toBeVisible();
     await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
 
-    await modal.getByRole('link', { name: 'View All Fields' }).click();
+    await modal.getByRole('button', { name: 'View All Fields' }).click();
     await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
-    await expect(modal.getByRole('link', { name: 'Hide All Fields' })).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Hide All Fields' })).toBeVisible();
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toBeHidden();
@@ -185,7 +185,7 @@ test.describe('core layout golden paths', () => {
     await expect(queryList).toHaveAttribute('data-queries-list-sort-name-value', 'query');
 
     await expandFirstQuery(page);
-    await queryList.getByRole('link', { name: 'Collapse all', exact: true }).click();
+    await queryList.getByRole('button', { name: 'Collapse all', exact: true }).click();
     await expect(queryList.locator('.sub-results:visible')).toHaveCount(0);
   });
 
@@ -430,7 +430,7 @@ test.describe('core layout golden paths', () => {
     await gotoCase(page, '', 6);
     await expandFirstQuery(page);
 
-    const browse = page.locator('a[data-controller="browse-query"]').first();
+    const browse = page.locator('button[data-controller="browse-query"]').first();
     await expect(browse).toBeVisible();
     await browse.click();
 

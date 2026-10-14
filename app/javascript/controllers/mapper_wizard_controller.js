@@ -58,8 +58,7 @@ export default class extends withStatusMessages(Controller) {
 
   // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
-  showStep3Manually(event) {
-    event.preventDefault()
+  showStep3Manually() {
     this.step2Target.style.display = "block"
     this.step3Target.style.display = "block"
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })

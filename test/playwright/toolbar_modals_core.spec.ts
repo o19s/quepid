@@ -67,7 +67,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     pickScorerCaseId = caseId;
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
+    await page.locator('button[data-bs-target="#pickScorerModal"]').click();
 
     const modal = page.locator('#pickScorerModal.show');
     await expect(modal).toBeVisible();
@@ -99,7 +99,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     expect(response.ok()).toBeTruthy();
     await expect(modal).toBeHidden({ timeout: 10_000 });
     await page.reload();
-    await page.locator('a[data-bs-target="#pickScorerModal"]').click();
+    await page.locator('button[data-bs-target="#pickScorerModal"]').click();
     await expect(modal.locator('.list-group-item.active')).toHaveText(scorerName);
   });
 
@@ -109,7 +109,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     takeSnapshotCaseId = caseId;
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-bs-target="#takeSnapshotModal"]').click();
+    await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
 
     const modal = page.locator('#takeSnapshotModal.show');
     await expect(modal).toBeVisible();
@@ -144,7 +144,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     const teamId = await shareCaseWithFirstTeam(page, caseId);
 
     await gotoCase(page, caseId);
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
 
     const modal = page.locator('#judgementsModal.show');
     await expect(modal).toBeVisible();
@@ -175,7 +175,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await expect(saveButton).toBeVisible();
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
     await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
     await expect(saveButton).toBeHidden();
@@ -184,7 +184,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await modal.locator(`[data-judgements-core-book-id-param="${bookId}"]`).getByRole('link', { name: 'View' }).click();
     await page.waitForURL(new RegExp(`/books/${bookId}$`));
     await gotoCase(page, caseId);
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
     await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
     await modal.locator(`[data-judgements-core-book-id-param="${bookId}"]`).click();
@@ -217,7 +217,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
 
     // Reopening must read persisted settings and keep the selected-case owner
     // synchronized, rather than relying on the toolbar's old dataset.
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
     await expect(modal.locator('[data-judgements-core-target="bookList"] .list-group-item.active')).toHaveCount(1);
     await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', bookId!);
@@ -227,7 +227,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await saveButton.click();
     await expect(modal).toBeHidden();
     await page.reload();
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="loading"]')).toBeHidden();
     await expect(modal.locator('.list-group-item.active')).toHaveAttribute('data-judgements-core-book-id-param', '');
     await expect(saveButton).toBeHidden();
@@ -241,12 +241,12 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await page.route(`**/cases/${caseId}/modal_catalogs/books`, route => route.fulfill({
       status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Book list verification failure' })
     }));
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="error"]')).toContainText('Book list verification failure');
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(modal).toBeHidden();
     await page.unroute(`**/cases/${caseId}/modal_catalogs/books`);
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeVisible();
     await expect(modal.locator('[data-judgements-core-target="error"]')).toBeHidden();
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
@@ -254,7 +254,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     await page.route(`**/cases/${caseId}/modal_catalogs/books`, route => route.fulfill({
       status: 200, contentType: 'text/html', body: '<ul data-book-catalog><li data-judgements-core-target=item data-judgements-core-book-id-param="" data-action="click->judgements-core#selectBook"><em>None (disconnect from any book)</em></li></ul>'
     }));
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="noBooks"]')).toBeVisible();
     await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeHidden();
     await modal.getByRole('button', { name: 'Cancel', exact: true }).click();
@@ -265,7 +265,7 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
       const data = await response.json();
       await route.fulfill({ response, json: { ...data, teams: [] } });
     });
-    await page.locator('a[data-bs-target="#judgementsModal"]').click();
+    await page.locator('button[data-bs-target="#judgementsModal"]').click();
     await expect(modal.locator('[data-judgements-core-target="noTeams"]')).toBeVisible();
     await expect(modal.locator('[data-judgements-core-target="bookPicker"]')).toBeHidden();
   });

@@ -54,11 +54,12 @@ export default class extends Controller {
     const fields = slot("fields")
     const title = document.createElement("li")
     title.className = "subTitle"
-    const titleLink = document.createElement("a")
-    titleLink.href = "#"
-    titleLink.textContent = doc.title ?? ""
-    titleLink.dataset.action = "search-result#showDocument"
-    title.appendChild(titleLink)
+    const titleButton = document.createElement("button")
+    titleButton.type = "button"
+    titleButton.className = "btn btn-link p-0 border-0 align-baseline text-start"
+    titleButton.textContent = doc.title ?? ""
+    titleButton.dataset.action = "search-result#showDocument"
+    title.appendChild(titleButton)
     fields.appendChild(title)
 
     if (doc.error) {

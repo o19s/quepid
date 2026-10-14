@@ -1,5 +1,6 @@
-<%# locals: (books:) %>
-<ul data-book-catalog>
+<%# locals: (kase:, books:) %>
+<%# Carries the case's current new-book URL: the scorer can change on the case page without a reload. %>
+<ul data-book-catalog data-new-book-url="<%= new_book_path(scorer_id: kase.scorer_id, origin_case_id: kase.id) %>">
   <li class="list-group-item"
       data-judgements-core-target="item"
       data-judgements-core-book-id-param=""

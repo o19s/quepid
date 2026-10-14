@@ -46,7 +46,7 @@ test.describe('Workspace tuning drafts and saved tries', () => {
     test.setTimeout(60_000);
     await page.goto(`case/${caseId}/try/1`);
     await expect(page.locator('#case-actions')).toBeVisible();
-    await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+    await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
     const editor = page.locator('#query-params-editor .cm-content');
     const original = await editor.innerText();
     const draft = `${original}&testBoost=##draftBoost##`;
@@ -96,7 +96,7 @@ test.describe('Workspace tuning drafts and saved tries', () => {
     expect(saved.number_of_rows).toBe(12);
     expect(saved.curator_vars.draftBoost).toBe(8);
     await page.reload();
-    await page.getByRole('link', { name: 'Tune Relevance', exact: true }).click();
+    await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     await expect(rows).toHaveValue('12');
     await expect(page.locator('#case-actions')).toBeVisible();
