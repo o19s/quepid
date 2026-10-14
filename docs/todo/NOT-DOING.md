@@ -19,6 +19,18 @@ Deliberate decisions to leave something as it is, with the reasoning, so they ar
 
 The HTML user page does not display the digest. Migration only needs the JSON export, so that display was removed.
 
+## [MIGRATION-FOLLOWUP] Remove runtime forwarding adapters
+
+Retain the scoped adapters and named async accessors used by bootstrap, wizard, tuning and snapshots. Removing forwarding would move dependency selection and receiver binding into consumers without removing an owner, request or state copy. A generic facade would duplicate the existing capability groups.
+
+**Revisit if:** a concrete dependency design meaningfully simplifies consumers while preserving shared instances, startup order, Promise/error/microtask timing, method receivers and tuning's `draft()` versus wizard's `editable()`. See the [runtime forwarding assessment](rails_stimulus_json_workspace_plan.md#runtime-forwarding-assessment) for contracts and verification.
+
+## [MIGRATION-FOLLOWUP] Share initial annotation reads between the list and graph
+
+Rails already renders the list with the case page; only the graph makes an initial annotation JSON GET. Retain the separate projections: removing the remaining GET would change startup freshness and independent failure handling, while a shared store would add mutation and invalidation coordination. The measured saving does not justify that work. Snapshot catalogs also retain a fresh read on every modal open.
+
+**Revisit if:** representative production measurements justify the coordination and a concrete design preserves list errors, graph refresh and `annotations:changed`. See the [annotation read assessment](rails_stimulus_json_workspace_plan.md#annotation-read-assessment) for contracts, measurements and verification.
+
 ## [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
 
 The `http`↔`https` switch is a cross-origin navigation, so browser storage and `Secure` session cookies cannot provide a direct handoff. A short-lived, single-use opaque token could retrieve server-side pending state without sharing those cookies, keeping the credential itself out of browser history and URL logs. Redemption over plaintext `http` would still carry transport risk. This mitigation is deferred, not technically impossible.

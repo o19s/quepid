@@ -32,6 +32,17 @@ describe("core runtime capabilities", () => {
     expect(framework).not.toHaveProperty("applyAsync")
   })
 
+  it("runs the native scheduler in a microtask and preserves callback rejection", async () => {
+    const framework = createNativeFramework()
+    const callback = vi.fn(() => "finished")
+    const pending = framework.schedule(callback)
+    expect(callback).not.toHaveBeenCalled()
+    await expect(pending).resolves.toBe("finished")
+    expect(callback).toHaveBeenCalledOnce()
+    const failure = new Error("scheduled failure")
+    await expect(framework.schedule(() => { throw failure })).rejects.toBe(failure)
+  })
+
   it("publishes named capabilities without exposing a service lookup to callers", async () => {
     const services = {
       settings: { editableSettings: vi.fn() },
@@ -107,5 +118,34 @@ describe("core runtime capabilities", () => {
     const { capability } = await getWizardCapabilities()
 
     expect(capability.user.shownIntroWizard).toEqual(expect.any(Function))
+  })
+
+  it.each([
+    ["bootstrap", getBootstrapCapabilities],
+    ["snapshots", getSnapshotCapabilities],
+    ["wizard", getWizardCapabilities],
+    ["tuneRelevance", getTuneRelevanceCapabilities]
+  ])("keeps %s access asynchronous and turns lookup errors into rejections", async (name, getter) => {
+    const group = { marker: name }
+    testCapabilities = { caseRuntime: { [name]: group } }
+    const order = []
+    const pending = getter().then(value => {
+      order.push("resolved")
+      expect(value).toBe(group)
+    })
+    order.push("caller")
+    expect(order).toEqual(["caller"])
+    await pending
+    expect(order).toEqual(["caller", "resolved"])
+
+    const failure = new Error("workspace unavailable")
+    testCapabilities = {
+      get caseRuntime() {
+        throw failure
+      }
+    }
+    let rejected
+    expect(() => { rejected = getter() }).not.toThrow()
+    await expect(rejected).rejects.toBe(failure)
   })
 })

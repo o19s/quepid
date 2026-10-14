@@ -177,6 +177,25 @@ describe("QgraphController", () => {
     expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/annotations", { method: "GET", headers: { Accept: "application/json" } })
   })
 
+  it("clears failed annotation refreshes and fetches fresh markers on a later event", async () => {
+    const { controller, element } = mount()
+    controller.connect()
+    await flush()
+    apiFetch.mockRejectedValueOnce(new Error("offline"))
+    controller.handleAnnotationsChanged({ detail: { caseId: 5 } })
+    await flush()
+    expect(controller.annotations).toEqual([])
+    expect(element.hidden).toBe(false)
+    expect(controller.scores).toEqual(scores)
+    expect(JSON.stringify(window.vegaEmbed.mock.calls.at(-1)[1])).not.toContain("tuned")
+
+    apiFetch.mockResolvedValueOnce(json({ annotations: [{ message: "fresh marker", updated_at: "2026-01-02T00:00:00Z" }] }))
+    controller.handleAnnotationsChanged({ detail: { caseId: "5" } })
+    await flush()
+    expect(controller.annotations[0].updatedAt).toBe("2026-01-02T00:00:00Z")
+    expect(JSON.stringify(window.vegaEmbed.mock.calls.at(-1)[1])).toContain("fresh marker")
+  })
+
   it("stops listening and finalizes the chart on disconnect", async () => {
     const { controller } = mount()
     controller.connect()

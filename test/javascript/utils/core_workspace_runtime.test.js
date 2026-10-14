@@ -68,4 +68,43 @@ describe("core workspace construction", () => {
     first.workspace.queryCapabilities.resetQueryState()
     expect(second.workspace.queryCapabilities.getQueries()).toEqual({})
   })
+
+  it("preserves receivers, return identity and synchronous errors for detached callbacks", () => {
+    const { workspace, splainerSearch } = buildWorkspace()
+    const initialize = workspace.caseRuntime.bootstrap.core.case.initialize
+    expect(initialize({ case_id: 7, case_name: "Receiver contract" }).caseNo).toBe(7)
+    const result = Promise.resolve({ explained: true })
+    splainerSearch.normalDocsSvc.explainDoc = function (...args) {
+      expect(this).toBe(splainerSearch.normalDocsSvc)
+      expect(args).toEqual(["doc", "explain"])
+      return result
+    }
+    const explain = workspace.caseRuntime.snapshots.capability.documents.explain
+    expect(explain("doc", "explain")).toBe(result)
+    const failure = new Error("invalid document")
+    splainerSearch.normalDocsSvc.explainDoc = function () {
+      expect(this).toBe(splainerSearch.normalDocsSvc)
+      throw failure
+    }
+    expect(() => explain()).toThrow(failure)
+  })
+
+  it("keeps tuning's null/draft contract distinct from wizard's editable projection", () => {
+    const { workspace } = buildWorkspace()
+    const { bootstrap, wizard, tuneRelevance } = workspace.caseRuntime
+    expect(tuneRelevance.capability.settings.editable()).toBeNull()
+    expect(wizard.capability.settings.editable()).toEqual({})
+    bootstrap.core.settings.setCaseTries([{ try_number: 1, search_engine: "solr", query_params: "q=original" }])
+    bootstrap.core.settings.setCurrentTry(1)
+    const wizardSettings = { ...wizard.capability.settings.editable() }
+    const draft = tuneRelevance.capability.settings.editable()
+    wizardSettings.queryParams = "q=wizard"
+    expect(draft.queryParams).toBe("q=original")
+    draft.queryParams = "q=tuning"
+    expect(wizardSettings.selectedTry.queryParams).toBe("q=tuning")
+    expect(wizardSettings.queryParams).toBe("q=wizard")
+    bootstrap.core.settings.setCurrentTry(999)
+    expect(tuneRelevance.capability.settings.editable()).toBeNull()
+    expect(wizard.capability.settings.editable().selectedTry).toBeNull()
+  })
 })

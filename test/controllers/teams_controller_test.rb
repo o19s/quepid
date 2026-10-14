@@ -320,6 +320,17 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
       assert_equal 'autocomplete_user_1@example.com', user_suggestion['email']
     end
 
+    it 'does not suggest users without an email (AI judges)' do
+      judge = users(:judge_judy)
+      shared_team = (@user.teams.to_a - [ @team ]).first
+      shared_team.members << judge unless shared_team.members.exists?(judge.id)
+
+      get suggest_members_team_path(@team), params: { query: 'judge judy' }
+
+      assert_response :success
+      assert_empty(response.parsed_body.select { |s| s['name'] == judge.name })
+    end
+
     it 'excludes current team members from suggestions' do
       # doug is already a member of the valid team
       existing_member = users(:doug)

@@ -182,8 +182,7 @@ class ScorersControllerTest < ActionController::TestCase
       end
 
       test 'can delete own custom scorer' do
-        scorer = scorers(:random_scorer)
-        scorer.update(owner: user)
+        scorer = Scorer.create!(name: 'Unused scorer', code: 'setScore(1);', owner: user, scale: [ 1, 2, 3 ])
 
         assert_difference 'Scorer.count', -1 do
           delete :destroy, params: { id: scorer.id }
@@ -191,6 +190,20 @@ class ScorersControllerTest < ActionController::TestCase
 
         assert_redirected_to scorers_path
         assert_equal 'Scorer deleted.', flash[:notice]
+      end
+
+      test 'cannot delete a scorer that a case uses' do
+        scorer = Scorer.create!(name: 'Used scorer', code: 'setScore(1);', owner: user, scale: [ 1, 2, 3 ])
+        kase = cases(:one)
+        kase.update!(scorer: scorer)
+
+        assert_no_difference 'Scorer.count' do
+          delete :destroy, params: { id: scorer.id }
+        end
+
+        assert_redirected_to edit_scorer_path(scorer)
+        assert_match(/Cannot delete the scorer because it is the default for 1 case/, flash[:alert])
+        assert_equal scorer.id, kase.reload.scorer_id
       end
 
       test 'cannot delete communal scorer' do

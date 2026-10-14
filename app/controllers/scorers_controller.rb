@@ -138,11 +138,33 @@ class ScorersController < ApplicationController
       return
     end
 
+    blocker = deletion_blocker
+    if blocker
+      redirect_to edit_scorer_path(@scorer), alert: blocker, status: :see_other
+      return
+    end
+
     @scorer.destroy
     redirect_to scorers_path, notice: 'Scorer deleted.', status: :see_other
   end
 
   private
+
+  # A scorer that is still a case's or user's default can't be deleted; cases would be left without a scorer.
+  # Only counts are reported: the cases may belong to other users who share the scorer through a team.
+  def deletion_blocker
+    case_count = Case.where(scorer_id: @scorer.id).count
+    if case_count.positive?
+      return "Cannot delete the scorer because it is the default for #{case_count} #{'case'.pluralize(case_count)}. " \
+             'Switch those cases to another scorer first.'
+    end
+
+    user_count = User.where(default_scorer_id: @scorer.id).count
+    return unless user_count.positive?
+
+    "Cannot delete the scorer because it is the default for #{user_count} #{'user'.pluralize(user_count)}. " \
+      'Choose another default scorer first.'
+  end
 
   def set_sharing_resources
     @sharing_team = current_user.teams.find_by(id: params[:team_id])

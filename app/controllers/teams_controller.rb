@@ -292,7 +292,9 @@ class TeamsController < ApplicationController
     # Base scope: users who are either in teams with current user OR have same email domain
     # Used for prefix and name matching (more restricted)
     scope_start = Time.current
+    # AI judges have no email and can't be added through the email-based form, so don't suggest them.
     base_scope = User.where.not(id: @team.members.pluck(:id))
+      .where.not(email: nil)
       .where('id IN (?) OR LOWER(email) LIKE ?', team_member_ids, "%@#{current_domain.to_s.downcase}")
     scope_time = ((Time.current - scope_start) * 1000).round(2)
 

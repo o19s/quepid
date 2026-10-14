@@ -115,6 +115,38 @@ describe("AnnotationsController", () => {
     expect(controller.createButtonTarget.disabled).toBe(true)
   })
 
+  it("retains Rails-rendered rows on connect without an annotation read", () => {
+    const controller = buildController()
+    renderRows(controller, rowHtml(9, "Already rendered"))
+    controller.connect()
+    try {
+      expect(rowIds(controller)).toEqual(["9"])
+      expect(controller.listTarget.textContent).toContain("Already rendered")
+      expect(apiFetch).not.toHaveBeenCalled()
+    } finally {
+      controller.disconnect()
+    }
+  })
+
+  it("keeps a failed create draft without notifying graph consumers", async () => {
+    const controller = buildController()
+    renderRows(controller, rowHtml(9, "Saved"))
+    controller.messageTarget.value = "Unsaved note"
+    apiFetch.mockResolvedValueOnce({ ok: false })
+    const changed = vi.fn()
+    document.addEventListener("annotations:changed", changed)
+    try {
+      await controller.create({ preventDefault: vi.fn() })
+      expect(controller.messageTarget.value).toBe("Unsaved note")
+      expect(rowIds(controller)).toEqual(["9"])
+      expect(controller.createButtonTarget.disabled).toBe(false)
+      expect(changed).not.toHaveBeenCalled()
+      expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to create Annotation.")
+    } finally {
+      document.removeEventListener("annotations:changed", changed)
+    }
+  })
+
   it("does not create before the first score is available", async () => {
     const controller = buildController()
     controller.scoringStore.caseScore = null
