@@ -40,6 +40,7 @@ async function closeModal(page: Page) {
   if (await cancel.count()) await cancel.click();
   else await modal.locator('.btn-close').first().click();
   await expect(modal).toHaveCount(0);
+  await expect(page.locator('.modal:visible, .modal-backdrop')).toHaveCount(0);
 }
 
 // The account's teams are shared dev-DB state; serve a fixed catalog (one shared, one not).
@@ -98,12 +99,18 @@ test('core workspace and widgets', async ({ page }) => {
   await shot(page, 'core-query-options');
   await closeModal(page);
 
+  await page.getByRole('button', { name: 'Explain Query', exact: true }).first()
+    .evaluate(el => el.scrollIntoView({ block: 'start' }));
   await page.getByRole('button', { name: 'Explain Query', exact: true }).first().click();
   await expect(page.locator('#query-explain-tab-params')).toBeVisible();
   await shot(page, 'core-explain');
   await closeModal(page);
 
-  await page.locator('search-result .single-rating').first().click();
+  // Modal dismissal restores the Explain trigger, which can scroll the pane.
+  // Keep the popover capture framed on the first result, as its baseline is.
+  const rating = page.locator('search-result .single-rating button').first();
+  await rating.evaluate(el => el.scrollIntoView({ block: 'start' }));
+  await rating.click();
   await expect(page.locator('.popover').first()).toBeVisible();
   await shot(page, 'core-rating-popover');
   await page.locator('search-result .single-rating').first().click();
@@ -114,15 +121,20 @@ test('core workspace and widgets', async ({ page }) => {
   await shot(page, 'core-scorer');
   await closeModal(page);
 
+  await page.locator('button[data-bs-target="#takeSnapshotModal"]')
+    .evaluate(el => el.scrollIntoView({ block: 'start' }));
   await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
   await expect(page.locator('#takeSnapshotModal.show')).toBeVisible();
   await shot(page, 'core-snapshot');
   await closeModal(page);
 
+  await page.getByText('Share case', { exact: true })
+    .evaluate(el => el.scrollIntoView({ block: 'start' }));
   await openShareCase(page);
   await shot(page, 'core-share-case');
   await closeModal(page);
 
+  await page.locator('.pane_main').evaluate(el => { el.scrollTop = 0; });
   await page.getByRole('button', { name: 'Toggle Notes', exact: true }).first().click();
   const notes = page.locator('textarea[data-query-notes-target="notes"]:visible').first();
   await expect(notes).toBeVisible();

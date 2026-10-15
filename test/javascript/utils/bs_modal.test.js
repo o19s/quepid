@@ -118,6 +118,47 @@ describe("bs_modal", () => {
       expect(received).toEqual([modal])
     })
 
+    it("replays early Escape once opening finishes, even before the modal has show", () => {
+      const modal = addModal()
+      modal.classList.remove("show")
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      pressEscape()
+      pressEscape()
+      expect(received).toEqual([])
+      modal.classList.add("show")
+      modal.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([modal])
+      modal.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([modal])
+    })
+
+    it("queues Escape only for the opening inner modal", () => {
+      addModal()
+      const inner = addModal()
+      inner.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      pressEscape()
+      inner.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([inner])
+    })
+
+    it("does not retain a canceled opening", async () => {
+      const modal = addModal()
+      modal.addEventListener("show.bs.modal", event => event.preventDefault())
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true, cancelable: true }))
+      await Promise.resolve()
+      pressEscape()
+      expect(received).toEqual([modal])
+    })
+
+    it("does not intercept Escape for a modal detached while opening", () => {
+      const modal = addModal()
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      modal.remove()
+      const next = addModal()
+      pressEscape()
+      expect(received).toEqual([next])
+    })
+
     it("picks the last shown modal, which is the topmost stacked one", () => {
       addModal()
       const inner = addModal()

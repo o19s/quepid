@@ -92,10 +92,44 @@ export function showStackedModal(wrapper, modal) {
  * in-modal control is re-rendered or disabled, focus falls back to <body> and
  * Escape stops working. In that case, hand the keypress to the topmost open
  * modal so Bootstrap's own handler runs and still honors `keyboard: false`.
+ * Escape during opening is replayed once Bootstrap can accept dismissal.
  *
  * @param {Document} [doc]
  */
 export function installModalEscapeFallback(doc = document) {
+  const opening = new Map()
+  doc.addEventListener("show.bs.modal", (event) => {
+    if (event.defaultPrevented) return
+    opening.set(event.target, false)
+    queueMicrotask(() => {
+      if (event.defaultPrevented) opening.delete(event.target)
+    })
+  })
+  doc.addEventListener("shown.bs.modal", (event) => {
+    const pending = opening.get(event.target)
+    opening.delete(event.target)
+    // Bootstrap ignores hide() until shown. Replay through its keyboard
+    // handler so keyboard:false and hide prevention still belong to Bootstrap.
+    if (pending)
+      event.target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+  })
+  doc.addEventListener("hidden.bs.modal", (event) => opening.delete(event.target))
+  doc.addEventListener(
+    "keydown",
+    (event) => {
+      if (event.key !== "Escape" || event.defaultPrevented) return
+      for (const modal of opening.keys()) {
+        if (!modal.isConnected) opening.delete(modal)
+      }
+      if (opening.size === 0) return
+      const modal = [...opening.keys()].at(-1)
+      opening.set(modal, true)
+      event.preventDefault()
+      event.stopPropagation()
+    },
+    true
+  )
+
   doc.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" || event.defaultPrevented) return
     if (doc.activeElement && doc.activeElement !== doc.body) return

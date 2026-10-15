@@ -36,6 +36,7 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
 - **Edge cases:**
   - [ ] Confirm modals that are meant to scroll internally (tall content) actually do — don't confuse "modal cut off at the bottom of the viewport" with "modal has no scrollbar" — the two look similar but only one is a bug.
   - [ ] Try an even narrower width (e.g., 375px, a typical phone width) even though it's not part of the automated suite — note anything broken, even if mobile isn't officially a target form factor, since it indicates how fragile the layout is at the edge.
+  - [ ] At 600×900, preserve the core's inherited 750px minimum width: scroll the workbench horizontally and verify the drawer's bottom action and footer links remain reachable. Compare the same drawer/modal at the same width on Legacy before classifying clipping as a regression.
   - [ ] At 768×900 the top navbar collapses into the hamburger toggler (both header partials use `.navbar-expand-lg`). Open it and confirm User Manual / Wiki / the avatar dropdown are reachable, and that `document.body.scrollWidth` equals `document.body.clientWidth` (check `body`, not `documentElement` — `body` is the element with `overflow: auto`, so overflow there shows no top-level scrollbar).
 
 ### 16.3 Case header typography
@@ -54,6 +55,8 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
 - **Expected:** No critical/serious structural or ARIA violations reported (ignore pure color-contrast complaints against the current theme — that's a known, separate concern, not part of this check). Keyboard focus behaves correctly.
 - **Edge cases:**
   - [ ] Repeat for Export, Compare Snapshots and Judgements: scan `select-name` and `heading-order` at every severity. Export's API picker is named **API snapshot**; each Compare picker is associated with its numbered Snapshot label, including added rows. Modal titles are level 2 and section headings level 3. Also sample Import when changing its markup.
+  - [ ] Repeat Escape while Explain and Export are opening, after they settle, and during closing. An opening keypress must dismiss once the transition finishes; closing must leave no backdrop or body scroll lock and restore the opening control. Keep Bootstrap's `keyboard: false` behavior when configured.
+  - [ ] From Missing Documents, open a document's Matches debug dialog. Escape and backdrop dismissal must close only the inner dialog, restore focus and usable Tab order in the outer dialog, and leave exactly one backdrop and its body scroll lock. Repeat Escape during the inner dialog's opening transition.
 
 ### 16.5 General visual sanity sweep after any CSS/JS change
 

@@ -6,6 +6,7 @@ import { createBsModal, restoreModalBodyLock, showStackedModal } from "utils/bs_
 export default class extends Controller {
   connect() {
     if (this.modal) return
+    this.returnFocus = document.activeElement
     this.onClose = () => this.close()
     this.onShown = event => {
       if (event.target !== this.element) return
@@ -47,5 +48,8 @@ export default class extends Controller {
     this.modal = null
     this.element.remove()
     restoreModalBodyLock()
+    const outer = [...document.querySelectorAll(".modal.show")].at(-1)
+    if (this.returnFocus?.isConnected && !this.returnFocus.disabled &&
+        (!outer || outer.contains(this.returnFocus))) this.returnFocus.focus()
   }
 }

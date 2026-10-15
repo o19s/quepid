@@ -10,6 +10,41 @@ import { expandFirstQuery, gotoCase } from './case_helpers';
  * class regressions from framework swaps.
  */
 test.describe('Core case — modal a11y (axe)', () => {
+  for (const name of ['Explain Query', 'Export']) {
+    test(`${name} honors Escape during opening and restores the trigger`, async ({ page }) => {
+      await gotoCase(page);
+      if (name === 'Explain Query') await expandFirstQuery(page);
+      const trigger = page.getByRole('button', { name, exact: true }).first();
+      // Capture the show event before the backdrop or dialog finishes fading in.
+      await page.evaluate(() => {
+        document.addEventListener('show.bs.modal', event => {
+          (window as any).openingModal = event.target;
+        }, { once: true });
+      });
+      await trigger.click();
+      expect(await page.evaluate(() => {
+        const modal = (window as any).openingModal;
+        return (window as any).bootstrap.Modal.getInstance(modal)._isTransitioning;
+      })).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.modal:visible')).toHaveCount(0);
+      await expect(page.locator('.modal-backdrop')).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+
+      await trigger.click();
+      const modal = page.locator('.modal.show');
+      await expect.poll(() => modal.evaluate(el =>
+        (window as any).bootstrap.Modal.getInstance(el)._isTransitioning
+      )).toBe(false);
+      await page.keyboard.press('Escape');
+      // A second key during closing must not strand a backdrop or focus.
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.modal:visible')).toHaveCount(0);
+      await expect(page.locator('.modal-backdrop')).toHaveCount(0);
+      await expect(trigger).toBeFocused();
+    });
+  }
+
   test('Explain Query modal has no critical/serious axe violations (modal scope)', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

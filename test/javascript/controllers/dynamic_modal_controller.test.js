@@ -51,6 +51,33 @@ describe("DynamicModalController", () => {
     expect(instance.dispose).toHaveBeenCalledOnce()
   })
 
+  it("restores the opening control after dismissal", () => {
+    const trigger = document.createElement("button")
+    document.body.append(trigger)
+    trigger.focus()
+    const modal = owner()
+    const close = document.createElement("button")
+    modal.element.append(close)
+    close.focus()
+    hidden(modal.element)
+    expect(document.activeElement).toBe(trigger)
+  })
+
+  it("does not steal focus from a newer modal when teardown finishes", () => {
+    const trigger = document.createElement("button")
+    document.body.append(trigger)
+    trigger.focus()
+    const modal = owner()
+    const newer = document.createElement("div")
+    newer.className = "modal show"
+    const control = document.createElement("button")
+    newer.append(control)
+    document.body.append(newer)
+    control.focus()
+    hidden(modal.element)
+    expect(document.activeElement).toBe(control)
+  })
+
   it("finishes teardown when detached during the show transition", () => {
     const modal = owner()
     modal.element.remove()
