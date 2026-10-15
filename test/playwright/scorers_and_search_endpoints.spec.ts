@@ -55,7 +55,7 @@ test.describe('scorers management', () => {
 
     const scorerName = `Playwright Scorer ${Date.now()}`;
 
-    await page.getByRole('link', { name: 'Add New' }).click();
+    await page.getByRole('link', { name: 'New Scorer' }).click();
     await expect(page).toHaveURL(/\/scorers\/new/);
 
     await page.locator('#scorer_name').fill(scorerName);

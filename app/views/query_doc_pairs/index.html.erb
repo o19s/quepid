@@ -1,9 +1,7 @@
 <%= book_page_header @book, prefix: 'Query Doc Pairs for' do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <%= link_to 'New Query Doc Pair', new_book_query_doc_pair_path, class: 'btn btn-sm btn-outline-secondary' %>
-      <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>
-    </div>
+  <div class="btn-toolbar gap-2 mb-2 mb-md-0">
+    <%= page_create_button 'New Query Doc Pair', new_book_query_doc_pair_path %>
+    <%= link_to "Back to Book", @book, class: 'btn btn-sm btn-outline-secondary' %>
   </div>
 <% end %>
 
