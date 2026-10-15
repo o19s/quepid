@@ -4,16 +4,16 @@
   <i class="bi bi-book"></i> Books <%= "(Archived)" if params[:archived] == 'true' %>
 <% end %>
 <%= page_header title do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <% if params[:archived] == 'true' %>
-        <%= link_to 'View Active Books', books_path, class: "btn btn-sm btn-outline-primary" %>
-      <% else %>
-        <%= link_to 'New Book', new_book_path, class: "btn btn-sm btn-outline-primary" %>
+  <div class="btn-toolbar gap-2 mb-2 mb-md-0">
+    <% if params[:archived] == 'true' %>
+      <%= link_to 'View Active Books', books_path, class: "btn btn-sm btn-outline-secondary" %>
+    <% else %>
+      <%= page_create_button 'New Book', new_book_path %>
+      <div class="btn-group">
         <%= link_to 'Import Book', new_books_import_path, class: "btn btn-sm btn-outline-secondary" %>
-        <%= link_to 'View Archived Books', books_path(archived: true), class: "btn btn-sm btn-outline-warning" %>
-      <% end %>
-    </div>
+        <%= link_to 'View Archived Books', books_path(archived: true), class: "btn btn-sm btn-outline-secondary" %>
+      </div>
+    <% end %>
   </div>
 <% end %>
 

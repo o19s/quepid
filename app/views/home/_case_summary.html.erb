@@ -4,7 +4,8 @@
       <% if kase.nightly? %>
         <i class="bi bi-repeat float-end"></i>
       <% end %>
-      <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
+      <i class="bi bi-briefcase me-1" aria-hidden="true"></i>
+      <%= link_to_core_case kase.case_name, kase, kase.last_try_number %>
 
     </h5>
 

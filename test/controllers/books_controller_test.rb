@@ -532,7 +532,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       get book_judgements_path(archived_book)
 
       assert_response :success
-      assert_select 'h1', text: /Judgements for\s+Book Iam Archived Book\s+Archived/ do
+      assert_select 'h1', text: /Judgements for\s+Book IamArchivedBook\s+Archived/ do
         assert_select 'i.bi-book'
         assert_select 'span.badge.bg-warning', text: 'Archived'
       end

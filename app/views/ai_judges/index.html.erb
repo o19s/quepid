@@ -1,9 +1,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
   <h1><i class="bi bi-robot"></i> AI Judges</h1>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <%= link_to new_ai_judge_path, class: 'btn btn-success' do %>
-      <i class="bi bi-plus-lg" aria-hidden="true"></i> Create AI Judge
-    <% end %>
+    <%= page_create_button 'Create AI Judge', new_ai_judge_path %>
   </div>
 </div>
 

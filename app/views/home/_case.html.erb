@@ -1,6 +1,6 @@
 <tr>
   <th scope="row"><%= kase.id %></th>
-  <th scope="row"><%= strip_case_title(kase) %>
+  <th scope="row"><%= kase.case_name %>
     <% if kase.nightly? %>
       <i class="bi bi-repeat float-end"></i>
     <% end %>

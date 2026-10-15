@@ -1,6 +1,6 @@
 <tr>
   <td><%= book.id %> </td>
-  <td><%= link_to strip_book_title(book), book_path(book) %></td>
+  <td><%= link_to book.name, book_path(book) %></td>
   <td><%= book.teams.pluck(:name).join(',') %></td>
   <td>Scale: <%= book.scale.join(',') if book.scale.present? %> </td>
   <td>

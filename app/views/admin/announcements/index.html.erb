@@ -1,8 +1,6 @@
 <%= page_header "Quepid Announcements for Users" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <%= link_to 'New Quepid Announcement', new_admin_announcement_path, class: "btn btn-sm btn-outline-secondary" %>
-    </div>
+    <%= page_create_button 'New Quepid Announcement', new_admin_announcement_path %>
   </div>
 <% end %>
 

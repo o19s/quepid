@@ -18,8 +18,4 @@ module HomeHelper
     ]
     greetings.sample
   end
-
-  def strip_case_title kase
-    kase.case_name.sub(/^case\s+/i, '').titleize
-  end
 end

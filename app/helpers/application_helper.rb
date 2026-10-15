@@ -39,22 +39,28 @@ module ApplicationHelper
     sanitize text, attributes: Rails::HTML5::SafeListSanitizer.allowed_attributes + [ 'style' ]
   end
 
+  # Names are shown as the user typed them; titleize would mangle acronyms
+  # ("ES" -> "Es") and mixed case ("McKey" -> "Mc Key").
   def book_title book
     if book.name.downcase.starts_with?('book')
-      book.name.titleize
+      book.name
     else
-      "Book #{book.name.titleize}"
+      "Book #{book.name}"
     end
-  end
-
-  def strip_book_title book
-    book.name.sub(/^book\s+/i, '').titleize
   end
 
   # Renders the shared page-header bar: an <h1> title plus an optional right-aligned
   # actions block (buttons, toolbar, stats -- whatever the page needs).
   def page_header title, &block
     render 'shared/page_header', title: title, actions: (block ? capture(&block) : nil)
+  end
+
+  # The one create action in an index page's header. Secondary header actions
+  # (imports, exports, wizards) sit beside it as btn-outline-secondary.
+  def page_create_button label, path, data: {}
+    link_to path, class: 'btn btn-sm btn-primary', data: data do
+      safe_join([ tag.i(class: 'bi bi-plus-lg', aria: { hidden: true }), label ], ' ')
+    end
   end
 
   # Bordered stat card: a large colored value over an icon label and a muted
@@ -90,9 +96,9 @@ module ApplicationHelper
 
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
-      kase.case_name.titleize
+      kase.case_name
     else
-      "Case #{kase.case_name.titleize}"
+      "Case #{kase.case_name}"
     end
   end
 
