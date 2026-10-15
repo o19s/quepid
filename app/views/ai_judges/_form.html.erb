@@ -23,7 +23,7 @@
         </ul>
       </div>
     <% end %>
-    <div data-ai-judge-wizard-target="status" class="alert" style="display:none"></div>
+    <div data-ai-judge-wizard-target="status" class="alert" hidden></div>
     <% provider = LlmProvider.find(ai_judge.judge_options[:llm_provider]) %>
     <% scale = JudgeScale.for(book) %>
     <% images_supported = provider.nil? || provider.supports_images? %>
@@ -57,8 +57,8 @@
       <%= form.label :system_prompt, provider&.prompt_label || 'System prompt', class: 'col-sm-2 col-form-label', data: { ai_judge_form_target: 'systemPromptLabel' } %>
       <%= form.textarea :system_prompt, class: "form-control", rows: 6, data: { ai_judge_form_target: "systemPrompt", action: "input->ai-judge-form#updateProviderPanels" } %>
     </div>
-    <div class="form-text" data-ai-judge-form-target="systemPromptHint" style="display:none"></div>
-    <div class="alert alert-warning small" data-ai-judge-form-target="systemPromptWarning" style="display:none">
+    <div class="form-text" data-ai-judge-form-target="systemPromptHint" hidden></div>
+    <div class="alert alert-warning small" data-ai-judge-form-target="systemPromptWarning" hidden>
       This text is another provider's default, written for a different kind of model.
       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="click->ai-judge-form#useDefaultPrompt">
         Use <span data-ai-judge-form-target="defaultPromptProvider"></span>'s default

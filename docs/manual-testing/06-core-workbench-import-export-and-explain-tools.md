@@ -51,6 +51,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   5. Click **Clone**.
 - **Expected:** On success, you're navigated into the new case at its last try, with the chosen data (tries/queries/ratings) copied appropriately.
 - **Edge cases:**
+  - [ ] Hover and Tab through the option buttons; text remains legible in default, hover, focus and selected states.
   - [ ] Leave the name blank — Clone button should stay disabled.
   - [ ] Uncheck **Include Queries** — confirm the warning "You have chosen not to import any queries. The new case will be empty." appears, and the resulting case is indeed empty of queries.
   - [ ] Check Include Queries but uncheck Include Ratings — confirm queries clone without any ratings attached.
@@ -69,6 +70,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   3. Confirm the footer button label always matches the selected option ("Delete All Queries" / "Archive" / "Delete").
 - **Expected:** Each option does exactly what its own description promises — no more, no less. In particular, confirm "Delete All Queries" also removes ratings for those queries (per its own copy) but does **not** delete the case, its annotations, or its snapshots — verify this last part explicitly, since it's easy to assume too much or too little is deleted.
 - **Edge cases:**
+  - [ ] Hover and Tab through the option buttons; text remains legible in default, hover, focus and selected states.
   - [ ] Confirm button (**Cancel** aside) stays disabled until one of the three options is picked.
   - [ ] Expire the session while the modal is open, then confirm each action. Expect full-page navigation to sign-in and no case/query mutation.
   - [ ] Force a server failure on each path — confirm the modal closes, the workspace stays available and a flash includes the server error message (or a contextual retry message for an HTML/empty error response). Reopen and retry after recovery; confirm one request per click and the usual success destination.

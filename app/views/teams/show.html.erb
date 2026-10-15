@@ -31,11 +31,11 @@
                     team_member_autocomplete_target: 'input',
                     action: 'input->team-member-autocomplete#search'
                   } %>
-              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner" style="display: none;">
+              <span data-team-member-autocomplete-target="spinner" class="autocomplete-spinner" hidden>
                 <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
               </span>
             </div>
-            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" style="display: none;"></div>
+            <div data-team-member-autocomplete-target="suggestions" class="autocomplete-suggestions" hidden></div>
             <template data-team-member-autocomplete-target="itemTemplate"><div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar" alt=""><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div></template>
           </div>
           <div>

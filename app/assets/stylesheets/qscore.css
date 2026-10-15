@@ -143,11 +143,11 @@
 
 /* Search result highlighting */
 .search-result.different {
-  border-left: var(--qscore-highlight-width) solid #ffc107;
+  border-left: var(--qscore-highlight-width) solid var(--q-warning);
 }
 
 .search-result.missing {
-  border-left: var(--qscore-highlight-width) solid #dc3545;
+  border-left: var(--qscore-highlight-width) solid var(--q-danger);
 }
 
 /* Responsive design */

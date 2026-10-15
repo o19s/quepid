@@ -4,7 +4,7 @@ import { buildControllerFixture } from "../support/controller_fixture"
 
 function owner(linkUrl = "") {
   const allFields = document.createElement("div")
-  allFields.style.display = "none"
+  allFields.hidden = true
   const toggle = document.createElement("a")
   toggle.textContent = "View All Fields"
   return buildControllerFixture(DetailedDocumentController, {
@@ -17,10 +17,10 @@ describe("DetailedDocumentController", () => {
     const controller = owner()
     const event = { preventDefault: vi.fn() }
     controller.toggleFields(event)
-    expect(controller.allFieldsTarget.style.display).toBe("")
+    expect(controller.allFieldsTarget.hidden).toBe(false)
     expect(controller.toggleTarget.textContent).toBe("Hide All Fields")
     controller.toggleFields(event)
-    expect(controller.allFieldsTarget.style.display).toBe("none")
+    expect(controller.allFieldsTarget.hidden).toBe(true)
     expect(controller.toggleTarget.textContent).toBe("View All Fields")
     expect(event.preventDefault).toHaveBeenCalledTimes(2)
   })

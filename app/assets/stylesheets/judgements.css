@@ -17,9 +17,16 @@
   transform: scale(1.05);
 }
 
+/* Focus must remain distinct from the persistent selection shadow. */
+.btn-preselected:focus-visible,
+.rating-buttons .btn-check:focus-visible + .btn {
+  outline: 2px solid #212529;
+  outline-offset: 4px;
+}
+
 .rating-buttons-container .btn {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border-radius: 0.375rem;
+  border-radius: var(--bs-border-radius);
   min-width: 45px;
   text-align: center;
   padding: 8px 12px;
@@ -58,12 +65,12 @@
 .scoring-guidelines-content th,
 .scoring-guidelines-content td {
   padding: 0.5rem;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--bs-border-color);
   vertical-align: top;
 }
 
 .scoring-guidelines-content th {
-  background-color: #f8f9fa;
+  background-color: var(--bs-tertiary-bg);
   font-weight: 600;
 }
 
@@ -88,8 +95,8 @@
 }
 
 .query-sidebar {
-  background-color: #f8f9fa;
-  border-right: 2px solid #dee2e6;
+  background-color: var(--bs-tertiary-bg);
+  border-right: 2px solid var(--bs-border-color);
   min-height: 100%;
 }
 
@@ -100,7 +107,7 @@
 }
 
 .query-title {
-  color: #6c757d;
+  color: var(--bs-secondary-color);
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -109,12 +116,12 @@
 
 .query-text {
   font-size: 1.1rem;
-  color: #212529;
+  color: var(--bs-body-color);
   overflow-wrap: break-word;
 }
 
 .document-card {
-  background-color: white;
+  background-color: var(--bs-body-bg);
 }
 
 .document-card:last-child {
@@ -123,7 +130,7 @@
 
 .document-header {
   padding: 0.75rem 0;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--bs-secondary-bg);
   min-height: 3rem;
 }
 

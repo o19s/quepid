@@ -14,7 +14,7 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
   1. Open the Tune Relevance drawer, go to the **History** tab.
   2. Confirm the try list shows every past try, background-color-coded by search endpoint URL.
   3. Click an older try in the list.
-  4. Hover/click the "..." button that appears on a try row to see its per-try edit details.
+  4. Hover/click the "..." button that appears on a try row to see its per-try edit details. Tab to the button and press Enter to open the same details; on touch devices, the button remains visible without hovering.
 - **Expected:** Clicking a try switches the entire page — queries, scores, and settings — to that try's configuration live (not just a read-only view).
 - **Edge cases:**
   - [ ] Change a setting (e.g., Displayed Fields) and confirm a *new* try is created rather than mutating the old one.

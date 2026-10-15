@@ -3,7 +3,7 @@
 <div class="mb-4">
   <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
 
-  <div data-ai-judge-wizard-target="step2" style="display: none;">
+  <div data-ai-judge-wizard-target="step2" hidden>
     <p class="text-muted">Run the prompt against a real query/doc pair and see how the judge rates it. Edit the prompt above and run again as many times as you like before saving.</p>
 
     <div class="row gx-5">
@@ -52,7 +52,7 @@
         <h6>Rating Information</h6>
         <% unless scale.empty? %>
           <div class="mb-3">
-            <div data-ai-judge-form-target="criteriaTable" style="display:<%= provider&.scale_as_criteria? ? 'block' : 'none' %>">
+            <div data-ai-judge-form-target="criteriaTable" <% unless provider&.scale_as_criteria? %>hidden<% end %>>
               <h6>Criteria sent with the question — from <%= link_to book.name, book_path(book) %>'s scale</h6>
               <table class="table table-sm table-borderless small w-auto"><tbody>
                 <% scale.values.zip(scale.criteria).each_with_index do |(value, criterion), level| %>
@@ -60,26 +60,26 @@
                 <% end %>
               </tbody></table>
             </div>
-            <div data-ai-judge-form-target="criteriaProse" style="display:<%= provider&.scale_as_criteria? ? 'none' : 'block' %>">
+            <div data-ai-judge-form-target="criteriaProse" <% if provider&.scale_as_criteria? %>hidden<% end %>>
               <h6>Rating scale added to the prompt — from <%= link_to book.name, book_path(book) %>'s scale</h6>
               <p class="small"><%= scale.describe %></p>
             </div>
           </div>
         <% end %>
-        <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= provider&.needs_scale? && scale.empty? ? 'block' : 'none' %>">
+        <div class="form-text" data-ai-judge-form-target="needsScaleNotice" <% unless provider&.needs_scale? && scale.empty? %>hidden<% end %>>
           This provider rates against a book's scale. Open this judge from a book with a scale on its Judgement Stats page (Refine Prompt).
         </div>
         <button type="button" class="btn btn-primary" <% if provider&.needs_scale? && scale.empty? %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
 
-        <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
+        <div data-ai-judge-wizard-target="loadingSpinner" hidden class="text-center my-4">
           <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
           </div>
           <p class="mt-2">Evaluating with AI Judge...</p>
         </div>
 
-        <div data-ai-judge-wizard-target="ratingInfo" style="display: none;">
-          <span class="badge bg-warning text-dark" data-ai-judge-wizard-target="unrateable" style="display:none">Unrateable</span>
+        <div data-ai-judge-wizard-target="ratingInfo" hidden>
+          <span class="badge bg-warning text-dark" data-ai-judge-wizard-target="unrateable" hidden>Unrateable</span>
           <p>LLM Response: <span data-ai-judge-wizard-target="rating"></span></p>
           <p data-ai-judge-wizard-target="explanation"></p>
         </div>

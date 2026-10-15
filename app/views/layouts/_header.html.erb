@@ -19,7 +19,7 @@
               <%= image_tag current_user.avatar_url, size: '24x24', class: 'rounded', alt: '' %>
               <span data-display-name><%= current_user.display_name %> </span>
             </button>
-            <ul class="dropdown-menu" style="right: 0; left: auto;" aria-labelledby="navbarDropdown">
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
               <%= render 'shared/account_dropdown', divider: account_dropdown_divider(:hr) %>
             </ul>
           </li>

@@ -203,7 +203,7 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     get edit_ai_judge_url(ai_judge)
     assert_response :success
     assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-    assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])', text: /Judgement Stats/
+    assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([hidden])', text: /Judgement Stats/
     assert_select '#judge_options_llm_include_images[disabled]:not([checked])'
   end
 end

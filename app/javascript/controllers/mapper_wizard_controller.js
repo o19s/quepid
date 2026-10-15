@@ -50,8 +50,8 @@ export default class extends withStatusMessages(Controller) {
   connect() {
     // If editing an existing endpoint with mappers, show steps 2 and 3
     if (this.hasExistingMappersValue) {
-      this.step2Target.style.display = "block"
-      this.step3Target.style.display = "block"
+      this.step2Target.hidden = false
+      this.step3Target.hidden = false
       this.showStatus("Existing mappers loaded. Fetch HTML to test them, or edit and save directly.", "info")
     }
   }
@@ -59,8 +59,8 @@ export default class extends withStatusMessages(Controller) {
   // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
   showStep3Manually() {
-    this.step2Target.style.display = "block"
-    this.step3Target.style.display = "block"
+    this.step2Target.hidden = false
+    this.step3Target.hidden = false
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
@@ -139,9 +139,9 @@ export default class extends withStatusMessages(Controller) {
 
       if (data.success) {
         this.htmlPreviewTarget.textContent = data.html_preview
-        this.htmlPreviewContainerTarget.style.display = "block"
+        this.htmlPreviewContainerTarget.hidden = false
         this.showStatus(`Response fetched successfully (${data.html_length.toLocaleString()} characters)`, "success")
-        this.step2Target.style.display = "block"
+        this.step2Target.hidden = false
       } else {
         this.showStatus(data.error || "Failed to fetch response", "error")
       }
@@ -197,7 +197,7 @@ export default class extends withStatusMessages(Controller) {
         }
 
         this.showMapperSuccess("Mapper functions generated successfully!", data)
-        this.step3Target.style.display = "block"
+        this.step3Target.hidden = false
       } else {
         this.showStatus(data.error || "Failed to generate mappers", "error")
       }
@@ -274,11 +274,11 @@ export default class extends withStatusMessages(Controller) {
   // Display captured console logs from JavaScript execution
   displayLogs(logs, logsTarget, logsContainerTarget) {
     if (!logs || logs.length === 0) {
-      logsContainerTarget.style.display = "none"
+      logsContainerTarget.hidden = true
       return
     }
 
-    logsContainerTarget.style.display = "block"
+    logsContainerTarget.hidden = false
 
     logsTarget.replaceChildren(...logs.map(log => {
       const levelClass = log.level === 'error' ? 'text-danger' :
@@ -485,13 +485,13 @@ export default class extends withStatusMessages(Controller) {
   showStatus(message, type) {
     if (!this.hasStatusTarget) return
 
-    this.statusTarget.style.display = "block"
+    this.statusTarget.hidden = false
     this.showStatusMessage(this.statusTarget, {
       message,
       className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'}`,
       // Auto-hide success messages after 5 seconds
       autoHideMs: type === 'success' ? 5000 : undefined,
-      onExpire: (el) => { el.style.display = "none" }
+      onExpire: (el) => { el.hidden = true }
     })
   }
 

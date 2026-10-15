@@ -688,14 +688,16 @@ parts:
       "5.1":
         title: "Try history (History tab)"
         screenshots:
+          keyboard-controls: "5.1/keyboard-controls"
+          touch-controls: "5.1/touch-controls"
           newest-restored: "5.1/newest-restored"
           try-details: "5.1/try-details"
           older-try: "5.1/older-try"
           try-history: "5.1/try-history"
-        last_run: 2026-10-15T01:32:56Z
-        result: pass
-        notes: "Live six-try history, older/newest round trip and details verified on owned 21-query case. Earlier settings saves created distinct tries. Four settled screenshots inspected and registered; prior captures retained."
-        paths: ["test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
+        last_run: 2026-10-15T18:21:33Z
+        result: pass_with_fixes
+        notes: "Covered live: owned empty case1067523417, Tab reaches/reveals the History details button and Enter opens its modal; touch viewport768x900 keeps the control visible and tapping opens details. Settled keyboard and touch screenshots captured; initial modal-transition image retained in Archive. Fixed hover-only display:none without changing try actions. Not covered live: older/newest navigation, persistence or settings changes."
+        paths: ["app/assets/stylesheets/core-additions.css", "test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
         screenshots:
@@ -789,6 +791,8 @@ parts:
       "6.3":
         title: "Clone a case"
         screenshots:
+          option-hover: "6.3/option-hover"
+          option-focus: "6.3/option-focus"
           clone-single-created: "6.3/clone-single-created"
           clone-single-try: "6.3/clone-single-try"
           clone-empty-created: "6.3/clone-empty-created"
@@ -796,13 +800,14 @@ parts:
           clone-created: "6.3/clone-created"
           clone-history: "6.3/clone-history"
           clone-form: "6.3/clone-form"
-        last_run: 2026-10-15T01:48:15Z
-        result: pass
-        notes: "Live blank-name disable, entire six-try history with 21 queries/five ratings, empty clone and single older try without ratings verified in browser and guarded DB read. Injected failure retained form and retry succeeded. Seven captures inspected/registered; all clones recorded for cleanup."
-        paths: ["app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/javascript/utils/error_message.js", "app/views/core/_case_toolbar.html.erb", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/status_message_behavior.js"]
+        last_run: 2026-10-15T18:22:14Z
+        result: pass_with_fixes
+        notes: "Covered live: owned case1067523417 Clone dialog option hover and keyboard focus render white text on Bootstrap gray; selecting entire history still switches the option to primary. Cancelled without cloning. Two screenshots captured. Not covered live: clone submission, persistence or failure paths."
+        paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/javascript/utils/error_message.js", "app/views/core/_case_toolbar.html.erb", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/status_message_behavior.js"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
         screenshots:
+          option-hover: "6.4/option-hover"
           deleted: "6.4/deleted"
           delete-option: "6.4/delete-option"
           archived: "6.4/archived"
@@ -815,10 +820,10 @@ parts:
           queries-error: "6.4/queries-error"
           html-error: "6.4/html-error"
           expired-session: "6.4/expired-session"
-        last_run: 2026-10-15T13:08:56Z
+        last_run: 2026-10-15T18:22:14Z
         result: pass_with_fixes
-        notes: "Covered live: Playwright MCP opened Delete All Queries on static case219, cleared only its browser session, and confirmed401 followed by full-page sign-in with no destructive mutation. Native Playwright verifies all three expired-session actions plus existing500 retry and wrapped-banner recovery. Fixed JSON auth guard returns server-generated sign-in URL, consumed by core modal. Not covered live: authenticated successful mutations and annotation/snapshot preservation were not repeated in this follow-up; earlier evidence remains in the dated findings report."
-        paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/api/json.js", "app/javascript/utils/error_message.js"]
+        notes: "Covered live: owned case1067523417 Delete Options Archive button hover and Tab focus retain contrasting white-on-gray text; selection works and Cancel dismisses without mutation. Screenshot captured. Not covered live: destructive submissions, persistence, authentication failures or server failures."
+        paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/api/json.js", "app/javascript/utils/error_message.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
         screenshots:
@@ -1534,6 +1539,7 @@ parts:
       "11.8":
         title: "Bulk Judge (grid mode)"
         screenshots:
+          selected-focus: "11.8/selected-focus"
           thumbnail-grid: "11.8/thumbnail-grid"
           pagination-next: "11.8/pagination-next"
           pagination-first: "11.8/pagination-first"
@@ -1550,10 +1556,10 @@ parts:
           rating-persisted: "11.8/rating-persisted"
           rating-selected: "11.8/rating-selected"
           unrated-grid: "11.8/unrated-grid"
-        last_run: 2026-10-15T04:24:07Z
+        last_run: 2026-10-15T18:23:03Z
         result: fail
-        notes: "Refresh: AJAX rating/persistence/reset; two-row debounce and read-only display; saved JudgeLater explanation cleared/reloaded; navigation cancels pending edit; injected500 visible error preserves prior value. Default5/rank1/All and unranked exclusion/inclusion verified, filter-empty/clear/back and25-row pages,1280x720 loaded thumbnails captured. Known pre-existing unrated-explanation422 and off-scale99 accepted200 (existing todo; restored2). Pages1/2 repeat9 IDs: current+8ceb shuffle-before-pagination source match; live historical pagination replay pending. Sixteen selected captures inspected and registered."
-        paths: ["app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/", "app/models/query_doc_pair.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js", "app/javascript/controllers/status_message_behavior.js"]
+        notes: "Covered live: Book1 bulk judging with only_unrated=false; Tab/Shift+Tab focuses an already-selected rating without saving, selection shadow remains and a distinct2px outline with4px offset appears. Settled screenshot captured; initial transition retained in Archive. Not covered live: save/reset, pagination or failure paths. Unresolved failures from 2026-10-15T04:24:07Z: unrated explanation returns422; off-scale99 accepted200; pages1/2 repeated9 IDs (same shuffle-before-pagination in Angular8ceb99e9, source inspection only)."
+        paths: ["app/assets/stylesheets/judgements.css", "app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/", "app/models/query_doc_pair.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "11.9":
         title: "Query/Doc Pairs management"
         screenshots:

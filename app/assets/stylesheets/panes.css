@@ -56,5 +56,5 @@
 	 z-index: 99;
 }
  .east-slider:hover {
-	 background: none repeat scroll 0% 0% #326414;
+	 background: var(--q-brand-blue);
 }

@@ -1,13 +1,13 @@
 <template data-diff-core-target="selectionTemplate">
-  <div class="snapshot-selection-row d-flex align-items-center" style="margin-bottom: 10px;">
-    <label data-slot="label" class="fw-bold" style="margin-right: 10px; min-width: 100px;"></label>
-    <select data-slot="select" class="form-select w-auto" style="min-width: 200px; margin-right: 10px;" data-action="change->diff-core#selectChanged">
+  <div class="snapshot-selection-row d-flex align-items-center mb-2">
+    <label data-slot="label" class="fw-bold me-2" style="min-width: 100px;"></label>
+    <select data-slot="select" class="form-select w-auto me-2" style="min-width: 200px;" data-action="change->diff-core#selectChanged">
       <option value="">-- Select Snapshot --</option>
     </select>
     <button type="button" class="btn btn-sm btn-danger" data-slot="remove" data-action="click->diff-core#removeSelectionAt">
       <i class="bi bi-x-lg" aria-hidden="true"></i>
     </button>
-    <button type="button" class="btn btn-sm btn-danger" style="margin-left: 5px;" title="Delete this snapshot" aria-label="Delete this snapshot" data-slot="delete" data-action="click->diff-core#deleteSelectionAt">
+    <button type="button" class="btn btn-sm btn-danger ms-1" title="Delete this snapshot" aria-label="Delete this snapshot" data-slot="delete" data-action="click->diff-core#deleteSelectionAt">
       <i class="bi bi-trash" aria-hidden="true"></i>
     </button>
   </div>

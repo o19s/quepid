@@ -12,7 +12,8 @@ function fixture() {
   const element = document.createElement("div")
   form.appendChild(element)
   const targets = Object.fromEntries(AiJudgeWizardController.targets.map(name => [name, document.createElement(name === "runPromptButton" ? "button" : ["rating", "explanation", "status", "ratingInfo", "step2", "loadingSpinner"].includes(name) ? "div" : "input")]))
-  targets.step2.style.display = "none"
+  targets.step2.hidden = true
+  targets.unrateable.hidden = true
   const controller = buildControllerFixture(AiJudgeWizardController, {
     element, targets, values: { sampleUrl: "sample", testUrl: "test", existing: false }
   })
@@ -60,9 +61,9 @@ it("shows server failures and restores the button without showing a stale rating
   postJson.mockRejectedValue(new HttpError({ status: 422, data: { error: "Invalid JSON" } }))
   await c.runPrompt({ preventDefault() {} })
   expect(c.statusTarget.textContent).toContain("Invalid JSON")
-  expect(c.ratingInfoTarget.style.display).toBe("none")
+  expect(c.ratingInfoTarget.hidden).toBe(true)
   expect(c.runPromptButtonTarget.disabled).toBe(false)
-  expect(c.loadingSpinnerTarget.style.display).toBe("none")
+  expect(c.loadingSpinnerTarget.hidden).toBe(true)
 })
 
 it("aborts requests on Turbo disconnect and ignores a stale sample", async () => {
@@ -81,10 +82,10 @@ it("shows rejected ratings as Unrateable and clears that state on a successful r
   const c = fixture()
   postJson.mockResolvedValue({ rating: null, unrateable: true, explanation: "Low confidence" })
   await c.runPrompt({ preventDefault() {} })
-  expect(c.unrateableTarget.style.display).toBe("")
+  expect(c.unrateableTarget.hidden).toBe(false)
   expect(c.ratingTarget.textContent).toBe("")
   postJson.mockResolvedValue({ rating: 0, unrateable: false, explanation: "Accepted zero" })
   await c.runPrompt({ preventDefault() {} })
-  expect(c.unrateableTarget.style.display).toBe("none")
+  expect(c.unrateableTarget.hidden).toBe(true)
   expect(c.ratingTarget.textContent).toBe("0")
 })

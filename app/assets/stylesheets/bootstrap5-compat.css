@@ -32,6 +32,10 @@ pre {
   --q-brand-blue-hover-rgb: 35, 82, 124;
   --q-success-bg: #dff0d8;
   --q-success-text: #3c763d;
+  /* BS3's softer warning orange and danger red, for buttons and for the
+   * case view's warning/error accents. */
+  --q-warning: #f0ad4e;
+  --q-danger: #d9534f;
 
   /* BS3's body font, for the case view and the dev panel (core-additions.css). */
   --q-body-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -74,13 +78,13 @@ pre {
 /* BS3's brand blue for .btn-primary, matching the links. */
 .btn-primary {
   --bs-btn-bg: var(--q-brand-blue);
-  --bs-btn-border-color: var(--q-brand-blue);
-  --bs-btn-hover-bg: #2e6da4;
-  --bs-btn-hover-border-color: #2b6496;
-  --bs-btn-active-bg: #2e6da4;
-  --bs-btn-active-border-color: #2b6496;
+  --bs-btn-border-color: #2e6da4;
+  --bs-btn-hover-bg: #286090;
+  --bs-btn-hover-border-color: #204d74;
+  --bs-btn-active-bg: #286090;
+  --bs-btn-active-border-color: #204d74;
   --bs-btn-disabled-bg: var(--q-brand-blue);
-  --bs-btn-disabled-border-color: var(--q-brand-blue);
+  --bs-btn-disabled-border-color: #2e6da4;
 }
 
 /* BS3's brand blue for selected list items (e.g. Share Case's team row). */
@@ -338,7 +342,12 @@ header .dropdown-toggle .bi {
 /* Modal-body button group has a subtle paper-like fill — only the
  * `background` differs from BS5's outline button defaults. */
 .modal-body .btn-group .btn-outline-secondary {
-  background: linear-gradient(to bottom right, #EEE, #F8F8F8);
+  background-image: linear-gradient(to bottom right, #EEE, #F8F8F8);
+}
+
+/* Let Bootstrap's state backgrounds contrast with its white button text. */
+.modal-body .btn-group .btn-outline-secondary:is(:hover, :focus-visible, :active, .active, .show) {
+  background-image: none;
 }
 
 /* ── #dev-settings — Bootstrap-class overrides ──────────────────────
@@ -420,7 +429,7 @@ header .dropdown-toggle .bi {
 }
 
 .annotation .dropdown > .dropdown-toggle:hover {
-	color: #888;
+	color: var(--bs-link-hover-color);
 }
 
 .annotation > .dropdown > .dropdown-menu > li {
@@ -455,8 +464,7 @@ header .dropdown-toggle .bi {
 	left: calc(var(--score-col-end) + 20px);
 }
 
-/* BS3's .btn-default and softer warning/danger shades for the query
- * toolbar. BS5 hardcodes each button's colors, so each needs its own rule. */
+/* BS3's .btn-default for the query toolbar. */
 .sub-results .btn-outline-secondary {
 	--bs-btn-color: #333;
 	--bs-btn-bg: #fff;
@@ -469,30 +477,33 @@ header .dropdown-toggle .bi {
 	--bs-btn-active-border-color: #adadad;
 }
 
-.sub-results .btn-warning {
-	--bs-btn-bg: #f0ad4e;
-	--bs-btn-border-color: #f0ad4e;
-	--bs-btn-hover-bg: #ec971f;
-	--bs-btn-hover-border-color: #e28a00;
-	--bs-btn-active-bg: #ec971f;
-	--bs-btn-active-border-color: #e28a00;
-}
-
-/* BS5's .btn-warning defaults to black text; BS3 used white (e.g. "Move
- * Query", the diff modal's "Clear Comparison View"). */
+/* BS3's warning/danger buttons, with white text on both (BS5's warning is
+ * yellow with black text), e.g. "Move Query", the diff modal's "Clear
+ * Comparison View". BS5 hardcodes each button's colors, so each needs its
+ * own rule. */
 .btn-warning {
 	--bs-btn-color: #fff;
+	--bs-btn-bg: var(--q-warning);
+	--bs-btn-border-color: var(--q-warning);
 	--bs-btn-hover-color: #fff;
+	--bs-btn-hover-bg: #ec971f;
+	--bs-btn-hover-border-color: #e28a00;
 	--bs-btn-active-color: #fff;
+	--bs-btn-active-bg: #ec971f;
+	--bs-btn-active-border-color: #e28a00;
+	--bs-btn-disabled-bg: var(--q-warning);
+	--bs-btn-disabled-border-color: var(--q-warning);
 }
 
-.sub-results .btn-danger {
-	--bs-btn-bg: #d9534f;
-	--bs-btn-border-color: #d9534f;
+.btn-danger {
+	--bs-btn-bg: var(--q-danger);
+	--bs-btn-border-color: var(--q-danger);
 	--bs-btn-hover-bg: #c9302c;
 	--bs-btn-hover-border-color: #ac2925;
 	--bs-btn-active-bg: #c9302c;
 	--bs-btn-active-border-color: #ac2925;
+	--bs-btn-disabled-bg: var(--q-danger);
+	--bs-btn-disabled-border-color: var(--q-danger);
 }
 
 .sub-results .row {

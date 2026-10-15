@@ -97,7 +97,7 @@ export default class extends Controller {
   updateRunAvailability(preset) {
     const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
+    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.hidden = !missingScale
   }
 
   syncImages() {
@@ -110,13 +110,13 @@ export default class extends Controller {
     field.dataset.unsupported = String(!supported)
     if (this.hasImagesHiddenTarget) this.imagesHiddenTarget.value = supported ? "false" : field.dataset.wanted
     if (this.hasImagesNoticeProviderTarget) this.imagesNoticeProviderTarget.textContent = this.currentPreset()?.label || ""
-    if (this.hasImagesNoticeTarget) this.imagesNoticeTarget.style.display = supported ? "none" : ""
+    if (this.hasImagesNoticeTarget) this.imagesNoticeTarget.hidden = supported
   }
 
   showHelp() {
     const template = this.hasProviderTarget && this.presetTargets.find(preset => preset.dataset.provider === this.providerTarget.value)
     this.helpTarget.replaceChildren(...(template ? [template.content.cloneNode(true)] : []))
-    this.helpTarget.style.display = template ? "block" : "none"
+    this.helpTarget.hidden = !template
   }
 
   applyReadOnlyFields(preset) {
@@ -141,7 +141,7 @@ export default class extends Controller {
     this.providerOptionFieldTargets.forEach((row) => {
       const mine = row.dataset.provider === provider
 
-      row.style.display = mine ? "" : "none"
+      row.hidden = !mine
       row.querySelectorAll("input").forEach((input) => { input.disabled = !mine || this.jsonTabTarget.classList.contains("active") })
     })
   }
@@ -151,8 +151,8 @@ export default class extends Controller {
   showCriteria(preset) {
     const asCriteria = Boolean(preset?.scale_as_criteria)
 
-    if (this.hasCriteriaTableTarget) this.criteriaTableTarget.style.display = asCriteria ? "" : "none"
-    if (this.hasCriteriaProseTarget) this.criteriaProseTarget.style.display = asCriteria ? "none" : ""
+    if (this.hasCriteriaTableTarget) this.criteriaTableTarget.hidden = !asCriteria
+    if (this.hasCriteriaProseTarget) this.criteriaProseTarget.hidden = asCriteria
   }
 
   isStockPrompt(text) {
@@ -182,7 +182,7 @@ export default class extends Controller {
     }
     if (this.hasSystemPromptHintTarget) {
       this.systemPromptHintTarget.textContent = preset?.prompt_hint || ""
-      this.systemPromptHintTarget.style.display = preset?.prompt_hint ? "block" : "none"
+      this.systemPromptHintTarget.hidden = !preset?.prompt_hint
     }
     if (!this.hasSystemPromptWarningTarget) return
 
@@ -198,7 +198,7 @@ export default class extends Controller {
       const select = this.providerTarget
       this.defaultPromptProviderTarget.textContent = select.options[select.selectedIndex].text
     }
-    this.systemPromptWarningTarget.style.display = foreign ? "block" : "none"
+    this.systemPromptWarningTarget.hidden = !foreign
   }
 
   useDefaultPrompt(event) {

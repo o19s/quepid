@@ -7,7 +7,8 @@ function buildController({ spinner = true } = {}) {
   const input = document.createElement("input")
   const suggestions = document.createElement("div")
   const spinnerTarget = document.createElement("span")
-  spinnerTarget.style.display = "none"
+  suggestions.hidden = true
+  spinnerTarget.hidden = true
   const itemTemplate = document.createElement("template")
   itemTemplate.innerHTML =
     '<div class="autocomplete-item" data-action="click->team-member-autocomplete#select"><img class="autocomplete-avatar"><div class="autocomplete-details"><div class="autocomplete-name"></div><div class="autocomplete-email"></div></div></div>'
@@ -75,10 +76,10 @@ describe("TeamMemberAutocompleteController", () => {
     controller.search()
     vi.advanceTimersByTime(299)
     expect(fetch).not.toHaveBeenCalled()
-    expect(controller.spinnerTarget.style.display).toBe("none")
+    expect(controller.spinnerTarget.hidden).toBe(true)
 
     vi.advanceTimersByTime(1)
-    expect(controller.spinnerTarget.style.display).toBe("inline-block")
+    expect(controller.spinnerTarget.hidden).toBe(false)
     expect(controller.isLoading).toBe(true)
     expect(fetch).toHaveBeenCalledWith("/teams/3/suggest_members?query=a%26b", {
       method: "GET",
@@ -87,7 +88,7 @@ describe("TeamMemberAutocompleteController", () => {
     })
 
     await vi.runAllTimersAsync()
-    expect(controller.spinnerTarget.style.display).toBe("none")
+    expect(controller.spinnerTarget.hidden).toBe(true)
     expect(controller.isLoading).toBe(false)
     expect(controller.suggestions).toEqual(users)
   })
@@ -121,7 +122,7 @@ describe("TeamMemberAutocompleteController", () => {
     vi.advanceTimersByTime(1000)
 
     expect(fetch).not.toHaveBeenCalled()
-    expect(controller.suggestionsTarget.style.display).toBe("none")
+    expect(controller.suggestionsTarget.hidden).toBe(true)
     expect(controller.suggestionsTarget.innerHTML).toBe("")
     expect(controller.debounceTimer).toBe(null)
   })
@@ -144,7 +145,7 @@ describe("TeamMemberAutocompleteController", () => {
     controller.showSuggestions(users)
 
     const items = controller.suggestionsTarget.querySelectorAll(".autocomplete-item")
-    expect(controller.suggestionsTarget.style.display).toBe("block")
+    expect(controller.suggestionsTarget.hidden).toBe(false)
     expect(items).toHaveLength(2)
     expect(items[0].dataset.email).toBe("ada@example.com")
     expect(items[0].dataset.action).toBe("click->team-member-autocomplete#select")
@@ -188,7 +189,7 @@ describe("TeamMemberAutocompleteController", () => {
 
     controller.showSuggestions(body)
 
-    expect(controller.suggestionsTarget.style.display).toBe("none")
+    expect(controller.suggestionsTarget.hidden).toBe(true)
     expect(controller.suggestionsTarget.innerHTML).toBe("")
   })
 
@@ -200,7 +201,7 @@ describe("TeamMemberAutocompleteController", () => {
     controller.select({ currentTarget: item })
 
     expect(controller.inputTarget.value).toBe("alan@example.com")
-    expect(controller.suggestionsTarget.style.display).toBe("none")
+    expect(controller.suggestionsTarget.hidden).toBe(true)
     expect(controller.suggestions).toEqual([])
   })
 
@@ -217,9 +218,9 @@ describe("TeamMemberAutocompleteController", () => {
     await controller.fetchSuggestions("ada")
 
     expect(error).toHaveBeenCalledOnce()
-    expect(controller.spinnerTarget.style.display).toBe("none")
+    expect(controller.spinnerTarget.hidden).toBe(true)
     expect(controller.isLoading).toBe(false)
-    expect(controller.suggestionsTarget.style.display).toBe("none")
+    expect(controller.suggestionsTarget.hidden).toBe(true)
     expect(controller.suggestionsTarget.children).toHaveLength(0)
   })
 
@@ -228,10 +229,10 @@ describe("TeamMemberAutocompleteController", () => {
     controller.showSuggestions(users)
 
     controller.clickOutside({ target: controller.inputTarget })
-    expect(controller.suggestionsTarget.style.display).toBe("block")
+    expect(controller.suggestionsTarget.hidden).toBe(false)
 
     controller.clickOutside({ target: document.body })
-    expect(controller.suggestionsTarget.style.display).toBe("none")
+    expect(controller.suggestionsTarget.hidden).toBe(true)
   })
 
   it("cancels a pending search on disconnect", () => {
@@ -293,7 +294,7 @@ describe("TeamMemberAutocompleteController", () => {
       controller.fetchSuggestions("ada")
       await older
 
-      expect(controller.spinnerTarget.style.display).toBe("inline-block")
+      expect(controller.spinnerTarget.hidden).toBe(false)
       expect(controller.isLoading).toBe(true)
       expect(pending).toHaveLength(2)
     })
@@ -312,8 +313,8 @@ describe("TeamMemberAutocompleteController", () => {
       await vi.runAllTimersAsync()
 
       expect(pending[0].init.signal.aborted).toBe(true)
-      expect(controller.spinnerTarget.style.display).toBe("none")
-      expect(controller.suggestionsTarget.style.display).toBe("none")
+      expect(controller.spinnerTarget.hidden).toBe(true)
+      expect(controller.suggestionsTarget.hidden).toBe(true)
       expect(controller.suggestionsTarget.children).toHaveLength(0)
     })
 
@@ -339,7 +340,7 @@ describe("TeamMemberAutocompleteController", () => {
 
     controller.showLoading()
     expect(controller.isLoading).toBe(false)
-    expect(controller.spinnerTarget.style.display).toBe("none")
+    expect(controller.spinnerTarget.hidden).toBe(true)
 
     controller.isLoading = true
     await controller.fetchSuggestions("ada")

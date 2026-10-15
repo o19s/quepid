@@ -62,7 +62,6 @@ function writeBundle(name, title, files) {
 
   const outputFile = `app/assets/builds/${name}.css`;
   let output = `/* ${title} */\n`;
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
   for (const file of files) {
     output += readFileIfExists(file);

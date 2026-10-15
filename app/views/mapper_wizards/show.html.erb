@@ -22,7 +22,7 @@
 
   <div class="card-body">
     <!-- Status Alert -->
-    <div data-mapper-wizard-target="status" class="alert" style="display: none;"></div>
+    <div data-mapper-wizard-target="status" class="alert" hidden></div>
 
     <!-- Step 1: Fetch HTML -->
     <div class="mb-4">
@@ -120,7 +120,7 @@
       </div>
 
       <!-- HTML Preview -->
-      <div class="mt-3" data-mapper-wizard-target="htmlPreviewContainer" style="display: none;">
+      <div class="mt-3" data-mapper-wizard-target="htmlPreviewContainer" hidden>
         <div class="d-flex justify-content-between align-items-center mb-2">
           <label class="form-label mb-0">Fetched HTML/JSON Preview</label>
           <div class="btn-group btn-group-sm">
@@ -143,7 +143,7 @@
     <!-- Step 2: Generate with AI -->
     <div class="mb-4">
       <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
-      <div data-mapper-wizard-target="step2" style="display: none;">
+      <div data-mapper-wizard-target="step2" hidden>
         <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
 
         <div class="row g-3">
@@ -179,7 +179,7 @@
     <!-- Step 3: Edit, Test, and Refine -->
     <div class="mb-4">
       <h4><span class="badge bg-primary">3</span> Edit, Test &amp; Refine</h4>
-      <div data-mapper-wizard-target="step3" style="display: none;">
+      <div data-mapper-wizard-target="step3" hidden>
         <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
 
         <%= render "mapper_wizards/mapper_editor", name: "numberOfResultsMapper",

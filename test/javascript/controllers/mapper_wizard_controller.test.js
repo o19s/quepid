@@ -19,9 +19,9 @@ function buildController(overrides = {}) {
       testQuery: { value: "" },
       fetchButton: document.createElement("button"),
       htmlPreview: document.createElement("div"),
-      htmlPreviewContainer: document.createElement("div"),
-      step2: document.createElement("div"),
-      status: document.createElement("div")
+      htmlPreviewContainer: Object.assign(document.createElement("div"), { hidden: true }),
+      step2: Object.assign(document.createElement("div"), { hidden: true }),
+      status: Object.assign(document.createElement("div"), { hidden: true })
     },
     values: {
       fetchUrl: "/mapper_wizard/new/fetch_html"
@@ -30,8 +30,6 @@ function buildController(overrides = {}) {
   controller.hasCustomHeadersTarget = false
   controller.hasBasicAuthCredentialTarget = false
 
-  controller.htmlPreviewContainerTarget.style = {}
-  controller.step2Target.style = {}
 
   controller.setButtonLoading = vi.fn()
   controller.showStatus = vi.fn()
@@ -85,8 +83,8 @@ describe("MapperWizardController fetchHtml", () => {
       }),
     })
     expect(controller.htmlPreviewTarget.textContent).toBe("<html>preview</html>")
-    expect(controller.htmlPreviewContainerTarget.style.display).toBe("block")
-    expect(controller.step2Target.style.display).toBe("block")
+    expect(controller.htmlPreviewContainerTarget.hidden).toBe(false)
+    expect(controller.step2Target.hidden).toBe(false)
   })
 
   it("does not call apiFetch when custom headers are invalid JSON", async () => {
@@ -199,14 +197,13 @@ describe("MapperWizardController save", () => {
 describe("MapperWizardController showStep3Manually", () => {
   it("reveals both optional bodies and scrolls step 3 into view", () => {
     const controller = buildController()
-    controller.step3Target = document.createElement("div")
-    controller.step3Target.style = {}
+    controller.step3Target = Object.assign(document.createElement("div"), { hidden: true })
     controller.step3Target.scrollIntoView = vi.fn()
 
     MapperWizardController.prototype.showStep3Manually.call(controller)
 
-    expect(controller.step2Target.style.display).toBe("block")
-    expect(controller.step3Target.style.display).toBe("block")
+    expect(controller.step2Target.hidden).toBe(false)
+    expect(controller.step3Target.hidden).toBe(false)
     expect(controller.step3Target.scrollIntoView).toHaveBeenCalledWith({
       behavior: "smooth",
       block: "start",
@@ -227,7 +224,6 @@ describe("MapperWizardController testMapper", () => {
     const button = document.createElement("button")
     const logsTarget = document.createElement("div")
     const logsContainerTarget = document.createElement("div")
-    logsContainerTarget.style = {}
     controller.showStatus = vi.fn()
 
     apiFetch.mockResolvedValue(jsonResponse({
@@ -271,7 +267,6 @@ describe("MapperWizardController testMapper", () => {
     const button = document.createElement("button")
     const logsTarget = document.createElement("div")
     const logsContainerTarget = document.createElement("div")
-    logsContainerTarget.style = {}
     controller.showStatus = vi.fn()
 
     apiFetch.mockResolvedValue(jsonResponse({
@@ -309,7 +304,7 @@ describe("MapperWizardController AI generation and refinement", () => {
       generateButtonTarget: document.createElement("button"),
       generateUrlValue: "/mapper_wizard/new/generate",
       refineUrlValue: "/mapper_wizard/new/refine",
-      step3Target: { style: {} },
+      step3Target: { hidden: true },
       ...overrides
     })
   }
@@ -351,7 +346,7 @@ describe("MapperWizardController AI generation and refinement", () => {
     expect(apiFetch.mock.calls[0][0]).toBe("/mapper_wizard/new/generate")
     expect(numberOfResultsEditor.setValue).toHaveBeenCalledWith("n()")
     expect(docsEditor.setValue).toHaveBeenCalledWith("d()")
-    expect(controller.step3Target.style.display).toBe("block")
+    expect(controller.step3Target.hidden).toBe(false)
     expect(controller.showStatus).toHaveBeenLastCalledWith("Mapper functions generated successfully!", "success")
     expect(controller.setButtonLoading).toHaveBeenNthCalledWith(1, controller.generateButtonTarget, true)
     expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
@@ -383,7 +378,7 @@ describe("MapperWizardController AI generation and refinement", () => {
     await controller.generateMappers({ preventDefault: vi.fn() })
 
     expect(controller.showStatus).toHaveBeenLastCalledWith(message, "error")
-    expect(controller.step3Target.style.display).toBeUndefined()
+    expect(controller.step3Target.hidden).toBe(true)
     expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
   })
 
@@ -512,7 +507,7 @@ describe("MapperWizardController helpers", () => {
   it("shows mapper logs with a level label, escaping their text, and hides an empty log", () => {
     const controller = realHelpers()
     const logs = document.createElement("div")
-    const container = { style: {} }
+    const container = {}
 
     controller.displayLogs([
       { level: "error", message: "<b>bad</b>" },
@@ -521,7 +516,7 @@ describe("MapperWizardController helpers", () => {
       { level: "log", message: "plain" }
     ], logs, container)
 
-    expect(container.style.display).toBe("block")
+    expect(container.hidden).toBe(false)
     expect([...logs.children].map((el) => [el.className, el.textContent])).toEqual([
       ["text-danger", "[ERROR] <b>bad</b>"],
       ["text-warning", "[WARN] careful"],
@@ -531,7 +526,7 @@ describe("MapperWizardController helpers", () => {
     expect(logs.querySelector("b")).toBeNull()
 
     controller.displayLogs([], logs, container)
-    expect(container.style.display).toBe("none")
+    expect(container.hidden).toBe(true)
   })
 
   it("shows the server-rendered test query hint for the chosen HTTP method", () => {
@@ -570,12 +565,12 @@ describe("MapperWizardController helpers", () => {
     controller.showStatus("Working", "info")
     expect(controller.statusTarget.className).toBe("alert alert-info")
     vi.advanceTimersByTime(10000)
-    expect(controller.statusTarget.style.display).toBe("block")
+    expect(controller.statusTarget.hidden).toBe(false)
 
     controller.showStatus("Done", "success")
     expect(controller.statusTarget.className).toBe("alert alert-success")
     vi.advanceTimersByTime(5000)
-    expect(controller.statusTarget.style.display).toBe("none")
+    expect(controller.statusTarget.hidden).toBe(true)
   })
 
   it("shows a spinner while loading and restores the button label after", () => {

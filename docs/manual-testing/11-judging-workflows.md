@@ -91,7 +91,7 @@ Confirm **Back to Judge Overview** returns to your personal Judge Overview.
   5. Click **Reset** ("clear rating") on a rated document — confirm it's removed via AJAX and the Reset control disappears.
   6. Toggle **Show Explanations** on, type into a document's explanation field — confirm it auto-saves (no explicit save button) and persists on reload.
   7. Toggle **Show Explanations** off with existing explanations present — confirm they render read-only rather than vanishing.
-  8. Uncheck **Unrated** — confirm already-rated documents also appear, pre-selected.
+  8. Uncheck **Unrated** — confirm already-rated documents also appear, pre-selected. Tab into a selected rating group and confirm keyboard focus has a distinct outline in addition to the selection shadow.
   9. With a book Rank Depth set, confirm it is the initial cutoff. Use the dropdown to limit to `position <= N`, then choose **All** to include deeper and unranked pairs. Return without an explicit cutoff and confirm the book default still applies.
   10. Enter a **query text** filter that matches no queries — confirm the empty state lists active filters with working "clear this filter" quick links.
   11. Page through results (25 per page) if there are enough documents, and confirm grouping-by-query stays correct across the page boundary.

@@ -73,8 +73,8 @@ export default class extends Controller {
 
   toggleFields(event) {
     event.preventDefault()
-    const showing = this.allFieldsTarget.style.display !== "none"
-    this.allFieldsTarget.style.display = showing ? "none" : ""
+    const showing = !this.allFieldsTarget.hidden
+    this.allFieldsTarget.hidden = showing
     this.toggleTarget.textContent = showing ? "View All Fields" : "Hide All Fields"
   }
 }

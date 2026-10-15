@@ -24,8 +24,8 @@ export default class extends withStatusMessages(Controller) {
   }
 
   revealStep2() {
-    if (this.step2Target.style.display === "block") return
-    this.step2Target.style.display = "block"
+    if (!this.step2Target.hidden) return
+    this.step2Target.hidden = false
     this.sampleQueryDocPair()
   }
 
@@ -71,9 +71,9 @@ export default class extends withStatusMessages(Controller) {
     if (this.running) return
     this.running = true
     this.runPromptButtonTarget.disabled = true
-    this.ratingInfoTarget.style.display = "none"
-    this.statusTarget.style.display = "none"
-    this.loadingSpinnerTarget.style.display = "block"
+    this.ratingInfoTarget.hidden = true
+    this.statusTarget.hidden = true
+    this.loadingSpinnerTarget.hidden = false
     try {
       const formData = new FormData(this.element.closest("form"))
       const data = await postJson(this.testUrlValue, {
@@ -91,21 +91,21 @@ export default class extends withStatusMessages(Controller) {
         }
       }, { signal: this.abortController.signal })
       this.ratingTarget.textContent = String(data.rating ?? "")
-      if (this.hasUnrateableTarget) this.unrateableTarget.style.display = data.unrateable ? "" : "none"
+      if (this.hasUnrateableTarget) this.unrateableTarget.hidden = !data.unrateable
       this.explanationTarget.textContent = data.explanation || ""
-      this.ratingInfoTarget.style.display = "block"
+      this.ratingInfoTarget.hidden = false
     } catch (error) {
       if (error.name !== "AbortError") this.showError(error)
     } finally {
       this.running = false
       const scaleNotice = this.element.querySelector("[data-ai-judge-form-target~=needsScaleNotice]")
-      this.runPromptButtonTarget.disabled = Boolean(scaleNotice && scaleNotice.style.display !== "none")
-      this.loadingSpinnerTarget.style.display = "none"
+      this.runPromptButtonTarget.disabled = Boolean(scaleNotice && !scaleNotice.hidden)
+      this.loadingSpinnerTarget.hidden = true
     }
   }
 
   showError(error) {
-    this.statusTarget.style.display = "block"
+    this.statusTarget.hidden = false
     this.showStatusMessage(this.statusTarget, {
       message: `Error: ${serverMessage(error, error.message)}`,
       className: "alert alert-danger"

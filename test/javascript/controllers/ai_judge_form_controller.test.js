@@ -94,6 +94,7 @@ describe("AiJudgeFormController provider switching", () => {
 
   it("warns when the prompt is another provider's default", () => {
     const warning = document.createElement("div")
+    warning.hidden = true
     const select = document.createElement("select")
     const option = document.createElement("option")
     option.value = "typesafe_jev"
@@ -111,22 +112,23 @@ describe("AiJudgeFormController provider switching", () => {
 
     AiJudgeFormController.prototype.describePromptField.call(controller, presets.typesafe_jev)
 
-    expect(warning.style.display).toBe("block")
+    expect(warning.hidden).toBe(false)
     expect(controller.defaultPromptProviderTarget.textContent).toBe("TypeSafe Jev")
   })
 
   it("disables Run Judgement for a provider that needs a scale when there is none", () => {
     const notice = document.createElement("div")
+    notice.hidden = true
     const controller = buildController({ hasScaleValue: false, hasNeedsScaleNoticeTarget: true, needsScaleNoticeTarget: notice })
     controller.hasRunPromptButtonTarget = true
 
     AiJudgeFormController.prototype.updateRunAvailability.call(controller, { needs_scale: true })
     expect(controller.runPromptButtonTarget.disabled).toBe(true)
-    expect(notice.style.display).toBe("")
+    expect(notice.hidden).toBe(false)
 
     AiJudgeFormController.prototype.updateRunAvailability.call(controller, { needs_scale: false })
     expect(controller.runPromptButtonTarget.disabled).toBe(false)
-    expect(notice.style.display).toBe("none")
+    expect(notice.hidden).toBe(true)
   })
 
   it("lets a provider that needs a scale run once there is one", () => {
@@ -223,7 +225,7 @@ it("gates the active JSON provider and allows malformed JSON errors to be retrie
   json.value = '{"judge_options":{"llm_provider":"openai"}}'
   controller.jsonChanged()
   expect(run.disabled).toBe(false)
-  expect(notice.style.display).toBe("none")
+  expect(notice.hidden).toBe(true)
   json.value = '{"judge_options":{"llm_provider":"typesafe_jev"}}'
   controller.jsonChanged()
   expect(run.disabled).toBe(true)

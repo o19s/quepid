@@ -120,7 +120,7 @@ export default class extends Controller {
       this.suggestionsTarget.appendChild(item)
     })
 
-    this.suggestionsTarget.style.display = 'block'
+    this.suggestionsTarget.hidden = false
   }
 
   /**
@@ -167,7 +167,7 @@ export default class extends Controller {
    * Hide the suggestions dropdown and clear state
    */
   hideSuggestions() {
-    this.suggestionsTarget.style.display = 'none'
+    this.suggestionsTarget.hidden = true
     this.suggestionsTarget.innerHTML = ''
     this.suggestions = []
   }
@@ -197,7 +197,7 @@ export default class extends Controller {
   showLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = true
-      this.spinnerTarget.style.display = 'inline-block'
+      this.spinnerTarget.hidden = false
     }
   }
 
@@ -207,7 +207,7 @@ export default class extends Controller {
   hideLoading() {
     if (this.hasSpinnerTarget) {
       this.isLoading = false
-      this.spinnerTarget.style.display = 'none'
+      this.spinnerTarget.hidden = true
     }
   }
 }
