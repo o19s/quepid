@@ -524,7 +524,7 @@ describe("WizardController", () => {
 
       controller.render()
 
-      expect(controller.queryListTarget.querySelectorAll(".wiz_new_query")).toHaveLength(2)
+      expect(controller.queryListTarget.querySelectorAll(".badge")).toHaveLength(2)
       expect(controller.queryListTarget.querySelector("button").dataset.wizardIndexParam).toBe("0")
     })
   })

@@ -472,11 +472,13 @@ export default class extends Controller {
     if (this.hasQueryListTarget) {
       this.queryListTarget.replaceChildren(...this.newQueries.map((query, index) => {
         const item = document.createElement("span")
-        item.className = "wiz_new_query"
+        item.className = "badge text-bg-primary d-inline-flex align-items-center gap-2 me-2 mb-2"
+        item.dataset.bsTheme = "dark"
         item.textContent = query.queryString
         const remove = document.createElement("button")
         remove.type = "button"
-        remove.textContent = "X"
+        remove.className = "btn-close"
+        remove.setAttribute("aria-label", `Remove ${query.queryString}`)
         remove.dataset.action = "wizard#removeQuery"
         remove.dataset.wizardIndexParam = index
         item.append(remove)

@@ -224,7 +224,7 @@ export default class extends withStatusMessages(Controller) {
     ratings.appendChild(rating)
     scoreAll.append(scoreLabel, ratings)
     const warning = document.createElement("div")
-    warning.className = "alert alert-warning float-start score-all-alert"
+    warning.className = "alert alert-warning float-start ms-3"
     warning.textContent = "Changing ratings will affect the query score."
     // Contain the two floats so the results below start on their own full-width line.
     const scoreAllRow = document.createElement("div")

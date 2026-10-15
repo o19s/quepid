@@ -1,7 +1,7 @@
 /**
  * Clone a one-off modal shell; its Stimulus controller owns Bootstrap lifecycle.
  *
- * @param {{ html: string, size?: "sm"|"lg"|"xl", windowClass?: string, ariaLabelledBy?: string }} options
+ * @param {{ html: string, size?: "sm"|"lg"|"xl"|"fullscreen", windowClass?: string, ariaLabelledBy?: string }} options
  * @returns {{ element: Element, dispose: () => void }}
  */
 export function openDynamicModal({ html, templateId, size, windowClass, ariaLabelledBy } = {}) {

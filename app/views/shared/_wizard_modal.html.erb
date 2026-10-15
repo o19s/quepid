@@ -1,9 +1,9 @@
 <%# locals: (kase:) %>
-<div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
+<div class="modal fade" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
      data-controller="wizard"
      data-wizard-proxy-required-value="<%= require_proxy_for_all_search_endpoints? %>"
      data-wizard-snapshot-search-url-template-value="<%= api_case_snapshot_search_index_url(kase, '__SNAPSHOT_ID__') if kase %>">
-  <div class="modal-dialog modal-xl">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header"><h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1><button type="button" class="btn-close" data-action="wizard#close" aria-label="Close"></button></div>
       <div class="modal-body">

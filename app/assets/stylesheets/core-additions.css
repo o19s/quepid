@@ -123,13 +123,6 @@ header .dropdown-item:focus {
   border-width:1px 0;
 }
 
-.results-list-element {
-	list-style: none;
-  display: block;
-	margin: 20px 0 0;
-  padding-left: 0;
-}
-
 .results-list-element > li {
   border: 1px solid #eee;
 	margin: 0 0 5px 0;
@@ -184,21 +177,6 @@ header .dropdown-item:focus {
 	   vertical-align the icon renders noticeably higher than the sibling
 	   result-count number and the toggle chevron. Nudge down to align. */
 	top: 6px;
-}
-
-.notification-bubble {
-	position: absolute;
-	top: -10px;
-	right: -12px;
-	background-color: var(--bs-danger);
-	color: white;
-	border-radius: 50%;
-	width: 20px;
-	height: 20px;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	font-size: 12px;
 }
 
 .frog-icon {
@@ -258,11 +236,6 @@ header .dropdown-item:focus {
 	--score-col-end: 90px;
 }
 
-.sub-results td {
-	vertical-align: middle;
-}
-
-
 /*
 	Main - Results - Sub Results — rating columns and thumbnails
 */
@@ -297,10 +270,6 @@ header .dropdown-item:focus {
 
 .score-all .ratings {
   position: relative;
-}
-
-.score-all-alert {
-  margin-left: 20px;
 }
 
 .col-ratings.query-rating {
@@ -368,12 +337,6 @@ header .dropdown-item:focus {
 .move-query-cases-list {
   max-height: 300px;
   overflow:   auto;
-}
-
-
-
-.result-rank {
-  font-size:  1em;
 }
 
 
@@ -470,12 +433,6 @@ header .dropdown-item:focus {
 	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap5-compat.css)
 */
 
-.history-list {
-	list-style: none;
-	padding: 0;
-	margin: 0 0 20px 0;
-}
-
 .history-list li {
 	padding: 5px 10px;
 	border-bottom: 1px solid var(--bs-border-color);
@@ -507,16 +464,8 @@ header .dropdown-item:focus {
 
 .try-details {
   position: absolute;
-  display: inline-block;
   top: 5px;
   right: 10px;
-  background: #777;
-  cursor: pointer;
-}
-
-.try-details:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 2px;
 }
 
 /* Keep touch controls visible and keyboard controls focusable between hovers. */
@@ -531,14 +480,6 @@ header .dropdown-item:focus {
   }
 }
 
-/*
-	Footer
-*/
-
-footer {
-  margin-top: 30px;
-}
-
 .matches-popper:hover {
   cursor:           pointer;
   text-decoration:  underline;
@@ -546,20 +487,6 @@ footer {
 
 .matches-popper .bi-info-circle-fill {
   margin-left: 0.25rem;
-}
-
-.btn-circle {
-  width: 30px;
-  height: 30px;
-  text-align: center;
-  padding: 6px 0;
-  font-size: 12px;
-  line-height: 1.42;
-  border-radius: 15px;
-}
-
-.search-feedback {
-  margin: 20px 0;
 }
 
 /* Case workspace flashes overlay the bottom of the viewport. Ordinary

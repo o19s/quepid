@@ -211,7 +211,7 @@ export default class extends Controller {
     const modal = openDynamicModal({
       templateId: "match-explain-debug-modal-template",
       ariaLabelledBy: "match-explain-debug-modal-title",
-      size: "lg",
+      size: "fullscreen",
       windowClass: "full-screen-modal"
     })
     modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
@@ -221,6 +221,7 @@ export default class extends Controller {
     const modal = openDynamicModal({
       templateId: "match-explain-expand-modal-template",
       ariaLabelledBy: "match-explain-expand-modal-title",
+      size: "fullscreen",
       windowClass: "full-screen-modal"
     })
     modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data

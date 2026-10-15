@@ -39,31 +39,9 @@ main > .container {
 }
 
 
-.alert {
-  z-index: 100;
-}
-
 /* Slow down Bootstrap spinner animation */
 .spinner-border {
   animation-duration: 1.5s;
-}
-
-/* Base heading style for every application-bundle page (dashboard, books,
- * judgements, sign-in, admin, ...). */
-h2,
-h3 {
-  font-family: Aller, sans-serif;
-  color: #036;
-  margin: 10px 0 20px 0;
-  padding: 0;
-}
-
-h2 {
-  font-size: 24px;
-}
-
-h3 {
-  font-size: 20px;
 }
 
 /* Size the copy button like the heading around it, not .btn's 1rem. */

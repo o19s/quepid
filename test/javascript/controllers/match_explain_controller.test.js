@@ -227,7 +227,7 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).not.toHaveBeenCalled()
   })
 
-  it("Debug opens a modal sized lg with the full-screen-modal class and renders the JSON explorer", () => {
+  it("Debug opens a fullscreen modal with the full-screen-modal class and renders the JSON explorer", () => {
     const data = baseData()
     const controller = buildController(element, data)
     MatchExplainController.prototype.connect.call(controller)
@@ -237,7 +237,7 @@ describe("MatchExplainController", () => {
 
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
-    expect(options.size).toBe("lg")
+    expect(options.size).toBe("fullscreen")
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-debug-modal-template")
     expect(options.ariaLabelledBy).toBe("match-explain-debug-modal-title")
@@ -258,6 +258,7 @@ describe("MatchExplainController", () => {
 
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
+    expect(options.size).toBe("fullscreen")
     expect(options.windowClass).toBe("full-screen-modal")
     expect(options.templateId).toBe("match-explain-expand-modal-template")
     expect(options.ariaLabelledBy).toBe("match-explain-expand-modal-title")

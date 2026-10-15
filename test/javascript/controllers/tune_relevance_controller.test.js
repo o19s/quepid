@@ -124,7 +124,7 @@ function mount(settingsOverrides) {
   target("queryWarning", document.createElement("div"))
   target("curatorVars", document.createElement("div"))
   target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="number" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
-  target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
+  target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-sm btn-secondary rounded-pill try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
   target("tlsWarning", document.createElement("div"))
   target("tlsProtocol", document.createElement("span"))
   target("endpointSelect", document.createElement("select"))

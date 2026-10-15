@@ -127,15 +127,15 @@
 </template>
 
 <template id="match-explain-debug-modal-template">
-  <div class="doc-detailed-explain" data-controller="match-explain-modal">
-    <h3 id="match-explain-debug-modal-title">Debug Explain for <em data-match-explain-modal-target="title"></em> (id:<span data-match-explain-modal-target="docId"></span>)</h3>
+  <div class="modal-body" data-controller="match-explain-modal">
+    <div class="d-flex align-items-start gap-3"><h3 id="match-explain-debug-modal-title">Debug Explain for <em data-match-explain-modal-target="title"></em> (id:<span data-match-explain-modal-target="docId"></span>)</h3><button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button></div>
     <div data-match-explain-modal-target="json"></div>
   </div>
 </template>
 
 <template id="match-explain-expand-modal-template">
-  <div class="col-sm-12 pt-4 pb-4 px-4" data-controller="match-explain-modal">
-    <h1 id="match-explain-expand-modal-title">Relevancy Score: <span data-match-explain-modal-target="score"></span></h1>
+  <div class="modal-body p-4" data-controller="match-explain-modal">
+    <div class="d-flex align-items-start gap-3"><h1 id="match-explain-expand-modal-title">Relevancy Score: <span data-match-explain-modal-target="score"></span></h1><button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button></div>
     <div><pre data-match-explain-modal-target="explanation"></pre></div>
   </div>
 </template>
