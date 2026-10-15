@@ -6,9 +6,19 @@
  */
 
 import zlib from "node:zlib"
+import pixelmatch from "pixelmatch"
 
-// Matches the viewer's per-channel tint threshold (screenshot-viewer.html).
-export const PIXEL_THRESHOLD = 8
+// Pixelmatch options shared with the viewer (published as `compare` in the
+// manifest) so the boxes and the in-browser tint/diff map agree. Threshold is
+// a perceptual (OKLab) distance, not a per-channel difference. Pixelmatch's
+// default 0.1 missed real Bootstrap-migration changes (flat vs gradient
+// buttons, a darker danger red, a focus ring, border radius) that the old
+// ±8 comparison caught, so this stays near that sensitivity; anti-aliased
+// edge pixels are still detected and ignored instead of counted.
+export const COMPARE_OPTIONS = { threshold: 0.02, includeAA: false }
+// Colors pixelmatch paints in the diff output; the masks below key off them.
+const DIFF_COLOR = [255, 0, 0]
+const AA_COLOR = [255, 255, 0]
 // Changed pixels are bucketed into CELL×CELL cells; dirty cells within GAP px
 // of each other become one region, so a reworded label is one box, not one
 // per glyph.
@@ -108,6 +118,38 @@ function toRgba(pixels, count, colorType) {
   return rgba
 }
 
+// Near-duplicate detection compares coarse luminance thumbnails: area-averaged
+// down to GRID×GRID, so a small modal or a reworded label barely moves them
+// while a different page moves many cells.
+export const THUMB_GRID = 48
+// A cell counts as different when its average luminance moves by more than this.
+const THUMB_CELL_DELTA = 12
+
+export function thumbnail(image, grid = THUMB_GRID) {
+  const { width, height, data } = image
+  const sums = new Float64Array(grid * grid)
+  const counts = new Uint32Array(grid * grid)
+  for (let y = 0; y < height; y++) {
+    const row = Math.min(grid - 1, Math.floor((y * grid) / height)) * grid
+    for (let x = 0; x < width; x++) {
+      const cell = row + Math.min(grid - 1, Math.floor((x * grid) / width))
+      const i = (y * width + x) * 4
+      sums[cell] += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]
+      counts[cell]++
+    }
+  }
+  const out = new Uint8Array(grid * grid)
+  for (let i = 0; i < out.length; i++) out[i] = counts[i] ? Math.round(sums[i] / counts[i]) : 255
+  return out
+}
+
+/** Percent of thumbnail cells that differ noticeably (0 = same page layout). */
+export function thumbnailDifference(a, b) {
+  let different = 0
+  for (let i = 0; i < a.length; i++) if (Math.abs(a[i] - b[i]) > THUMB_CELL_DELTA) different++
+  return (different / a.length) * 100
+}
+
 /**
  * Compares two decoded images and returns the changed-pixel count plus
  * padded bounding boxes ({ x, y, width, height, changedPixels }) around each
@@ -137,15 +179,15 @@ export function diffRegions(before, after) {
   const maxY = new Int32Array(cols * rows)
   let changedPixels = 0
 
+  // diffMask leaves unchanged pixels transparent and paints counted
+  // differences DIFF_COLOR (ignored anti-aliased pixels get AA_COLOR).
+  const mask = Buffer.alloc(a.length)
+  pixelmatch(a, b, mask, width, height, { ...COMPARE_OPTIONS, diffMask: true, diffColor: DIFF_COLOR, aaColor: AA_COLOR })
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4
-      if (
-        Math.abs(a[i] - b[i]) <= PIXEL_THRESHOLD &&
-        Math.abs(a[i + 1] - b[i + 1]) <= PIXEL_THRESHOLD &&
-        Math.abs(a[i + 2] - b[i + 2]) <= PIXEL_THRESHOLD &&
-        Math.abs(a[i + 3] - b[i + 3]) <= PIXEL_THRESHOLD
-      ) continue
+      if (mask[i + 3] === 0 || mask[i + 1] !== DIFF_COLOR[1]) continue
 
       changedPixels++
       const cell = Math.floor(y / CELL) * cols + Math.floor(x / CELL)

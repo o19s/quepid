@@ -2,9 +2,13 @@ import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DeleteCaseOptionsCoreController from "controllers/delete_case_options_core_controller"
 import { mountCaseHeader } from "../support/case_header_dom"
+import { deleteJson, postJson } from "api/json"
+import coreFlash from "utils/core_flash"
+import { HttpError } from "api/http_error"
 
-
-const submitDestructiveForm = vi.spyOn(DeleteCaseOptionsCoreController.prototype, "submitDestructiveForm").mockImplementation(() => {})
+vi.mock("api/json", () => ({ deleteJson: vi.fn(), postJson: vi.fn() }))
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn() } }))
+const assign = vi.fn()
 
 function buildOptionButton(action) {
   const btn = document.createElement("button")
@@ -42,7 +46,8 @@ function buildModalController(overrides = {}) {
       destroyQueriesUrlTemplate: "/cases/__CASE_ID__/queries"
     },
     overrides: {
-      identifier: "delete-case-options-core"
+      identifier: "delete-case-options-core",
+      hide: vi.fn()
     }
   })
 
@@ -51,13 +56,14 @@ function buildModalController(overrides = {}) {
 }
 
 describe("DeleteCaseOptionsCoreController", () => {
+  afterEach(() => vi.unstubAllGlobals())
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.stubGlobal("window", { location: { assign } })
+    postJson.mockResolvedValue({ redirect_url: "/cases" })
+    deleteJson.mockResolvedValue({ redirect_url: "/case/42/1" })
   })
 
-  afterEach(() => {
-    submitDestructiveForm.mockClear()
-  })
 
   it("open titles itself from the live case header and disables the submit button until a choice is made", () => {
     const controller = buildModalController()
@@ -86,33 +92,83 @@ describe("DeleteCaseOptionsCoreController", () => {
     expect(controller.submitButtonTarget.textContent).toBe("Delete")
   })
 
-  it("confirm resolves the archive url template and posts", () => {
+  it("confirm resolves the archive url template and posts", async () => {
     const controller = buildModalController()
     controller.currentCaseId = "42"
     controller.selectedAction = "archive"
 
-    controller.confirm()
+    await controller.confirm()
 
-    expect(submitDestructiveForm).toHaveBeenCalledWith("/cases/42/archive", "post")
+    expect(postJson).toHaveBeenCalledWith("/cases/42/archive", {})
+    expect(assign).toHaveBeenCalledWith("/cases")
   })
 
-  it("confirm resolves the delete-all-queries url template with a delete method", () => {
+  it("confirm resolves the delete-all-queries url template with a delete method", async () => {
     const controller = buildModalController()
     controller.currentCaseId = "42"
     controller.selectedAction = "destroy_queries"
 
-    controller.confirm()
+    await controller.confirm()
 
-    expect(submitDestructiveForm).toHaveBeenCalledWith("/cases/42/queries", "delete")
+    expect(deleteJson).toHaveBeenCalledWith("/cases/42/queries")
+    expect(assign).toHaveBeenCalledWith("/case/42/1")
   })
 
-  it("confirm does nothing when no action has been selected", () => {
+  it.each(["archive", "destroy_queries", "destroy_case"])("navigates to sign-in after %s loses its session", async action => {
+    const controller = buildModalController()
+    controller.currentCaseId = "42"
+    controller.selectedAction = action
+    const request = action === "archive" ? postJson : deleteJson
+    request.mockRejectedValueOnce(new HttpError({ status: 401, data: { redirect_url: "/quepid/sessions/new" } }))
+
+    await controller.confirm()
+
+    expect(assign).toHaveBeenCalledWith("/quepid/sessions/new")
+    expect(coreFlash.show).not.toHaveBeenCalled()
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+  })
+
+  it.each(["archive", "destroy_queries", "destroy_case"])("keeps the workspace after a failed %s and permits retry", async action => {
+    const controller = buildModalController()
+    controller.currentCaseId = "42"
+    controller.selectedAction = action
+    const request = action === "archive" ? postJson : deleteJson
+    request.mockRejectedValueOnce(new HttpError({ status: 500, data: { error: "Database unavailable" } }))
+
+    await controller.confirm()
+
+    expect(controller.hide).toHaveBeenCalledOnce()
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Database unavailable")
+    expect(assign).not.toHaveBeenCalled()
+    expect(controller.submitButtonTarget.disabled).toBe(false)
+    await controller.confirm()
+    expect(request).toHaveBeenCalledTimes(2)
+    expect(assign).toHaveBeenCalledOnce()
+  })
+
+  it("shows a contextual error for an HTML 500 and blocks duplicate requests", async () => {
+    const controller = buildModalController()
+    controller.currentCaseId = "42"
+    controller.selectedAction = "destroy_case"
+    let reject
+    deleteJson.mockImplementationOnce(() => new Promise((resolve, rejectRequest) => { reject = rejectRequest }))
+    const pending = controller.confirm()
+    await controller.confirm()
+    expect(deleteJson).toHaveBeenCalledOnce()
+    reject(new HttpError({ status: 500 }))
+    await pending
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Could not delete. Please try again.")
+    expect(assign).not.toHaveBeenCalled()
+  })
+
+  it("confirm does nothing when no action has been selected", async () => {
     const controller = buildModalController()
     controller.currentCaseId = "42"
     controller.selectedAction = null
 
-    controller.confirm()
+    await controller.confirm()
 
-    expect(submitDestructiveForm).not.toHaveBeenCalled()
+    expect(deleteJson).not.toHaveBeenCalled()
+    expect(postJson).not.toHaveBeenCalled()
   })
 })

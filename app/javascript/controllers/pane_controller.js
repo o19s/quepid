@@ -21,10 +21,19 @@ export default class extends Controller {
     }
 
     this.refreshElements()
+    const flashes = document.getElementById("flash-messages")
+    if (flashes) {
+      this.flashObserver = new ResizeObserver(() => {
+        this.element.style.setProperty("--core-flash-height", `${flashes.offsetHeight}px`)
+      })
+      this.flashObserver.observe(flashes)
+    }
   }
 
   disconnect() {
     this.cancelRefreshRetry()
+    this.flashObserver?.disconnect()
+    this.element.style.removeProperty("--core-flash-height")
     this.releaseSlider()
   }
 

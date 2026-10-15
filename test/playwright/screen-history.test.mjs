@@ -8,7 +8,8 @@ import { once } from "node:events"
 import { fileURLToPath } from "node:url"
 import crypto from "node:crypto"
 import { runInNewContext } from "node:vm"
-import { readHistory, recordScreen, sourceFingerprint, historyLocation } from "./screen-history.mjs"
+import { nextCapturePath } from "./next-capture-path.mjs"
+import { duplicateCaptures, pageTextHash, readHistory, recordScreen, sourceFingerprint, historyLocation } from "./screen-history.mjs"
 import { linkedScreenshotStatus, scenarioCaptureOptions, readScreenshotTracker } from "./screenshot-tracker.mjs"
 import { CaptureJobs } from "./capture-jobs.mjs"
 import { captureRecipes } from "./capture-registry.mjs"
@@ -40,6 +41,33 @@ test("unchanged source preserves images and ignores unrelated code, file times a
   git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "--allow-empty", "-m", "Unrelated commit")
   assert.equal(record({ image: "/missing.png" }).updated, false)
   assert.deepEqual(readHistory(root), original)
+})
+
+test("recording warns when another screen already has the identical image and keeps page context", (t) => {
+  const { root, options, record } = setup(t)
+  const first = record({ capture: { pageUrl: "http://localhost:3000/login", pageTextHash: "abc" } })
+  assert.equal(first.duplicateOf, undefined)
+  const version = readHistory(root).screens["1.2/login"].versions[0]
+  assert.deepEqual(version.imageSize, { width: decodePng(fs.readFileSync(fixture)).width, height: decodePng(fs.readFileSync(fixture)).height })
+  assert.equal(version.capture.pageUrl, "http://localhost:3000/login")
+  const other = recordScreen(root, { ...options, id: "1.3/other", title: "Other", source: sourceFingerprint(root, options.paths) })
+  assert.deepEqual(other.duplicateOf, [{ id: "1.2/login", title: "Login" }])
+  assert.deepEqual(duplicateCaptures(root, "1.3/other"), [{ id: "1.2/login", title: "Login" }])
+  assert.equal(pageTextHash("Hello   world\n"), pageTextHash("Hello world"))
+})
+
+test("next capture path never reuses an existing file", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "quepid-capture-path-"))
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }))
+  const directory = path.join(root, ".playwright-mcp", "topic")
+  assert.equal(nextCapturePath(root, "topic", "shot"), path.join(directory, "shot.png"))
+  fs.mkdirSync(directory, { recursive: true })
+  fs.writeFileSync(path.join(directory, "shot.png"), "x")
+  assert.equal(nextCapturePath(root, "topic", "shot.png"), path.join(directory, "shot-2.png"))
+  fs.writeFileSync(path.join(directory, "shot-2.png"), "x")
+  assert.equal(nextCapturePath(root, "topic", "shot"), path.join(directory, "shot-3.png"))
+  assert.equal(nextCapturePath(root, "nested/topic", "shot"), path.join(root, ".playwright-mcp", "nested", "topic", "shot.png"))
+  assert.throws(() => nextCapturePath(root, "../escape", "shot"), /Invalid capture path part/)
 })
 
 test("relevant source changes retain the preceding image and include added/deleted files", (t) => {
@@ -623,7 +651,7 @@ function differenceBrowserFixture(search = "") {
   const approval = new Promise(resolve => { finishApproval = resolve })
   const browser = runInNewContext(`${functions}\n${navigation}\nfunction select(id) { activeId = id }\n({ visibleItems, approveAndNext, selectRelative, active: () => activeId })`, {
     items, activeId: "A", archiveView: false, diffMode: true,
-    document: { getElementById: id => ({ search: { value: search }, "review-filter": { value: "all" }, "diff-show-approved": { checked: false } })[id] },
+    document: { getElementById: id => ({ search: { value: search }, "review-filter": { value: "all" }, "duplicate-filter": { value: "all" }, "diff-show-approved": { checked: false } })[id] },
     approveCurrent: async () => { await approval; items[0].review.status = "approved" }
   })
   return { browser, items, finishApproval }

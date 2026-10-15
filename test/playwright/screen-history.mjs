@@ -35,6 +35,26 @@ export function storedImageStatus(root, version) {
   }
 }
 
+const storedImageHash = (image) => image?.match(/-([0-9a-f]{16})\.png$/)?.[1]
+
+/**
+ * Other screens whose latest Current image is byte-identical to this
+ * screen's latest. Usually a capture that landed on the wrong page (a
+ * redirect, an error, the previous scenario's screen), so recording warns.
+ */
+export function duplicateCaptures(root, id, history = readHistory(root)) {
+  const hash = storedImageHash(history.screens[id]?.versions.at(-1)?.image)
+  if (!hash) return []
+  return Object.values(history.screens)
+    .filter((screen) => screen.id !== id && storedImageHash(screen.versions.at(-1)?.image) === hash)
+    .map(({ id: otherId, title }) => ({ id: otherId, title }))
+}
+
+/** Stable short hash of a page's visible text, whitespace-normalized. */
+export function pageTextHash(text) {
+  return digest(String(text).replace(/\s+/g, " ").trim()).slice(0, 16)
+}
+
 export function sourceFingerprint(root, paths) {
   if (!paths?.length) throw new Error("At least one source path is required")
   for (const source of paths) {
@@ -123,8 +143,10 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
     } : null
     if (!unchanged && !image) throw new Error("A screenshot is required for changed source")
     Object.assign(screen, { title, area, ...(!unchanged ? { paths } : {}) })
+    const imageSize = unchanged ? null : (({ width, height }) => ({ width, height }))(decodePng(fs.readFileSync(image)))
     if (!unchanged) screen.versions.push({
       image: copyImage(image, screen.versions.length + 1),
+      imageSize,
       source: fingerprint,
       sourcePaths: paths,
       sourceFiles,
@@ -132,16 +154,17 @@ export function recordScreen(root, { id, title, area, paths, image, source, lega
       dirty: Boolean(git(root, "status", "--porcelain", "--", ...paths)),
       capturedAt: currentTime
     })
-    if (recapture) {
-      delete screen.approval
-      if (capture) screen.versions.at(-1).capture = capture
-    }
+    if (recapture) delete screen.approval
+    // Context (URL, viewport, page-text hash, ...) is kept for every new
+    // version so a capture can later be checked against the page it claimed.
+    if (capture && !unchanged) screen.versions.at(-1).capture = capture
     if (legacy) screen.legacy = legacy
     history.screens[id] = screen
     const temporary = path.join(location.directory, "index.json.tmp")
     fs.writeFileSync(temporary, `${JSON.stringify(history, null, 2)}\n`)
     fs.renameSync(temporary, path.join(location.directory, "index.json"))
-    return { updated: true, id, source: fingerprint, versions: screen.versions.length }
+    const duplicateOf = unchanged ? [] : duplicateCaptures(root, id, history)
+    return { updated: true, id, source: fingerprint, versions: screen.versions.length, ...(duplicateOf.length ? { duplicateOf } : {}) }
   } finally {
     fs.closeSync(descriptor)
     fs.unlinkSync(lock)

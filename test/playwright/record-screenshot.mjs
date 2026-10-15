@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import path from "node:path"
 import { fileURLToPath } from "node:url"
-import { readHistory, recordScreen, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
+import { pageTextHash, readHistory, recordScreen, sourceFingerprint, storedImageStatus } from "./screen-history.mjs"
 import { scenarioCaptureOptions } from "./screenshot-tracker.mjs"
 import { screenshotSourceCurrent } from "./screenshot-dependencies.mjs"
 
@@ -15,6 +15,8 @@ while (args.length) {
   else if (flag === "--legacy-image") options.legacyImage = args.shift()
   else if (flag === "--legacy-ref") options.legacyRef = args.shift()
   else if (flag === "--path") options.paths.push(args.shift())
+  else if (flag === "--page-url") options.pageUrl = args.shift()
+  else if (flag === "--page-text") options.pageText = args.shift()
   else if (flag === "--captured-at") options.capturedAt = args.shift()
   else if (flag === "--legacy-captured-at") options.legacyCapturedAt = args.shift()
   else if (["--id", "--title", "--area", "--image", "--source", "--scenario", "--state"].includes(flag)) {
@@ -40,5 +42,14 @@ if (options.check) {
   console.log(JSON.stringify({ id: options.id, source, needsCapture: missing || !screenshotSourceCurrent(root, screen, options.paths, source) }))
 } else {
   if (!options.source) throw new Error("Use --check before capture, then pass its --source fingerprint when recording")
-  console.log(JSON.stringify(recordScreen(root, options)))
+  const { pageUrl, pageText, ...record } = options
+  if (pageUrl || pageText) {
+    record.capture = { ...(pageUrl ? { pageUrl } : {}), ...(pageText ? { pageTextHash: pageTextHash(pageText) } : {}) }
+  }
+  const result = recordScreen(root, record)
+  if (result.duplicateOf) {
+    const names = result.duplicateOf.map((other) => `${other.id} (${other.title})`).join(", ")
+    console.error(`WARNING: this capture is byte-identical to ${names}. Check it is the page this scenario asked for, not a redirect or the previous screen.`)
+  }
+  console.log(JSON.stringify(result))
 }

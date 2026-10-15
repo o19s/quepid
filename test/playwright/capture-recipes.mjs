@@ -1,3 +1,4 @@
+import crypto from "node:crypto"
 import { chromium, expect } from "@playwright/test"
 
 import { captureRecipes } from "./capture-registry.mjs"
@@ -62,15 +63,20 @@ async function captureAdminScreen(screenId, label, image, progress, environment,
         throw new Error("Admin sign-in failed. Check QUEPID_E2E_ADMIN_EMAIL and QUEPID_E2E_ADMIN_PASSWORD in the app container.")
       }
       await prepare(page)
+      // Settled means no busy markers, spinners or running finite animations/transitions.
+      await expect(page.locator('[aria-busy="true"], .spinner-border:visible, .spinner-grow:visible')).toHaveCount(0)
+      await expect.poll(() => page.evaluate(() => document.getAnimations().filter((animation) => animation.playState === "running" && animation.effect?.getComputedTiming().iterations !== Infinity).length)).toBe(0)
       await page.evaluate(async () => {
         await document.fonts.ready
         await Promise.all([...document.images].map((image) => image.decode().catch(() => {})))
         window.scrollTo(0, 0)
         await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
       })
+      const pageText = await page.evaluate(() => document.body.innerText)
+      const pageTextHash = crypto.createHash("sha256").update(pageText.replace(/\s+/g, " ").trim()).digest("hex").slice(0, 16)
       progress(`Capturing ${label}…`)
       await page.screenshot({ path: image, fullPage: recipe.fullPage, animations: "disabled", caret: "hide" })
-      return { recipe: recipe.id, recipeVersion: recipe.version, viewport: recipe.viewport, fullPage: recipe.fullPage, accountRole: "administrator", target: baseURL, scroll: { x: 0, y: 0 }, ...(recipe.search ? { search: recipe.search } : {}) }
+      return { recipe: recipe.id, recipeVersion: recipe.version, viewport: recipe.viewport, fullPage: recipe.fullPage, accountRole: "administrator", target: baseURL, pageUrl: page.url(), pageTextHash, scroll: { x: 0, y: 0 }, ...(recipe.search ? { search: recipe.search } : {}) }
     }
     return await Promise.race([
       replay(),

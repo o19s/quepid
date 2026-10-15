@@ -35,7 +35,9 @@
   z-index: 5;
 }
 
- .pane_east {
+/* Keep the drawer's bottom actions above visible core error/notice banners. */
+.pane_east {
+  bottom: var(--core-flash-height, 0px);
 	 background: #333;
 	 display: none;
 	 min-width: 300px;
@@ -43,7 +45,7 @@
  .east-slider {
 	 background: none repeat scroll 0% 0% #ddd;
 	 border: 0px solid #bbb;
-	 bottom: 0;
+	 bottom: var(--core-flash-height, 0px);
 	 cursor: col-resize;
 	 display: none;
 	 position: absolute;

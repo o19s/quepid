@@ -1,5 +1,7 @@
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
-import { withDestructiveForm } from "controllers/destructive_form_behavior"
+import { deleteJson, postJson } from "api/json"
+import coreFlash from "utils/core_flash"
+import { serverMessage } from "utils/error_message"
 import { caseNameFromHeader } from "utils/case_header"
 
 const ACTION_LABELS = {
@@ -15,12 +17,12 @@ const ACTION_METHODS = {
 }
 
 /**
- * Delete/archive options for the core case toolbar — list UI, form-post
- * (stay-Rails) transport, mirrors the former delete-case-options modal.
+ * Core delete/archive options retain Rails actions and success destinations.
+ * JSON submission keeps failed requests on the workspace for retry.
  *
  * The toolbar trigger carries the case id.
  */
-export default class extends withDestructiveForm(CoreModalControllerBase) {
+export default class extends CoreModalControllerBase {
   static targets = [ "title", "optionButton", "description", "submitButton" ]
 
   static values = {
@@ -45,14 +47,30 @@ export default class extends withDestructiveForm(CoreModalControllerBase) {
     this._refreshUI()
   }
 
-  confirm() {
-    if (!this.selectedAction || !this.currentCaseId) return
+  async confirm() {
+    if (this.submitting || !this.selectedAction || !this.currentCaseId) return
 
     const template = this._urlTemplateFor(this.selectedAction)
     if (!template) return
 
     const url = template.replaceAll("__CASE_ID__", this.currentCaseId)
-    this.submitDestructiveForm(url, ACTION_METHODS[this.selectedAction])
+    const action = this.selectedAction
+    this.submitting = true
+    this.submitButtonTarget.disabled = true
+    this.hide()
+    try {
+      const result = ACTION_METHODS[action] === "post" ? await postJson(url, {}) : await deleteJson(url)
+      window.location.assign(result.redirect_url)
+    } catch (error) {
+      if (error.status === 401 && error.data?.redirect_url) {
+        window.location.assign(error.data.redirect_url)
+        return
+      }
+      coreFlash.show("error", serverMessage(error, `Could not ${ACTION_LABELS[action].toLowerCase()}. Please try again.`))
+    } finally {
+      this.submitting = false
+      this._refreshUI()
+    }
   }
 
   _urlTemplateFor(action) {
@@ -80,7 +98,7 @@ export default class extends withDestructiveForm(CoreModalControllerBase) {
     })
 
     if (this.hasSubmitButtonTarget) {
-      this.submitButtonTarget.disabled = !this.selectedAction
+      this.submitButtonTarget.disabled = this.submitting || !this.selectedAction
       this.submitButtonTarget.textContent = ACTION_LABELS[this.selectedAction] || "Delete"
     }
   }

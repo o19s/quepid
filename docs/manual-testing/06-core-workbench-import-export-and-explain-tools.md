@@ -70,7 +70,8 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - **Expected:** Each option does exactly what its own description promises — no more, no less. In particular, confirm "Delete All Queries" also removes ratings for those queries (per its own copy) but does **not** delete the case, its annotations, or its snapshots — verify this last part explicitly, since it's easy to assume too much or too little is deleted.
 - **Edge cases:**
   - [ ] Confirm button (**Cancel** aside) stays disabled until one of the three options is picked.
-  - [ ] Force a server failure on each path — confirm the flash includes the server error message and doesn't leave the UI in a half-deleted state.
+  - [ ] Expire the session while the modal is open, then confirm each action. Expect full-page navigation to sign-in and no case/query mutation.
+  - [ ] Force a server failure on each path — confirm the modal closes, the workspace stays available and a flash includes the server error message (or a contextual retry message for an HTML/empty error response). Reopen and retry after recovery; confirm one request per click and the usual success destination.
 
 ### 6.5 Share a case (in-case toolbar)
 

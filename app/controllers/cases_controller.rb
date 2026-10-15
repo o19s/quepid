@@ -47,7 +47,7 @@ class CasesController < ApplicationController
     Analytics::Tracker.track_case_archived_event(current_user, @case)
     flash[:notice] = "Case #{@case.case_name} archived."
 
-    redirect_to cases_path, status: :see_other
+    redirect_after_action cases_path
   end
 
   # Unarchive a case
@@ -66,7 +66,7 @@ class CasesController < ApplicationController
     Analytics::Tracker.track_case_deleted_event(current_user, @case)
     flash[:notice] = "Case #{case_name} deleted."
 
-    redirect_to cases_path, status: :see_other
+    redirect_after_action cases_path
   end
 
   # Delete all queries (and their ratings) for a case
@@ -74,17 +74,36 @@ class CasesController < ApplicationController
     @case.queries.destroy_all
     flash[:notice] = "All queries deleted for case #{@case.case_name}."
 
-    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number), status: :see_other
+    redirect_after_action case_core_path(id: @case.id, try_number: @case.last_try_number)
   end
 
   private
+
+  def require_login
+    return super unless request.format.json? && %w[archive destroy destroy_queries].include?(action_name)
+    return if current_user
+
+    render json: { redirect_url: new_session_path }, status: :unauthorized
+  end
+
+  def redirect_after_action path
+    respond_to do |format|
+      format.html { redirect_to path, status: :see_other }
+      format.json { render json: { redirect_url: path } }
+    end
+  end
 
   def set_case
     @case = current_user.cases_involved_with.find_by(id: params[:id])
 
     return if @case
 
-    flash[:alert] = 'Case not found.'
-    redirect_to cases_path, status: :see_other
+    respond_to do |format|
+      format.html do
+        flash[:alert] = 'Case not found.'
+        redirect_to cases_path, status: :see_other
+      end
+      format.json { render json: { error: 'Case not found.' }, status: :not_found }
+    end
   end
 end

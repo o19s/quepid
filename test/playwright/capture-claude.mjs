@@ -17,6 +17,8 @@ const schema = {
       type: "object",
       properties: {
         target: { type: "string" },
+        pageUrl: { type: "string" },
+        pageHeading: { type: "string" },
         accountRole: { type: "string" },
         viewport: { type: "object", properties: { width: { type: "integer" }, height: { type: "integer" } }, required: ["width", "height"], additionalProperties: false },
         fullPage: { type: "boolean" },
@@ -36,6 +38,7 @@ export function validateClaudeCapture(result, image, origin) {
   if (result?.status !== "captured") throw new Error(`Claude capture blocked: ${result?.reason || "No verified capture returned"}`)
   const capture = result.capture
   if (!capture || new URL(capture.target).origin !== origin) throw new Error("Claude capture returned a different app origin")
+  if (capture.pageUrl && new URL(capture.pageUrl).origin !== origin) throw new Error("Claude capture ended on a different app origin")
   const { width, height } = capture.viewport || {}
   if (!Number.isInteger(width) || !Number.isInteger(height) || width < 1 || height < 1 || typeof capture.fullPage !== "boolean" ||
       !capture.accountRole || !capture.state || !capture.steps?.length || !Number.isFinite(capture.scroll?.x) || !Number.isFinite(capture.scroll?.y)) {

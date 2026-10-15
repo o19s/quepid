@@ -4,7 +4,7 @@ import crypto from "node:crypto"
 import os from "node:os"
 import { spawn, execFile } from "node:child_process"
 import { promisify } from "node:util"
-import { readHistory, sourceFingerprint } from "./screen-history.mjs"
+import { duplicateCaptures, readHistory, sourceFingerprint } from "./screen-history.mjs"
 import { captureOptions } from "./capture-options.mjs"
 import { captureRecipes } from "./capture-registry.mjs"
 
@@ -137,6 +137,8 @@ export class CaptureJobs {
         await this.regenerate()
         job.state = "succeeded"
         job.message = "Current screenshot captured. Review the new image."
+        const duplicates = duplicateCaptures(this.root, id)
+        if (duplicates.length) job.message += ` Warning: it is identical to ${duplicates.map((other) => other.title).join(", ")} — confirm it shows the requested page.`
       } catch (error) {
         job.state = "failed"
         job.message = error.message

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import PaneController from "controllers/pane_controller"
 import { buildControllerFixture } from "../support/controller_fixture"
 
@@ -30,6 +30,38 @@ function pointerDownOn(slider, button = 0) {
 }
 
 describe("PaneController", () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it("reserves the current banner height and releases its observer on disconnect", () => {
+    const flashes = document.createElement("div")
+    flashes.id = "flash-messages"
+    document.body.append(flashes)
+    let height = 51
+    Object.defineProperty(flashes, "offsetHeight", { get: () => height })
+    let resize
+    const observe = vi.fn()
+    const disconnect = vi.fn()
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback) { resize = callback }
+      observe = observe
+      disconnect = disconnect
+    })
+    const { controller, element } = buildController()
+    controller.connect()
+    expect(observe).toHaveBeenCalledWith(flashes)
+    resize()
+    expect(element.style.getPropertyValue("--core-flash-height")).toBe("51px")
+    height = 102
+    resize()
+    expect(element.style.getPropertyValue("--core-flash-height")).toBe("102px")
+    height = 0
+    resize()
+    expect(element.style.getPropertyValue("--core-flash-height")).toBe("0px")
+    controller.disconnect()
+    expect(disconnect).toHaveBeenCalledOnce()
+    expect(element.style.getPropertyValue("--core-flash-height")).toBe("")
+  })
+
   beforeEach(() => {
     document.body.innerHTML = ""
     window.sessionStorage.clear()

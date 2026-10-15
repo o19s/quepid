@@ -177,3 +177,24 @@ h3 {
 .scorer-scale-label .form-control {
   width: 100px;
 }
+
+/* Vega's generated controls on the analytics pages (tries visualization). */
+.vega-bindings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: center;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.vega-bind label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.vega-bind .vega-bind-name {
+  font-weight: 500;
+  margin-right: 0.25rem;
+}

@@ -22,6 +22,7 @@ const host = process.env.SCREENSHOT_VIEWER_HOST || "127.0.0.1"
 function contentType(filePath) {
   if (filePath.endsWith(".html")) return "text/html; charset=utf-8"
   if (filePath.endsWith(".json")) return "application/json; charset=utf-8"
+  if (filePath.endsWith(".js") || filePath.endsWith(".mjs")) return "text/javascript; charset=utf-8"
   if (filePath.endsWith(".png")) return "image/png"
   if (filePath.endsWith(".webp")) return "image/webp"
   return "application/octet-stream"
@@ -42,7 +43,7 @@ function safePath(urlPath) {
   const relative = decoded.replace(/^\/+/, "")
   const absolute = path.resolve(repoRoot, relative)
   if (absolute !== repoRoot && !absolute.startsWith(repoRoot + path.sep)) return null
-  if (!["test/playwright/screenshot-viewer.html", "test/playwright/screenshot-manifest.json"].includes(relative) &&
+  if (!["test/playwright/screenshot-viewer.html", "test/playwright/screenshot-manifest.json", "node_modules/pixelmatch/index.js"].includes(relative) &&
       !(relative.startsWith(".playwright-mcp/") && /\.(png|webp)$/.test(relative))) return null
   if (!fs.existsSync(absolute)) return null
   const real = fs.realpathSync(absolute)

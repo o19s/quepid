@@ -168,6 +168,68 @@ class CasesControllerTest < ActionDispatch::IntegrationTest
     Bullet.enable = bullet_enabled
   end
 
+  test 'expired core JSON actions return sign-in without mutating cases' do
+    kase = cases(:queries_case)
+    query_count = kase.queries.count
+    delete logout_path
+
+    post archive_case_url(kase), as: :json
+    assert_response :unauthorized
+    assert_equal new_session_path, response.parsed_body['redirect_url']
+    assert_not kase.reload.archived
+
+    delete case_queries_url(kase), as: :json
+    assert_response :unauthorized
+    assert_equal new_session_path, response.parsed_body['redirect_url']
+    assert_equal query_count, kase.queries.count
+
+    delete case_url(kase), as: :json
+    assert_response :unauthorized
+    assert_equal new_session_path, response.parsed_body['redirect_url']
+    assert Case.exists?(kase.id)
+
+    post archive_case_url(kase)
+    assert_redirected_to new_session_path
+  end
+
+  test 'core JSON actions return their existing success destinations' do
+    kase = cases(:queries_case)
+    Bullet.enable = false
+
+    delete case_queries_url(kase), as: :json
+    assert_response :success
+    assert_equal case_core_path(id: kase.id, try_number: kase.last_try_number), response.parsed_body['redirect_url']
+    assert_empty kase.queries.reload
+
+    post archive_case_url(kase), as: :json
+    assert_response :success
+    assert_equal cases_path, response.parsed_body['redirect_url']
+    assert kase.reload.archived
+
+    delete case_url(kase), as: :json
+    assert_response :success
+    assert_equal cases_path, response.parsed_body['redirect_url']
+    assert_nil Case.find_by(id: kase.id)
+  ensure
+    Bullet.enable = true
+  end
+
+  test 'core JSON actions reject inaccessible cases without mutations or redirects' do
+    kase = cases(:owned_case)
+    original_queries = kase.queries.count
+    [ :destroy_queries, :archive, :destroy ].each do |action|
+      if :archive == action
+        post archive_case_url(kase), as: :json
+      else
+        delete(:destroy_queries == action ? case_queries_url(kase) : case_url(kase), as: :json)
+      end
+      assert_response :not_found
+      assert_equal 'Case not found.', response.parsed_body['error']
+      assert_equal original_queries, kase.queries.count
+      assert_not kase.reload.archived
+    end
+  end
+
   test 'destroy permanently deletes a case the user owns and redirects to the cases listing' do
     kase = cases(:queries_case)
 
