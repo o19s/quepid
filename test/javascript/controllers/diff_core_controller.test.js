@@ -248,7 +248,7 @@ describe("DiffCoreController", () => {
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })
 
-  it("asks to confirm a delete, then drops the deleted snapshot from the selection", async () => {
+  it("drops a deleted snapshot from every open picker as well as the selection", async () => {
     const controller = buildController()
     controller.selectionValues = ["2", "3"]
     controller.snapshotsUrlValue = "api/cases/1/snapshots"
@@ -260,6 +260,10 @@ describe("DiffCoreController", () => {
 
     expect(controller.snapshotBridgeOutlet.delete).toHaveBeenCalledWith({ snapshotId: "3", snapshotsUrl: "api/cases/1/snapshots" })
     expect(controller.selectionValues).toEqual(["2"])
+    expect(controller.snapshots).toEqual([{ id: 2, name: "Weekly" }])
+    const select = controller.selectionsTarget.querySelector("select")
+    expect([...select.options].map(option => option.value)).toEqual(["", "2"])
+    expect(select.value).toBe("2")
     expect(controller.deleteId).toBeNull()
     expect(controller.deleteWarningTarget.classList.contains("d-none")).toBe(true)
   })
@@ -292,6 +296,7 @@ describe("DiffCoreController", () => {
     expect(logged).toHaveBeenCalledWith(failure)
     expect(alertMessages()).toContain(message)
     expect(controller.selectionValues).toEqual(["2"])
+    expect(controller.snapshots.map(snapshot => snapshot.id)).toEqual([2, 3])
     expect(controller.closeModal).not.toHaveBeenCalled()
     expect(controller.updateButtonTarget.disabled).toBe(false)
   })

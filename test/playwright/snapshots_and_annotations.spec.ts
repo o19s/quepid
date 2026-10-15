@@ -87,6 +87,32 @@ test.describe('snapshots', () => {
       await expect(compareModal).toBeHidden({ timeout: 30_000 });
       await expect(page.locator('.diff-score')).toHaveCount(0, { timeout: 30_000 });
 
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal).toBeVisible();
+      await compareModal.locator('select').first().selectOption(selectedId);
+      const deleteUrl = `**/api/cases/${SNAPSHOT_CASE_ID}/snapshots/${selectedId}`;
+      await page.route(deleteUrl, route => route.request().method() === 'DELETE'
+        ? route.fulfill({ status: 500, contentType: 'application/json', body: '{}' })
+        : route.continue());
+      await compareModal.getByRole('button', { name: 'Delete this snapshot', exact: true }).click();
+      await compareModal.getByRole('button', { name: 'yes', exact: true }).click();
+      await expect(compareModal.locator('[data-diff-core-target="alert"]')).toContainText('Could not delete snapshot.');
+      await expect(compareModal.locator('select').first()).toHaveValue(selectedId);
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(1);
+
+      await page.unroute(deleteUrl);
+      const deleted = page.waitForResponse(response => response.request().method() === 'DELETE'
+        && response.url().endsWith(`/snapshots/${selectedId}`));
+      await compareModal.getByRole('button', { name: 'yes', exact: true }).click();
+      expect((await deleted).ok()).toBeTruthy();
+      snapshotId = undefined;
+      await expect(compareModal).toBeVisible();
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(0);
+      await expect(compareModal.locator('select').first()).toHaveValue('');
+      await compareModal.getByRole('button', { name: 'Cancel', exact: true }).click();
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(0);
+
     } finally {
       // This case's dev DB row is shared across runs (there's no per-test
       // fixture reset) — clean up after ourselves so repeated runs don't pile

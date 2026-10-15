@@ -586,6 +586,76 @@ test("source edits during capture fail without replacing Current", async (t) => 
 })
 
 
+test("viewer displays recorded screenshots while approval status is still loading", async () => {
+  const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "screenshot-viewer.html"), "utf8")
+  const source = html.slice(html.indexOf("      async function init(preserveSelection"), html.indexOf('      document.getElementById("search").addEventListener'))
+  let finishReviews
+  const pendingReviews = new Promise((resolve) => { finishReviews = resolve })
+  const elements = new Map()
+  const element = (id) => {
+    if (!elements.has(id)) elements.set(id, { value: "" })
+    return elements.get(id)
+  }
+  let selected
+  let navRendered = false
+  const init = runInNewContext(`${source}; init`, {
+    activeId: null, archiveView: false, historyScreen: null, manifestUrl: "screenshot-manifest.json",
+    document: { getElementById: element },
+    fetch: async () => ({ ok: true, json: async () => ({ current: { branch: "example", groups: [], singles: [{ id: "screen" }] } }) }),
+    refreshReviews: () => pendingReviews,
+    renderNav: () => { navRendered = true },
+    select: (id) => { selected = id }
+  })
+  const loading = init()
+  await new Promise((resolve) => setImmediate(resolve))
+  assert.equal(navRendered, true)
+  assert.equal(selected, "screen")
+  finishReviews()
+  await loading
+})
+
+function differenceBrowserFixture(search = "") {
+  const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "screenshot-viewer.html"), "utf8")
+  const functions = html.slice(html.indexOf("      function differsFromLegacy"), html.indexOf("      function renderReview"))
+  const navigation = html.slice(html.indexOf("      function selectRelative(delta)"), html.indexOf("      async function init"))
+  const items = ["A", "B", "C"].map(id => ({ id, title: `Screen ${id}`, topic: "core/workbench", legacyComparison: { byteIdentical: false }, review: { status: "needs_review" } }))
+  let finishApproval
+  const approval = new Promise(resolve => { finishApproval = resolve })
+  const browser = runInNewContext(`${functions}\n${navigation}\nfunction select(id) { activeId = id }\n({ visibleItems, approveAndNext, selectRelative, active: () => activeId })`, {
+    items, activeId: "A", archiveView: false, diffMode: true,
+    document: { getElementById: id => ({ search: { value: search }, "review-filter": { value: "all" }, "diff-show-approved": { checked: false } })[id] },
+    approveCurrent: async () => { await approval; items[0].review.status = "approved" }
+  })
+  return { browser, items, finishApproval }
+}
+
+test("difference navigation includes screens matched only by sidebar topic", () => {
+  const { browser } = differenceBrowserFixture("  CORE/WORKBENCH  ")
+  assert.equal(browser.visibleItems().length, 3)
+  browser.selectRelative(1)
+  assert.equal(browser.active(), "B")
+})
+
+test("approval completion preserves navigation made while the request was pending", async () => {
+  const { browser, items, finishApproval } = differenceBrowserFixture()
+  const saving = browser.approveAndNext()
+  browser.selectRelative(1)
+  assert.equal(browser.active(), "B")
+  finishApproval()
+  await saving
+  assert.equal(items[0].review.status, "approved")
+  assert.equal(items[1].review.status, "needs_review")
+  assert.equal(browser.active(), "B")
+})
+
+test("approval still advances when the approved screen remains selected", async () => {
+  const { browser, finishApproval } = differenceBrowserFixture()
+  const saving = browser.approveAndNext()
+  finishApproval()
+  await saving
+  assert.equal(browser.active(), "B")
+})
+
 test("review controls render safely before selection and disable recapture for unsupported states", () => {
   const html = fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), "screenshot-viewer.html"), "utf8")
   const source = html.slice(html.indexOf("      function renderReview(item)"), html.indexOf("      function applyReviews(data)"))

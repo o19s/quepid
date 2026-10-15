@@ -38,11 +38,12 @@ describe("core Stimulus registration", () => {
       path.join(repoRoot, "app/views/layouts/_case_workspace.html.erb")
     ].map(filePath => readFileSync(filePath, "utf8"))
 
-    // The shared layout also contains Rails-only controllers. Inspect the case
-    // branch of its body attributes rather than treating the management body as
-    // core markup; the case body itself is _case_workspace, read above.
+    // The layout delegates body attributes to the helper. Inspect its core return
+    // rather than treating the management body's controllers as core markup.
     const layout = readFileSync(path.join(repoRoot, "app/views/layouts/application.html.erb"), "utf8")
-    const caseBodyAttributes = layout.match(/body_attributes = if case_page\b([\s\S]*?)\n\s*else\n/)?.[1]
+    expect(layout).toMatch(/layout_body_attributes\(case_page: case_page,/)
+    const helper = readFileSync(path.join(repoRoot, "app/helpers/application_helper.rb"), "utf8")
+    const caseBodyAttributes = helper.match(/^ {4}\{ data: \{([\s\S]*?)^ {4}\} \}/m)?.[1]
     expect(caseBodyAttributes).toMatch(/\bcontroller:/)
     coreSources.push(caseBodyAttributes)
 

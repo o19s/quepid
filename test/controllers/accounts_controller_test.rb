@@ -130,6 +130,25 @@ class AccountsControllerTest < ActionController::TestCase
         assert_redirected_to sessions_path
       end
 
+      test 'annotation restriction preserves a private case and its score before cleanup' do
+        private_case = cases(:matt_case)
+        annotation = Annotation.create!(user: user, message: 'Keep this history')
+        score = Score.create!(case: private_case, user: user, annotation: annotation, score: 0.5)
+
+        assert_no_difference([ 'User.count', 'Case.count', 'Query.count', 'Annotation.count', 'Score.count' ]) do
+          delete :destroy
+        end
+
+        assert_response :unprocessable_content
+        assert_template 'profiles/show'
+        assert_select '#error_explanation_danger_zone', text: /annotations/
+        assert_select '#error_explanation_profile', count: 0
+        assert_select '#error_explanation_account_security', count: 0
+        assert_equal user.id, annotation.reload.user_id
+        assert_equal annotation.id, score.reload.annotation_id
+        assert_equal user.id, private_case.reload.owner_id
+      end
+
       test 'deletes an inviter while preserving the pending invitation and shared case' do
         invitee = User.create!(
           email: 'pending-account-delete@example.com', password: 'password',

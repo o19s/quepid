@@ -81,7 +81,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - **Edge cases:**
   - [ ] Attempt to delete a user who still owns un-reassigned judgements (skip step 14.7 first) — confirm it's blocked gracefully (re-renders the Edit page with an error) rather than crashing, since `User#judgements` uses `dependent: :restrict_with_error`.
   - [ ] Delete a user who owns cases/teams — confirm downstream effects match what you'd expect from Part 1.9 (account self-deletion) applied via the admin path: owned cases/books are nullified (not deleted) if shared with a team, and survive.
-  - [ ] Delete a user who authored an **Annotation** (Part 5.4) — confirm this succeeds and the annotation survives with its `user_id` nullified, rather than a 500 (`ActiveRecord::InvalidForeignKey`). This was previously broken because `User` had no `has_many :annotations` association at all, so `destroy` never nullified the FK before hitting the DB-level constraint — fixed by adding `has_many :annotations, dependent: :nullify` to `app/models/user.rb`. This affects both this admin path and the self-service Danger Zone deletion (Part 1.9).
+  - [ ] Try deleting a user who authored an **Annotation** (Part 5.4) — confirm the Edit page shows an annotations restriction error with HTTP 422. The user, annotations and linked score history survive, ownership remains unchanged, and no foreign-key error page appears. The same restriction applies to self-service deletion (Part 1.9).
 
 ### 14.9 Announcements
 

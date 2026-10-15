@@ -147,6 +147,7 @@ export default class extends CoreModalControllerBase {
     )
     if (!deleted) return
 
+    this.snapshots = this.snapshots.filter((snapshot) => !isSameId(snapshot.id, snapshotId))
     this.selectionValues = this.selectionValues.filter((id) => !isSameId(id, snapshotId))
     if (this.selectionValues.length === 0) this.selectionValues = [""]
     this.deleteId = null

@@ -46,10 +46,6 @@ body {
   flex-direction: column;
 }
 
-a, button {
-  cursor: pointer;
-}
-
 #main {
 	padding: 0;
 	position: relative;
@@ -165,7 +161,6 @@ header .dropdown-item:focus {
 .results-list-element {
 	list-style: none;
   display: block;
-  clear: both;
 	margin: 20px 0 0;
   padding-left: 0;
 }

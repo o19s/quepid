@@ -415,6 +415,29 @@
       #review-status { color: var(--warn); }
       #review-status.approved { color: var(--ok); }
 
+      .diff-browser {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0 1.25rem 1rem;
+      }
+
+      .diff-browser[hidden] { display: none; }
+
+      .diff-browser button {
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem;
+      }
+
+      .diff-browser button:disabled { opacity: 0.5; }
+      .diff-browser .primary { background: var(--accent-soft); border-color: var(--accent); }
+      #diff-position { font-variant-numeric: tabular-nums; }
+      .diff-browser .muted { color: var(--muted); font-size: 0.85rem; }
+
       .empty {
         color: var(--muted);
         padding: 2rem;
@@ -476,6 +499,17 @@
           <button type="button" id="refresh-reviews">Check status</button>
           <span id="review-status" role="status" aria-live="polite"></span>
         </div>
+        <div class="diff-browser" id="diff-browser" hidden>
+          <label><input type="checkbox" id="diff-mode" /> Browse legacy/current differences</label>
+          <span class="diff-browser-nav" id="diff-nav" hidden>
+            <button type="button" id="diff-prev">&larr; Previous difference</button>
+            <span id="diff-position" role="status" aria-live="polite"></span>
+            <button type="button" id="diff-next">Next difference &rarr;</button>
+            <button type="button" class="primary" id="diff-approve-next">Approve &amp; next</button>
+            <label><input type="checkbox" id="diff-show-approved" /> Include approved</label>
+            <span class="muted" id="diff-summary"></span>
+          </span>
+        </div>
         <div class="baseline-tabs" id="baseline-tabs" role="tablist" aria-label="Left comparison" hidden></div>
         <div class="stage" id="stage">
           <div class="empty">Pick a screenshot set from the sidebar.</div>
@@ -506,8 +540,78 @@
       let captureJob = null
       let captureError = null
 
+      let diffMode = false
+
+      // A screen "differs from legacy" when its Legacy/Current comparison is not pixel identical.
+      function differsFromLegacy(item) {
+        const comparison = item.legacyComparison
+        if (!comparison) return false
+        const diff = comparison.diff
+        return !(comparison.byteIdentical || (diff && !diff.error && !diff.dimensionMismatch && diff.pixelIdentical))
+      }
+
+      function inDiffQueue(item) {
+        if (!differsFromLegacy(item)) return false
+        // The active screen stays listed after approval so "Approve & next" doesn't shift the queue under you.
+        return item.id === activeId || document.getElementById("diff-show-approved").checked || item.review?.status !== "approved"
+      }
+
+      function matchesSearch(item, query) {
+        return !query || item.title.toLowerCase().includes(query) || item.id.toLowerCase().includes(query) || (item.topic || "").toLowerCase().includes(query)
+      }
+
+      function visibleItems() {
+        const q = document.getElementById("search").value.trim().toLowerCase()
+        return items.filter((item) => matchesReview(item) && matchesSearch(item, q))
+      }
+
+      function renderDiffBrowser() {
+        const bar = document.getElementById("diff-browser")
+        bar.hidden = archiveView
+        const nav = document.getElementById("diff-nav")
+        nav.hidden = !diffMode
+        if (!diffMode) return
+        const queue = visibleItems()
+        const index = queue.findIndex((item) => item.id === activeId)
+        const differing = items.filter(differsFromLegacy)
+        const approved = differing.filter((item) => item.review?.status === "approved").length
+        document.getElementById("diff-position").textContent = queue.length ? `${index + 1} of ${queue.length}` : "None"
+        document.getElementById("diff-summary").textContent = `${differing.length} differ from legacy · ${approved} approved`
+        const active = items.find((item) => item.id === activeId)
+        document.getElementById("diff-prev").disabled = queue.length < 2
+        document.getElementById("diff-next").disabled = queue.length < 2
+        document.getElementById("diff-approve-next").disabled = reviewLoading || captureJob?.state === "running" || !active?.review || active.review.status === "approved" || !["current", "stale"].includes(active.review.captureStatus)
+      }
+
+      async function approveAndNext() {
+        const item = items.find((entry) => entry.id === activeId)
+        if (!item || item.review?.status === "approved") return
+        await approveCurrent()
+        if (activeId === item.id && items.find((entry) => entry.id === item.id)?.review?.status === "approved") selectRelative(1)
+      }
+
+      function setDiffMode(enabled) {
+        diffMode = enabled
+        const current = items.find((item) => item.id === activeId)
+        if (!enabled) {
+          renderNav(document.getElementById("search").value)
+          return
+        }
+        const next = current && differsFromLegacy(current) ? current : items.find(matchesReview)
+        if (next) select(next.id)
+        else {
+          renderNav(document.getElementById("search").value)
+          activeId = null
+          ++stageRenderVersion
+          document.getElementById("stage").textContent = "No screens differ from legacy."
+          document.getElementById("baseline-tabs").hidden = true
+          renderReview(null)
+        }
+      }
+
       function matchesReview(item) {
         const filter = document.getElementById("review-filter").value
+        if (!archiveView && diffMode && !inDiffQueue(item)) return false
         return archiveView || filter === "all" || (filter === "approved" ? item.review?.status === "approved" : item.review?.status !== "approved")
       }
 
@@ -721,12 +825,8 @@
           })
         }
         const q = filter.trim().toLowerCase()
-        navFiltered = Boolean(q) || document.getElementById("review-filter").value !== "all"
-        const match = (item) => matchesReview(item) && (
-          !q ||
-          item.title.toLowerCase().includes(q) ||
-          item.id.toLowerCase().includes(q) ||
-          (item.topic || "").toLowerCase().includes(q))
+        navFiltered = Boolean(q) || diffMode || document.getElementById("review-filter").value !== "all"
+        const match = (item) => matchesReview(item) && matchesSearch(item, q)
 
         const topicNavs = document.getElementById("topic-navs")
         const singlesList = document.getElementById("singles-list")
@@ -794,6 +894,7 @@
           li.appendChild(btn)
           singlesList.appendChild(li)
         }
+        renderDiffBrowser()
       }
 
       // Clicking a screenshot toggles the actual-size view, which keeps the
@@ -1256,15 +1357,13 @@
         const item = items.find((entry) => entry.id === id)
         if (!item) return
         activeId = id
+        if (diffMode && !archiveView) baselineModes.set(id, "legacy")
         renderNav(document.getElementById("search").value)
         renderStage(item)
       }
 
       function selectRelative(delta) {
-        const visible = items.filter((item) => {
-          const q = document.getElementById("search").value.trim().toLowerCase()
-          return matchesReview(item) && (!q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q))
-        })
+        const visible = visibleItems()
         if (!visible.length) return
         const idx = Math.max(0, visible.findIndex((item) => item.id === activeId))
         const next = visible[(idx + delta + visible.length) % visible.length]
@@ -1302,12 +1401,12 @@
             : `${manifest.current?.branch || "Current branch"} · ${items.length} screens · Left: Previous or Legacy · Right: Current`
 
         document.getElementById("review-controls").hidden = archiveView
-        await refreshReviews()
         renderNav(document.getElementById("search").value)
         if (items.length) select(items.some((item) => item.id === selectedId) ? selectedId : items[0].id)
         else {
           document.getElementById("stage").textContent = "No screens recorded for this branch yet. Record a capture with yarn screenshots:record; existing captures remain in Archive."
         }
+        await refreshReviews()
       }
 
       document.getElementById("search").addEventListener("input", (event) => {
@@ -1331,10 +1430,15 @@
           renderReview(null)
         }
       })
+      document.getElementById("diff-mode").addEventListener("change", (event) => setDiffMode(event.target.checked))
+      document.getElementById("diff-show-approved").addEventListener("change", () => renderNav(document.getElementById("search").value))
+      document.getElementById("diff-prev").addEventListener("click", () => selectRelative(-1))
+      document.getElementById("diff-next").addEventListener("click", () => selectRelative(1))
+      document.getElementById("diff-approve-next").addEventListener("click", approveAndNext)
       window.addEventListener("focus", refreshReviews)
 
       window.addEventListener("keydown", (event) => {
-        if (event.target.matches("input, textarea")) return
+        if (event.target.matches("textarea, select, input:not([type=checkbox])")) return
         if (event.key === "ArrowRight" || event.key === "ArrowDown") {
           event.preventDefault()
           selectRelative(1)

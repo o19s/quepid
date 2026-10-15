@@ -155,7 +155,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   - [ ] Delete an account that is the sole member of a team — check what happens to that orphaned team.
   - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm deletion succeeds and the invitee can still accept the invitation.
   - [ ] Try deleting an account with judgements requiring reassignment and a private case — confirm the Danger Zone shows the validation error and the account, case and its queries remain intact.
-  - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm deletion succeeds without a foreign-key error and removes the authored annotation. The current `User` association uses `dependent: :destroy`; annotations require a user.
+  - [ ] Try deleting an account that authored an Annotation (Part 5.4), including one on its private case — confirm the Danger Zone shows an annotations restriction error. The account, private case, queries, annotations and linked score history remain intact; the user stays signed in.
 
 ### 1.10 Transactional emails (invitation & password reset)
 

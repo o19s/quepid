@@ -35,6 +35,34 @@ pre {
 
   /* BS3's body font, for the case view and the dev panel (core-additions.css). */
   --q-body-font: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  /* Core component tokens. The core root is 87.5% (14px), so component sizes
+   * that must not scale with it are pinned in px here, once, and the component
+   * rules below consume them instead of repeating literals. */
+  --q-font-size: 14px;
+  --q-font-size-lg: 16px;
+  --q-space-sm: 8px;
+  --q-space-md: 16px;
+
+  /* Focus ring for form fields, nav links and Bootstrap's focus-ring helper:
+   * BS3-blue, 4px (BS5's default is 0.25rem, 3.5px at this root, in #0d6efd
+   * blue). Buttons keep Bootstrap's per-variant rings. */
+  --q-focus-border-color: #66afe9;
+  --q-focus-ring-color: rgba(var(--q-brand-blue-rgb), 0.25);
+  --q-focus-ring: 0 0 0 4px var(--q-focus-ring-color);
+  --bs-focus-ring-width: 4px;
+  --bs-focus-ring-color: var(--q-focus-ring-color);
+}
+
+/* BS5 hardcodes #0d6efd for these focus states; use the shared ring. */
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--q-focus-border-color);
+  box-shadow: var(--q-focus-ring);
+}
+
+.form-check-input:focus {
+  box-shadow: var(--q-focus-ring);
 }
 
 /* BS5 defines --bs-modal-box-shadow but never applies it, so modals have
@@ -141,8 +169,8 @@ label {
  * from rendering as a sliver. Other px values restate BS5 defaults at
  * a 16px root for explicitness. */
 .tooltip {
-  --bs-tooltip-font-size: 14px;
-  --bs-tooltip-padding-x: 8px;
+  --bs-tooltip-font-size: var(--q-font-size);
+  --bs-tooltip-padding-x: var(--q-space-sm);
   --bs-tooltip-padding-y: 4px;
   --bs-tooltip-arrow-width: 12px;
   --bs-tooltip-arrow-height: 6px;
@@ -158,12 +186,12 @@ label {
 
 .popover {
   --bs-popover-max-width: 800px;
-  --bs-popover-font-size: 14px;
-  --bs-popover-header-font-size: 16px;
-  --bs-popover-header-padding-y: 8px;
-  --bs-popover-header-padding-x: 16px;
+  --bs-popover-font-size: var(--q-font-size);
+  --bs-popover-header-font-size: var(--q-font-size-lg);
+  --bs-popover-header-padding-y: var(--q-space-sm);
+  --bs-popover-header-padding-x: var(--q-space-md);
   --bs-popover-body-padding-y: 12px;
-  --bs-popover-body-padding-x: 16px;
+  --bs-popover-body-padding-x: var(--q-space-md);
   --bs-popover-arrow-width: 16px;
   --bs-popover-arrow-height: 8px;
   --bs-popover-border-radius: 8px;
@@ -184,11 +212,11 @@ label {
 
 /* Nav tabs. Font size inherits BS5's 1rem. */
 .nav {
-  --bs-nav-link-padding-x: 16px;
-  --bs-nav-link-padding-y: 8px;
+  --bs-nav-link-padding-x: var(--q-space-md);
+  --bs-nav-link-padding-y: var(--q-space-sm);
 }
 .nav-link:focus-visible {
-  box-shadow: 0 0 0 4px rgba(var(--q-brand-blue-rgb), 0.25);
+  box-shadow: var(--q-focus-ring);
 }
 
 /* Dropdown: open/close plumbing comes from window.bootstrap.Dropdown
@@ -199,11 +227,11 @@ label {
  * scoped overrides in core-additions.css. */
 .dropdown-menu {
   --bs-dropdown-min-width: 160px;
-  --bs-dropdown-padding-y: 8px;
+  --bs-dropdown-padding-y: var(--q-space-sm);
   --bs-dropdown-spacer: 2px;
-  --bs-dropdown-item-padding-x: 16px;
+  --bs-dropdown-item-padding-x: var(--q-space-md);
   --bs-dropdown-item-padding-y: 4px;
-  --bs-dropdown-divider-margin-y: 8px;
+  --bs-dropdown-divider-margin-y: var(--q-space-sm);
 }
 
 /* Header and annotation menus carry their own chevron glyph — suppress

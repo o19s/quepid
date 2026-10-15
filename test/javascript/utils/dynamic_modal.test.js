@@ -17,6 +17,10 @@ describe("dynamic_modal", () => {
   beforeEach(() => {
     window.bootstrap = {
       Modal: class ModalMock {
+        static getInstance(element) {
+          return ModalMock.instances.get(element) || null
+        }
+
         constructor(el, config) {
           this.element = el
           this._config = config

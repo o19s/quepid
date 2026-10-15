@@ -46,6 +46,34 @@ Browser coverage and actual verification timestamps live in
 `docs/manual-testing/tracking.yml`.
 Line numbers may drift — re-check cited files before fixing.
 
+### [PREEXISTING] P1 I0 C2 — Align RRE export and import formats
+
+Scenario 6.2 accepts the exported `doc_id: {gain: rating}` format but the importer
+interprets it as `rating: [doc_ids]`, creating malformed document IDs and ratings.
+Both implementations already exist at Angular baseline `8ceb99e9`; this is source
+evidence, not a historical live replay. Define supported RRE variants and verify
+export/import round trips before changing the parser.
+
+### [PREEXISTING] P1 I0 C2 — Preserve proxy transport during Solr result paging
+
+Scenario 4.22: the first proxied search succeeds, but paging drops `proxyUrl`
+and requests the engine directly, failing CORS. Current splainer-search3.3.0
+`buildPagerOptions` and installed historical2.36.2 `pager()` both omit the proxy
+configuration; provenance is dependency-source comparison, not a new historical
+live replay. Fix in the shared search dependency/integration and verify real
+proxied paging, unique appended results, retained ratings and failed-page retry.
+Browser CORS overrides are evidence fixtures, not a fix. Deferred from the
+migration-only parity patch.
+
+### [MIGRATION-FOLLOWUP] P1 I0 C2 — Classify the required-proxy wizard failure before merge
+
+Manual scenario 7.13 retains an unresolved failure: new-engine Finish selected an
+archived endpoint with dummy credentials and search failed; explicit endpoint
+selection worked. Reproduce with controlled endpoint fixtures and distinguish
+inherited lookup behavior from a regression in the new required-proxy flow.
+The historical application lacks this flag; its absence alone proves neither
+parity nor regression. Do not change endpoint reuse semantics without that evidence.
+
 ### [PREEXISTING] P1 I0 C2 — Resolve stored mapper input compatibility - EP review needed
 
 Manual scenario 7.9: stored `JSON.parse(data)` mappers work on historical
@@ -246,6 +274,12 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 **Observed:** Adding a query shows it at the bottom of a Manual-sorted list, but after a reload (or anything that re-bootstraps the case, such as Rerun My Searches! creating a new try) it is at the top. The `create` response's `display_order` lists the new id last, while `index` lists it first. The `Case#queries` scope orders `arranged_at IS NULL DESC`, so a new, unarranged query sorts first in the database, and `create` builds `display_order` from the association it just built on, which appears to put the in-memory record last. Reproduced 2026-10-04 on case 598. The controller is unchanged from `main`, and the `be9b319a` Angular client also applied the `create` response's `display_order`, so this predates the migration (source evidence only, not replayed).
 
 **Fix direction:** Reload the association (`@case.queries.reload`) before building `display_order` in `create`, and add a controller test that `create` and `index` return the same order.
+
+---
+
+### [PREEXISTING] P2 I0 C2 — Bulk judging reshuffles documents between pages
+
+`BulkJudgeController#new` shuffles each query group before pagination on every request, so consecutive pages can repeat documents and omit others. Current browser replay confirms overlap; Angular `8ceb99e9` has the same ordering code (source comparison only; live historical replay pending). Preserve a stable ordering across a judging session before paginating.
 
 ---
 

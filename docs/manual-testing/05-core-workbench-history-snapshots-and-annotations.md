@@ -51,7 +51,7 @@ Rails owns the picker row template; Stimulus populates selections and dynamic op
 - **Edge cases:**
   - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
   - [ ] Compare two snapshots whose result *order* differs for the same query (re-rank between captures) — confirm the diff shows distinguishable ordering, not just matching sets. Repeat with a snapshot taken on a non-Solr engine.
-  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot; reopen to verify persistence.
+  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot. Its option disappears from every picker immediately, other snapshots remain available, and reopening confirms persistence.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.
   - [ ] While fetching snapshot data, confirm the "Fetching snapshot data..." progress text shows and the footer buttons are disabled meanwhile.

@@ -61,6 +61,23 @@ module Admin
       assert_equal user, assigns(:user)
     end
 
+    test 'cannot delete an annotation author or their score history' do
+      author = users(:matt)
+      annotation = Annotation.create!(user: author, message: 'Keep this history')
+      score = Score.create!(case: cases(:matt_case), user: author, annotation: annotation, score: 0.5)
+
+      assert_no_difference([ 'User.count', 'Case.count', 'Annotation.count', 'Score.count' ]) do
+        delete :destroy, params: { id: author.id }
+      end
+
+      assert_response :unprocessable_content
+      assert_template :edit
+      assert_select '#error_explanation_attributes', text: /annotations/
+      assert_equal author.id, annotation.reload.user_id
+      assert_equal annotation.id, score.reload.annotation_id
+      assert_equal author.id, cases(:matt_case).reload.owner_id
+    end
+
     test 'should update user' do
       patch :update, params: { id: user, user: { email: 'blah@blah.com' } }
 

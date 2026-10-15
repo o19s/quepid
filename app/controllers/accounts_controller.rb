@@ -32,8 +32,12 @@ class AccountsController < ApplicationController
     @user = current_user
 
     deleted = User.transaction do
-      @user.cases.each do |c|
-        c.really_destroy if c.teams.empty?
+      # Private-case cleanup can itself destroy authored annotations. Let the
+      # model reject deletion before that cleanup can erase the restriction.
+      unless @user.annotations.exists?
+        @user.cases.each do |c|
+          c.really_destroy if c.teams.empty?
+        end
       end
 
       destroyed = @user.destroy
