@@ -56,5 +56,5 @@
 	 z-index: 99;
 }
  .east-slider:hover {
-	 background: var(--q-brand-blue);
+	 background: var(--bs-primary);
 }

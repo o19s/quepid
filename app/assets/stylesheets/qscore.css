@@ -6,7 +6,6 @@
   --qscore-border-radius: 5px;
   --qscore-border-width: 1px;
   --qscore-border-width-thick: 2px;
-  --qscore-highlight-width: 4px;
   --qscore-divider-color: #eee;
 }
 
@@ -139,15 +138,6 @@
   text-align: center;
   padding-top: var(--qscore-spacing-xl);
   border-top: var(--qscore-border-width) solid var(--qscore-divider-color);
-}
-
-/* Search result highlighting */
-.search-result.different {
-  border-left: var(--qscore-highlight-width) solid var(--q-warning);
-}
-
-.search-result.missing {
-  border-left: var(--qscore-highlight-width) solid var(--q-danger);
 }
 
 /* Responsive design */

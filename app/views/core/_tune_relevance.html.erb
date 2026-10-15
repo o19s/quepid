@@ -1,7 +1,7 @@
 <%# locals: (kase:) %>
 <%# The tune-relevance controller lives on #main (core/index) so the try-details modal can sit outside the pane. %>
 <div id="dev-settings" data-bs-theme="dark">
-  <ul class="nav nav-tabs" role="tablist">
+  <ul class="nav nav-tabs mb-3" role="tablist">
     <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="developer" aria-selected="true">Query</button></li>
     <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="curator" aria-selected="false">Tuning Knobs</button></li>
     <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="engineSettings" aria-selected="false">Settings</button></li>
@@ -13,7 +13,7 @@
     <div class="settings-tab query-sandbox" data-tune-relevance-target="panel" data-tune-panel="developer">
       <p data-tune-relevance-target="staticEngineMessage" hidden>With a Static search endpoint there are no query settings to play with ;-(.</p>
       <div class="rerunnable-settings-tab" id="query-params-editor" data-tune-relevance-target="editorShell">
-        <div class="d-flex justify-content-between align-items-center"><h4 class="mb-0">Query Sandbox:</h4><a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank" rel="noopener noreferrer" aria-label="Query sandbox help (opens in new tab)"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></a></div>
+        <div class="d-flex justify-content-between align-items-center mb-2"><h4 class="mb-0">Query Sandbox:</h4><a href="http://quepidapp.com/docs/#tuning" class="query-help" target="_blank" rel="noopener noreferrer" aria-label="Query sandbox help (opens in new tab)"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></a></div>
         <p class="alert alert-warning" data-tune-relevance-target="queryWarning" hidden></p>
         <textarea id="tune-query-params" class="d-none" data-tune-relevance-target="queryEditor"></textarea>
       </div>

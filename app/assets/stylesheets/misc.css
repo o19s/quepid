@@ -22,23 +22,9 @@
 
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
    tags) sit directly under the close button rather than beside it in a
-   flex row. At the shared 600px modal width, longer headings like "What
+   flex row. At BS5's 500px default modal width, longer headings like "What
    Search Endpoint do you want to connect to?" run almost edge-to-edge and
    crowd the X. Give the wizard extra width so headings clear it. */
  .wizard-modal-window .modal-dialog {
 	 max-width: 700px;
 }
-
-/* BS3 heading size and list-group padding/borders for the scorer lists.
-   The .active blue comes from the global rule in bootstrap5-compat.css. */
- .pick-scorer-modal h4 {
-	 font-size: 18px;
-	 color: #333;
-}
-
- .pick-scorer-modal .list-group-item {
-	 padding: 10px 15px;
-	 margin-bottom: -1px;
-	 border-color: #ddd;
-}
-

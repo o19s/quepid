@@ -694,9 +694,9 @@ parts:
           try-details: "5.1/try-details"
           older-try: "5.1/older-try"
           try-history: "5.1/try-history"
-        last_run: 2026-10-15T18:21:33Z
+        last_run: 2026-10-15T18:26:54Z
         result: pass_with_fixes
-        notes: "Covered live: owned empty case1067523417, Tab reaches/reveals the History details button and Enter opens its modal; touch viewport768x900 keeps the control visible and tapping opens details. Settled keyboard and touch screenshots captured; initial modal-transition image retained in Archive. Fixed hover-only display:none without changing try actions. Not covered live: older/newest navigation, persistence or settings changes."
+        notes: "Covered live: owned empty case 1067523417, Tab reveals and outlines the History details button; Enter opens details. Touch viewport 768x900 keeps the control visible and tapping opens details. Two inspected Current captures registered. Not covered live: older/newest navigation, persistence or settings changes."
         paths: ["app/assets/stylesheets/core-additions.css", "test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
@@ -800,9 +800,9 @@ parts:
           clone-created: "6.3/clone-created"
           clone-history: "6.3/clone-history"
           clone-form: "6.3/clone-form"
-        last_run: 2026-10-15T18:22:14Z
+        last_run: 2026-10-15T18:26:54Z
         result: pass_with_fixes
-        notes: "Covered live: owned case1067523417 Clone dialog option hover and keyboard focus render white text on Bootstrap gray; selecting entire history still switches the option to primary. Cancelled without cloning. Two screenshots captured. Not covered live: clone submission, persistence or failure paths."
+        notes: "Covered live: owned case 1067523417 Clone options remain legible on hover and Tab focus; selecting entire history still switches the option to primary. Cancelled without cloning. Two inspected Current captures registered. Not covered live: clone submission, persistence or failure paths."
         paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/javascript/utils/error_message.js", "app/views/core/_case_toolbar.html.erb", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/status_message_behavior.js"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
@@ -820,9 +820,9 @@ parts:
           queries-error: "6.4/queries-error"
           html-error: "6.4/html-error"
           expired-session: "6.4/expired-session"
-        last_run: 2026-10-15T18:22:14Z
+        last_run: 2026-10-15T18:26:54Z
         result: pass_with_fixes
-        notes: "Covered live: owned case1067523417 Delete Options Archive button hover and Tab focus retain contrasting white-on-gray text; selection works and Cancel dismisses without mutation. Screenshot captured. Not covered live: destructive submissions, persistence, authentication failures or server failures."
+        notes: "Covered live: owned case 1067523417 Delete Options Archive button remains legible on hover and Tab focus; selection works and Cancel dismisses without mutation. Inspected Current capture registered. Not covered live: destructive submissions, persistence, authentication failures or server failures."
         paths: ["app/assets/stylesheets/bootstrap5-compat.css", "app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/api/json.js", "app/javascript/utils/error_message.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
@@ -1556,9 +1556,9 @@ parts:
           rating-persisted: "11.8/rating-persisted"
           rating-selected: "11.8/rating-selected"
           unrated-grid: "11.8/unrated-grid"
-        last_run: 2026-10-15T18:23:03Z
+        last_run: 2026-10-15T18:26:54Z
         result: fail
-        notes: "Covered live: Book1 bulk judging with only_unrated=false; Tab/Shift+Tab focuses an already-selected rating without saving, selection shadow remains and a distinct2px outline with4px offset appears. Settled screenshot captured; initial transition retained in Archive. Not covered live: save/reset, pagination or failure paths. Unresolved failures from 2026-10-15T04:24:07Z: unrated explanation returns422; off-scale99 accepted200; pages1/2 repeated9 IDs (same shuffle-before-pagination in Angular8ceb99e9, source inspection only)."
+        notes: "Covered live: Book 1 bulk judging with only_unrated=false; Tab/Shift+Tab focuses an already-selected rating without saving. Selection shadow remains and a distinct 2px outline with 4px offset appears. Corrected, inspected Current capture keeps the focused control in view; earlier misframed/transition captures retained in Archive/history. Not covered live: save/reset, pagination or failure paths. Unresolved failures from 2026-10-15T04:24:07Z: unrated explanation returns 422; off-scale 99 accepted with 200; pages 1/2 repeated nine IDs (same shuffle-before-pagination in Angular 8ceb99e9, source inspection only)."
         paths: ["app/assets/stylesheets/judgements.css", "app/controllers/bulk_judge_controller.rb", "app/views/bulk_judge/", "app/models/query_doc_pair.rb", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/bulk_judgement_controller.js", "test/javascript/controllers/bulk_judgement_controller.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "11.9":
         title: "Query/Doc Pairs management"
@@ -2193,7 +2193,7 @@ parts:
         paths: ["test/playwright/screenshot-viewer.html", "test/playwright/generate-screenshot-manifest.mjs", "test/playwright/screenshot-viewer-server.mjs", "test/playwright/screen-history.mjs", "test/playwright/record-screenshot.mjs", "test/playwright/screen-history.test.mjs", "test/playwright/png-diff.mjs", "test/playwright/screenshot-tracker.mjs", "test/playwright/screenshot-dependencies.mjs", "test/playwright/screenshot-status.mjs", "test/playwright/screenshot-reviews.mjs", "test/playwright/capture-registry.mjs", "test/playwright/capture-recipes.mjs", "test/playwright/capture-screenshot.mjs", "test/playwright/capture-jobs.mjs", "test/playwright/capture-recipes.test.mjs", "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs", "test/playwright/capture-agent.md", "test/playwright/capture-claude.test.mjs"]
       "17.12":
         title: "Routine visual regression suite"
-        last_run: 2026-10-15T06:30:12Z
+        last_run: 2026-10-15T18:26:54Z
         result: pass
-        notes: "Current fullrefresh: two unchanged nativevisual runs6/6passed(45.1s,44.4s); controlled14pxmagenta .cardborder causedRailsformcomparisonfailure. Inspectedexpected/actual/diff showingborder. Finally restoredbase.css exactSHA c62ae4c3 andrebuilt; fullsuite6/6passed44.5s. Inspected23baselinePNGs(including20suitecaptures) andnativeHTMLreport All6/Passed6. Originalinput/baselinehashesunchanged. Cleanreport tmp/clean-visual-review/report/index.html; faultreport .playwright-mcp/full-refresh-20261014/visual-fault/report/index.html. No baselineupdates. Historical/externalintegration outside nativegate."
+        notes: "Covered live: final CSS build passed all six native visual tests (50.2s), including desktop/narrow core and Rails forms; CSS lint and bundle build passed. No baseline updates. Not covered live: full behavioral E2E or external search integration."
         paths: ["package.json", "test/playwright/visual.config.ts", "test/playwright/visual_smoke.spec.ts", "test/playwright/baselines/visual_smoke.spec.ts/", "test/playwright/playwright.config.ts", "test/playwright/auth.setup.ts", "test/playwright/case_helpers.ts"]

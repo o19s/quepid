@@ -16,19 +16,9 @@
  * navbar-brand.css and bootstrap5-compat.css.
  */
 
-/* BS3's 14px base instead of BS5's 16px, so every rem-based size keeps the
- * old density. On `html` only: also setting it on `body` would compound. */
-html {
-  font-size: 87.5%;
-}
-
 html, body {
   height:   100%;
   overflow: auto; /* when page gets too small */
-}
-
-hr {
-  border-color: rgb(170, 170, 170);
 }
 
 /*
@@ -89,14 +79,14 @@ header .dropdown-menu > li {
 
 header .dropdown-item {
   padding: 0;
-  color: var(--q-brand-blue);
+  color: var(--bs-link-color);
   background: transparent;
 }
 
 header .dropdown-item:hover,
 header .dropdown-item:focus {
   background: transparent;
-  color: var(--q-brand-blue-hover);
+  color: var(--bs-link-hover-color);
   text-decoration: underline;
 }
 
@@ -112,34 +102,12 @@ header .dropdown-item:focus {
   padding-bottom: 10px;
 }
 
-/* BS3's flat #777 muted text and Helvetica body font for the case view.
- * BS5's .text-muted uses !important, so steer the variable it reads.
- * Headings keep the Aller font via the more specific rule below. The BS3
- * link blue for this scope is set in bootstrap5-compat.css. */
-.results-control {
-  --bs-secondary-color: #777;
-  font-family: var(--q-body-font);
-}
-
-/* BS3 underlined links only on hover/focus; BS5's Reboot and .btn-link always do. */
-.results-control a,
-.results-control .btn-link {
-  text-decoration: none;
-}
-
-.results-control a:hover,
-.results-control a:focus,
-.results-control .btn-link:hover,
-.results-control .btn-link:focus-visible {
-  text-decoration: underline;
-}
-
 .results-control :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
   font-family: Aller, sans-serif;
 }
 
 /* These containers have no side padding, so BS5's negative .row margin
- * would push their content to the viewport edge. Zero it, as BS3 did here. */
+ * would push their content to the viewport edge. Zero it. */
 .results-control #query-container > .row,
 .results-control #case-header,
 .results-control #case-actions {
@@ -205,7 +173,7 @@ header .dropdown-item:focus {
 .results .queryHeader_error .error-warning {
 	display: inline-block;
 	font-size: 1.25rem;
-	color: var(--q-danger);
+	color: var(--bs-danger);
 }
 
 /* Query header indicators: the 🐸 missing-ratings badge and the Querqy icon. */
@@ -222,7 +190,7 @@ header .dropdown-item:focus {
 	position: absolute;
 	top: -10px;
 	right: -12px;
-	background-color: var(--q-danger);
+	background-color: var(--bs-danger);
 	color: white;
 	border-radius: 50%;
 	width: 20px;
@@ -251,7 +219,7 @@ header .dropdown-item:focus {
 /* Expand/collapse toggles: the results-pane one and the per-query chevron. */
 .results-pane-toggle,
 .results .toggleSign {
-	color: var(--q-brand-blue);
+	color: var(--bs-link-color);
 	font-weight: bold;
 	font-size: 16px;
 }
@@ -280,11 +248,11 @@ header .dropdown-item:focus {
 
 .sub-results {
 	background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
-	padding: 75px 15px 15px 15px;
+	padding: 20px 15px 15px 15px;
 	position: relative;
 	min-width: 650px;
 	/* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
-	 * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's `left`
+	 * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's margin
 	 * in bootstrap5-compat.css so the two rules stay in sync from one source of
 	 * truth instead of two independently-hardcoded pixel values. */
 	--score-col-end: 90px;
@@ -430,9 +398,6 @@ header .dropdown-item:focus {
 	 * automatically (only <body> does). */
 	background-color: var(--bs-body-bg);
 	color: var(--bs-body-color);
-	/* Outside `.results-control`'s font rule; BS5's wider system-ui font
-	 * would wrap the "Annotations" tab onto its own row. */
-	font-family: var(--q-body-font);
 	/* main's .dev-section wrapper inset the whole panel by 15px. */
 	padding: 15px;
 }
@@ -497,10 +462,7 @@ header .dropdown-item:focus {
 }
 
 #queryParamsCanvas .slider-wrap input {
-  /* Color comes from the `#dev-settings input.form-control` white-box
-     override in bootstrap5-compat.css now that this input carries
-     .form-control. Room for 4 digits plus the number input's spin-button
-     chrome. */
+  /* Room for 4 digits plus the number input's spin-button chrome. */
   width: 7ch;
 }
 
