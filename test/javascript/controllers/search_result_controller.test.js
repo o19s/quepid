@@ -55,6 +55,16 @@ describe("SearchResultController", () => {
     expect(controller.contentTarget.querySelector("strong").textContent).toBe("A result")
   })
 
+  it("shows the scoring-depth notice only under the result at the depth of rating", () => {
+    const atDepth = buildController(snapshotFor(), { depthOfRating: 2, ratingScale: {} })
+    atDepth.render()
+    expect(atDepth.contentTarget.querySelector("[data-slot='depthNotice']").textContent).toBe("Results above are counted in scoring.")
+
+    const aboveDepth = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
+    aboveDepth.render()
+    expect(aboveDepth.contentTarget.querySelector("[data-slot='depthNotice']")).toBeNull()
+  })
+
   it("routes title clicks through a declared action that requests the rendered document", () => {
     const controller = buildController(snapshotFor({ id: 42 }), { depthOfRating: 0, ratingScale: {} })
     controller.render()

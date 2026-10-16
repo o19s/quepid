@@ -1,0 +1,22 @@
+<%# locals: (kase:) %>
+<div class="settings-tab" data-tune-relevance-target="panel" data-tune-panel="annotations" hidden style="height: 100%;">
+  <div id="annotations">
+    <p>Annotations are like snapshots for scores. Create a new annotation to save the current case score along with a message to help you remember what the state of the case is at this moment.</p>
+    <strong>Why?</strong>
+    <p>You might have made changes that are invisible to Quepid and want to capture that information with the corresponding score.</p>
+    <p><a href="#annotations-list">Scroll down to view list of annotations</a></p>
+    <div class="mb-3">
+      <label for="annotation-message">Message:</label>
+      <textarea id="annotation-message" class="form-control" rows="3" data-annotations-target="message"></textarea>
+    </div>
+    <div class="mb-3">
+      <button class="btn btn-success" data-annotations-target="createButton" data-action="click->annotations#create">Create</button>
+    </div>
+    <div id="annotations-list">
+      <h3>Existing Annotations</h3>
+      <p class="text-muted annotations-empty">No annotations yet.</p>
+      <ul id="case-annotations" data-annotations-target="list"><%= render partial: 'core/annotation', collection: kase.annotations.includes(:user, score: :try), as: :annotation %></ul>
+    </div>
+    <%= render 'core/edit_annotation_modal' %>
+  </div>
+</div>

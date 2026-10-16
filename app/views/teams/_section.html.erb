@@ -37,9 +37,7 @@
       <%= yield %>
 
       <% if empty %>
-        <div class="text-center text-muted py-3">
-          <p>No <%= title.downcase %> found for this team.</p>
-        </div>
+        <%= render 'shared/empty_state', message: "No #{title.downcase} found for this team." %>
       <% end %>
 
       <% if pagy.last > 1 %>

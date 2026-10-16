@@ -88,7 +88,7 @@
                     <div class="text-muted small">Invite link:
                       <% if member.stored_raw_invitation_token.present? %>
                         <% invite_link = "#{request.base_url}/users/invitation/accept?invitation_token=#{member.stored_raw_invitation_token}" %>
-                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" data-controller="invite" data-invite-link-value="<%= invite_link %>" data-action="click->invite#copy">📋</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" data-controller="clipboard" data-clipboard-text-value="<%= invite_link %>" data-clipboard-success-label-value="Copied" data-clipboard-failure-label-value="Copy failed" data-clipboard-feedback-ms-value="1500" data-action="clipboard#copy">📋</button>
                       <% end %>
                     </div>
                   <% end %>

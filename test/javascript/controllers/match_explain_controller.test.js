@@ -1,4 +1,5 @@
 import { buildControllerFixture } from "../support/controller_fixture"
+import { controllerTargets, loadViewTemplate } from "../support/view_template"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import MatchExplainModalController from "controllers/match_explain_modal_controller"
 import MatchExplainController from "controllers/match_explain_controller"
@@ -80,6 +81,7 @@ function baseData(overrides = {}) {
 function buildController(element, data) {
   const controller = buildControllerFixture(MatchExplainController, {
     element,
+    targets: controllerTargets(element, MatchExplainController, "match-explain"),
     values: {
       data
     }
@@ -102,7 +104,10 @@ describe("MatchExplainController", () => {
   let element
 
   beforeEach(() => {
-    element = document.createElement("div")
+    // Provides the shipped match-explain templates and the result row's chip shell.
+    document.body.innerHTML = loadViewTemplate("app/views/core/_query_list_templates.html.erb")
+    element = document.getElementById("search-result-template").content
+      .querySelector("[data-controller='match-explain']").cloneNode(true)
     document.body.appendChild(element)
     vi.clearAllMocks()
 

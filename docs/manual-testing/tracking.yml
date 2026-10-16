@@ -498,9 +498,9 @@ parts:
           finder-ready: "4.9/finder-ready"
           finder-rating-popover: "4.9/finder-rating-popover"
           finder-empty: "4.9/finder-empty"
-        last_run: 2026-10-15T21:03:20Z
+        last_run: 2026-10-16T15:26:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable query superman (TMDB Solr): blank finder, id:11 returned '1 matching document' (Star Wars) under the persistent 'Changing ratings will affect the query score' note; keyboard Enter on its rating opened the popover inside the modal, Tab reached 0 Irrelevant / 1 Relevant without leaving the finder, Enter on Relevant saved rating 11=1 with focus back on the rebuilt 'Change rating: 1' button; Reset to All Rated Docs showed the rated doc; Escape with the popover open closed the finder and tip and returned focus to Missing Documents. Not covered live: proxied/authenticated finder, JSON params pagination, request failures and pending-dismiss races."
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 1 (TMDB Solr): Missing Documents modal's rated list ('There are 3 ratings for your original query star wars', Score All block, warning, rows) and Search results; per-element layout/style/text identical to HEAD except the new lead <span>. Rating from the modal not re-driven."
         paths: ["app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -509,10 +509,10 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-15T21:04:40Z
+        last_run: 2026-10-16T15:24:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: wrench opens the east drawer (444px) on the Query tab's CodeMirror 6 Query Sandbox; an appended &qf=title^##titleBoost## line survived switching to Tuning Knobs and back; Rerun My Searches! POSTed a new try, navigated to /try/2 with the drawer still open and all queries rerun. Computed-style diff with the drawer open: 0 differences across 1431 elements vs HEAD. Static-engine message, TLS mismatch and drag clamping not covered live."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Query tab rendered from the new tune_relevance/_query partial; per-element layout/style/text identical to HEAD. Editing and rerun not re-driven."
+        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_query.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
         screenshots:
@@ -520,10 +520,10 @@ parts:
           knobs-edited: "4.11/knobs-edited"
           knobs-variable: "4.11/knobs-variable"
           knobs-empty: "4.11/knobs-empty"
-        last_run: 2026-10-15T21:04:45Z
+        last_run: 2026-10-16T15:24:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: with no placeholders Tuning Knobs explains the ##titleBoost## convention; adding ##titleBoost## created a titleBoost number input (default 10); setting 5 and rerunning saved try 2 with curator_vars {titleBoost: 5} and query_params containing the placeholder."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Tuning Knobs tab (with knob input) identical to HEAD per element. Changing a knob not re-driven."
+        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_tuning_knobs.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
         screenshots:
@@ -535,10 +535,10 @@ parts:
           settings-edited: "4.12/settings-edited"
           endpoint-empty: "4.12/endpoint-empty"
           settings-initial: "4.12/settings-initial"
-        last_run: 2026-10-15T21:06:30Z
+        last_run: 2026-10-16T15:24:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: Endpoint Details (name, Solr icon, URL, More, troubleshooting link), Displayed Fields and Number of Results expanded, Escape Queries / Evaluate Nightly / Search Endpoints collapsed (+); Search Endpoints on this unshared case shows 'No search endpoints found. Create or share an endpoint to use it here.'; 150 rows flagged invalid ('Value must be less than or equal to 100.'); fields 'id:id, title:title' + 5 rows rerun created try 3, kept the drawer on Settings, rendered 5 title-only results and saved both values; Rerun stays pinned at 847-885 of a 900px window. Not covered live: endpoint switching, nightly toggle/job, escape toggle, forced new-try failure."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Settings tab sections identical to HEAD per element (only the host in the snapshot endpoint URL differs by port). Section toggles and endpoint switching not re-driven."
+        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_settings.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
         screenshots:
@@ -546,10 +546,10 @@ parts:
           ratings-page: "4.13/ratings-page"
           scores-page: "4.13/scores-page"
           history-list: "4.13/history-list"
-        last_run: 2026-10-15T21:07:40Z
+        last_run: 2026-10-16T15:24:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: History tab links (Visualize your tries, Check Scores, Check Ratings) point at the right routes; try list shows Try 3 / Try 2 / renamed Try 1 with plain-text truncated params and 'using TMDB Solr'. Scores page: 'Scores for Case ...', Scorer/Try Number/Score/Day, Delete disabled until a box is checked, Check All then one uncheck leaves Check All unchecked, Understand Score Duplication link present. Ratings page: 'Ratings for Case ...' with all seven columns, doc-id search '11' filters to the off-query rating. Computed-style diff of the Scores page (application bundle): 0 differences vs HEAD. Not covered live: actual score deletion with confirm, rating-value search, try color coding by URL (single endpoint)."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/shared/fonts.css", "app/assets/stylesheets/shared/tokens.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: History tab links and try list identical to HEAD per element. Try navigation and details modal not re-driven."
+        paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_history.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/shared/fonts.css", "app/assets/stylesheets/shared/tokens.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
         screenshots:
@@ -560,10 +560,10 @@ parts:
           annotation-created: "4.14/annotation-created"
           annotation-draft: "4.14/annotation-draft"
           annotations-empty: "4.14/annotations-empty"
-        last_run: 2026-10-15T21:08:00Z
+        last_run: 2026-10-16T15:24:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: Annotations tab renders the explanation and create form inside the drawer. Creating/editing annotations is deferred to 5.4."
-        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_annotation.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Annotations tab (explanation, form, existing annotations) identical to HEAD per element. Create/edit deferred to 5.4."
+        paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_annotations.html.erb", "app/views/core/index.html.erb", "app/views/core/_annotation.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
         screenshots:
@@ -668,9 +668,9 @@ parts:
           matches-popover: "4.23/matches-popover"
           document-details: "4.23/document-details"
           results-layout: "4.23/results-layout"
-        last_run: 2026-10-15T21:01:45Z
+        last_run: 2026-10-16T15:26:00Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: result rows render rating left, thumb:poster_path image, title button and JSON-tree array fields, explain bars right; Matches popover 'Relevancy Score: 11.694886' with breakdown and Debug/Expand; Debug opens the modal-fullscreen Debug Explain JSON tree (z-index 2050, close button works); title opens Detailed Document View, Escape closes. Computed-style diff of the expanded results vs HEAD: 0 differences. Not covered live: audio/video/translations/URL fields, injected-markup doc, No Match state, 768px overflow."
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on cases 219 (static, no-breakdown chip) and 1 (Solr): result rows and the match-explain popover identical to HEAD per element (one hover-state difference on the copy button). 'Show N More' toggle not present in this data; covered by Vitest."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"
@@ -700,7 +700,7 @@ parts:
         last_run: 2026-10-15T21:15:04Z
         result: pass
         notes: "Covered live on Current :3000 on disposable case 1067523425 (three tries, one endpoint so one color bucket): History lists Try 3, Try 2 and the renamed Try 1 with 'using TMDB Solr'; the hidden '...' becomes visible on keyboard focus and Enter opens the Try 2 details modal (arguments, endpoint, displayed fields, ##titleBoost## = 5, Rename/Duplicate/Delete/Dismiss); clicking Try 2 navigated to /try/2 and reran with its 10-row settings; returning to Try 3 kept its own 5-row/title-only settings (the earlier Settings change had created Try 3 rather than mutating Try 2). Not covered live: multi-endpoint color coding, touch visibility."
-        paths: ["app/assets/stylesheets/core/dev_settings.css", "test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
+        paths: ["app/assets/stylesheets/core/dev_settings.css", "test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_history.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
         screenshots:
@@ -742,7 +742,7 @@ parts:
         last_run: 2026-10-15T21:28:49Z
         result: pass
         notes: "Covered live via Playwright MCP on case6: create annotation980191024 at score0.62; Cancel preserves original; edit persists through reload with two-decimal score; delete removes the disposable annotation immediately without confirmation. Not covered live: zero-score/empty-state, injected failures or overlapping save/delete."
-        paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core/annotations.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
+        paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core/annotations.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_annotations.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
         screenshots:
@@ -875,9 +875,9 @@ parts:
           debug-hot-match: "6.8/debug-hot-match"
           debug-collapsed: "6.8/debug-collapsed"
           debug-expanded: "6.8/debug-expanded"
-        last_run: 2026-10-15T21:38:45Z
+        last_run: 2026-10-16T16:04:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: meetings first-document Matches bar opens Debug Explain for l_6997 with expanded real Solr payload; JSON node collapse/expand toggles plus/minus; Escape dismisses. Not covered live: alternate Debug entry from Matches popover."
+        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003) on case 6/doc l_6997; Matches popover (now cloned from match-explain-popover-template) and its Debug button opening Debug Explain, pixel-identical to HEAD (0 px). Not covered live: JSON node collapse/expand, Expand button."
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
@@ -886,9 +886,9 @@ parts:
           document-hidden: "6.11/document-hidden"
           document-raw: "6.11/document-raw"
           document-fields: "6.11/document-fields"
-        last_run: 2026-10-15T21:38:30Z
+        last_run: 2026-10-16T16:04:00Z
         result: pass
-        notes: "Covered live via Playwright MCP on case6/doc l_6997: title opens detailed fields, View All/Hide All toggles raw document JSON, Escape and Close dismiss; reopening starts with raw fields hidden; settled dismissal leaves no backdrop/body lock. Not covered live: backdrop dismissal, nested object fields, translations or external View Document navigation."
+        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003) on case 6/doc l_6997; result row (title/error/rank now in search-result-template) and the title button opening Detailed Document View, pixel-identical to HEAD (0 px). Not covered live: View All/Hide All, error-row documents, dismissal paths."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.9":
         title: "Frog Report"
@@ -990,9 +990,9 @@ parts:
           mapper-fetch-error: "7.7/mapper-fetch-error"
           mapper-fetch: "7.7/mapper-fetch"
           mapper-entry: "7.7/mapper-entry"
-        last_run: 2026-10-15T21:41:46Z
+        last_run: 2026-10-16T15:28:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: blank URL shows Please enter a search URL; file scheme rejected as Invalid URL format; real public Solr GET returns200 and preview JSON for star/two docs, revealing AI step. Not covered live: POST/advanced options, clipboard fallback, unreachable/timeout/header errors."
+        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003): fetched TMDB Solr JSON; Fetch button shows the spinner + Loading... and is disabled while busy, then restores; Copy shows 'Copied!' with check icon, status 'Copied to clipboard!', clipboard equals the preview, label restored after 2s — same as HEAD."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/views/mapper_wizards/_mapper_editor.html.erb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/utils/clipboard.js", "app/helpers/application_helper.rb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
@@ -1010,9 +1010,9 @@ parts:
           mapper-test-error: "7.9/mapper-test-error"
           mapper-test: "7.9/mapper-test"
           mapper-editors: "7.9/mapper-editors"
-        last_run: 2026-10-16T14:08:56Z
-        result: pass_with_fixes
-        notes: "Covered live via Playwright MCP: fetched real Solr JSON, hand-edited and tested both count/docs using legacy JSON.parse(data) and modern data.response access; both return20148/two docs, console logs visible. Fixed V8 compatibility with non-enumerable JSON coercion on parsed objects/arrays, retaining HTML strings and thrown errors. Focused mapper suites60tests/264assertions pass. Not covered live: paid AI refinement or reopening stored endpoint editors."
+        last_run: 2026-10-16T16:05:00Z
+        result: pass
+        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003); fetched TMDB Solr, Write by hand, Test numberOfResultsMapper: button disabled with spinner + Loading... then restored (withBusy), Test Result 0, pixel-identical to HEAD (0 px). Not covered live: docsMapper test, console logs, Refine with AI."
         paths: ["Gemfile.lock", "app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/views/mapper_wizards/_mapper_editor.html.erb", "lib/v8_mapper_executor.rb", "app/services/mapper_wizard_service.rb", "app/javascript/controllers/status_message_behavior.js", "app/helpers/application_helper.rb"]
       "7.10":
         title: "Mapper Wizard — Step 4: Save Search Endpoint"
@@ -1177,9 +1177,9 @@ parts:
           team-validation: "9.1/team-validation"
           team-form: "9.1/team-form"
           team-list: "9.1/team-list"
-        last_run: 2026-10-15T21:43:29Z
+        last_run: 2026-10-16T16:02:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: blank-name create rejected visibly; team1071000084 created with acting user automatically added; Rename persists and heading updates. Not covered live: index/empty filters, duplicate name or cross-section filter retention. Disposable team reserved for membership/sharing tests and cleanup."
+        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003) on team 1; No custom scorers found for this team empty state (now shared/_empty_state), pixel-identical to HEAD (0 px). Not covered live: team create, rename, index filters."
         paths: ["app/controllers/teams_controller.rb", "app/models/team.rb", "app/views/teams/index.html.erb", "app/views/teams/new.html.erb", "app/views/teams/show.html.erb", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/teams/_cases.html.erb", "app/views/teams/_books.html.erb", "app/views/teams/_search_endpoints.html.erb", "app/views/teams/_scorers.html.erb", "app/javascript/controllers/auto_submit_controller.js", "test/playwright/todo_fixes.spec.ts", "test/controllers/teams_controller_test.rb", "app/views/teams/_section.html.erb"]
       "9.2":
         title: "Add a team member (existing user)"
@@ -1198,10 +1198,10 @@ parts:
           invitation-accept-form: "9.3/invitation-accept-form"
           member-invited: "9.3/member-invited"
           invitation-form: "9.3/invitation-form"
-        last_run: 2026-10-15T21:43:49Z
+        last_run: 2026-10-16T16:03:00Z
         result: pass
-        notes: "Covered live via Playwright MCP: adding new mcp-due-invite-2150@example.invalid creates invited user1044838883 in disposable team1071000084 with INVITED badge and copy-link control, count3. Not covered live: clipboard/acceptance, actual external delivery or signup-disabled branch; invalid-domain fixture queued for cleanup."
-        paths: ["app/javascript/controllers/invite_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/views/teams/show.html.erb", "app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
+        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003); invited bud-invite-20261016@example.invalid to team 1 on both sides (user deleted from both databases afterwards); copy-link button (now clipboard controller) shows Copied, writes the invite URL to the clipboard and restores the icon after 1.5s, pixel-identical to HEAD (0 px) idle/copied/restored. Not covered live: Copy failed label, invitation acceptance, email delivery."
+        paths: ["app/javascript/controllers/clipboard_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/views/teams/show.html.erb", "app/controllers/teams_controller.rb", "app/controllers/users/invitations_controller.rb", "app/services/team_sharing.rb", "app/services/team_membership.rb", "app/controllers/concerns/controller_configuration.rb", "app/models/concerns/text_search.rb"]
       "9.4":
         title: "Remove a team member"
         screenshots:

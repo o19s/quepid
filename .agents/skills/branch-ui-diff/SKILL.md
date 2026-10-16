@@ -147,7 +147,10 @@ of the branch-diff scenario discovery below.
 
 6b. **Mutating scenarios** (steps that create/delete/archive/clone/import/rename/share-unshare
    anything) need no bracketing on the old side: its writes stay in the copy. The "after" pass
-   writes to the dev database like any manual testing. Both sides must start from the same data,
+   writes to the dev database like any manual testing. The copy persists until the next sync, so
+   before handing back delete what you created on both sides, per
+   [AGENTS.md](../../../AGENTS.md#ui-changes--screenshots-via-playwright-mcp-playwright-server).
+   Both sides must start from the same data,
    though: prepare equivalent fixtures on both sides before replay. Do not synchronize databases
    after the batch's fixture states have diverged; follow the guide's
    [batch completion rules](../../../docs/screenshot_review.md#completing-a-screenshot-batch).

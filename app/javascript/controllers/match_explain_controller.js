@@ -20,25 +20,14 @@ import { escapeHtml } from "utils/html"
  * already-open popover out from under the user mid-interaction.
  */
 export default class extends Controller {
+  static targets = ["trigger", "label", "bars"]
   static values = { data: Object }
 
   connect() {
     this.showAll = false
 
-    const trigger = document.createElement("p")
-    trigger.className = "matches-popper"
-    trigger.appendChild(document.createElement("span"))
-    const info = document.createElement("i")
-    info.className = "bi bi-info-circle-fill"
-    info.setAttribute("aria-hidden", "true")
-    trigger.appendChild(info)
-    const bars = document.createElement("div")
-    bars.className = "match-explain-bars"
-    this.element.replaceChildren(trigger, bars)
-    this.triggerEl = this.element.querySelector(".matches-popper")
-    this.barsEl = this.element.querySelector(".match-explain-bars")
-
-    this.popoverHandle = createBsPopover(this.triggerEl, {
+    // The chip and bars shell is server-rendered in core/_query_list_templates.
+    this.popoverHandle = createBsPopover(this.triggerTarget, {
       trigger: "outside-click",
       placement: "left",
       html: true
@@ -52,7 +41,7 @@ export default class extends Controller {
   // so this can fire once before popoverHandle exists — connect() does that
   // first render itself once dataValue is already in hand. Also guards the
   // opposite ordering: a value change landing after disconnect() (which
-  // nulls popoverHandle but leaves triggerEl in place) would otherwise call
+  // nulls popoverHandle but leaves the trigger in place) would otherwise call
   // render() -> this.popoverHandle.setTitle() on null.
   dataValueChanged(value) {
     if (!this.popoverHandle) return
@@ -75,8 +64,8 @@ export default class extends Controller {
     const hots = data.hots || []
     this.renderedData = data
 
-    this.triggerEl.querySelector("span").textContent = hots.length > 0 ? "Matches" : "No Match"
-    this.barsEl.replaceChildren(this.renderBars(data, hots))
+    this.labelTarget.textContent = hots.length > 0 ? "Matches" : "No Match"
+    this.barsTarget.replaceChildren(this.renderBars(data, hots))
     this.wireBars()
 
     this.popoverHandle.setTitle(`Relevancy Score: ${escapeHtml(data.docScore)}`)
@@ -86,13 +75,7 @@ export default class extends Controller {
   renderBars(data, hots) {
     const fragment = document.createDocumentFragment()
     if (!data.hasChildren) {
-      const explanation = document.createElement("div")
-      explanation.className = "graph-explain"
-      const label = document.createElement("div")
-      label.className = "graph-label"
-      label.textContent = "no per-term score breakdown for doc"
-      explanation.appendChild(label)
-      fragment.appendChild(explanation)
+      fragment.appendChild(cloneTemplate("match-explain-no-breakdown-template"))
       return fragment
     }
 
@@ -105,12 +88,8 @@ export default class extends Controller {
       more.className = `collapse${this.showAll ? " show" : ""} match-explain-more`
       rest.forEach((match) => more.appendChild(this.barElement(match)))
       wrapper.appendChild(more)
-      const toggle = document.createElement("button")
-      toggle.type = "button"
-      toggle.className = "btn btn-link p-0 border-0 match-explain-toggle"
-      toggle.style.fontSize = "10px"
+      const toggle = cloneTemplate("match-explain-toggle-template")
       toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
-      toggle.dataset.action = "match-explain#toggleMore"
       wrapper.appendChild(toggle)
     }
     fragment.appendChild(wrapper)
@@ -146,7 +125,7 @@ export default class extends Controller {
       this.collapseInstance = null
     }
 
-    const moreEl = this.barsEl.querySelector(".match-explain-more")
+    const moreEl = this.barsTarget.querySelector(".match-explain-more")
     if (!moreEl) return
 
     const Collapse = window.bootstrap && window.bootstrap.Collapse
@@ -167,29 +146,11 @@ export default class extends Controller {
   }
 
   popoverBody(data) {
-    const body = document.createElement("div")
-    const explanation = document.createElement("div")
-    explanation.className = "doc-score-explanation"
-    const pre = document.createElement("pre")
-    pre.textContent = data.hasChildren ? data.explainToStr : data.explainAsJson
-    explanation.appendChild(pre)
-    const actions = document.createElement("div")
-    actions.className = "actions"
-    const debug = document.createElement("button")
-    debug.type = "button"
-    debug.className = "btn btn-outline-secondary match-explain-debug"
-    debug.textContent = "Debug"
+    const body = cloneTemplate("match-explain-popover-template")
+    body.querySelector("pre").textContent = data.hasChildren ? data.explainToStr : data.explainAsJson
+    const debug = body.querySelector(".match-explain-debug")
     debug.disabled = !data.hasChildren
-    const expand = document.createElement("button")
-    expand.type = "button"
-    expand.className = "btn btn-outline-secondary match-explain-expand"
-    expand.append("Expand ")
-    const expandIcon = document.createElement("i")
-    expandIcon.className = "bi bi-arrows-angle-expand"
-    expandIcon.setAttribute("aria-hidden", "true")
-    expand.appendChild(expandIcon)
-    actions.append(debug, expand)
-    body.append(explanation, actions)
+    const expand = body.querySelector(".match-explain-expand")
 
     // Bootstrap renders popover content under document.body, outside this
     // controller's scope, so these buttons cannot use data-action.
@@ -226,4 +187,8 @@ export default class extends Controller {
     })
     modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
   }
+}
+
+function cloneTemplate(id) {
+  return document.getElementById(id).content.firstElementChild.cloneNode(true)
 }

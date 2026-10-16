@@ -1,8 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 import { HttpError } from "api/http_error"
 import { postJson } from "api/json"
-import { copyText } from "utils/clipboard"
 import { withStatusMessages } from "controllers/status_message_behavior"
+import { withBusy } from "utils/busy_button"
 
 export default class extends withStatusMessages(Controller) {
   static targets = [
@@ -125,31 +125,30 @@ export default class extends withStatusMessages(Controller) {
       }
     }
 
-    this.setButtonLoading(this.fetchButtonTarget, true)
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
-    try {
-      const data = await this.postWizardJson(this.fetchUrlValue, {
-        search_url: url,
-        http_method: httpMethod,
-        test_query: testQuery,
-        custom_headers: customHeaders,
-        basic_auth_credential: basicAuthCredential
-      })
+    await withBusy(this.fetchButtonTarget, async () => {
+      try {
+        const data = await this.postWizardJson(this.fetchUrlValue, {
+          search_url: url,
+          http_method: httpMethod,
+          test_query: testQuery,
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential
+        })
 
-      if (data.success) {
-        this.htmlPreviewTarget.textContent = data.html_preview
-        this.htmlPreviewContainerTarget.hidden = false
-        this.showStatus(`Response fetched successfully (${data.html_length.toLocaleString()} characters)`, "success")
-        this.step2Target.hidden = false
-      } else {
-        this.showStatus(data.error || "Failed to fetch response", "error")
+        if (data.success) {
+          this.htmlPreviewTarget.textContent = data.html_preview
+          this.htmlPreviewContainerTarget.hidden = false
+          this.showStatus(`Response fetched successfully (${data.html_length.toLocaleString()} characters)`, "success")
+          this.step2Target.hidden = false
+        } else {
+          this.showStatus(data.error || "Failed to fetch response", "error")
+        }
+      } catch (error) {
+        this.showStatus(`Error: ${error.message}`, "error")
       }
-    } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "error")
-    } finally {
-      this.setButtonLoading(this.fetchButtonTarget, false)
-    }
+    }, { label: "Loading..." })
   }
 
   // The wizard endpoints answer validation failures with a 422 and a
@@ -175,37 +174,36 @@ export default class extends withStatusMessages(Controller) {
       return
     }
 
-    this.setButtonLoading(this.generateButtonTarget, true)
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
-    try {
-      const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
+    await withBusy(this.generateButtonTarget, async () => {
+      try {
+        const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
 
-      if (data.success) {
+        if (data.success) {
 
-        // Update CodeMirror editors
-        if (this.numberOfResultsEditor) {
-          this.numberOfResultsEditor.setValue(data.number_of_results_mapper)
-        } else if (this.hasNumberOfResultsMapperTarget) {
-          this.numberOfResultsMapperTarget.value = data.number_of_results_mapper
+          // Update CodeMirror editors
+          if (this.numberOfResultsEditor) {
+            this.numberOfResultsEditor.setValue(data.number_of_results_mapper)
+          } else if (this.hasNumberOfResultsMapperTarget) {
+            this.numberOfResultsMapperTarget.value = data.number_of_results_mapper
+          }
+
+          if (this.docsEditor) {
+            this.docsEditor.setValue(data.docs_mapper)
+          } else if (this.hasDocsMapperTarget) {
+            this.docsMapperTarget.value = data.docs_mapper
+          }
+
+          this.showMapperSuccess("Mapper functions generated successfully!", data)
+          this.step3Target.hidden = false
+        } else {
+          this.showStatus(data.error || "Failed to generate mappers", "error")
         }
-
-        if (this.docsEditor) {
-          this.docsEditor.setValue(data.docs_mapper)
-        } else if (this.hasDocsMapperTarget) {
-          this.docsMapperTarget.value = data.docs_mapper
-        }
-
-        this.showMapperSuccess("Mapper functions generated successfully!", data)
-        this.step3Target.hidden = false
-      } else {
-        this.showStatus(data.error || "Failed to generate mappers", "error")
+      } catch (error) {
+        this.showStatus(`Error: ${error.message}`, "error")
       }
-    } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "error")
-    } finally {
-      this.setButtonLoading(this.generateButtonTarget, false)
-    }
+    }, { label: "Loading..." })
   }
 
   // Test numberOfResultsMapper
@@ -244,31 +242,29 @@ export default class extends withStatusMessages(Controller) {
       return
     }
 
-    this.setButtonLoading(button, true)
+    await withBusy(button, async () => {
+      try {
+        const data = await this.postWizardJson(this.testUrlValue, {
+          mapper_type: mapperType,
+          code: code
+        })
 
-    try {
-      const data = await this.postWizardJson(this.testUrlValue, {
-        mapper_type: mapperType,
-        code: code
-      })
+        if (data.success) {
+          const result = this.resultPre(JSON.stringify(data.result, null, 2), "text-success")
+          result.style.whiteSpace = "pre-wrap"
+          resultTarget.replaceChildren(result)
+          this.showStatus(`${mapperType} test successful!`, "success")
+        } else {
+          resultTarget.replaceChildren(this.resultPre(data.error, "text-danger"))
+          this.showStatus(`${mapperType} test failed`, "error")
+        }
 
-      if (data.success) {
-        const result = this.resultPre(JSON.stringify(data.result, null, 2), "text-success")
-        result.style.whiteSpace = "pre-wrap"
-        resultTarget.replaceChildren(result)
-        this.showStatus(`${mapperType} test successful!`, "success")
-      } else {
-        resultTarget.replaceChildren(this.resultPre(data.error, "text-danger"))
-        this.showStatus(`${mapperType} test failed`, "error")
+        // Display console logs if any were captured
+        this.displayLogs(data.logs, logsTarget, logsContainerTarget)
+      } catch (error) {
+        resultTarget.replaceChildren(this.resultPre(`Error: ${error.message ?? ""}`, "text-danger"))
       }
-
-      // Display console logs if any were captured
-      this.displayLogs(data.logs, logsTarget, logsContainerTarget)
-    } catch (error) {
-      resultTarget.replaceChildren(this.resultPre(`Error: ${error.message ?? ""}`, "text-danger"))
-    } finally {
-      this.setButtonLoading(button, false)
-    }
+    }, { label: "Loading..." })
   }
 
   // Display captured console logs from JavaScript execution
@@ -341,32 +337,31 @@ export default class extends withStatusMessages(Controller) {
 
     const currentCode = editor ? editor.getValue() : textarea.value
 
-    this.setButtonLoading(button, true)
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
-    try {
-      const data = await this.postWizardJson(this.refineUrlValue, {
-        mapper_type: mapperType,
-        current_code: currentCode,
-        feedback: feedback,
-        api_key: apiKey
-      })
+    await withBusy(button, async () => {
+      try {
+        const data = await this.postWizardJson(this.refineUrlValue, {
+          mapper_type: mapperType,
+          current_code: currentCode,
+          feedback: feedback,
+          api_key: apiKey
+        })
 
-      if (data.success) {
-        if (editor) {
-          editor.setValue(data.code)
+        if (data.success) {
+          if (editor) {
+            editor.setValue(data.code)
+          } else {
+            textarea.value = data.code
+          }
+          this.showMapperSuccess(`${mapperType} refined successfully!`, data)
         } else {
-          textarea.value = data.code
+          this.showStatus(data.error || "Refinement failed", "error")
         }
-        this.showMapperSuccess(`${mapperType} refined successfully!`, data)
-      } else {
-        this.showStatus(data.error || "Refinement failed", "error")
+      } catch (error) {
+        this.showStatus(`Error: ${error.message}`, "error")
       }
-    } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "error")
-    } finally {
-      this.setButtonLoading(button, false)
-    }
+    }, { label: "Loading..." })
   }
 
   // Save to SearchEndpoint
@@ -392,7 +387,6 @@ export default class extends withStatusMessages(Controller) {
       return
     }
 
-    this.setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
@@ -407,31 +401,31 @@ export default class extends withStatusMessages(Controller) {
       ? this.teamCheckboxTargets.filter(cb => cb.checked).map(cb => parseInt(cb.value))
       : []
 
-    try {
-      const data = await this.postWizardJson(this.saveUrlValue, {
-        name: name,
-        number_of_results_mapper: numberOfResultsMapper,
-        docs_mapper: docsMapper,
-        endpoint_url: this.searchUrlTarget.value.trim(),
-        api_method: httpMethod,
-        proxy_requests: this.proxyRequestsTarget.checked,
-        test_query: testQuery,
-        custom_headers: customHeaders,
-        basic_auth_credential: basicAuthCredential,
-        team_ids: teamIds
-      })
+    await withBusy(this.saveButtonTarget, async () => {
+      try {
+        const data = await this.postWizardJson(this.saveUrlValue, {
+          name: name,
+          number_of_results_mapper: numberOfResultsMapper,
+          docs_mapper: docsMapper,
+          endpoint_url: this.searchUrlTarget.value.trim(),
+          api_method: httpMethod,
+          proxy_requests: this.proxyRequestsTarget.checked,
+          test_query: testQuery,
+          custom_headers: customHeaders,
+          basic_auth_credential: basicAuthCredential,
+          team_ids: teamIds
+        })
 
-      if (data.success) {
-        this.showStatus("Search endpoint saved successfully! Redirecting...", "success")
-        window.location.href = data.redirect_url
-      } else {
-        this.showStatus(data.errors?.join(", ") || "Save failed", "error")
+        if (data.success) {
+          this.showStatus("Search endpoint saved successfully! Redirecting...", "success")
+          window.location.href = data.redirect_url
+        } else {
+          this.showStatus(data.errors?.join(", ") || "Save failed", "error")
+        }
+      } catch (error) {
+        this.showStatus(`Error: ${error.message}`, "error")
       }
-    } catch (error) {
-      this.showStatus(`Error: ${error.message}`, "error")
-    } finally {
-      this.setButtonLoading(this.saveButtonTarget, false)
-    }
+    }, { label: "Loading..." })
   }
 
   showMapperSuccess(message, data) {
@@ -453,32 +447,18 @@ export default class extends withStatusMessages(Controller) {
     }
   }
 
-  // Copy HTML preview content to clipboard
-  async copyHtmlPreview(event) {
-    event.preventDefault()
+  // The clipboard controller on the preview copies it and confirms on the button;
+  // these report the outcome in the wizard's status area.
+  htmlPreviewCopied() {
+    this.showStatus("Copied to clipboard!", "success")
+  }
 
-    // Capture button reference before any await - event.currentTarget becomes null after async operations
-    const button = event.currentTarget
-    const originalHtml = button.innerHTML
+  htmlPreviewCopyFailed(event) {
+    this.showStatus(`Failed to copy: ${event.detail.error.message}`, "error")
+  }
 
-    const content = this.htmlPreviewTarget.textContent
-    if (!content) {
-      this.showStatus("No content to copy", "error")
-      return
-    }
-
-    try {
-      await copyText(content)
-      this.showStatus("Copied to clipboard!", "success")
-
-      // Briefly change button icon to show success
-      button.innerHTML = '<i class="bi bi-clipboard-check"></i> Copied!'
-      setTimeout(() => {
-        button.innerHTML = originalHtml
-      }, 2000)
-    } catch (error) {
-      this.showStatus(`Failed to copy: ${error.message}`, "error")
-    }
+  htmlPreviewEmpty() {
+    this.showStatus("No content to copy", "error")
   }
 
   // Helper methods
@@ -493,16 +473,5 @@ export default class extends withStatusMessages(Controller) {
       autoHideMs: type === 'success' ? 5000 : undefined,
       onExpire: (el) => { el.hidden = true }
     })
-  }
-
-  setButtonLoading(button, loading) {
-    if (loading) {
-      button.disabled = true
-      button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-    } else {
-      button.disabled = false
-      button.innerHTML = button.dataset.originalText || button.innerHTML
-    }
   }
 }

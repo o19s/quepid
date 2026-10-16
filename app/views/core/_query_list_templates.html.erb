@@ -112,18 +112,42 @@
 </template>
 
 <%# Cloned by search_result_controller.js for each document, by id because each
-    result is its own controller; it fills the `data-slot`s. These rows nest inside
+    result is its own controller; it fills the `data-slot`s and removes the
+    error and depth notice when they don't apply. These rows nest inside
     the expanded-query shell above, so keep slot names distinct from its slots. %>
 <template id="search-result-template">
-  <div class="row">
-    <div class="col-md-10 position-relative">
-      <div class="col-ratings"><div class="ratings" data-slot="ratings"></div></div>
-      <div class="col-summary d-flex">
-        <div class="result-thumb-col flex-shrink-0 text-center me-2 d-none" data-slot="thumbColumn"><img class="img-thumbnail result-thumbnail" data-slot="thumb"></div>
-        <div class="result-image-col flex-shrink-0 text-center me-2 d-none" data-slot="imageColumn"><img class="img-thumbnail result-image" data-slot="image"></div>
-        <ul class="subfields flex-grow-1" data-slot="fields"></ul>
+  <div>
+    <div class="row">
+      <div class="col-md-10 position-relative">
+        <div class="col-ratings"><div class="ratings" data-slot="ratings"></div></div>
+        <div class="col-summary d-flex">
+          <div class="result-thumb-col flex-shrink-0 text-center me-2 d-none" data-slot="thumbColumn"><img class="img-thumbnail result-thumbnail" data-slot="thumb"></div>
+          <div class="result-image-col flex-shrink-0 text-center me-2 d-none" data-slot="imageColumn"><img class="img-thumbnail result-image" data-slot="image"></div>
+          <%# Document fields go between the error and the rank. %>
+          <ul class="subfields flex-grow-1" data-slot="fields">
+            <li class="subTitle"><button type="button" class="btn btn-link p-0 border-0 align-baseline text-start" data-action="search-result#showDocument" data-slot="resultTitle"></button></li>
+            <li data-slot="resultError"><div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> This document can't be uniquely identified, so Quepid can't store ratings for this document. <br><span data-slot="resultErrorDetail"></span>.</div></li>
+            <li class="result-rank" data-slot="resultRank"></li>
+          </ul>
+        </div>
       </div>
+      <div class="col-md-2" data-slot="matchExplainColumn"><div class="stacked-chart-container" data-controller="match-explain" data-slot="matchExplain"><p class="matches-popper" data-match-explain-target="trigger"><span data-match-explain-target="label"></span><i class="bi bi-info-circle-fill" aria-hidden="true"></i></p><div class="match-explain-bars" data-match-explain-target="bars"></div></div></div>
     </div>
-    <div class="col-md-2" data-slot="matchExplainColumn"><div class="stacked-chart-container" data-controller="match-explain" data-slot="matchExplain"></div></div>
+    <div class="text-muted text-warning" data-slot="depthNotice">Results above are counted in scoring.</div>
+  </div>
+</template>
+
+<%# Cloned by match_explain_controller.js. Bootstrap renders the popover body
+    under document.body, outside the controller, so its buttons are wired in JS. %>
+<template id="match-explain-no-breakdown-template">
+  <div class="graph-explain"><div class="graph-label">no per-term score breakdown for doc</div></div>
+</template>
+<template id="match-explain-toggle-template">
+  <button type="button" class="btn btn-link p-0 border-0 match-explain-toggle" style="font-size: 10px;" data-action="match-explain#toggleMore"></button>
+</template>
+<template id="match-explain-popover-template">
+  <div>
+    <div class="doc-score-explanation"><pre></pre></div>
+    <div class="actions"><button type="button" class="btn btn-outline-secondary match-explain-debug">Debug</button><button type="button" class="btn btn-outline-secondary match-explain-expand">Expand <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i></button></div>
   </div>
 </template>

@@ -31,7 +31,6 @@ function buildController(overrides = {}) {
   controller.hasBasicAuthCredentialTarget = false
 
 
-  controller.setButtonLoading = vi.fn()
   controller.showStatus = vi.fn()
 
   // Editors live on their textarea targets, as CodeMirror's auto-init leaves them.
@@ -338,7 +337,11 @@ describe("MapperWizardController AI generation and refinement", () => {
     const numberOfResultsEditor = editor()
     const docsEditor = editor()
     const controller = aiController({ numberOfResultsEditor, docsEditor })
-    apiFetch.mockResolvedValue(jsonResponse({ success: true, number_of_results_mapper: "n()", docs_mapper: "d()" }))
+    let busyDuringRequest
+    apiFetch.mockImplementation(async () => {
+      busyDuringRequest = controller.generateButtonTarget.disabled
+      return jsonResponse({ success: true, number_of_results_mapper: "n()", docs_mapper: "d()" })
+    })
 
     await controller.generateMappers({ preventDefault: vi.fn() })
 
@@ -348,8 +351,8 @@ describe("MapperWizardController AI generation and refinement", () => {
     expect(docsEditor.setValue).toHaveBeenCalledWith("d()")
     expect(controller.step3Target.hidden).toBe(false)
     expect(controller.showStatus).toHaveBeenLastCalledWith("Mapper functions generated successfully!", "success")
-    expect(controller.setButtonLoading).toHaveBeenNthCalledWith(1, controller.generateButtonTarget, true)
-    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
+    expect(busyDuringRequest).toBe(true)
+    expect(controller.generateButtonTarget.disabled).toBe(false)
   })
 
   it("falls back to the plain textareas when the code editors aren't ready", async () => {
@@ -379,7 +382,7 @@ describe("MapperWizardController AI generation and refinement", () => {
 
     expect(controller.showStatus).toHaveBeenLastCalledWith(message, "error")
     expect(controller.step3Target.hidden).toBe(true)
-    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.generateButtonTarget, false)
+    expect(controller.generateButtonTarget.disabled).toBe(false)
   })
 
   it("refines the current code with the user's feedback and replaces it", async () => {
@@ -396,7 +399,7 @@ describe("MapperWizardController AI generation and refinement", () => {
     })
     expect(docsEditor.setValue).toHaveBeenCalledWith("docsMapper = new")
     expect(controller.showStatus).toHaveBeenLastCalledWith("docsMapper refined successfully!", "success")
-    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(button, false)
+    expect(button.disabled).toBe(false)
   })
 
   it("refines from and into the textarea when there is no editor, and reports a failed refinement", async () => {
@@ -487,7 +490,7 @@ describe("MapperWizardController save validation and errors", () => {
     await controller.save({ preventDefault: vi.fn() })
 
     expect(controller.showStatus).toHaveBeenLastCalledWith(message, "error")
-    expect(controller.setButtonLoading).toHaveBeenLastCalledWith(controller.saveButtonTarget, false)
+    expect(controller.saveButtonTarget.disabled).toBe(false)
   })
 })
 
@@ -500,7 +503,6 @@ describe("MapperWizardController helpers", () => {
   function realHelpers(overrides = {}) {
     const controller = buildController(overrides)
     delete controller.showStatus
-    delete controller.setButtonLoading
     return controller
   }
 
@@ -573,20 +575,6 @@ describe("MapperWizardController helpers", () => {
     expect(controller.statusTarget.hidden).toBe(true)
   })
 
-  it("shows a spinner while loading and restores the button label after", () => {
-    const controller = realHelpers()
-    const button = document.createElement("button")
-    button.innerHTML = "Generate"
-
-    controller.setButtonLoading(button, true)
-    expect(button.disabled).toBe(true)
-    expect(button.textContent).toContain("Loading...")
-
-    controller.setButtonLoading(button, false)
-    expect(button.disabled).toBe(false)
-    expect(button.innerHTML).toBe("Generate")
-  })
-
   it("reads each code editor from its textarea when used, including ones attached after connect", () => {
     const docs = document.createElement("textarea")
     const controller = realHelpers({
@@ -605,55 +593,16 @@ describe("MapperWizardController helpers", () => {
     expect(controller.docsEditor).toBe("d-editor")
   })
 
-  it("copies the HTML preview, briefly confirming on the button", async () => {
-    vi.useFakeTimers()
-    const writeText = vi.fn(() => Promise.resolve())
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
-    const controller = realHelpers()
-    controller.htmlPreviewTarget.textContent = "<html>results</html>"
-    const button = document.createElement("button")
-    button.innerHTML = "Copy"
-
-    await controller.copyHtmlPreview({ preventDefault: vi.fn(), currentTarget: button })
-
-    expect(writeText).toHaveBeenCalledWith("<html>results</html>")
-    expect(button.textContent).toContain("Copied!")
-    vi.advanceTimersByTime(2000)
-    expect(button.innerHTML).toBe("Copy")
-  })
-
-  it("copies through the plain-HTTP fallback when the Clipboard API is absent", async () => {
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: undefined })
-    const execCommand = vi.fn(() => true)
-    Object.defineProperty(document, "execCommand", { configurable: true, value: execCommand })
+  it("reports the clipboard controller's copy outcome in the status area", () => {
     const controller = buildController()
-    controller.htmlPreviewTarget.textContent = "<html>results</html>"
-    const button = document.createElement("button")
-    button.innerHTML = "Copy"
-    vi.useFakeTimers()
 
-    await controller.copyHtmlPreview({ preventDefault: vi.fn(), currentTarget: button })
+    controller.htmlPreviewCopied()
+    expect(controller.showStatus).toHaveBeenLastCalledWith("Copied to clipboard!", "success")
 
-    expect(execCommand).toHaveBeenCalledWith("copy")
-    expect(controller.showStatus).toHaveBeenCalledWith("Copied to clipboard!", "success")
-    expect(document.querySelector("textarea")).toBeNull()
-    vi.advanceTimersByTime(2000)
-    expect(button.innerHTML).toBe("Copy")
-    delete document.execCommand
-  })
-
-  it("reports an empty preview or a clipboard failure instead of copying", async () => {
-    const writeText = vi.fn(() => Promise.reject(new Error("denied")))
-    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } })
-    const controller = buildController()
-    const event = () => ({ preventDefault: vi.fn(), currentTarget: document.createElement("button") })
-
-    await controller.copyHtmlPreview(event())
+    controller.htmlPreviewEmpty()
     expect(controller.showStatus).toHaveBeenLastCalledWith("No content to copy", "error")
-    expect(writeText).not.toHaveBeenCalled()
 
-    controller.htmlPreviewTarget.textContent = "x"
-    await controller.copyHtmlPreview(event())
+    controller.htmlPreviewCopyFailed({ detail: { error: new Error("denied") } })
     expect(controller.showStatus).toHaveBeenLastCalledWith("Failed to copy: denied", "error")
   })
 })

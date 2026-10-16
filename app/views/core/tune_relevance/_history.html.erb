@@ -1,0 +1,9 @@
+<%# locals: (kase:) %>
+<div class="settings-tab" data-tune-relevance-target="panel" data-tune-panel="history" hidden>
+  <div class="container-fluid">
+    <p><a href="analytics/tries_visualization/<%= kase.id %>" target="_self">Visualize your tries</a> | <a href="cases/<%= kase.id %>/scores" target="_self">Check Scores</a> | <a href="cases/<%= kase.id %>/ratings" target="_self">Check Ratings</a></p>
+    <p>To switch back to a previous try, click on the try listing.<br>Click on the "..." when you hover over a listing to edit a try.</p>
+    <ul class="history-list list-unstyled mb-4" data-tune-relevance-target="historyList"></ul>
+    <template data-tune-relevance-target="historyItemTemplate"><li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-sm btn-secondary rounded-pill try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li></template>
+  </div>
+</div>

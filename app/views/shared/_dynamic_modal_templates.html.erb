@@ -94,6 +94,34 @@
       <button type="button" class="btn btn-outline-secondary d-none" data-missing-documents-target="next" data-action="missing-documents#paginate">Peek at the next page of results</button>
       <span class="ms-2 d-none" data-missing-documents-target="spinner"><i class="bi bi-arrow-repeat spintime"></i></span>
     </div>
+
+    <%# Status and results shells; missing-documents fills the data-* slots. %>
+    <template data-missing-documents-target="parseErrorTemplate">
+      <div class="alert alert-danger">Couldn't parse that query — check the syntax and try again.</div>
+    </template>
+    <template data-missing-documents-target="lookupUnsupportedTemplate">
+      <div class="alert alert-warning">There are <span data-total-ratings></span> ratings for your original query, but looking up already-rated documents by ID isn't supported for the <strong data-engine-name></strong> search engine.</div>
+    </template>
+    <template data-missing-documents-target="noResultsTemplate">
+      <div class="alert alert-warning">Your query <em data-query></em> returned no results</div>
+    </template>
+    <template data-missing-documents-target="resultsHeaderTemplate">
+      <h4 data-heading></h4>
+      <p data-summary="rated"><span data-lead></span> for your original query <em data-query></em>.</p>
+      <p data-summary="matches"></p>
+      <%# Contain the two floats so the results below start on their own full-width line. %>
+      <div class="clearfix">
+        <div class="score-all float-start">
+          <strong>Score All</strong>
+          <div class="ratings">
+            <div class="single-rating" data-controller="rating-popover">
+              <span class="btn" style="background-color: rgb(119, 119, 119);">- <i class="bi bi-caret-down-fill"></i></span>
+            </div>
+          </div>
+        </div>
+        <div class="alert alert-warning float-start ms-3">Changing ratings will affect the query score.</div>
+      </div>
+    </template>
   </div>
   <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
 </template>

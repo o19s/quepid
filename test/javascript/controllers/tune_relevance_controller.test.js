@@ -84,7 +84,8 @@ function makeCapability(settingsOverrides = {}) {
   return { capability, settings }
 }
 
-// Copied from the <template> rows in app/views/core/_tune_relevance.html.erb. Specs using
+// Copied from the <template> rows in app/views/core/tune_relevance/_tuning_knobs.html.erb and
+// _history.html.erb. Specs using
 // these cannot detect drift in the ERB's data-action wiring; that is covered by manual scenarios
 // 4.11 and 4.13.
 function template(html) {

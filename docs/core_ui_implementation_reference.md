@@ -230,16 +230,19 @@ the same handler (`live_query_events.js:91-92`).
 
 ### Clipboard feedback
 
-There are four versions of "copy, then swap the button label for a moment":
-`query_explain_controller.js:68`, `invite_controller.js:33`,
-`mapper_wizard_controller.js:446` and `browse_query_controller.js:44`.
+There are three versions of "copy, then swap the button label for a moment":
+`clipboard_controller.js`, `query_explain_controller.js:68` and
+`browse_query_controller.js:44`. All three use `utils/temporary_feedback`.
 
-Do not impose one feedback policy on all four callers; Explain, Invite and
-Browse share `utils/temporary_feedback`, while Mapper retains independent timers.
-Browse restores its label/icon after two seconds on success or failure and
-cancels feedback on modal close/disconnect. Its HTTP fallback textarea stays
-inside the modal's focus trap. Mapper uses `utils/clipboard` for
-plain-HTTP copying while retaining its existing status messages and button timing.
+Do not impose one feedback policy on every caller. The clipboard controller
+takes each site's labels, icon and timing as values: the team invite button
+shows "Copied" or "Copy failed" for 1.5 seconds, and the Mapper preview shows
+"Copied!" with a check icon for two seconds and reports the outcome in its
+status area through `clipboard:*` events. Explain and Browse keep their own
+feedback because it is tied to the dynamic modal's lifecycle. Browse restores
+its label/icon after two seconds on success or failure and cancels feedback on
+modal close/disconnect. Its HTTP fallback textarea stays inside the modal's
+focus trap.
 
 ### Success-and-redirect timing
 

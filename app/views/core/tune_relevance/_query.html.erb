@@ -1,0 +1,12 @@
+<%# locals: () %>
+<div class="settings-tab query-sandbox" data-tune-relevance-target="panel" data-tune-panel="developer">
+  <p data-tune-relevance-target="staticEngineMessage" hidden>With a Static search endpoint there are no query settings to play with ;-(.</p>
+  <div class="rerunnable-settings-tab" id="query-params-editor" data-tune-relevance-target="editorShell">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <h4 class="mb-0">Query Sandbox:</h4>
+      <a href="http://quepidapp.com/docs/#tuning" class="query-help fs-4" target="_blank" rel="noopener noreferrer" aria-label="Query sandbox help (opens in new tab)"><i class="bi bi-question-circle-fill" aria-hidden="true"></i></a>
+    </div>
+    <p class="alert alert-warning" data-tune-relevance-target="queryWarning" hidden></p>
+    <textarea id="tune-query-params" class="d-none" data-tune-relevance-target="queryEditor"></textarea>
+  </div>
+</div>

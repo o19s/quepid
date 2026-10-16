@@ -21,12 +21,6 @@
     "documentListener": 2,
     "innerHTML": 1
   },
-  "app/javascript/controllers/invite_controller.js": {
-    "innerHTML": 1
-  },
-  "app/javascript/controllers/mapper_wizard_controller.js": {
-    "innerHTML": 4
-  },
   "app/javascript/controllers/pane_controller.js": {
     "documentListener": 2
   },
@@ -43,7 +37,7 @@
     "innerHTML": 1
   },
   "app/javascript/controllers/search_result_controller.js": {
-    "innerHTML": 4
+    "innerHTML": 1
   },
   "app/javascript/controllers/search_results_controller.js": {
     "innerHTML": 4

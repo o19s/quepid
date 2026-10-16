@@ -7,7 +7,7 @@ import { fromTextArea } from "modules/editor"
 import { withStatusMessages } from "controllers/status_message_behavior"
 
 export default class extends withStatusMessages(Controller) {
-  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported", "solrHelp", "previewHelp"]
+  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported", "solrHelp", "previewHelp", "parseErrorTemplate", "lookupUnsupportedTemplate", "noResultsTemplate", "resultsHeaderTemplate"]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
@@ -166,71 +166,35 @@ export default class extends withStatusMessages(Controller) {
     this.resetButtonTarget?.toggleAttribute("disabled", this.adapter.defaultList)
     this.statusTarget.replaceChildren()
     if (this.adapter.parseError) {
-      const message = document.createElement("div")
-      message.className = "alert alert-danger"
-      message.textContent = "Couldn't parse that query — check the syntax and try again."
-      this.statusTarget.appendChild(message)
+      this.statusTarget.appendChild(this.parseErrorTemplateTarget.content.firstElementChild.cloneNode(true))
     } else if (this.adapter.defaultList && this.adapter.ratedDocsLookupUnsupported) {
-      const message = document.createElement("div")
-      message.className = "alert alert-warning"
-      message.append("There are ", String(this.adapter.totalRatings), " ratings for your original query, but looking up already-rated documents by ID isn't supported for the ")
-      const engine = document.createElement("strong")
-      engine.textContent = this.engineLabel
-      message.append(engine, " search engine.")
+      const message = this.lookupUnsupportedTemplateTarget.content.firstElementChild.cloneNode(true)
+      message.querySelector("[data-total-ratings]").textContent = String(this.adapter.totalRatings)
+      message.querySelector("[data-engine-name]").textContent = this.engineLabel
       this.statusTarget.appendChild(message)
     } else if (!this.adapter.defaultList && this.adapter.numFound === 0) {
-      const message = document.createElement("div")
-      message.className = "alert alert-warning"
-      message.append("Your query ")
-      const query = document.createElement("em")
-      query.textContent = this.adapter.lastQuery || this.adapter.queryText
-      message.append(query, " returned no results")
+      const message = this.noResultsTemplateTarget.content.firstElementChild.cloneNode(true)
+      message.querySelector("[data-query]").textContent = this.adapter.lastQuery || this.adapter.queryText
       this.statusTarget.appendChild(message)
     }
 
     this.resultsTarget.replaceChildren()
     if (this.adapter.docs.length === 0) return
-    const heading = document.createElement("h4")
-    heading.textContent = this.adapter.defaultList ? "Already Rated Documents" : "Query Results"
-    this.resultsTarget.appendChild(heading)
-    const summary = document.createElement("p")
+    const header = this.resultsHeaderTemplateTarget.content.cloneNode(true)
+    header.querySelector("[data-heading]").textContent = this.adapter.defaultList ? "Already Rated Documents" : "Query Results"
+    const ratedSummary = header.querySelector("[data-summary='rated']")
+    const matchesSummary = header.querySelector("[data-summary='matches']")
     if (this.adapter.defaultList) {
       const count = this.adapter.numFound
-      const lead = count === 0 ? "There are no ratings created yet" : count === 1 ? "There is one rating" : `There are ${count} ratings`
-      summary.append(`${lead} for your original query `, Object.assign(document.createElement("em"), { textContent: this.adapter.queryText }), ".")
+      ratedSummary.querySelector("[data-lead]").textContent = count === 0 ? "There are no ratings created yet" : count === 1 ? "There is one rating" : `There are ${count} ratings`
+      ratedSummary.querySelector("[data-query]").textContent = this.adapter.queryText
+      matchesSummary.remove()
     } else {
-      summary.textContent = `${this.adapter.numFound} matching document${this.adapter.numFound === 1 ? "" : "s"}.`
+      matchesSummary.textContent = `${this.adapter.numFound} matching document${this.adapter.numFound === 1 ? "" : "s"}.`
+      ratedSummary.remove()
     }
-    this.resultsTarget.appendChild(summary)
-
-    const scoreAll = document.createElement("div")
-    scoreAll.className = "score-all float-start"
-    const scoreLabel = document.createElement("strong")
-    scoreLabel.textContent = "Score All"
-    const ratings = document.createElement("div")
-    ratings.className = "ratings"
-    const rating = document.createElement("div")
-    rating.className = "single-rating"
-    rating.dataset.controller = "rating-popover"
-    rating.dataset.ratingPopoverScaleValue = JSON.stringify(this.adapter.ratingScale || {})
-    const ratingButton = document.createElement("span")
-    ratingButton.className = "btn"
-    ratingButton.style.backgroundColor = "rgb(119, 119, 119)"
-    ratingButton.append("- ")
-    const ratingIcon = document.createElement("i")
-    ratingIcon.className = "bi bi-caret-down-fill"
-    ratingButton.appendChild(ratingIcon)
-    rating.appendChild(ratingButton)
-    ratings.appendChild(rating)
-    scoreAll.append(scoreLabel, ratings)
-    const warning = document.createElement("div")
-    warning.className = "alert alert-warning float-start ms-3"
-    warning.textContent = "Changing ratings will affect the query score."
-    // Contain the two floats so the results below start on their own full-width line.
-    const scoreAllRow = document.createElement("div")
-    scoreAllRow.className = "clearfix"
-    scoreAllRow.append(scoreAll, warning)
-    this.resultsTarget.appendChild(scoreAllRow)
+    header.querySelector(".single-rating").dataset.ratingPopoverScaleValue = JSON.stringify(this.adapter.ratingScale || {})
+    this.resultsTarget.appendChild(header)
 
     this.adapter.docs.forEach((doc, index) => {
       const result = document.createElement("search-result")

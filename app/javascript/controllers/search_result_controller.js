@@ -41,8 +41,8 @@ export default class extends Controller {
   renderResult(doc, query) {
     // The row skeleton is the ERB `<template id="search-result-template">` in
     // core/_query_list_templates.html.erb.
-    const row = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
-    const slot = name => row.querySelector(`[data-slot="${name}"]`)
+    const result = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
+    const slot = name => result.querySelector(`[data-slot="${name}"]`)
     const showExplain = this.explainViewValue === "full" && doc.matchExplain
     if (!showExplain) slot("matchExplainColumn").remove()
 
@@ -51,46 +51,28 @@ export default class extends Controller {
     this.renderImage(slot("thumbColumn"), slot("thumb"), doc.thumb, doc.thumb_options, doc.hasThumb)
     this.renderImage(slot("imageColumn"), slot("image"), doc.image, doc.image_options, doc.hasImage)
 
-    const fields = slot("fields")
-    const title = document.createElement("li")
-    title.className = "subTitle"
-    const titleButton = document.createElement("button")
-    titleButton.type = "button"
-    titleButton.className = "btn btn-link p-0 border-0 align-baseline text-start"
-    titleButton.textContent = doc.title ?? ""
-    titleButton.dataset.action = "search-result#showDocument"
-    title.appendChild(titleButton)
-    fields.appendChild(title)
+    slot("resultTitle").textContent = doc.title ?? ""
 
     if (doc.error) {
-      const error = document.createElement("li")
-      error.innerHTML = '<div class="alert alert-danger"><i class="bi bi-exclamation-triangle-fill"></i> This document can\'t be uniquely identified, so Quepid can\'t store ratings for this document. <br><span></span>.</div>'
-      this.appendSanitized(error.querySelector("span"), doc.error)
-      fields.appendChild(error)
+      this.appendSanitized(slot("resultErrorDetail"), doc.error)
+    } else {
+      slot("resultError").remove()
     }
 
-    this.appendFields(fields, doc.embeds, (name, value) => this.embedField(name, value))
-    this.appendFields(fields, doc.translations, (name, value) => this.htmlField(name, value, true))
-    this.appendFields(fields, doc.unabridgeds, (name, value) => this.htmlField(name, value))
+    const rank = slot("resultRank")
+    this.insertFields(rank, doc.embeds, (name, value) => this.embedField(name, value))
+    this.insertFields(rank, doc.translations, (name, value) => this.htmlField(name, value, true))
+    this.insertFields(rank, doc.unabridgeds, (name, value) => this.htmlField(name, value))
 
-    this.appendFields(fields, doc.snippets, (name, value) => this.snippetField(name, value, doc))
+    this.insertFields(rank, doc.snippets, (name, value) => this.snippetField(name, value, doc))
 
-    const rank = document.createElement("li")
-    rank.className = "result-rank"
     rank.textContent = `Rank: #${this.element.getAttribute("rank") || ""}`
-    fields.appendChild(rank)
 
     if (showExplain) slot("matchExplain").setAttribute("data-match-explain-data-value", JSON.stringify(doc.matchExplain))
 
-    const footer = document.createElement("div")
-    if (query.depthOfRating === Number(this.element.getAttribute("rank"))) {
-      footer.className = "text-muted text-warning"
-      footer.textContent = "Results above are counted in scoring."
-    }
+    if (query.depthOfRating !== Number(this.element.getAttribute("rank"))) slot("depthNotice").remove()
 
-    const wrapper = document.createElement("div")
-    wrapper.append(row, footer)
-    return wrapper
+    return result
   }
 
   showDocument(event) {
@@ -113,8 +95,8 @@ export default class extends Controller {
     wrapper.classList.remove("d-none")
   }
 
-  appendFields(parent, values, renderer) {
-    Object.entries(values || {}).forEach(([name, value]) => parent.appendChild(renderer(name, value)))
+  insertFields(before, values, renderer) {
+    Object.entries(values || {}).forEach(([name, value]) => before.before(renderer(name, value)))
   }
 
   fieldLabel(name) {
