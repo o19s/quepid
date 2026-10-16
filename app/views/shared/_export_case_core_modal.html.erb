@@ -41,7 +41,8 @@
       Detailed export is only supported from the individual Case view.
     </p>
     <span class="form-text d-block">
-      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code> where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
+      CSV file with <code>Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN</code>
+      where <code>Field1,...,FieldN</code> are specified under <strong>Settings</strong> in the <strong>Displayed Fields</strong> field.
     </span>
   </div>
 
@@ -94,7 +95,9 @@
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="rre">
     <label for="exportRre">Rated Ranking Evaluator / RankQuest</label>
     <span class="form-text d-block">
-      Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank" rel="noopener noreferrer">Rated Ranking Evaluator</a> or <a href="https://rankquest.jillesvangurp.com/" target="_blank" rel="noopener noreferrer">RankQuest</a>?  Use the RRE format to export the ratings from Quepid to import into those tools.
+      Using <a href="https://github.com/SeaseLtd/rated-ranking-evaluator" target="_blank" rel="noopener noreferrer">Rated Ranking Evaluator</a>
+      or <a href="https://rankquest.jillesvangurp.com/" target="_blank" rel="noopener noreferrer">RankQuest</a>?
+      Use the RRE format to export the ratings from Quepid to import into those tools.
     </span>
   </div>
   <div class="mb-3">
@@ -109,7 +112,8 @@
   <div class="mb-3">
     <label>Quepid API</label>
     <span class="form-text d-block">
-      Quepid <%= link_to "has an API", oas_rails_path, target: "_blank", rel: "noopener noreferrer" %> that you can export data in the JSON format via.  Append the parameter <code>?shallow=true</code> to return a smaller dataset.
+      Quepid <%= link_to "has an API", oas_rails_path, target: "_blank", rel: "noopener noreferrer" %> that you can export data in the JSON format via.
+      Append the parameter <code>?shallow=true</code> to return a smaller dataset.
     </span>
 
     Retrieve the
@@ -140,19 +144,19 @@
 <% end %>
 
 <%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", title_tag: :h2, title_class: "h5", dialog_class: "modal-lg",
-                                 data: {
-                                   controller: "export-case-core",
-                                   action: "show.bs.modal->export-case-core#open",
-                                   export_case_core_snapshots_index_url_template_value: api_case_snapshots_path(case_id: "__CASE_ID__", shallow: true),
-                                   export_case_core_snapshot_show_url_template_value: api_case_snapshot_path(case_id: "__CASE_ID__", id: "__SNAPSHOT_ID__", shallow: false),
-                                   export_case_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__", shallow: false),
-                                   export_case_core_queries_url_template_value: api_case_queries_path(case_id: "__CASE_ID__"),
-                                   export_case_core_annotations_url_template_value: api_case_annotations_path(case_id: "__CASE_ID__"),
-                                   export_case_core_scores_url_template_value: api_case_scores_path(case_id: "__CASE_ID__"),
-                                   export_case_core_ratings_export_url_template_value: api_export_rating_path(case_id: "__CASE_ID__", format: "__FORMAT__"),
-                                   export_case_core_information_need_url_template_value: api_export_queries_information_need_path(case_id: "__CASE_ID__", format: :csv),
-                                   export_case_core_quepid_export_url_template_value: api_export_case_path(case_id: "__CASE_ID__")
-                                 },
-                                 title_data: { export_case_core_target: "title" },
-                                 footer: modal_footer,
-                                 body: modal_body %>
+  data: {
+    controller: "export-case-core",
+    action: "show.bs.modal->export-case-core#open",
+    export_case_core_snapshots_index_url_template_value: api_case_snapshots_path(case_id: "__CASE_ID__", shallow: true),
+    export_case_core_snapshot_show_url_template_value: api_case_snapshot_path(case_id: "__CASE_ID__", id: "__SNAPSHOT_ID__", shallow: false),
+    export_case_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__", shallow: false),
+    export_case_core_queries_url_template_value: api_case_queries_path(case_id: "__CASE_ID__"),
+    export_case_core_annotations_url_template_value: api_case_annotations_path(case_id: "__CASE_ID__"),
+    export_case_core_scores_url_template_value: api_case_scores_path(case_id: "__CASE_ID__"),
+    export_case_core_ratings_export_url_template_value: api_export_rating_path(case_id: "__CASE_ID__", format: "__FORMAT__"),
+    export_case_core_information_need_url_template_value: api_export_queries_information_need_path(case_id: "__CASE_ID__", format: :csv),
+    export_case_core_quepid_export_url_template_value: api_export_case_path(case_id: "__CASE_ID__")
+  },
+  title_data: { export_case_core_target: "title" },
+  footer: modal_footer,
+  body: modal_body %>

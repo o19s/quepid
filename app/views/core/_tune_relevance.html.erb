@@ -2,11 +2,26 @@
 <%# The tune-relevance controller lives on #main (core/index) so the try-details modal can sit outside the pane. %>
 <div id="dev-settings" data-bs-theme="dark">
   <ul class="nav nav-tabs mb-3" role="tablist">
-    <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="developer" aria-selected="true">Query</button></li>
-    <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="curator" aria-selected="false">Tuning Knobs</button></li>
-    <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="engineSettings" aria-selected="false">Settings</button></li>
-    <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="history" aria-selected="false">History</button></li>
-    <li class="nav-item"><button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab" data-tune-relevance-tab-param="annotations" aria-selected="false">Annotations</button></li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab"
+              data-tune-relevance-tab-param="developer" aria-selected="true">Query</button>
+    </li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab"
+              data-tune-relevance-tab-param="curator" aria-selected="false">Tuning Knobs</button>
+    </li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab"
+              data-tune-relevance-tab-param="engineSettings" aria-selected="false">Settings</button>
+    </li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab"
+              data-tune-relevance-tab-param="history" aria-selected="false">History</button>
+    </li>
+    <li class="nav-item">
+      <button type="button" class="nav-link" data-tune-relevance-target="tab" data-action="click->tune-relevance#selectTab"
+              data-tune-relevance-tab-param="annotations" aria-selected="false">Annotations</button>
+    </li>
   </ul>
 
   <div id="queryParamsCanvas">
@@ -17,7 +32,13 @@
     <%= render 'core/tune_relevance/annotations', kase: kase %>
   </div>
 
-  <div data-tune-relevance-target="tlsWarning" class="alert alert-warning" hidden><button type="button" class="btn btn-primary form-control" data-action="tune-relevance#reloadInOtherProtocol"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in <code data-tune-relevance-target="tlsProtocol"></code> Protocol</button></div>
-  <button type="button" id="query-sandbox-action" class="btn btn-primary form-control" data-tune-relevance-target="saveButton action" data-action="click->tune-relevance#save">Rerun My Searches!</button>
+  <div data-tune-relevance-target="tlsWarning" class="alert alert-warning" hidden>
+    <button type="button" class="btn btn-primary form-control"
+            data-action="tune-relevance#reloadInOtherProtocol"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in
+      <code data-tune-relevance-target="tlsProtocol"></code> Protocol</button>
+  </div>
+  <button type="button" id="query-sandbox-action" class="btn btn-primary form-control"
+          data-tune-relevance-target="saveButton action"
+          data-action="click->tune-relevance#save">Rerun My Searches!</button>
 
 </div>

@@ -29,14 +29,18 @@
 
       <ul class="list-inline d-flex justify-content-end flex-wrap mb-0 float-end">
         <li class="list-inline-item" data-queries-list-target="ratedLabel">
-          <input type="checkbox" class="align-top" data-queries-list-target="ratedCheckbox" data-action="change->queries-list#toggleShowOnlyRated">
-          <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->queries-list#toggleShowOnlyRated">Show only rated</button>
+          <input type="checkbox" class="align-top"
+                 data-queries-list-target="ratedCheckbox"
+                 data-action="change->queries-list#toggleShowOnlyRated">
+          <button type="button" class="btn btn-link p-0 border-0 align-baseline"
+                  data-action="click->queries-list#toggleShowOnlyRated">Show only rated</button>
         </li>
 
         <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
 
         <li class="list-inline-item">
-          <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->queries-list#collapseAll">Collapse all</button>
+          <button type="button" class="btn btn-link p-0 border-0 align-baseline"
+                  data-action="click->queries-list#collapseAll">Collapse all</button>
         </li>
 
         <li class="list-inline-item text-muted"><span class="text-muted"> | </span></li>
@@ -45,16 +49,38 @@
           <span class="text-muted">Sort &nbsp;</span>
           <ul class="list-inline d-inline" role="group" aria-label="Sort">
             <li class="list-inline-item" data-queries-list-target="manualSortLink" data-sort-field="default">
-              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-action="click->queries-list#sort" data-sort-field="default">Manual <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="default" aria-hidden="true"></i></button>
+              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-action="click->queries-list#sort"
+                      data-sort-field="default">Manual
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="default" aria-hidden="true"></i></button>
             </li>
             <li class="list-inline-item d-none" data-queries-list-target="manualHelp">
               Manual
-              <i class="bi bi-exclamation-circle-fill" tabindex="0" role="button" aria-label="Help" data-controller="bs-popover" data-bs-popover-trigger-value="hover focus" data-bs-popover-placement-value="right" data-bs-popover-content-value="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></i>
+              <i class="bi bi-exclamation-circle-fill" tabindex="0" role="button" aria-label="Help"
+                 data-controller="bs-popover"
+                 data-bs-popover-trigger-value="hover focus"
+                 data-bs-popover-placement-value="right"
+                 data-bs-popover-content-value="Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272."></i>
             </li>
-            <li class="list-inline-item"><button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="query" data-action="click->queries-list#sort">Name <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="query" aria-hidden="true"></i></button></li>
-            <li class="list-inline-item"><button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="modified" data-action="click->queries-list#sort">Modified <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="modified" aria-hidden="true"></i></button></li>
-            <li class="list-inline-item"><button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="score" data-action="click->queries-list#sort">Score <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="score" aria-hidden="true"></i></button></li>
-            <li class="list-inline-item"><button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="error" data-action="click->queries-list#sort">Errors <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="error" aria-hidden="true"></i></button></li>
+            <li class="list-inline-item">
+              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="query"
+                      data-action="click->queries-list#sort">Name
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="query" aria-hidden="true"></i></button>
+            </li>
+            <li class="list-inline-item">
+              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="modified"
+                      data-action="click->queries-list#sort">Modified
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="modified" aria-hidden="true"></i></button>
+            </li>
+            <li class="list-inline-item">
+              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="score"
+                      data-action="click->queries-list#sort">Score
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="score" aria-hidden="true"></i></button>
+            </li>
+            <li class="list-inline-item">
+              <button type="button" class="btn btn-link p-0" data-queries-list-target="sortLink" data-sort-field="error"
+                      data-action="click->queries-list#sort">Errors
+                <i class="bi d-none" data-queries-list-target="sortIcon" data-sort-field="error" aria-hidden="true"></i></button>
+            </li>
           </ul>
         </li>
       </ul>
@@ -62,7 +88,11 @@
       <div class="clearfix"></div>
       <div class="d-flex flex-row-reverse flex-wrap">
         <div class="pe-3">Number of Queries: <span data-queries-list-target="count">0</span></div>
-        <div class="pe-3"><input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter" placeholder="Filter Queries" aria-label="Filter queries" class="form-control form-control-sm" id="queries-filter" autocomplete="off"></div>
+        <div class="pe-3">
+          <input type="search" data-queries-list-target="filter" data-action="input->queries-list#filter"
+                 placeholder="Filter Queries" aria-label="Filter queries"
+                 class="form-control form-control-sm" id="queries-filter" autocomplete="off">
+        </div>
         <div class="pe-3">
           <button type="button" class="btn btn-link p-0" data-controller="frog-report" data-action="click->frog-report#open"
                   data-frog-report-refresh-url-template-value="<%= api_book_refresh_path(book_id: '__BOOK_ID__', case_id: kase.id, create_missing_queries: 'false', process_in_background: '__BACKGROUND__') %>">
@@ -71,8 +101,13 @@
         </div>
       </div>
 
-      <div class="alert alert-info search-feedback my-4 d-none" role="alert" data-queries-list-target="bootstrapFeedback"><i class="bi bi-arrow-repeat spintime"></i> Bootstrapping Queries</div>
-      <div class="alert alert-info search-feedback my-4 d-none" role="alert" data-queries-list-target="searchFeedback"><i class="bi bi-arrow-repeat spintime"></i> Updating Queries: <span data-queries-list-target="batchPosition">0</span> / <span data-queries-list-target="batchSize">0</span> <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small></div>
+      <div class="alert alert-info search-feedback my-4 d-none" role="alert" data-queries-list-target="bootstrapFeedback">
+        <i class="bi bi-arrow-repeat spintime"></i> Bootstrapping Queries
+      </div>
+      <div class="alert alert-info search-feedback my-4 d-none" role="alert" data-queries-list-target="searchFeedback">
+        <i class="bi bi-arrow-repeat spintime"></i> Updating Queries: <span data-queries-list-target="batchPosition">0</span>
+        / <span data-queries-list-target="batchSize">0</span> <small class="text-muted">If the counter stalls, do a hard refresh of Quepid.</small>
+      </div>
       <ul class="results-list-element list-unstyled mt-4 mb-0" data-queries-list-target="list"></ul>
     </div>
   </div>

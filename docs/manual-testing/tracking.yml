@@ -336,9 +336,9 @@ parts:
           wizard-endpoint: "3.2/wizard-endpoint"
           wizard-name: "3.2/wizard-name"
           wizard-welcome: "3.2/wizard-welcome"
-        last_run: 2026-10-15T20:54:00Z
+        last_run: 2026-10-16T18:06:34Z
         result: pass
-        notes: "Covered live on Current :3000 as realisticActivity: /cases/new redirected to /case/1067523425/try/1?showWizard=true with the wizard open; blank name disables Continue; unreachable Solr URL shows 'Error with Solr query or server...'; TMDB Solr validated to Fields (title/id/overview defaults), three query chips added with labelled btn-close, one removed, Finish saved case/try/bulk queries and landed on the workbench with both queries run. Computed-style diff of the wizard (Name and Endpoint steps) against HEAD's pre-reorg bundles: 0 differences across 1080 elements. Not covered live: delayed/failed query save, first-time tour, HTTPS mismatch, Vespa POST validation."
+        notes: "Covered live on Current :3000 as realisticActivity: /cases/new redirected to /case/1067523433/try/1?showWizard=true with the wizard open on Name (this account skips Welcome); whitespace-only name disables Continue; a nonexistent Solr core shows 'Error with Solr query or server...' and stays on Endpoint; engine list, GET/POST/JSONP and the proxy checkbox beside its label render; TMDB Solr (JSONP) validated to Fields (title/id/overview, cast, thumb:poster_path); four query chips with 'Remove <query>' btn-close, one removed; Finish landed on the workbench with star wars 267 / batman 24 / zzqqxxnomatch 0 results. Not covered live: delayed/failed query save, first-time tour, HTTPS mismatch, Vespa POST validation."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/settings_runtime.js", "app/assets/stylesheets/shared/fonts.css", "app/assets/stylesheets/core/modals.css"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -348,9 +348,9 @@ parts:
           static-queries: "3.2b/static-queries"
           static-fields: "3.2b/static-fields"
           static-endpoint: "3.2b/static-endpoint"
-        last_run: 2026-10-15T20:55:00Z
+        last_run: 2026-10-16T18:28:21Z
         result: pass
-        notes: "Covered live on Current :3000: Static File engine; missing-header CSV and non-CSV text rejected with the header-mismatch message, a 4-column row rejected with 'CSV format error: line 2...', none sending a request, and Continue stays on Endpoint after an error. A CSV with padded headers/values, blank lines, quoted commas/escaped quotes and an embedded newline imported (snapshot-backed search URL generated), pre-filled star wars/batman, and the finished case returned d1,d2 / d3 in CSV order with field content preserved; Add Query disabled. Cancelling a later wizard rerun on that case accepted 'abandon this case?' and deleted it (disposable). Not covered live: Query-tab static message (4.10), missing Snapshot Time."
+        notes: "Covered live on Current :3000 (disposable case 1067523434): Static File engine shows the CSV picker; a missing-header CSV and a non-CSV text file are rejected with 'Required headers mismatch!...', a 4-column row with 'CSV format error: line 2: expected 3 columns but found 4.', none sending a request, and Continue stays on Endpoint; a CSV with padded headers/values, blank lines, quoted commas, escaped quotes and an embedded newline imported via POST snapshots/imports, generated the snapshot-backed search URL, pre-filled star wars/batman, and the finished case returned d1,d2 / d3 in CSV order with Add Query disabled ('Adding queries is not supported'). Observation (wizard JS, not compared with HEAD): the 'Error with Solr query or server...' alert from Continue after a rejected file stays visible after the valid import until the next step. Not covered live: Query-tab static message (seen in 4.10), missing Snapshot Time."
         paths: ["app/javascript/controllers/wizard_controller.js", "app/javascript/utils/wizard_contracts.js", "app/views/shared/_wizard_modal.html.erb", "app/controllers/api/v1/snapshots/imports_controller.rb", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js"]
       "3.3":
         title: "Import a case from JSON"
@@ -419,18 +419,18 @@ parts:
           query-reloaded: "4.2/query-reloaded"
           query-added: "4.2/query-added"
           add-query-ready: "4.2/add-query-ready"
-        last_run: 2026-10-15T20:57:00Z
+        last_run: 2026-10-16T18:06:56Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: whitespace-only input disables Add query; 'superman' added, searched (16 results) and scored with 'Query added successfully.'. Static-endpoint disabled Add with the not-supported placeholder seen in 3.2b. Not covered live: in-flight spinner capture (search returned too fast), forced search failure."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr): whitespace-only input disables Add query; 'superman' showed the add spinner, then 'Query added successfully.' and 16 results. Not covered live: static-endpoint disabled Add (seen in 3.2b's last pass), forced search failure."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_model.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/models/query.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/assets/stylesheets/core/animations.css", "app/assets/stylesheets/shared/header.css"]
       "4.3":
         title: "Add multiple queries (bulk)"
         screenshots:
           bulk-queries-added: "4.3/bulk-queries-added"
           bulk-query-ready: "4.3/bulk-query-ready"
-        last_run: 2026-10-15T20:57:10Z
+        last_run: 2026-10-16T18:06:56Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: 'spiderman; hulk' switches the label to Add queries and adds both with the distinct 'Queries added successfully.' flash (spiderman zero results, hulk 9); pasting 'alpha\\nbeta' is intercepted into 'alpha;beta' with the plural label. Not covered live: partial-failure bulk add."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: 'spiderman; hulk' switches the label to Add queries and adds both with the distinct 'Queries added successfully.' flash (spiderman 0 results, hulk 9). Not covered live: multi-line paste conversion, partial-failure bulk add."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.4":
         title: "Move a query to another case"
@@ -498,9 +498,9 @@ parts:
           finder-ready: "4.9/finder-ready"
           finder-rating-popover: "4.9/finder-rating-popover"
           finder-empty: "4.9/finder-empty"
-        last_run: 2026-10-16T15:26:00Z
+        last_run: 2026-10-16T18:18:55Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 1 (TMDB Solr): Missing Documents modal's rated list ('There are 3 ratings for your original query star wars', Score All block, warning, rows) and Search results; per-element layout/style/text identical to HEAD except the new lead <span>. Rating from the modal not re-driven."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr, batman): Find and Rate Missing Documents opens with the Solr help and a blank finder; id:11 returns '1 matching document' (Star Wars) with Score All and the 'Changing ratings will affect the query score.' warning; keyboard: Enter on the rating button opens the popover, Tab goes title -> Close -> rating choices (focus stays in the finder), Enter on 1 Relevant saves and focus returns to the rebuilt 'Change rating: 1' button; Reset to All Rated Docs lists 'There is one rating for your original query batman'; Escape with a rating popover open closes the finder and removes the tip with no backdrop. Not covered live: proxied/authenticated endpoint, Next paging, injected failures, dismiss-while-pending."
         paths: ["app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -509,9 +509,9 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-16T15:24:00Z
+        last_run: 2026-10-16T18:19:37Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Query tab rendered from the new tune_relevance/_query partial; per-element layout/style/text identical to HEAD. Editing and rerun not re-driven."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr): the drawer opens on Query with the CodeMirror Solr params; an appended &bq=title:star^##titleBoost## survives switching to Tuning Knobs and back; Rerun My Searches! (pinned at the drawer bottom) navigated to /try/2, reran all six queries and saved the edited params. Static case 219 shows 'With a Static search endpoint there are no query settings to play with'. Not covered live: drawer drag/resize clamping, TLS-mismatch reload button."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_query.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -520,9 +520,9 @@ parts:
           knobs-edited: "4.11/knobs-edited"
           knobs-variable: "4.11/knobs-variable"
           knobs-empty: "4.11/knobs-empty"
-        last_run: 2026-10-16T15:24:00Z
+        last_run: 2026-10-16T18:19:38Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Tuning Knobs tab (with knob input) identical to HEAD per element. Changing a knob not re-driven."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: adding ##titleBoost## to the query makes Tuning Knobs show the templating explanation and a titleBoost input; setting 7 and rerunning saved try 2 with curator vars {titleBoost: 7}. Not covered live: ranking/score change from the knob value, the no-placeholder empty state."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_tuning_knobs.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
@@ -535,9 +535,9 @@ parts:
           settings-edited: "4.12/settings-edited"
           endpoint-empty: "4.12/endpoint-empty"
           settings-initial: "4.12/settings-initial"
-        last_run: 2026-10-16T15:24:00Z
+        last_run: 2026-10-16T18:21:30Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Settings tab sections identical to HEAD per element (only the host in the snapshot endpoint URL differs by port). Section toggles and endpoint switching not re-driven."
+        notes: "Covered live on Current :3000 at 1400x900 on disposable case 1067523433 (TMDB Solr): Escape Queries, Evaluate Nightly? and Search Endpoints start collapsed (+) and expand (-); Endpoint Details shows TMDB Solr, its URL, More (search_endpoints/2) and the troubleshooting link, no archived banner; Search Endpoints shows 'No search endpoints found...' (case not shared); 150 rows is flagged invalid by the max=100 input; Displayed Fields 'title:title, id:id, overview' plus 5 rows saved try 3 with the drawer still on Settings, and star wars then listed 5 docs without cast; Evaluate Nightly on showed the header repeat icon immediately and off removed it (case nightly true/false); Rerun in the Background queued the job and went to the dashboard with 'Run Case Job has completed.'; Escape Queries toggles. Checkbox-to-label gaps are 8px (the 0.5em margin, no added space); Rerun My Searches! stays pinned 15px above the window bottom. Not covered live: switching endpoints, forced new-try failure/retry, Job Manager check."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/utils/endpoint_settings.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_settings.html.erb", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css"]
       "4.13":
         title: "Tune Relevance drawer — History tab"
@@ -546,9 +546,9 @@ parts:
           ratings-page: "4.13/ratings-page"
           scores-page: "4.13/scores-page"
           history-list: "4.13/history-list"
-        last_run: 2026-10-16T15:24:00Z
+        last_run: 2026-10-16T18:24:24Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: History tab links and try list identical to HEAD per element. Try navigation and details modal not re-driven."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: History shows Visualize your tries, Check Scores and Check Ratings; clicking them reaches /analytics/tries_visualization/1067523433, 'Scores for Case ...' (Scorer/Try Number/Score/Day) and 'Ratings for Case ...' (Rating ID/Query/Doc ID/Rating/User/Created At/Updated At); the try list shows Try 3/2/1 with truncated params and 'using TMDB Solr' (one endpoint, one bucket). Not covered live: score deletion and Check All, ratings search."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_history.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core/dev_settings.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/shared/fonts.css", "app/assets/stylesheets/shared/tokens.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"
@@ -560,9 +560,9 @@ parts:
           annotation-created: "4.14/annotation-created"
           annotation-draft: "4.14/annotation-draft"
           annotations-empty: "4.14/annotations-empty"
-        last_run: 2026-10-16T15:24:00Z
+        last_run: 2026-10-16T18:25:06Z
         result: pass
-        notes: "Covered live (branch-ui-diff vs HEAD 549693a8 on :3003) on case 219: Annotations tab (explanation, form, existing annotations) identical to HEAD per element. Create/edit deferred to 5.4."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: Annotations tab shows 'No annotations yet.', the message box and Create; created/edited/deleted rows render through core/_annotation (details in 5.4) with the action dropdown floated right and the byline 'now - by <user>' spacing intact. Not covered live: score-graph update (5.5)."
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_annotations.html.erb", "app/views/core/index.html.erb", "app/views/core/_annotation.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
@@ -598,9 +598,9 @@ parts:
           bare-case: "4.17/bare-case"
           case-navigation: "4.17/case-navigation"
           direct-try: "4.17/direct-try"
-        last_run: 2026-10-15T21:09:00Z
+        last_run: 2026-10-16T18:29:10Z
         result: pass
-        notes: "Covered live on Current :3000: direct /case/1067523425/try/1 boot made no GET /api/users/current or /api/cases/:id and logged no console errors; Relevancy Cases dropdown to the other disposable case did a full navigation (window marker cleared) and booted; bare /case loaded the most recent case; /case/x/y/z/garbage returned Rails 404; try 99 shows 'Could not load case ... due to try number 99 not existing' with the toolbar hidden; missing case id returns 404; hard reload then immediate Set Options opened that query's Query Options modal. Not covered live: forced customer-engine failure, try deletion via API, zero-case flash."
+        notes: "Covered live on Current :3000: direct /case/1067523433/try/3 boot made no GET /api/users/current or /api/cases/:id and logged no console errors, with toolbar and six rows; the Relevancy Cases dropdown to the other disposable case did a full navigation (window marker cleared) and booted; bare /case loaded the most recent case (ERB Format Static, Try 1); /case/x/y/z/garbage and a missing case id returned 404; try 99 shows 'Could not load case ... due to try number 99 not existing' with the toolbar hidden; after reload, Set Options opened Query Options, then Cancel, filter and Collapse all worked. Not covered live: forced customer-engine failure, try deletion via API, zero-case flash."
         paths: ["test/playwright/workspace_settings.spec.ts", "app/controllers/core_controller.rb", "app/views/core/_bootstrap.json.jbuilder", "app/views/api/v1/cases/_case.json.jbuilder", "app/views/api/v1/tries/_try.json.jbuilder", "app/views/api/v1/users/_current_user.json.jbuilder", "app/views/api/v1/users/_user.json.jbuilder", "app/javascript/utils/user_runtime.js", "test/controllers/core_controller_test.rb", "test/javascript/controllers/core_bootstrap_controller.test.js", "test/javascript/utils/user_runtime.test.js", "test/playwright/workspace_bootstrap.spec.ts", "app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/controllers/api/v1/tries_controller.rb", "test/integration/try_deletion_flow_test.rb", "app/javascript/utils/configuration_runtime.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/curator_vars.js", "test/javascript/utils/configuration_runtime.test.js", "test/javascript/utils/navigation_runtime.test.js", "test/javascript/utils/case_runtime.test.js", "test/javascript/utils/settings_runtime.test.js", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/utils/search_error.js", "app/javascript/utils/query_model.js", "app/javascript/utils/query_service.js", "app/javascript/utils/live_query_lifecycle.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/core_workspace_runtime.js", "vitest.config.js", "test/javascript/utils/search_error.test.js", "test/javascript/utils/curator_vars.test.js", "test/javascript/utils/query_service.test.js", "test/javascript/utils/live_query_model.test.js", "test/javascript/utils/live_query_runtime.test.js", "test/javascript/utils/live_query_lifecycle.test.js", "test/javascript/utils/query_runtime.test.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/core/_case_header.html.erb", "app/views/core/_case_toolbar.html.erb", "app/controllers/dropdown_controller.rb", "app/views/dropdown/cases.html.erb", "app/views/dropdown/books.html.erb", "app/javascript/core_stimulus.js", "test/javascript/controllers/queries_list_controller.test.js", "test/playwright/case_shell_navigation.spec.ts", "app/javascript/core_runtime.js", "app/javascript/utils/scorer_runtime.js", "app/javascript/utils/scorer_catalog.js", "app/javascript/utils/splainer_search_runtime.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb"]
       "4.18":
         title: "Browse query results"
@@ -608,9 +608,9 @@ parts:
           direct-url: "4.18/direct-url"
           curl-copied: "4.18/curl-copied"
           browse-modal: "4.18/browse-modal"
-        last_run: 2026-10-15T21:02:10Z
+        last_run: 2026-10-16T18:09:09Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425 (TMDB Solr, no headers/credentials): 'Browse 16 Results on Solr' opens 'Browse Results on Solr' with the encoded curl command; Copy curl command writes the exact command to the clipboard and its aria-live label shows Copied! for ~2s then restores; Open URL directly is a target=_blank link to the browse URL. Not covered live: forced clipboard failure, pending-write close/reopen, header/credential endpoints, insecure-HTTP fallback."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr, no headers/credentials): 'Browse 267 Results on Solr' opens 'Browse Results on Solr' with the encoded curl command and the no-headers notice; Copy curl command writes the exact command to the clipboard, shows Copied! and restores after ~2s; Open URL directly is a target=_blank link to the browse URL; closing leaves no backdrop. Not covered live: forced clipboard failure, pending-write close/reopen, header/credential endpoints, insecure-HTTP fallback."
         paths: ["app/javascript/controllers/browse_query_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/browse_query.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "config/importmap.rb", "test/javascript/utils/browse_query.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "app/javascript/utils/clipboard.js", "app/javascript/utils/temporary_feedback.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/browse_query_controller.test.js", "test/javascript/utils/clipboard.test.js"]
       "4.19":
         title: "Query-list controls"
@@ -619,9 +619,9 @@ parts:
           name-sort: "4.19/name-sort"
           filter-cleared: "4.19/filter-cleared"
           filter-empty: "4.19/filter-empty"
-        last_run: 2026-10-15T21:03:50Z
+        last_run: 2026-10-16T18:09:09Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: a no-match Filter Queries empties the list and clearing restores all four rows; Name sort reorders alphabetically with ?sort=query&reverse=false, Score sort records sort=score; an expanded query's 10 visible docs drop to 0 after Collapse all; a window marker survived all of it (no page reload). Not covered live: manual drag reorder persistence, collapse-while-loading race."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: a no-match Filter Queries empties the list and clearing restores all six rows; Name sort reorders alphabetically with ?sort=query&reverse=false; an expanded query's 10 visible docs drop to 0 after Collapse all; a window marker survived (no page reload). Not covered live: manual drag reorder persistence, collapse-while-loading race."
         paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/controllers/search_results_template.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js"]
       "4.20":
         title: "Query-list sorting, pagination & Show only rated"
@@ -632,9 +632,9 @@ parts:
           name-sort: "4.20/name-sort"
           page-two: "4.20/page-two"
           page-one: "4.20/page-one"
-        last_run: 2026-10-15T21:12:00Z
+        last_run: 2026-10-16T18:27:17Z
         result: pass
-        notes: "Covered live on Current :3000 on seeded 10s of Queries (case 6), read-only: 15 per page with 'Page 1 of 2 (20 queries)' and Next to 5 rows on page 2; Name/Score/Modified/Errors/Manual sort buttons activate with Enter/Space and record sort= (Name toggled to reverse=true, Score descending 1.00, 0.94...); a filter on page 2 clamps to page 1 and clearing restores the pager; Show only rated on 'meetings' lists only rated docs with the count switched to 10, toggling back restores 1422 Results; no page reload throughout. Not covered live: manual drag on page 2, Modified-after-rating, forced errors and progress banner, rated lookup on ES/SearchAPI."
+        notes: "Covered live on Current :3000 on seeded 10s of Queries (case 6, try 32), read-only: 15 per page with 'Page 1 of 2 (20 queries)' and Next to 5 rows on page 2; a filter on page 2 clamps to the single match and clearing restores 'Page 1 of 2'; Name/Modified/Score/Errors/Manual activate with Enter or Space and record sort= (Name toggled to reverse=true, year/whose/unsatisfied first); sort buttons keep 12px spacing; Show only rated on the first query switches 3149 Results to 10 with 10 rated docs, toggling back restores 3149; no page reload throughout. Not covered live: manual drag on page 2, Modified-after-rating, forced errors and progress banner, rated lookup on ES/SearchAPI."
         paths: ["app/javascript/utils/query_service.js", "test/javascript/utils/query_service.test.js", "app/javascript/controllers/queries_list_controller.js", "app/views/core/_queries.html.erb", "app/javascript/utils/query_state.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "test/playwright/modal_a11y.spec.ts", "app/javascript/utils/query_runtime.js", "app/javascript/utils/live_query_runtime_owner.js"]
       "4.21":
         title: "Query row states & score badge values"
@@ -646,9 +646,9 @@ parts:
           information-need: "4.21/information-need"
           zero-results: "4.21/zero-results"
           loaded-unrated: "4.21/loaded-unrated"
-        last_run: 2026-10-15T21:03:50Z
+        last_run: 2026-10-16T18:08:36Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425: loaded rows (queryHeader_loaded) show 2-decimal red badges with 'of 1.00', result counts and the unrated-frog count; the zero-result spiderman row carries queryHeader_noResults with '0 Results' and no frog; a query with a saved Information Need gets tooltip 'Info Need: ...' after hover. Observation (pre-existing, unchanged since 639313b9): queries without an Information Need still show an empty 'Info Need:' tooltip on hover. Not covered live: pending '?', error-row styling, Querqy icon, diff badges."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: loaded rows (queryHeader_loaded) show 2-decimal badges 'of 1.00', result counts and unrated-frog count 10; the zero-result row is queryHeader_noResults with '0 Results' and no frog; after reload, a query with a saved Information Need shows 'Info Need: Find the Dark Knight films' on hover. Observation (pre-existing, same on HEAD f1064835 at :3003; Angular baseline not compared): saving an Information Need from Toggle Notes leaves the row tooltip stale until reload. Not covered live: pending '?', error-row styling, Querqy icon, diff badges."
         paths: ["app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/views/core/query_list/", "app/assets/stylesheets/core/query_list.css"]
       "4.22":
         title: "Bulk rating (Score All) & result paging"
@@ -697,9 +697,9 @@ parts:
           try-details: "5.1/try-details"
           older-try: "5.1/older-try"
           try-history: "5.1/try-history"
-        last_run: 2026-10-15T21:15:04Z
+        last_run: 2026-10-16T18:24:24Z
         result: pass
-        notes: "Covered live on Current :3000 on disposable case 1067523425 (three tries, one endpoint so one color bucket): History lists Try 3, Try 2 and the renamed Try 1 with 'using TMDB Solr'; the hidden '...' becomes visible on keyboard focus and Enter opens the Try 2 details modal (arguments, endpoint, displayed fields, ##titleBoost## = 5, Rename/Duplicate/Delete/Dismiss); clicking Try 2 navigated to /try/2 and reran with its 10-row settings; returning to Try 3 kept its own 5-row/title-only settings (the earlier Settings change had created Try 3 rather than mutating Try 2). Not covered live: multi-endpoint color coding, touch visibility."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (three tries, one endpoint so one color bucket): the '...' on Try 2 is visible on keyboard focus and Enter opens its details (arguments with ##titleBoost##, TMDB Solr, displayed fields, variables); clicking Try 1 navigated to /try/1 and star wars showed its 10 rows; returning to Try 3 kept its own 5-row settings (the Settings change in 4.12 created Try 3 rather than mutating Try 2). Not covered live: multi-endpoint color coding, touch visibility."
         paths: ["app/assets/stylesheets/core/dev_settings.css", "test/playwright/workspace_settings.spec.ts", "app/models/try.rb", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_history.html.erb", "app/views/core/index.html.erb", "app/controllers/core_controller.rb", "app/views/core/_try_details_modal.html.erb", "app/views/shared/_modal_shell.html.erb"]
       "5.2":
         title: "Create a snapshot"
@@ -739,9 +739,9 @@ parts:
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-15T21:28:49Z
+        last_run: 2026-10-16T18:25:06Z
         result: pass
-        notes: "Covered live via Playwright MCP on case6: create annotation980191024 at score0.62; Cancel preserves original; edit persists through reload with two-decimal score; delete removes the disposable annotation immediately without confirmation. Not covered live: zero-score/empty-state, injected failures or overlapping save/delete."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (Try 3): 'No annotations yet.' hides after Create; the new row shows 'now - by User with Realistic Activity in Quepid', 'Try No: 3', 'Score: 0.00' and the message; Edit then Cancel keeps the original; Edit prefilled and Update saved 'synonyms re-enabled', which persisted through reload ('7 seconds ago', Score: 0.00); Delete removed it immediately without confirmation and the empty state returned. Not covered live: brand-new case with no score, injected save failures, overlapping delete/edit."
         paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core/annotations.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/tune_relevance/_annotations.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
@@ -772,9 +772,9 @@ parts:
           export-snapshot: "6.1/export-snapshot"
           export-formats: "6.1/export-formats"
           export-form: "6.1/export-form"
-        last_run: 2026-10-15T01:43:04Z
+        last_run: 2026-10-16T18:30:23Z
         result: pass
-        notes: "Live nine export formats downloaded; CSV headers/records, TREC qrel, LTR and JSON structures inspected. Empty format and missing snapshot disable export; Basic/TREC dropdown retains format. Seven API links returned valid JSON. Twelve matched-viewport captures inspected/registered; old export-formats failure image preserved. Detailed outside single-case context pending."
+        notes: "Covered live on Current :3000 on disposable case 1067523433: 'Export Case: ERB Format Manual 2026-10-16' starts with Export disabled; all nine formats downloaded with case-named files and the modal closed each time: information_need CSV (batman need present), General CSV with the 10 documented headers, Detailed CSV with Doc Position/Title/Rating/overview, Snapshot (disabled until a snapshot was picked; headers only because the API-created snapshot had no docs), Basic CSV (batman,11,1.0), TREC (stays selected after picking a snapshot in the shared dropdown; empty for the empty snapshot), RRE JSON (id_field/index/queries), LTR ('1.0 qid:... # 11 batman') and Quepid case JSON. API links point to the case/queries/annotations/scores/ratings and export endpoints; the API snapshot picker lists both snapshots. Not covered live: snapshot/TREC content from a populated snapshot, Detailed outside single-case context."
         paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/services/trec_export.rb", "app/services/ltr_export.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "test/javascript/utils/date_format.test.js", "test/javascript/controllers/export_case_core_controller.test.js", "test/playwright/todo_fixes.spec.ts", "app/javascript/controllers/status_message_behavior.js"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
@@ -787,9 +787,9 @@ parts:
           import-valid-csv: "6.2/import-valid-csv"
           import-invalid-headers: "6.2/import-invalid-headers"
           import-ratings: "6.2/import-ratings"
-        last_run: 2026-10-15T01:45:52Z
+        last_run: 2026-10-16T18:32:44Z
         result: fail
-        notes: "CSV, quoted query, Information Needs/create-missing, Snapshot/current-case ID override and LTR imports driven; header/column errors, wrong-tab and cancel, injected server failure/retry checked. Eight captures inspected/registered. RRE gain-object JSON was accepted but created doc IDs [\"gain\", 1]/[\"gain\", 0] rated 11/9426. Same importer loop and gain-object exporter at Angular 8ceb99e9 confirm pre-existing format mismatch; source comparison, not historical live replay. Clear-existing toggle mutation pending."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (2026-10-16): 'Import into Case' with Ratings/Information Needs/Snapshots tabs and Import disabled until a file is chosen; the Clear-existing help popover opens; Ratings CSV with wrong headers and an Information Needs file both show 'Headers mismatch! ... query,docid,rating', a 4-value row shows 'CSV format error: line 2: expected 3 columns but found 4.'; a valid CSV shows the override warning and preview, then imported star wars 11=1/1891=0 with 'Successfully imported ratings from CSV.'; Information Needs with Create missing queries set star wars's need and created 'new info query'; Snapshot CSV (Case ID 999) imported 'Imported Snap' into this case; LTR imported with its success flash. Unresolved failure retained (verified 2026-10-15T01:45:52Z, not re-driven today): RRE gain-object JSON was accepted but created doc IDs [\"gain\", 1]/[\"gain\", 0] rated 11/9426; the same importer loop and gain-object exporter exist at Angular 8ceb99e9, so it is a pre-existing format mismatch (source comparison, not a historical live replay). Not covered live: Cancel-imports-nothing check, Clear existing queries mutation, injected server failure."
         paths: ["app/views/api/v1/export/queries/information_needs/show.csv.erb", "app/controllers/api/v1/export/queries/information_needs_controller.rb", "app/javascript/utils/core_events.js", "app/controllers/api/v1/import/ratings_controller.rb", "app/services/ratings_importer.rb", "app/controllers/api/v1/import/queries/information_needs_controller.rb", "app/services/snapshot_importer.rb", "app/javascript/controllers/import_ratings_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_import_ratings_core_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "test/javascript/controllers/import_ratings_core_controller.test.js", "test/playwright/dom_migration_screenshots.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "6.3":
         title: "Clone a case"
@@ -865,9 +865,9 @@ parts:
           explain-template: "6.7/explain-template"
           explain-parsing: "6.7/explain-parsing"
           explain-params: "6.7/explain-params"
-        last_run: 2026-10-15T21:38:12Z
+        last_run: 2026-10-16T18:09:33Z
         result: pass
-        notes: "Covered live via Playwright MCP on case6 meetings: Params contains submitted query and rows; Parsing shows LuceneQParser/text:meet; Query Template shows not-templated message; Copy clicked. Not covered live: clipboard value/status timing, real ES/OS templates, failures or overlapping requests. Ad-hoc template screenshot retained."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr, star wars): Explain Query Parsing opens with Params/Parsing/Query Template tabs; Params shows the processed parameters, Parsing shows ExtendedDismaxQParser, Query Template shows 'This is not a templated query.'; Params Copy writes the JSON to the clipboard, reads Copied! and restores exactly '<i class=\"bi bi-copy\"></i> Copy'; 12 Tabs stay inside, Escape closes with no backdrop/body lock and focus back on Explain Query. Not covered live: clipboard failure, real ES/OS templates, overlapping requests."
         paths: ["app/views/core/query_list/", "app/javascript/controllers/query_explain_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
@@ -875,9 +875,9 @@ parts:
           debug-hot-match: "6.8/debug-hot-match"
           debug-collapsed: "6.8/debug-collapsed"
           debug-expanded: "6.8/debug-expanded"
-        last_run: 2026-10-16T16:04:00Z
+        last_run: 2026-10-16T18:16:27Z
         result: pass
-        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003) on case 6/doc l_6997; Matches popover (now cloned from match-explain-popover-template) and its Debug button opening Debug Explain, pixel-identical to HEAD (0 px). Not covered live: JSON node collapse/expand, Expand button."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (TMDB Solr, star wars / doc 11): Matches popover shows Debug and Expand side by side (0px gap, unchanged); Debug opens 'Debug Explain for Star Wars (id:11)' with the close button beside the title; Expand opens 'Relevancy Score: 16.849138' with the explain text; clicking the hot-match bar opens the same Debug Explain. Observation (pre-existing, same on HEAD f1064835 at :3003 on the same case): after closing Debug Explain with Escape, the first click on Matches does nothing and the second reopens the popover. Not covered live: JSON node collapse/expand."
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
@@ -886,9 +886,9 @@ parts:
           document-hidden: "6.11/document-hidden"
           document-raw: "6.11/document-raw"
           document-fields: "6.11/document-fields"
-        last_run: 2026-10-16T16:04:00Z
+        last_run: 2026-10-16T18:16:27Z
         result: pass
-        notes: "Covered live: branch-ui-diff vs HEAD 549693a8 (:3003) on case 6/doc l_6997; result row (title/error/rank now in search-result-template) and the title button opening Detailed Document View, pixel-identical to HEAD (0 px). Not covered live: View All/Hide All, error-row documents, dismissal paths."
+        notes: "Covered live on Current :3000 on disposable case 1067523433 (doc 11): clicking the title opens 'Detailed Document View of doc: 11' with the overview/cast sub-fields; View All Fields shows the raw JSON and relabels to Hide All Fields, toggling back hides it; View Document is enabled; Close, Escape (with raw fields left open, reopening starts hidden) and a backdrop click all leave no backdrop or body lock. Not covered live: error-row documents, object-valued sub-field tree, View Document's new tab."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.9":
         title: "Frog Report"
@@ -896,9 +896,9 @@ parts:
           frog-complete: "6.9/frog-complete"
           frog-chart: "6.9/frog-chart"
           frog-partial: "6.9/frog-partial"
-        last_run: 2026-10-15T21:38:55Z
+        last_run: 2026-10-16T18:26:28Z
         result: pass
-        notes: "Covered live via Playwright MCP on case6: summary20queries/20with results/200ratings, fully-rated congratulations and distribution chart; reopen retains exactly one chart. Not covered live: missing-rating distribution, Book refresh, failures or pending-request races."
+        notes: "Covered live via Playwright MCP on Current :3000: on case 6 try 32, '20 Queries ... 20 return results, and 0 return zero results', 200 ratings and the 'All the queries have been fully rated! Congratulations!' state with one chart; on disposable case 1067523433, '6 Queries ... 4 return results, and 2 return zero results', '20 ratings missing, leading to 100% missing rate' with 'So hop to it'; Close then reopen keeps exactly one chart; Escape leaves no backdrop. Not covered live: Book refresh (no linked book), failures or pending-request races."
         paths: ["app/javascript/controllers/frog_report_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/views/core/_queries.html.erb", "app/assets/stylesheets/core/modals.css", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"
@@ -2026,9 +2026,9 @@ parts:
           narrow-popover: "16.1/narrow-popover"
           tooltip: "16.1/tooltip"
           rating-popover: "16.1/rating-popover"
-        last_run: 2026-10-16T13:43:24Z
+        last_run: 2026-10-16T18:16:48Z
         result: pass
-        notes: "Covered live via Playwright MCP at1280x900 on case6/meetings: rating popover visible with display:block,opacity1,font14px; settled1422-result capture inspected and registered as Current16.1/rating-popover (equivalent existing seeded case/document replaces prior capture fixture). Earlier count-animation frame retained Archive. Not covered live: tooltip/Matches dismissal, long custom scale or narrow popover."
+        notes: "Covered live via Playwright MCP at 1280x900 on disposable case 1067523433 (star wars, doc 11): rating popover opens on first click with display:block, opacity 1, font 14px, in viewport, showing '0 Irrelevant 1 Relevant RESET'; a click inside the tip keeps it open, the trigger closes it, and an outside click dismisses it; the Matches popover also closes on an outside click; the Info Need tooltip painted on hover (4.21). Not covered live: long custom scale, narrow viewport, popovers elsewhere in the app."
         paths: ["app/javascript/controllers/bs_popover_controller.js", "app/javascript/controllers/bs_tooltip_controller.js", "app/assets/stylesheets/core/bootstrap_overrides.css", "app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_tooltip.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/views/core/_queries.html.erb", "app/views/shared/_clone_case_core_modal.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "test/playwright/popover_visibility.spec.ts", "app/assets/stylesheets/core/search_results.css", "test/playwright/modal_a11y.spec.ts"]
       "16.2":
         title: "Narrow viewport reflow sweep"
@@ -2059,9 +2059,9 @@ parts:
           keyboard-modal: "16.4/keyboard-modal"
           nested-escape: "16.4/nested-escape"
           nested-backdrop: "16.4/nested-backdrop"
-        last_run: 2026-10-15T21:54:10Z
+        last_run: 2026-10-16T18:30:51Z
         result: pass
-        notes: "Covered live via Playwright MCP at768x900: Export modal12Tab steps stay inside; Escape closes, focus returns Export trigger, backdrop/body lock clear. Not covered live: axe, reverse Tab, full cycle, other modals/nested debug or transition-time Escape."
+        notes: "Covered live via Playwright MCP at 768x900 on disposable case 1067523433: Export (h2 title, aria-labelledby set, every select/input named) and Import both keep 25 Tab and 5 Shift+Tab steps inside; Escape closes each, focus returns to its toolbar button, and no backdrop or body lock remains. Observation (pre-existing; the import render call has never passed title_tag): Import's title renders as h5 rather than the level-2 the edge case expects. Not covered live: axe scan, Escape during transitions, Missing Documents nested debug dialog, Compare Snapshots/Judgements."
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts", "app/views/shared/_export_case_core_modal.html.erb", "app/views/core/_diff_modal.html.erb", "app/views/core/_snapshot_selection_template.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/status_message_behavior.js"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
@@ -2092,9 +2092,9 @@ parts:
         title: "Image field specifications"
         screenshots:
           images: "17.1/images"
-        last_run: 2026-10-16T13:34:11Z
+        last_run: 2026-10-16T18:34:18Z
         result: pass
-        notes: "Covered live via Playwright MCP on disposable Qdrant case1067523429: mapped result thumbnail URLs load from image.tmdb.org at65px, title/overview/cast render beside them. Screenshot captured. Not covered live: relative image prefix, full-size image spec, broken/one-image variants or sanitization payload; this is absolute-thumbnail partial coverage."
+        notes: "Covered live via Playwright MCP on disposable case 1067523433 try 4 (TMDB Solr): field spec 'id:id, title:title, overview, {\"name\":\"poster_path\",\"type\":\"thumb\",\"prefix\":\"https://image.tmdb.org/t/p/w92\"}, image:backdrop_path' shows the thumbnail column (75px) with src = prefix + value verbatim (this index's poster_path is already absolute, so the prefix doubled it; the image still loaded); the image:backdrop_path field has no value, so its column stays hidden and the card (title, overview) renders normally; the title opens Detailed Document View. Not covered live: a genuinely relative path with prefix, full-size image rendering, sanitization payload."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/views/query_doc_pairs/_document_fields.html.erb", "app/views/core/"]
       "17.2":
         title: "Background and nightly case evaluation"
