@@ -112,7 +112,7 @@
               .config(view: { stroke: nil })
           %>
         <% else %>
-          <p class="text-muted mb-0">No judging activity in the last 30 days yet.</p>
+          <%= render 'shared/empty_state', message: 'No judging activity in the last 30 days yet.' %>
         <% end %>
       </div>
     </div>

@@ -72,3 +72,30 @@
 #chart1 {
   background-color: #fff;
 }
+
+/* Case wizard — engine logo tiles (radio + logo), as in the Angular wizard. */
+.wizard-engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-engine-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.wizard-engine-tile .form-check-input {
+  margin-top: 0;
+}
+
+.wizard-engine-logo {
+  height: 50px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}

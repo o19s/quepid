@@ -5,6 +5,6 @@
   <% end %>
 <% else %>
   <tr id="judge-activity-empty">
-    <td colspan="4" class="text-center text-muted py-3">No judging activity yet.</td>
+    <td colspan="4"><%= render 'shared/empty_state', message: 'No judging activity yet.' %></td>
   </tr>
 <% end %>

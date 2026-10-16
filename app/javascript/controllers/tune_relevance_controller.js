@@ -6,6 +6,7 @@ import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning
 import coreFlash from "utils/core_flash"
 import { searchEngineLabel } from "utils/search_engines"
 import { isSameId } from "utils/record_identity"
+import { withBusy } from "utils/busy_button"
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -325,18 +326,18 @@ export default class extends Controller {
       this.settings.queryParams = formatted
     }
     this.saving = true
-    this.saveButtonTarget.disabled = true
     try {
-      const savedTry = await this.capability.settings.save(this.settings)
-      if (savedTry) {
-        this.keepDrawerOpen()
-        this.capability.navigation.goToTry(savedTry.tryNo)
-      }
+      await withBusy(this.saveButtonTarget, async () => {
+        const savedTry = await this.capability.settings.save(this.settings)
+        if (savedTry) {
+          this.keepDrawerOpen()
+          this.capability.navigation.goToTry(savedTry.tryNo)
+        }
+      })
     } catch (error) {
       this.showError(error.message || "Unable to save settings. Please try again.")
     } finally {
       this.saving = false
-      this.saveButtonTarget.disabled = false
     }
   }
 

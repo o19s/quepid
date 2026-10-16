@@ -90,7 +90,7 @@ test.describe('Case creation wizard', () => {
       const queryInput = modal.getByPlaceholder('Search query');
       await queryInput.fill('star wars');
       await modal.getByRole('button', { name: 'Add Query', exact: true }).click();
-      await expect(modal.getByText('star wars')).toBeVisible();
+      await expect(modal.getByText('star wars', { exact: true })).toBeVisible();
       await continueButton().click();
 
       // --- Finish step ---

@@ -103,7 +103,7 @@ for (const { idField, docId } of [
         if (completedWizard === false) await next().click();
         await modal.getByLabel('New Case Name:').fill('Qdrant E2E');
         await next().click();
-        await modal.getByLabel('Create a new endpoint').selectOption('qdrant');
+        await modal.getByRole('radio', { name: 'Qdrant' }).check();
         // Endpoint assignment deduplicates by configuration; isolate this test's row.
         const url = modal.getByPlaceholder('Search endpoint URL');
         await url.fill(`${await url.inputValue()}?${endpointMarker}`);
@@ -111,7 +111,7 @@ for (const { idField, docId } of [
         await expect(modal.getByLabel('Proxy requests through Quepid')).toBeChecked();
         await next().click();
         await expect(modal.locator('[data-wizard-target="alert"]')).toBeVisible();
-        await expect(modal.getByLabel('Create a new endpoint')).toHaveValue('qdrant');
+        await expect(modal.getByRole('radio', { name: 'Qdrant' })).toBeChecked();
         failValidation = false;
         await next().click();
         await expect(modal.getByRole('heading', { name: 'How Should We Display Your Results?' })).toBeVisible();

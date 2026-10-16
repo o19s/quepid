@@ -127,7 +127,7 @@
 </p>
 <%= form_for(@book, url: remap_judgement_ratings_book_path(@book), method: :patch, data: { turbo_confirm: "Are you sure? This will update all matching judgement and case ratings." }) do |form| %>
   <% if @current_ratings.empty? %>
-    <p class="text-muted">No rated judgements or case ratings found in this book.</p>
+    <%= render 'shared/empty_state', message: 'No rated judgements or case ratings found in this book.' %>
   <% else %>
     <table class="table table-sm w-auto">
       <thead>

@@ -160,6 +160,7 @@ function createWizardCapabilities(
       proxyUrlFor: (searchEndpointId) => navigationRuntime.getQuepidProxyUrl(searchEndpointId),
       demoChosen: (engine, url) => settingsCatalog.demoSettingsChosen(engine, url),
       defaultSolrQueryParams: () => settingsCatalog.defaultSolrQueryParams(),
+      troubleshootingWikiUrl: (...args) => settingsCatalog.troubleshootingWikiUrl(...args),
       applicable: () => settingsRuntime.applicable(),
       update: (...args) => settingsRuntime.update(...args)
     },

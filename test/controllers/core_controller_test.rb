@@ -39,7 +39,8 @@ class CoreControllerTest < ActionController::TestCase
       assert_select 'link[rel="stylesheet"]' do |links|
         hrefs = links.map { |link| link['href'] }
         assert(hrefs.any? { |href| href.match?(%r{/core[.-]}) })
-        assert(hrefs.any? { |href| href.match?(%r{/json-explorer[.-]}) })
+        # The JSON explorer styles are bundled into core.css, not linked separately.
+        assert_not(hrefs.any? { |href| href.match?(%r{/json-explorer[.-]}) })
         assert_not(hrefs.any? { |href| href.match?(%r{/application[.-]}) })
       end
       scripts = css_select('script[src]').map { |script| script['src'] }

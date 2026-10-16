@@ -6,6 +6,7 @@ import { getOrCreateBsModal } from "utils/bs_modal"
 import coreFlash from "utils/core_flash"
 import { getCoreStores } from "utils/core_store_access"
 import { isSameId } from "utils/record_identity"
+import { withBusy } from "utils/busy_button"
 
 const STREAM_TYPE = "text/vnd.turbo-stream.html"
 
@@ -41,17 +42,17 @@ export default class extends Controller {
       return
     }
 
-    this.createButtonTarget.disabled = true
-    try {
-      await this.stream(this.urlValue, "POST", { annotation: { message }, score })
-      this.messageTarget.value = ""
-      this.notifyScoreConsumers()
-      coreFlash.show("success", "New Annotation created successfully!")
-    } catch {
-      coreFlash.show("error", "Unable to create Annotation.")
-    } finally {
-      this.updateCreateState()
-    }
+    await withBusy(this.createButtonTarget, async () => {
+      try {
+        await this.stream(this.urlValue, "POST", { annotation: { message }, score })
+        this.messageTarget.value = ""
+        this.notifyScoreConsumers()
+        coreFlash.show("success", "New Annotation created successfully!")
+      } catch {
+        coreFlash.show("error", "Unable to create Annotation.")
+      }
+    })
+    this.updateCreateState()
   }
 
   openEdit(event) {
@@ -84,17 +85,16 @@ export default class extends Controller {
 
     const editMessage = this.editMessageElement || this.editMessageTarget
     const editSave = this.editSaveElement || this.editSaveTarget
-    editSave.disabled = true
-    try {
-      await this.stream(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
-      this.editModalInstance?.hide()
-      this.notifyScoreConsumers()
-      coreFlash.show("success", "Annotation updated successfully!")
-    } catch {
-      coreFlash.show("error", "Unable to update Annotation.")
-    } finally {
-      editSave.disabled = false
-    }
+    await withBusy(editSave, async () => {
+      try {
+        await this.stream(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
+        this.editModalInstance?.hide()
+        this.notifyScoreConsumers()
+        coreFlash.show("success", "Annotation updated successfully!")
+      } catch {
+        coreFlash.show("error", "Unable to update Annotation.")
+      }
+    })
   }
 
   async delete(event) {
