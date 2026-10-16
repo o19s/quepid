@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest"
 import QueriesListController from "controllers/queries_list_controller"
 import { viewTemplateTargets } from "../support/view_template"
 
-const TEMPLATES = "app/views/core/_query_list_templates.html.erb"
+const TEMPLATES = "app/views/core/query_list/_row_templates.html.erb"
 
 function controller() {
   const targets = viewTemplateTargets(TEMPLATES, "queries-list")

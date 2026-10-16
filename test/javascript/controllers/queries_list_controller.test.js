@@ -41,7 +41,7 @@ function controllerFor(values = {}) {
     <i data-queries-list-target="sortIcon" data-sort-field="score"></i>
     <i data-queries-list-target="manualHelp"></i>
     <ul data-queries-list-target="list"></ul>
-    ${loadViewTemplate("app/views/core/_query_list_templates.html.erb")}
+    ${loadViewTemplate("app/views/core/query_list/_row_templates.html.erb")}
   `
   const state = {
     showOnlyRatedValue: false,

@@ -26,7 +26,7 @@ export default class extends Controller {
   connect() {
     this.showAll = false
 
-    // The chip and bars shell is server-rendered in core/_query_list_templates.
+    // The chip and bars shell is server-rendered in core/query_list/_search_result_template.
     this.popoverHandle = createBsPopover(this.triggerTarget, {
       trigger: "outside-click",
       placement: "left",

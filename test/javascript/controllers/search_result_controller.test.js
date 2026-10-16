@@ -40,7 +40,7 @@ function snapshotFor(overrides = {}) {
 describe("SearchResultController", () => {
   beforeEach(() => {
     // Provides the shipped <template id="search-result-template">.
-    document.body.innerHTML = loadViewTemplate("app/views/core/_query_list_templates.html.erb")
+    document.body.innerHTML = loadViewTemplate("app/views/core/query_list/_search_result_template.html.erb")
   })
 
   it("renders the document title, fields, and rank", () => {

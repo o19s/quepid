@@ -7,7 +7,7 @@ import { QueryDocumentsStore } from "stores/query_documents_store"
 import SearchResultsController from "controllers/search_results_controller"
 import { loadViewTemplate } from "../support/view_template"
 
-const TEMPLATES = "app/views/core/_query_list_templates.html.erb"
+const TEMPLATES = ["app/views/core/query_list/_row_templates.html.erb", "app/views/core/query_list/_search_result_template.html.erb"]
 
 vi.mock("utils/detailed_document_modal", () => ({
   openDetailedDocumentModal: vi.fn()
@@ -19,7 +19,7 @@ vi.mock("utils/clipboard", () => ({
 
 function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", queryState = "loaded", numFound = 1, ratedDocsFound = 1, depthOfRating = null, diffError = false } = {}) {
   // The shipped expanded-query shell, plus the per-document template the results clone.
-  document.body.innerHTML = loadViewTemplate(TEMPLATES)
+  document.body.innerHTML = TEMPLATES.map(loadViewTemplate).join("")
   const element = document.body.querySelector('[data-queries-list-target="searchResultsTemplate"]').content.firstElementChild.cloneNode(true)
   const controller = buildControllerFixture(SearchResultsController, {
     element,

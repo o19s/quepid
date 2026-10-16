@@ -1,0 +1,14 @@
+<%# Cloned by match_explain_controller.js. Bootstrap renders the popover body
+    under document.body, outside the controller, so its buttons are wired in JS. %>
+<template id="match-explain-no-breakdown-template">
+  <div class="graph-explain"><div class="graph-label">no per-term score breakdown for doc</div></div>
+</template>
+<template id="match-explain-toggle-template">
+  <button type="button" class="btn btn-link p-0 border-0 match-explain-toggle" style="font-size: 10px;" data-action="match-explain#toggleMore"></button>
+</template>
+<template id="match-explain-popover-template">
+  <div>
+    <div class="doc-score-explanation"><pre></pre></div>
+    <div class="actions"><button type="button" class="btn btn-outline-secondary match-explain-debug">Debug</button><button type="button" class="btn btn-outline-secondary match-explain-expand">Expand <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i></button></div>
+  </div>
+</template>

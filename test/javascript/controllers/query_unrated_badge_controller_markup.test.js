@@ -17,7 +17,7 @@ describe("query-unrated-badge ERB wiring with real Stimulus", () => {
 
   beforeEach(async () => {
     store = new CaseScoreStore()
-    const { rowTemplate } = viewTemplateTargets("app/views/core/_query_list_templates.html.erb", "queries-list")
+    const { rowTemplate } = viewTemplateTargets("app/views/core/query_list/_row_templates.html.erb", "queries-list")
     row = rowTemplate.content.firstElementChild.cloneNode(true)
     badge = row.querySelector('[data-slot="unratedBadge"]')
     count = badge.querySelector(".notification-bubble")

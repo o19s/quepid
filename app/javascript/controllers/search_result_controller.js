@@ -40,7 +40,7 @@ export default class extends Controller {
 
   renderResult(doc, query) {
     // The row skeleton is the ERB `<template id="search-result-template">` in
-    // core/_query_list_templates.html.erb.
+    // core/query_list/_search_result_template.html.erb.
     const result = document.getElementById("search-result-template").content.firstElementChild.cloneNode(true)
     const slot = name => result.querySelector(`[data-slot="${name}"]`)
     const showExplain = this.explainViewValue === "full" && doc.matchExplain

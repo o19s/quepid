@@ -1,5 +1,5 @@
 /*
- * Query list (core/_queries.html.erb, _query_list_templates.html.erb): the
+ * Query list (core/_queries.html.erb, core/query_list/_row_templates.html.erb): the
  * results-control container, one row per query with its header, indicators
  * and expand/collapse toggle. The expanded results are search_results.css.
  */

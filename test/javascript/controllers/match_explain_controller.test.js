@@ -105,7 +105,10 @@ describe("MatchExplainController", () => {
 
   beforeEach(() => {
     // Provides the shipped match-explain templates and the result row's chip shell.
-    document.body.innerHTML = loadViewTemplate("app/views/core/_query_list_templates.html.erb")
+    document.body.innerHTML = [
+      "app/views/core/query_list/_search_result_template.html.erb",
+      "app/views/core/query_list/_match_explain_templates.html.erb"
+    ].map(loadViewTemplate).join("")
     element = document.getElementById("search-result-template").content
       .querySelector("[data-controller='match-explain']").cloneNode(true)
     document.body.appendChild(element)
