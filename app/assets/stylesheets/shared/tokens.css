@@ -1,0 +1,13 @@
+/*
+ * Quepid brand values shared by both bundles. Bootstrap's own --bs-*
+ * variables cover everything else; prefer those over new literals.
+ */
+
+:root {
+  --quepid-brand-font: Aller, sans-serif;
+
+  /* Header bar (shared/header.css, core/header.css). */
+  --quepid-header-bg: #369;
+  --quepid-header-gradient: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
+  --quepid-header-open-bg: #258;
+}

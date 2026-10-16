@@ -1,0 +1,62 @@
+/*
+ * Snapshot diff layout: side-by-side columns comparing the current results
+ * with a snapshot. Spacing tokens (--qscore-*) are defined in scores.css.
+ */
+
+.diff-container {
+  padding: 0;
+  width: 100%;
+}
+
+.diff-header {
+  display: flex;
+  margin-bottom: var(--qscore-spacing-xl);
+  border-bottom: var(--qscore-border-width-thick) solid var(--qscore-divider-color);
+}
+
+.diff-header .diff-column {
+  padding: 0;
+}
+
+.diff-row {
+  display: flex;
+  min-height: 200px;
+  border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
+  margin-bottom: var(--qscore-spacing-xl);
+}
+
+.diff-column {
+  flex: 1;
+  border-right: var(--qscore-border-width) solid var(--qscore-divider-color);
+  padding: 0 var(--qscore-spacing-lg);
+  text-align: left;
+}
+
+.diff-column:last-child {
+  border-right: none;
+}
+
+.diff-actions {
+  text-align: center;
+  padding-top: var(--qscore-spacing-xl);
+  border-top: var(--qscore-border-width) solid var(--qscore-divider-color);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .diff-header,
+  .diff-row {
+    flex-direction: column;
+  }
+
+  .diff-column {
+    border-right: none;
+    border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
+    margin-bottom: var(--qscore-spacing-lg);
+    padding: var(--qscore-spacing-lg) 0;
+  }
+
+  .diff-column:last-child {
+    border-bottom: none;
+  }
+}

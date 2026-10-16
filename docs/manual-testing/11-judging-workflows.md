@@ -89,15 +89,15 @@ Confirm **Back to Judge Overview** returns to your personal Judge Overview.
   3. Click a rating button on a document — confirm it saves via AJAX (no full page reload) and visually marks as selected.
   4. Reload the page — confirm the rating persisted.
   5. Click **Reset** ("clear rating") on a rated document — confirm it's removed via AJAX and the Reset control disappears.
-  6. Toggle **Show Explanations** on, type into a document's explanation field — confirm it auto-saves (no explicit save button) and persists on reload.
+  6. Toggle **Show Explanations** on, type into a rated or previously persisted judgement's explanation — confirm it auto-saves and persists on reload. On a new unrated pair, it stays a draft with a choose-rating message; choose zero, reload and confirm both persist.
   7. Toggle **Show Explanations** off with existing explanations present — confirm they render read-only rather than vanishing.
   8. Uncheck **Unrated** — confirm already-rated documents also appear, pre-selected. Tab into a selected rating group and confirm keyboard focus has a distinct outline in addition to the selection shadow.
   9. With a book Rank Depth set, confirm it is the initial cutoff. Use the dropdown to limit to `position <= N`, then choose **All** to include deeper and unranked pairs. Return without an explicit cutoff and confirm the book default still applies.
   10. Enter a **query text** filter that matches no queries — confirm the empty state lists active filters with working "clear this filter" quick links.
-  11. Page through results (25 per page) if there are enough documents, and confirm grouping-by-query stays correct across the page boundary.
+  11. Page through results (25 per page) if there are enough documents. With an unchanged pair set, confirm adjacent pages are disjoint, returning to page one preserves its order within the session, and grouping-by-query stays correct across the boundary.
 - **Expected:** All of the above work as described; saving/clearing ratings never triggers a full page reload.
 - **Edge cases:**
-  - [ ] Submit an invalid rating value (e.g., via browser dev tools tampering the request) — expect a `422` JSON error response and some visible failure indication in the UI, not a silent no-op.
+  - [ ] Submit an off-scale bulk rating (e.g., by tampering with the request) — expect a `422` JSON error and visible failure indication without overwriting the saved judgement. Implicit books retain continuous ratings.
 
   - [ ] Edit explanations on two rows within one second; reload after saves and confirm both persisted. Clear an existing Judge Later explanation, wait for Saved, reload and confirm it stays empty.
   - [ ] Navigate away before the one-second debounce fires, return and hard reload: pending explanation edits are cancelled, so only previously saved text persists. Force a save failure and confirm the visible error and prior persisted value.

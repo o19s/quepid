@@ -1,0 +1,159 @@
+/*
+ * Dev settings drawer (#dev-settings, core/_dev_settings.html.erb): tune
+ * relevance tabs, query params canvas, history list.
+ *
+ * Dark theme is delivered via data-bs-theme="dark" on #dev-settings; BS5
+ * supplies --bs-body-bg / --bs-body-color and the nav-tabs palette. Rules
+ * below are panel sizing, brand-specific surface treatments BS5 doesn't
+ * cover, and a few Bootstrap component adjustments for the narrow panel.
+ */
+
+#dev-settings {
+  width: 100%;
+  height: 100%;
+  /* Tabs, then the canvas taking the remaining height, then the TLS warning and
+   * Rerun My Searches! pinned to the drawer's bottom outside the scrolling tab. */
+  display: flex;
+  flex-direction: column;
+  /* data-bs-theme="dark" sets the --bs-body-* vars; consume them
+   * explicitly because a plain <div> doesn't get the theme applied
+   * automatically (only <body> does). */
+  background-color: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  /* main's .dev-section wrapper inset the whole panel by 15px. */
+  padding: 15px;
+}
+
+#dev-settings .dev-header {
+  background: linear-gradient(to bottom, #282828, #222222);
+  padding: 15px;
+  border-bottom: 1px solid #363636;
+  cursor: pointer;
+}
+
+#dev-settings .dev-header .bi {
+  margin-left: 10px;
+  font-size: 14px;
+  font-weight: normal;
+}
+
+#dev-settings .dev-body,
+#dev-settings .dev-setting-attribute {
+  padding: 15px;
+}
+
+/* Smaller, tighter tabs so all five fit on one row at the panel's default
+ * width. */
+#dev-settings .nav-tabs {
+  --bs-nav-link-padding-x: 0.5rem;
+  --bs-nav-link-font-size: 0.875rem;
+}
+
+#dev-settings .settings-tab {
+  height:     100%;
+  min-height: 300px;
+}
+
+/* The History tab wraps its content in a BS `.container-fluid`; this lets it
+ * fill the panel height and scroll. */
+#dev-settings .settings-tab > .container-fluid {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Checkbox settings ("Evaluate Nightly?" / "Escape Queries")
+ * Drop BS5's float/negative-margin trick and just flow the checkbox
+ * inline before its label, so it lines up with the panel's normal 15px inset. */
+#dev-settings .dev-body.form-check .form-check-input {
+  float: none;
+  margin-left: 0;
+  margin-right: 0.5em;
+}
+
+#dev-settings #queryParamsCanvas {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#dev-settings > :not(#queryParamsCanvas) {
+  flex-shrink: 0;
+}
+
+#dev-settings .rerunnable-settings-tab {
+  height:         calc(100% - 50px);
+  min-height:     300px;
+  margin-bottom:  20px;
+  overflow:       auto;
+}
+
+#queryParamsCanvas textarea {
+  height: calc(100% - 40px);
+}
+
+#queryParamsCanvas .slider-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #555;
+}
+
+#queryParamsCanvas .slider-wrap input {
+  /* Room for 4 digits plus the number input's spin-button chrome. */
+  width: 7ch;
+}
+
+/*
+ * History tab
+ */
+
+.history-list li {
+  padding: 5px 10px;
+  border-bottom: 1px solid var(--bs-border-color);
+  background: #666;
+  overflow-wrap: break-word;
+  position: relative;
+}
+
+.history-list li:hover {
+  background: #555;
+  cursor: pointer;
+}
+
+/* The try's query params stay plain and inline, followed by "...". */
+.history-list li span:not([data-try-query]) {
+  display: block;
+  text-align: left;
+  font-family: var(--quepid-brand-font);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 16px;
+  color: #CCC;
+  padding: 3px 0 8px 0;
+}
+
+/* Try-details rename form: flex only while shown, so [hidden] actually hides it. */
+.try-rename-form:not([hidden]) {
+  display: flex;
+}
+
+.try-details {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+}
+
+/* Keep touch controls visible and keyboard controls focusable between hovers. */
+@media (hover: hover) and (pointer: fine) {
+  .try-details {
+    opacity: 0;
+  }
+
+  .history-list li:hover .try-details,
+  .history-list li:focus-within .try-details {
+    opacity: 1;
+  }
+}

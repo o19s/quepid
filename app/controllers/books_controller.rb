@@ -59,18 +59,8 @@ class BooksController < ApplicationController
 
     @cases = @book.cases.includes(:owner)
 
-    # ── RE coverage metrics ───────────────────────────────────────────────────
-    # Wrapped in a transaction so the three counts see one consistent snapshot
-    # even while this book is being actively judged.
-    @total_pairs, @zero_judgement_count, @partial_count = ActiveRecord::Base.transaction do
-      [
-        @book.query_doc_pairs_within_rank_depth.count,
-        SelectionStrategy.unjudged_pairs_count(@book),
-        SelectionStrategy.partially_judged_pairs_count(@book)
-      ]
-    end
-    @complete_count = @total_pairs - @zero_judgement_count - @partial_count
-    @coverage_pct   = @total_pairs.positive? ? ((@complete_count.to_f / @total_pairs) * 100).round : 0
+    @total_pairs, @zero_judgement_count, @partial_count, @complete_count, @coverage_pct =
+      @book.coverage_summary.values_at(:total_pairs, :zero_judgement_count, :partial_count, :complete_count, :coverage_pct)
 
     # ── Per-judge activity: last 30 days sparkline + last judged timestamp ────
     @judge_activity = @book.judge_activity_rows
@@ -149,6 +139,8 @@ class BooksController < ApplicationController
       streams << turbo_stream.update('judge-activity-table', partial: 'books/judge_activity_table_body',
                                                              locals:  { judge_activity: [], book: @book })
     end
+    streams << turbo_stream.update('book-coverage-summary', partial: 'books/coverage_summary',
+                                                            locals:  @book.coverage_summary.merge(cases: @book.cases))
     render turbo_stream: streams
   end
 

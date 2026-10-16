@@ -720,7 +720,8 @@ test("branch changes during replay cannot publish a Current image on another bra
 test("surface scoping ignores unloaded CSS/layouts while retaining shared and explicit dependencies", (t) => {
   const { root, record } = setup(t)
   for (const directory of ["app/assets/stylesheets", "app/views/layouts"]) fs.mkdirSync(path.join(root, directory), { recursive: true })
-  for (const file of ["app/assets/stylesheets/base.css", "app/assets/stylesheets/core-additions.css", "app/views/layouts/admin.html.erb"]) fs.writeFileSync(path.join(root, file), "original")
+  for (const directory of ["app/assets/stylesheets/shared", "app/assets/stylesheets/core"]) fs.mkdirSync(path.join(root, directory), { recursive: true })
+  for (const file of ["app/assets/stylesheets/shared/base.css", "app/assets/stylesheets/core/layout.css", "app/views/layouts/admin.html.erb"]) fs.writeFileSync(path.join(root, file), "original")
   const paths = ["app/", "app/assets/stylesheets/", "app/views/layouts/"]
   // Keep the page dependency specific, rather than swallowing CSS through app/.
   paths[0] = "app/view.html"
@@ -729,30 +730,30 @@ test("surface scoping ignores unloaded CSS/layouts while retaining shared and ex
   record({ paths, source: sourceFingerprint(root, paths) })
   const original = readHistory(root)
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "current")
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core-additions.css"), "core change")
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core/layout.css"), "core change")
   fs.writeFileSync(path.join(root, "app/views/layouts/admin.html.erb"), "admin change")
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "current")
   const options = scenarioCaptureOptions(root, "1.2", "login-form", [], scoped)
-  assert.equal(options.paths.includes("app/assets/stylesheets/core-additions.css"), false)
+  assert.equal(options.paths.includes("app/assets/stylesheets/core/layout.css"), false)
   assert.equal(recordScreen(root, { ...options, source: sourceFingerprint(root, options.paths) }).updated, false)
   assert.deepEqual(readHistory(root), original)
-  scoped.parts["01"].scenarios["1.2"].paths.push("app/assets/stylesheets/core-additions.css")
+  scoped.parts["01"].scenarios["1.2"].paths.push("app/assets/stylesheets/core/layout.css")
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "stale")
   scoped.parts["01"].scenarios["1.2"].paths.pop()
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/base.css"), "shared change")
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/shared/base.css"), "shared change")
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "stale")
 })
 
 test("surface changes include new files in the loaded bundle and do not hide newly tracked dependencies", (t) => {
   const { root, record } = setup(t)
-  fs.mkdirSync(path.join(root, "app/assets/stylesheets"), { recursive: true })
+  fs.mkdirSync(path.join(root, "app/assets/stylesheets/application"), { recursive: true })
   const paths = ["app/view.html", "app/assets/stylesheets/"]
   const scoped = tracker(paths)
   scoped.screenshot_surfaces = { parts: { "01": "application" } }
   record({ paths, source: sourceFingerprint(root, paths) })
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/signup.css"), "new loaded CSS")
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/application/sign_in.css"), "new loaded CSS")
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "stale")
-  fs.unlinkSync(path.join(root, "app/assets/stylesheets/signup.css"))
+  fs.unlinkSync(path.join(root, "app/assets/stylesheets/application/sign_in.css"))
   fs.writeFileSync(path.join(root, "new-dependency.css"), "new")
   scoped.parts["01"].scenarios["1.2"].paths.push("new-dependency.css")
   assert.equal(linkedScreenshotStatus(root, scoped)[0].current.status, "stale")
@@ -760,8 +761,8 @@ test("surface changes include new files in the loaded bundle and do not hide new
 
 test("legacy metadata narrowing verifies its original source and cannot bless dirty unknown captures", (t) => {
   const { root, record } = setup(t)
-  fs.mkdirSync(path.join(root, "app/assets/stylesheets"), { recursive: true })
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core-additions.css"), "original")
+  fs.mkdirSync(path.join(root, "app/assets/stylesheets/core"), { recursive: true })
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core/layout.css"), "original")
   const paths = ["app/view.html", "app/assets/stylesheets/"]
   const scoped = tracker(paths)
   scoped.screenshot_surfaces = { parts: { "01": "application" } }
@@ -773,14 +774,14 @@ test("legacy metadata narrowing verifies its original source and cannot bless di
   // Old dirty captures have no per-file evidence; unchanged broad content is
   // still provable, but changed broad content cannot be projected safely.
   assert.equal(linkedScreenshotStatus(root, scoped, history)[0].current.status, "current")
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core-additions.css"), "changed")
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core/layout.css"), "changed")
   assert.equal(linkedScreenshotStatus(root, scoped, history)[0].current.status, "stale")
 })
 
 test("old clean captures can narrow dependencies using a verified commit without rewriting provenance", (t) => {
   const { root, record } = setup(t)
-  fs.mkdirSync(path.join(root, "app/assets/stylesheets"), { recursive: true })
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core-additions.css"), "original")
+  fs.mkdirSync(path.join(root, "app/assets/stylesheets/core"), { recursive: true })
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core/layout.css"), "original")
   const paths = ["app/view.html", "app/assets/stylesheets/"]
   const scoped = tracker(paths)
   scoped.screenshot_surfaces = { parts: { "01": "application" } }
@@ -789,7 +790,8 @@ test("old clean captures can narrow dependencies using a verified commit without
   const git = (args, input) => execFileSync("git", ["-C", root, ...args], { input, encoding: "utf8" }).trim()
   const blob = text => git(["hash-object", "-w", "--stdin"], text)
   const tree = text => git(["mktree"], text)
-  const cssTree = tree(`100644 blob ${blob("original")}\tcore-additions.css\n`)
+  const coreTree = tree(`100644 blob ${blob("original")}\tlayout.css\n`)
+  const cssTree = tree(`040000 tree ${coreTree}\tcore\n`)
   const assetsTree = tree(`040000 tree ${cssTree}\tstylesheets\n`)
   const appTree = tree(`100644 blob ${blob("First")}\tview.html\n040000 tree ${assetsTree}\tassets\n`)
   const rootTree = tree(`040000 tree ${appTree}\tapp\n`)
@@ -800,7 +802,7 @@ test("old clean captures can narrow dependencies using a verified commit without
   delete current.sourcePaths
   Object.assign(current, { dirty: false, commit })
   const original = structuredClone(history)
-  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core-additions.css"), "irrelevant change")
+  fs.writeFileSync(path.join(root, "app/assets/stylesheets/core/layout.css"), "irrelevant change")
   assert.equal(linkedScreenshotStatus(root, scoped, history)[0].current.status, "current")
   assert.deepEqual(history, original)
   current.source = "incorrect provenance"

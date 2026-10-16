@@ -41,14 +41,16 @@ class BulkJudgeController < ApplicationController
 
     # Order by query_text first, then random within each group
     # We need to get all results first, then group and randomize
-    all_results = query.order(:query_text)
+    all_results = query.order(:query_text, :id)
 
     # Group by query_text and randomize within each group
     grouped = all_results.group_by(&:query_text)
     randomized_results = []
+    shuffle_seed = session[:bulk_judge_shuffle_seed] ||= SecureRandom.random_number(2**31)
+    random = Random.new(shuffle_seed)
 
     grouped.each_value do |docs|
-      randomized_results.concat(docs.shuffle)
+      randomized_results.concat(docs.shuffle(random: random))
     end
 
     @pagy, paginated_query_doc_pairs = pagy(randomized_results, items: 25, page: params[:page])
@@ -89,6 +91,14 @@ class BulkJudgeController < ApplicationController
       judgement.destroy if judgement.persisted?
       render json: { status: 'success' }
     else
+      if params[:rating].present? && !@book.support_implicit_judgements?
+        rating = Float(params[:rating], exception: false)
+        unless @book.scale.include?(rating)
+          render json: { status: 'error', errors: [ "Rating must be on this book's scale." ] }, status: :unprocessable_content
+          return
+        end
+      end
+
       # Update rating if provided
       judgement.rating = params[:rating] if params[:rating].present?
 

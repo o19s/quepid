@@ -34,7 +34,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Leave the case name blank and try to proceed — should be blocked.
   - [ ] Delay the query save after **Finish** — the wizard stays open with Finish disabled until settings, queries and onboarding status are saved. Force a query-save failure, then retry; the error stays in the wizard and navigation occurs only after success. Confirm a first-time tour starts on the loaded workspace and does not restart on reload; returning users receive no automatic tour.
   - [ ] Enter an invalid/unreachable endpoint URL and click **Continue** — should surface a clear connection error, not a silent failure or crash.
-  - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `bootstrap5-compat.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
+  - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also the HTTPS notes for Solr JSONP in the project's engineering docs).
   - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
   - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/javascript/controllers/wizard_launcher_controller.js`) — this is current behavior, not a one-time trigger.
 
@@ -69,6 +69,7 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Upload a non-JSON file, or JSON that doesn't validate as a proper case structure — should show a clear inline error in the modal (not a blank failure).
   - [ ] Upload a very large export — confirm reasonable behavior (progress indicator, no browser freeze).
   - [ ] Cancel mid-way through selecting a file — no partial case should be created.
+  - [ ] Reimport a case whose exported endpoint credentials are redacted: reuse the accessible active authenticated endpoint, retaining its stored credential without creating a passwordless duplicate. Archived endpoints remain excluded.
 
 ### 3.4 Import snapshots from CSV
 

@@ -1,0 +1,38 @@
+/*
+ * Page layout and Bootstrap tweaks for the application bundle (dashboard,
+ * books, judgements, admin, ...).
+ */
+
+/* Shared page spacing for the application and admin layouts. */
+main > .container {
+  padding: 20px 15px 0;
+}
+
+/* Keep the icon sidebar beside content below the Bootstrap column breakpoint. */
+@media (max-width: 767.98px) {
+  .sidebar + main {
+    width: calc(100% - 3.5rem);
+    min-width: 0;
+  }
+}
+
+.centered-form {
+  max-width: 960px;
+}
+
+/* Slow down Bootstrap spinner animation */
+.spinner-border {
+  animation-duration: 1.5s;
+}
+
+.turbo-progress-bar {
+  height: 5px;
+  background-color: gold;
+}
+
+/* Bootstrap's .visually-hidden is position:absolute. Inside a table cell with no positioned ancestor it
+   escapes the .table-responsive scroller and stretches the whole page horizontally (e.g. /cases at 768px),
+   so make the scroller the containing block. */
+.table-responsive {
+  position: relative;
+}

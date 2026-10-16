@@ -26,6 +26,7 @@ Based on the RubyLLM agentic workflow patterns, we implemented a retry-based app
 1. **MapperTool** (`app/tools/mapper_tool.rb`)
    - Executes JavaScript functions against HTML content
    - Uses the `V8MapperExecutor` class with V8 engine
+   - JSON objects/arrays support direct property access and legacy `JSON.parse(data)` through non-enumerable JSON string coercion; HTML remains a string. Mapper errors propagate without retrying with another input type.
    - Returns structured results with success/error indicators
    - Enhanced logging for debugging and success detection
 

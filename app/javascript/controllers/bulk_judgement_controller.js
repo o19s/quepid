@@ -17,6 +17,10 @@ export default class extends withStatusMessages(Controller) {
 
   connect() {
     this.saveTimeouts = new Map()
+    this.persistedJudgements = new Set(
+      [...this.element.querySelectorAll("textarea[data-judgement-persisted='true']")]
+        .map((field) => field.dataset.queryDocPairId)
+    )
     this.savedExplanations = new Map(
       [...this.element.querySelectorAll("textarea[data-query-doc-pair-id]")].map((field) =>
         [field.dataset.queryDocPairId, field.value]
@@ -76,8 +80,10 @@ export default class extends withStatusMessages(Controller) {
     const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
     if (explanationField) {
       explanationField.value = ''
+      explanationField.dataset.judgementPersisted = "false"
     }
     this.savedExplanations.set(queryDocPairId, "")
+    this.persistedJudgements.delete(queryDocPairId)
   }
 
   // Called when a rating is clicked
@@ -105,6 +111,8 @@ export default class extends withStatusMessages(Controller) {
         })
 
       this.savedExplanations.set(queryDocPairId, explanation)
+      this.persistedJudgements.add(queryDocPairId)
+      if (explanationField) explanationField.dataset.judgementPersisted = "true"
       this.showStatus(queryDocPairId, "saved")
     } catch (error) {
       this.showStatus(queryDocPairId, "error")
@@ -136,6 +144,11 @@ export default class extends withStatusMessages(Controller) {
       // An untouched empty field needs no write; clearing saved text does.
       if (!rating && !explanation.trim() && !this.savedExplanations.get(queryDocPairId)?.trim()) {
         this.showStatus(queryDocPairId, "")
+        return
+      }
+
+      if (!rating && !this.persistedJudgements.has(queryDocPairId)) {
+        this.showStatus(queryDocPairId, "draft")
         return
       }
 
@@ -233,6 +246,13 @@ export default class extends withStatusMessages(Controller) {
       case "typing":
         this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-pencil"></i> Typing...',
+          variantClass: "text-muted",
+          variantClasses: STATUS_VARIANT_CLASSES
+        })
+        break
+      case "draft":
+        this.showStatusMessage(statusElement, {
+          html: "Choose a rating to save this explanation.",
           variantClass: "text-muted",
           variantClasses: STATUS_VARIANT_CLASSES
         })

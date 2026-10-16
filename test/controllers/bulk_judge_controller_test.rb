@@ -14,6 +14,24 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe '#new' do
+    test 'keeps shuffled pages stable and disjoint within the session' do
+      Bullet.enable = false
+      empty_book = books(:empty_book)
+      30.times { |i| empty_book.query_doc_pairs.create!(query_text: 'stable paging', doc_id: "stable#{i}") }
+
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false }
+      first_page = assigns(:grouped_query_doc_pairs).values.flatten.map(&:id)
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false, page: 2 }
+      second_page = assigns(:grouped_query_doc_pairs).values.flatten.map(&:id)
+      get book_judge_bulk_path(empty_book), params: { only_unrated: false }
+
+      assert_equal first_page, assigns(:grouped_query_doc_pairs).values.flatten.map(&:id)
+      assert_empty first_page & second_page
+      assert_equal 30, (first_page + second_page).uniq.size
+    ensure
+      Bullet.enable = true
+    end
+
     test 'renders the bulk judge page successfully' do
       Bullet.enable = false
       get book_judge_bulk_path(book)
@@ -151,6 +169,29 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe '#save' do
+    test 'rejects off-scale ratings without changing an existing judgement' do
+      judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, rating: 1, explanation: 'Keep this')
+      [ 99, 0.5, 'invalid' ].each do |rating|
+        post book_judge_bulk_save_path(book),
+             params: { query_doc_pair_id: query_doc_pair.id, rating: rating, explanation: 'Rejected' },
+             as:     :json
+
+        assert_response :unprocessable_content
+        assert_equal 1, judgement.reload.rating
+        assert_equal 'Keep this', judgement.explanation
+      end
+    end
+
+    test 'retains continuous ratings for implicit-judgement books' do
+      book.update!(support_implicit_judgements: true)
+      post book_judge_bulk_save_path(book),
+           params: { query_doc_pair_id: query_doc_pair.id, rating: 0.5 },
+           as:     :json
+
+      assert_response :success
+      assert_in_delta(0.5, Judgement.find_by!(query_doc_pair: query_doc_pair, user: user).rating)
+    end
+
     [ :unrateable, :judge_later ].each do |flag|
       test "rating zero clears #{flag} and preserves the judgement identity" do
         judgement = Judgement.create!(query_doc_pair: query_doc_pair, user: user, flag => true)
@@ -188,7 +229,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
     test 'creates a new judgement with rating' do
       assert_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),
-             params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+             params: { query_doc_pair_id: query_doc_pair.id, rating: 1 },
              as:     :json
       end
       assert_response :success
@@ -207,13 +248,13 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
 
       assert_no_difference 'Judgement.count' do
         post book_judge_bulk_save_path(book),
-             params: { query_doc_pair_id: query_doc_pair.id, rating: 5 },
+             params: { query_doc_pair_id: query_doc_pair.id, rating: 0 },
              as:     :json
       end
 
       assert_response :success
       judgement.reload
-      assert_equal 5, judgement.rating
+      assert_equal 0, judgement.rating
     end
 
     test 'resets judgement when reset parameter is true' do
@@ -239,7 +280,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
       post book_judge_bulk_save_path(book),
            params: {
              query_doc_pair_id: query_doc_pair.id,
-             rating:            3,
+             rating:            1,
              explanation:       'This is a great match',
            },
            as:     :json
@@ -252,7 +293,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
     test 'enqueues UpdateCaseRatingsJob' do
       assert_enqueued_with(job: UpdateCaseRatingsJob) do
         post book_judge_bulk_save_path(book),
-             params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+             params: { query_doc_pair_id: query_doc_pair.id, rating: 1 },
              as:     :json
       end
     end
@@ -260,7 +301,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
     test 'broadcasts judge activity' do
       assert_enqueued_with(job: BroadcastJudgeActivityJob) do
         post book_judge_bulk_save_path(book),
-             params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+             params: { query_doc_pair_id: query_doc_pair.id, rating: 1 },
              as:     :json
       end
     end
@@ -470,7 +511,7 @@ class BulkJudgeControllerTest < ActionDispatch::IntegrationTest
   test 'broadcasts judge activity' do
     assert_enqueued_with(job: BroadcastJudgeActivityJob) do
       post book_judge_bulk_save_path(book),
-           params: { query_doc_pair_id: query_doc_pair.id, rating: 3 },
+           params: { query_doc_pair_id: query_doc_pair.id, rating: 1 },
            as:     :json
     end
   end

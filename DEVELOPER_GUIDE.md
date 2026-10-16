@@ -570,7 +570,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
 
 4. **Why bundles work this way**
    - Splainer-search ESM modules are inlined into **`app/assets/builds/core_case.js`** at build time, not runtime.
-   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core`**
+   - Stylesheets are built by **`yarn build:css`** (`build_css.js`), not by **`build:core`**
    - With **`bin/docker s`**, Foreman watches the import graph (including **`node_modules/splainer-search`**) and keeps **`core_case.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running.
 
 
@@ -856,7 +856,9 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 ## How does the Frontend work?
 
 The core interactive application is Rails + Stimulus with a module-owned case runtime. **`splainer-search`** is **`3.x` from npm** (see root `package.json`).
-The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). Core uses Bootstrap 5's own sizing, colors and component skins; **`bootstrap5-compat.css`** holds only the layout and behaviour overrides the case UI needs on top of them.
+The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus the Quepid sheets in `app/assets/stylesheets/shared/` and `core/`, wired in **`build_css.js`** (`buildCoreCSS()`). The rest of Quepid loads **`application.css`**: Bootstrap 5 plus `shared/` and `application/`. Core uses Bootstrap 5's own sizing, colors and component skins; Quepid's sheets hold only the layout and behaviour the UI needs on top of them.
+
+Stylesheets are organized by UI component, one file per component (`core/dev_settings.css`, `core/search_results.css`, `application/judging.css`, ...), named after the partial or Stimulus controller it styles. A component's rules — including overrides on Bootstrap classes inside it — live in its one file. Bootstrap overrides that apply core-wide go in `core/bootstrap_overrides.css`; brand values go in `shared/tokens.css`. When adding a file, add it to its bundle in `build_css.js` and to `test/playwright/screenshot-dependencies.mjs`.
 
 For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
 
@@ -1126,7 +1128,7 @@ The remaining globals are `window.Stimulus` (Playwright specs look up controller
 ## Fonts
 
 The *Aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.
-Declare its regular, italic, bold and bold-italic faces under one family in `fonts.css`; use `Aller, sans-serif` with CSS weight/style at call sites.
+Declare its regular, italic, bold and bold-italic faces under one family in `shared/fonts.css`; use `var(--quepid-brand-font)` (`shared/tokens.css`) with CSS weight/style at call sites.
 
 ## How to develop Jupyterlite
 

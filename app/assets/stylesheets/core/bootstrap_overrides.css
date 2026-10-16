@@ -1,0 +1,40 @@
+/*
+ * Core-wide overrides on Bootstrap components. Core uses BS5's own sizing,
+ * colors and component skins; these are only the behaviour the case UI
+ * needs on top of them. Component-specific overrides live with their
+ * component (header.css, dev_settings.css, search_results.css, ...).
+ */
+
+/* Tooltip + popover: createBsPopover / bs_tooltip.js pass `animation: false`
+ * so `.fade` is never added — avoids invisible-but-present popover bugs
+ * from cascade conflicts on opacity.
+ *
+ * Quepid's tooltips use explicit <br/> tags for multi-line content, so they
+ * are left-aligned and wider than BS5's 200px default rather than centered
+ * and wrapped; min-width keeps single-word tooltips from rendering as a
+ * sliver. Popovers are sized for explain / ratings JSON. */
+.tooltip {
+  --bs-tooltip-max-width: 300px;
+}
+
+.tooltip-inner {
+  min-width:  100px;
+  text-align: left;
+}
+
+.popover {
+  --bs-popover-max-width: 800px;
+  max-height: 600px;
+}
+
+/* .popover defaults to overflow: visible, so without this, tall content
+ * spills past the bordered box instead of scrolling within it. */
+.popover-body {
+  overflow-y: auto;
+  max-height: 550px;
+}
+
+/* .btn-group z-index keeps toolbar dropdowns above static siblings. */
+.btn-group {
+  z-index: 10;
+}

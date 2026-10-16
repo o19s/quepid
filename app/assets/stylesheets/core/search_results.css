@@ -1,0 +1,189 @@
+/*
+ * Expanded query results (.sub-results): the query toolbar, the "Score All"
+ * and per-document rating columns, result fields, thumbnails and media.
+ */
+
+.sub-results {
+  background: url('sub-results-bg.png') top center no-repeat #F7F7F7;
+  padding: 20px 15px 15px 15px;
+  position: relative;
+  min-width: 650px;
+  /* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
+   * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's margin
+   * so the two rules stay in sync from one source of truth. */
+  --score-col-end: 90px;
+}
+
+/* Query toolbar beside the absolutely positioned "Score All" column. The
+ * margin reserves the space `.col-ratings.query-rating` occupies plus a small
+ * gap. The toolbar stays in flow, so when `.btn-toolbar`'s `flex-wrap: wrap`
+ * puts its buttons on a second row at narrow widths, the results move down
+ * rather than being overlapped; min-height keeps the first result clear of
+ * "Score All". */
+.sub-results .btn-toolbar {
+  min-height: 55px;
+  margin: 0 5px 0 calc(var(--score-col-end) + 5px);
+  align-content: flex-start;
+  row-gap: 0.5rem;
+}
+
+/* Row borders between <search-result> items. */
+.sub-results .row {
+  padding: 5px 0;
+}
+
+.sub-results .search-result .row {
+  border-top: 1px solid #CCC;
+  position: relative;
+}
+
+/*
+ * Rating columns and thumbnails
+ */
+
+.col-summary {
+  text-align: left;
+  margin-left: 70px;
+  padding: 15px;
+}
+
+.query-thumbnail {
+  width: 75px;
+  height: 100%;
+  margin: -10px 0;
+  padding: 0;
+  display: block;
+  line-height: 0;
+  object-fit: contain;
+}
+
+.result-thumbnail {
+  width: 75px;
+}
+
+.result-image {
+  width: 250px;
+}
+
+.score-all {
+  margin-left: 15px;
+}
+
+.score-all .ratings {
+  position: relative;
+}
+
+.col-ratings.query-rating {
+  margin-left: 15px;
+  margin-top: -10px;
+}
+
+/* Per-document rating column sits inside a different positioned ancestor
+ * (.col-md-10, 10.5px padding) than the "Score All" column above it
+ * (.sub-results.container-fluid, 15px padding), so absolute `left: 0` alone
+ * lands 11px further left. Nudge it right to line up under "Score All". */
+.col-ratings:not(.query-rating) {
+  margin-left: 11px;
+}
+
+.col-ratings {
+  width: 75px;
+  padding: 0;
+  position: absolute;
+  top: 15px;
+  left: 0;
+}
+
+.result-thumb-col {
+  width: 125px;
+}
+
+.result-image-col {
+  width: 300px;
+}
+
+/*
+ * Result fields
+ */
+
+.col-summary .subfields {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-wrap: anywhere;
+}
+
+.col-summary .subfields li {
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+
+.col-summary .subfields li:last-child {
+  margin: 0;
+}
+
+.col-summary .subfields li.subTitle {
+  font-family: var(--quepid-brand-font);
+  font-size: 18px;
+}
+
+.col-summary .subfields li.subTitle .btn-link {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.col-summary .subfields li .subLabel {
+  font-weight: bold;
+}
+
+.matches-popper:hover {
+  cursor:           pointer;
+  text-decoration:  underline;
+}
+
+.matches-popper .bi-info-circle-fill {
+  margin-left: 0.25rem;
+}
+
+/* Audio/video/image embeds rendered in result rows (search_result_controller
+ * embedField) — cap size so large media doesn't blow out the result row. */
+.media-embed {
+  vertical-align: middle;
+  max-width: 640px;
+  max-height: 640px;
+}
+
+/*
+ * Rating buttons: the per-document rating dropdown and the rating popover's
+ * choices (rating_popover_controller.js).
+ */
+
+.single-rating .btn {
+  min-width: 60px;
+  white-space: nowrap;
+  font-size: 12px;
+  padding-inline: 6px;
+  box-shadow: inset 0 0 25px rgba(0,0,0,0.25);
+  color: #FFF;
+  text-shadow: 0 0 6px rgba(0,0,0,0.25);
+}
+
+.single-rating .btn .bi-caret-down-fill {
+  margin-left: 4px;
+}
+
+.ratingNum {
+  color: white;
+  font-size: .7em;
+  margin-right: 2px;
+  padding: 3px 5px;
+}
+
+.ratingContainer .ratingNum {
+  box-shadow: inset 0 0 20px rgba(255,255,255,0.75);
+}
+
+.ratingContainer .ratingNum:hover {
+  box-shadow: inset 0 0 15px rgba(0,0,0,0.25);
+  color: #FFF;
+}

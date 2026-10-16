@@ -1,16 +1,15 @@
 /*
- * Quepid navbar brand skin shared by both bundles: the core
- * header (_header_core_app.html.erb, styled the rest of the way by
- * bootstrap5-compat.css) and the application header (_header.html.erb,
- * used by the application and admin layouts, styled the rest of the way by
- * bootstrap5-add.css).
+ * Quepid navbar brand skin shared by both headers: the core header
+ * (_header_core_app.html.erb) and the application header (_header.html.erb,
+ * used by the application and admin layouts). Each header's own deltas live
+ * in its bundle's header.css (core/header.css, application/header.css).
  */
 
 .navbar-brand {
   position: relative;
   height: 56px;
   min-width: 120px;
-  font-family: Aller, sans-serif;
+  font-family: var(--quepid-brand-font);
   font-weight: 400;
   font-style: italic;
   font-size: 28px;
@@ -29,9 +28,9 @@
 }
 
 .navbar-secondary {
-  background: #369;
-  background-image: linear-gradient(to bottom, #4F8ECC 0%, #2774C0 100%);
-  font-family: Aller, sans-serif;
+  background: var(--quepid-header-bg);
+  background-image: var(--quepid-header-gradient);
+  font-family: var(--quepid-brand-font);
 }
 
 /* BS5's `.nav-link` sets `font-size: var(--bs-nav-link-font-size)`, which

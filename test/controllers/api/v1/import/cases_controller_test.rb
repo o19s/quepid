@@ -186,6 +186,38 @@ module Api
             assert_equal existing, imported.tries.first.search_endpoint
           end
 
+          test 'reuses an authenticated endpoint when exported credentials are redacted' do
+            with_require_proxy_with_basic_auth(true) do
+              existing = SearchEndpoint.create!(
+                owner: user, search_engine: 'os', api_method: 'POST', proxy_requests: true,
+                endpoint_url: 'https://redacted-import.example.com/_search',
+                basic_auth_credential: 'reader:secret'
+              )
+              credential = existing.api_basic_auth_credential
+              assert_nil credential
+              data = {
+                case_name: 'redacted credential reimport',
+                scorer:    { name: acase.scorer.name },
+                try:       {
+                  search_endpoint: {
+                    search_engine: existing.search_engine, endpoint_url: existing.endpoint_url,
+                    api_method: existing.api_method, proxy_requests: existing.proxy_requests,
+                    basic_auth_credential: credential
+                  },
+                },
+                queries:   [],
+              }
+
+              assert_no_difference 'SearchEndpoint.count' do
+                post :create, params: { case: data, format: :json }
+              end
+              assert_response :created
+              imported = Case.find_by!(case_name: data[:case_name])
+              assert_equal existing.id, imported.tries.first.search_endpoint_id
+              assert_equal 'reader:secret', existing.reload.basic_auth_credential
+            end
+          end
+
           test 'creates a new case' do
             data = {
               case_name:   'test case',

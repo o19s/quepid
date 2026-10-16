@@ -20,15 +20,14 @@ function ensureDirectoryExists(dirPath) {
   }
 }
 
-function readFileIfExists(filePath) {
-  try {
-    if (fs.existsSync(filePath)) {
-      return fs.readFileSync(filePath, 'utf8');
-    }
-  } catch (error) {
-    console.warn(`Warning: Could not read ${filePath}:`, error.message);
+// Every bundle source is required: a missing file must fail the build rather
+// than silently ship a bundle without it (e.g. a watcher started before the
+// file lists in this script changed).
+function readRequiredFile(filePath) {
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing bundle source: ${filePath}`);
   }
-  return '';
+  return fs.readFileSync(filePath, 'utf8');
 }
 
 function copyFileIfExists(src, dest) {
@@ -46,13 +45,15 @@ function copyFileIfExists(src, dest) {
 
 const STYLES = 'app/assets/stylesheets';
 
-// Every bundle starts with Bootstrap 5, its icons, Quepid's fonts, and the
-// page skin shared by both bundles.
+// Every bundle starts with Bootstrap 5, its icons, and the shared/ sheets
+// (fonts, brand variables, page skin, header brand) that both bundles load.
 const BOOTSTRAP_BASE = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
   'node_modules/bootstrap-icons/font/bootstrap-icons.css',
-  `${STYLES}/fonts.css`,
-  `${STYLES}/base.css`,
+  `${STYLES}/shared/fonts.css`,
+  `${STYLES}/shared/tokens.css`,
+  `${STYLES}/shared/base.css`,
+  `${STYLES}/shared/header.css`,
 ];
 
 // Concatenates `files` in order (order matters for the cascade) into
@@ -64,7 +65,7 @@ function writeBundle(name, title, files) {
   let output = `/* ${title} */\n`;
   output += '\n';
   for (const file of files) {
-    output += readFileIfExists(file);
+    output += readRequiredFile(file);
     output += '\n';
   }
 
@@ -73,51 +74,42 @@ function writeBundle(name, title, files) {
   console.log(`${name}.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
+// Rails pages (dashboard, books, judgements, admin, analytics): shared/ plus
+// application/.
 function buildApplicationCSS() {
   writeBundle('application', 'Application CSS Bundle (Bootstrap 5)', [
     ...BOOTSTRAP_BASE,
-    `${STYLES}/navbar-brand.css`,
-    `${STYLES}/bootstrap5-add.css`,
-    `${STYLES}/signup.css`,
-    `${STYLES}/judgements.css`,
+    `${STYLES}/application/header.css`,
+    `${STYLES}/application/layout.css`,
+    `${STYLES}/application/pages.css`,
+    `${STYLES}/application/teams.css`,
+    `${STYLES}/application/sign_in.css`,
+    `${STYLES}/application/judging.css`,
+    `${STYLES}/application/books.css`,
   ]);
 }
 
+// The core case workspace: shared/ plus core/.
 function buildCoreCSS() {
   writeBundle('core', 'Core CSS Bundle (Bootstrap 5 for the core case UI)', [
     ...BOOTSTRAP_BASE,
-    // Quepid layout, then the BS5 overrides (px sizing, popovers, header nav,
-    // modals, sub-results toolbar, ...).
-    `${STYLES}/core-additions.css`,
-    `${STYLES}/navbar-brand.css`,
-    `${STYLES}/bootstrap5-compat.css`,
-    `${STYLES}/style.css`,
-    `${STYLES}/panes.css`,
-    `${STYLES}/stackedChart.css`,
-    // Tour/Guides
+    `${STYLES}/core/layout.css`,
+    `${STYLES}/core/header.css`,
+    `${STYLES}/core/bootstrap_overrides.css`,
+    `${STYLES}/core/query_list.css`,
+    `${STYLES}/core/search_results.css`,
+    `${STYLES}/core/scores.css`,
+    `${STYLES}/core/diff.css`,
+    `${STYLES}/core/match_explain.css`,
+    `${STYLES}/core/dev_settings.css`,
+    `${STYLES}/core/annotations.css`,
+    `${STYLES}/core/flash.css`,
+    `${STYLES}/core/modals.css`,
     'node_modules/shepherd.js/dist/css/shepherd.css',
-    `${STYLES}/tour.css`,
-    // Screen-specific styles
-    `${STYLES}/docs.css`,
-    `${STYLES}/qscore.css`,
-    `${STYLES}/qgraph.css`,
-    // Other styles
-    `${STYLES}/misc.css`,
-    `${STYLES}/animation.css`,
-    `${STYLES}/froggy.css`,
+    `${STYLES}/core/tour.css`,
+    `${STYLES}/core/animations.css`,
+    `${STYLES}/core/json_explorer.css`,
   ]);
-}
-
-// Standalone stylesheets linked from layouts/_case_head.html.erb (not folded into core.css).
-function copyLinkedStylesheets() {
-  console.log('Copying linked stylesheets...');
-
-  ensureDirectoryExists('app/assets/builds');
-
-  copyFileIfExists(
-    'app/assets/stylesheets/json-explorer.css',
-    'app/assets/builds/json-explorer.css'
-  );
 }
 
 function copyFontFiles() {
@@ -148,8 +140,7 @@ function buildAllCSS() {
     buildApplicationCSS();
     buildCoreCSS();
 
-    // Copy linked stylesheets and other asset files
-    copyLinkedStylesheets();
+    // Copy font and image assets
     copyFontFiles();
     copyImageFiles();
     
@@ -165,8 +156,11 @@ function buildAllCSS() {
 function main() {
   const isWatchMode = process.argv.includes('--watch');
   
-  // Initial build
-  buildAllCSS();
+  // Initial build; a one-off build fails the command (watch mode keeps
+  // watching so the next save can fix it).
+  if (!buildAllCSS() && !isWatchMode) {
+    process.exit(1);
+  }
   
   if (isWatchMode) {
     console.log('Watching for CSS changes...');

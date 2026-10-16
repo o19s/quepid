@@ -212,10 +212,7 @@ class SearchEndpointTest < ActiveSupport::TestCase
   describe 'find_or_initialize_for_user' do
     let(:joey) { users(:joey) }
 
-    it 'matches an existing endpoint even when basic_auth_credential differs' do
-      # basic_auth_credential is encrypted non-deterministically, so it must be excluded
-      # from the lookup. Passing a *different* credential value here proves the lookup
-      # ignores it — otherwise we'd silently create a duplicate row on every wizard run.
+    it 'preserves explicit credential reuse but does not give saved credentials to an unauthenticated request' do
       existing = search_endpoints(:one)
       existing.update!(
         search_engine:         'os',
@@ -236,7 +233,20 @@ class SearchEndpointTest < ActiveSupport::TestCase
       )
 
       assert_equal existing, found
-      assert_predicate found, :persisted?
+      assert_equal 'reader:reader', existing.reload.basic_auth_credential
+      assert_predicate SearchEndpoint.find_or_initialize_for_user(joey,
+                                                                  search_engine: 'os', endpoint_url: existing.endpoint_url, api_method: 'POST',
+                                                                  proxy_requests: true), :new_record?
+
+      [ 'reader:reader', existing.masked_basic_auth_credential ].each do |credential|
+        assert_equal existing, SearchEndpoint.find_or_initialize_for_user(joey,
+                                                                          search_engine: 'os', endpoint_url: existing.endpoint_url, api_method: 'POST',
+                                                                          proxy_requests: true, basic_auth_credential: credential)
+      end
+      existing.update!(archived: true)
+      assert_predicate SearchEndpoint.find_or_initialize_for_user(joey,
+                                                                  search_engine: 'os', endpoint_url: existing.endpoint_url, api_method: 'POST',
+                                                                  proxy_requests: true, basic_auth_credential: 'reader:reader'), :new_record?
     end
 
     # The lookup fields do not identify an endpoint uniquely, so more than one

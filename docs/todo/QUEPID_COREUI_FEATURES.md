@@ -1302,7 +1302,7 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - **Froggy animation**: `flipInX` / `flipOutX` transitions (2s duration)
 - **Spinner**: `spin 1s linear infinite` rotation for loading indicators (class: `spintime`)
 
-### Chart Styling (`qgraph.css`)
+### Chart Styling (`core/scores.css`)
 - Height: 100px, white background
 - Path stroke: `#587`, width 2, round linecap, no fill
 - X-axis lines: lightgrey
@@ -1328,13 +1328,13 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 ```
 
 ### Key CSS Files
-1. **qscore.css** (218 lines) — score display, diff layout, responsive breakpoints
-2. **bootstrap5-compat.css** (~709 lines) — BS5 shims for case UI (navbar, modals, popovers, etc.)
-3. **animation.css** — spinners (`.spinner`, `.spintime`)
-4. **judgements.css** (86 lines) — rating button transitions and selected states
-5. **qgraph.css** (105 lines) — SVG chart/graph styling
-6. **style.css** (105 lines) — main layout, results list
-7. **fonts.css** — Aller font family declarations
+1. **core/scores.css**, **core/diff.css** — score display, diff layout, responsive breakpoints
+2. **core/header.css**, **core/modals.css**, **core/bootstrap_overrides.css** — BS5 shims for case UI (navbar, modals, popovers, etc.)
+3. **core/animations.css** — spinners (`.spinner`, `.spintime`)
+4. **application/judging.css** — rating button transitions and selected states
+5. **core/scores.css** — SVG chart/graph styling
+6. **core/layout.css**, **core/query_list.css**, **core/search_results.css** — main layout, results list
+7. **shared/fonts.css** — Aller font family declarations
 
 ### No Dark Mode / No Print Styles
 - No dark mode support exists

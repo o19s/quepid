@@ -63,7 +63,7 @@
 
 /* flip black icon to white */
 .black-to-white {
-    width: 300px; /* Set desired width */
-    height: auto; /* Maintain aspect ratio */
-    filter: brightness(0) invert(1); /* Turns black to white */
+  width: 300px; /* Set desired width */
+  height: auto; /* Maintain aspect ratio */
+  filter: brightness(0) invert(1); /* Turns black to white */
 }

@@ -198,6 +198,18 @@ class Book < ApplicationRecord
     depth.present? ? query_doc_pairs.where(position: ..depth) : query_doc_pairs
   end
 
+  # Keep initial rendering, broadcasts and polling on the same coverage calculation.
+  def coverage_summary
+    total, zero, partial = ActiveRecord::Base.transaction do
+      [ query_doc_pairs_within_rank_depth.count,
+        SelectionStrategy.unjudged_pairs_count(self),
+        SelectionStrategy.partially_judged_pairs_count(self) ]
+    end
+    complete = total - zero - partial
+    { total_pairs: total, zero_judgement_count: zero, partial_count: partial,
+      complete_count: complete, coverage_pct: total.positive? ? ((complete.to_f / total) * 100).round : 0 }
+  end
+
   # Per-judge activity stats (sparkline of daily counts, total count, last
   # judged timestamp) for the given user ids, in a constant number of queries
   # regardless of how many judges are asked for. Shared by the book overview

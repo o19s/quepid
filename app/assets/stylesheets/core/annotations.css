@@ -1,0 +1,49 @@
+/* Case annotations list (core/_annotation.html.erb). */
+
+#annotations {
+  overflow: auto;
+  height:   auto;
+}
+
+li.annotation {
+  border: 1px solid #444;
+}
+
+.annotations-time {
+  font-size: 0.7em;
+}
+
+#annotations-list:has(li.annotation) .annotations-empty {
+  display: none;
+}
+
+.annotation-source {
+  font-size: 0.8em;
+}
+
+.annotation {
+  margin: 10px 0;
+}
+
+.annotation > div {
+  margin: 5px 0;
+}
+
+/* The menu toggle carries its own chevron glyph — suppress BS5's `::after`
+ * triangle so it doesn't double up. */
+.annotation .dropdown-toggle::after {
+  display: none;
+}
+
+/* The toggle is a bare <button>, so give it link colors. */
+.annotation .dropdown > .dropdown-toggle {
+  color: var(--bs-link-color);
+}
+
+.annotation .dropdown > .dropdown-toggle:hover {
+  color: var(--bs-link-hover-color);
+}
+
+.annotation > .dropdown > .dropdown-menu > li {
+  border-bottom: 1px solid #AAA !important;
+}

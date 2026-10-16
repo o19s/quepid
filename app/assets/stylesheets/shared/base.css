@@ -1,7 +1,7 @@
 /*
  * Page skin shared by both bundles (application and core). build_css.js
  * loads it right after Bootstrap and the fonts, so each bundle's own files
- * can extend these rules (e.g. core-additions.css makes body a flex column).
+ * can extend these rules (e.g. core/layout.css makes body a flex column).
  */
 
 body {

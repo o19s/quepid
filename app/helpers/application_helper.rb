@@ -81,7 +81,7 @@ module ApplicationHelper
   # Divider <li> for the shared account-dropdown menu (shared/_account_dropdown).
   # :hr is a standard Bootstrap divider (plain Rails nav). :separator is an
   # empty role="separator" <li> that core's header-scoped CSS
-  # (core-additions.css `header .dropdown-menu > li`) turns into a divider via
+  # (core/header.css `header .dropdown-menu > li`) turns into a divider via
   # its border-bottom -- the two surfaces can't share one divider style.
   def account_dropdown_divider style
     case style

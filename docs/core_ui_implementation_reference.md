@@ -26,7 +26,7 @@ After the case wizard closes, `setupAndStartTour()` runs (1.5s `setTimeout` from
 
 **Wizard gating** (when the tour runs): [COREUI §14](./todo/QUEPID_COREUI_FEATURES.md#14-wizard--onboarding).
 
-**File:** `app/javascript/modules/tour.js` (styles: `app/assets/stylesheets/tour.css`)
+**File:** `app/javascript/modules/tour.js` (styles: `app/assets/stylesheets/core/tour.css`)
 
 ---
 

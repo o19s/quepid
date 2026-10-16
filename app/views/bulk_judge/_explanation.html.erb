@@ -11,7 +11,8 @@
         id: "explanation_#{query_doc_pair.id}",
         data: {
           action: "input->bulk-judgement#saveExplanation",
-          query_doc_pair_id: query_doc_pair.id
+          query_doc_pair_id: query_doc_pair.id,
+          judgement_persisted: judgement.persisted?
         } %>
   </div>
 <% elsif judgement.explanation.present? %>

@@ -8,51 +8,51 @@
  */
 
 .json-explorer .hidden {
-	display: none;
+  display: none;
 }
 
 .json-explorer .prop {
-	font-weight: bold;
+  font-weight: bold;
 }
 
 .json-explorer .null {
-	color: red;
+  color: red;
 }
 
 .json-explorer .bool,
 .json-explorer .num {
-	color: blue;
+  color: blue;
 }
 
 .json-explorer .string {
-	color: green;
-	white-space: pre-wrap;
+  color: green;
+  white-space: pre-wrap;
 }
 
 .json-explorer .collapser {
-	position: absolute;
-	left: -1em;
-	cursor: pointer;
-	user-select: none;
-	color: rgb(249, 39, 83);
-	text-decoration: none;
-	background: none;
-	border: 0;
-	padding: 0;
+  position: absolute;
+  left: -1em;
+  cursor: pointer;
+  user-select: none;
+  color: rgb(249, 39, 83);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 .json-explorer li {
-	position: relative;
+  position: relative;
 }
 
 .json-explorer {
-	font-family: monospace;
-	font-size: 1.1em;
-	white-space: pre-wrap;
+  font-family: monospace;
+  font-size: 1.1em;
+  white-space: pre-wrap;
 }
 
 .json-explorer ul {
-	list-style: none;
-	margin: 0 0 0 2em;
-	padding: 0;
+  list-style: none;
+  margin: 0 0 0 2em;
+  padding: 0;
 }

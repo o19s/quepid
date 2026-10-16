@@ -13,7 +13,7 @@ function buildController() {
   slider.className = "east-slider"
   const east = document.createElement("div")
   east.className = "pane_east"
-  // jsdom does not load panes.css; provide its minimum for computed styles.
+  // jsdom does not load core/layout.css; provide its minimum for computed styles.
   east.style.minWidth = "300px"
   element.append(main, slider, east)
   document.body.append(element)

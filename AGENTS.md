@@ -128,6 +128,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 ### Manual testing tracker (`docs/manual-testing/`)
 
 - Follow the timestamp rules in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker). Preserve actual verification timestamps.
+- For multi-step Playwright MCP passes, inspect the rendered controls once, then batch related interactions and compact verification results in `browser_run_code_unsafe`. Use selectors observed in the DOM or snapshot; await each mutation response and its resulting UI/navigation before the next dependent action, especially with Turbo. Use short timeouts for exploratory selectors and inspect failures before retrying. Capture and inspect screenshots at meaningful states, and update a scenario only after its checks succeed; a failed batch must not trigger a success record.
 
 - Proactively offer a representative sample batch when browser verification spans many flows or would slow incremental development. Name the proposed sample and deferred coverage. Once sampling is authorized, carry out that batch without asking again on every commit; follow the sampling policy in DEVELOPER_GUIDE.md. Do not make a full Playwright sweep the default gate for each commit.
 
@@ -205,11 +206,11 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 ## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)
 
-- The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then `base.css` (page skin shared with `application.css`) and Quepid layers (`core-additions.css` — Quepid layout, mostly without Bootstrap-class selectors; `navbar-brand.css` — navbar brand skin; **`bootstrap5-compat.css`** — Bootstrap-class shims, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
+- The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then `app/assets/stylesheets/shared/` (fonts, brand tokens, page skin and header brand shared with `application.css`) and `core/` (one file per component; core-wide Bootstrap overrides in `core/bootstrap_overrides.css`). See [DEVELOPER_GUIDE.md — How does the Frontend work?](DEVELOPER_GUIDE.md#how-does-the-frontend-work). The header's full-width layout is a markup change (`container` → `container-fluid`), not a CSS rule.
 - The core Stimulus/runtime bundle and `bootstrap_globals` provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
-- The rest of the UI, admin included, loads BS5 via `application.css`. Apart from `base.css`, `fonts.css` and `navbar-brand.css`, the two are separate stylesheet worlds.
+- The rest of the UI, admin included, loads BS5 via `application.css` (`shared/` plus `application/`). Apart from `shared/`, the two are separate stylesheet worlds.
 - **Use Bootstrap 5's defaults.** `core` uses BS5's 16px root, palette, focus rings and component skins, the same as `application.css`. Don't reintroduce Bootstrap 3 look-alike colors or px-pinned `--bs-*` sizes; where a widget needs a different size or color, prefer BS5 utilities or component `--bs-*` variables over new literals.
-- When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
+- When you **add or change** BS5-driven UI on `core` (or Bootstrap overrides in `core/`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
 - **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
 - **Verify visually.** Some of these traps produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
 

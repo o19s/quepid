@@ -1,0 +1,117 @@
+/*
+ * Core header (_header_core_app.html.erb) deltas on the shared skin in
+ * shared/header.css, plus its dropdown menus. Rules are scoped to `header`
+ * so other dropdowns (case toolbar, account picker outside the header) stay
+ * on BS5 defaults.
+ */
+
+/* Explicit line-height keeps the wordmark centered in the 56px box:
+ * without it, BS5's unitless `line-height: 1.5` on body inherits and
+ * recomputes against this element's own 28px font-size (1.5 * 28 = 42px),
+ * overflowing the fixed-height box below the 16px top padding and pushing
+ * the text down instead of centering it.
+ */
+.navbar-brand {
+  padding: 16px 15px 0 0;
+  line-height: 20px;
+}
+
+/* 15px here vs 5px in application/header.css is intentional, not drift: the
+ * padding-top above puts the wordmark — and this tooltip's offset from it —
+ * lower here. Don't "sync" the two numbers without re-checking both headers. */
+.navbar-brand:hover .hover {
+  top: 15px;
+}
+
+/* 18px y centres nav items against the 56px brand strip (BS5 default
+ * 8px sits high). Scoped to `header.navbar-secondary` so the selector
+ * (0,3,1) outranks BS5's `.navbar-expand .navbar-nav .nav-link` (0,3,0),
+ * which sets `padding-right/left` to `--bs-navbar-nav-link-padding-x`
+ * and would otherwise clobber the 15px horizontal padding. */
+header.navbar-secondary .navbar-nav .nav-link {
+  padding: 18px 15px;
+  line-height: 24px;
+}
+
+/* Below `lg`, `.navbar-collapse` stacks nav items into a vertical list —
+ * the 18px/24px pair above (sized to center a link against the horizontal
+ * 56px bar) turns into large, loose gaps once every item is its own row.
+ * Tighten to a normal stacked-list size only in the collapsed/mobile state. */
+@media (max-width: 991.98px) {
+  header.navbar-secondary .navbar-nav .nav-link {
+    padding: 8px 15px;
+    line-height: 1.5;
+  }
+}
+
+/* Row + center the secondary navbar's dropdown and breadcrumb siblings.
+ * Only this header has a `.container-home` sibling to center. */
+.navbar-secondary .container-home {
+  display: flex;
+  align-items: center;
+}
+
+/* Hover emphasis — only this header's nav-links get it. */
+.navbar-secondary .navbar-nav .nav-link:hover {
+  background: rgba(0,0,0,0.25);
+}
+
+/* Stop "User Manual" / "Relevancy Cases" from wrapping at 1280px. */
+header .nav-link {
+  white-space: nowrap;
+}
+
+/* Secondary nav — open toggle uses .show / aria-expanded="true". */
+.navbar-secondary .navbar-nav .dropdown-toggle.show,
+.navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
+  background: var(--quepid-header-open-bg);
+}
+
+/* Header menus carry their own chevron glyph — suppress BS5's `::after`
+ * triangle so it doesn't double up. */
+header.navbar-secondary .dropdown-toggle::after {
+  display: none;
+}
+
+header .dropdown-toggle .bi {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+}
+
+/*
+ * Header dropdown skin — Quepid visual on BS5's .dropdown-menu /
+ * .dropdown-item. BS5 supplies positioning (Popper.js), open/close plumbing,
+ * and the keyboard a11y; we only override spacing, item layout, and the
+ * link color/hover treatment.
+ */
+
+header .dropdown-menu {
+  margin: 0;
+  padding: 1px 0 0 0;
+  border-radius: 0;
+  z-index: 999;
+}
+
+header .dropdown-menu > li {
+  min-width: 250px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+header .dropdown-item {
+  padding: 0;
+  color: var(--bs-link-color);
+  background: transparent;
+}
+
+header .dropdown-item:hover,
+header .dropdown-item:focus {
+  background: transparent;
+  color: var(--bs-link-hover-color);
+  text-decoration: underline;
+}
+
+/* Gap between the stacked header dropdown buttons. */
+.dropdown-menu .actions .btn + .btn {
+  margin-top: 10px;
+}

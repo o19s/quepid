@@ -1,0 +1,33 @@
+/*
+ * Match explain (match_explain_controller.js): the per-document scoring
+ * breakdown popover, its stacked chart, and the Debug / Expand modals.
+ */
+
+.doc-score-explanation {
+  max-height: 200px;
+  overflow:   auto;
+  width:      100%;
+}
+
+.graph-explain .progress {
+  height: 7px;
+  margin: 2px 0 5px 0;
+}
+
+.graph-explain .progress-bar {
+  transition: none;
+}
+
+.graph-explain .graph-label {
+  font-size: 10px;
+  overflow-wrap: break-word;
+}
+
+.stacked-chart-container {
+  padding: 15px;
+}
+
+/* The Debug and Expand modals open from the explain popover; sit above it. */
+.full-screen-modal {
+  z-index: 2050 !important;
+}

@@ -44,7 +44,6 @@ class V8MapperExecutor
     @logs = []
   end
 
-  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
   def extract_docs code_mapper, response_body
     @context.eval('var docs = [];')
 
@@ -52,20 +51,7 @@ class V8MapperExecutor
 
     @context.eval('validateMappersExist()')
 
-    response_body = response_body.join("\n") if response_body.is_a?(Array)
-
-    # If responseBody is a JSON string, parse it first before converting to JavaScript
-    if response_body.is_a?(String)
-      begin
-        parsed_body = JSON.parse(response_body)
-        @context.eval("var responseBody = #{parsed_body.to_json};")
-      rescue JSON::ParserError
-        # If it's not valid JSON, treat it as a plain string
-        @context.eval("var responseBody = #{response_body.to_json};")
-      end
-    else
-      @context.eval("var responseBody = #{response_body.to_json};")
-    end
+    load_response_body(response_body)
 
     # Let a thrown docsMapper error propagate as a MiniRacer::Error (caught below) rather
     # than swallowing it here - callers need to distinguish "the mapper crashed" from
@@ -78,7 +64,6 @@ class V8MapperExecutor
     raise MapperError, "JavaScript execution error: #{e.message}"
   end
 
-  # rubocop:disable-next Style/DocumentDynamicEvalDefinition
   def extract_number_of_results code_mapper, response_body
     @context.eval('var numberOfResults = 0;')
 
@@ -86,16 +71,7 @@ class V8MapperExecutor
 
     @context.eval('validateMappersExist()')
 
-    response_body = response_body.join("\n") if response_body.is_a?(Array)
-
-    # If responseBody is a JSON string, parse it first before converting to JavaScript
-    begin
-      parsed_body = JSON.parse(response_body)
-      @context.eval("var responseBody = #{parsed_body.to_json};")
-    rescue JSON::ParserError
-      # If it's not valid JSON, treat it as a plain string
-      @context.eval("var responseBody = #{response_body.to_json};")
-    end
+    load_response_body(response_body)
 
     # See the matching comment in extract_docs: let a thrown error propagate instead of
     # silently defaulting numberOfResults to 0, which would be indistinguishable from a
@@ -109,6 +85,29 @@ class V8MapperExecutor
   end
 
   private
+
+  def load_response_body response_body
+    response_body = response_body.join("\n") if response_body.is_a?(Array)
+    if response_body.is_a?(String)
+      begin
+        response_body = JSON.parse(response_body)
+      rescue JSON::ParserError
+        # Non-JSON responses (including HTML) retain their string contract.
+      end
+    end
+    # rubocop:disable-next Style/DocumentDynamicEvalDefinition
+    @context.eval("var responseBody = #{response_body.to_json};")
+    # Preserve object/array access while supporting saved JSON.parse(data) mappers.
+    # The non-enumerable coercion hook leaves keys and JSON serialization intact;
+    # no native JSON functions are replaced and mapper errors are never retried.
+    @context.eval <<~JS
+      if (responseBody !== null && typeof responseBody === 'object') {
+        Object.defineProperty(responseBody, Symbol.toPrimitive, {
+          value: function() { return JSON.stringify(this); }
+        });
+      }
+    JS
+  end
 
   def attach_ruby_methods
     # Capture log messages to @logs array

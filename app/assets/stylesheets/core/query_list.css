@@ -1,0 +1,133 @@
+/*
+ * Query list (core/_queries.html.erb, _query_list_templates.html.erb): the
+ * results-control container, one row per query with its header, indicators
+ * and expand/collapse toggle. The expanded results are search_results.css.
+ */
+
+.dragging {
+  border: 1px dashed #AAA;
+  padding: 5px 0px;
+}
+
+.results-control h1 {
+  margin: 15px 0 20px 0;
+  padding-bottom: 10px;
+}
+
+.results-control :is(h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6) {
+  font-family: var(--quepid-brand-font);
+}
+
+/* These containers have no side padding, so BS5's negative .row margin
+ * would push their content to the viewport edge. Zero it. */
+.results-control #query-container > .row,
+.results-control #case-header,
+.results-control #case-actions {
+  margin-right: 0;
+  margin-left: 0;
+}
+
+.results-control #query-container {
+  margin: 5px 0 60px;
+  padding: 30px 0 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-width: 1px 0;
+}
+
+.results-list-element > li {
+  border: 1px solid #eee;
+  margin: 0 0 5px 0;
+  position: relative;
+  border-radius: 5px;
+}
+
+.result-header {
+  display: flex;
+  position: relative;
+  padding: 10px 20px;
+}
+
+.result-header:hover {
+  background: #eee;
+}
+
+.results-title {
+  color:       #222;
+  cursor:      pointer;
+  font-size:   18px;
+  font-weight: normal;
+  line-height: 1.5em;
+  margin:      0;
+}
+
+.results .total-results {
+  line-height:  30px;
+  margin-right: 50px;
+  text-align:   right;
+}
+
+.low-profile {
+  opacity: 0.5;
+  font-size: 60%;
+}
+
+.results .error-warning {
+  display: none;
+}
+
+.results .queryHeader_error .error-warning {
+  display: inline-block;
+  font-size: 1.25rem;
+  color: var(--bs-danger);
+}
+
+/* Query header indicators: the 🐸 missing-ratings badge and the Querqy icon. */
+.icon-container {
+  position: relative;
+  display: inline-block;
+  /* The 🐸 emoji glyph sits well above the text baseline, so at default
+     vertical-align the icon renders noticeably higher than the sibling
+     result-count number and the toggle chevron. Nudge down to align. */
+  top: 6px;
+}
+
+.frog-icon {
+  color: grey;
+  filter: grayscale(100%);
+}
+
+.querqy-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-image: url('images/querqy-icon.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Expand/collapse toggles: the results-pane one and the per-query chevron. */
+.results-pane-toggle,
+.results .toggleSign {
+  color: var(--bs-link-color);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.results-pane-toggle {
+  cursor: pointer;
+}
+
+/* Shared cursor; positioning and appearance apply only inside results. */
+.toggleSign {
+  cursor: pointer;
+}
+
+.results .toggleSign {
+  position: absolute;
+  top: 50%;
+  right: 19px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+}

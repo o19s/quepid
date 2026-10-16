@@ -1,0 +1,14 @@
+/*
+ * Application header (_header.html.erb) deltas on the shared skin in
+ * shared/header.css. This header's .navbar-brand has no padding-top (unlike
+ * the core header — see core/header.css), so the wordmark sits higher and
+ * this tooltip offset is correspondingly smaller.
+ */
+
+.navbar-brand:hover .hover {
+  top: 5px;
+}
+
+.navbar-secondary {
+  padding: 0px;
+}

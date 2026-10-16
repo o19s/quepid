@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
-// Dead-rule audit for the `core.css` stylesheet bundle.
+// Dead-rule audit for the `core.css` and `application.css` stylesheet bundles.
 //
-// Scans every source file that `buildCoreCSS()` in build_css.js
-// concatenates into core.css, and asks PurgeCSS which selectors are
+// Scans every Quepid source file that build_css.js concatenates into either
+// bundle (shared/, core/, application/), and asks PurgeCSS which selectors are
 // never referenced by any template, helper, or script. Writes a
 // per-source-file report (default tmp/css-audit/, override with CSS_AUDIT_DIR).
 //
@@ -13,7 +13,7 @@
 // Exits before PurgeCSS if the output directory is not writable.
 //
 // Why per-file rather than per-bundle: the core CSS bundle is built by
-// concatenation, so an unused selector in bootstrap5-compat.css is attributable
+// concatenation, so an unused selector in core/header.css is attributable
 // to that file versus npm Bootstrap noise in node_modules/bootstrap. Attribution matters.
 
 const fs = require('fs');
@@ -45,26 +45,19 @@ function ensureWritableOutDir(dir) {
   }
 }
 
-// Sources that compose core.css (mirrors buildCoreCSS in build_css.js).
-// fonts.css is excluded — it's just @font-face declarations.
-// Vendored bootstrap-icons and shepherd-theme are excluded — those
-// belong to upstream packages.
+// Sources that compose the bundles (the files build_css.js concatenates).
+// fonts.css and tokens.css are excluded — just @font-face and :root
+// declarations. Vendored bootstrap-icons and shepherd-theme are excluded —
+// those belong to upstream packages.
+const STYLES = 'app/assets/stylesheets';
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
-  'app/assets/stylesheets/base.css',
-  'app/assets/stylesheets/core-additions.css',
-  'app/assets/stylesheets/navbar-brand.css',
-  'app/assets/stylesheets/bootstrap5-compat.css',
-  'app/assets/stylesheets/style.css',
-  'app/assets/stylesheets/panes.css',
-  'app/assets/stylesheets/stackedChart.css',
-  'app/assets/stylesheets/tour.css',
-  'app/assets/stylesheets/docs.css',
-  'app/assets/stylesheets/qscore.css',
-  'app/assets/stylesheets/qgraph.css',
-  'app/assets/stylesheets/misc.css',
-  'app/assets/stylesheets/animation.css',
-  'app/assets/stylesheets/froggy.css',
+  ...['shared', 'core', 'application'].flatMap(dir =>
+    fs.readdirSync(path.join(STYLES, dir))
+      .filter(name => name.endsWith('.css') && !['fonts.css', 'tokens.css'].includes(name))
+      .sort()
+      .map(name => `${STYLES}/${dir}/${name}`)
+  ),
 ];
 
 // Vendored upstream files we report on but expect high false-positive
@@ -152,7 +145,10 @@ async function auditFile(cssFile) {
 }
 
 function writeReports(report) {
-  const basename = path.basename(report.file, '.css');
+  // core/layout.css -> core_layout; bundle directories share file names.
+  const basename = report.file.startsWith(`${STYLES}/`)
+    ? report.file.slice(STYLES.length + 1, -'.css'.length).replace(/\//g, '_')
+    : path.basename(report.file, '.css');
   fs.writeFileSync(
     path.join(AUDIT_OUTPUT_DIR, `${basename}.dead.txt`),
     report.rejected.join('\n') + '\n'
@@ -167,7 +163,7 @@ function writeReports(report) {
 
 function writeSummary(reports) {
   const lines = [];
-  lines.push('# core.css dead-rule audit');
+  lines.push('# Stylesheet dead-rule audit');
   lines.push('');
   lines.push(`Generated: ${new Date().toISOString()}`);
   const relOutDir = path.relative(process.cwd(), AUDIT_OUTPUT_DIR) || '.';
@@ -204,7 +200,7 @@ function writeSummary(reports) {
 }
 
 async function main() {
-  console.log('Auditing core.css sources for unreferenced selectors...');
+  console.log('Auditing stylesheet sources for unreferenced selectors...');
   console.log(`Content globs: ${CONTENT.length} patterns`);
   console.log(`CSS sources: ${SOURCES.length} files`);
   console.log(`Output directory: ${AUDIT_OUTPUT_DIR}`);

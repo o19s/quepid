@@ -127,11 +127,11 @@ class SearchEndpoint < ApplicationRecord
   end
 
   # Find an existing endpoint owned by or shared with the user, or build a new one.
-  # basic_auth_credential is excluded from the lookup because it is non-deterministically
-  # encrypted and cannot be queried with find_by.
+  # Check credential presence after loading candidates: encryption is non-deterministic.
   # proxy_requests defaults to false when omitted so lookup matches the DB default; callers
   # that use a proxied endpoint must pass proxy_requests explicitly.
-  def self.find_or_initialize_for_user user, params
+  # Imports can reuse stored credentials omitted by the export serializer.
+  def self.find_or_initialize_for_user user, params, options = {}
     normalized = params.to_h.symbolize_keys
     normalized[:proxy_requests] = false if normalized[:proxy_requests].nil?
 
@@ -139,12 +139,12 @@ class SearchEndpoint < ApplicationRecord
     lookup_params = normalized.slice(*lookup_keys)
 
     if lookup_keys.all? { |key| lookup_params.key?(key) }
-      # These four fields do not identify an endpoint uniquely - the same URL
-      # can be registered more than once with different options or credentials.
-      # find_by would take whichever row the database happened to return first,
-      # which is not defined and does differ between adapters. Take the lowest-id
-      # match instead, so the same import always attaches the same endpoint.
-      endpoint = user.search_endpoints_involved_with.where(lookup_params).order(:id).first
+      # A new unauthenticated connection must not inherit saved credentials.
+      # Explicit credentials retain the caller's existing update/masking policy.
+      credential = normalized[:basic_auth_credential]
+      endpoint = user.search_endpoints_involved_with.not_archived.where(lookup_params).order(:id).detect do |candidate|
+        options[:reuse_stored_credentials] || credential.present? || candidate.basic_auth_credential.blank?
+      end
       return endpoint if endpoint
     end
 

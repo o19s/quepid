@@ -7,9 +7,14 @@ class BroadcastJudgeActivityJob < ApplicationJob
 
   def perform book, judge
     row = book.judge_activity_row_for(judge)
+    # Coverage is the same for every viewer, so render it once.
+    coverage_html = ApplicationController.render(
+      partial: 'books/coverage_summary', locals: book.coverage_summary.merge(cases: book.cases)
+    )
     member_ids = book.teams.joins(:members).pluck('teams_members.member_id')
     User.where(id: [ book.owner_id, *member_ids ].compact.uniq).find_each do |viewer|
       channel = [ viewer, book, :judgements ]
+      Turbo::StreamsChannel.broadcast_update_to(*channel, target: 'book-coverage-summary', html: coverage_html)
       if row
         row[:refinable] = AiJudge.for_user(viewer).exists?(id: judge.id)
         broadcast_cells(channel, book, row)

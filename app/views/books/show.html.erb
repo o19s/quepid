@@ -64,9 +64,11 @@
   </div>
 <% end %>
 
+<div id="book-coverage-summary">
 <%= render "books/coverage_summary", total_pairs: @total_pairs, coverage_pct: @coverage_pct,
            complete_count: @complete_count, zero_judgement_count: @zero_judgement_count,
            partial_count: @partial_count, cases: @cases %>
+</div>
 
 <%= render "books/judge_activity_card", book: @book, judge_activity: @judge_activity,
            available_ai_judges: available_ai_judges %>

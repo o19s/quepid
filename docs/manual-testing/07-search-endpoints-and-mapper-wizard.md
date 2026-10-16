@@ -132,6 +132,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   2. Click **Test** on each — confirm the Test Result and any `console.log` output ("Console Logs") display.
   3. Click **Refine with AI**, provide feedback text, confirm the editor content updates with the AI's improved version.
 - **Expected:** Test runs the code safely (sandboxed) against the previously fetched sample data and shows accurate results/errors; Refine incorporates your feedback into a revised version.
+- [ ] Test stored JSON mappers using `JSON.parse(data)` and current mappers accessing parsed objects/arrays directly; both must return the same count/documents. Non-JSON HTML remains a string.
 - **Edge cases:**
   - [ ] Test with empty/broken code — expect "Code is required" or a "JavaScript error: ..." message, not a crash.
   - [ ] Test before ever fetching HTML — expect "HTML content is required".
@@ -222,5 +223,6 @@ See [Qdrant setup and request examples](../endpoints_qdrant.md).
   until its endpoint is explicitly reconfigured; the flag is not a data migration.
 - [ ] Open the standalone Mapper Wizard: no visible proxy switch, and its save
   submits proxy true. Broader mapper generation/save checks remain in 7.7–7.10.
+- [ ] With archived and credentialed endpoints matching a new unauthenticated connection, confirm Finish selects an active endpoint without inheriting saved credentials. Explicit credentials retain the existing owned/shared endpoint update policy.
 - [ ] Restore the flag to false and restart: JSONP and proxy controls return.
   Remove disposable cases/endpoints and restore account onboarding state.

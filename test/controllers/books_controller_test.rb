@@ -930,6 +930,9 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_match "judge-row-#{judge_judy.id}", response.body
     assert_match 'Judge Judy', response.body
+    assert_select 'turbo-stream[action="update"][target="book-coverage-summary"]' do
+      assert_select 'template', text: /Not Started/
+    end
   end
 
   test 'lists assigned AI judge in Judge Activity table even with no judgements' do

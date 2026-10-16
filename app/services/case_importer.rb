@@ -108,7 +108,8 @@ class CaseImporter
   def attach_search_endpoint
     search_endpoint = SearchEndpoint.find_or_initialize_for_user(
       @current_user,
-      @data_to_process[:try][:search_endpoint]
+      @data_to_process[:try][:search_endpoint],
+      reuse_stored_credentials: true
     )
     if search_endpoint.new_record? && !search_endpoint.save
       search_endpoint.errors.messages.each do |attribute, messages|

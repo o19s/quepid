@@ -13,6 +13,8 @@ class BroadcastJudgeActivityJobTest < ActiveJob::TestCase
       BroadcastJudgeActivityJob.perform_now(book, judge_judy)
     end
 
+    assert_equal 'book-coverage-summary', streams.first['target']
+    assert_equal 'update', streams.shift['action']
     assert_equal(%w[replace replace replace], streams.map { |stream| stream['action'] })
     assert_equal([ "judge-status-#{judge_judy.id}", "judge-count-#{judge_judy.id}", "judge-last-#{judge_judy.id}" ],
                  streams.map { |stream| stream['target'] })
@@ -33,7 +35,7 @@ class BroadcastJudgeActivityJobTest < ActiveJob::TestCase
     streams = capture_turbo_stream_broadcasts([ book.owner, book, :judgements ]) do
       BroadcastJudgeActivityJob.perform_now(book, users(:matt))
     end
-    assert_equal 'remove', streams.first['action']
+    assert_equal 'remove', streams.last['action']
   end
 
   test 'prompt links remain scoped to each viewer when activity is broadcast' do
@@ -42,6 +44,7 @@ class BroadcastJudgeActivityJobTest < ActiveJob::TestCase
     streams = capture_turbo_stream_broadcasts([ book.owner, book, :judgements ]) do
       BroadcastJudgeActivityJob.perform_now(book, judge_judy)
     end
-    assert_not_includes streams.first.to_s, 'Refine Prompt'
+    status = streams.find { |stream| stream['target'] == "judge-status-#{judge_judy.id}" }
+    assert_not_includes status.to_s, 'Refine Prompt'
   end
 end

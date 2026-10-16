@@ -5,9 +5,10 @@ import { execFileSync } from "node:child_process"
 
 const styles = "app/assets/stylesheets/"
 const layouts = "app/views/layouts/"
-const sharedStyles = ["fonts", "base", "navbar-brand"]
-const applicationStyles = [...sharedStyles, "bootstrap5-add", "signup", "judgements"]
-const coreStyles = [...sharedStyles, "core-additions", "bootstrap5-compat", "style", "panes", "stackedChart", "tour", "docs", "qscore", "qgraph", "misc", "animation", "froggy", "json-explorer"]
+// Mirrors the bundle file lists in build_css.js.
+const sharedStyles = ["shared/fonts", "shared/tokens", "shared/base", "shared/header"]
+const applicationStyles = [...sharedStyles, ...["header", "layout", "pages", "teams", "sign_in", "judging", "books"].map(name => `application/${name}`)]
+const coreStyles = [...sharedStyles, ...["layout", "header", "bootstrap_overrides", "query_list", "search_results", "scores", "diff", "match_explain", "dev_settings", "annotations", "flash", "modals", "tour", "animations", "json_explorer"].map(name => `core/${name}`)]
 const sharedLayouts = ["_header", "_header_navigation", "_header_management_actions", "_header_help_links", "_footer"]
 const captureInfrastructure = new Set([
   "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs",

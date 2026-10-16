@@ -106,6 +106,36 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
     end
   end
 
+  test 'saved string mappers and parsed object mappers accept the same JSON response' do
+    [ { 'docs' => [ { 'id' => 'one' } ] }, [ { 'id' => 'one' } ] ].each do |body|
+      source = body.to_json
+      legacy = <<~JS
+        docsMapper = function(data) { return JSON.parse(data).docs || JSON.parse(data); };
+        numberOfResultsMapper = function(data) { return docsMapper(data).length; };
+      JS
+      modern = <<~JS
+        docsMapper = function(data) { return Array.isArray(data) ? data : data.docs; };
+        numberOfResultsMapper = function(data) { return docsMapper(data).length; };
+      JS
+      [ legacy, modern ].each do |mapper|
+        assert_equal [ { 'id' => 'one' } ], v8_executor.extract_docs(mapper, source)
+        assert_equal 1, v8_executor.extract_number_of_results(mapper, source)
+      end
+      identity = <<~JS
+        docsMapper = function(data) { return [{ keys: Object.keys(data), json: JSON.stringify(data) }]; };
+        numberOfResultsMapper = function(data) { return 0; };
+      JS
+      result = v8_executor.extract_docs(identity, source).first
+      assert_equal source, result['json']
+      assert_equal body.is_a?(Array) ? [ '0' ] : [ 'docs' ], result['keys']
+    end
+  end
+
+  test 'number mapper also accepts an already parsed JSON object' do
+    code = 'docsMapper = function(data) { return data.docs; }; numberOfResultsMapper = function(data) { return data.docs.length; };'
+    assert_equal 1, v8_executor.extract_number_of_results(code, { docs: [ { id: 1 } ] })
+  end
+
   describe 'console log capture' do
     test 'all console levels preserve objects circular values and multiple arguments' do
       code_mapper = <<~JS

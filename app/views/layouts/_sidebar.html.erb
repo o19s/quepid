@@ -75,7 +75,7 @@
       <%= render "layouts/sidebar_item", url: scorers_path, label: "Scorers", icon: "bi-list-task",
                  active: make_active?({path: 'scorers'}), data: { turbo_prefetch: false } %>
       <%= render "layouts/sidebar_item", url: "#{root_path}notebooks/lab/index.html", label: "Notebooks",
-                 icon: "bi-journal-medical", active: false, icon_active: make_active?({path: 'case'}),
+                 icon: "bi-journal-medical", active: false,
                  link_class: "nav-link py-3 border-bottom rounded-0",
                  target: "_blank", rel: "noopener noreferrer", data: { turbo: false } %>
       <%= render "layouts/sidebar_item", url: search_endpoints_path, label: "Search Endpoints", icon: "bi-send-fill",

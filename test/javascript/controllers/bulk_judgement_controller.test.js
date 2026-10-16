@@ -19,7 +19,7 @@ function mount() {
         <label for="r1">1</label>
       </div>
       <div class="rating-buttons"><div class="d-flex"></div></div>
-      <textarea id="explanation_${QDP}" data-query-doc-pair-id="${QDP}"></textarea>
+      <textarea id="explanation_${QDP}" data-query-doc-pair-id="${QDP}" data-judgement-persisted="true"></textarea>
       <span id="status_${QDP}"></span>
     </div>`
   document.body.appendChild(element)
@@ -53,6 +53,33 @@ describe("BulkJudgementController", () => {
   })
 
   describe("saveRating", () => {
+    it("keeps an unrated explanation as a draft and saves it with the selected rating", async () => {
+      vi.useFakeTimers()
+      apiFetch.mockResolvedValue(ok())
+      const { controller, element } = mount()
+      const field = element.querySelector("textarea")
+      field.dataset.judgementPersisted = "false"
+      controller.disconnect()
+      controller.connect()
+      field.value = "Draft explanation"
+
+      controller.saveExplanation({ currentTarget: field })
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(apiFetch).not.toHaveBeenCalled()
+      expect(status(element).textContent).toBe("Choose a rating to save this explanation.")
+      expect(field.value).toBe("Draft explanation")
+
+      await controller.saveRating(ratingButton("0"))
+
+      expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
+        query_doc_pair_id: QDP,
+        rating: "0",
+        explanation: "Draft explanation"
+      })
+      expect(field.dataset.judgementPersisted).toBe("true")
+    })
+
     it("selects the rating optimistically, adds a reset button, and posts the judgement", async () => {
       apiFetch.mockResolvedValue(ok())
       const { controller, element } = mount()

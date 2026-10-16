@@ -80,6 +80,8 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   - [ ] Trigger a run when the book already has zero unjudged pairs left — confirm it completes immediately having processed 0, without error.
   - [ ] Confirm a run with no available pairs completes without new judgements; availability follows the book's selection strategy and Rank Depth.
 
+- [ ] During a judging run, confirm coverage cards update alongside Judge Activity without reloading the Book page.
+
 ### 12.6 AI Judge image options
 
 - [ ] **Steps:**

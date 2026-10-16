@@ -113,7 +113,7 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 ### 15.10 Flash timing and placement
 
 - [ ] On Profile, submit unchanged profile fields for a notice; submit an incorrect current password for an error. Repeat representative success/error states on admin pages.
-- [ ] Rails/admin flashes overlay the viewport bottom without shifting page content. Announcements remain in the header flow. Modal controls remain above the flash layer.
+- [ ] Rails/admin flashes appear in the header flow, below navigation, matching the historical Rails surface. Announcements remain in the header flow. Modal controls remain usable above the flash layer.
 - [ ] Success/notice remains at three seconds and dismisses after five. Hover or focus the close button for longer than five seconds; leave both hover and focus and confirm a fresh five-second delay. Errors/warnings remain until manually closed or navigation.
 - [ ] Navigate through Turbo and Back; one-time messages do not repeat. Disconnect and reconnect an alert and confirm only one dismissal timer runs.
 - [ ] On core, trigger a main-channel success and a search-error message. Preserve the separate contract: main messages use their existing timer without hover/focus pause; search-error stays until dismissed. Check both layers after resizing and with Tune Relevance open.

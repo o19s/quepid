@@ -65,24 +65,6 @@ proxied paging, unique appended results, retained ratings and failed-page retry.
 Browser CORS overrides are evidence fixtures, not a fix. Deferred from the
 migration-only parity patch.
 
-### [MIGRATION-FOLLOWUP] P1 I0 C2 — Classify the required-proxy wizard failure before merge
-
-Manual scenario 7.13 retains an unresolved failure: new-engine Finish selected an
-archived endpoint with dummy credentials and search failed; explicit endpoint
-selection worked. Reproduce with controlled endpoint fixtures and distinguish
-inherited lookup behavior from a regression in the new required-proxy flow.
-The historical application lacks this flag; its absence alone proves neither
-parity nor regression. Do not change endpoint reuse semantics without that evidence.
-
-### [PREEXISTING] P1 I0 C2 — Resolve stored mapper input compatibility - EP review needed
-
-Manual scenario 7.9: stored `JSON.parse(data)` mappers work on historical
-`8ceb99e9` but fail on current because `lib/v8_mapper_executor.rb` pre-parses JSON
-into an object. Upstream `92519d55` changed that contract before the Stimulus
-mapper migration. Define a compatible input contract and verify both stored
-string-based and object-based mappers; an adaptive mapper workaround does not
-resolve existing saved mapper failures.
-
 ### [PREEXISTING] P1 I0 C3 — Scorer sandboxing - LATER
 
 **Decision needed:** Agree on the trust model for shared scorer code and the isolation guarantees required while preserving supported scorer behavior.
@@ -277,19 +259,13 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ---
 
-### [PREEXISTING] P2 I0 C2 — Bulk judging reshuffles documents between pages
-
-`BulkJudgeController#new` shuffles each query group before pagination on every request, so consecutive pages can repeat documents and omit others. Current browser replay confirms overlap; Angular `8ceb99e9` has the same ordering code (source comparison only; live historical replay pending). Preserve a stable ordering across a judging session before paginating.
-
----
-
 ### [PREEXISTING] P2 I1 C3 — Judgement rating not validated against book's scale (outside AI judging)
 
-**Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update`, `JudgementsController`, and `BulkJudgeController#save` (`judgement.rating = params[:rating]`, no scale check) all write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path (`app/jobs/run_judge_judy_job.rb`, hardened in `37840b47`) is the only one with a guard, and it's job-local.
+**Observed:** `Judgement#rating` only validates presence, never that the value is actually one of the book's configured scale values. `Api::V1::JudgementsController#update` and `JudgementsController` write a client-supplied rating with no scale check — they're only "safe" today because the judging UI happens to render buttons limited to the book's actual scale values; nothing stops a raw form/API POST from bypassing that. The AI-judging path and bulk endpoint guard explicit-scale submissions; the other write paths still need a shared validation policy.
 
 **Cause:** No model-level validation ties `Judgement#rating` to `query_doc_pair.book.scale`.
 
-**Audit result (done):** Two call sites *legitimately* write ratings outside the discrete scale, both gated on `book.support_implicit_judgements?`:
+**Audit result (done):** Two call sites can legitimately write ratings outside the discrete scale. Only the merge path gates continuous values on `book.support_implicit_judgements?`; case-to-book sync does not:
 - `[PREEXISTING]` `BooksController#combine` (`app/controllers/books_controller.rb:277`) averages two existing ratings — `(judgement.rating + j.rating) / 2` — and explicitly skips rounding when `support_implicit_judgements` is true (e.g. `(0+3)/2 = 1.5` on a `[0,1,2,3]` scale).
 - `[PREEXISTING]` `JudgementFromRatingJob#perform` (`app/jobs/judgement_from_rating_job.rb:24`) copies a case-level `Rating#rating` straight into `judgement.rating` via `judgement.save!` (raises on failure) — that value comes from the case's scorer scale, which has no guaranteed relationship to the book's judgement scale.
 
