@@ -1,9 +1,10 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { showStatusMessage } from "utils/status_message"
-import { setButtonLoading, escapeHtml } from "utils/stimulus_ui"
+import { HttpError } from "api/http_error"
+import { postJson } from "api/json"
+import { copyText } from "utils/clipboard"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
-export default class extends Controller {
+export default class extends withStatusMessages(Controller) {
   static targets = [
     "searchUrl",
     "testQuery",
@@ -47,16 +48,6 @@ export default class extends Controller {
   }
 
   connect() {
-    console.log("Mapper Wizard controller connected")
-    // Editors will be initialized by the global CodeMirror auto-init
-    // Store references when they become available
-    this.numberOfResultsEditor = null
-    this.docsEditor = null
-    this.customHeadersEditor = null
-
-    // Wait for CodeMirror to initialize the textareas
-    setTimeout(() => this.captureEditors(), 500)
-
     // If editing an existing endpoint with mappers, show steps 2 and 3
     if (this.hasExistingMappersValue) {
       this.step2Target.style.display = "block"
@@ -67,43 +58,34 @@ export default class extends Controller {
 
   // Lets a user without an OpenAI key (or who just prefers to write the mapper by hand) reach
   // Step 3 directly, instead of it only ever being revealed by a successful AI generation.
-  showStep3Manually(event) {
-    event.preventDefault()
+  showStep3Manually() {
     this.step2Target.style.display = "block"
     this.step3Target.style.display = "block"
     this.step3Target.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
-  captureEditors() {
-    if (this.hasNumberOfResultsMapperTarget && this.numberOfResultsMapperTarget.editor) {
-      this.numberOfResultsEditor = this.numberOfResultsMapperTarget.editor
-    }
-    if (this.hasDocsMapperTarget && this.docsMapperTarget.editor) {
-      this.docsEditor = this.docsMapperTarget.editor
-    }
-    if (this.hasCustomHeadersTarget && this.customHeadersTarget.editor) {
-      this.customHeadersEditor = this.customHeadersTarget.editor
-    }
+  // CodeMirror's auto-init attaches each editor to its textarea, possibly after
+  // this controller connects, so look editors up when they are used.
+  get numberOfResultsEditor() { return this.editorFor("numberOfResultsMapper") }
+  get docsEditor() { return this.editorFor("docsMapper") }
+  get customHeadersEditor() { return this.editorFor("customHeaders") }
+
+  editorFor(target) {
+    const has = this[`has${target[0].toUpperCase()}${target.slice(1)}Target`]
+    return has ? this[`${target}Target`].editor || null : null
   }
 
-  // Update the test query hint text and placeholder based on HTTP method
+  // Show the ERB-rendered hint for the chosen HTTP method and use its placeholder
   updateTestQueryHint() {
-    if (!this.hasHttpMethodTarget || !this.hasTestQueryHintTarget) return
+    if (!this.hasHttpMethodTarget) return
 
-    const method = this.httpMethodTarget.value
-    const isPost = method === 'POST'
+    const method = this.httpMethodTarget.value === "POST" ? "POST" : "GET"
 
-    if (isPost) {
-      this.testQueryHintTarget.innerHTML = 'Enter JSON body for POST request. Saved with endpoint for easy iteration.'
-      if (this.hasTestQueryTarget) {
-        this.testQueryTarget.placeholder = '{"query": "test", "size": 10}'
-      }
-    } else {
-      this.testQueryHintTarget.innerHTML = 'Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.'
-      if (this.hasTestQueryTarget) {
-        this.testQueryTarget.placeholder = 'q=shirts&rows=10'
-      }
-    }
+    this.testQueryHintTargets.forEach((hint) => {
+      const active = hint.dataset.httpMethod === method
+      hint.hidden = !active
+      if (active && this.hasTestQueryTarget) this.testQueryTarget.placeholder = hint.dataset.placeholder
+    })
   }
 
   // Step 1: Fetch HTML
@@ -127,7 +109,7 @@ export default class extends Controller {
     if (customHeaders) {
       try {
         JSON.parse(customHeaders)
-      } catch (e) {
+      } catch {
         this.showStatus("Custom headers must be valid JSON", "error")
         return
       }
@@ -137,31 +119,23 @@ export default class extends Controller {
     if (httpMethod === 'POST' && testQuery) {
       try {
         JSON.parse(testQuery)
-      } catch (e) {
+      } catch {
         this.showStatus("Test query must be valid JSON for POST requests", "error")
         return
       }
     }
 
-    setButtonLoading(this.fetchButtonTarget, true)
+    this.setButtonLoading(this.fetchButtonTarget, true)
     this.showStatus(`Fetching via ${httpMethod}...`, "info")
 
     try {
-      const response = await apiFetch(this.fetchUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          search_url: url,
-          http_method: httpMethod,
-          test_query: testQuery,
-          custom_headers: customHeaders,
-          basic_auth_credential: basicAuthCredential
-        })
+      const data = await this.postWizardJson(this.fetchUrlValue, {
+        search_url: url,
+        http_method: httpMethod,
+        test_query: testQuery,
+        custom_headers: customHeaders,
+        basic_auth_credential: basicAuthCredential
       })
-
-      const data = await response.json()
 
       if (data.success) {
         this.htmlPreviewTarget.textContent = data.html_preview
@@ -174,7 +148,20 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      setButtonLoading(this.fetchButtonTarget, false)
+      this.setButtonLoading(this.fetchButtonTarget, false)
+    }
+  }
+
+  // The wizard endpoints answer validation failures with a 422 and a
+  // `{ success: false, error|errors }` body that the callers render. Hand those
+  // bodies back; anything else (HTML error page, expired CSRF token, network
+  // failure) stays an error with a readable message.
+  async postWizardJson(url, body) {
+    try {
+      return await postJson(url, body)
+    } catch (error) {
+      if (error instanceof HttpError && error.data && typeof error.data === "object") return error.data
+      throw error
     }
   }
 
@@ -188,23 +175,13 @@ export default class extends Controller {
       return
     }
 
-    setButtonLoading(this.generateButtonTarget, true)
+    this.setButtonLoading(this.generateButtonTarget, true)
     this.showStatus("Generating mapper functions with AI... This may take a moment.", "info")
 
     try {
-      const response = await apiFetch(this.generateUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ api_key: apiKey })
-      })
-
-      const data = await response.json()
+      const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
 
       if (data.success) {
-        // Re-capture editors in case they weren't ready before
-        this.captureEditors()
 
         // Update CodeMirror editors
         if (this.numberOfResultsEditor) {
@@ -219,14 +196,7 @@ export default class extends Controller {
           this.docsMapperTarget.value = data.docs_mapper
         }
 
-        if (data.truncated) {
-          this.showStatus(
-            `Mapper functions generated, but the fetched HTML was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. If docsMapper doesn't find results below, the real markup may be past that cutoff — try "Refine with AI" with more specific feedback, or edit the mapper by hand.`,
-            "warning"
-          )
-        } else {
-          this.showStatus("Mapper functions generated successfully!", "success")
-        }
+        this.showMapperSuccess("Mapper functions generated successfully!", data)
         this.step3Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to generate mappers", "error")
@@ -234,7 +204,7 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      setButtonLoading(this.generateButtonTarget, false)
+      this.setButtonLoading(this.generateButtonTarget, false)
     }
   }
 
@@ -267,7 +237,6 @@ export default class extends Controller {
   }
 
   async testMapper(mapperType, editor, textarea, resultTarget, button, logsTarget, logsContainerTarget) {
-    this.captureEditors()
 
     const code = editor ? editor.getValue() : textarea.value
     if (!code.trim()) {
@@ -275,37 +244,30 @@ export default class extends Controller {
       return
     }
 
-    setButtonLoading(button, true)
+    this.setButtonLoading(button, true)
 
     try {
-      const response = await apiFetch(this.testUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          mapper_type: mapperType,
-          code: code
-        })
+      const data = await this.postWizardJson(this.testUrlValue, {
+        mapper_type: mapperType,
+        code: code
       })
 
-      const data = await response.json()
-
       if (data.success) {
-        const resultStr = JSON.stringify(data.result, null, 2)
-        resultTarget.innerHTML = `<pre class="text-success mb-0" style="white-space: pre-wrap;">${escapeHtml(resultStr)}</pre>`
+        const result = this.resultPre(JSON.stringify(data.result, null, 2), "text-success")
+        result.style.whiteSpace = "pre-wrap"
+        resultTarget.replaceChildren(result)
         this.showStatus(`${mapperType} test successful!`, "success")
       } else {
-        resultTarget.innerHTML = `<pre class="text-danger mb-0">${escapeHtml(data.error)}</pre>`
+        resultTarget.replaceChildren(this.resultPre(data.error, "text-danger"))
         this.showStatus(`${mapperType} test failed`, "error")
       }
 
       // Display console logs if any were captured
       this.displayLogs(data.logs, logsTarget, logsContainerTarget)
     } catch (error) {
-      resultTarget.innerHTML = `<pre class="text-danger mb-0">Error: ${escapeHtml(error.message)}</pre>`
+      resultTarget.replaceChildren(this.resultPre(`Error: ${error.message ?? ""}`, "text-danger"))
     } finally {
-      setButtonLoading(button, false)
+      this.setButtonLoading(button, false)
     }
   }
 
@@ -318,17 +280,26 @@ export default class extends Controller {
 
     logsContainerTarget.style.display = "block"
 
-    const logHtml = logs.map(log => {
+    logsTarget.replaceChildren(...logs.map(log => {
       const levelClass = log.level === 'error' ? 'text-danger' :
                          log.level === 'warn' ? 'text-warning' :
                          log.level === 'info' ? 'text-info' : 'text-light'
       const levelIcon = log.level === 'error' ? '[ERROR]' :
                         log.level === 'warn' ? '[WARN]' :
                         log.level === 'info' ? '[INFO]' : '[LOG]'
-      return `<div class="${levelClass}">${escapeHtml(levelIcon)} ${escapeHtml(log.message)}</div>`
-    }).join('')
+      const line = document.createElement("div")
+      line.className = levelClass
+      line.textContent = `${levelIcon} ${log.message ?? ""}`
+      return line
+    }))
+  }
 
-    logsTarget.innerHTML = logHtml
+  // A mapper test result; text is set as text, never parsed as markup
+  resultPre(text, colorClass) {
+    const pre = document.createElement("pre")
+    pre.className = `${colorClass} mb-0`
+    pre.textContent = String(text ?? "")
+    return pre
   }
 
   // Refine numberOfResultsMapper with AI
@@ -368,27 +339,18 @@ export default class extends Controller {
       return
     }
 
-    this.captureEditors()
     const currentCode = editor ? editor.getValue() : textarea.value
 
-    setButtonLoading(button, true)
+    this.setButtonLoading(button, true)
     this.showStatus(`Refining ${mapperType} with AI...`, "info")
 
     try {
-      const response = await apiFetch(this.refineUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          mapper_type: mapperType,
-          current_code: currentCode,
-          feedback: feedback,
-          api_key: apiKey
-        })
+      const data = await this.postWizardJson(this.refineUrlValue, {
+        mapper_type: mapperType,
+        current_code: currentCode,
+        feedback: feedback,
+        api_key: apiKey
       })
-
-      const data = await response.json()
 
       if (data.success) {
         if (editor) {
@@ -396,21 +358,14 @@ export default class extends Controller {
         } else {
           textarea.value = data.code
         }
-        if (data.truncated) {
-          this.showStatus(
-            `${mapperType} refined, but the HTML sample was long (${data.original_length.toLocaleString()} characters) and had to be truncated to ${data.sent_length.toLocaleString()} characters before the AI saw it. Test the result below to confirm it still works.`,
-            "warning"
-          )
-        } else {
-          this.showStatus(`${mapperType} refined successfully!`, "success")
-        }
+        this.showMapperSuccess(`${mapperType} refined successfully!`, data)
       } else {
         this.showStatus(data.error || "Refinement failed", "error")
       }
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      setButtonLoading(button, false)
+      this.setButtonLoading(button, false)
     }
   }
 
@@ -424,7 +379,6 @@ export default class extends Controller {
       return
     }
 
-    this.captureEditors()
 
     const numberOfResultsMapper = this.numberOfResultsEditor
       ? this.numberOfResultsEditor.getValue()
@@ -438,7 +392,7 @@ export default class extends Controller {
       return
     }
 
-    setButtonLoading(this.saveButtonTarget, true)
+    this.setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
     const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
@@ -454,26 +408,18 @@ export default class extends Controller {
       : []
 
     try {
-      const response = await apiFetch(this.saveUrlValue, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          name: name,
-          number_of_results_mapper: numberOfResultsMapper,
-          docs_mapper: docsMapper,
-          endpoint_url: this.searchUrlTarget.value.trim(),
-          api_method: httpMethod,
-          proxy_requests: this.proxyRequestsTarget.checked,
-          test_query: testQuery,
-          custom_headers: customHeaders,
-          basic_auth_credential: basicAuthCredential,
-          team_ids: teamIds
-        })
+      const data = await this.postWizardJson(this.saveUrlValue, {
+        name: name,
+        number_of_results_mapper: numberOfResultsMapper,
+        docs_mapper: docsMapper,
+        endpoint_url: this.searchUrlTarget.value.trim(),
+        api_method: httpMethod,
+        proxy_requests: this.proxyRequestsTarget.checked,
+        test_query: testQuery,
+        custom_headers: customHeaders,
+        basic_auth_credential: basicAuthCredential,
+        team_ids: teamIds
       })
-
-      const data = await response.json()
 
       if (data.success) {
         this.showStatus("Search endpoint saved successfully! Redirecting...", "success")
@@ -484,15 +430,25 @@ export default class extends Controller {
     } catch (error) {
       this.showStatus(`Error: ${error.message}`, "error")
     } finally {
-      setButtonLoading(this.saveButtonTarget, false)
+      this.setButtonLoading(this.saveButtonTarget, false)
+    }
+  }
+
+  showMapperSuccess(message, data) {
+    if (data.truncated) {
+      this.showStatus(
+        `${message} The HTML sample was truncated from ${data.original_length.toLocaleString()} to ${data.sent_length.toLocaleString()} characters after removing boilerplate. Test the mapper to confirm it finds the results; their markup may be past the cutoff.`,
+        "warning"
+      )
+    } else {
+      this.showStatus(message, "success")
     }
   }
 
   // Toggle HTML preview expansion
   toggleHtmlPreview(event) {
-    const container = this.htmlPreviewContainerTarget.querySelector('.html-preview')
-    if (container) {
-      const isExpanded = container.classList.toggle("expanded")
+    if (this.hasHtmlPreviewTarget) {
+      const isExpanded = this.htmlPreviewTarget.classList.toggle("expanded")
       event.currentTarget.textContent = isExpanded ? "Collapse" : "Expand"
     }
   }
@@ -512,7 +468,7 @@ export default class extends Controller {
     }
 
     try {
-      await navigator.clipboard.writeText(content)
+      await copyText(content)
       this.showStatus("Copied to clipboard!", "success")
 
       // Briefly change button icon to show success
@@ -530,13 +486,23 @@ export default class extends Controller {
     if (!this.hasStatusTarget) return
 
     this.statusTarget.style.display = "block"
-    showStatusMessage(this.statusTarget, {
+    this.showStatusMessage(this.statusTarget, {
       message,
-      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'}`,
+      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'}`,
       // Auto-hide success messages after 5 seconds
       autoHideMs: type === 'success' ? 5000 : undefined,
       onExpire: (el) => { el.style.display = "none" }
     })
   }
 
+  setButtonLoading(button, loading) {
+    if (loading) {
+      button.disabled = true
+      button.dataset.originalText = button.innerHTML
+      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+    } else {
+      button.disabled = false
+      button.innerHTML = button.dataset.originalText || button.innerHTML
+    }
+  }
 }

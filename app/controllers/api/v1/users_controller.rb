@@ -12,7 +12,7 @@ module Api
         if params[:prefix]
           prefix = params.expect(:prefix).downcase
           @users = User.where('LOWER(email) LIKE :prefix', prefix: "#{prefix}%")
-            .or(User.where('LOWER(name) LIKE :prefix', prefix: "#{prefix}%")).limit(8)
+            .or(User.where('LOWER(name) LIKE :prefix', prefix: "#{prefix}%")).with_api_counts.limit(8)
         end
         respond_with @users
       end

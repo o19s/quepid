@@ -17,10 +17,7 @@ class CasesController < ApplicationController
     query = query.joins(:teams).where(teams: { id: @filter_team_id }) if @filter_team_id.present?
 
     # Apply search filter
-    if @filter_q.present?
-      query = query.where('LOWER(case_name) LIKE ? OR cases.id = ?',
-                          "%#{@filter_q.to_s.downcase}%", @filter_q.to_i)
-    end
+    query = query.search_by(@filter_q, :case_name).or(query.where(id: @filter_q.to_i)) if @filter_q.present?
 
     # Apply archived filter
     query = query.where(archived: @archived)
@@ -40,19 +37,17 @@ class CasesController < ApplicationController
     # Paginate results
     @pagy, @cases = pagy(query)
     @last_scores = Score.latest_summaries_for_cases(@cases.map(&:id)).index_by(&:case_id)
-
-    # Get user's teams for the share modal
-    @user_teams = current_user.teams.order(:name)
+    @ratings_counts = Case.ratings_count_by_case_id(@cases.map(&:id))
   end
 
   # Archive a case (mark archived and set current_user as owner)
   def archive
     @case.owner = current_user
     @case.mark_archived!
-    Analytics::Tracker.track_case_archived_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_archived_event)
+    Analytics::Tracker.track_case_archived_event(current_user, @case)
     flash[:notice] = "Case #{@case.case_name} archived."
 
-    redirect_to cases_path
+    redirect_after_action cases_path
   end
 
   # Unarchive a case
@@ -61,17 +56,17 @@ class CasesController < ApplicationController
     @case.save
     flash[:notice] = "Case #{@case.case_name} unarchived."
 
-    redirect_to cases_path
+    redirect_to cases_path, status: :see_other
   end
 
   # Permanently delete a case
   def destroy
     case_name = @case.case_name
     @case.really_destroy
-    Analytics::Tracker.track_case_deleted_event(current_user, @case) if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_case_deleted_event)
+    Analytics::Tracker.track_case_deleted_event(current_user, @case)
     flash[:notice] = "Case #{case_name} deleted."
 
-    redirect_to cases_path
+    redirect_after_action cases_path
   end
 
   # Delete all queries (and their ratings) for a case
@@ -79,17 +74,36 @@ class CasesController < ApplicationController
     @case.queries.destroy_all
     flash[:notice] = "All queries deleted for case #{@case.case_name}."
 
-    redirect_to case_core_path(id: @case.id, try_number: @case.last_try_number)
+    redirect_after_action case_core_path(id: @case.id, try_number: @case.last_try_number)
   end
 
   private
+
+  def require_login
+    return super unless request.format.json? && %w[archive destroy destroy_queries].include?(action_name)
+    return if current_user
+
+    render json: { redirect_url: new_session_path }, status: :unauthorized
+  end
+
+  def redirect_after_action path
+    respond_to do |format|
+      format.html { redirect_to path, status: :see_other }
+      format.json { render json: { redirect_url: path } }
+    end
+  end
 
   def set_case
     @case = current_user.cases_involved_with.find_by(id: params[:id])
 
     return if @case
 
-    flash[:alert] = 'Case not found.'
-    redirect_to cases_path
+    respond_to do |format|
+      format.html do
+        flash[:alert] = 'Case not found.'
+        redirect_to cases_path, status: :see_other
+      end
+      format.json { render json: { error: 'Case not found.' }, status: :not_found }
+    end
   end
 end

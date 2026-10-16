@@ -58,6 +58,16 @@ class CaseImporterTest < ActiveSupport::TestCase
                       "Scorer with name 'a scorer that does not exist' needs to be migrated over first."
     end
 
+    test 'adds an error instead of raising when the scorer is missing' do
+      data.delete(:scorer)
+
+      importer = CaseImporter.new new_case, user, data
+
+      importer.validate
+
+      assert_predicate new_case.errors[:scorer], :present?
+    end
+
     test 'adds an error when a rating user email does not exist and force_create_users is false' do
       data[:queries].last[:ratings] << { doc_id: 'docc', rating: 2.0, user_email: 'fakeuser@fake.com' }
 

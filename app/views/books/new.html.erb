@@ -9,4 +9,7 @@
   </div>
 <% end %>
 
-<%= render 'form', book: @book %>
+<%= render 'form', book: @book, origin_case: @origin_case, link_the_case: @link_the_case,
+                 auto_populate_book_pairs: @auto_populate_book_pairs,
+                 auto_populate_case_judgements: @auto_populate_case_judgements,
+                 ai_judges: @ai_judges, viewer: @current_user %>

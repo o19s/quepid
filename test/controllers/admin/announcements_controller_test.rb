@@ -12,6 +12,17 @@ module Admin
       login_user admin
     end
 
+    test 'index renders announcement HTML but strips scripts and event handlers' do
+      announcement.update!(text: '<a href="https://example.com" onclick="steal()">Notes</a><script>alert(1)</script>')
+
+      get :index
+
+      assert_response :success
+      assert_select 'td a[href="https://example.com"]', text: 'Notes'
+      assert_select 'td a[onclick]', count: 0
+      assert_select 'td script', count: 0
+    end
+
     test 'update with an invalid date range does not save and shows the errors' do
       patch :update, params: {
         id:           announcement,
@@ -26,14 +37,14 @@ module Admin
       assert_not_equal 1.day.ago.to_date, announcement.expiration_date
     end
 
-    test 'update with a valid date range saves and re-renders edit' do
+    test 'update with a valid date range redirects back to the edit preview' do
       patch :update, params: {
         id:           announcement,
         announcement: { publish_date: Date.current, expiration_date: 2.days.from_now.to_date },
       }
 
-      assert_response :success
-      assert_template :edit
+      assert_response :see_other
+      assert_redirected_to edit_admin_announcement_path(announcement)
 
       announcement.reload
       assert_equal 2.days.from_now.to_date, announcement.expiration_date

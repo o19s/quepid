@@ -1,11 +1,14 @@
 # frozen_string_literal: true
 
-# This hosts the main Angular 1 application that runs in the client.
+# This hosts the main case application that runs in the client.
 class CoreController < ApplicationController
+  layout 'application'
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
 
   def index
+    # The initial workspace data includes user-scoped endpoint credentials.
+    response.cache_control.replace(private: true, no_store: true)
     Analytics::Tracker.track_user_swapped_protocol current_user, @case, params['protocolToSwitchTo'] if params['protocolToSwitchTo']
   end
 
@@ -21,19 +24,24 @@ class CoreController < ApplicationController
   def set_case_or_bootstrap
     @case = if params[:id].present?
               # load the explicitly listed case.
-              current_user.cases_involved_with.where(id: params[:id]).first
+              current_user.cases_involved_with.find_by(id: params[:id])
             else
               # load a case/try if the user has access to one
               current_user.cases_involved_with.not_archived.last
             end
 
-    if @case # don't run if we don't find the case!
-      @try = if params[:try_number].present?
-               @case.tries.where(try_number: params[:try_number]).first
-             else
-               @case.tries.latest
-             end
+    unless @case
+      # An explicit id that doesn't resolve is a 404; GET must never create a case as a side effect.
+      raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', params[:id]) if params[:id].present?
+
+      return redirect_to(case_new_path)
     end
+
+    @try = if params[:try_number].present?
+             @case.tries.where(try_number: params[:try_number]).first
+           else
+             @case.tries.latest
+           end
   end
 
   def populate_from_params

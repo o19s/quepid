@@ -1,22 +1,8 @@
 /* Misc. */
- .border-bottom {
-	 border-bottom: 1px #aaa solid;
-}
- a.action-icon {
-	 color: #666;
-	 text-decoration: none;
-	 margin: 0 2px;
-}
- a.action-icon:hover {
-	 color: #999;
-}
- a.action-icon sup {
-	 top: -1em;
-	 font-size: 10px;
-}
  .query-help {
 	 font-size: 1.5em;
 }
+/* Used by the match-explain Debug and Expand modals. */
  .full-screen-modal {
 	 height: 100%;
 	 z-index: 2050 !important;
@@ -31,14 +17,7 @@
 }
  .full-screen-modal .modal-content {
 	 height: 100%;
-	 overflow: scroll;
-}
-
-/* BS3's default modal width was 600px; BS5's default is 500px, with no
-   built-in size between default and .modal-lg (800px). Restore the BS3
-   width for the "Select Scorer" modal, which used the plain default size. */
- .pick-scorer-modal .modal-dialog {
-	 max-width: 600px;
+	 overflow: auto;
 }
 
 /* The wizard has no .modal-header, so its step headings (plain BS5 <h1>/<h2>
@@ -50,10 +29,35 @@
 	 max-width: 700px;
 }
 
-/* BS5's h4 is 1.5rem vs BS3's 1.25x-base (~18px), and BS5's .list-group-item
-   uses looser padding, a lighter border, no border-collapsing margin, and
-   the BS5 primary blue for .active instead of BS3's. Restore the BS3 look
-   for the scorer/custom-scorer lists in this modal. */
+/* Case wizard — engine logo tiles (radio + logo), as in the Angular wizard. */
+.wizard-engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.wizard-engine-tile {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+
+.wizard-engine-tile .form-check-input {
+  margin-top: 0;
+}
+
+.wizard-engine-logo {
+  height: 50px;
+  width: auto;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+/* BS3 heading size and list-group padding/borders for the scorer lists.
+   The .active blue comes from the global rule in bootstrap5-compat.css. */
  .pick-scorer-modal h4 {
 	 font-size: 18px;
 	 color: #333;
@@ -65,69 +69,3 @@
 	 border-color: #ddd;
 }
 
-/* .list-group-item.active's brand-blue color already comes from the
- * global rule in bootstrap5-compat.css (--bs-list-group-active-bg/
- * -border-color: var(--q-brand-blue)) — no need to repeat the hex here. */
-
-/* This modal uses .row purely as a scrollable wrapper, not a grid — but BS5's
-   .row still applies its negative gutter margin, and .row > * still applies
-   the compensating gutter padding to any direct child that doesn't cancel it
-   itself. .list-group cancels it (padding-left: 0 in its own component
-   style), so the list box ends up flush with .row's pulled-out edge while
-   the <h4> siblings (no such override) stay indented by the gutter, throwing
-   the headings and list boxes out of alignment. Zeroing both here keeps
-   every direct child flush with the modal's own padding. */
- .pick-scorer-modal .row {
-	 margin-left: 0;
-	 margin-right: 0;
-}
-
- .pick-scorer-modal .row > * {
-	 padding-left: 0;
-	 padding-right: 0;
-}
-
-/* begin close button for modals in core app */
-/* Stolen from Bootstrap 5 */
-/* originally this was .btn-close, and mapping to .btn-core-close */
-.btn-core-close {
-  --bs-btn-close-color: #000;
-  --bs-btn-close-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='M.293.293a1 1 0 0 1 1.414 0L8 6.586 14.293.293a1 1 0 1 1 1.414 1.414L9.414 8l6.293 6.293a1 1 0 0 1-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 0 1-1.414-1.414L6.586 8 .293 1.707a1 1 0 0 1 0-1.414z'/%3e%3c/svg%3e");
-  --bs-btn-close-opacity: 0.5;
-  --bs-btn-close-hover-opacity: 0.75;
-  --bs-btn-close-focus-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  --bs-btn-close-focus-opacity: 1;
-  --bs-btn-close-disabled-opacity: 0.25;
-  box-sizing: content-box;
-  width: 1em;
-  height: 1em;
-  padding: 0.25em 0.25em;
-  color: var(--bs-btn-close-color);
-  background: transparent var(--bs-btn-close-bg) center/1em auto no-repeat;
-  border: 0;
-  border-radius: 0.375rem;
-  opacity: var(--bs-btn-close-opacity);
-}
-.btn-core-close:hover {
-  color: var(--bs-btn-close-color);
-  text-decoration: none;
-  opacity: var(--bs-btn-close-hover-opacity);
-}
-.btn-core-close:focus {
-  outline: 0;
-  box-shadow: var(--bs-btn-close-focus-shadow);
-  opacity: var(--bs-btn-close-focus-opacity);
-}
-.btn-core-close:disabled, .btn-core-close.disabled {
-  pointer-events: none;
-  -webkit-user-select: none;
-  user-select: none;
-  opacity: var(--bs-btn-close-disabled-opacity);
-}
-/* BS5 pushes .btn-close to the far right of .modal-header via margin-left:
- * auto on the button itself (not justify-content: space-between on the
- * header, which our vendored bootstrap.css doesn't set). */
-.modal-header .btn-core-close {
-  margin: 5px 5px 0 auto;
-}
-/* end close button for modals in core app */

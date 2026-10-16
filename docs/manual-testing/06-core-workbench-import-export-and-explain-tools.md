@@ -17,6 +17,8 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - **Edge cases:**
   - [ ] Try Detailed export outside of single-case context — confirm it's disabled, not silently broken.
 
+  - [ ] Select TREC, then choose/change a snapshot in the shared Basic/TREC dropdown; TREC stays selected and downloads qrel text. Repeat with Basic and confirm CSV.
+
 ### 6.2 Import into a case (ratings / information needs / snapshots)
 
 - [ ] **Steps — Ratings tab:**
@@ -31,8 +33,9 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - [ ] **Steps — Snapshots tab:**
   1. Upload a CSV with headers containing `Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position` (the file's Case ID column is ignored — it always imports into the current case).
   2. Click **Import**.
-- **Expected:** Each import type validates headers strictly and refreshes the relevant data (queries/scores) after success, with a flash confirming the result.
+- **Expected:** The Stimulus core modal validates headers strictly and refreshes the relevant data (queries/scores) after success, with a flash confirming the result.
 - **Edge cases:**
+  - [ ] If the ratings importer fails unexpectedly, expect "Unable to import ratings. Please try again." rather than internal exception details; the modal permits retry.
   - [ ] Upload a Ratings CSV with mismatched headers — confirm a red "Headers mismatch!" alert lists the expected headers.
   - [ ] Upload a Ratings CSV where a row has more than 3 comma-separated values without quote-wrapping — confirm a red alert lists the specific offending line number(s). Repeat for Information Needs with the 2-column limit.
   - [ ] Upload the wrong file into the wrong tab (e.g., an Information Needs CSV into the Ratings tab) — confirm this is caught by header validation rather than silently corrupting data.
@@ -67,28 +70,49 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - **Expected:** Each option does exactly what its own description promises — no more, no less. In particular, confirm "Delete All Queries" also removes ratings for those queries (per its own copy) but does **not** delete the case, its annotations, or its snapshots — verify this last part explicitly, since it's easy to assume too much or too little is deleted.
 - **Edge cases:**
   - [ ] Confirm button (**Cancel** aside) stays disabled until one of the three options is picked.
-  - [ ] Force a server failure on each path — confirm the flash includes the server error message and doesn't leave the UI in a half-deleted state.
+  - [ ] Expire the session while the modal is open, then confirm each action. Expect full-page navigation to sign-in and no case/query mutation.
+  - [ ] Force a server failure on each path — confirm the modal closes, the workspace stays available and a flash includes the server error message (or a contextual retry message for an HTML/empty error response). Reopen and retry after recovery; confirm one request per click and the usual success destination.
 
 ### 6.5 Share a case (in-case toolbar)
 
-- [ ] **Steps:** Same flow as Part 3.6, but triggered from inside the workbench via the "Share case" icon. Confirm behavior matches (share/unshare, "already shared with" list, no-teams-yet prompt with a **Create a team** shortcut).
+Rails renders the core team lists through a targeted HTML endpoint; Stimulus retains JSON mutations
+and stays on the workspace. The management surface in Part 3.6 retains its select/form UI.
+
+- [ ] **Steps:** Open **Share case**, select a shareable team and share; reload and reopen to confirm persistence. Select a shared team and unshare; reload and reopen again.
+- **Expected:** Selection toggles off on a second click and is mutually exclusive across lists. Cancel/reopen resets selection. No-team users see Create a team; users whose teams all share the case see the shared list without the no-teams prompt.
 - **Edge cases:**
+  - [ ] Force team-load failure and close/reopen to retry; force share/unshare failure and retry with selection retained. Check the Judgements modal’s share-case outlet.
+  - [ ] Delay an earlier catalog response, close/reopen the same case and let the newer catalog finish first. Older success/error responses must leave the newer list and loading state intact. Delay share/unshare completion across close/reopen; reconcile the completed write with the current catalog, without duplicate rows or stale alerts. With two teams available, select a team in the reopened modal before the old write completes; the refreshed catalog clears selections, hidden team IDs and both footer actions.
   - [ ] Click **Create a team** from inside this modal — confirm it navigates away to `/teams` and that no unsaved workbench state (e.g., an in-progress edit elsewhere on the page) is silently lost.
 
 ### 6.6 Judgements link (connect a case to a Book)
 
+Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). Rails renders the owned/case-team book catalog; Stimulus retains settings reads and JSON writes. Populate Now reads the document store; live search publishes that store from the live-query runtime.
+
 - [ ] **Steps:**
-  1. Click the **Judgements** (book) icon in the case toolbar.
-  2. If the case isn't yet shared with any team, confirm you're prompted to share it or create a team first.
-  3. Pick (or create) a Book from a team the case is shared with.
+  1. Click **Judgements** in the case toolbar.
+  2. On a teamless case, confirm your owned books are available. With no owned books and no teams, confirm the create-book prompt.
+  3. Pick (or create) an owned Book or a Book from a team the case is shared with.
+     A book appearing in both sources must appear only once.
+     Confirm None appears first and the saved book precedes other books. View opens
+     the book without saving a selection; Cancel discards a changed selection.
   4. Toggle **Case → Book: Query/Doc Pairs** sync and use its manual **Populate Now** button.
   5. Toggle **Book → Case: Judgement Ratings** sync and use its manual **Refresh Ratings** button.
   6. Try **Sync Queries** (pulls in queries missing from the book).
   7. Click **Save** (should only be enabled once something has actually changed).
+  8. Reopen Judgements without reloading the page: the saved book and sync toggles remain selected, and Save is hidden until another change.
+  9. Switch to another case and open Judgements: its own book settings appear. If a settings read/save fails, show the error and allow a retry without replacing the current settings.
+  10. Select **None**, save and reload: the case remains disconnected, both sync
+      flags are off, integration controls are hidden and Save is hidden on reopen.
 - **Expected:** The case-to-book link is established; sync directions work independently in both directions. Large operations (50+ queries) run as a background job with a redirect and a flash notice rather than blocking the UI.
 - **Edge cases:**
-  - [ ] Attempt this on a case with zero team-sharing — confirm the gating message/prompt to share first.
+  - [ ] Link an owned book on a case with zero team-sharing; save and reload.
+  - [ ] No books across ownership and case-team sharing shows Create a book rather than the picker.
+  - [ ] Force a book-list load failure, then close/reopen to retry; force a save
+        failure and retry with the selected book and sync flags retained.
   - [ ] Use **Create a book** and **Judge Documents!** shortcuts — confirm they land you in the right place (Part 10/11).
+  - [ ] Against a real book with judgements, run **Populate Now**, **Refresh Ratings** and **Sync Queries** and confirm the book's pairs/ratings and the case's queries/scores actually change as described, not just that the buttons succeed. Check Mission Control/jobs for the background job on a 50+ query case.
+  - [ ] As a user in several teams, with the case shared to more than one, confirm the catalog lists each team's books once, and that a book from a team the case is no longer shared with is not offered.
 
 ### 6.7 Explain a query (Explain Query modal)
 
@@ -98,7 +122,9 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   3. **Parsing** tab — view how the engine parsed the query.
   4. **Query Template** tab — click it; if the query is templated, confirm the populated template renders; otherwise confirm "This is not a templated query." shows.
   5. Use the **Copy** icon to copy the active tab's content, then paste it somewhere to confirm it copied correctly.
-- **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open).
+  6. For a templated query, force a render failure and revisit the tab to retry. Delay a response, close/reopen the modal and confirm it cannot replace the new modal's content; when requests overlap, the latest request wins.
+  7. On a real Elasticsearch or OpenSearch case with a templated query, confirm the Query Template tab renders the engine's actual populated template (not just a stub), and that Params/Parsing tabs are accurate for that engine.
+- **Expected:** Each tab shows accurate, engine-appropriate information; the Query Template tab only fetches on-demand (switching to it, not on modal open). After **Copy**, the button reads "Copied!" for about two seconds and then returns to "Copy"; if the browser refuses the clipboard write, it reads "Copy failed" instead.
 
 ### 6.8 Explain a single document (Debug Explain)
 
@@ -106,7 +132,9 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   1. Expand a query, expand a document's detailed explain/score-breakdown area.
   2. Click **Debug**.
   3. In "Debug Explain for {doc title} (id:{doc id})", expand/collapse nodes in the JSON tree.
-- **Expected:** The tree accurately reflects the raw explain payload returned by the search engine for that specific document.
+- **Expected:** The tree opens fully expanded and accurately reflects the raw explain payload returned by the search engine for that specific document.
+- **Edge cases:**
+  - [ ] Click a hot-match bar under **Matches** on the result row (not the popover): the same Debug Explain modal opens for that doc. This is intentional. Pre-deangularization `main` declared the bar click (`ng-click="showDetailed()"` in `views/stackedChart.html`, opening this same `detailedExplain.html` view), but it never fired in practice; the Stimulus port makes it work. The "no per-term score breakdown for doc" row is not clickable.
 
 ### 6.9 Frog Report
 
@@ -115,7 +143,8 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   2. Review "The Frog Pond Report: {case name}" — summary stats on ratings coverage (queries with/without results, total ratings needed, % missing).
   3. On a fully-rated case, confirm the "All the queries have been fully rated!" congratulations state appears.
   4. Review the bar chart of query counts grouped by missing-rating depth.
-  5. If the case is linked to a Book, use **Refresh ratings from book {book name}**.
+  5. If the case is linked to a Book, use **Refresh ratings from book {book name}**. Force a save failure, confirm the error and re-enabled button, then retry.
+  6. Close/reopen while a chart or refresh is pending. Confirm one current chart and no late error or button changes from the closed modal; a completed refresh still updates shared query data.
 - **Expected:** Stats and chart accurately reflect the case's current rating coverage; the refresh action pulls the latest judgements from the linked book.
 
 ### 6.10 Unarchive case (from a list's Archived filter)
@@ -124,3 +153,13 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
   1. On the Cases list (`/cases`) or a Team's case list, check the **Archived** filter checkbox.
   2. Click the (green) unarchive icon on the case's row, and confirm the "Unarchive {case name}?" dialog.
 - **Expected:** The chosen case is restored to active status and reappears in the default (non-archived) list. (There is no separate "Unarchive case" modal listing archived cases with an "Add Back" button — this is the same icon-button + confirm mechanism used to archive, in reverse.)
+
+### 6.11 View a document's details (Detailed Document View)
+
+- [ ] **Steps:**
+  1. Expand a query, click a result's title.
+  2. In "Detailed Document View of doc: {doc id}", review the listed sub-fields, translations, and embeds.
+  3. Click **View All Fields** to reveal the full raw document as formatted JSON, then **Hide All Fields** to collapse it again.
+  4. Click **View Document** (opens the document at the search engine in a new tab) if the doc has a resolvable URL, otherwise confirm the button is disabled.
+  5. Repeat open/close with Close, Escape and a backdrop click. Reopening starts with raw fields hidden; dismissal leaves no orphaned backdrop or body scroll lock.
+- **Expected:** Fields shown match the document's actual data; an object/array-valued sub-field renders as an expandable JSON tree, not raw text.

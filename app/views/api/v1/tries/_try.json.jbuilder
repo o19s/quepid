@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+no_endpoint ||= false
+
 json.args           try.args
 json.curator_vars   try.curator_vars_map
 json.escape_query   try.escape_query
@@ -32,7 +34,7 @@ json.requests_per_minute try.search_endpoint&.requests_per_minute
 json.options try.options
 
 json.try_number try.try_number
-if try.search_endpoint.present?
+if !no_endpoint && try.search_endpoint.present?
   json.search_endpoint do
     json.partial! 'api/v1/search_endpoints/search_endpoint', search_endpoint: try.search_endpoint
   end

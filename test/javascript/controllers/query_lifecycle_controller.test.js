@@ -1,0 +1,149 @@
+import { buildControllerFixture } from "../support/controller_fixture"
+import coreFlash from "utils/core_flash"
+import { describe, expect, it, vi, beforeEach } from "vitest"
+import QueryLifecycleController from "controllers/query_lifecycle_controller"
+import * as queryLifecycle from "utils/query_lifecycle"
+import { SearchError } from "utils/search_error"
+
+let testCapabilities
+
+vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
+beforeEach(() => {
+  coreFlash.show = vi.fn()
+  coreFlash.hide = vi.fn()
+})
+
+vi.mock("utils/query_lifecycle", async (importOriginal) => ({
+  ...await importOriginal(),
+  persistQuery: vi.fn(),
+  persistQueries: vi.fn()
+}))
+
+function controllerFor({ persistQuery, persistQueries, prepareQueries, commitQueries }) {
+  const element = document.createElement("div")
+  element.innerHTML = '<form data-controller="add-query"></form>'
+  const controller = buildControllerFixture(QueryLifecycleController, {
+    element,
+    targets: {
+      addQuery: element.querySelector("form")
+    }
+  })
+  queryLifecycle.persistQuery.mockImplementation(persistQuery || vi.fn())
+  queryLifecycle.persistQueries.mockImplementation(persistQueries || vi.fn())
+  testCapabilities = {
+    queryLifecycle: { prepareQueries, commitQueries }
+  }
+  Object.assign(coreFlash, { show: vi.fn() })
+  return { controller, element }
+}
+
+describe("query_lifecycle_controller", () => {
+  it("runs the add-query workflow and completes the form", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ query: {} })
+    const persistQueries = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const commitQueries = vi.fn().mockResolvedValue({})
+    const { controller, element } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+    const complete = vi.fn()
+    element.querySelector("form").addEventListener("add-query:complete", complete)
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars", "dune"] }
+    }))
+
+    expect(prepareQueries).toHaveBeenCalledWith(["star wars", "dune"])
+    expect(persistQueries).toHaveBeenCalledWith(undefined, ["star wars", "dune"])
+    expect(commitQueries).toHaveBeenCalledWith({ query: {} }, { status: 201, data: {} })
+    expect(coreFlash.show).toHaveBeenCalledWith("success", "Queries added successfully.")
+    expect(complete).toHaveBeenCalledOnce()
+    expect(complete.mock.calls[0][0].detail).toEqual({ success: true })
+  })
+
+  it("reports search errors but completes the persisted workflow", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ query: {} })
+    const persistQuery = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const commitQueries = vi.fn().mockResolvedValue({ searchError: new Error("timeout") })
+    const { controller } = controllerFor({ prepareQueries, persistQuery, commitQueries })
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars"] }
+    }))
+
+    expect(coreFlash.show).toHaveBeenNthCalledWith(1, "error", "Your new query had an error!")
+    expect(coreFlash.show).toHaveBeenNthCalledWith(2, "error", "timeout", "search-error")
+  })
+
+  it("passes a translated search error through intact so the flash can render its links", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ query: {} })
+    const persistQuery = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const searchError = new SearchError([{ text: "see " }, { text: "wiki", href: "https://example.com" }])
+    const commitQueries = vi.fn().mockResolvedValue({ searchError })
+    const { controller } = controllerFor({ prepareQueries, persistQuery, commitQueries })
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars"] }
+    }))
+
+    expect(coreFlash.show).toHaveBeenNthCalledWith(2, "error", searchError, "search-error")
+  })
+
+  it("reports a bulk search error without duplicating the collection store's own flash", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
+    const persistQueries = vi.fn().mockResolvedValue({ status: 201, data: {} })
+    const commitQueries = vi.fn().mockResolvedValue({ searchError: new Error("timeout") })
+    const { controller } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars", "dune"] }
+    }))
+
+    // svc.searchAll() (the bulk path) already reports this failure through the
+    // query collection store's search-failed event, which queries_list_controller.js
+    // flashes on the same sticky channel — a second write here would just race it.
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "One (or many) of your new queries had an error!")
+    expect(coreFlash.show).not.toHaveBeenCalledWith("error", expect.anything(), "search-error")
+  })
+
+  it("reports persistence failures and marks the form unsuccessful", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ query: {} })
+    const persistQuery = vi.fn().mockRejectedValue({ error: "Unable to add query." })
+    const commitQueries = vi.fn()
+    const { controller, element } = controllerFor({ prepareQueries, persistQuery, commitQueries })
+    const complete = vi.fn()
+    element.querySelector("form").addEventListener("add-query:complete", complete)
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars"] }
+    }))
+
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add query.")
+    expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
+  })
+
+  it("falls back to a generic message for a persistence failure with no usable error field", async () => {
+    const prepareQueries = vi.fn().mockReturnValue({ queries: [{}, {}] })
+    const persistQueries = vi.fn().mockRejectedValue({ foo: "bar" })
+    const commitQueries = vi.fn()
+    const { controller } = controllerFor({ prepareQueries, persistQueries, commitQueries })
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars", "dune"] }
+    }))
+
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
+  })
+
+  it("fails cleanly when the adapter is unavailable", async () => {
+    const { controller, element } = controllerFor({})
+    const complete = vi.fn()
+    element.querySelector("form").addEventListener("add-query:complete", complete)
+
+    await controller.handleAddQueries(new CustomEvent("add-query:submit", {
+      detail: { queryTexts: ["star wars"] }
+    }))
+
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to add queries.")
+    expect(complete.mock.calls[0][0].detail).toEqual({ success: false })
+  })
+})

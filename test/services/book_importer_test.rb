@@ -26,6 +26,26 @@ class BookImporterTest < ActiveSupport::TestCase
   end
 
   describe '#validate' do
+    test 'does not attach validation candidates to a new books autosave collection' do
+      book.name = 'Detached validation'
+      payload = {
+        judgements: [
+          { query_doc_pair: { query_text: 'invalid' }, rating: 1 },
+          { query_text: 'cat', doc_id: '42', rating: 3, user_id: user.id }
+        ],
+      }
+      importer = BookImporter.new(book, user, payload)
+
+      importer.validate
+
+      assert_empty book.errors
+      assert_empty book.query_doc_pairs.target
+      assert book.save
+      assert_empty book.query_doc_pairs
+      assert importer.import
+      assert_equal 1, book.judgements.count
+    end
+
     test 'does not add errors when all judgement users already exist' do
       importer = BookImporter.new book, user, data
 
@@ -80,6 +100,26 @@ class BookImporterTest < ActiveSupport::TestCase
   end
 
   describe '#import' do
+    test 'validates and imports flat judgements into a new book without a name' do
+      payload = { judgements: [ { query_text: 'cat', doc_id: '42', rating: 1, email: user.email } ] }
+      importer = BookImporter.new(book, user, payload)
+      importer.validate
+      assert_empty book.errors
+      assert importer.import
+      assert_equal BookImporter::DEFAULT_BOOK_NAME, book.reload.name
+      assert_equal user, book.judgements.first!.user
+    end
+
+    test 'upserts flat judgements using the legacy envelope' do
+      payload = { all_judgements: [ { query_text: 'cat', doc_id: '42', rating: 1, user_id: user.id } ] }
+      assert BookImporter.new(book, user, payload).import
+      payload[:all_judgements].first[:rating] = 2
+      assert BookImporter.new(book, user, payload).import
+      assert_equal 1, book.query_doc_pairs.count
+      assert_equal 1, book.judgements.count
+      assert_in_delta 2, book.judgements.first!.rating
+    end
+
     test 'creates the book with the current user as owner' do
       importer = BookImporter.new book, user, data
       importer.import
@@ -87,6 +127,15 @@ class BookImporterTest < ActiveSupport::TestCase
       assert_predicate book, :persisted?
       assert_equal 'test book', book.name
       assert_equal user, book.owner
+    end
+
+    test 'falls back to a default name when the file does not provide one' do
+      data.delete(:name)
+
+      BookImporter.new(book, user, data).import
+
+      assert_predicate book, :persisted?
+      assert_equal BookImporter::DEFAULT_BOOK_NAME, book.name
     end
 
     test 'sets the owner on a persisted book that does not have one yet' do
@@ -235,7 +284,7 @@ class BookImporterTest < ActiveSupport::TestCase
     end
 
     # assign_attributes happily overwrites created_at/updated_at, and Rails only backfills them
-    # when blank - without the denylist entry, a crafted file could forge a row's history.
+    # when blank - if they were assignable, a crafted file could forge a row's history.
     test 'ignores created_at and updated_at on a nested judgement and query_doc_pair' do
       forged = 3.years.ago
 
@@ -254,6 +303,26 @@ class BookImporterTest < ActiveSupport::TestCase
       qdp = book.query_doc_pairs.find_by(doc_id: '123')
       assert_operator qdp.created_at, :>, 1.minute.ago
       assert_operator qdp.judgements.first.created_at, :>, 1.minute.ago
+    end
+
+    # The judgements export emits `judgement_id`, and other producers may add keys; anything that
+    # isn't an importable attribute is dropped instead of raising UnknownAttributeError.
+    test 'ignores keys that are not importable attributes' do
+      data[:query_doc_pairs] = [
+        {
+          query_text: 'dog', doc_id: '123', not_a_column: 'x',
+          judgements: [
+            { rating: 2.0, user_email: user.email, judgement_id: 42, not_a_column: 'x' }
+          ]
+        }
+      ]
+
+      importer = BookImporter.new book, user, data
+      importer.import
+
+      qdp = book.query_doc_pairs.find_by(doc_id: '123')
+      assert_not_nil qdp
+      assert_in_delta 2.0, qdp.judgements.first.rating
     end
 
     test 'prefers scorer scale information over top level scale when both are given' do
@@ -391,9 +460,8 @@ class BookImporterTest < ActiveSupport::TestCase
 
         importer = BookImporter.new existing_book, user, data_with_judgements
 
-        assert_nothing_raised do
-          importer.import
-        end
+        assert_not importer.import
+        assert_includes existing_book.errors[:base].join, 'No judgements could be imported'
         assert_empty existing_book.judgements
       end
 

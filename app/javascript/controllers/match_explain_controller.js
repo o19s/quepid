@@ -1,19 +1,16 @@
 import { Controller } from "@hotwired/stimulus"
 import { createBsPopover } from "utils/bs_popover"
 import { openDynamicModal } from "utils/dynamic_modal"
-import { renderJsonExplorer, escapeHtml } from "utils/json_explorer"
+import { escapeHtml } from "utils/html"
 
 /**
- * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row
- * (was the `stackedChart` directive/`HotMatchesCtrl`), the popover it opens
- * (was `matches/matches.html`, reached via the now-deleted Angular
- * `quepidPopoverTemplate` directive) and the two modals reachable from that
- * popover (were the `debug-matches` and `expand-content` components).
+ * Per-doc "Matches"/"No Match" chip + hot-match bars on the search result row,
+ * the popover it opens, and the two modals reachable from that popover
+ * (debug matches and expanded content).
  *
- * doc.explain()/doc.hotMatchesOutOf() are still Angular/splainer-search —
- * SearchResultCtrl computes them into `matchExplainData()` and serializes the
- * result onto `data-match-explain-data-value` (same bridge pattern as
- * rating-popover's scale value). This controller owns rendering only.
+ * doc.explain()/doc.hotMatchesOutOf() are still provided by splainer-search —
+ * the query document store computes the plain `matchExplain` snapshot and
+ * this controller owns rendering only.
  *
  * The popover trigger + BS5 popover instance are created once in connect()
  * and kept alive across re-renders (updated via setTitle()/setBody(), same
@@ -28,16 +25,21 @@ export default class extends Controller {
   connect() {
     this.showAll = false
 
-    this.element.innerHTML = `
-      <p class="matches-popper"><span></span><i class="bi bi-info-circle-fill" aria-hidden="true"></i></p>
-      <div class="match-explain-bars"></div>
-    `
+    const trigger = document.createElement("p")
+    trigger.className = "matches-popper"
+    trigger.appendChild(document.createElement("span"))
+    const info = document.createElement("i")
+    info.className = "bi bi-info-circle-fill"
+    info.setAttribute("aria-hidden", "true")
+    trigger.appendChild(info)
+    const bars = document.createElement("div")
+    bars.className = "match-explain-bars"
+    this.element.replaceChildren(trigger, bars)
     this.triggerEl = this.element.querySelector(".matches-popper")
     this.barsEl = this.element.querySelector(".match-explain-bars")
 
     this.popoverHandle = createBsPopover(this.triggerEl, {
-      mode: "text",
-      trigger: "outsideClick",
+      trigger: "outside-click",
       placement: "left",
       html: true
     })
@@ -71,113 +73,133 @@ export default class extends Controller {
 
   render(data) {
     const hots = data.hots || []
+    this.renderedData = data
 
     this.triggerEl.querySelector("span").textContent = hots.length > 0 ? "Matches" : "No Match"
-    this.barsEl.innerHTML = this.barsHtml(data, hots)
-    this.wireBars(data, hots)
+    this.barsEl.replaceChildren(this.renderBars(data, hots))
+    this.wireBars()
 
     this.popoverHandle.setTitle(`Relevancy Score: ${escapeHtml(data.docScore)}`)
     this.popoverHandle.setBody(this.popoverBody(data))
   }
 
-  barsHtml(data, hots) {
+  renderBars(data, hots) {
+    const fragment = document.createDocumentFragment()
     if (!data.hasChildren) {
-      return `
-        <div class="graph-explain">
-          <div class="graph-label">no per-term score breakdown for doc</div>
-        </div>
-      `
+      const explanation = document.createElement("div")
+      explanation.className = "graph-explain"
+      const label = document.createElement("div")
+      label.className = "graph-label"
+      label.textContent = "no per-term score breakdown for doc"
+      explanation.appendChild(label)
+      fragment.appendChild(explanation)
+      return fragment
     }
 
     const visible = hots.length <= 3 ? hots : hots.slice(0, 3)
     const rest = hots.length <= 3 ? [] : hots.slice(3)
-
-    let html = `<div>${visible.map((match) => this.barHtml(match)).join("")}`
+    const wrapper = document.createElement("div")
+    visible.forEach((match) => wrapper.appendChild(this.barElement(match)))
     if (rest.length > 0) {
-      const moreClass = this.showAll ? "collapse show" : "collapse"
-      html += `<div class="${moreClass} match-explain-more">${rest.map((match) => this.barHtml(match)).join("")}</div>`
-      html += `<a href="#" class="match-explain-toggle" style="font-size: 10px">Show ${this.showAll ? "Less" : `${hots.length - 3} More`}</a>`
+      const more = document.createElement("div")
+      more.className = `collapse${this.showAll ? " show" : ""} match-explain-more`
+      rest.forEach((match) => more.appendChild(this.barElement(match)))
+      wrapper.appendChild(more)
+      const toggle = document.createElement("button")
+      toggle.type = "button"
+      toggle.className = "btn btn-link p-0 border-0 match-explain-toggle"
+      toggle.style.fontSize = "10px"
+      toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
+      toggle.dataset.action = "match-explain#toggleMore"
+      wrapper.appendChild(toggle)
     }
-    html += "</div>"
-    return html
+    fragment.appendChild(wrapper)
+    return fragment
   }
 
-  barHtml(match) {
+  barElement(match) {
     const pct = Number(match.percentage) || 0
     const clamped = pct > 100 ? 100 : pct < 0 ? 0 : pct
-    return `
-      <div class="graph-explain match-explain-bar">
-        <div class="graph-label">${escapeHtml(match.description)}</div>
-        <div class="progress">
-          <div
-            class="progress-bar"
-            role="progressbar"
-            aria-valuemin="0"
-            aria-valuemax="100"
-            aria-valuenow="${clamped}"
-            style="width: ${clamped}%"
-          ></div>
-        </div>
-      </div>
-    `
+    const bar = document.createElement("div")
+    bar.className = "graph-explain match-explain-bar"
+    bar.dataset.action = "click->match-explain#openBarDebug"
+    const label = document.createElement("div")
+    label.className = "graph-label"
+    label.textContent = match.description || ""
+    const progress = document.createElement("div")
+    progress.className = "progress"
+    const progressBar = document.createElement("div")
+    progressBar.className = "progress-bar"
+    progressBar.setAttribute("role", "progressbar")
+    progressBar.setAttribute("aria-valuemin", "0")
+    progressBar.setAttribute("aria-valuemax", "100")
+    progressBar.setAttribute("aria-valuenow", String(clamped))
+    progressBar.style.width = `${clamped}%`
+    progress.appendChild(progressBar)
+    bar.append(label, progress)
+    return bar
   }
 
-  wireBars(data, hots) {
+  wireBars() {
     if (this.collapseInstance) {
       this.collapseInstance.dispose()
       this.collapseInstance = null
     }
 
-    this.barsEl.querySelectorAll(".match-explain-bar").forEach((bar) => {
-      bar.addEventListener("click", () => this.openDebugModal(data))
-    })
-
-    const toggle = this.barsEl.querySelector(".match-explain-toggle")
-    if (!toggle) return
-
     const moreEl = this.barsEl.querySelector(".match-explain-more")
+    if (!moreEl) return
+
     const Collapse = window.bootstrap && window.bootstrap.Collapse
     this.collapseInstance = Collapse ? new Collapse(moreEl, { toggle: false }) : null
+  }
 
-    toggle.addEventListener("click", (event) => {
-      event.preventDefault()
-      this.showAll = !this.showAll
-      toggle.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
-      if (this.showAll) this.collapseInstance?.show()
-      else this.collapseInstance?.hide()
-    })
+  openBarDebug() {
+    this.openDebugModal(this.renderedData)
+  }
+
+  toggleMore(event) {
+    event.preventDefault()
+    const hots = this.renderedData.hots || []
+    this.showAll = !this.showAll
+    event.currentTarget.textContent = `Show ${this.showAll ? "Less" : `${hots.length - 3} More`}`
+    if (this.showAll) this.collapseInstance?.show()
+    else this.collapseInstance?.hide()
   }
 
   popoverBody(data) {
     const body = document.createElement("div")
-    const explanationHtml = data.hasChildren
-      ? escapeHtml(data.explainToStr)
-      : escapeHtml(data.explainAsJson)
+    const explanation = document.createElement("div")
+    explanation.className = "doc-score-explanation"
+    const pre = document.createElement("pre")
+    pre.textContent = data.hasChildren ? data.explainToStr : data.explainAsJson
+    explanation.appendChild(pre)
+    const actions = document.createElement("div")
+    actions.className = "actions"
+    const debug = document.createElement("button")
+    debug.type = "button"
+    debug.className = "btn btn-outline-secondary match-explain-debug"
+    debug.textContent = "Debug"
+    debug.disabled = !data.hasChildren
+    const expand = document.createElement("button")
+    expand.type = "button"
+    expand.className = "btn btn-outline-secondary match-explain-expand"
+    expand.append("Expand ")
+    const expandIcon = document.createElement("i")
+    expandIcon.className = "bi bi-arrows-angle-expand"
+    expandIcon.setAttribute("aria-hidden", "true")
+    expand.appendChild(expandIcon)
+    actions.append(debug, expand)
+    body.append(explanation, actions)
 
-    body.innerHTML = `
-      <div class="doc-score-explanation">
-        <pre>${explanationHtml}</pre>
-      </div>
-      <div class="actions">
-        <a
-          href="#"
-          class="btn btn-outline-secondary match-explain-debug ${data.hasChildren ? "" : "disabled"}"
-          aria-disabled="${!data.hasChildren}"
-        >Debug</a>
-        <a href="#" class="btn btn-outline-secondary match-explain-expand">
-          Expand
-          <i class="bi bi-arrows-angle-expand" aria-hidden="true"></i>
-        </a>
-      </div>
-    `
-
-    body.querySelector(".match-explain-debug").addEventListener("click", (event) => {
+    // Bootstrap renders popover content under document.body, outside this
+    // controller's scope, so these buttons cannot use data-action.
+    debug.addEventListener("click", (event) => {
       event.preventDefault()
       if (!data.hasChildren) return
       this.openDebugModal(data)
     })
 
-    body.querySelector(".match-explain-expand").addEventListener("click", (event) => {
+    expand.addEventListener("click", (event) => {
       event.preventDefault()
       this.openExpandModal(data)
     })
@@ -187,31 +209,20 @@ export default class extends Controller {
 
   openDebugModal(data) {
     const modal = openDynamicModal({
-      html: `
-        <div class="doc-detailed-explain">
-          <h3>Debug Explain for <em>${escapeHtml(data.docTitle)}</em> (id:${escapeHtml(data.docId)})</h3>
-          <div class="match-explain-json"></div>
-        </div>
-      `,
+      templateId: "match-explain-debug-modal-template",
+      ariaLabelledBy: "match-explain-debug-modal-title",
       size: "lg",
-      windowClass: "doc-detailed-explain-modal"
+      windowClass: "full-screen-modal"
     })
-    renderJsonExplorer(modal.element.querySelector(".match-explain-json"), data.explainRawStr, { collapsed: true })
+    modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
   }
 
   openExpandModal(data) {
-    const explanationHtml = data.hasChildren
-      ? escapeHtml(data.explainToStr)
-      : escapeHtml(data.explainAsJson)
-
-    openDynamicModal({
-      html: `
-        <div class="col-sm-12 pt-4 pb-4 px-4">
-          <h1>Relevancy Score: ${escapeHtml(data.docScore)}</h1>
-          <div><pre>${explanationHtml}</pre></div>
-        </div>
-      `,
+    const modal = openDynamicModal({
+      templateId: "match-explain-expand-modal-template",
+      ariaLabelledBy: "match-explain-expand-modal-title",
       windowClass: "full-screen-modal"
     })
+    modal.element.querySelector("[data-controller='match-explain-modal']").matchExplainData = data
   }
 }

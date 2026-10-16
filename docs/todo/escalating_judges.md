@@ -1,5 +1,8 @@
 # Escalating judges — a cheap judge that wakes an expensive one
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > **Status:** plan only, nothing implemented. Builds directly on the provider adapters and
 > `JudgementFinalizer` from `docs/adr/0001-llm-judge-provider-architecture.md`.
 >

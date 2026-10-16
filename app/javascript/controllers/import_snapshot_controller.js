@@ -1,14 +1,12 @@
-import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { showStatusMessage } from "utils/status_message"
-import { getQuepidRootUrl } from "utils/quepid_root"
+import ImportFormControllerBase from "controllers/import_form_controller_base"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
+import { parseCsv } from "utils/csv"
+import { buildSnapshotImportGroups, SNAPSHOT_CSV_HEADERS } from "utils/snapshot_import"
 
-export default class extends Controller {
+export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner", "preview", "previewContent"]
-
-  connect() {
-    console.log("Import snapshot controller connected")
-  }
+  static values = { importsUrlTemplate: String }
 
   async fileSelected(event) {
     const file = event.target.files[0]
@@ -28,7 +26,7 @@ export default class extends Controller {
 
     try {
       // Read and validate the file
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       const validation = this.validateCSV(fileContent)
       
       if (!validation.valid) {
@@ -40,7 +38,7 @@ export default class extends Controller {
         this.showPreview(fileContent)
         this.submitButtonTarget.disabled = false
       }
-    } catch (error) {
+    } catch {
       this.showAlert('Error reading file. Please try again.', 'danger')
       this.submitButtonTarget.disabled = true
       this.hidePreview()
@@ -48,23 +46,24 @@ export default class extends Controller {
   }
 
   validateCSV(content) {
-    const lines = content.trim().split('\n')
-    if (lines.length < 2) {
+    const { headers, rows, errors } = parseCsv(content.trim())
+    if (rows.length === 0) {
       return { valid: false, error: 'CSV file is empty or has no data rows.' }
     }
 
-    const headers = lines[0].split(',').map(h => h.trim())
-    const expectedHeaders = [
-      'Snapshot Name', 'Snapshot Time', 'Case ID', 'Query Text', 'Doc ID', 'Doc Position'
-    ]
-
-    const missingHeaders = expectedHeaders.filter(header => !headers.includes(header))
+    const missingHeaders = SNAPSHOT_CSV_HEADERS.filter(header => !headers.includes(header))
     
     if (missingHeaders.length > 0) {
       return {
         valid: false,
         error: `Missing required headers: ${missingHeaders.join(', ')}. Please check spelling and capitalization.`
       }
+    }
+
+    // Report malformed rows instead of dropping them, so a partial import
+    // never looks like a successful one.
+    if (errors.length > 0) {
+      return { valid: false, error: `CSV format error: ${errors.join(' ')}` }
     }
 
     return { valid: true }
@@ -85,16 +84,18 @@ export default class extends Controller {
 
     try {
       // Read the file content
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       
-      // Parse CSV to structured data
-      const snapshotData = this.parseCSV(fileContent)
-      
-      if (snapshotData.length === 0) {
-        this.showAlert('No valid data found in CSV file.', 'danger')
+      // The file may have changed since it was selected, so re-check it here.
+      const validation = this.validateCSV(fileContent)
+      if (!validation.valid) {
+        this.showAlert(validation.error, 'danger')
         this.setLoading(false)
         return
       }
+
+      // Parse CSV to structured data (validation above guarantees at least one row)
+      const snapshotData = this.parseCSV(fileContent)
 
       // Group data by case and send to API
       await this.importSnapshots(snapshotData)
@@ -112,57 +113,11 @@ export default class extends Controller {
   }
 
   parseCSV(content) {
-    const lines = content.trim().split('\n')
-    const headers = lines[0].split(',').map(h => h.trim())
-    
-    const data = []
-    for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',').map(v => v.trim())
-      if (values.length !== headers.length) continue
-      
-      const row = {}
-      headers.forEach((header, index) => {
-        row[header] = values[index]
-      })
-      data.push(row)
-    }
-    
-    return data
+    return parseCsv(content.trim()).rows
   }
 
   async importSnapshots(docs) {
-    // Group by case ID and snapshot name
-    const cases = {}
-
-    docs.forEach(doc => {
-      const caseId = doc['Case ID']
-      if (!cases[caseId]) {
-        cases[caseId] = { snapshots: {} }
-      }
-
-      const snapshotName = doc['Snapshot Name']
-      if (!cases[caseId].snapshots[snapshotName]) {
-        cases[caseId].snapshots[snapshotName] = {
-          queries: {},
-          created_at: doc['Snapshot Time'],
-          name: snapshotName
-        }
-      }
-
-      const snapshot = cases[caseId].snapshots[snapshotName]
-      const queryText = doc['Query Text']
-      
-      if (!snapshot.queries[queryText]) {
-        snapshot.queries[queryText] = { docs: [] }
-      }
-
-      const docPayload = {
-        id: doc['Doc ID'],
-        position: doc['Doc Position']
-      }
-
-      snapshot.queries[queryText].docs.push(docPayload)
-    })
+    const cases = buildSnapshotImportGroups(docs, undefined, { includeFields: false })
 
     // Convert to API format and send requests sequentially: snapshots for the same
     // case commonly share query text, and sending them concurrently races the
@@ -171,19 +126,9 @@ export default class extends Controller {
 
     for (const [caseId, caseData] of Object.entries(cases)) {
       for (const [snapshotName, snapshot] of Object.entries(caseData.snapshots)) {
-        const snapshotPayload = {
-          name: snapshot.name,
-          created_at: snapshot.created_at,
-          queries: Object.fromEntries(
-            Object.entries(snapshot.queries).map(([queryText, queryData]) => [
-              queryText,
-              { docs: queryData.docs }
-            ])
-          )
-        }
 
         try {
-          await this.sendSnapshotToAPI(caseId, snapshotPayload)
+          await this.sendSnapshotToAPI(caseId, snapshot)
         } catch (error) {
           console.error(`Snapshot import failed for case ${caseId}, snapshot "${snapshotName}":`, error)
           failureCount += 1
@@ -197,52 +142,17 @@ export default class extends Controller {
   }
 
   async sendSnapshotToAPI(caseId, snapshotData) {
-    // Case IDs come from the uploaded CSV, not the page, so there's no
-    // server-rendered URL to pass in - fall back to the root URL.
-    const url = `${getQuepidRootUrl()}/api/cases/${caseId}/snapshots/imports`
+    // Case IDs come from the uploaded CSV, so the server passes a URL template.
+    const url = this.importsUrlTemplateValue.replaceAll("__CASE_ID__", String(caseId))
 
-    const response = await apiFetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ snapshots: [snapshotData] })
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.message || `Failed to import snapshot for case ${caseId}`)
+    try {
+      return await postJson(url, { snapshots: [snapshotData] })
+    } catch (error) {
+      if (error instanceof HttpError) {
+        error.message = error.data?.message || `Failed to import snapshot for case ${caseId}`
+      }
+      throw error
     }
-
-    return response.json()
-  }
-
-  readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = (e) => reject(e)
-      reader.readAsText(file)
-    })
-  }
-
-  setLoading(isLoading) {
-    this.submitButtonTarget.disabled = isLoading
-    if (isLoading) {
-      this.submitTextTarget.textContent = 'Importing...'
-      this.spinnerTarget.classList.remove('d-none')
-    } else {
-      this.submitTextTarget.textContent = 'Import'
-      this.spinnerTarget.classList.add('d-none')
-    }
-  }
-
-  showAlert(message, type) {
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
-  }
-
-  hideAlert() {
-    this.alertTarget.classList.add('d-none')
   }
 
   showPreview(content) {

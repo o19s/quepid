@@ -1,0 +1,155 @@
+<%# Client-owned modal shells. Stimulus clones these templates and fills their targets. %>
+<template id="browse-query-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="browse-query-modal-title">Browse Results on <span data-browse-query-target="engineName"></span></h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <p>Run this in a terminal, or paste it into a tool like Postman, to see the raw response from <span data-browse-query-target="engineName"></span> for this query.</p>
+    <pre class="p-2 bg-light border rounded browse-query-curl" data-browse-query-target="curl"></pre>
+    <p class="text-muted mb-0" data-browse-query-target="headersNotice">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      This includes the endpoint's configured headers/credentials — treat it like a secret.
+    </p>
+    <p class="text-muted mb-0 d-none" data-browse-query-target="noHeadersNotice">
+      <i class="bi bi-info-circle" aria-hidden="true"></i>
+      No headers or credentials are configured for this endpoint, so you can also open the URL directly below.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-outline-secondary float-start me-auto" data-browse-query-target="copy" data-action="browse-query#copy">
+      <i class="bi bi-copy" data-browse-query-target="copyIcon"></i>
+      <span data-browse-query-target="copyLabel" aria-live="polite">Copy curl command</span>
+    </button>
+    <%# browse-query supplies href before showing this link. %>
+    <a class="btn btn-outline-secondary float-start me-2 d-none" data-browse-query-target="directLink" target="_blank" rel="noopener noreferrer"><i class="bi bi-box-arrow-up-right"></i> Open URL directly</a> <%# herb:disable html-anchor-require-href %>
+    <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+  </div>
+</template>
+
+<template id="query-explain-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="query-explain-modal-title">Explain Query Parsing</h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body">
+    <p>These are details returned from the search engine on how it processed the input query</p>
+    <ul class="nav nav-tabs" role="tablist">
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link active" id="query-explain-tab-params" data-query-explain-target="tab" data-action="shown.bs.tab->query-explain#tabShown" data-bs-toggle="tab" data-bs-target="#query-explain-pane-params" role="tab" aria-controls="query-explain-pane-params" aria-selected="true">Params</button></li>
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link" id="query-explain-tab-parsing" data-query-explain-target="tab" data-action="shown.bs.tab->query-explain#tabShown" data-bs-toggle="tab" data-bs-target="#query-explain-pane-parsing" role="tab" aria-controls="query-explain-pane-parsing" aria-selected="false">Parsing</button></li>
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link" id="query-explain-tab-template" data-query-explain-target="tab" data-action="shown.bs.tab->query-explain#tabShown" data-bs-toggle="tab" data-bs-target="#query-explain-pane-template" role="tab" aria-controls="query-explain-pane-template" aria-selected="false">Query Template</button></li>
+    </ul>
+    <div class="tab-content">
+      <div class="tab-pane active" id="query-explain-pane-params" role="tabpanel" aria-labelledby="query-explain-tab-params">
+        <p data-query-explain-target="paramsMessage">
+          <i class="bi bi-exclamation-triangle-fill d-none" aria-hidden="true" data-query-explain-target="paramsWarningIcon"></i>
+          <span data-query-explain-target="paramsMessageText"></span>
+        </p>
+        <div class="query-explain-params" data-query-explain-target="params"></div>
+      </div>
+      <div class="tab-pane" id="query-explain-pane-parsing" role="tabpanel" aria-labelledby="query-explain-tab-parsing">
+        <p>This is how the search engine parsed the query.</p>
+        <div class="query-explain-parsing" data-query-explain-target="parsing"></div>
+      </div>
+      <div class="tab-pane" id="query-explain-pane-template" role="tabpanel" aria-labelledby="query-explain-tab-template">
+        <div class="query-explain-template" data-query-explain-target="templatePane">
+          <p></p>
+          <pre class="query-explain-template-json"></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button data-query-explain-target="copy" data-action="query-explain#copy" class="btn btn-outline-secondary float-start me-auto query-explain-copy" data-tab="queryDetails"><i class="bi bi-copy"></i> Copy</button>
+    <button data-query-explain-target="copy" data-action="query-explain#copy" class="btn btn-outline-secondary float-start me-auto query-explain-copy d-none" data-tab="parsedQueryDetails"><i class="bi bi-copy"></i> Copy</button>
+    <button data-query-explain-target="copy" data-action="query-explain#copy" class="btn btn-outline-secondary float-start me-auto query-explain-copy d-none" data-tab="renderedQueryTemplate"><i class="bi bi-copy"></i> Copy</button>
+    <button class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+  </div>
+</template>
+
+<template id="missing-documents-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="missing-documents-modal-title">Find and Rate Missing Documents</h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body" data-controller="missing-documents" data-action="rating-popover:rate->missing-documents#rate rating-popover:reset->missing-documents#rate" data-missing-documents-modal-root-value="true" data-missing-documents-engine-labels-value="<%= SearchEngine::LABELS.to_json %>">
+    <div class="d-none" data-missing-documents-target="supported">
+      <p>Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer. For example, NDCG is based on your global scores, so if your top 10 are all <code>1</code>'s, and you find and rate a document as a <code>3</code>, then the score will drop if that <code>3</code> rated document doesn't show up first!</p>
+      <form data-action="submit->missing-documents#search">
+        <div class="row">
+          <div class="mb-3 col-sm-6">
+            <textarea class="form-control" rows="4" data-missing-documents-target="queryParams"></textarea>
+            <p class="form-text d-none" data-missing-documents-target="solrHelp">Enter a Lucene query to find documents, for example <code>id:123</code>. Explanations use your original query; this search does not change your try.</p>
+            <p class="form-text" data-missing-documents-target="previewHelp">This is pre-filled from your current try's query, just like the Query Sandbox — edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query.</p>
+          </div>
+          <div class="col-sm-3"><input type="submit" class="btn btn-primary form-control" value="Search" data-missing-documents-target="searchButton"></div>
+        </div>
+      </form>
+      <button type="button" class="btn btn-outline-secondary form-control mb-3" data-missing-documents-target="resetButton" data-action="missing-documents#reset">Reset to All Rated Docs</button>
+    </div>
+    <div class="alert alert-warning d-none" data-missing-documents-target="unsupported">Finding and rating missing documents isn't supported for the <strong data-missing-documents-target="engineName"></strong> search engine yet.</div>
+    <div data-missing-documents-target="status"></div>
+    <div data-missing-documents-target="results"></div>
+    <div class="d-flex align-items-center">
+      <button type="button" class="btn btn-outline-secondary d-none" data-missing-documents-target="next" data-action="missing-documents#paginate">Peek at the next page of results</button>
+      <span class="ms-2 d-none" data-missing-documents-target="spinner"><i class="bi bi-arrow-repeat spintime"></i></span>
+    </div>
+  </div>
+  <div class="modal-footer"><button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button></div>
+</template>
+
+<template id="frog-report-modal-template">
+  <div class="modal-header">
+    <h3 class="modal-title" id="frog-report-modal-title">The Frog Pond Report: <span data-frog-report-target="caseName"></span></h3>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  </div>
+  <div class="modal-body frog-pond">
+    <div class="frog-pond-content">
+      <p>The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have. Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!</p>
+      <h4>Summary</h4>
+      <p>You have <span data-frog-report-target="queryCount"></span> Queries for this case, of which <span data-frog-report-target="withResults"></span> return results, and <span data-frog-report-target="withoutResults"></span> return <strong>zero</strong> results.</p>
+      <p>You need to maintain a total of <span data-frog-report-target="ratingsNeeded"></span> ratings to eliminate all the 🐸.<br>
+        <span data-frog-report-target="allRated">All the queries have been fully rated! Congratulations!</span>
+        <span data-frog-report-target="notAllRated">There are currently <span data-frog-report-target="missingRatings"></span> ratings missing, leading to <span data-frog-report-target="missingRate"></span>% missing rate. We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating.<span data-frog-report-target="hopMessage"><br>So hop to it!</span></span>
+      </p>
+      <h4 style="margin-top: 60px;">Distribution of Queries Needing Ratings</h4>
+      <div data-frog-report-target="chart" id="chart1"></div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" data-frog-report-target="refreshButton" data-action="click->frog-report#refresh">
+      <i class="bi bi-arrow-repeat" data-frog-report-target="refreshIcon"></i>
+      Refresh ratings from book <i data-frog-report-target="bookName"></i>
+    </button>
+    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+    <div class="text-danger d-none" data-frog-report-target="error"></div>
+  </div>
+</template>
+
+<template id="match-explain-debug-modal-template">
+  <div class="doc-detailed-explain" data-controller="match-explain-modal">
+    <h3 id="match-explain-debug-modal-title">Debug Explain for <em data-match-explain-modal-target="title"></em> (id:<span data-match-explain-modal-target="docId"></span>)</h3>
+    <div data-match-explain-modal-target="json"></div>
+  </div>
+</template>
+
+<template id="match-explain-expand-modal-template">
+  <div class="col-sm-12 pt-4 pb-4 px-4" data-controller="match-explain-modal">
+    <h1 id="match-explain-expand-modal-title">Relevancy Score: <span data-match-explain-modal-target="score"></span></h1>
+    <div><pre data-match-explain-modal-target="explanation"></pre></div>
+  </div>
+</template>
+
+<template id="detailed-document-modal-template">
+  <div style="margin: 20px" data-controller="detailed-document">
+    <h3 id="detailed-document-modal-title">Detailed Document View of doc: <span data-detailed-document-target="docId"></span></h3>
+    <h4 data-detailed-document-target="title"></h4>
+    <div data-detailed-document-target="fields"></div>
+    <div data-detailed-document-target="allFields" class="detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
+      <pre data-detailed-document-target="rawFields"></pre>
+    </div>
+    <button class="btn btn-primary detailed-doc-view" data-detailed-document-target="viewButton" data-action="detailed-document#view">View Document</button>
+    <button type="button" class="btn btn-outline-secondary" data-detailed-document-target="toggle" data-action="detailed-document#toggleFields">View All Fields</button>
+    <button type="button" class="btn btn-outline-secondary float-end" data-bs-dismiss="modal">Close</button>
+  </div>
+</template>

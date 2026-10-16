@@ -19,30 +19,8 @@ class ScoringTest < ActiveSupport::TestCase
       assert_equal 42, context.eval('math.adder(20,22)')
     end
 
-    it 'runs some demo code' do
-      scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
-
-      # Prepare some items to score
-      items = [
-        { id: 1, value: 10 },
-        { id: 2, value: 20 }
-      ]
-
-      # Calculate score with options
-      begin
-        score = scorer.score_items(items, {
-          multiplier: 1.5,
-          dataId:     123,
-        })
-        puts "Final score: #{score}"
-        assert_equal 45, score
-      rescue JavaScriptScorer::ScoreError => e
-        puts "Scoring failed: #{e.message}"
-      end
-    end
-
     it 'handles P@10' do
-      javascript_scorer = JavascriptScorer.new(Rails.root.join('lib/scorer_logic.js'))
+      javascript_scorer = JavascriptScorer.new
 
       # Prepare some items to score
       docs = [

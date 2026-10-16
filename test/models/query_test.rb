@@ -115,8 +115,8 @@ class QueryTest < ActiveSupport::TestCase
       assert_not_equal first, new_first
     end
 
-    test 'removes random element form the list and rearranges list' do
-      index = (1..(queries_case.queries.length - 1)).to_a.sample
+    test 'removes a middle element from the list and rearranges list' do
+      index = queries_case.queries.length / 2
       query = queries_case.queries[index]
 
       query.remove_from_list

@@ -1,51 +1,43 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import CloneCaseCoreController from "controllers/clone_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(CloneCaseCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
-  controller.triesUrlTemplateValue = "/api/cases/__CASE_ID__/tries"
-  controller.hasTriesUrlTemplateValue = true
-  controller.cloneUrlValue = "/api/clone/cases"
-
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasNoQueriesAlertTarget = true
-  controller.noQueriesAlertTarget = document.createElement("div")
-  controller.hasCaseNameInputTarget = true
-  controller.caseNameInputTarget = document.createElement("input")
-  controller.hasHistoryOffButtonTarget = true
-  controller.historyOffButtonTarget = document.createElement("button")
-  controller.hasHistoryOnButtonTarget = true
-  controller.historyOnButtonTarget = document.createElement("button")
-  controller.hasTryFieldWrapperTarget = true
-  controller.tryFieldWrapperTarget = document.createElement("div")
-  controller.hasTrySelectTarget = true
-  controller.trySelectTarget = document.createElement("select")
-  controller.hasQueriesCheckboxTarget = true
-  controller.queriesCheckboxTarget = document.createElement("input")
-  controller.hasRatingsCheckboxTarget = true
-  controller.ratingsCheckboxTarget = document.createElement("input")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
+  const controller = buildControllerFixture(CloneCaseCoreController, {
+    overrides: { identifier: "clone-case-core" },
+    targets: {
+      title: document.createElement("h5"),
+      alert: document.createElement("div"),
+      noQueriesAlert: document.createElement("div"),
+      caseNameInput: document.createElement("input"),
+      historyOffButton: document.createElement("button"),
+      historyOnButton: document.createElement("button"),
+      tryFieldWrapper: document.createElement("div"),
+      trySelect: document.createElement("select"),
+      queriesCheckbox: document.createElement("input"),
+      ratingsCheckbox: document.createElement("input"),
+      submitButton: document.createElement("button")
+    },
+    values: {
+      triesUrlTemplate: "/api/cases/__CASE_ID__/tries",
+      cloneUrl: "/api/clone/cases"
+    }
+  })
 
   Object.assign(controller, overrides)
   return controller
 }
 
 function buildTrigger({ id = "5", name = "Movies", lastTry = "3" } = {}) {
+  mountCaseHeader(name)
   const trigger = document.createElement("a")
   trigger.dataset.cloneCaseCoreIdValue = id
-  trigger.dataset.cloneCaseCoreNameValue = name
   trigger.dataset.cloneCaseCoreLastTryValue = lastTry
   return trigger
 }
@@ -54,6 +46,9 @@ describe("CloneCaseCoreController", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ tries: [] })
     })
@@ -63,34 +58,11 @@ describe("CloneCaseCoreController", () => {
     vi.restoreAllMocks()
   })
 
-  it("is not a modal root without a title target", () => {
-    const trigger = Object.create(CloneCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-
-    expect(trigger.isModalRoot).toBe(false)
-  })
-
-  it("a trigger instance (not the modal root) delegates open() to the modal-root controller", () => {
-    const modalController = buildModalController()
-    const trigger = Object.create(CloneCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-    trigger.application = {
-      getControllerForElementAndIdentifier: vi.fn(() => modalController)
-    }
-    document.body.innerHTML = '<div id="cloneCaseModal"></div>'
-    const openSpy = vi.spyOn(modalController, "open")
-
-    const event = { preventDefault: () => {}, currentTarget: document.createElement("a") }
-    trigger.open(event)
-
-    expect(openSpy).toHaveBeenCalledWith(event)
-  })
-
   it("open resets state from the trigger's dataset and disables submit until a case name is entered", async () => {
     const controller = buildModalController()
     const trigger = buildTrigger()
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.currentCaseId).toBe("5")
     expect(controller.titleTarget.textContent).toBe("Clone case: Movies")
@@ -106,6 +78,9 @@ describe("CloneCaseCoreController", () => {
 
   it("loadTries populates the try select and preselects the current try number", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () =>
         Promise.resolve({
@@ -165,6 +140,9 @@ describe("CloneCaseCoreController", () => {
     })
 
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: true,
       json: () => Promise.resolve({ case_id: 42, last_try_number: 1 })
     })
@@ -203,6 +181,9 @@ describe("CloneCaseCoreController", () => {
 
   it("submit shows an inline alert and re-enables submit on failure", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        return JSON.stringify(await this.json()) || ""
+      },
       ok: false,
       json: () => Promise.resolve({ error: "Nope" })
     })

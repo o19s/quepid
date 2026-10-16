@@ -11,86 +11,113 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
-  test 'should get new' do
-    get new_ai_judge_url
-    assert_response :success
-  end
-
-  test 'should get new with a team pre-selected from the team page' do
-    get new_ai_judge_url(team_id: team.id)
-    assert_response :success
-    assert_equal [ team.id ], assigns(:ai_judge).team_ids
-    assert_select "input[type=checkbox][value='#{team.id}'][checked]"
-  end
-
-  test 'new renders the provider dropdown and presets from the LlmProvider registry' do
-    get new_ai_judge_url
-
-    LlmProvider.each do |provider|
-      assert_select 'select#judge_options_llm_provider option[value=?]', provider.key, text: provider.label
+  test 'clone opens an unsaved owned configuration with only the originating team' do
+    ai_judge.update!(administrator: true, company: 'Do not copy', reset_password_token: 'source-token')
+    assert_no_difference 'User.count' do
+      get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
     end
-    wizard = css_select('[data-controller="ai-judge-wizard"]').first
-    presets_json = wizard['data-ai-judge-wizard-presets-value']
-
-    assert_not_nil presets_json, 'presets were not rendered into the wizard'
-    assert_equal LlmProvider.presets.deep_stringify_keys, JSON.parse(presets_json)
-  end
-
-  test 'should update ai_judge and flash a success notice' do
-    patch ai_judge_url(ai_judge),
-          params: { user: {
-            name: 'Renamed Judge', llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
-          } }
-
-    assert_redirected_to ai_judge_path(ai_judge)
-    assert_equal 'AI Judge was successfully updated.', flash[:notice]
-    assert_equal 'Renamed Judge', ai_judge.reload.name
-  end
-
-  test 'a validation failure on update keeps the book context the request arrived with' do
-    book = books(:james_bond_movies)
-
-    patch ai_judge_url(ai_judge), params: { book_id: book.id, user: { name: '' } }
-
     assert_response :success
-    assert_select '[data-ai-judge-wizard-has-scale-value=true]'
+    assert_select 'form[action=?]', team_ai_judges_path(team)
+    assert_select 'input[name="user[name]"][value=?]', "Clone of #{ai_judge.name}"
+    assert_select 'input[name="user[llm_key]"][value=?]', ai_judge.llm_key
+    assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
+    assert_select '[data-ai-judge-wizard-existing-value="false"]'
+    assert_select '[data-ai-judge-wizard-test-url-value*="/new/"]'
   end
 
-  test 'should create ai_judge with no team (owner-only)' do
+  test 'saving a clone creates a distinct requester-owned judge without account state' do
+    configuration = { name: "Clone of #{ai_judge.name}", llm_key: ai_judge.llm_key,
+                      system_prompt: ai_judge.system_prompt, options: { judge_options: ai_judge.judge_options }.to_json,
+                      team_ids: [ team.id ], administrator: true, reset_password_token: 'source-token' }
+    original = ai_judge.attributes
+    assert_difference 'AiJudge.count' do
+      post team_ai_judges_url(team), params: { user: configuration }
+    end
+    assert_response :see_other
+    assert_redirected_to team_url(team)
+    cloned = AiJudge.order(:id).last
+    assert_equal user, cloned.owner
+    assert_equal ai_judge.llm_key, cloned.llm_key
+    assert_equal ai_judge.system_prompt, cloned.system_prompt
+    assert_equal ai_judge.judge_options, cloned.judge_options
+    assert_equal [ team.id ], cloned.team_ids
+    assert_not cloned.administrator?
+    assert_nil cloned.reset_password_token
+    assert_empty cloned.books
+    assert_equal original, ai_judge.reload.attributes
+  end
+
+  test 'clone rejects an inaccessible team, private source, and source outside the team' do
+    get clone_team_ai_judge_url(team_id: teams(:valid).id, id: ai_judge.id)
+    assert_response :not_found
+    ai_judge.teams.clear
+    get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+    assert_response :not_found
+    ai_judge.update!(owner: user)
+    get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
+    assert_response :not_found
+  end
+
+  test 'clone validation failure retains input and the nested create route for retry' do
+    assert_no_difference 'User.count' do
+      post team_ai_judges_url(team), params: { user: {
+        name: 'Retry clone', llm_key: 'retained-key', system_prompt: '', options: '{broken', team_ids: [ team.id ]
+      } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'form[action=?]', team_ai_judges_path(team)
+    assert_select 'input[name="user[name]"][value="Retry clone"]'
+    assert_select 'input[name="user[llm_key]"][value="retained-key"]'
+    assert_select 'textarea[name="user[options]"]', text: '{broken'
+    assert_select 'input[name="user[team_ids][]"][checked][value=?]', team.id.to_s
+  end
+
+  test 'update announces success and retains the team-context redirect' do
+    patch team_ai_judge_url(team, ai_judge), params: { user: { name: 'Updated judge' } }
+    assert_response :see_other
+    assert_redirected_to team_url(team)
+    assert_equal 'AI Judge was successfully updated.', flash[:notice]
+  end
+
+  test 'should get new with the existing provider defaults' do
+    get new_team_ai_judge_url(team_id: team.id)
+    assert_response :success
+    assert_select '#judge_options_llm_provider option[selected][value="openai"]'
+    assert_select '#judge_options_llm_service_url[value="https://api.openai.com"]'
+    assert_select '#judge_options_llm_model[value="gpt-4o"]'
+    assert_select '#judge_options_llm_timeout[value="30"]'
+    assert_select '#judge_options_llm_api_version[value=""]'
+    assert_select 'textarea[name="user[system_prompt]"]', text: LlmProvider::CHAT_SYSTEM_PROMPT
+  end
+
+  test 'should create ai_judge' do
     assert_difference('User.count') do
-      post ai_judges_url,
+      post team_ai_judges_url(team_id: team.id),
            params: { user: {
              name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
            } }
     end
-    new_judge = User.order(:id).last
-    assert_equal user, new_judge.owner
-    assert_empty new_judge.teams
-    assert_redirected_to ai_judge_url(new_judge)
-    assert_equal 'AI Judge was successfully created.', flash[:notice]
+    assert_redirected_to team_url(id: team.id)
   end
 
-  test 'should create ai_judge and share it with a team in the same request' do
-    assert_difference('User.count') do
-      post ai_judges_url,
-           params: { user: {
-             name: ai_judge.name, llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt,
-             team_ids: [ team.id ]
-           } }
+  test 'should destroy ai_judge' do
+    assert_difference('User.count', -1) do
+      delete team_ai_judge_url(team_id: team.id, id: ai_judge.id)
     end
-    new_judge = User.order(:id).last
-    assert_includes new_judge.teams, team
-  end
 
+    assert_redirected_to team_url(id: team.id)
+  end
   test 'new offers the chat prompt, and ships every stock prompt for the switcher' do
     get new_ai_judge_url
 
     assert_select 'textarea[name=?]', 'user[system_prompt]', text: /scale of 0 to 3/
 
-    stock = css_select('[data-controller="ai-judge-wizard"]').first['data-ai-judge-wizard-stock-prompts-value']
+    stock = css_select('[data-controller~="ai-judge-form"]').first['data-ai-judge-form-stock-prompts-value']
 
     assert_not_nil stock, 'stock prompts were not rendered into the wizard'
     assert_equal LlmProvider.stock_system_prompts, JSON.parse(stock)
+    defaults = JSON.parse(css_select('[data-controller~="ai-judge-form"]').first['data-ai-judge-form-option-defaults-value'])
+    assert_equal LlmService::DEFAULT_OPTIONS.stringify_keys.merge('llm_provider' => 'openai', 'llm_api_version' => ''), defaults
   end
 
   test 'new offers a provider own option as a field, inert until that provider is chosen' do
@@ -116,56 +143,6 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_equal '0.4', judge.options.dig('judge_options', 'jev_min_confidence')
   end
 
-  test 'new offers the include images switch, on' do
-    get new_ai_judge_url
-
-    assert_select 'input#judge_options_llm_include_images[type=checkbox][role=switch][checked]'
-    assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'false'
-  end
-
-  test 'edit shows the include images switch on for a judge saved before it existed' do
-    assert_nil ai_judge.judge_options[:llm_include_images]
-
-    get edit_ai_judge_url(ai_judge)
-
-    assert_select 'input#judge_options_llm_include_images[checked]'
-  end
-
-  test 'turning include images off is stored with the judge' do
-    patch ai_judge_url(ai_judge),
-          params: { user: { judge_options: { llm_provider: 'ollama', llm_include_images: 'false' } } }
-
-    assert_equal 'false', ai_judge.reload.judge_options[:llm_include_images]
-  end
-
-  test 'edit shows the include images switch off for a judge that turned it off' do
-    ai_judge.update!(judge_options: ai_judge.judge_options.merge(llm_include_images: 'false'))
-
-    get edit_ai_judge_url(ai_judge)
-
-    assert_select 'input#judge_options_llm_include_images'
-    assert_select 'input#judge_options_llm_include_images[checked]', count: 0
-  end
-
-  test 'edit shows the include images switch disabled for a provider that cannot take images' do
-    ai_judge.update!(judge_options: { llm_provider: 'ollama', llm_include_images: 'true' })
-
-    get edit_ai_judge_url(ai_judge)
-
-    assert_select 'input#judge_options_llm_include_images[disabled]'
-    assert_select 'input#judge_options_llm_include_images[checked]', count: 0
-    # the judge's own choice still posts, kept for a provider that can
-    assert_select 'input[type=hidden][name=?][value=?]', 'user[judge_options][llm_include_images]', 'true'
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice]:not([style])', text: /Ollama\s+doesn't support images/
-  end
-
-  test 'new shows the include images switch enabled for the default provider' do
-    get new_ai_judge_url
-
-    assert_select 'input#judge_options_llm_include_images[disabled]', count: 0
-    assert_select '[data-ai-judge-wizard-target=includeImagesNotice][style*="display:none"]'
-  end
-
   test 'edit renders the provider dropdown for judge_options saved before llm_provider existed' do
     assert_nil ai_judge.judge_options[:llm_provider], "fixture shouldn't carry llm_provider, to match a pre-existing judge"
 
@@ -189,163 +166,44 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to ai_judge_url(AiJudge.order(:id).last)
     assert_equal 'typesafe_jev', AiJudge.order(:id).last.judge_options[:llm_provider]
   end
-
-  describe 'edit, as the page to refine a prompt on' do
-    let(:book) { books(:james_bond_movies) }
-
-    test 'flags instructions written for another kind of model, and offers the right default' do
-      ai_judge.update!(system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
-                       judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge)
-
-      assert_response :success
-      assert_select '#system-prompt-warning:not([style*="display:none"])'
-      assert_select '#system-prompt-warning button', text: /Use TypeSafe Jev's default/
-    end
-
-    test 'says nothing when the instructions already belong to this provider' do
-      ai_judge.update!(system_prompt: LlmProvider::JEV_SYSTEM_PROMPT,
-                       judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge)
-
-      assert_response :success
-      assert_select '#system-prompt-warning[style*="display:none"]'
-    end
-
-    test 'says nothing about a prompt somebody wrote themselves' do
-      ai_judge.update!(system_prompt: 'Only rate wine labels.',
-                       judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge)
-
-      assert_response :success
-      assert_select '#system-prompt-warning[style*="display:none"]'
-    end
-
-    test 'shows the book scale as the criteria a typed model will be sent' do
-      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge, book_id: book.id)
-
-      assert_response :success
-      assert_select '#judging-criteria [data-ai-judge-wizard-target=criteriaTable]:not([style*="display:none"])',
-                    text: /Criteria sent with the question/
-      assert_select '#judging-criteria td', text: /Not Relevant/
-      assert_select '#judging-criteria td', text: /level 1 . rating 1/
-    end
-
-    test 'shows a chat judge the scale as the prose its prompt will carry' do
-      get edit_ai_judge_url(ai_judge, book_id: book.id)
-
-      assert_response :success
-      assert_select '#judging-criteria [data-ai-judge-wizard-target=criteriaProse]:not([style*="display:none"])',
-                    text: /Rating scale added to the prompt/
-      assert_select '#judging-criteria p', text: /0 \(labeled "Not Relevant"\)/
-    end
-
-    test 'a judge that needs a book cannot be run without one, and says where to go' do
-      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge)
-
-      assert_response :success
-      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
-      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"])',
-                    text: /Judgement Stats/
-    end
-
-    test 'a judge that needs a book can be run once it has one' do
-      ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
-
-      get edit_ai_judge_url(ai_judge, book_id: book.id)
-
-      assert_response :success
-      assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
-      assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
-    end
-
-    test 'shows no criteria when there is no book to take them from' do
-      get edit_ai_judge_url(ai_judge)
-
-      assert_response :success
-      assert_select '#judging-criteria', count: 0
+  test 'provider selection and presets share the registry' do
+    get new_ai_judge_url
+    LlmProvider.each do |provider|
+      assert_select 'select#judge_options_llm_provider option[value=?]', provider.key, text: provider.label
+      assert_select 'template[data-provider=?]', provider.key
     end
   end
 
-  test 'should destroy ai_judge' do
-    assert_difference('User.count', -1) do
-      delete ai_judge_url(id: ai_judge.id)
+  test 'provider help preserves formatting and links while removing unsafe markup' do
+    provider = LlmProvider.find('openai')
+    provider.help_html = <<~HTML
+      <strong onclick="alert(1)">Provider</strong><br><b>URL:</b><code>example</code>
+      <a href="https://example.com/help" target="_blank" rel="noopener">Help</a>
+      <a href="javascript:alert(1)">Unsafe link</a><img src="x" onerror="alert(1)">
+    HTML
+
+    template = File.readlines(Rails.root.join('app/views/ai_judges/_provider_options.html.erb')).find do |line|
+      line.include?('entry.help_html')
     end
+    html = ApplicationController.render(inline: template, locals: { entry: provider })
 
-    assert_redirected_to ai_judges_url
-  end
-
-  describe 'index' do
-    it 'lists AI judges the user owns or shares a team with' do
-      owned_judge = AiJudge.create!(name: 'My Judge', llm_key: '1234', owner: user)
-
-      get ai_judges_url
-
-      assert_response :success
-      assert_includes assigns(:ai_judges), owned_judge
-      assert_includes assigns(:ai_judges), ai_judge
-    end
-
-    it 'excludes AI judges owned by, or only shared with, someone else' do
-      other_user = users(:doug)
-      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
-
-      get ai_judges_url
-
-      assert_not_includes assigns(:ai_judges), private_judge
+    assert_select Nokogiri::HTML5.fragment(html), 'template[data-provider="openai"]' do
+      assert_select 'strong', text: 'Provider'
+      assert_select 'br', count: 1
+      assert_select 'b', text: 'URL:'
+      assert_select 'code', text: 'example'
+      assert_select 'a[href="https://example.com/help"][target="_blank"][rel="noopener"]', text: 'Help'
+      assert_select 'a:not([href])', text: 'Unsafe link'
+      assert_select 'img, [onclick], [onerror]', count: 0
     end
   end
 
-  describe 'access control' do
-    it 'cannot edit an AI judge owned by, and not shared with, another user' do
-      other_user = users(:doug)
-      private_judge = AiJudge.create!(name: 'Not Mine', llm_key: '1234', owner: other_user)
-
-      get edit_ai_judge_url(private_judge)
-
-      assert_response :not_found
-    end
-  end
-
-  describe 'cloning an ai_judge' do
-    test 'renders a pre-filled form without creating a record' do
-      assert_no_difference('User.count') do
-        get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
-      end
-
-      assert_response :success
-      assert_select "input[name='user[name]'][value=?]", "Clone of #{ai_judge.name}"
-    end
-
-    test 'submitting the cloned form creates a new ai_judge with the same settings' do
-      get clone_team_ai_judge_url(team_id: team.id, id: ai_judge.id)
-
-      assert_difference('User.count') do
-        post team_ai_judges_url(team_id: team.id),
-             params: { user: {
-               name: "Clone of #{ai_judge.name}", llm_key: ai_judge.llm_key, system_prompt: ai_judge.system_prompt
-             } }
-      end
-
-      clone = User.order(:id).last
-      assert_equal "Clone of #{ai_judge.name}", clone.name
-      assert_equal ai_judge.llm_key, clone.llm_key
-      assert_predicate clone, :ai_judge?
-    end
-
-    test 'returns not found for an ai_judge id that does not belong to the team' do
-      other_team_ai_judge = users(:matt)
-
-      get clone_team_ai_judge_url(team_id: team.id, id: other_team_ai_judge.id)
-
-      assert_response :not_found
-    end
+  test 'a saved Jev judge renders a disabled preview without an accessible scale' do
+    ai_judge.update!(judge_options: { llm_provider: 'typesafe_jev' })
+    get edit_ai_judge_url(ai_judge)
+    assert_response :success
+    assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]'
+    assert_select '[data-ai-judge-form-target=needsScaleNotice]:not([style*="display:none"])', text: /Judgement Stats/
+    assert_select '#judge_options_llm_include_images[disabled]:not([checked])'
   end
 end

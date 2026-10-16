@@ -2,7 +2,7 @@
 
 ## Overview
 
-Quepid is mid-migration off Bootstrap 3 (AngularJS's original styling) onto Bootstrap 5, layered as: npm Bootstrap 5 → `core-additions.css` (Quepid layout) → `bootstrap5-compat.css` (BS-class shims for the Angular `core` app). This creates a specific, recurring class of bug that functional testing alone won't catch: **an element can be present in the DOM, correctly wired (`aria-describedby` set, click handlers firing), and still be invisible** — wrong `display`, `opacity: 0`, a stray `transform`, or a font-size collapsed by an unscoped legacy rule. A tester clicking through the happy path can easily miss this because the *behavior* looks right even when the *paint* is wrong.
+The core UI uses Bootstrap 5 layered as: npm Bootstrap 5 → `core-additions.css` (Quepid layout) → `bootstrap5-compat.css` (Bootstrap-class compatibility rules for the core app). This creates a specific, recurring class of bug that functional testing alone won't catch: **an element can be present in the DOM, correctly wired (`aria-describedby` set, click handlers firing), and still be invisible** — wrong `display`, `opacity: 0`, a stray `transform`, or a font-size collapsed by an unscoped legacy rule. A tester clicking through the happy path can easily miss this because the *behavior* looks right even when the *paint* is wrong.
 
 This part is a checklist for exactly that class of regression, plus general responsive/narrow-viewport and accessibility sweeps. Run it whenever BS5-related CSS/JS changes, or as a periodic full-app sweep. It complements (doesn't replace) the automated Playwright suite in `test/playwright/` — see `DEVELOPER_GUIDE.md`'s "Playwright E2E" section to run that suite yourself (`bin/docker r yarn test:e2e`), and treat any manual finding here as a candidate to also encode as a new Playwright spec.
 
@@ -10,14 +10,16 @@ This part is a checklist for exactly that class of regression, plus general resp
 
 ### 16.1 Popover & tooltip paint check (BS3↔BS5 trap)
 
-Every rating badge, and various icon buttons throughout the app, use BS5 popovers/tooltips (see `quepidPopover.js` / `quepidTooltip.js`).
+Every rating badge, and various icon buttons throughout the app, use BS5 popovers/tooltips (see `app/javascript/utils/bs_popover.js` / `bs_tooltip.js`).
 
 - [ ] **Steps:**
   1. In the Core Workbench, expand a query and click a document's rating badge to open its popover.
   2. Open your browser's DevTools, inspect the popover element, and check its **Computed** styles: `display`, `opacity`, `transform`, `font-size`.
-  3. Repeat for at least one tooltip (e.g., hover a sidebar icon, Part 15.1) and one other popover-driven control elsewhere in the app (e.g., a share modal's info icon, if any).
+  3. Confirm clicking the rating trigger again closes its popover; clicking inside the tip keeps it open, and clicking outside dismisses it. Repeat outside-click dismissal for Matches.
+  4. Repeat for at least one tooltip (e.g., hover a sidebar icon, Part 15.1) and one other popover-driven control elsewhere in the app (e.g., a share modal's info icon, if any).
 - **Expected:** `display` is not `none`, `opacity` is `1` (or transitioning toward it, not stuck at `0`), no unexpected `transform: scale(0)`/`translate` pushing it off-screen, and `font-size` looks proportionate to surrounding text (not collapsed to a tiny fixed px value from a legacy `small { font-size: 11px }`-style leak).
 - **Edge cases:**
+  - [ ] Open a longer custom rating scale with labels at 1280×900 and 768×900. Confirm choices wrap within the popover and the final value and **RESET** remain visible and reachable.
   - [ ] Confirm the popover/tooltip is visible **on first click/hover**, not just after a second interaction (a common symptom of an early-layer CSS rule winning over the intended BS5 one).
   - [ ] Check this at both the default viewport and the narrow viewport (16.2) — some of these bugs only manifest once BS5's responsive font-size (RFS) scaling kicks in.
 
@@ -34,7 +36,8 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
 - **Edge cases:**
   - [ ] Confirm modals that are meant to scroll internally (tall content) actually do — don't confuse "modal cut off at the bottom of the viewport" with "modal has no scrollbar" — the two look similar but only one is a bug.
   - [ ] Try an even narrower width (e.g., 375px, a typical phone width) even though it's not part of the automated suite — note anything broken, even if mobile isn't officially a target form factor, since it indicates how fragile the layout is at the edge.
-  - [ ] **Known issue (confirmed, not yet fixed):** at 768×900 the top navbar's right-hand items (User Manual / Wiki / avatar dropdown) overflow past the right edge — `document.documentElement.scrollWidth` stays `768` (misleading — check `document.body.scrollWidth` instead, which reports `1080`) since the overflow happens on `<body>` (`overflow: auto` there), not `<html>`, so there's no visible horizontal scrollbar at the top of the viewport to reveal it; the avatar/profile/logout menu is effectively unreachable through normal interaction at this width. Root cause: both `_header.html.erb` and `_header_core_app.html.erb` use Bootstrap's unsuffixed `.navbar-expand` class (see `app/assets/stylesheets/navbar-brand.css`), which by design never collapses into a responsive hamburger toggler at any viewport width — the five nav links plus the avatar dropdown simply don't fit in 768px alongside the logo. Fixing this properly needs a responsive toggler (e.g. `.navbar-expand-md` + Bootstrap's collapse component) added to both header partials — real design/frontend work, not a safe one-line CSS patch, so left unfixed pending a deliberate design pass. Reproduce: resize to 768×900, load any page, run `document.body.scrollWidth` (1080) vs `document.body.clientWidth` (768) in DevTools, or note the avatar dropdown button's `getBoundingClientRect()` extends to x≈1080.
+  - [ ] At 600×900, preserve the core's inherited 750px minimum width: scroll the workbench horizontally and verify the drawer's bottom action and footer links remain reachable. Compare the same drawer/modal at the same width on Legacy before classifying clipping as a regression.
+  - [ ] At 768×900 the top navbar collapses into the hamburger toggler (both header partials use `.navbar-expand-lg`). Open it and confirm User Manual / Wiki / the avatar dropdown are reachable, and that `document.body.scrollWidth` equals `document.body.clientWidth` (check `body`, not `documentElement` — `body` is the element with `overflow: auto`, so overflow there shows no top-level scrollbar).
 
 ### 16.3 Case header typography
 
@@ -51,23 +54,26 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
   3. Separately, without any tooling: tab through the modal's controls using only the keyboard — confirm focus is trapped inside the modal (doesn't escape to background content), every interactive element is reachable, and pressing **Escape** closes the modal.
 - **Expected:** No critical/serious structural or ARIA violations reported (ignore pure color-contrast complaints against the current theme — that's a known, separate concern, not part of this check). Keyboard focus behaves correctly.
 - **Edge cases:**
-  - [ ] Repeat for at least one other frequently-used modal (Compare Snapshots, Import, Export, Judgements) since modal markup isn't perfectly uniform across the app.
+  - [ ] Repeat for Export, Compare Snapshots and Judgements: scan `select-name` and `heading-order` at every severity. Export's API picker is named **API snapshot**; each Compare picker is associated with its numbered Snapshot label, including added rows. Modal titles are level 2 and section headings level 3. Also sample Import when changing its markup.
+  - [ ] Repeat Escape while Explain and Export are opening, after they settle, and during closing. An opening keypress must dismiss once the transition finishes; closing must leave no backdrop or body scroll lock and restore the opening control. Keep Bootstrap's `keyboard: false` behavior when configured.
+  - [ ] From Missing Documents, open a document's Matches debug dialog. Escape and backdrop dismissal must close only the inner dialog, restore focus and usable Tab order in the outer dialog, and leave exactly one backdrop and its body scroll lock. Repeat Escape during the inner dialog's opening transition.
 
 ### 16.5 General visual sanity sweep after any CSS/JS change
 
-Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per `CLAUDE.md`, this requires a rebuild — confirm with the dev team that `yarn build` / `yarn build:css` / `yarn build:angular-vendor` has run before testing):
+Whenever you're testing after a CSS, Bootstrap-version, or vendor-JS change (per `CLAUDE.md`, this requires a rebuild — confirm with the dev team that `yarn build` (or `yarn build:css` / `yarn build:core` for just that part) has run before testing):
 
 - [ ] Click through every dropdown, modal, popover, tooltip, accordion, and tab control you encounter in your normal testing pass for that day, and actually **look** at them — don't just confirm the click "did something."
 - [ ] Compare against a recent baseline screenshot if one exists (see `.playwright-mcp/` conventions in `CLAUDE.md`, or the automated suite's own baselines).
 - [ ] If something looks subtly off (wrong spacing, wrong font size, a control that's technically clickable but visually washed-out/misaligned), don't dismiss it as "probably fine" — this exact category of bug is what this part exists to catch, and it's easy to unconsciously explain away.
 - [ ] Report anything found with a screenshot and the computed-style values from DevTools (display/opacity/font-size/transform) — that's what turns a vague "this looks wrong" into an actionable bug report for this specific class of issue.
 
-### 16.6 Core case-page footer stays pinned to the viewport bottom
 
-The Angular core case page (`/case/:id/try/:try`) doesn't render `body`'s footer directly — `footer.js` hides it and clones it into `.pane_main` (the `position: fixed`, internally-scrolling results pane from `panes.css`), since the real `body`-level footer is never reachable there. The clone (`#footer-copy`) is pinned with `position: fixed; bottom: 0` in `core-additions.css`, and `footer.js` pads `.pane_main`'s bottom by the clone's height so it doesn't cover the last result.
+### 16.6 Core footer placement and scrolling
 
 - [ ] **Steps:**
-  1. Open a case with only one or two queries (short content) and confirm the footer sits flush against the bottom of the browser viewport, not immediately below the query list.
-  2. Open a case with enough queries/expanded results to overflow `.pane_main`, scroll to the very bottom, and confirm the last result is fully visible above the footer (not clipped behind it).
-  3. Resize the browser window and confirm the footer stays pinned to the bottom without overlapping content (the padding is recalculated on `resize`).
-- **Expected:** The footer never moves up/down with content height — it's always flush with the bottom of the viewport, and scrollable content is never hidden behind it.
+  1. Open a case with enough queries to scroll, at 1280×900, and dismiss any search-error banners.
+  2. Scroll the main case pane to its bottom and inspect the footer.
+  3. Open Tune Relevance, then scroll the main pane to its bottom again.
+  4. Close the drawer and repeat at 600×900.
+- **Expected:** One footer stays at the bottom of the main case pane while queries scroll, including on an empty case. Copyright, version, configured policy links, API and community-support links are visible. Opening the drawer wraps the footer within the narrower pane without duplicating it. At the end of the query list, pagination remains above the footer and reachable. Wait for resize to settle before scrolling to the end.
+- **Edge cases:** Existing workbench clipping below its minimum width may also clip footer text; compare with the baseline before attributing this to a footer change. Separately sample an empty case and deployments with configured policy links.

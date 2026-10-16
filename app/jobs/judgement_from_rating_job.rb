@@ -13,6 +13,7 @@ class JudgementFromRatingJob < ApplicationJob
   def self.active_for _book, kase
     SolidQueue::Job
       .where(class_name: name, finished_at: nil)
+      .where.missing(:failed_execution)
       .select { |job| job_targets_case?(job, kase) }
   end
 
@@ -22,37 +23,30 @@ class JudgementFromRatingJob < ApplicationJob
 
   def self.job_targets_case? job, kase
     args = job.arguments['arguments'] || []
-    rating_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/Rating/') }
-    return false unless rating_arg
-
-    # safely_locate returns nil (rather than raising) for a rating deleted
-    # after this job was enqueued - it can't target any case anymore.
-    safely_locate(rating_arg['_aj_globalid'])&.query&.case_id == kase.id
+    ids = args[1]
+    if ids.is_a?(Array)
+      Rating.joins(:query).exists?(id: ids, queries: { case_id: kase.id })
+    else
+      rating_arg = args.find { |arg| arg.is_a?(Hash) && arg['_aj_globalid']&.include?('/Rating/') }
+      rating_arg && safely_locate(rating_arg['_aj_globalid'])&.query&.case_id == kase.id
+    end
   end
   private_class_method :job_targets_case?
 
   def perform user, rating
-    query = rating.query
-    book = query.case.book
-    if book
-      query_doc_pair = book.query_doc_pairs.find_or_create_by query_text: rating.query.query_text, doc_id: rating.doc_id
+    ids = rating.is_a?(Array) ? rating : [ rating.id ]
+    JudgementSync.batch do
+      Rating.where(id: ids).includes(query: :case).find_each do |item|
+        book = item.query.case.book
+        next unless book
 
-      # We can't populate the query_doc_pair.document_fields since we don't have that data
-      # but there are other fields we CAN update.
-      # query_doc_pair.document_fields = pair[:document_fields].to_json
-
-      # We need to think about the difference between a query / rating and a query_doc_pair.
-      # query_doc_pair.information_need = query.information_need
-      # query_doc_pair.notes = query.notes
-      # query_doc_pair.options = query.options
-
-      query_doc_pair.save!
-
-      judgement = query_doc_pair.judgements.find_or_initialize_by(user: user)
-      judgement.rating = rating.rating
-      judgement.save!
-
-      BroadcastLinkedCasesJob.perform_later(book)
+        pair = book.find_or_initialize_query_doc_pair(query_text: item.query.query_text, doc_id: item.doc_id)
+        pair.save!
+        judgement = pair.judgements.find_or_initialize_by(user: user)
+        judgement.rating = item.rating
+        judgement.save!
+        BroadcastLinkedCasesJob.perform_later(book)
+      end
     end
   end
 end

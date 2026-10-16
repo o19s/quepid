@@ -16,6 +16,7 @@ class UpdateCaseRatingsJob < ApplicationJob
 
     SolidQueue::Job
       .where(class_name: name, finished_at: nil)
+      .where.missing(:failed_execution)
       .select { |job| job_targets_book?(job, book) }
   end
 
@@ -25,23 +26,21 @@ class UpdateCaseRatingsJob < ApplicationJob
 
   def self.job_targets_book? job, book
     args = job.arguments['arguments'] || []
-    qdp_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/QueryDocPair/') }
-    return false unless qdp_arg
-
-    # safely_locate returns nil (rather than raising) for a query_doc_pair
-    # deleted after this job was enqueued (e.g. the book was reset or
-    # re-imported) - it can't target any book anymore.
-    safely_locate(qdp_arg['_aj_globalid'])&.book_id == book.id
+    ids = args.first
+    if ids.is_a?(Array)
+      QueryDocPair.exists?(id: ids, book_id: book.id)
+    else
+      qdp_arg = args.find { |arg| arg.is_a?(Hash) && arg['_aj_globalid']&.include?('/QueryDocPair/') }
+      qdp_arg && safely_locate(qdp_arg['_aj_globalid'])&.book_id == book.id
+    end
   end
   private_class_method :job_targets_book?
 
-  # Fired after every judgement save (human, bulk, or AI) - the dominant
-  # path for Book -> Case ratings syncing, unlike the bulk/explicit
-  # UpdateCaseJob. Broadcasting here (rather than at each call site) keeps
-  # the Linked Cases card's pulse live for all three judging flows.
   def perform query_doc_pair
-    service = RatingsManager.new(query_doc_pair.book)
-    service.sync_ratings_for_query_doc_pair query_doc_pair
-    BroadcastLinkedCasesJob.perform_later(query_doc_pair.book)
+    ids = query_doc_pair.is_a?(Array) ? query_doc_pair : [ query_doc_pair.id ]
+    QueryDocPair.where(id: ids).includes(:book).find_each do |pair|
+      RatingsManager.new(pair.book).sync_ratings_for_query_doc_pair(pair)
+      BroadcastLinkedCasesJob.perform_later(pair.book)
+    end
   end
 end

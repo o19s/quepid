@@ -22,29 +22,36 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 
 ### 5.2 Create a snapshot
 
+Core toolbar opens the Stimulus **take-snapshot-core** modal (`#takeSnapshotModal`); the snapshot bridge owns shallow bootstrap, payload construction, POST, and hydration while live query state remains in the shared live-query runtime.
+
 - [ ] **Steps:**
-  1. Click the camera icon ("Create snapshot") in the case toolbar.
-  2. Enter a snapshot name (required).
+  1. Click **Create snapshot** in the case toolbar.
+  2. Enter a snapshot name (optional in practice — blank names get an auto-generated label).
   3. If shown (only for engines that support lookup-by-id), toggle **Record Document Fields?**.
   4. Click **Take Snapshot**.
-- **Expected:** While processing, the modal (or relevant UI) shows "Snapshot Being Created (this can take a minute or so)"; once done, the snapshot is available for comparison (5.3) and export (Part 6).
+- **Expected:** While processing, the modal shows "Snapshot Being Created (this can take a minute or so)"; once done, the snapshot is available for comparison (5.3) and export (Part 6).
 - **Edge cases:**
-  - [ ] Submit with no name — should be blocked (required field).
   - [ ] Force a server error — confirm it surfaces clearly rather than leaving the modal stuck on "in progress" forever.
   - [ ] Take a snapshot on a large case (many queries) — confirm the async/background behavior doesn't block the rest of the UI.
+  - [ ] Take a snapshot against an Elasticsearch/OpenSearch case (not only Solr) — confirm capture, the Record Document Fields toggle's presence/absence, and later comparison behave as for Solr.
 
 ### 5.3 Compare snapshots (diff)
 
+Rails owns the picker row template; Stimulus populates selections and dynamic options. Snapshot hydration, diff read renderer, per-query diff score badges, and case-level diff score row remain browser-owned. The explicit `snapshot-bridge` controller hands hydrated snapshots to the live-query runtime for diff scoring.
+
 - [ ] **Steps:**
   1. Click "Compare snapshots" (bar-chart icon) in the case toolbar.
-  2. For "Snapshot 1", pick a snapshot from the dropdown.
-  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum allowed.
+  2. For "Snapshot 1", pick a snapshot from the dropdown. Keyboard focus stays on that select; changing a second row or clearing its value also retains focus.
+  3. Click **Add Snapshot** to add a second (and third) comparison row, up to the maximum shown in the modal (currently 5). At the limit, Add Snapshot disappears.
   4. Click **Update Comparison Settings**.
   5. Confirm additional score badges (per query, and per case) appear reflecting each chosen snapshot.
   6. Click the "x" on a row to clear just that selection.
   7. Click **Clear Comparison View** to disable all diffs at once.
 - **Expected:** Diff badges accurately reflect each snapshot's historical scores/results side-by-side with the live/current view.
 - **Edge cases:**
+  - [ ] Open a document rating popover in an expanded comparison, then refresh a different query. The original comparison controls and popover stay open.
+  - [ ] Compare two snapshots whose result *order* differs for the same query (re-rank between captures) — confirm the diff shows distinguishable ordering, not just matching sets. Repeat with a snapshot taken on a non-Solr engine.
+  - [ ] Force catalog load failure, close/reopen to retry; force apply/delete failure and retry with selections and delete confirmation retained. Cancel deletion, then confirm it on a disposable snapshot. Its option disappears from every picker immediately, other snapshots remain available, and reopening confirms persistence.
   - [ ] Select the same snapshot in two rows — confirm the inline warning "You have selected the same snapshot multiple times." appears.
   - [ ] Select a snapshot that's still being processed in the background — confirm a warning is shown and the UI doesn't present stale/partial data as if it were complete.
   - [ ] While fetching snapshot data, confirm the "Fetching snapshot data..." progress text shows and the footer buttons are disabled meanwhile.
@@ -52,16 +59,24 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 
 ### 5.4 Annotations
 
+Rails renders persisted annotation rows with the case page and returns Turbo Stream
+responses for create, edit and delete; Stimulus captures the live score, renders the
+streams and retains the edit modal. The JSON API
+continues to supply the graph and external clients.
+
 - [ ] **Steps:**
   1. Open Tune Relevance → **Annotations** tab.
   2. Type a note (e.g., "disabled synonyms, see what happens") in the message box, click **Create**.
-  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp, the current try's score, and your message.
+  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp, the current try's score formatted to two decimals, and your message. The score formatting stays consistent after reload or edit.
   4. Open the per-annotation dropdown menu (list icon), click **Edit**, change the message, click **Update** (or Cancel).
   5. Delete an annotation via the same dropdown.
 - **Expected:** Annotations record a point-in-time note tied to the current score; edits/deletes reflect immediately in the list and on the score graph (5.5).
 - **Edge cases:**
-  - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), attempt to create an annotation — confirm the flash error "Can't create a new annotation until searches have been run! Please rerun your searches." and no annotation is created.
+  - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), confirm the **Create** button is disabled until a case score exists, so no annotation can be created. (The controller's flash "Can't create a new annotation until searches have been run! Please rerun your searches." is a fallback that the disabled button normally keeps unreachable.)
   - [ ] Open Edit, change the message, then click **Cancel** — confirm the original message is restored (no partial edit leaks through).
+  - [ ] On a case with no annotations, confirm "No annotations yet." shows, hides after Create, and returns after deleting the last one.
+  - [ ] Force a save failure: failed create/edit retains the draft and allows retry. Reload after a successful edit to confirm persistence and score formatting.
+  - [ ] Delay deletion of one annotation, then edit another. Let deletion finish while the edit is saving; confirm the successful edit displays its saved message and survives reload.
   - [ ] Delete an annotation — note there is no confirmation dialog on this action; confirm this is intentional (and mention it to the team if it feels too easy to trigger accidentally).
 
 ### 5.5 Score graph (sparkline) & annotation markers
@@ -70,6 +85,6 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
   1. Run searches multiple times on a case to build up score history, and create at least one annotation.
   2. Observe the small sparkline graph near the case score badge.
   3. Hover a vertical annotation marker on the graph.
-- **Expected:** With 2+ historical scores, the sparkline renders (last ~10 scores). Hovering a marker shows a tooltip with the annotation's message. With 0–1 scores, no graph is shown at all.
+- **Expected:** With 2+ historical scores, the Stimulus/Vega sparkline renders (last ~10 scores). Hovering a marker shows a tooltip with the annotation's message. With 0–1 scores, no graph is shown at all.
 - **Edge cases:**
   - [ ] Confirm the graph doesn't duplicate or flicker when scores/annotations update while the page is open (re-render should replace, not stack).

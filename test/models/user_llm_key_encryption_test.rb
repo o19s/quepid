@@ -2,22 +2,24 @@
 
 require 'test_helper'
 
-class AiJudgeLlmKeyEncryptionTest < ActiveSupport::TestCase
+class UserLlmKeyEncryptionTest < ActiveSupport::TestCase
   test 'llm_key should be encrypted when saved' do
-    judge = AiJudge.new(
-      name:          'AI Judge',
+    user = AiJudge.new(
+      name:          'ai judge',
+      email:         'ai_judge@example.com',
+      password:      'password123',
       llm_key:       'sk-test-key-123456789',
       system_prompt: 'You are a helpful assistant'
     )
 
-    assert judge.save
+    assert user.save
 
     # The llm_key should still be accessible through the model
-    assert_equal 'sk-test-key-123456789', judge.llm_key
+    assert_equal 'sk-test-key-123456789', user.llm_key
 
     # But in the database, it should be encrypted (not equal to the plain text)
     raw_value = User.connection.select_value(
-      "SELECT llm_key FROM users WHERE id = #{judge.id}"
+      "SELECT llm_key FROM users WHERE id = #{user.id}"
     )
 
     # The raw database value should not equal the plaintext value
@@ -28,16 +30,34 @@ class AiJudgeLlmKeyEncryptionTest < ActiveSupport::TestCase
   end
 
   test 'llm_key should be decrypted when loaded' do
-    judge = AiJudge.create!(
-      name:          'AI Judge',
+    user = AiJudge.create!(
+      name:          'ai judges',
+      email:         'ai_judge2@example.com',
+      password:      'password123',
       llm_key:       'sk-another-test-key',
       system_prompt: 'You are a helpful assistant'
     )
 
-    # Reload the judge from database
-    loaded_judge = AiJudge.find(judge.id)
+    # Reload the user from database
+    loaded_user = User.find(user.id)
 
     # The llm_key should be decrypted automatically
-    assert_equal 'sk-another-test-key', loaded_judge.llm_key
+    assert_equal 'sk-another-test-key', loaded_user.llm_key
+  end
+
+  test 'can query users by llm_key presence' do
+    # Create a user with llm_key (AI judge)
+    ai_judge = AiJudge.create!(
+      name:          'ai judge3',
+      email:         'ai_judge3@example.com',
+      password:      'password123',
+      llm_key:       'sk-query-test-key',
+      system_prompt: 'You are a helpful assistant'
+    )
+
+    # Only AI judges retain provider keys
+    ai_judges = AiJudge.all
+    assert_includes ai_judges, ai_judge
+    assert_not_includes ai_judges, users(:doug)
   end
 end

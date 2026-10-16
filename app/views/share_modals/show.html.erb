@@ -1,0 +1,58 @@
+<%# Body of shared/_share_entity_modal, loaded into its Turbo Frame; the modal's
+    footer buttons submit these forms by id. %>
+<% prefix = "share-#{@record_type.dasherize}" %>
+<% record_param = :"#{@record_type}_id" %>
+<% target_key = "#{prefix}-target" %>
+<% noun = @record_type.humanize(capitalize: false) %>
+<%= turbo_frame_tag "#{prefix}-frame" do %>
+  <% if @record %>
+    <%= form_with url: @share_path, method: :post, local: true, html: { id: "#{prefix}-form", class: 'mb-3' } do %>
+      <%= hidden_field_tag record_param, @record.id, id: "#{prefix}-id" %>
+
+      <p class="h5">Select a team to share this <%= noun %> with:</p>
+      <div class="mb-3">
+        <% team_options = if @shareable_teams.any?
+                            [ [ 'Select a team...', '' ] ] + @shareable_teams.map { |team| [ team.name, team.id ] }
+                          else
+                            [ [ @all_teams.empty? ? 'You have no teams yet' : 'No other teams to share with', '' ] ]
+                          end %>
+        <%= select_tag :team_id,
+                       options_for_select(team_options),
+                       class: 'form-select',
+                       id: "#{prefix}-team",
+                       required: true,
+                       disabled: @shareable_teams.empty?,
+                       data: {
+                         target_key => 'teamSelect',
+                         action: "change->#{prefix}#toggleSubmit",
+                       } %>
+      </div>
+    <% end %>
+
+    <hr>
+    <p class="h5">Already shared with:</p>
+    <%= tag.div id: "#{prefix}-shared-list", class: 'list-group mt-2', data: { target_key => 'sharedList' } do %>
+      <% if @shared_teams.empty? %>
+        <p class="text-muted mb-0">Not shared with any teams yet.</p>
+      <% else %>
+        <% @shared_teams.each do |team| %>
+          <%= button_tag team.name.presence || "Team #{team.id}",
+                         type: 'button',
+                         class: 'list-group-item list-group-item-action list-group-item-success',
+                         data: {
+                           team_id: team.id,
+                           "#{prefix}-team-id-param" => team.id,
+                           action: "click->#{prefix}#selectSharedTeam",
+                         } %>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <%= form_with url: @unshare_path, method: :post, local: true, html: { id: "un#{prefix}-form", class: 'mt-3' } do %>
+      <%= hidden_field_tag record_param, @record.id, id: "un#{prefix}-id" %>
+      <%= hidden_field_tag :team_id, '', id: "un#{prefix}-team", data: { target_key => 'unshareTeamId' } %>
+    <% end %>
+  <% else %>
+    <p class="text-danger mb-0"><%= noun.capitalize %> not found.</p>
+  <% end %>
+<% end %>

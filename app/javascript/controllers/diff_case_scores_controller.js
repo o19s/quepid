@@ -1,0 +1,53 @@
+import { Controller } from "@hotwired/stimulus"
+import { subscribeToStore } from "utils/store_subscription"
+import { formatScore, scoreToColor, renderScoreState } from "utils/scoring"
+import { getCoreStores } from "utils/core_store_access"
+
+/**
+ * Renders the case-level snapshot comparison scores.
+ *
+ * The live-query runtime still calculates these scores while scoring is being
+ * migrated, but the header no longer depends on the old qscore-case
+ * component or its scope bindings.
+ */
+export default class extends Controller {
+  connect() {
+    this.store = getCoreStores().documents
+    this.onStoreChange = () => this.render()
+    this.unsubscribeStore = this.store && subscribeToStore(this.store, { change: this.onStoreChange, reset: this.onStoreChange })
+    this.render()
+  }
+
+  disconnect() {
+    this.unsubscribeStore?.()
+  }
+
+  render() {
+    this.element.querySelectorAll("[data-diff-case-scores-generated]").forEach((badge) => badge.remove())
+    const searchers = this.store?.snapshot()?.caseDiffs || []
+
+    searchers.forEach((searcher) => {
+      const badge = document.createElement("div")
+      badge.className = "case-score diff-score"
+      badge.dataset.diffCaseScoresGenerated = "true"
+
+      const rating = document.createElement("div")
+      rating.className = "header-rating"
+      const score = searcher.score?.score ?? "?"
+      rating.style.backgroundColor = scoreToColor(score, searcher.score?.maxScore || 1)
+
+      const value = document.createElement("span")
+      value.className = "scorable-score"
+      value.textContent = formatScore(score)
+
+      const label = document.createElement("span")
+      label.className = "query-score-label low-profile"
+      label.textContent = searcher.name || "Snapshot"
+
+      rating.append(value, label)
+      renderScoreState(rating, score, searcher.score?.maxScore || 1)
+      badge.append(rating)
+      this.element.append(badge)
+    })
+  }
+}

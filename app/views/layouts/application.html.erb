@@ -1,17 +1,21 @@
+<% case_page = controller_name == "core" %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <% if content_for?(:debug_info) %>
   <%= yield :debug_info %>
 <% end %>
 <head>
-  <meta charset="utf-8"/>
+  <%= render 'layouts/head_common' %>
+  <%= yield :head %>
+  <% if case_page %>
+    <%= render 'layouts/case_head' %>
+  <% else %>
+  <%# Some legacy GET actions change state; defer speculative visits until those routes are audited. %>
+  <meta name="turbo-prefetch" content="false">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-	<meta name="apple-mobile-web-app-capable" content="yes">
-	<meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <%= action_cable_meta_tag %>
-  <base href="<%= ENV['RAILS_RELATIVE_URL_ROOT'] %>/">
-
-  <%= favicon_link_tag asset_path "favicon.ico" %>
 
 
 <% if flash[:unfurl] %>
@@ -19,32 +23,32 @@
 
   <title>Quepid: Case <%= flash[:unfurl]["case_name"] %></title>
 
-  <!-— facebook open graph tags -->
+  <!-- facebook open graph tags -->
   <meta property="og:type" content="website">
   <% if flash[:unfurl]["id"] %>
-    <meta property="og:url" content="<%=case_core_url(id: flash[:unfurl]["id"] ) %>">
+    <meta property="og:url" content="<%= case_core_url(id: flash[:unfurl]["id"] ) %>">
   <% end %>
   <meta property="og:title" content="Case <%= flash[:unfurl]["case_name"] %>">
   <meta property="og:description" content="Case <%= flash[:unfurl]["case_name"] %> Description here.">
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>">
 
-  <!-— twitter card tags additive with the og: tags -->
+  <!-- twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@quepid_search">
-  <meta name="twitter:domain" value="<%=URI.parse(root_url).host%>">
+  <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>">
   <meta name="twitter:title" value="Case <%= flash[:unfurl]["case_name"] %>">
   <meta name="twitter:description" value="Case <%= flash[:unfurl]["case_name"] %> Description here">
   <meta name="twitter:image" content="<%= image_url "quepid-icon.png" %>">
   <% if flash[:unfurl]["id"] %>
-    <meta name="twitter:url" value="<%=case_core_url(id: flash[:unfurl]["id"] ) %>">
+    <meta name="twitter:url" value="<%= case_core_url(id: flash[:unfurl]["id"] ) %>">
     <meta name="twitter:label1" value="Latest Try">
-    <meta name="twitter:data1" value="<%=Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>">
+    <meta name="twitter:data1" value="<%= Case.find_by_id(flash[:unfurl]["id"]).tries.latest.try_number %>">
   <% end %>
 <% else %>
 
   <title>Quepid -- Relevant Search Solved</title>
 
-  <!-— facebook open graph tags -->
+  <!-- facebook open graph tags -->
   <meta property="og:type" content="website">
   <meta name="twitter:site" content="@quepid_search">
   <meta property="og:url" content="<%= root_path %>">
@@ -52,7 +56,7 @@
   <meta property="og:description" content="Tired of irrelevant search results? Use Quepid products & services to help improve the quality and relevancy of your search results.">
   <meta property="og:image" content="<%= image_url "quepid-icon.png" %>">
 
-  <!-— twitter card tags additive with the og: tags -->
+  <!-- twitter card tags additive with the og: tags -->
   <meta name="twitter:card" content="summary">
   <meta name="twitter:domain" value="<%= URI.parse(root_url).host %>">
   <meta name="twitter:title" value="Quepid -- Relevant Search Solved">
@@ -66,27 +70,23 @@
 
 
   <%= stylesheet_link_tag 'application', media: 'all', 'data-turbo-track': 'reload' %>
-  <%= csrf_meta_tags %>
 
-  <%= javascript_importmap_tags 'application_modern' %>
+  <%= javascript_importmap_tags 'application' %>
   <%= debugbar_head  if defined? Debugbar %>
 
+  <% end %>
 </head>
 
-<body class="d-flex flex-column min-vh-100" data-quepid-root-url="<%= quepid_root_url %>">
+<body <%= tag.attributes(layout_body_attributes(case_page: case_page, kase: @case, try: @try)) %>> <%# herb:disable actionview-no-unnecessary-tag-attributes %>
 
-<%= render 'layouts/header' %>
+<% if case_page %>
+  <%= render 'layouts/case_workspace', kase: @case %>
+<% else %>
+<%= render 'layouts/header', announcement: @announcement %>
 
-<%# Deliberately d-flex directly on container-fluid, not a nested .row: .row's
-    "> *" rule forces width:100%/flex-shrink:0 on every direct child (assuming
-    Bootstrap grid .col-* children), which fights a fixed-width sidebar + a
-    flex-grow content pane that isn't using grid columns. That mismatch is
-    what let main overlap the sidebar below the md breakpoint: main's old
-    col-md-10/col-lg-11 classes only set a width at their own breakpoint and
-    up, so under md nothing but that universal .row > * rule applied, handing
-    main the row's entire width right underneath the sidebar instead of
-    beside it. flex-grow-1 here (on a flex-column body) lets this reach all
-    the way down to the footer instead of only matching short page content. %>
+<%# Continue the flex chain so the sidebar reaches the footer on short pages.
+    Flex directly on the container, not a .row: .row's "> *" rule gives every
+    child width:100%, which put main underneath the fixed-width sidebar below md. %>
 <div class="container-fluid flex-shrink-0 flex-grow-1 d-flex ps-0">
 
   <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
@@ -100,7 +100,9 @@
 </div>
 
 <%= render 'layouts/footer' %>
+<%= render 'shared/confirm_modal' %>
 
 <%= debugbar_body if defined? Debugbar %>
+<% end %>
 </body>
 </html>

@@ -36,8 +36,8 @@
                   id="httpMethod"
                   data-mapper-wizard-target="httpMethod"
                   data-action="change->mapper-wizard#updateTestQueryHint">
-            <option value="GET" <%= @search_endpoint.api_method == 'GET' || !@search_endpoint.persisted? ? 'selected' : '' %>>GET</option>
-            <option value="POST" <%= @search_endpoint.api_method == 'POST' ? 'selected' : '' %>>POST</option>
+            <%= tag.option 'GET', value: 'GET', selected: @search_endpoint.api_method == 'GET' || !@search_endpoint.persisted? %>
+            <%= tag.option 'POST', value: 'POST', selected: @search_endpoint.api_method == 'POST' %>
           </select>
         </div>
         <div class="col-md-8">
@@ -47,7 +47,8 @@
                  id="searchUrl"
                  placeholder="https://www.opensourceconnections.com/"
                  data-mapper-wizard-target="searchUrl"
-                 value="<%= @search_endpoint.endpoint_url %>">
+                 value="<%= @search_endpoint.endpoint_url %>"
+                 autocomplete="off">
           <div class="form-text">Base URL saved to endpoint.</div>
         </div>
         <div class="col-md-2 d-flex align-items-end">
@@ -62,6 +63,9 @@
 
       <!-- Test Query (used for both GET query params and POST body) -->
       <% existing_test_query = @wizard_state.try(:test_query).presence || @search_endpoint.test_query %>
+      <% post_test_query = @search_endpoint.api_method == 'POST' %>
+      <% post_placeholder = '{"query": "test", "size": 10}' %>
+      <% get_placeholder = 's=quepid&rows=10' %>
       <div class="row g-3 mt-2">
         <div class="col-12">
           <label for="testQuery" class="form-label">Test Query</label>
@@ -69,14 +73,16 @@
                     id="testQuery"
                     rows="4"
                     data-mapper-wizard-target="testQuery"
-                    placeholder="<%= @search_endpoint.api_method == 'POST' ? '{"query": "test", "size": 10}' : 's=quepid&rows=10' %>"><%= existing_test_query %></textarea>
-          <div class="form-text" data-mapper-wizard-target="testQueryHint">
-            <% if @search_endpoint.api_method == 'POST' %>
-              Enter JSON body for POST request. Saved with endpoint for easy iteration.
-            <% else %>
-              Enter query params (e.g., <code>q=test&rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
-            <% end %>
-          </div>
+                    placeholder="<%= post_test_query ? post_placeholder : get_placeholder %>"><%= existing_test_query %></textarea>
+          <%# One hint per HTTP method; the controller shows the one matching the method select and copies its placeholder onto the textarea. %>
+          <%= tag.div class: 'form-text', hidden: !post_test_query,
+                      data: { mapper_wizard_target: 'testQueryHint', http_method: 'POST', placeholder: post_placeholder } do %>
+            Enter JSON body for POST request. Saved with endpoint for easy iteration.
+          <% end %>
+          <%= tag.div class: 'form-text', hidden: post_test_query,
+                      data: { mapper_wizard_target: 'testQueryHint', http_method: 'GET', placeholder: get_placeholder } do %>
+            Enter query params (e.g., <code>q=test&amp;rows=10</code>) appended to URL. Saved with endpoint for easy iteration.
+          <% end %>
         </div>
       </div>
 
@@ -97,19 +103,16 @@
                      id="basicAuthCredential"
                      data-mapper-wizard-target="basicAuthCredential"
                      placeholder="username:password"
-                     value="<%= existing_basic_auth %>">
+                     value="<%= existing_basic_auth %>"
+                     autocomplete="off">
               <div class="form-text">Optional. Format: <code>username:password</code>. Used for HTTP Basic Authentication.</div>
             </div>
             <div class="mt-2">
               <label for="customHeaders" class="form-label">Custom HTTP Headers (JSON)</label>
-              <textarea class="form-control"
-                        id="customHeaders"
-                        rows="3"
-                        data-mapper-wizard-target="customHeaders"
-                        data-codemirror-mode="application/json"
-                        data-codemirror-line-numbers="true"
-                        data-codemirror-height="100"
-                        placeholder='{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}'><%= format_json(existing_headers) %></textarea>
+              <%= tag.textarea format_json(existing_headers),
+                    class: "form-control", id: "customHeaders", rows: 3,
+                    placeholder: '{"X-Api-Key": "your-api-key", "Authorization": "Bearer token"}',
+                    data: codemirror_data(mode: "application/json", height: 100, line_numbers: true, mapper_wizard_target: "customHeaders") %>
               <div class="form-text">Optional. Add custom headers as JSON object (e.g., API keys, authentication tokens). These will be saved with the search endpoint.</div>
             </div>
           </div>
@@ -140,7 +143,6 @@
     <!-- Step 2: Generate with AI -->
     <div class="mb-4">
       <h4><span class="badge bg-primary">2</span> Generate Mappers with AI</h4>
-
       <div data-mapper-wizard-target="step2" style="display: none;">
         <p class="text-muted">Enter your OpenAI API key to generate JavaScript mapper functions.</p>
 
@@ -151,7 +153,8 @@
                    class="form-control"
                    id="apiKey"
                    placeholder="sk-..."
-                   data-mapper-wizard-target="apiKey">
+                   data-mapper-wizard-target="apiKey"
+                   autocomplete="password">
             <div class="form-text">Your API key is used only for this request and is not stored.</div>
           </div>
           <div class="col-md-4 d-flex align-items-end">
@@ -165,9 +168,9 @@
         </div>
       </div>
       <p class="mt-2 mb-0">
-        <a href="#" data-action="click->mapper-wizard#showStep3Manually">
+        <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->mapper-wizard#showStep3Manually">
           No OpenAI key? Write the mapper code by hand instead.
-        </a>
+        </button>
       </p>
     </div>
 
@@ -176,85 +179,22 @@
     <!-- Step 3: Edit, Test, and Refine -->
     <div class="mb-4">
       <h4><span class="badge bg-primary">3</span> Edit, Test &amp; Refine</h4>
-
       <div data-mapper-wizard-target="step3" style="display: none;">
-      <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
+        <p class="text-muted">Test your mapper functions and refine them as needed. You can edit the code directly or ask AI for improvements.</p>
 
-      <!-- numberOfResultsMapper -->
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <strong>numberOfResultsMapper</strong>
-          <div class="btn-group btn-group-sm">
-            <button type="button"
-                    class="btn btn-outline-primary"
-                    data-mapper-wizard-target="testNumberButton"
-                    data-action="click->mapper-wizard#testNumberOfResultsMapper">
-              <i class="bi bi-play-fill"></i> Test
-            </button>
-            <button type="button"
-                    class="btn btn-outline-warning"
-                    data-mapper-wizard-target="refineNumberButton"
-                    data-action="click->mapper-wizard#refineNumberOfResultsMapper">
-              <i class="bi bi-stars"></i> Refine with AI
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <textarea data-mapper-wizard-target="numberOfResultsMapper"
-                    data-codemirror-mode="javascript"
-                    data-codemirror-line-numbers="true"
-                    data-codemirror-height="200"><%= @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}" %></textarea>
-          <div class="mt-2">
-            <strong>Test Result:</strong>
-            <div data-mapper-wizard-target="numberOfResultsResult" class="p-2 bg-light border rounded">
-              <em class="text-muted">Click "Test" to see results</em>
-            </div>
-          </div>
-          <div class="mt-2" data-mapper-wizard-target="numberOfResultsLogsContainer" style="display: none;">
-            <strong>Console Logs:</strong>
-            <div data-mapper-wizard-target="numberOfResultsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
-            </div>
-          </div>
-        </div>
-      </div>
+        <%= render "mapper_wizards/mapper_editor", name: "numberOfResultsMapper",
+                   code: @existing_number_of_results_mapper || @wizard_state.try(:number_of_results_mapper) || "numberOfResultsMapper = function(data) {\n  // Return total number of search results\n  return 0;\n}",
+                   editor_height: 200, test_target: "testNumberButton", test_action: "testNumberOfResultsMapper",
+                   refine_target: "refineNumberButton", refine_action: "refineNumberOfResultsMapper",
+                   result_target: "numberOfResultsResult", logs_container_target: "numberOfResultsLogsContainer",
+                   logs_target: "numberOfResultsLogs" %>
 
-      <!-- docsMapper -->
-      <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-          <strong>docsMapper</strong>
-          <div class="btn-group btn-group-sm">
-            <button type="button"
-                    class="btn btn-outline-primary"
-                    data-mapper-wizard-target="testDocsButton"
-                    data-action="click->mapper-wizard#testDocsMapper">
-              <i class="bi bi-play-fill"></i> Test
-            </button>
-            <button type="button"
-                    class="btn btn-outline-warning"
-                    data-mapper-wizard-target="refineDocsButton"
-                    data-action="click->mapper-wizard#refineDocsMapper">
-              <i class="bi bi-stars"></i> Refine with AI
-            </button>
-          </div>
-        </div>
-        <div class="card-body">
-          <textarea data-mapper-wizard-target="docsMapper"
-                    data-codemirror-mode="javascript"
-                    data-codemirror-line-numbers="true"
-                    data-codemirror-height="300"><%= @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}" %></textarea>
-          <div class="mt-2">
-            <strong>Test Result:</strong>
-            <div data-mapper-wizard-target="docsResult" class="p-2 bg-light border rounded" style="max-height: 300px; overflow-y: auto;">
-              <em class="text-muted">Click "Test" to see results</em>
-            </div>
-          </div>
-          <div class="mt-2" data-mapper-wizard-target="docsLogsContainer" style="display: none;">
-            <strong>Console Logs:</strong>
-            <div data-mapper-wizard-target="docsLogs" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
-            </div>
-          </div>
-        </div>
-      </div>
+        <%= render "mapper_wizards/mapper_editor", name: "docsMapper",
+                   code: @existing_docs_mapper || @wizard_state.try(:docs_mapper) || "docsMapper = function(data) {\n  // Return array of {id, title, ...} objects\n  var docs = [];\n  return docs;\n}",
+                   editor_height: 300, test_target: "testDocsButton", test_action: "testDocsMapper",
+                   refine_target: "refineDocsButton", refine_action: "refineDocsMapper",
+                   result_target: "docsResult", logs_container_target: "docsLogsContainer", logs_target: "docsLogs",
+                   result_style: "max-height: 300px; overflow-y: auto;" %>
       </div>
     </div>
 
@@ -272,20 +212,24 @@
                  id="endpointName"
                  placeholder="My Search API"
                  data-mapper-wizard-target="endpointName"
-                 value="<%= @search_endpoint.name %>">
+                 value="<%= @search_endpoint.name %>"
+                 autocomplete="off">
         </div>
-        <div class="col-md-6 <%= 'd-none' if require_proxy_for_all_search_endpoints? %>">
+        <% if require_proxy_for_all_search_endpoints? %>
+          <input type="checkbox" hidden checked data-mapper-wizard-target="proxyRequests">
+          <div class="col-md-6 form-text">This Quepid instance requires all search requests to be proxied.</div>
+        <% else %>
+        <div class="col-md-6">
           <label class="form-label">Options</label>
           <div class="form-check form-switch">
-            <input type="checkbox"
-                   class="form-check-input"
-                   id="proxyRequests"
-                   data-mapper-wizard-target="proxyRequests"
-                   <%= require_proxy_for_all_search_endpoints? || @search_endpoint.proxy_requests? || !@search_endpoint.persisted? ? 'checked' : '' %>>
+            <%= tag.input type: 'checkbox', class: 'form-check-input', id: 'proxyRequests',
+                          data: { mapper_wizard_target: 'proxyRequests' },
+                          checked: @search_endpoint.proxy_requests? || !@search_endpoint.persisted? %>
             <label class="form-check-label" for="proxyRequests">Proxy requests through Quepid</label>
           </div>
           <div class="form-text">Recommended for avoiding CORS issues with external search APIs.</div>
         </div>
+        <% end %>
       </div>
 
       <% if @current_user.teams.any? %>
@@ -297,12 +241,9 @@
               <% auto_check_single = @current_user.teams.count == 1 && !@search_endpoint.persisted? %>
               <% @current_user.teams.each do |team| %>
                 <div class="form-check">
-                  <input type="checkbox"
-                         class="form-check-input"
-                         id="team_<%= team.id %>"
-                         value="<%= team.id %>"
-                         data-mapper-wizard-target="teamCheckbox"
-                         <%= existing_team_ids.include?(team.id) || auto_check_single ? 'checked' : '' %>>
+                  <%= tag.input type: 'checkbox', class: 'form-check-input', id: "team_#{team.id}", value: team.id,
+                                data: { mapper_wizard_target: 'teamCheckbox' },
+                                checked: existing_team_ids.include?(team.id) || auto_check_single %>
                   <label class="form-check-label" for="team_<%= team.id %>"><%= team.name %></label>
                 </div>
               <% end %>

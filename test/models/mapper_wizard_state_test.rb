@@ -73,44 +73,6 @@ class MapperWizardStateTest < ActiveSupport::TestCase
     end
   end
 
-  describe 'store_fetch_result' do
-    let(:wizard_state) { MapperWizardState.create!(user: user) }
-
-    it 'stores fetch result with all parameters' do
-      wizard_state.store_fetch_result(
-        'https://example.com/search',
-        '<html>response</html>',
-        method:                'POST',
-        test_query:            '{"query": "test"}',
-        custom_headers:        { 'Authorization' => 'Bearer token' },
-        basic_auth_credential: 'user:pass'
-      )
-
-      wizard_state.reload
-      assert_equal 'https://example.com/search', wizard_state.search_url
-      assert_equal '<html>response</html>', wizard_state.html_content
-      assert_equal 'POST', wizard_state.http_method
-      assert_equal '{"query": "test"}', wizard_state.test_query
-      assert_equal({ 'Authorization' => 'Bearer token' }, wizard_state.custom_headers)
-      assert_equal 'user:pass', wizard_state.basic_auth_credential
-    end
-
-    it 'stores fetch result with minimal parameters' do
-      wizard_state.store_fetch_result(
-        'https://example.com/search',
-        '<html>response</html>'
-      )
-
-      wizard_state.reload
-      assert_equal 'https://example.com/search', wizard_state.search_url
-      assert_equal '<html>response</html>', wizard_state.html_content
-      assert_equal 'GET', wizard_state.http_method
-      assert_nil wizard_state.test_query
-      assert_nil wizard_state.custom_headers
-      assert_nil wizard_state.basic_auth_credential
-    end
-  end
-
   describe 'store_mappers' do
     let(:wizard_state) { MapperWizardState.create!(user: user) }
 
@@ -136,24 +98,20 @@ class MapperWizardStateTest < ActiveSupport::TestCase
   end
 
   # MapperWizardState-specific tests
-  describe 'custom_headers with store_fetch_result' do
-    it 'handles validation in store_fetch_result' do
+  describe 'custom_headers persistence' do
+    it 'rejects invalid headers when saving' do
       wizard_state = MapperWizardState.create!(user: user)
 
       assert_raises(ActiveRecord::RecordInvalid) do
-        wizard_state.store_fetch_result(
-          'https://example.com',
-          '<html>test</html>',
+        wizard_state.update!(
           custom_headers: '{"invalid": json}'
         )
       end
     end
 
-    it 'normalizes in store_fetch_result' do
+    it 'persists normalized header values' do
       wizard_state = MapperWizardState.create!(user: user)
-      wizard_state.store_fetch_result(
-        'https://example.com',
-        '<html>test</html>',
+      wizard_state.update!(
         custom_headers: { 'X-Retry' => 3, 'X-Debug' => true }
       )
       wizard_state.reload
@@ -184,22 +142,6 @@ class MapperWizardStateTest < ActiveSupport::TestCase
     it 'returns nil for api_basic_auth_credential when no credential' do
       wizard_state.update!(basic_auth_credential: nil)
       assert_nil wizard_state.api_basic_auth_credential
-    end
-
-    it 'preserves real credential when masked value is resubmitted' do
-      wizard_state.update!(basic_auth_credential: 'bob:password')
-      masked = wizard_state.masked_basic_auth_credential
-
-      # Simulate form resubmission with masked value
-      wizard_state.store_fetch_result(
-        'https://example.com',
-        '<html>test</html>',
-        basic_auth_credential: masked
-      )
-
-      wizard_state.reload
-      # The credential should still be the masked version since we submitted the masked value
-      assert_equal 'bob:******', wizard_state.basic_auth_credential
     end
   end
 end

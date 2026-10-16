@@ -13,13 +13,13 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - [ ] **Steps:**
   1. Log in as a non-admin user. Confirm no "Admin Home" nav link appears anywhere in the UI.
   2. Attempt to navigate directly to `/admin`.
-- **Expected:** Redirected to the home page with an alert like "You must be a Quepid Administrator."
+- **Expected:** Redirected to the home page with an alert like "You must be a Quepid Administrator." below the navbar in the page flow.
 - **Edge cases:**
   - [ ] Repeat for each admin sub-page directly by URL (`/admin/users`, `/admin/announcements`, `/admin/websocket_tester`) — confirm all are equally gated, not just the index.
 
 ### 14.2 Admin Home dashboard
 
-- [ ] **Steps:** Log in as an admin, go to `/admin`. Confirm three cards: **Managing Quepid** (Users, Announcements), **Analytics** (SQL Analytics), **Background Jobs** (Job Manager, Websocket Tester).
+- [ ] **Steps:** Log in as an admin, go to `/admin`. Confirm three cards: **Managing Quepid** (Users, Announcements), **Analytics** (SQL Analytics), **Background Jobs & Performance Monitoring** (Job Manager, Websocket Tester, Rails Pulse).
 - **Expected:** All links navigate to their respective tools without error.
 
 ### 14.3 User management — list & search
@@ -34,7 +34,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 
 - [ ] **Steps:**
   1. Open a user with a reasonable amount of activity (e.g., `realisticActivity`).
-  2. Confirm displayed fields: Email, Name, Company, Signed Up (+ time ago), Created by Invite?, Email Marketing, Number of Logins, Is Administrator?, Locked?, Encrypted Password.
+  2. Confirm displayed fields: Email, Name, Company, Signed Up (+ time ago), Created by Invite?, Email Marketing, Number of Logins, Is Administrator?, Locked?. Confirm the password hash is **not** displayed.
   3. Review the **Pulse** charts: Cases viewed, Cases scored, Cases created, Queries created, Books created, Judgements created.
   4. Open a **pending-invite** user who hasn't accepted yet.
 - **Expected:** Pulse charts render grouped-by-date counts for a normal user. For a pending-invite user, confirm the info alert "This user hasn't accepted the invite to join Quepid, therefore no usage data is available." replaces the charts.
@@ -81,7 +81,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - **Edge cases:**
   - [ ] Attempt to delete a user who still owns un-reassigned judgements (skip step 14.7 first) — confirm it's blocked gracefully (re-renders the Edit page with an error) rather than crashing, since `User#judgements` uses `dependent: :restrict_with_error`.
   - [ ] Delete a user who owns cases/teams — confirm downstream effects match what you'd expect from Part 1.9 (account self-deletion) applied via the admin path: owned cases/books are nullified (not deleted) if shared with a team, and survive.
-  - [ ] Delete a user who authored an **Annotation** (Part 5.4) — confirm this succeeds and the annotation survives with its `user_id` nullified, rather than a 500 (`ActiveRecord::InvalidForeignKey`). This was previously broken because `User` had no `has_many :annotations` association at all, so `destroy` never nullified the FK before hitting the DB-level constraint — fixed by adding `has_many :annotations, dependent: :nullify` to `app/models/user.rb`. This affects both this admin path and the self-service Danger Zone deletion (Part 1.9).
+  - [ ] Try deleting a user who authored an **Annotation** (Part 5.4) — confirm the Edit page shows an annotations restriction error with HTTP 422. The user, annotations and linked score history survive, ownership remains unchanged, and no foreign-key error page appears. The same restriction applies to self-service deletion (Part 1.9).
 
 ### 14.9 Announcements
 
@@ -110,10 +110,36 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
 - **Edge cases:**
   - [ ] If the countdown never appears, this indicates an ActionCable/Redis/adapter misconfiguration in this environment — that's exactly what this page exists to surface, so treat a missing countdown as an infrastructure bug to report, not a UI bug.
 
-### 14.11 Mounted engines (Job Manager, SQL Analytics)
+### 14.11 Mounted engines (Job Manager, SQL Analytics, Rails Pulse)
 
 - [ ] **Steps:**
   1. As an admin, open **Job Manager** (MissionControl::Jobs) from the Admin Home — confirm it loads and shows background job queues/status.
   2. Open **SQL Analytics** (Blazer) — confirm it loads and can run a basic query.
-  3. As a **non-admin**, attempt to reach both directly by URL (`/admin/jobs`, `/admin/blazer`) — confirm access is denied.
-- **Expected:** Both tools are reachable only by admins; a deep dive into their internal functionality is out of scope for this guide (they're third-party engines), but confirm they at least load without erroring and are properly access-gated.
+  3. Open **Rails Pulse** — confirm its setup screen or dashboard loads.
+  4. As a **non-admin**, attempt to reach all three directly by URL (`/admin/jobs`, `/admin/blazer`, `/admin/rails_pulse`) — confirm access is denied with 404 responses. Repeat Rails Pulse without signing in and at `/admin/rails_pulse/requests`.
+- **Expected:** All three tools are reachable only by admins. Rails Pulse follows upstream's authentication defaults: the route gates all environments, with an additional engine authorization predicate outside development/test.
+
+### 14.12 Create a user (admin)
+
+- [ ] **Steps:**
+  1. Go to Admin > Users > **New User** (`/admin/users/new`).
+  2. Fill Email, Name, Company, a plain-text Password and confirmation, optionally tick Administrator, and save.
+  3. Repeat, but supply a pre-encrypted password hash (the **Encrypted Password** field) instead of a plain password.
+  4. Log in as each new user.
+- **Expected:** Redirects to the new user's Admin show page. The plain-password user logs in with that password; the pre-encrypted user logs in with the password the hash represents (the hash is stored as-is, not re-encrypted). The Administrator flag grants `/admin` access.
+- **Edge cases:**
+  - [ ] Duplicate email or blank email — form re-renders with validation errors, no user created.
+  - [ ] Password/confirmation mismatch — validation error.
+  - [ ] Delete the test users afterward (Part 14.8) so seed data stays clean.
+
+### 14.13 Rails Pulse monitoring
+
+- [ ] **Steps:**
+  1. Visit ordinary Quepid pages, then open Admin > Rails Pulse as an administrator.
+  2. If the setup screen says summaries are pending, wait for the hourly summary or run `rails runner 'RailsPulse::SummaryJob.perform_now(Time.current.beginning_of_hour)'` in the existing server container.
+  3. Confirm dashboard charts render. Open Requests and inspect a request's duration, response status, normalized SQL and operation timeline.
+  4. Run the Websocket Tester job (14.10), then open Pulse's Jobs page and inspect its completion status and duration.
+- **Expected:** Requests and background jobs are recorded without changing their behavior. Pulse's own dashboard requests are excluded. Raw SQL and job arguments remain uncaptured, matching upstream; summary and cleanup jobs run on the upstream hourly/daily schedules.
+- **Edge cases:**
+  - [ ] Verify a failed job remains failed and appears in monitoring.
+  - [ ] Verify cleanup removes expired monitoring data while retaining recent data in an isolated database.

@@ -6,10 +6,7 @@ module Admin
 
     def index
       query = Announcement.order(updated_at: :desc)
-      if params[:q].present?
-        query = query.where('LOWER(text) LIKE ?',
-                            "%#{params[:q].to_s.downcase}%")
-      end
+      query = query.search_by(params[:q], :text) if params[:q].present?
 
       @pagy, @announcements = pagy(query)
     end
@@ -30,7 +27,7 @@ module Admin
       @announcement.author = current_user
 
       if @announcement.save
-        redirect_to edit_admin_announcement_path(@announcement)
+        redirect_to edit_admin_announcement_path(@announcement), status: :see_other
       else
         render 'new', status: :unprocessable_content
       end
@@ -40,7 +37,7 @@ module Admin
       @announcement = Announcement.find(params.expect(:id))
 
       if @announcement.update(announcement_params)
-        render 'edit' # we stay on the edit page because that is where you can preview the rendered changes
+        redirect_to edit_admin_announcement_path(@announcement), status: :see_other
       else
         render 'edit', status: :unprocessable_content
       end
@@ -49,7 +46,7 @@ module Admin
     def destroy
       @announcement = Announcement.find(params.expect(:id))
       @announcement.destroy
-      redirect_to admin_announcements_path
+      redirect_to admin_announcements_path, status: :see_other
     end
 
     private

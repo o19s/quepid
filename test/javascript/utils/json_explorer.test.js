@@ -1,23 +1,31 @@
 import { describe, expect, it } from "vitest"
-import { escapeHtml, renderJsonExplorer } from "utils/json_explorer"
+import { renderJsonExplorer } from "utils/json_explorer"
 
 describe("json_explorer", () => {
-  describe("escapeHtml", () => {
-    it("escapes &, < and >", () => {
-      expect(escapeHtml("<a> & <b>")).toBe("&lt;a&gt; &amp; &lt;b&gt;")
-    })
-  })
-
   describe("renderJsonExplorer", () => {
     it("renders a raw object's keys, string, number and boolean leaves", () => {
       const container = document.createElement("div")
-      renderJsonExplorer(container, JSON.stringify({ description: "weight(x)", value: 3.5, matched: true }))
+      renderJsonExplorer(
+        container,
+        JSON.stringify({ description: "weight(x)", value: 3.5, matched: true })
+      )
 
-      const root = container.querySelector(".angular-json-explorer")
+      const root = container.querySelector(".json-explorer")
       expect(root).not.toBeNull()
+      expect(root.querySelector(".prop").textContent).toContain("description")
       expect(root.querySelector(".string").textContent).toBe('"weight(x)"')
       expect(root.querySelector(".num").textContent).toBe("3.5")
       expect(root.querySelector(".bool").textContent).toBe("true")
+    })
+
+    it("escapes HTML-significant characters in object keys (and uses class prop, not prop>)", () => {
+      const container = document.createElement("div")
+      renderJsonExplorer(container, JSON.stringify({ "<script>": "x" }))
+
+      const prop = container.querySelector(".prop")
+      expect(prop).not.toBeNull()
+      expect(prop.className).toBe("prop")
+      expect(prop.innerHTML).toContain("&lt;script&gt;")
     })
 
     it("escapes HTML-significant characters in string leaves", () => {
@@ -35,11 +43,11 @@ describe("json_explorer", () => {
       expect(container.querySelector("script")).toBeNull()
     })
 
-    it("nests arrays and objects under a collapsible list with a collapser link", () => {
+    it("nests arrays and objects under a collapsible list with a collapser button", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      const collapsers = container.querySelectorAll("a.collapser")
+      const collapsers = container.querySelectorAll(".collapser")
       expect(collapsers.length).toBeGreaterThan(0)
       expect(container.querySelector("ul.array")).not.toBeNull()
     })
@@ -48,7 +56,7 @@ describe("json_explorer", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      expect(container.querySelector("a.collapser").textContent).toBe("-")
+      expect(container.querySelector(".collapser").textContent).toBe("-")
       expect(container.querySelector(".ellipsis").classList.contains("hidden")).toBe(true)
       expect(container.querySelector("ul.collapsible").classList.contains("hidden")).toBe(false)
     })
@@ -57,7 +65,7 @@ describe("json_explorer", () => {
       const container = document.createElement("div")
       renderJsonExplorer(container, JSON.stringify({ details: [{ description: "a" }] }))
 
-      const collapser = container.querySelector("a.collapser")
+      const collapser = container.querySelector(".collapser")
       collapser.click()
 
       expect(collapser.textContent).toBe("+")
@@ -73,6 +81,15 @@ describe("json_explorer", () => {
       renderJsonExplorer(container, "not json")
 
       expect(container.querySelector(".string").textContent).toBe('"invalid json"')
+    })
+
+    it("renders JSON entries without empty list items", () => {
+      const container = document.createElement("div")
+      renderJsonExplorer(container, JSON.stringify({ present: "value", missing: null }))
+
+      const items = [...container.querySelectorAll(".json-explorer > ul > li")]
+      expect(items).toHaveLength(2)
+      expect(items.map(item => item.textContent)).toEqual(['present: "value",', "missing: null"])
     })
   })
 })

@@ -1,5 +1,8 @@
 # TypeSafe **Jev** as an LLM judge — implementation plan
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > **Decision record:** `docs/adr/0001-llm-judge-provider-architecture.md` — why this seam exists, what it rules out, and the step order. This file is the implementation detail.
 
 **Scope:** a new `llm_provider` value (`typesafe_jev`) for AI Judges, its service adapter,

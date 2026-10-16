@@ -42,10 +42,10 @@ module Books
       @book.owner = current_user
 
       params_to_use = load_import_params(@book)
-      @book.name = params_to_use[:name] if params_to_use
+      @book.name = params_to_use[:name].presence || BookImporter::DEFAULT_BOOK_NAME if params_to_use
 
       if queue_import(@book, params_to_use)
-        redirect_to @book, notice: 'Book was successfully created.'
+        redirect_to @book, notice: 'Book was successfully created.', status: :see_other
       else
         render :new, status: :unprocessable_content
       end
@@ -67,7 +67,7 @@ module Books
       params_to_use = strip_book_level_attributes(params_to_use) if params_to_use
 
       if queue_import(@book, params_to_use)
-        redirect_to @book, notice: 'Data was successfully queued for import.'
+        redirect_to @book, notice: 'Data was successfully queued for import.', status: :see_other
       else
         render :edit, status: :unprocessable_content
       end
@@ -76,7 +76,7 @@ module Books
     private
 
     def load_import_params book
-      uploaded_file = params[:book][:import_file]
+      uploaded_file = params.dig(:book, :import_file)
       if uploaded_file.nil?
         book.errors.add(:base, 'You must select the file to be imported first.')
         return nil
@@ -122,13 +122,9 @@ module Books
 
       return false unless book.errors.empty? && book.save
 
-      serialized_data = Marshal.dump(params_to_use)
-      compressed_data = Zlib::Deflate.deflate(serialized_data)
-      book.import_file.attach(io: StringIO.new(compressed_data), filename: "book_import_#{book.id}.bin.zip",
-                              content_type: 'application/zip')
-      book.save
+      DeferredPayload.stash!(params_to_use, filename: "book_import_#{book.id}.bin.zip", attachment: book.import_file)
 
-      track_book_import_queued(book) do
+      book.queue_job(:import) do
         ImportBookJob.perform_later current_user, book
       end
 
@@ -143,18 +139,11 @@ module Books
 
     def set_book
       @book = current_user.books_involved_with.find(params.expect(:id))
-      TrackBookViewedJob.perform_later current_user, @book
+      TrackBookViewedJob.perform_later current_user.id, @book.id
     end
 
     def read_json file
       JSON.parse(file.read)
-    end
-
-    def track_book_import_queued book
-      book.update(import_job: "queued at #{Time.zone.now}")
-
-      # Yield to the block to perform the job
-      yield if block_given?
     end
   end
 end

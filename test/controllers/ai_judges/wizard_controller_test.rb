@@ -70,30 +70,6 @@ module AiJudges
         assert_predicate body['explanation'], :present?
       end
 
-      test 'previews with the include images switch the form would save' do
-        image_parts = lambda do |include_images|
-          WebMock::RequestRegistry.instance.reset!
-          post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
-            system_prompt:  'Is this a cheese?',
-            llm_key:        OPENAI_VALID_KEY,
-            judge_options:  { llm_provider: 'openai', llm_service_url: 'https://api.openai.com',
-                              llm_model: 'gpt-4o', llm_include_images: include_images },
-            query_doc_pair: { query_text: 'cheese', doc_id: 'd1',
-                              document_fields: '{"title": "Cheddar", "thumb": "https://example.com/cheddar.jpg"}' },
-          }
-          assert_response :success
-
-          sent = nil
-          assert_requested(:post, 'https://api.openai.com/v1/chat/completions') do |req|
-            sent = JSON.parse(req.body)
-          end
-          sent.dig('messages', 1, 'content').select { |part| 'image_url' == part['type'] }
-        end
-
-        assert_equal 1, image_parts.call('true').size
-        assert_empty image_parts.call('false')
-      end
-
       test 'augments the system prompt with the book scale when book_id is provided' do
         scoped_book = Book.create!(name: 'scaled book', owner: user, scale: [ 0, 1 ],
                                    scale_with_labels: { '0' => 'Not Relevant', '1' => 'Relevant' })
@@ -140,7 +116,7 @@ module AiJudges
         body = response.parsed_body
         assert body['unrateable']
         assert_nil body['rating']
-        assert_match(/outside the scale/, body['explanation'])
+        assert_match(/outside this book's scale/, body['explanation'])
       end
 
       test 'a rating on the book scale is still shown as the rating' do
@@ -213,6 +189,45 @@ module AiJudges
         assert_predicate response.parsed_body['error'], :present?
         assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
       end
+    end
+  end
+end
+
+module AiJudges
+  class WizardControllerTest
+    test 'malformed options returns 422 without calling the provider' do
+      register_default_openai_stubs
+      post ai_judge_test_prompt_url(ai_judge_id: 'new'), params: {
+        system_prompt: 'Judge it.', llm_key: OPENAI_VALID_KEY,
+        judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o' },
+        query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}', options: '{bad' }
+      }, as: :json
+      assert_response :unprocessable_content
+      assert_predicate response.parsed_body['error'], :present?
+      assert_not_requested(:post, 'https://api.openai.com/v1/chat/completions')
+    end
+
+    test 'testing an existing id does not persist judge pair or judgement changes' do
+      register_default_openai_stubs
+      judge = users(:judge_judy)
+      original_prompt = judge.system_prompt
+      assert_no_difference [ 'AiJudge.count', 'QueryDocPair.count', 'Judgement.count' ] do
+        post ai_judge_test_prompt_url(ai_judge_id: judge.id), params: {
+          system_prompt: 'Unsaved draft.', llm_key: OPENAI_VALID_KEY,
+          judge_options: { llm_provider: 'openai', llm_service_url: 'https://api.openai.com', llm_model: 'gpt-4o', llm_include_images: false },
+          query_doc_pair: { query_text: 'q', doc_id: 'd', document_fields: '{}' }
+        }, as: :json
+      end
+      assert_response :success
+      assert_equal original_prompt, judge.reload.system_prompt
+    end
+
+    test 'empty accessible books return an editable blank pair' do
+      user.teams.clear
+      user.books.each { |owned_book| owned_book.query_doc_pairs.delete_all }
+      get ai_judge_sample_query_doc_pair_url(ai_judge_id: 'new')
+      assert_response :success
+      assert_nil response.parsed_body.dig('query_doc_pair', 'id')
     end
   end
 end

@@ -27,15 +27,40 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
 
 - [ ] **Steps:**
   1. Click **Relevancy Cases > Create a case** in the top navbar dropdown (there's no standalone "New Case" button on the `/cases` list page itself), or the equivalent button inside an existing case's workbench.
-  2. A wizard modal opens automatically. Step through: **Welcome** → **Name** (enter a case name) → **Endpoint** (choose a search engine type — Solr / Elasticsearch / OpenSearch / Vectara / Static / SearchAPI / Algolia — enter/validate the endpoint URL, choose Proxy vs. CORS as appropriate, use the "ping it" test button) → remaining steps (field spec/finish, depending on engine chosen).
+  2. A wizard modal opens automatically. Step through: **Welcome** → **Name** (enter a case name) → **Endpoint** (choose a search engine by its logo tile — Solr / Elasticsearch / OpenSearch / Vectara / Algolia / mapper-based engines such as Vespa and Qdrant / Static File / Search API — enter the endpoint URL, choose Proxy vs. CORS as appropriate, optionally use "ping it" to validate without leaving the step, and click **Continue** to validate) → **Display Fields** (Title, ID, optional comma-separated additional fields — required) → **Queries** (add one or more queries; removable rows) → **Finish** ("That's It!").
   3. Complete the wizard.
 - **Expected:** A new case is created and you land in its Core Workbench (Part 4), on its first try, connected to the chosen search endpoint.
 - **Edge cases:**
   - [ ] Leave the case name blank and try to proceed — should be blocked.
-  - [ ] Enter an invalid/unreachable endpoint URL and use "ping it" — should surface a clear connection error, not a silent failure or crash.
+  - [ ] Delay the query save after **Finish** — the wizard stays open with Finish disabled until settings, queries and onboarding status are saved. Force a query-save failure, then retry; the error stays in the wizard and navigation occurs only after success. Confirm a first-time tour starts on the loaded workspace and does not restart on reload; returning users receive no automatic tour.
+  - [ ] Enter an invalid/unreachable endpoint URL and use "ping it", then **Continue** — both stay on the Endpoint step and show the error plus that engine's troubleshooting: for Solr, the proxy quick fix (only while not proxying), a direct link to the URL, the `queryresponsewriter` curl command (including any basic-auth credential), and the troubleshooting wiki link; for Elasticsearch/OpenSearch, the proxy and CORS advice and the POST question. **Skip Validation** appears only after a connection failure (not after a mapper error).
+  - [ ] Choose the generic **Search API** engine — "Custom Mapper Required" appears and Continue is unavailable; **Use Mapper Wizard** deletes the draft case and opens the Mapper Wizard.
+  - [ ] Custom Headers: the None / API Key / Custom selector fills a starting template and the editor is read-only on None; choosing an existing endpoint that has headers shows them as Custom.
+  - [ ] Check each engine's per-engine hints: the URL-format tip, Basic Authentication hidden for Vectara/Algolia, and the "Static File endpoints are NOT sharable" note when the account has static endpoints.
+  - [ ] On Display Fields, the Title/ID inputs suggest discovered fields, and typing part of an additional field (optionally with `thumb:`) narrows the suggestions; clicking one replaces the partial token.
   - [ ] Enter an HTTPS Quepid session pointed at an HTTP-only Solr endpoint — confirm the wizard surfaces the protocol-mismatch guidance (see also `bootstrap5-compat.css`/HTTPS notes for Solr JSONP in the project's engineering docs).
   - [ ] Complete the wizard on an account whose `completed_case_wizard` flag is still `false` (the actual trigger — not tied to case count or account age; the flag only flips true once a wizard run is finished via **Finish**, so cancelling/dismissing earlier wizard runs leaves it eligible again) — confirm the product tour auto-starts shortly after the wizard completes.
-  - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/assets/javascripts/controllers/wizardCtrl.js`) — this is current behavior, not a one-time trigger.
+  - [ ] Visit `/cases/new` directly (no query param needed — it always creates a brand-new case immediately and redirects to `/case/:id/try/1?showWizard=true`) — confirm the wizard auto-triggers. Note: reloading that redirected URL re-triggers the wizard again each time, since `showWizard=true` stays in the URL and is never stripped client-side (`app/javascript/controllers/wizard_launcher_controller.js`) — this is current behavior, not a one-time trigger.
+
+- [ ] Choose Vespa with POST and a validation query such as `yql=select * from sources * where true&ranking.profile=bm25`; confirm validation sends separate named parameters and advances to Fields. Bare YQL and JSON request bodies should also validate.
+
+### 3.2b Case wizard: Static CSV endpoint
+
+- [ ] **Steps:**
+  1. Start the wizard (3.2) and choose the **Static** engine on the Endpoint step.
+  2. Select a CSV with headers `Query Text`, `Doc ID`, `Doc Position` (extra columns allowed).
+  3. Complete the wizard.
+- **Expected:** The Endpoint step shows the static explanation and a collapsible Static Dataset guide with a sample CSV instead of the URL fields, and Continue stays disabled until a CSV is imported. The CSV imports on file selection; a snapshot-backed search URL is generated, the Display Fields step starts with Title blank (ID `id`) and requires a title before continuing, the queries from the CSV are pre-filled on the Queries step, and the finished case shows the static queries with results in CSV order.
+- **Edge cases:**
+  - [ ] CSV missing one of the required headers — clear validation error, cannot continue.
+  - [ ] Header names and values with leading/trailing whitespace — trimmed before validation and import.
+  - [ ] Blank lines between records or at the end — ignored; nonempty malformed rows still rejected.
+  - [ ] Rows with too few/many columns or unclosed quoted fields — CSV format error; no import request is sent.
+  - [ ] Quoted commas, escaped quotes, and line breaks — preserved as field content.
+  - [ ] Non-CSV file chosen — rejected with a message.
+  - [ ] Confirm Add Query is disabled on the resulting case (4.2 edge case) and the Query tab shows the static-engine message (4.10).
+
+  - [ ] Omit `Snapshot Time` from the static CSV; the import retains the server-generated snapshot timestamp. Snapshot-import metadata headers with spaces are rejected as document field names.
 
 ### 3.3 Import a case from JSON
 
@@ -63,6 +88,10 @@ The Cases list page (`/cases`) is where you find, filter, create, import, archiv
   - [ ] Upload a CSV missing/misnamed headers — should be rejected with a clear message.
   - [ ] Upload a CSV with two different `Snapshot Name` values — confirm two separate snapshots are created correctly split by name.
   - [ ] Try submitting with no file chosen — the Import button should stay disabled until a file is selected (button starts `disabled`).
+  - [ ] Round trip: export a snapshot from a case (**Export** → snapshot) whose queries include a comma (`shoes, red`) and a quoted phrase (`"star wars"`), then import that file here. Every row should import, and in Compare Snapshots each query's docs should line up with the case's existing query — no new `shoes` / `star wars` query should appear. (8.6.0 silently dropped rows containing commas.)
+  - [ ] Upload a CSV with one malformed row (e.g. an extra unquoted comma in one line) — it should be refused with `CSV format error: line N: expected 6 columns but found 7.`, and nothing imported.
+
+  - [ ] Import `Snapshot Time` as ISO 8601 or `MM/DD/YY HH:MM` (20YY), reload and confirm the exact calendar date. Invalid dates identify the CSV row before an import request is sent.
 
 ### 3.5 Archive / unarchive a case from the list
 

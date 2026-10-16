@@ -107,6 +107,25 @@ class V8MapperExecutorTest < ActiveSupport::TestCase
   end
 
   describe 'console log capture' do
+    test 'all console levels preserve objects circular values and multiple arguments' do
+      code_mapper = <<~JS
+        docsMapper = function(data) {
+          var circular = {}; circular.self = circular;
+          ['log', 'error', 'warn', 'info'].forEach(function(level) {
+            console[level]('Object:', { key: 'value' }, circular, null, undefined, 42);
+          });
+          return [];
+        };
+        numberOfResultsMapper = function(data) { return 0; };
+      JS
+      v8_executor.extract_docs(code_mapper, '{}')
+
+      assert_equal %w[log error warn info], v8_executor.logs.pluck(:level)
+      v8_executor.logs.each do |log|
+        assert_equal 'Object: {"key":"value"} [object Object] null undefined 42', log[:message]
+      end
+    end
+
     test 'captures console.log messages' do
       code_mapper = <<~JS
         numberOfResultsMapper = function(data) {

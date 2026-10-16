@@ -1,3 +1,265 @@
-# Agent instructions
+# Quepid agent instructions
 
-Read and follow [CLAUDE.md](CLAUDE.md).
+## Scope and change control
+
+Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
+
+- Preserve behavior unless the user specifically authorizes a change. Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
+- Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts. Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved.
+- Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
+- Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
+- Keep documentation concise: state each rule once, link to shared guidance and retain only necessary rationale and verification evidence.
+- Preserve existing and imported documentation wording and structure. Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.
+
+## General Configuration / Execution
+
+- You are working on Quepid, a Rails application. Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for human-facing development workflows and conventions.
+- We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
+- To set up the environment use:
+    `bin/setup_docker`.
+- Follow [DEVELOPER_GUIDE.md — Running the app](DEVELOPER_GUIDE.md#4-running-the-app) for the established startup workflow (`bin/docker s` / `bin/docker q`). 
+    - Start the server when needed without asking for confirmation; reuse it when running. 
+    - Do not change developer scripts or Compose configuration to work around agent execution mistakes.
+- Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
+- When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
+- **Complete requested batches, not convenient slices.** 
+    - When the user says to do the next step in an execution plan, execute the entire first incomplete batch and its acceptance criteria. 
+    - A preparatory subtask is not completion. Do not present partial work as done, offer a commit message, or move the plan forward until all gates pass. 
+    - If a concrete blocker prevents completion, record the exact blocker and smallest safe prerequisite in the plan, report that the batch is incomplete, and stop at that boundary.
+- **Work in meaningful batches, not conversational micro-slices.** 
+    - When the user says “continue”, “do it”, or “do more”, keep working through the current end-to-end batch and its verification gates. 
+    - Do not stop after one extracted method, helper, or test to ask for another instruction, provide a commit message, or imply completion. 
+    - Give progress updates at meaningful boundaries; only hand back when the batch is complete, or when a concrete blocker has been recorded and reported.
+- **Do not stage or unstage changes; ask before cherry-picking.** 
+    - The user stages their own changes. 
+    - `git cherry-pick` is permitted only after asking for and receiving approval for the specific commits, including its index changes.
+    - This exception does not authorize other index operations: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index. 
+    - Files may show up staged without you doing anything, because the editor or the user staged them. Leave them alone and don't comment on what is staged. 
+    - If you need a file removed, delete it with plain `rm`. If you need to test old code, copy files to the scratchpad and back instead of stashing.
+- **Commit messages must describe the staged patch.** 
+    - Before proposing a commit message, inspect `git status --short`, `git diff --cached --stat`, and the full `git diff --cached` (including staged renames and deletions); do not infer the commit scope from the latest task or from uncommitted changes.
+- In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
+
+## Docker
+- **Check before starting Docker.** 
+    - Inspect `docker compose ps -a app` and the configured host port. The existing wrapper uses `docker compose run`, so a healthy server may be named `quepid-app-run-*`; an empty `docker compose ps app` does not prove the server is stopped. Identify and reuse the actual server container. 
+    - The three app instances are permanent (current :3000, historical :3001, diff baseline :3003; see [Screenshot capture and diffing](docs/screenshot_review.md)). 
+    - If the current server's container exists but is stopped, restart it with `docker start <name>`. Only when no current-server container exists at all, create one with `bin/docker q`, without asking for confirmation. 
+    - Don't use `bin/docker s` for this: it runs with `--rm`, so stopping it deletes the container. Never invoke startup again just to run a command or test. Leave the server running across tasks.
+    - `lsof -nP -iTCP:${APP_PORT:-3000} -sTCP:LISTEN`.
+    - A port-3000 bind error is not permission to stop anything, retry, or create a throwaway app. Resolve the exact owner and report it.
+- **Run commands inside the existing server container.** 
+    - Use `docker compose exec app` for the Compose service container, or `docker exec <actual-server-container-name>` for a server started by `bin/docker s` / `q`. For example, run Rails tests in that container rather than starting a new app-run container.
+    - While the diff baseline runs, `docker compose exec app` can land in `quepid_app_ui_diff`, which mounts `../quepid-ui-diff-worktree` and its own database. Confirm the container mounting this checkout at `/srv/app` and use `docker exec <that-name>` instead.
+- For an authorized server image update, preserve the inspected startup command. Compose does not retain command overrides from a previous `run`; the dev server uses `foreman s -f Procfile.dev`. Reuse the wrapper startup command with `--no-deps` when dependency configuration has changed, so an app runtime update cannot also recreate a database service.
+- Wait for tests and other commands in the server container to finish before restarting it; a restart terminates those checks.
+- Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
+- **Never use `bin/docker r`, `b`, or `c`, or any other `docker compose run`, for agent commands.** 
+    - Those wrappers create new throwaway containers. Use `exec` in the actual server so installed tools remain available throughout the session. 
+    - If the server looks down, check `docker compose ps -a app` first: the server's container name varies (`quepid_app`, `quepid-app-run-*`, or a custom name), so not finding one name doesn't mean it's stopped. 
+    - Restart a stopped server container rather than creating a new one, as described above. A new container is never the fallback, including when it is missing gems or other dependencies.
+- Container recreation between server sessions is acceptable; preserve host-mounted or volume-backed data. 
+    - Do not pull images, rebuild Docker images, or run setup unnecessarily. 
+    - Do not stop or replace a running server unless requested. 
+    - A generated app-run name alone does not make a container a duplicate: identify which container is serving the app. 
+    - If multiple servers exist, report their exact names and ask before stopping them.
+    - If Docker reports permission denied while connecting to its socket, rerun the same in-scope command once with the execution tool's elevated Docker-socket permission. Do not work around the failure with another container. If the elevated retry also fails, report the permission blocker and continue only with non-Docker checks that are safe and relevant.
+    - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.
+    - **Installs never stick.** `npx playwright install` and friends land in the throwaway container and vanish on exit, so the install appears to "never take" however many times it is rerun.
+- After CSS or vendor JS changes make sure you rebuild:
+    `docker compose exec app yarn build`              # full frontend build
+    `docker compose exec app yarn build:css`          # core.css / application.css only
+    `docker compose exec app yarn build:core`         # core case JS bundle
+
+### Shared agent skills
+
+- Repository skills use the portable Agent Skills format: one `<skill>/SKILL.md` with YAML front matter and instructions.
+- The source of truth is `.agents/skills/`, the shared project skill directory used by Codex, Cursor, and Gemini; `.claude/skills` is a symlink to it for Claude Code.
+- When adding or changing a skill, edit the file under `.agents/skills/` and keep its instructions tool-agnostic unless a tool-specific step is essential.
+
+
+## Frontend
+
+- The core case app uses Rails-rendered HTML, vanilla JS, StimulusJS, and Hotwire.
+- Keep behavior in Stimulus/controllers and shared runtime modules while Rails owns static page structure and URLs.
+- For Stimulus migrations, keep static page structure and copy in Rails ERB partials. JavaScript should own behavior, state, and genuinely dynamic repeated content only; do not put a mostly-static page or modal's HTML into `innerHTML` template strings. If a dynamic modal needs a shell, render the shell in ERB and populate its targets.
+
+
+## Backend
+
+- We are currently using Rails 8.1.4 and Ruby 4.0.7.
+- Tests for Ruby are written in Minitest.
+- Long-running work uses ActiveJob + SolidQueue, ActionCable pushes state to the frontend.
+- Solr JSONP forces the case page to HTTP while the rest may be HTTPS. When touching `CoreController` or SSL config, make sure to take this into consideration.
+- **Turbo navigation:** Drive is the default on ordinary Rails management/admin pages. Follow [DEVELOPER_GUIDE.md — Turbo navigation](DEVELOPER_GUIDE.md#turbo-navigation) for form responses, confirmations, caching, and opt-outs. The case workspace and standalone analytics retain full-page boundaries; see [Turbo on the case page](DEVELOPER_GUIDE.md#turbo-on-the-case-page) before changing either lifecycle.
+
+
+## JavaScript
+
+- Use yarn instead of npm for package management.
+
+
+## Tests
+
+### JavaScript
+
+- Run JavaScript unit tests via `docker compose exec app yarn test:unit` (Vitest — specs in `test/javascript/`, mirroring `app/javascript/`, not colocated).
+- If a missing platform-specific native dependency prevents tests from starting, restore the locked dependencies inside the existing server container (`yarn install --frozen-lockfile --check-files`) and rerun the checks before reporting a blocker.
+- Lint modern JS via `docker compose exec app yarn lint:js` or `docker compose exec app rails test:eslint` (see `docs/js_tooling.md`).
+- **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
+- **Property-based tests (fast-check):** when you add or materially change a pure `utils/` or `api/` function with a crisp invariant (round trip, aggregation, payload builder, ordering/concurrency), add or extend `test/javascript/utils/<module>_properties.test.js`. Follow `docs/js_tooling.md` — "Property-based tests". Before finishing one, temporarily break the code under test and confirm the property fails, then restore it. Pin any shrunk counterexample as a plain example test. Don't use them for controllers or DOM code, and don't loosen a failing property without understanding its counterexample.
+- **Cross-language contracts (Ruby ↔ JS):** share a fixture under `test/fixtures/files/` read by both Minitest and Vitest rather than adding a Ruby property-testing gem. If you change `CsvExport` or the CSV import/export utilities, update `csv_round_trip_cases.json` and run both suites.
+
+### Rails
+- Run Rails tests via `docker compose exec app rails test`.
+- Before a Rails suite or fixture-loading check, inspect running test processes in the server container. Do not run concurrent suites against the same test database; wait for the existing run or use a disposable database with an explicit `RAILS_ENV=test` and distinct `DB_NAME`, then remove only that database.
+- Scratch Ruby checks that load `test_helper` must explicitly set `RAILS_ENV=test` in the container command and verify it before loading fixtures; the server container inherits `RAILS_ENV=development`.
+
+### CSS
+- Lint CSS via `docker compose exec app yarn lint:css` or `docker compose exec app rails test:stylelint` (config: `.stylelintrc.json`).
+
+### E2E (Playwright)
+
+- For separate concurrent Playwright invocations, use distinct artifact/report directories and isolate writable auth/test state. Serialize invocations only while those resources remain shared; this does not restrict workers within one invocation.
+- Run Playwright E2E tests via `docker compose exec app yarn test:e2e`, with `docker compose exec app npx playwright install chromium` once. Requires the app already running via `bin/docker s`. **`bin/docker r` cannot run these** — E2E needs the live server and the browser install has to persist, which is exactly what a throwaway container breaks.
+- This is a separate, checked-in test suite under `test/playwright/` — not the same thing as the Playwright MCP interactive tool described below. See DEVELOPER_GUIDE.md's "Playwright E2E" section for env vars and full details.
+- **Any spec that creates a row in the shared dev DB (a user, a team, a case) must delete it in a `test.afterAll`** — See DEVELOPER_GUIDE.md's "Playwright E2E" section for the cleanup pattern to copy.
+
+### Manual testing tracker (`docs/manual-testing/`)
+
+- Follow the timestamp rules in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker). Preserve actual verification timestamps.
+
+- Proactively offer a representative sample batch when browser verification spans many flows or would slow incremental development. Name the proposed sample and deferred coverage. Once sampling is authorized, carry out that batch without asking again on every commit; follow the sampling policy in DEVELOPER_GUIDE.md. Do not make a full Playwright sweep the default gate for each commit.
+
+- When observed behavior differs from a manual scenario's expectation, compare it with the same surface on pre-deangularization `main` before classifying it or proposing a fix. Go back far enough to recover the Angular implementation (months if needed), record the baseline commit and source evidence, and distinguish migration regressions, pre-existing defects, and unsupported test expectations. Historical source inspection is not a live historical replay; state that limit explicitly.
+
+- `docs/manual-testing/*.md` is the human-readable manual test script. - `docs/manual-testing/tracking.yml` tracks, per numbered scenario, when it was last actually driven end-to-end (via Playwright MCP or by hand), the result, and which source `paths` that scenario exercises.
+
+- Before starting work that touches a tracked path, or when asked to do a manual testing pass: run `bin/manual_test_status` (plain `ruby`, no Docker/Rails boot needed) to see what's due — never run, stale (> `policy.default_max_age_days`, default 90), or whose `paths` changed (committed **or uncommitted**) since `last_run`. Use `--due-only` to filter, `--part 07` to scope to one part, `--paths-for 3.2` to see what a scenario tracks.
+- After changing code, check whether any tracked `paths` match your diff (`bin/manual_test_status` will surface it as "uncommitted changes in ..."). Follow [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) for representative browser sampling during incremental development; a full pass is not required on every commit. Record deferred coverage rather than implying it was verified.
+- Age-expired scenarios (flagged solely because `last_run` is past `default_max_age_days`, with no path change involved) are also yours to act on, not just report: when a session touching this repo notices one via `bin/manual_test_status`, drive it through Playwright MCP and update `tracking.yml` in that same session — don't wait to be asked, and don't leave it sitting as a report for a human to run later.
+- After running a scenario (pass or fail), update its entry in `tracking.yml`: `last_run` (today, UTC), `result` (`pass` / `pass_with_fixes` / `fail` / `blocked`), and `notes` on what was actually covered and what wasn't (partial coverage is normal — say so rather than implying the whole scenario was exhaustively verified; `tracking.yml`'s own header has the length guidance — brief for a clean pass, as long as it takes to be useful when the pass found and fixed something). Only set `last_run` for scenarios you actually exercised; leave others alone (`null` is honest and useful).
+- Update the tracker before moving to another scenario. During a long scenario, record verified checkpoints as you go, explicitly label the coverage as partial/in progress and name pending checks; do not leave an older result in place until the whole sweep finishes. The result describes only the recorded coverage. Replace the checkpoint notes with the final coverage and outcome when finished.
+- If a scenario's source moves or a new one is added, update `paths`/add an entry — the tracker is only as useful as its path mappings.
+- **Feature parity, not just staleness:** the checks above only re-verify scenarios that *already exist*. When a PR adds, removes, or materially changes user-facing functionality, also update the prose itself, in the same PR:
+    - add a new numbered scenario (with `paths`) for new functionality,
+    - delete/mark obsolete the scenario for removed functionality,
+    - and revise steps/expected-results for changed behavior.
+
+
+## Documentation
+
+- Documentation goes in the `docs` directory, not a toplevel `doc` directory.
+- Keep provenance tags and the migration skill until remaining work is classified and closed. Archive completed plans only after their acceptance criteria pass; retain links to unresolved criteria and historical evidence.
+- Every actionable item in `docs/todo/todo.md` must carry a provenance marker:
+  `[MIGRATION]` for defects introduced by or required to complete AngularJS
+  removal, `[MIGRATION-FOLLOWUP]` for related cleanup that is not necessarily a
+  regression, and `[PREEXISTING]` for defects that predate the removal. When
+  reviewing migration work, use these markers to keep pre-existing defects out
+  of the migration-fix scope; preserve or update the marker when moving or
+  splitting an item.
+- To understand the data model used by Quepid, consult `./docs/data_mapping.md`.
+- To understand how the application is built, consult `./docs/app_structure.md`.
+- **Documentation audience and authority:** human-facing guides (DEVELOPER_GUIDE.md and dedicated guides under `docs/`) are authoritative for shared development workflows and conventions. AGENTS.md and skills link to those guides rather than restating their rules. Agent-specific execution, approval, scope and recovery rules belong in AGENTS.md or `.agents/skills/**/SKILL.md`.
+- **State the rule, not the incident.** When you add a rule to a doc because something went wrong (a bug, a leak, a broken baseline), write the rule and, if genuinely non-obvious, *why* it holds — not a blow-by-blow of the specific occurrence (dates, counts, "this bit us on..."). Specifics like "16 leaked users" or a timestamp rot the moment the underlying state changes and read as clutter to a later reader who has no way to verify or care about that instance. Only keep instance detail when it's load-bearing — e.g. it teaches a non-obvious edge case the rule alone wouldn't convey.
+
+
+## Code Style
+
+- Instead of treating true/false parameters as strings in controller methods use our helper `archived = deserialize_bool_param(params[:archived])` to make them booleans.
+- Never do $window.location.href= '/', do $window.location.href= caseTryNavSvc.getQuepidRootUrl();.
+- Likewise urls generated should never start with / as we need relative links.
+- In Ruby we say `credentials?` versus `has_credentials?` for predicates.
+- Prefer BS5 spacing utilities over one-off margins.
+- We use .css, we do not use .scss.
+
+### Agent checklist — match the linter for the file you touch
+
+Quepid **does not** use one global JS style. Write **new** code to modern conventions (below); do not reformat older lines or unrelated sections just to normalize style.
+
+**Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
+
+- **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
+- Prettier pre-commit is limited to **`api/`, `utils/`, and the classic core scripts (`tour`)** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
+- ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) and the JavaScript tests under `test/javascript/`; follow the conventions above when you add specs.
+    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
+    - Do **not** run Prettier outside `api/`/`utils/`/the classic core scripts for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
+- **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy habits (`var`, semicolons) on greenfield Stimulus/importmap code.
+- **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
+- Use `const` or `let`, not `var`.
+
+**Ruby** — `.rubocop.yml` (opposite comma rule from JS):
+
+- **Multiline hashes require a trailing comma** (`Style/TrailingCommaInHashLiteral: comma`).
+- Table-style hash alignment (`Layout/HashAlignment: table`).
+
+**Stimulus / HTTP** — `DEVELOPER_GUIDE.md` § Stimulus HTTP conventions:
+
+- Server-owned URLs (`data-*-url-value`, `formTarget.action`, or a `*-url-template-value` with a named placeholder for browser-only ids); JSON through the `api/json` verb helpers (`getJson`/`postJson`/`putJson`/`patchJson`/`deleteJson`), `apiFetch` only for non-JSON. See the guide section.
+- `getQuepidRootUrl()` only when the server cannot pass the URL (e.g. redirect after import).
+
+**Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `test/javascript/support/stimulus_stub.js`.
+
+**Playwright** (`test/playwright/*.ts`) — TypeScript; not governed by `.prettierrc.json`.
+
+
+## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)
+
+- The core case UI (`app/views/layouts/application.html.erb` case branch, `_case_head` / `_case_workspace`) loads **`core.css`**: npm **Bootstrap 5** first, then `base.css` (page skin shared with `application.css`) and Quepid layers (`core-additions.css` — Quepid layout, mostly without Bootstrap-class selectors; `navbar-brand.css` — navbar brand skin; **`bootstrap5-compat.css`** — Bootstrap-class shims, modals, popovers, dev-panel chrome, etc.). The header's full-width layout is a markup change (`container` → `container-fluid`), not a `bootstrap5-compat.css` rule.
+- The core Stimulus/runtime bundle and `bootstrap_globals` provide BS5 **`window.bootstrap`** for popovers, tooltips, dropdowns, accordion, tabs, modals, and similar.
+- The rest of the UI, admin included, loads BS5 via `application.css`. Apart from `base.css`, `fonts.css` and `navbar-brand.css`, the two are separate stylesheet worlds. When you **add or change** BS5-driven UI on `core` (or more rules in `bootstrap5-compat.css`), use the existing core Bootstrap helpers/controllers as patterns and expect these traps:
+- **Root `font-size` and rem-based BS5 defaults.** `core-additions.css` sets **`html { font-size: 87.5% }`** on `core` (1rem = 14px, Bootstrap 3's base), so every rem-based BS5 default renders smaller than upstream.
+    - Where a BS5 widget needs an exact size, override the relevant **`--bs-*`** vars with **px** in compat CSS, and verify computed styles. Do not change root font-size casually without checking the whole **`core`** stack.
+- **Earlier-layer rules can win on shared selectors** (e.g. `.popover { padding: 1px }` from an old patch while BS5 puts padding on `.popover-header` / `.popover-body`). Reset bleed-through properties explicitly in the compat CSS.
+- **Verify visually.** Some of these traps produce *invisible-but-present* failures (popover element in DOM, `aria-describedby` set, but nothing visible). Static analysis won't catch them. Use Playwright MCP (or have the user screenshot DevTools' Computed panel for the popover element) and confirm `display`, `opacity`, `font-size`, and `transform` are sensible.
+
+
+## UI changes — screenshots via Playwright MCP (`playwright` server)
+
+For the comparison viewer and capture history workflow, see
+[Screenshot capture and diffing](docs/screenshot_review.md).
+
+Run the Playwright MCP server with `--isolated` (e.g. `claude mcp add playwright
+-s local -- npx @playwright/mcp@latest --isolated --output-dir <repo>/.playwright-mcp`).
+Each session then gets its own temporary browser profile, so several sessions
+can drive browsers at once; each signs in afresh, and cookies don't persist
+between sessions. Without `--isolated`, every session shares one persistent
+profile, which Chrome locks to a single browser, and a second session fails
+with "Browser is already in use". If that still happens (an older session
+started before the change), don't skip required browser verification: ask the
+user before stopping the browser holding that profile, stop only that one, and
+record the blocker if permission is declined. A standalone Playwright script
+launching its own headless browser is a fallback for captures, not for
+interactive scenario steps.
+
+Check the active client's MCP launch arguments include `--isolated`; repository
+instructions alone do not configure the MCP server. Isolation is per browser
+session, not per Quepid app port.
+When a browser task finishes or stops at a blocker, call `browser_close` to
+release that session's browser before handing back. Keep it open during ongoing
+work across turns, and never close another session's browser without permission.
+
+For any user-visible change, prove the behavior with Playwright MCP screenshots — never substitute prose or memory. App: `http://localhost:33000`; sign in with `quepid+realisticactivity@o19s.com` / `password`.
+
+For a UI change, run the representative native Playwright visual suite following [Routine visual regression checks](DEVELOPER_GUIDE.md#routine-visual-regression-checks). Refresh selected Current screen-history entries when capturing manual or migration evidence; historical source changes alone do not require renewing the corpus. Archive captures alone do not complete an explicitly requested Current update. If the original account or fixture is unavailable or unsuitable, use an equivalent account or fixture for the same scenario/state, document the differences, and record the new Current capture following [Screen capture history](docs/screenshot_review.md#screen-capture-history). For a selected evidence refresh, do not leave Current stale solely because fixtures differ.
+
+Apply the incremental sampling policy in [DEVELOPER_GUIDE.md — Manual testing tracker](DEVELOPER_GUIDE.md#manual-testing-tracker) to the captured flows. Use the actual running server's configured host port when it differs from the example URL.
+
+The Playwright MCP tools may be exposed as deferred tools rather than a direct namespace. In that case, discover `mcp__playwright__*` from the tool catalog and invoke them through the tool orchestrator; do not treat an empty computer-surface/browser inventory as proof that Playwright is unavailable. Start with `mcp__playwright__browser_tabs` (`action: "list"`), then use the browser snapshot/click/fill/screenshot tools for the required flow.
+
+### Before/after pairs — do not break the working tree
+
+Follow [Screenshot capture and diffing — Comparison baselines](docs/screenshot_review.md#comparison-baselines)
+and its [capture and verification conventions](docs/screenshot_review.md#capture-and-verification).
+
+## Code reviews
+
+When asked to review code, do not use subagents. Review the code in the conversation for bugs, errors, bad practices, regressions, lost functionality, and overengineering.
+
+Review from these perspectives:
+
+- modern Ruby on Rails, including Hotwire and Stimulus
+- pragmatic engineering
+- QA and regression risk
+
+Report actionable findings first, ordered by severity, with file and line references when possible. If no issues are found, say so and summarize the verification performed.

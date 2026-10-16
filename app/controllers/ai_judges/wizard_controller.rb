@@ -34,7 +34,6 @@ module AiJudges
       ai_judge = AiJudge.new(system_prompt: params[:system_prompt], llm_key: params[:llm_key])
       ai_judge.judge_options = judge_options_params.to_h
 
-      # The judge is handed the book's scale, never the book.
       scale = JudgeScale.for(@book)
       provider = LlmProvider.find(ai_judge.judge_options[:llm_provider])
       if provider&.needs_scale? && scale.empty?
@@ -63,9 +62,6 @@ module AiJudges
       llm_service = LlmService.new(ai_judge.llm_key, ai_judge.judge_options)
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: ai_judge)
       llm_service.perform_safe_judgement judgement, scale: scale
-      # Apply the same acceptance rules a real judging run uses, so a rating
-      # this book would reject can't look valid during preview. The finalizer
-      # only marks the in-memory judgement -- nothing here is persisted.
       JudgementFinalizer.call judgement, scale: scale
 
       render json: { rating: judgement.rating, explanation: judgement.explanation, unrateable: judgement.unrateable }
@@ -79,13 +75,11 @@ module AiJudges
 
     def query_doc_pair_params
       params.expect(query_doc_pair: [ :document_fields, :position, :query_text, :doc_id, :notes,
-                                      :information_need, { options: {} } ])
+                                      :information_need, :options, { options: {} } ])
     end
 
-    # The common options plus any a provider declares for itself (e.g. Jev's
-    # confidence floor), so the preview runs with what the form would save.
     def judge_options_params
-      params.fetch(:judge_options, {})
+      params.fetch(:judge_options, ActionController::Parameters.new)
         .permit(:llm_provider, :llm_service_url, :llm_model, :llm_timeout, :llm_api_version, :llm_include_images,
                 *LlmProvider.option_keys)
     end

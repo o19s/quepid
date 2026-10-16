@@ -35,7 +35,15 @@ class Try < ApplicationRecord
   has_ancestry orphan_strategy: :adopt
 
   # Scopes
-  scope :latest, -> { order(id: :desc).first } # The try created the most recently
+  # The try created most recently, or nil when the case has none.
+  #
+  # Deliberately a class method rather than a scope: a scope body that ends in `.first` returns
+  # the record when there is one, but Rails falls back to returning the *relation* when the body
+  # comes back nil - so an empty case yielded an AssociationRelation, and callers reaching
+  # straight for `.try_number` got a NoMethodError instead of a nil.
+  def self.latest
+    order(id: :desc).first
+  end
 
   # Associations
   belongs_to :case, optional: true # shouldn't be optional, but was in rails 4
@@ -48,6 +56,8 @@ class Try < ApplicationRecord
 
   has_many   :snapshots,
              dependent: :nullify
+
+  has_many :scores, dependent: :nullify, inverse_of: :try
 
   # Callbacks
   before_create :set_defaults
@@ -76,39 +86,24 @@ class Try < ApplicationRecord
   # merge the search endpoint and case options together,
   # with search endpoint options taking precedence
   def options
-    # NOTE: there is weirdness that case options parse as json
-    # but search_endpoint options stay strings and we manually parse them
-    # except sometimes we don't ugh.'
-    case_options = {}
-    if self.case
-      if self.case.options.is_a? String
-        begin
-          case_options = JSON.parse(self.case.options)
-        rescue JSON::ParserError
-          case_options = {}
-        end
-      elsif self.case.options.present?
-        case_options = self.case.options.to_hash
-      end
-    end
-    search_endpoint_options = {}
-    if search_endpoint
-      if search_endpoint.options.is_a? String
-        begin
-          search_endpoint_options = JSON.parse(search_endpoint.options)
-        rescue JSON::ParserError
-          search_endpoint_options = {}
-        end
-      elsif search_endpoint.options.present?
-        search_endpoint_options = search_endpoint.options.to_hash
-      end
-    end
+    case_options = normalize_options(self.case&.options)
+    search_endpoint_options = normalize_options(search_endpoint&.options)
     merged_hash = case_options.merge(search_endpoint_options)
     JSON.parse(merged_hash.to_json)
   end
 
   def param
     try_number
+  end
+
+  # How the try is labelled in the case header. Mirrors `formattedName()` in
+  # app/assets/javascripts/factories/TryFactory.js so the server-rendered header
+  # and the client models still in the page agree: a name that already mentions
+  # its own try number is shown as-is, anything else gets the number appended.
+  def formatted_name
+    return name if name.to_s.include?("Try #{try_number}")
+
+    "#{name} - Try #{try_number}"
   end
 
   def add_curator_vars vars = {}
@@ -157,17 +152,17 @@ class Try < ApplicationRecord
     JsonArgParser.parse(query_params, curator_vars_map)
   end
 
-  # JSON, parameter-list, and bare-text parsing is mirrored in
+  # This JSON-vs-bare-text split (and the bare-text wrapping below) is mirrored in
   # app/assets/javascripts/controllers/wizardModal.js's validate() function, which has to
   # apply the same rule client-side before a Try exists to call this method on - keep both
   # in sync if this logic changes.
   def searchapi_args
     if json_query_params?
+      # Same JSON-vs-bare-text split as #solr_args above, just with a third option (below) for
+      # engines - e.g. Vespa - that also accept bare text.
       JsonArgParser.parse(query_params,
                           curator_vars_map)
     elsif bare_query_param.present? && query_params.to_s.match?(/\A\s*[\w.-]+=/)
-      # Parameter lists must stay separate from bare YQL. Scalar values also keep
-      # AUTO's JSON POST fallback equivalent to the GET request.
       SolrArgParser.parse(query_params, curator_vars_map).transform_values do |values|
         values.one? ? values.first : values
       end
@@ -244,6 +239,18 @@ class Try < ApplicationRecord
   end
 
   private
+
+  def normalize_options value
+    if value.is_a?(String)
+      begin
+        JSON.parse(value)
+      rescue JSON::ParserError
+        {}
+      end
+    else
+      value.present? ? value.to_hash : {}
+    end
+  end
 
   def set_defaults
     self.try_number = 1 if try_number.blank?

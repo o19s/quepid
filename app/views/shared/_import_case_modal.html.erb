@@ -14,7 +14,7 @@
     Before the import happens Quepid will validate your Case data structures.
   </p>
 
-  <%= form_with url: api_import_cases_path, method: :post, local: false, html: { id: 'import-case-form', data: { import_case_target: 'form', action: 'submit->import-case#submit' } } do |f| %>
+  <%= form_with url: api_import_cases_path, method: :post, local: false, html: { id: 'import-case-form', data: { import_case_target: 'form', action: 'submit->import-case#submit' } } do %>
     <div class="mb-3">
       <label for="caseJsonFile" class="form-label">Select JSON file to import:</label>
       <%= file_field_tag :case_json,

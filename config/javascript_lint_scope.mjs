@@ -1,21 +1,15 @@
 /**
  * Single source of truth for ESLint + Prettier scope on `app/javascript/`.
- *
- * Legacy Angular assets (`app/assets/javascripts/`) stay on JSHint — see
- * `lib/jshint/configuration.rb`.
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 /** Esbuild bridge files — not importmap/Stimulus; excluded from modern lint. */
 export const LEGACY_ESBUILD_ENTRIES = [
-  'app/javascript/angular_app.js',
-  'app/javascript/quepid_app.js',
-  'app/javascript/jquery_bundle.js',
-  'app/javascript/splainer_search_adapter.js',
+  'app/javascript/utils/splainer_search_runtime.js',
 ];
 
-/** Directory names under app/javascript/ never linted (vendored Angular plugins). */
+/** Directory names under app/javascript/ never linted (vendored legacy plugins). */
 export const SKIPPED_DIRECTORIES = ['vendor'];
 
 /**
@@ -24,15 +18,14 @@ export const SKIPPED_DIRECTORIES = ['vendor'];
  */
 export const ESLINT_IGNORES = [
   '**/node_modules/**',
-  'app/assets/**',
   'public/**',
   'vendor/**',
   'spec/**',
-  'test/**',
+  'test/fixtures/**',
+  'test/playwright/**',
   'app/assets/builds/**',
   'app/javascript/vendor/**',
   ...LEGACY_ESBUILD_ENTRIES,
-  'app/javascript/**/*.test.js',
 ];
 
 /**
@@ -88,7 +81,8 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 }
 
 /**
- * Whether a repo-relative path is in the Prettier format scope.
+ * Whether a repo-relative path is in the Prettier format scope
+ * (api/, utils/, and the classic core scripts).
  * Narrow scope avoids a one-shot Prettier reformat of all controllers/modules;
  * project style is double quotes (see docs/js_tooling.md).
  * @param {string} path

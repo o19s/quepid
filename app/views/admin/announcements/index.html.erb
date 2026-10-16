@@ -1,8 +1,6 @@
 <%= page_header "Quepid Announcements for Users" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
-      <%= link_to 'New Quepid Announcement', new_admin_announcement_path, class: "btn btn-sm btn-outline-secondary" %>
-    </div>
+    <%= page_create_button 'New Quepid Announcement', new_admin_announcement_path %>
   </div>
 <% end %>
 
@@ -14,10 +12,10 @@
 <% end %>
 
 <div class="card">
-  <div class="card-header">   
-    <%= form_tag(admin_announcements_path, { method: :get }) do %> 
+  <div class="card-header">
+    <%= form_tag(admin_announcements_path, { method: :get }) do %>
       <div class="mb-0 d-flex fs-6 ">
-          
+
         <div class="input-group">
           <%= text_field_tag :q, params[:q], 
               class: 'form-control form-control-sm', 
@@ -28,13 +26,10 @@
             <i class="bi bi-search-heart"></i>
           <% end %>
         </div>
-        
-        
-        
       </div>
     <% end %>
   </div>
-  
+
   <div class="card-body">
     <div class="table-responsive">
     <table class="table table-hover table-sm">
@@ -53,7 +48,7 @@
       <tbody>
         <% @announcements.each do |announcement| %>
           <tr class="<%= announcement.active? ? 'table-success' : (announcement.expired? ? 'table-secondary' : '') %>">
-            <td><%= announcement.text.html_safe %></td>
+            <td><%= sanitize_announcement announcement.text %></td>
             <td><%= announcement.author.name %> </td>
             <td><%= announcement.created_at.strftime("%B %d %Y, %l:%M%P") %> </td>
             <td>

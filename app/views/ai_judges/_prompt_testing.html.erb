@@ -1,0 +1,89 @@
+<%# locals: (book:, scale:, provider:) %>
+<!-- Step 2: Test & Refine -->
+<div class="mb-4">
+  <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
+
+  <div data-ai-judge-wizard-target="step2" style="display: none;">
+    <p class="text-muted">Run the prompt against a real query/doc pair and see how the judge rates it. Edit the prompt above and run again as many times as you like before saving.</p>
+
+    <div class="row gx-5">
+      <div class="col-md-6">
+        <h6>Query Doc Pair to Evaluate</h6>
+        <div class="d-grid mb-2">
+          <button type="button" class="btn btn-light" data-action="click->ai-judge-wizard#sampleQueryDocPair">Change Query Doc Pair</button>
+        </div>
+
+        <div>
+          <label>Query text</label>
+          <input type="text" class="form-control" data-ai-judge-wizard-target="queryText" autocomplete="off">
+        </div>
+
+        <div>
+          <label>Doc ID</label>
+          <input type="text" class="form-control" data-ai-judge-wizard-target="docId" autocomplete="off">
+        </div>
+
+        <div>
+          <label>Information Need</label>
+          <input type="text" class="form-control" data-ai-judge-wizard-target="informationNeed" autocomplete="off">
+        </div>
+
+        <div>
+          <label>Document Fields</label> <small>JSON</small><br>
+          <%= tag.textarea class: "form-control", data: codemirror_data(mode: "json", height: 300, before_cache: false, ai_judge_wizard_target: "documentFields") %>
+        </div>
+
+        <div>
+          <label>Options</label> <small>JSON</small><br>
+          <%= tag.textarea class: "form-control", data: codemirror_data(mode: "json", height: 150, before_cache: false, ai_judge_wizard_target: "options") %>
+        </div>
+
+        <div>
+          <label>Notes</label><br>
+          <textarea class="form-control" data-ai-judge-wizard-target="notes"></textarea>
+        </div>
+
+        <div>
+          <label>Position</label>
+          <input type="text" class="form-control" data-ai-judge-wizard-target="position" autocomplete="off">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <h6>Rating Information</h6>
+        <% unless scale.empty? %>
+          <div class="mb-3">
+            <div data-ai-judge-form-target="criteriaTable" style="display:<%= provider&.scale_as_criteria? ? 'block' : 'none' %>">
+              <h6>Criteria sent with the question — from <%= link_to book.name, book_path(book) %>'s scale</h6>
+              <table class="table table-sm table-borderless small w-auto"><tbody>
+                <% scale.values.zip(scale.criteria).each_with_index do |(value, criterion), level| %>
+                  <tr><td>level <%= level %> → rating <strong><%= value %></strong></td><td><%= criterion %></td></tr>
+                <% end %>
+              </tbody></table>
+            </div>
+            <div data-ai-judge-form-target="criteriaProse" style="display:<%= provider&.scale_as_criteria? ? 'none' : 'block' %>">
+              <h6>Rating scale added to the prompt — from <%= link_to book.name, book_path(book) %>'s scale</h6>
+              <p class="small"><%= scale.describe %></p>
+            </div>
+          </div>
+        <% end %>
+        <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= provider&.needs_scale? && scale.empty? ? 'block' : 'none' %>">
+          This provider rates against a book's scale. Open this judge from a book with a scale on its Judgement Stats page (Refine Prompt).
+        </div>
+        <button type="button" class="btn btn-primary" <% if provider&.needs_scale? && scale.empty? %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+
+        <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="mt-2">Evaluating with AI Judge...</p>
+        </div>
+
+        <div data-ai-judge-wizard-target="ratingInfo" style="display: none;">
+          <span class="badge bg-warning text-dark" data-ai-judge-wizard-target="unrateable" style="display:none">Unrateable</span>
+          <p>LLM Response: <span data-ai-judge-wizard-target="rating"></span></p>
+          <p data-ai-judge-wizard-target="explanation"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

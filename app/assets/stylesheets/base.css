@@ -1,0 +1,13 @@
+/*
+ * Page skin shared by both bundles (application and core). build_css.js
+ * loads it right after Bootstrap and the fonts, so each bundle's own files
+ * can extend these rules (e.g. core-additions.css makes body a flex column).
+ */
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+footer {
+  font-size: 14px;
+}

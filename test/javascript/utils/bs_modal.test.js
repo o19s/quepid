@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { createBsModal, getOrCreateBsModal, hideBsModal, showBsModal } from "utils/bs_modal"
+import { createBsModal, getOrCreateBsModal, hideBsModal, installModalEscapeFallback, installModalTabWrap, showBsModal } from "utils/bs_modal"
 
 describe("bs_modal", () => {
   let element
@@ -86,5 +86,154 @@ describe("bs_modal", () => {
 
   it("hideBsModal does nothing when the instance is missing", () => {
     expect(() => hideBsModal(null)).not.toThrow()
+  })
+
+  describe("installModalEscapeFallback", () => {
+    let doc
+    let received
+
+    const addModal = () => {
+      const modal = doc.createElement("div")
+      modal.className = "modal show"
+      modal.innerHTML = "<button type=\"button\">Pick</button>"
+      modal.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") received.push(modal)
+      })
+      doc.body.appendChild(modal)
+      return modal
+    }
+    const pressEscape = (target = doc.body) =>
+      target.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))
+
+    beforeEach(() => {
+      // A separate document keeps each test's listener from leaking into the next.
+      doc = document.implementation.createHTMLDocument("")
+      received = []
+      installModalEscapeFallback(doc)
+    })
+
+    it("hands Escape to the open modal when focus has fallen back to the body", () => {
+      const modal = addModal()
+      pressEscape()
+      expect(received).toEqual([modal])
+    })
+
+    it("replays early Escape once opening finishes, even before the modal has show", () => {
+      const modal = addModal()
+      modal.classList.remove("show")
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      pressEscape()
+      pressEscape()
+      expect(received).toEqual([])
+      modal.classList.add("show")
+      modal.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([modal])
+      modal.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([modal])
+    })
+
+    it("queues Escape only for the opening inner modal", () => {
+      addModal()
+      const inner = addModal()
+      inner.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      pressEscape()
+      inner.dispatchEvent(new Event("shown.bs.modal", { bubbles: true }))
+      expect(received).toEqual([inner])
+    })
+
+    it("does not retain a canceled opening", async () => {
+      const modal = addModal()
+      modal.addEventListener("show.bs.modal", event => event.preventDefault())
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true, cancelable: true }))
+      await Promise.resolve()
+      pressEscape()
+      expect(received).toEqual([modal])
+    })
+
+    it("does not intercept Escape for a modal detached while opening", () => {
+      const modal = addModal()
+      modal.dispatchEvent(new Event("show.bs.modal", { bubbles: true }))
+      modal.remove()
+      const next = addModal()
+      pressEscape()
+      expect(received).toEqual([next])
+    })
+
+    it("picks the last shown modal, which is the topmost stacked one", () => {
+      addModal()
+      const inner = addModal()
+      pressEscape()
+      expect(received).toEqual([inner])
+    })
+
+    it("leaves Escape to Bootstrap when focus is still inside the modal", () => {
+      const modal = addModal()
+      const button = modal.querySelector("button")
+      button.focus()
+      pressEscape(button)
+      expect(received).toEqual([modal])
+    })
+
+    it("ignores other keys and Escape with no open modal", () => {
+      pressEscape()
+      addModal()
+      doc.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }))
+      expect(received).toEqual([])
+    })
+  })
+
+  describe("installModalTabWrap", () => {
+    let doc
+    let modal
+    let first
+    let last
+
+    const pressTab = (target, shiftKey = false) => {
+      const event = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true })
+      target.dispatchEvent(event)
+      return event
+    }
+
+    beforeEach(() => {
+      doc = document.implementation.createHTMLDocument("")
+      installModalTabWrap(doc)
+      modal = doc.createElement("div")
+      modal.className = "modal show"
+      modal.innerHTML =
+        '<button id="first">A</button><button disabled>X</button><button id="last">B</button>'
+      doc.body.appendChild(modal)
+      first = modal.querySelector("#first")
+      last = modal.querySelector("#last")
+    })
+
+    it("wraps Tab from the last control to the first", () => {
+      last.focus()
+      expect(pressTab(last).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(first)
+    })
+
+    it("wraps Shift+Tab from the first control to the last", () => {
+      first.focus()
+      expect(pressTab(first, true).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(last)
+    })
+
+    it("wraps Shift+Tab from the dialog container to the last control", () => {
+      modal.tabIndex = -1
+      modal.focus()
+      expect(pressTab(modal, true).defaultPrevented).toBe(true)
+      expect(doc.activeElement).toBe(last)
+    })
+
+    it("leaves Tab between inner controls to the browser", () => {
+      first.focus()
+      expect(pressTab(first).defaultPrevented).toBe(false)
+    })
+
+    it("ignores Tab outside an open modal", () => {
+      const outside = doc.createElement("button")
+      doc.body.appendChild(outside)
+      expect(pressTab(outside).defaultPrevented).toBe(false)
+    })
   })
 })

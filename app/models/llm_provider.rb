@@ -363,19 +363,6 @@ class LlmProvider
     scale_as_criteria?
   end
 
-  # Is this text one of the prompts Quepid ships for some *other* provider? That is a
-  # judge carrying instructions written for a different kind of model -- worth flagging,
-  # unlike text somebody wrote themselves, which is none of our business.
-  def stock_prompt_from_another_provider? text
-    return false if text.blank? || default_system_prompt.blank?
-
-    # A textarea posts CRLF, so stored text never matches a heredoc byte for byte.
-    text = normalize(text)
-    return false if text == normalize(default_system_prompt)
-
-    self.class.stock_system_prompts.any? { |prompt| normalize(prompt) == text }
-  end
-
   # The shape the AI Judge wizard (ai_judge_wizard_controller.js) expects for presets[key].
   def to_preset
     {
@@ -392,11 +379,5 @@ class LlmProvider
       label:             label,
       supports_images:   supports_images?,
     }
-  end
-
-  private
-
-  def normalize text
-    text.to_s.gsub(/\r\n?/, "\n").strip
   end
 end

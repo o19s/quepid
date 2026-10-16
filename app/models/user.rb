@@ -54,8 +54,41 @@
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class User < ApplicationRecord
+  def self.build_for_signup attributes
+    user = by_email(attributes[:email]).where.not(invitation_token: nil).first if attributes[:email].present?
+    if user
+      user.assign_attributes(attributes)
+      user
+    else
+      new(attributes)
+    end
+  end
+
+  scope :with_api_counts, -> {
+    select(<<~SQL.squish)
+      users.*,
+      (SELECT COUNT(*) FROM cases
+       WHERE cases.owner_id = users.id OR EXISTS (
+         SELECT 1 FROM teams_cases
+         INNER JOIN teams_members ON teams_members.team_id = teams_cases.team_id
+         WHERE teams_cases.case_id = cases.id AND teams_members.member_id = users.id
+       )) AS cases_involved_with_count,
+      (SELECT COUNT(*) FROM teams
+       INNER JOIN teams_members ON teams_members.team_id = teams.id
+       WHERE teams_members.member_id = users.id) AS teams_involved_with_count
+    SQL
+  }
+
+  encrypts :llm_key, deterministic: false
+
   # Associations
   has_many :api_keys, dependent: :destroy
+
+  has_many :invitations,
+           class_name:  'User',
+           foreign_key: :invited_by_id,
+           inverse_of:  :invited_by,
+           dependent:   :nullify
 
   belongs_to :default_scorer, class_name: 'Scorer', optional: true # for communal scorers there isn't a owner
 
@@ -114,10 +147,7 @@ class User < ApplicationRecord
 
   has_many :announcements, foreign_key: 'author_id', dependent: :destroy, inverse_of: :author
 
-  # :destroy, not :nullify - Annotation requires a user (belongs_to :user,
-  # optional: false), so nullifying user_id on delete would leave rows that
-  # violate the model's own invariant.
-  has_many :annotations, dependent: :destroy
+  has_many :annotations, dependent: :restrict_with_error
 
   # Validations
   validates :name,
@@ -201,6 +231,12 @@ class User < ApplicationRecord
     password_changed?
   end
 
+  # Devise's recoverable calls this (not the legacy method above) to decide whether to clear
+  # the reset_password_token, so without it a used reset link stays valid until it expires.
+  def will_save_change_to_encrypted_password?
+    will_save_change_to_password?
+  end
+
   # Because we want to be able to send the acceptance invite later,
   # store the raw invitation token in our own column for reuse later
   before_invitation_created :store_raw_invitation_token
@@ -214,8 +250,8 @@ class User < ApplicationRecord
   include Profile
 
   # Scopes
-
-  scope :real_users, -> { where(type: 'User') }
+  # default_scope -> { includes(:permissions) }
+  scope :real_users, -> { where(type: [ nil, 'User' ]) }
 
   # A fresh install (e.g. SQLite with no seed data) has no real users - and so no
   # administrator to grant one via the admin UI or `thor user:grant_administrator`.
@@ -233,10 +269,6 @@ class User < ApplicationRecord
 
   def ai_judge?
     is_a?(AiJudge)
-  end
-
-  def num_queries
-    queries.count
   end
 
   # All the scorers that you have access to, either as communal or as owner or via a team.
@@ -290,22 +322,22 @@ class User < ApplicationRecord
     created_by_invite? && !invitation_accepted? && password.blank?
   end
 
-  def unseen_app_notifications
-    Announcement
-      .left_outer_joins(:announcement_viewed)
-      .where('user_id != ? OR user_id IS NULL', id)
-      .order(:created_at)
+  def judge_options
+    # ugh, why isn't this :judge_options?
+    opts = options&.dig('judge_options') || {}
+    opts.deep_symbolize_keys
+  end
+
+  def judge_options= value
+    self.options ||= {}
+    self.options = options.merge(judge_options: value)
   end
 
   private
 
   def set_defaults
-    # rubocop:disable Style/RedundantSelf
-    # Rails' STI machinery stamps `type` for subclasses (e.g. AiJudge) at
-    # initialization, but leaves the base class NULL unless told otherwise -
-    # stamp it explicitly so every scope/query on `type` (real_users, admin
-    # filters, etc.) never has to special-case NULL.
     self.type ||= 'User'
+    # rubocop:disable Style/RedundantSelf
     self.completed_case_wizard = false if completed_case_wizard.nil?
     self.num_logins       = 0 if num_logins.nil?
     self.default_scorer   = Scorer.system_default_scorer if self.default_scorer.nil?

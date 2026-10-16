@@ -12,7 +12,6 @@ const WATCH_PATHS = [
   'app/assets/stylesheets',
   'node_modules/bootstrap/dist/css',
   'node_modules/bootstrap-icons/font',
-  'app/javascript/vendor/ng-tags-input/build'
 ];
 
 function ensureDirectoryExists(dirPath) {
@@ -45,134 +44,80 @@ function copyFileIfExists(src, dest) {
   return false;
 }
 
-function buildApplicationCSS() {
-  console.log('Building application.css...');
-  
-  const outputFile = 'app/assets/builds/application.css';
-  let output = '/* Application CSS Bundle (Bootstrap 5) */\n';
+const STYLES = 'app/assets/stylesheets';
+
+// Every bundle starts with Bootstrap 5, its icons, Quepid's fonts, and the
+// page skin shared by both bundles.
+const BOOTSTRAP_BASE = [
+  'node_modules/bootstrap/dist/css/bootstrap.css',
+  'node_modules/bootstrap-icons/font/bootstrap-icons.css',
+  `${STYLES}/fonts.css`,
+  `${STYLES}/base.css`,
+];
+
+// Concatenates `files` in order (order matters for the cascade) into
+// app/assets/builds/<name>.css.
+function writeBundle(name, title, files) {
+  console.log(`Building ${name}.css...`);
+
+  const outputFile = `app/assets/builds/${name}.css`;
+  let output = `/* ${title} */\n`;
   output += `/* Generated on ${new Date().toISOString()} */\n`;
   output += '\n';
-
-  // Bootstrap 5
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Application styles
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-add.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/signup.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/judgements.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/admin2.css');
-  output += '\n';
-
-  // Add the inline styles from application.css (excluding comments)
-  const appCSS = readFileIfExists('app/assets/stylesheets/application.css');
-  if (appCSS) {
-    const cleanedAppCSS = appCSS
-      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove block comments
-      .replace(/^\s*$/gm, '') // Remove empty lines
-      .trim();
-    if (cleanedAppCSS) {
-      output += cleanedAppCSS;
-    }
-  }
-
-  fs.writeFileSync(outputFile, output);
-  const stats = fs.statSync(outputFile);
-  console.log(`application.css created (${(stats.size / 1024).toFixed(1)}KB)`);
-}
-
-function buildCoreCSS() {
-  console.log('Building core.css...');
-  
-  const outputFile = 'app/assets/builds/core.css';
-  let output = '/* Core CSS Bundle (Bootstrap 5 for Angular App) */\n';
-  output += `/* Generated on ${new Date().toISOString()} */\n`;
-  output += '\n';
-
-  // Bootstrap 5 base. The compat shim (loaded below) supplies BS5-vs-legacy
-  // resets, px sizing, and Angular-core-specific overrides (popover, header nav,
-  // modals, sub-results toolbar, …).
-  output += readFileIfExists('node_modules/bootstrap/dist/css/bootstrap.css');
-  output += '\n';
-
-  // Bootstrap Icons
-  output += readFileIfExists('node_modules/bootstrap-icons/font/bootstrap-icons.css');
-  output += '\n';
-
-  // Core application styles
-  output += readFileIfExists('app/assets/stylesheets/fonts.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/core-additions.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/navbar-brand.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/bootstrap5-compat.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/style.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/panes.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/stackedChart.css');
-  output += '\n';
-
-  // Tour/Guides
-  output += readFileIfExists('node_modules/tether-shepherd/dist/css/shepherd-theme-arrows.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/tour.css');
-  output += '\n';
-
-  // Screen-specific styles
-  const screens = ['cases', 'docs', 'settings', 'qscore', 'qgraph'];
-  for (const screen of screens) {
-    output += readFileIfExists(`app/assets/stylesheets/${screen}.css`);
+  for (const file of files) {
+    output += readFileIfExists(file);
     output += '\n';
   }
 
-  // Other styles
-  output += readFileIfExists('app/assets/stylesheets/misc.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/animation.css');
-  output += '\n';
-  output += readFileIfExists('app/assets/stylesheets/froggy.css');
-  output += '\n';
-
   fs.writeFileSync(outputFile, output);
   const stats = fs.statSync(outputFile);
-  console.log(`core.css created (${(stats.size / 1024).toFixed(1)}KB)`);
+  console.log(`${name}.css created (${(stats.size / 1024).toFixed(1)}KB)`);
 }
 
-function copyVendorFiles() {
-  console.log('Copying Angular vendor CSS files...');
-  
+function buildApplicationCSS() {
+  writeBundle('application', 'Application CSS Bundle (Bootstrap 5)', [
+    ...BOOTSTRAP_BASE,
+    `${STYLES}/navbar-brand.css`,
+    `${STYLES}/bootstrap5-add.css`,
+    `${STYLES}/signup.css`,
+    `${STYLES}/judgements.css`,
+  ]);
+}
+
+function buildCoreCSS() {
+  writeBundle('core', 'Core CSS Bundle (Bootstrap 5 for the core case UI)', [
+    ...BOOTSTRAP_BASE,
+    // Quepid layout, then the BS5 overrides (px sizing, popovers, header nav,
+    // modals, sub-results toolbar, ...).
+    `${STYLES}/core-additions.css`,
+    `${STYLES}/navbar-brand.css`,
+    `${STYLES}/bootstrap5-compat.css`,
+    `${STYLES}/style.css`,
+    `${STYLES}/panes.css`,
+    `${STYLES}/stackedChart.css`,
+    // Tour/Guides
+    'node_modules/shepherd.js/dist/css/shepherd.css',
+    `${STYLES}/tour.css`,
+    // Screen-specific styles
+    `${STYLES}/docs.css`,
+    `${STYLES}/qscore.css`,
+    `${STYLES}/qgraph.css`,
+    // Other styles
+    `${STYLES}/misc.css`,
+    `${STYLES}/animation.css`,
+    `${STYLES}/froggy.css`,
+  ]);
+}
+
+// Standalone stylesheets linked from layouts/_case_head.html.erb (not folded into core.css).
+function copyLinkedStylesheets() {
+  console.log('Copying linked stylesheets...');
+
   ensureDirectoryExists('app/assets/builds');
-  
-  // Copy Angular third-party CSS files (sources live in app/javascript/vendor)
+
   copyFileIfExists(
-    'app/javascript/vendor/ng-json-explorer/dist/angular-json-explorer.css',
-    'app/assets/builds/angular-json-explorer.css'
-  );
-  copyFileIfExists(
-    'app/javascript/vendor/angular-wizard/angular-wizard.css',
-    'app/assets/builds/angular-wizard.css'
-  );
-  copyFileIfExists(
-    'app/javascript/vendor/ng-tags-input/build/ng-tags-input.min.css',
-    'app/assets/builds/ng-tags-input.min.css'
-  );
-  copyFileIfExists(
-    'app/assets/stylesheets/ng-tags-input-theme.css',
-    'app/assets/builds/ng-tags-input.theme.css'
+    'app/assets/stylesheets/json-explorer.css',
+    'app/assets/builds/json-explorer.css'
   );
 }
 
@@ -204,8 +149,8 @@ function buildAllCSS() {
     buildApplicationCSS();
     buildCoreCSS();
 
-    // Copy vendor and asset files
-    copyVendorFiles();
+    // Copy linked stylesheets and other asset files
+    copyLinkedStylesheets();
     copyFontFiles();
     copyImageFiles();
     
@@ -255,7 +200,7 @@ function main() {
         debouncedRebuild();
       });
 
-      watcher.on('add', (path) => {
+      watcher.on('add', () => {
         debouncedRebuild();
       });
 

@@ -1,19 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["scaleList", "scaleLabels"]
-
-  connect() {
-    // Listen for changes on scale preset radio buttons
-    this.element.querySelectorAll('input[name="scale_preset"]').forEach(radio => {
-      radio.addEventListener('change', this.updateScale.bind(this))
-    })
-    
-    // Listen for manual changes to scale_list field
-    if (this.hasScaleListTarget) {
-      this.scaleListTarget.addEventListener('input', this.handleScaleListInput.bind(this))
-    }
-  }
+  static targets = ["scaleList", "scaleLabels", "labelTemplate"]
 
   handleScaleListInput(event) {
     const scaleValue = event.target.value.trim()
@@ -56,24 +44,18 @@ export default class extends Controller {
 
     const values = scaleValue.split(',').map(v => v.trim()).filter(v => v)
     const labelsContainer = this.scaleLabelsTarget
+    const labels = new Map(
+      [...labelsContainer.querySelectorAll("input")].map(input => [input.name, input.value])
+    )
     
     labelsContainer.innerHTML = ''
     
     values.forEach(value => {
-      const label = document.createElement('label')
-      label.className = 'scale-with-label-element clearfix'
-      label.style.display = 'inline-block'
-      label.style.marginRight = '10px'
-      label.innerHTML = `
-        ${value}:
-        <input
-          class="form-control scale-label clearfix"
-          type="text"
-          name="scorer[scale_with_labels][${value}]"
-          value=""
-          style="width: 100px; display: inline-block;"
-        />
-      `
+      const label = this.labelTemplateTarget.content.firstElementChild.cloneNode(true)
+      label.querySelector("[data-scale-value]").textContent = value
+      const input = label.querySelector("input")
+      input.name = `scorer[scale_with_labels][${value}]`
+      input.value = labels.get(input.name) || ""
       labelsContainer.appendChild(label)
     })
   }

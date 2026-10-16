@@ -1,6 +1,5 @@
 /* CSS Custom Properties for consistent spacing and styling */
 :root {
-  --qscore-spacing-sm: 5px;
   --qscore-spacing-md: 10px;
   --qscore-spacing-lg: 15px;
   --qscore-spacing-xl: 20px;
@@ -8,29 +7,34 @@
   --qscore-border-width: 1px;
   --qscore-border-width-thick: 2px;
   --qscore-highlight-width: 4px;
+  --qscore-divider-color: #eee;
 }
 
-/* Base qscore component styles */
-qscore-case, qscore-query {
+/*
+  Case score badge spacing. The primary case score is a plain `.case-score` div now
+  (Stimulus-driven); the snapshot/diff scores use the same `.case-score` / `.diff-score`
+  classes while their state is being migrated. Both share the `.case-score` class, so these rules key off
+  DOM position (`:last-child`), not tag name, and apply the same regardless of which
+  is which: only the rightmost badge keeps the outer margin - every other one sits
+  flush against the next.
+*/
+.case-score {
+  display: block;
   padding: 0;
-}
-
-qscore-case.case-score {
-  margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
-}
-
-/* Simplified diff score margins */
-qscore-case.case-score:not(.diff-score):not(:only-of-type),
-qscore-case.case-score.diff-score {
   margin: var(--qscore-spacing-xl) 0px calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
-qscore-case.case-score.diff-score:last-of-type {
+.case-score:last-child {
   margin: var(--qscore-spacing-xl) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) 0px;
 }
 
+.query-score-label {
+  display: block;
+  font-size: x-small;
+}
+
 /* Header rating styles */
-qscore-case .header-rating {
+.case-score .header-rating {
   border-radius: var(--qscore-border-radius);
   color: #fff;
   display: inline-block;
@@ -42,65 +46,56 @@ qscore-case .header-rating {
   vertical-align: top;
 }
 
-/* Overall rating styles - consolidated identical selectors */
-qscore-case .overall-rating,
-qscore-query .overall-rating {
-  display: block;
-  float: left;
-  height: 100%;
+/* Primary per-query score badge (Stimulus `qscore-query`), a flex item at the left
+   edge of the query row (.result-header). It stretches to the row's full height; the
+   negative margins below extend it over the row padding. The styled element carries
+   `data-controller` itself; an outer wrapper would leave it un-styled. */
+.qscore-query-badge {
+  align-self: stretch;
+  flex-shrink: 0;
   width: 90px;
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
+  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
   padding: var(--qscore-spacing-md) 0;
   color: #fff;
-  font-family: 'allerbold_italic';
+  font-family: Aller, sans-serif;
+  font-weight: 700;
+  font-style: italic;
   font-size: 22px;
   text-align: center;
   border-top-left-radius: var(--qscore-border-radius);
   border-bottom-left-radius: var(--qscore-border-radius);
 }
 
-/* Query score specific positioning - consolidated identical rules */
-qscore-query.results-score .overall-rating,
-.diff-query-display qscore-query.results-score .overall-rating {
-  margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-lg) calc(-1 * var(--qscore-spacing-md)) calc(-1 * var(--qscore-spacing-xl));
-}
-
-qscore-query.diff-score .overall-rating {
+/* Per-query diff badge: a .qscore-query-badge (so it sits beside the primary badge) that butts
+   against its neighbor on the left and is rounded on the right. */
+.qscore-query-badge.diff-score {
   margin: calc(-1 * var(--qscore-spacing-md)) var(--qscore-spacing-xl) calc(-1 * var(--qscore-spacing-md)) 0px;
-}
-
-/* Diff score styling */
-qscore-case .overall-rating.diff-score,
-qscore-query.diff-score .overall-rating {
   border-radius: 0;
   border-top-right-radius: var(--qscore-border-radius);
   border-bottom-right-radius: var(--qscore-border-radius);
 }
 
-/* Border radius adjustments for multiple scores */
-qscore-case.case-score:not(.diff-score):not(:only-of-type) .header-rating {
+/* Border radius adjustments for multiple scores - same DOM-position logic as the
+   margin rules above: square off the side that butts against a neighbor. */
+.case-score:not(:last-child) .header-rating {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-qscore-case.case-score.diff-score .header-rating {
-  border-radius: 0;
-}
-
-qscore-case.case-score.diff-score:last-of-type .header-rating {
-  border-top-right-radius: var(--qscore-border-radius);
-  border-bottom-right-radius: var(--qscore-border-radius);
+.case-score.diff-score .header-rating {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 
 /* Graph styling */
-qscore-case qgraph {
+.case-score .qgraph {
   display: inline-block;
   height: 80px;
   margin: 0px calc(-1 * var(--qscore-spacing-md)) 0px 0px;
   width: 150px;
 }
 
-qscore-case qgraph svg {
+.case-score .qgraph svg {
   border: var(--qscore-border-width-thick) solid grey;
   border-right-style: none;
   border-radius: var(--qscore-border-radius);
@@ -115,7 +110,7 @@ qscore-case qgraph svg {
 .diff-header {
   display: flex;
   margin-bottom: var(--qscore-spacing-xl);
-  border-bottom: var(--qscore-border-width-thick) solid #eee;
+  border-bottom: var(--qscore-border-width-thick) solid var(--qscore-divider-color);
 }
 
 .diff-header .diff-column {
@@ -125,13 +120,13 @@ qscore-case qgraph svg {
 .diff-row {
   display: flex;
   min-height: 200px;
-  border-bottom: var(--qscore-border-width) solid #f0f0f0;
+  border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
   margin-bottom: var(--qscore-spacing-xl);
 }
 
 .diff-column {
   flex: 1;
-  border-right: var(--qscore-border-width) solid #eee;
+  border-right: var(--qscore-border-width) solid var(--qscore-divider-color);
   padding: 0 var(--qscore-spacing-lg);
   text-align: left;
 }
@@ -143,7 +138,7 @@ qscore-case qgraph svg {
 .diff-actions {
   text-align: center;
   padding-top: var(--qscore-spacing-xl);
-  border-top: var(--qscore-border-width) solid #eee;
+  border-top: var(--qscore-border-width) solid var(--qscore-divider-color);
 }
 
 /* Search result highlighting */
@@ -155,10 +150,6 @@ qscore-case qgraph svg {
   border-left: var(--qscore-highlight-width) solid #dc3545;
 }
 
-.search-result.new {
-  border-left: var(--qscore-highlight-width) solid #28a745;
-}
-
 /* Responsive design */
 @media (max-width: 768px) {
   .diff-header,
@@ -168,7 +159,7 @@ qscore-case qgraph svg {
 
   .diff-column {
     border-right: none;
-    border-bottom: var(--qscore-border-width) solid #eee;
+    border-bottom: var(--qscore-border-width) solid var(--qscore-divider-color);
     margin-bottom: var(--qscore-spacing-lg);
     padding: var(--qscore-spacing-lg) 0;
   }
@@ -176,4 +167,10 @@ qscore-case qgraph svg {
   .diff-column:last-child {
     border-bottom: none;
   }
+}
+
+.score-state {
+  display: block;
+  font-size: 11px;
+  line-height: 1.2;
 }

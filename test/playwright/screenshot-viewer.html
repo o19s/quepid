@@ -71,6 +71,35 @@
         font-size: 0.85rem;
       }
 
+      .meta a,
+      .history-link {
+        color: var(--accent);
+      }
+
+      .baseline-tabs {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1.25rem 0;
+      }
+
+      .baseline-tabs button {
+        padding: 0.4rem 0.75rem;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--panel);
+        color: var(--text);
+        cursor: pointer;
+      }
+
+      .baseline-tabs[hidden] {
+        display: none;
+      }
+
+      .baseline-tabs button[aria-selected="true"] {
+        border-color: var(--accent);
+        background: var(--accent-soft);
+      }
+
       .search {
         width: min(320px, 100%);
         padding: 0.45rem 0.65rem;
@@ -84,12 +113,22 @@
         margin-bottom: 1.25rem;
       }
 
-      .nav-section h2 {
+      .nav-section .nav-section {
+        margin: 0.75rem 0 0.75rem 0.75rem;
+      }
+
+      .nav-section summary {
         margin: 0 0 0.5rem;
         font-size: 0.72rem;
         letter-spacing: 0.06em;
         text-transform: uppercase;
         color: var(--muted);
+        cursor: pointer;
+      }
+
+      .nav-section summary:hover,
+      .nav-section summary:focus-visible {
+        color: var(--text);
       }
 
       .nav-list {
@@ -146,10 +185,6 @@
       .badge.diff {
         color: var(--diff);
         border-color: color-mix(in srgb, var(--diff) 50%, var(--border));
-      }
-
-      .badge.pending {
-        color: var(--muted);
       }
 
       .badge.single {
@@ -261,11 +296,147 @@
         background: #0a0c10;
       }
 
+      .panel header .raw-link {
+        margin-left: auto;
+        color: var(--accent);
+      }
+
+      /* Changed-region boxes, positioned in percentages of the screenshot so
+         they stay aligned at any rendered size. */
+      .shot {
+        position: relative;
+      }
+
+      .region {
+        position: absolute;
+        outline: 3px solid var(--diff);
+        box-shadow: 0 0 0 4px #000, inset 0 0 0 1px #fff;
+        pointer-events: none;
+      }
+
+      .region span {
+        position: absolute;
+        top: -3px;
+        left: -3px;
+        transform: translateY(-100%);
+        padding: 0 0.3rem;
+        background: var(--diff);
+        color: #000;
+        font-size: 0.7rem;
+        font-weight: 700;
+      }
+
+      .hide-regions .region {
+        display: none;
+      }
+
+      .compare.actual {
+        grid-template-columns: 1fr;
+      }
+
+      .compare.actual .shot {
+        width: fit-content;
+      }
+
+      .compare.actual .panel img,
+      .compare.actual .panel canvas {
+        width: auto;
+        max-width: none;
+        cursor: zoom-out;
+      }
+
+      .compare.actual .panel {
+        overflow: auto;
+      }
+
+      .compare.actual .panel header {
+        position: sticky;
+        left: 0;
+      }
+
+      .slider {
+        --pos: 50%;
+      }
+
+      .slider .slider-after {
+        position: absolute;
+        inset: 0;
+        height: 100%;
+        clip-path: inset(0 0 0 var(--pos));
+      }
+
+      .slider::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: var(--pos);
+        border-left: 2px solid var(--warn);
+        pointer-events: none;
+      }
+
+      .slider-range {
+        width: 100%;
+        margin: 0.5rem 0;
+      }
+
+      .region-list {
+        margin: 0;
+        padding-left: 1.4rem;
+        font-size: 0.85rem;
+        columns: 2;
+      }
+
       .panel .img-error {
         padding: 1rem;
         color: var(--diff);
         font-size: 0.85rem;
       }
+
+      .review-controls {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 1rem 1.25rem;
+      }
+
+      .review-controls[hidden] { display: none; }
+
+      .review-controls button, .review-controls select {
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem;
+      }
+
+      .review-controls button:disabled { opacity: 0.5; }
+      #review-status { color: var(--warn); }
+      #review-status.approved { color: var(--ok); }
+
+      .diff-browser {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin: 0 1.25rem 1rem;
+      }
+
+      .diff-browser[hidden] { display: none; }
+
+      .diff-browser button {
+        background: var(--panel);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 0.5rem;
+      }
+
+      .diff-browser button:disabled { opacity: 0.5; }
+      .diff-browser .primary { background: var(--accent-soft); border-color: var(--accent); }
+      #diff-position { font-variant-numeric: tabular-nums; }
+      .diff-browser .muted { color: var(--muted); font-size: 0.85rem; }
 
       .empty {
         color: var(--muted);
@@ -301,19 +472,51 @@
     <div class="layout">
       <aside>
         <div id="topic-navs"></div>
-        <div class="nav-section" id="singles-nav">
-          <h2>Single shots</h2>
+        <details class="nav-section" id="singles-nav" data-section="singles">
+          <summary>Single shots</summary>
           <ul class="nav-list" id="singles-list"></ul>
-        </div>
+        </details>
       </aside>
       <main>
         <header>
           <div>
             <h1 id="title">Screenshot viewer</h1>
             <div class="meta" id="subtitle">Loading manifest…</div>
+            <div class="meta" id="capture-info"></div>
           </div>
+          <a class="history-link" id="archive-link" href="?view=archive">Archive</a>
           <input class="search" id="search" type="search" placeholder="Filter screenshots…" />
         </header>
+        <div class="review-controls" id="review-controls" hidden>
+          <label for="review-filter">Capture review</label>
+          <select id="review-filter">
+            <option value="all">All screens</option>
+            <option value="needs_review">Unreviewed captures</option>
+            <option value="approved">Approved</option>
+          </select>
+          <label for="duplicate-filter">Duplicates</label>
+          <select id="duplicate-filter" title="Collapse Current captures that show the same page">
+            <option value="all">Show all</option>
+            <option value="identical">Hide identical captures</option>
+            <option value="similar">Hide identical and near-duplicates (≤2% of page differs)</option>
+          </select>
+          <button type="button" id="recapture-current" disabled>Recapture Current</button>
+          <button type="button" id="approve-current" disabled>Approve capture</button>
+          <button type="button" id="refresh-reviews">Check status</button>
+          <span id="review-status" role="status" aria-live="polite"></span>
+        </div>
+        <div class="diff-browser" id="diff-browser" hidden>
+          <label><input type="checkbox" id="diff-mode" /> Browse legacy/current differences</label>
+          <span class="diff-browser-nav" id="diff-nav" hidden>
+            <button type="button" id="diff-prev">&larr; Previous difference</button>
+            <span id="diff-position" role="status" aria-live="polite"></span>
+            <button type="button" id="diff-next">Next difference &rarr;</button>
+            <button type="button" class="primary" id="diff-approve-next">Approve &amp; next</button>
+            <label><input type="checkbox" id="diff-show-approved" /> Include approved</label>
+            <span class="muted" id="diff-summary"></span>
+          </span>
+        </div>
+        <div class="baseline-tabs" id="baseline-tabs" role="tablist" aria-label="Left comparison" hidden></div>
         <div class="stage" id="stage">
           <div class="empty">Pick a screenshot set from the sidebar.</div>
         </div>
@@ -323,12 +526,264 @@
     <script>
       const manifestUrl = "screenshot-manifest.json"
       const shotPrefix = "/.playwright-mcp/"
-      const PIXEL_THRESHOLD = 8
+      // Overridden by manifest.compare so the in-browser tint/diff map uses the
+      // same pixelmatch options as the manifest's changed-region boxes.
+      let compareOptions = { threshold: 0.02, includeAA: false }
+      const compareLabel = () => `pixelmatch threshold ${compareOptions.threshold}${compareOptions.includeAA ? "" : ", anti-aliasing ignored"}`
+      let pixelmatch = null
+      async function loadPixelmatch() {
+        pixelmatch ||= (await import("/node_modules/pixelmatch/index.js")).default
+        return pixelmatch
+      }
+      const params = new URLSearchParams(window.location.search)
+      const archiveView = params.get("view") === "archive"
+      const historyScreen = params.get("screen")
 
       let manifest = { groups: [], singles: [], summary: {} }
       let items = []
       let activeId = null
+      let viewMode = "side"
+      let showRegions = true
       const pixelCache = new Map()
+      const expandedSections = new Map()
+      let navFiltered = false
+      const baselineModes = new Map()
+      let stageRenderVersion = 0
+
+      let reviewLoading = false
+      let captureJob = null
+      let captureError = null
+
+      let diffMode = false
+
+      // A screen "differs from legacy" when its Legacy/Current comparison is not pixel identical.
+      function differsFromLegacy(item) {
+        const comparison = item.legacyComparison
+        if (!comparison) return false
+        const diff = comparison.diff
+        return !(comparison.byteIdentical || (diff && !diff.error && !diff.dimensionMismatch && diff.pixelIdentical))
+      }
+
+      function inDiffQueue(item) {
+        if (!differsFromLegacy(item)) return false
+        // The active screen stays listed after approval so "Approve & next" doesn't shift the queue under you.
+        return item.id === activeId || document.getElementById("diff-show-approved").checked || item.review?.status !== "approved"
+      }
+
+      function matchesSearch(item, query) {
+        return !query || item.title.toLowerCase().includes(query) || item.id.toLowerCase().includes(query) || (item.topic || "").toLowerCase().includes(query)
+      }
+
+      function visibleItems() {
+        const q = document.getElementById("search").value.trim().toLowerCase()
+        return items.filter((item) => matchesReview(item) && matchesSearch(item, q))
+      }
+
+      function renderDiffBrowser() {
+        const bar = document.getElementById("diff-browser")
+        bar.hidden = archiveView
+        const nav = document.getElementById("diff-nav")
+        nav.hidden = !diffMode
+        if (!diffMode) return
+        const queue = visibleItems()
+        const index = queue.findIndex((item) => item.id === activeId)
+        const differing = items.filter(differsFromLegacy)
+        const approved = differing.filter((item) => item.review?.status === "approved").length
+        document.getElementById("diff-position").textContent = queue.length ? `${index + 1} of ${queue.length}` : "None"
+        document.getElementById("diff-summary").textContent = `${differing.length} differ from legacy · ${approved} approved`
+        const active = items.find((item) => item.id === activeId)
+        document.getElementById("diff-prev").disabled = queue.length < 2
+        document.getElementById("diff-next").disabled = queue.length < 2
+        document.getElementById("diff-approve-next").disabled = reviewLoading || captureJob?.state === "running" || !active?.review || active.review.status === "approved" || !["current", "stale"].includes(active.review.captureStatus)
+      }
+
+      async function approveAndNext() {
+        const item = items.find((entry) => entry.id === activeId)
+        if (!item || item.review?.status === "approved") return
+        await approveCurrent()
+        if (activeId === item.id && items.find((entry) => entry.id === item.id)?.review?.status === "approved") selectRelative(1)
+      }
+
+      function setDiffMode(enabled) {
+        diffMode = enabled
+        const current = items.find((item) => item.id === activeId)
+        if (!enabled) {
+          renderNav(document.getElementById("search").value)
+          return
+        }
+        const next = current && differsFromLegacy(current) ? current : items.find(matchesReview)
+        if (next) select(next.id)
+        else {
+          renderNav(document.getElementById("search").value)
+          activeId = null
+          ++stageRenderVersion
+          document.getElementById("stage").textContent = "No screens differ from legacy."
+          document.getElementById("baseline-tabs").hidden = true
+          renderReview(null)
+        }
+      }
+
+      function matchesReview(item) {
+        const filter = document.getElementById("review-filter").value
+        if (!archiveView && diffMode && !inDiffQueue(item)) return false
+        if (!archiveView && item.id !== activeId) {
+          const duplicates = document.getElementById("duplicate-filter").value
+          if ((duplicates === "identical" && item.duplicateShadowed) || (duplicates === "similar" && item.similarShadowed)) return false
+        }
+        return archiveView || filter === "all" || (filter === "approved" ? item.review?.status === "approved" : item.review?.status !== "approved")
+      }
+
+      function renderReview(item) {
+        if (archiveView) return
+        const status = document.getElementById("review-status")
+        const button = document.getElementById("approve-current")
+        const review = item?.review
+        const recapture = document.getElementById("recapture-current")
+        const busy = captureJob?.state === "running"
+        recapture.textContent = captureError && captureError.id === item?.id ? "Retry capture" : "Recapture Current"
+        recapture.disabled = busy || reviewLoading || !review?.canRecapture
+        recapture.title = review?.canRecapture ? review.captureMethod === "claude" ? "Capture this screen using local Claude and Playwright MCP" : "Capture a new image of this screen" : "No recorded screen to recapture"
+        document.getElementById("refresh-reviews").disabled = busy || reviewLoading
+        status.classList.toggle("approved", review?.status === "approved")
+        status.textContent = !item ? "No screens match this filter." : reviewLoading ? "Checking review status…" : !review ? "Review status unavailable or the capture changed. Reload the viewer or check status." : review.status === "approved" ? `Approved · ${review.approvedAt}` : !["current", "stale"].includes(review.captureStatus) ? "Capture image unavailable — restore it before review." : "Unreviewed capture"
+        if (review?.captureStatus === "stale") status.append(" · Source changed since capture (advisory).")
+        if (busy) status.textContent = captureJob.message
+        else if (captureError && captureError.id === item?.id) status.textContent = captureError.message
+        else if (item && !review?.canRecapture) status.append(" · Automatic capture not configured for this screen.")
+        button.textContent = review?.status === "approved" ? "Undo approval" : "Approve capture"
+        button.disabled = busy || reviewLoading || !review || !["current", "stale"].includes(review.captureStatus)
+      }
+
+      function applyReviews(data) {
+        for (const item of items) {
+          const review = data.screens.find((screen) => screen.id === item.screenId)
+          if (data.partial && !review && data.branch === manifest.current?.branch) continue
+          item.review = data.branch === manifest.current?.branch && review?.source === item.now?.source && review?.image === item.now?.image && review?.capturedAt === item.now?.capturedAt ? review : null
+          if (item.review) {
+            item.captureStatus = review.captureStatus
+            item.stale = review.captureStatus === "stale"
+          }
+        }
+      }
+
+      async function refreshReviews() {
+        if (archiveView || reviewLoading || captureJob?.state === "running") return
+        reviewLoading = true
+        renderReview(items.find((item) => item.id === activeId))
+        try {
+          const response = await fetch("/api/reviews", { cache: "no-store" })
+          if (!response.ok) throw new Error("Could not load review status")
+          applyReviews(await response.json())
+        } catch {
+          for (const item of items) item.review = null
+        } finally {
+          reviewLoading = false
+          renderNav(document.getElementById("search").value)
+          renderReview(items.find((item) => item.id === activeId))
+        }
+      }
+
+      async function approveCurrent() {
+        const item = items.find((item) => item.id === activeId)
+        if (!item?.review || reviewLoading || captureJob?.state === "running") return
+        reviewLoading = true
+        renderReview(item)
+        let errorMessage
+        try {
+          const response = await fetch("/api/reviews", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branch: manifest.current.branch, id: item.screenId, source: item.now.source, image: item.now.image, capturedAt: item.now.capturedAt, approved: item.review.status !== "approved" })
+          })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not save approval")
+          applyReviews(data)
+        } catch (error) {
+          item.review = null
+          errorMessage = error.message
+        } finally {
+          reviewLoading = false
+          renderNav(document.getElementById("search").value)
+          renderReview(items.find((entry) => entry.id === activeId))
+          if (errorMessage) document.getElementById("review-status").textContent = errorMessage
+        }
+      }
+
+      async function watchCapture() {
+        while (captureJob.state === "running") {
+          renderReview(items.find((entry) => entry.id === activeId))
+          await new Promise((resolve) => setTimeout(resolve, 750))
+          const response = await fetch(`/api/captures/${encodeURIComponent(captureJob.jobId)}`, { cache: "no-store" })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not check capture progress")
+          captureJob = data
+        }
+      }
+
+      async function resumeCapture() {
+        if (archiveView || captureJob) return
+        try {
+          const saved = JSON.parse(sessionStorage.getItem("screenshotCapture") || "null")
+          const response = await fetch(saved ? `/api/captures/${encodeURIComponent(saved.jobId)}` : "/api/captures", { cache: "no-store" })
+          if (!response.ok) return
+          const job = await response.json()
+          if (!job) return
+          captureJob = job
+          if (saved && items.some((item) => item.id === saved.id)) {
+            document.getElementById("search").value = saved.search
+            document.getElementById("review-filter").value = saved.filter
+            baselineModes.set(saved.id, saved.baseline)
+            viewMode = saved.viewMode
+            showRegions = saved.showRegions
+            select(saved.id)
+          }
+          await watchCapture()
+          if (captureJob.state !== "succeeded") {
+            sessionStorage.removeItem("screenshotCapture")
+            throw new Error(captureJob.message)
+          }
+          sessionStorage.removeItem("screenshotCapture")
+          pixelCache.clear()
+          await init(true)
+        } catch (error) {
+          captureError = { id: captureJob?.id, message: `Capture failed: ${error.message}` }
+        } finally {
+          captureJob = null
+          renderReview(items.find((entry) => entry.id === activeId))
+        }
+      }
+
+      async function recaptureCurrent() {
+        const item = items.find((entry) => entry.id === activeId)
+        if (!item?.review?.canRecapture || captureJob?.state === "running" || reviewLoading) return
+        captureError = null
+        captureJob = { state: "running", message: "Starting capture…", id: item.id }
+        renderReview(item)
+        try {
+          const response = await fetch("/api/captures", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ branch: manifest.current.branch, id: item.screenId, source: item.now.source, image: item.now.image, capturedAt: item.now.capturedAt })
+          })
+          const data = await response.json()
+          if (!response.ok) throw new Error(data.error || "Could not start capture")
+          captureJob = data
+          sessionStorage.setItem("screenshotCapture", JSON.stringify({ jobId: data.jobId, id: item.id, search: document.getElementById("search").value, filter: document.getElementById("review-filter").value, baseline: baselineModes.get(item.id) || "previous", viewMode, showRegions }))
+          await watchCapture()
+          if (captureJob.state !== "succeeded") {
+            sessionStorage.removeItem("screenshotCapture")
+            throw new Error(captureJob.message)
+          }
+          sessionStorage.removeItem("screenshotCapture")
+          pixelCache.clear()
+          await init(true)
+        } catch (error) {
+          captureError = { id: item.id, message: `Capture failed: ${error.message}` }
+        } finally {
+          captureJob = null
+          renderReview(items.find((entry) => entry.id === activeId))
+        }
+      }
 
       function shotSrc(relPath) {
         return (
@@ -356,58 +811,98 @@
         if (item.byteIdentical) {
           return '<span class="badge identical">byte =</span>'
         }
-        if (item.byteIdentical === false) {
-          const pixel = pixelCache.get(item.id)
-          if (pixel?.pixelIdentical) return '<span class="badge identical">pixel =</span>'
-          if (pixel && !pixel.pending) return '<span class="badge diff">diff</span>'
-          return '<span class="badge diff">bytes ≠</span>'
-        }
-        return '<span class="badge pending">…</span>'
+        const diff = item.diff
+        if (!diff || diff.error) return '<span class="badge diff">bytes ≠</span>'
+        if (diff.dimensionMismatch) return '<span class="badge diff">size ≠</span>'
+        if (diff.pixelIdentical) return '<span class="badge identical">pixel =</span>'
+        const count = diff.regions.length
+        return `<span class="badge diff">${count} box${count === 1 ? "" : "es"} · ${diff.changedPercent}%</span>`
+      }
+
+      function hasRegions(item) {
+        return Boolean(item?.diff?.regions?.length)
+      }
+
+      function regionsHtml(item) {
+        if (!hasRegions(item)) return ""
+        const { width, height } = item.diff
+        return item.diff.regions
+          .map(
+            (r, index) => `
+              <div class="region" style="left:${(r.x / width) * 100}%;top:${(r.y / height) * 100}%;width:${(r.width / width) * 100}%;height:${(r.height / height) * 100}%">
+                <span>${index + 1}</span>
+              </div>`
+          )
+          .join("")
       }
 
       function renderNav(filter = "") {
+        if (!navFiltered) {
+          document.querySelectorAll("details.nav-section").forEach((section) => {
+            expandedSections.set(section.dataset.section, section.open)
+          })
+        }
         const q = filter.trim().toLowerCase()
-        const match = (item) =>
-          !q ||
-          item.title.toLowerCase().includes(q) ||
-          item.id.toLowerCase().includes(q) ||
-          (item.topic || "").toLowerCase().includes(q)
+        navFiltered = Boolean(q) || diffMode || document.getElementById("review-filter").value !== "all" || document.getElementById("duplicate-filter").value !== "all"
+        const match = (item) => matchesReview(item) && matchesSearch(item, q)
 
         const topicNavs = document.getElementById("topic-navs")
         const singlesList = document.getElementById("singles-list")
         topicNavs.innerHTML = ""
         singlesList.innerHTML = ""
 
-        const pairs = items.filter((item) => item.kind === "pair" && match(item))
-        const singles = items.filter((item) => item.kind === "single" && match(item))
+        const pairs = items.filter((item) => (item.kind === "pair" || !archiveView) && match(item))
+        const singles = archiveView ? items.filter((item) => item.kind === "single" && match(item)) : []
 
         const topics = [...new Set(pairs.map((p) => p.topic || "(root)"))].sort(
           (a, b) => topicRank(a) - topicRank(b) || a.localeCompare(b)
         )
 
+        const topicSections = new Map()
         for (const topic of topics) {
-          const section = document.createElement("div")
-          section.className = "nav-section"
-          const h2 = document.createElement("h2")
-          h2.textContent = topic === "(root)" ? "Before / after (root)" : topic
+          let parent = topicNavs
+          let topicPath = ""
+          for (const part of topic.split("/")) {
+            topicPath = topicPath ? `${topicPath}/${part}` : part
+            let section = topicSections.get(topicPath)
+            if (!section) {
+              section = document.createElement("details")
+              section.className = "nav-section"
+              section.dataset.section = `pair:${topicPath}`
+              section.open = navFiltered || expandedSections.get(section.dataset.section) || false
+              const summary = document.createElement("summary")
+              summary.textContent = topicPath === "(root)" ? "Before / after (root)" : part
+              section.appendChild(summary)
+              parent.insertBefore(section, parent.querySelector(":scope > .nav-list"))
+              topicSections.set(topicPath, section)
+            }
+            parent = section
+          }
           const ul = document.createElement("ul")
           ul.className = "nav-list"
           for (const item of pairs.filter((p) => (p.topic || "(root)") === topic)) {
             const li = document.createElement("li")
             const btn = document.createElement("button")
             btn.type = "button"
-            btn.innerHTML = `<span>${item.title}</span>${pairBadge(item)}`
+            const label = document.createElement("span")
+            label.textContent = item.title
+            const badge = document.createElement("span")
+            badge.innerHTML = ["missing", "corrupt"].includes(item.captureStatus) ? `<span class="badge diff">capture ${item.captureStatus}</span>` : item.stale ? '<span class="badge single">source changed</span>' : item.kind === "pair" ? pairBadge(item) : '<span class="badge single">first capture</span>'
+            if (!archiveView && !item.duplicates && item.similar) badge.insertAdjacentHTML("beforeend", `<span class="badge single" title="Looks like: ${item.similar.map((s) => `${s.title.replace(/"/g, "&quot;")} (${s.percentDifferent}% differs)`).join(", ")}">≈ ${(100 - item.similar[0].percentDifferent).toFixed(1)}%</span>`)
+            if (!archiveView && item.duplicates) badge.insertAdjacentHTML("beforeend", `<span class="badge single" title="Current image is byte-identical to: ${item.duplicates.map((d) => d.title.replace(/"/g, "&quot;")).join(", ")}">same ×${item.duplicates.length + 1}</span>`)
+            if (!archiveView) badge.insertAdjacentHTML("beforeend", item.review?.status === "approved" ? '<span class="badge identical">approved</span>' : '<span class="badge single">unreviewed capture</span>')
+            btn.append(label, badge)
             btn.setAttribute("aria-current", item.id === activeId ? "true" : "false")
             btn.addEventListener("click", () => select(item.id))
             li.appendChild(btn)
             ul.appendChild(li)
           }
-          section.appendChild(h2)
-          section.appendChild(ul)
-          topicNavs.appendChild(section)
+          parent.appendChild(ul)
         }
 
-        document.getElementById("singles-nav").hidden = singles.length === 0
+        const singlesNav = document.getElementById("singles-nav")
+        singlesNav.hidden = singles.length === 0
+        singlesNav.open = navFiltered || expandedSections.get("singles") || false
 
         for (const item of singles) {
           const li = document.createElement("li")
@@ -419,22 +914,68 @@
           li.appendChild(btn)
           singlesList.appendChild(li)
         }
+        renderDiffBrowser()
       }
 
-      function panel(label, src, alt) {
+      // Clicking a screenshot toggles the actual-size view, which keeps the
+      // boxes; the header's raw PNG link opens the untouched file.
+      function panel(label, src, alt, item = null) {
         const safeAlt = alt.replaceAll('"', "&quot;")
         return `
           <figure class="panel">
-            <header>${label}</header>
-            <a href="${src}" target="_blank" rel="noopener noreferrer">
+            <header>${label}<a class="raw-link" href="${src}" target="_blank" rel="noopener noreferrer">raw PNG</a></header>
+            <div class="shot" data-toggle-actual>
               <img src="${src}" alt="${safeAlt}" loading="lazy"
                 onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'img-error',textContent:'Failed to load: ${src}'}))" />
-            </a>
+              ${regionsHtml(item)}
+            </div>
           </figure>
         `
       }
 
-      function reportHtml(item, pixel = null) {
+      function sliderHtml(item) {
+        const beforeSrc = shotSrc(item.before)
+        const afterSrc = shotSrc(item.after)
+        return `
+          <figure class="panel">
+            <header>${item.baselineLabel || "Before"} (left of the line) / ${archiveView ? "After" : "Current"} (right)</header>
+            <div class="shot slider" id="slider">
+              <img src="${beforeSrc}" alt="${item.title} before" />
+              <img class="slider-after" src="${afterSrc}" alt="${item.title} after" />
+              ${regionsHtml(item)}
+            </div>
+          </figure>
+          <input class="slider-range" id="slider-pos" type="range" min="0" max="100" value="50" aria-label="Slider position" />
+        `
+      }
+
+      function viewHtml(item) {
+        const mode = viewMode === "slider" && item.diff?.dimensionMismatch ? "side" : viewMode
+        if (mode === "slider") return sliderHtml(item)
+        return `
+          <div class="compare${mode === "actual" ? " actual" : ""}">
+            ${panel(item.baselineLabel || "Before", shotSrc(item.before), `${item.title} before`, item)}
+            ${panel(archiveView ? "After" : "Current", shotSrc(item.after), `${item.title} after`, item)}
+          </div>
+        `
+      }
+
+      function viewControlsHtml(item) {
+        const option = (value, label, disabled = false) => `
+          <label><input type="radio" name="view-mode" value="${value}" ${viewMode === value ? "checked" : ""} ${disabled ? "disabled" : ""} /> ${label}</label>`
+        return `
+          <div class="controls">
+            ${option("side", "Side by side")}
+            ${option("slider", "Slider", Boolean(item.diff?.dimensionMismatch))}
+            ${option("actual", "Actual size")}
+            ${hasRegions(item) ? `<label><input type="checkbox" id="show-regions" ${showRegions ? "checked" : ""} /> Boxes</label>` : ""}
+            ${hasRegions(item) ? '<label><input type="checkbox" id="diff-only" /> Diff only (hide unchanged pixels)</label>' : ""}
+            ${hasRegions(item) ? '<label><input type="checkbox" id="diff-overlay" checked /> Tint changed pixels</label>' : ""}
+          </div>
+        `
+      }
+
+      function reportHtml(item) {
         if (item.kind !== "pair") return ""
 
         if (item.byteIdentical) {
@@ -450,56 +991,57 @@
           `
         }
 
-        if (!pixel || pixel.pending) {
+        const diff = item.diff || { error: "manifest has no pixel diff; rerun yarn screenshots:view" }
+        const bytes = `<dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>`
+
+        if (diff.error) {
           return `
-            <div class="report warn" id="diff-report">
-              <strong>Comparing pixels…</strong>
-              <dl>
-                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-              </dl>
+            <div class="report warn">
+              <strong>Couldn't compare pixels</strong>
+              <dl>${bytes}<dt>Reason</dt><dd>${diff.error}</dd></dl>
             </div>
           `
         }
 
-        if (pixel.dimensionMismatch) {
+        if (diff.dimensionMismatch) {
           return `
             <div class="report diff">
               <strong>Different dimensions</strong>
               <dl>
-                <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-                <dt>Before</dt><dd>${pixel.beforeWidth}×${pixel.beforeHeight}</dd>
-                <dt>After</dt><dd>${pixel.afterWidth}×${pixel.afterHeight}</dd>
+                ${bytes}
+                <dt>Before</dt><dd>${diff.beforeWidth}×${diff.beforeHeight}</dd>
+                <dt>After</dt><dd>${diff.afterWidth}×${diff.afterHeight}</dd>
               </dl>
             </div>
           `
         }
 
-        if (pixel.pixelIdentical) {
+        if (diff.pixelIdentical) {
           return `
             <div class="report identical">
               <strong>Pixel identical (bytes differ)</strong>
               <dl>
                 <dt>Bytes</dt><dd>Different PNG encoding (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-                <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
-                <dt>Pixels</dt><dd>All channels match within threshold ${PIXEL_THRESHOLD}</dd>
+                <dt>Dimensions</dt><dd>${diff.width}×${diff.height}</dd>
+                <dt>Pixels</dt><dd>No perceptual differences (${compareLabel()})</dd>
               </dl>
             </div>
           `
         }
 
+        const regions = diff.regions
+          .map((r) => `<li>${r.width}×${r.height} at (${r.x}, ${r.y}), ${r.changedPixels.toLocaleString()} px changed</li>`)
+          .join("")
         return `
           <div class="report diff">
-            <strong>Visual diff detected</strong>
+            <strong>Visual diff detected: ${diff.regions.length} changed region${diff.regions.length === 1 ? "" : "s"}</strong>
             <dl>
-              <dt>Bytes</dt><dd>Different (${formatBytes(item.beforeSize)} vs ${formatBytes(item.afterSize)})</dd>
-              <dt>Dimensions</dt><dd>${pixel.width}×${pixel.height}</dd>
-              <dt>Changed pixels</dt><dd>${pixel.changedPixels.toLocaleString()} (${pixel.changedPercent}%)</dd>
-              <dt>Threshold</dt><dd>±${PIXEL_THRESHOLD} per RGBA channel</dd>
+              ${bytes}
+              <dt>Dimensions</dt><dd>${diff.width}×${diff.height}</dd>
+              <dt>Changed pixels</dt><dd>${diff.changedPixels.toLocaleString()} (${diff.changedPercent}%)</dd>
+              <dt>Comparison</dt><dd>${compareLabel()}</dd>
             </dl>
-          </div>
-          <div class="controls">
-            <label><input type="checkbox" id="diff-only" /> Diff only (hide unchanged pixels)</label>
-            <label><input type="checkbox" id="diff-overlay" checked /> Tint changed pixels on before/after</label>
+            <ol class="region-list">${regions}</ol>
           </div>
         `
       }
@@ -521,20 +1063,21 @@
         return ctx.getImageData(0, 0, canvas.width, canvas.height)
       }
 
-      function pixelDiff(beforeData, afterData, threshold) {
+      function pixelDiff(beforeData, afterData) {
         const { width, height, data: a } = beforeData
         const b = afterData.data
         const diff = new Uint8ClampedArray(a.length)
         let changedPixels = 0
 
+        // diffMask: unchanged pixels stay transparent, counted differences are
+        // painted pure red (ignored anti-aliased pixels yellow).
+        const mask = new Uint8ClampedArray(a.length)
+        pixelmatch(a, b, mask, width, height, { ...compareOptions, diffMask: true, diffColor: [255, 0, 0], aaColor: [255, 255, 0] })
+
         for (let y = 0; y < height; y++) {
           for (let x = 0; x < width; x++) {
             const i = (y * width + x) * 4
-            const dr = Math.abs(a[i] - b[i])
-            const dg = Math.abs(a[i + 1] - b[i + 1])
-            const db = Math.abs(a[i + 2] - b[i + 2])
-            const da = Math.abs(a[i + 3] - b[i + 3])
-            const changed = dr > threshold || dg > threshold || db > threshold || da > threshold
+            const changed = mask[i + 3] !== 0 && mask[i + 1] === 0
 
             if (changed) {
               changedPixels++
@@ -584,63 +1127,61 @@
 
       // IMPORTANT: never assign canvas via innerHTML/outerHTML — that drops
       // putImageData pixels and leaves a blank canvas (broke pairs 05–08).
-      function mountCanvas(container, imageData, label) {
+      function mountCanvas(container, imageData, label, item) {
         container.replaceChildren()
         const figure = document.createElement("figure")
         figure.className = "panel"
         const header = document.createElement("header")
         header.textContent = label
+        const shot = document.createElement("div")
+        shot.className = "shot"
         const canvas = document.createElement("canvas")
         canvas.width = imageData.width
         canvas.height = imageData.height
         // Keep CSS from collapsing the canvas before layout.
         canvas.style.aspectRatio = `${imageData.width} / ${imageData.height}`
         canvas.getContext("2d").putImageData(imageData, 0, 0)
-        figure.append(header, canvas)
+        // Region boxes are static markup, so appending them after the canvas
+        // is safe (the warning above is about the canvas itself).
+        shot.append(canvas)
+        shot.insertAdjacentHTML("beforeend", regionsHtml(item))
+        figure.append(header, shot)
         container.appendChild(figure)
         return canvas
       }
 
-      async function comparePair(item) {
-        if (item.byteIdentical) {
-          return { pending: false, byteIdentical: true, pixelIdentical: true }
+      // Caches the promise, so revisiting a pair mid-load reuses it.
+      function comparePair(item) {
+        const key = `${item.before}\0${item.after}`
+        if (!pixelCache.has(key)) {
+          const promise = readPair(item).catch((error) => {
+            if (pixelCache.get(key) === promise) pixelCache.delete(key)
+            throw error
+          })
+          pixelCache.set(key, promise)
+          if (pixelCache.size > 3) pixelCache.delete(pixelCache.keys().next().value)
         }
+        return pixelCache.get(key)
+      }
 
-        if (pixelCache.has(item.id)) return pixelCache.get(item.id)
-
-        const pending = { pending: true }
-        pixelCache.set(item.id, pending)
-
-        const beforeUrl = shotSrc(item.before)
-        const afterUrl = shotSrc(item.after)
-        const [beforeImg, afterImg] = await Promise.all([loadImage(beforeUrl), loadImage(afterUrl)])
+      async function readPair(item) {
+        const [beforeImg, afterImg] = await Promise.all([loadImage(shotSrc(item.before)), loadImage(shotSrc(item.after))])
 
         if (beforeImg.naturalWidth !== afterImg.naturalWidth || beforeImg.naturalHeight !== afterImg.naturalHeight) {
-          const result = {
-            pending: false,
-            dimensionMismatch: true,
-            beforeWidth: beforeImg.naturalWidth,
-            beforeHeight: beforeImg.naturalHeight,
-            afterWidth: afterImg.naturalWidth,
-            afterHeight: afterImg.naturalHeight
-          }
-          pixelCache.set(item.id, result)
-          return result
+          return { dimensionMismatch: true }
         }
 
+        await loadPixelmatch()
         const beforeData = readPixels(beforeImg)
         const afterData = readPixels(afterImg)
-        const result = {
-          pending: false,
-          ...pixelDiff(beforeData, afterData, PIXEL_THRESHOLD),
+        return {
+          ...pixelDiff(beforeData, afterData),
           beforeData,
           afterData
         }
-        pixelCache.set(item.id, result)
-        return result
       }
 
-      function wireDiffControls(pixel) {
+      function wireDiffControls(pixel, item) {
         const diffOnly = document.getElementById("diff-only")
         const diffOverlay = document.getElementById("diff-overlay")
         const diffHost = document.getElementById("diff-canvas-host")
@@ -662,19 +1203,21 @@
           }
 
           if (diffHost) {
-            mountCanvas(diffHost, diffImage, `Diff map (${pixel.changedPercent}% changed)`)
+            mountCanvas(diffHost, diffImage, `Diff map (${pixel.changedPercent}% changed)`, item)
           }
 
           if (beforeHost && afterHost) {
             mountCanvas(
               beforeHost,
               overlayDiff(pixel.beforeData, pixel.imageData, showOverlay),
-              "Before (highlighted)"
+              `${item.baselineLabel || "Before"} (tinted)`,
+              item
             )
             mountCanvas(
               afterHost,
               overlayDiff(pixel.afterData, pixel.imageData, showOverlay),
-              "After (highlighted)"
+              `${archiveView ? "After" : "Current"} (tinted)`,
+              item
             )
           }
         }
@@ -684,19 +1227,124 @@
         redraw()
       }
 
+      function wireViewControls(item) {
+        const viewHost = document.getElementById("view-host")
+        const stage = document.getElementById("stage")
+
+        function wireSlider() {
+          document.getElementById("slider-pos")?.addEventListener("input", (event) => {
+            document.getElementById("slider").style.setProperty("--pos", `${event.target.value}%`)
+          })
+        }
+
+        function setMode(mode) {
+          viewMode = mode
+          viewHost.innerHTML = viewHtml(item)
+          for (const radio of document.querySelectorAll('input[name="view-mode"]')) radio.checked = radio.value === mode
+          wireSlider()
+        }
+
+        for (const radio of document.querySelectorAll('input[name="view-mode"]')) {
+          radio.addEventListener("change", () => setMode(radio.value))
+        }
+        document.getElementById("show-regions")?.addEventListener("change", (event) => {
+          showRegions = event.target.checked
+          stage.classList.toggle("hide-regions", !showRegions)
+        })
+        viewHost.addEventListener("click", (event) => {
+          if (!event.target.closest("[data-toggle-actual]")) return
+          setMode(viewMode === "actual" ? "side" : "actual")
+        })
+        wireSlider()
+      }
+
       async function renderStage(item) {
+        const renderVersion = ++stageRenderVersion
+        renderReview(item)
+        const original = item
+        const tabs = document.getElementById("baseline-tabs")
+        tabs.replaceChildren()
+        tabs.hidden = archiveView
+        let baseline = baselineModes.get(item.id) || "previous"
+        if (!archiveView) {
+          for (const mode of ["previous", "legacy"]) {
+            const button = document.createElement("button")
+            button.type = "button"
+            button.role = "tab"
+            button.textContent = mode === "previous" ? "Previous" : "Legacy"
+            button.setAttribute("aria-selected", String(mode === baseline))
+            button.tabIndex = mode === baseline ? 0 : -1
+            const change = () => {
+              baselineModes.set(original.id, mode)
+              renderStage(original)
+              tabs.querySelector('[aria-selected="true"]').focus()
+            }
+            button.addEventListener("click", change)
+            button.addEventListener("keydown", (event) => {
+              if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
+                event.preventDefault()
+                event.stopPropagation()
+                const next = event.key === "Home" ? "previous" : event.key === "End" ? "legacy" : mode === "previous" ? "legacy" : "previous"
+                baselineModes.set(original.id, next)
+                renderStage(original)
+                tabs.querySelector('[aria-selected="true"]').focus()
+              }
+            })
+            tabs.append(button)
+          }
+          if (baseline === "legacy" && item.legacyComparison) {
+            item = { ...item, ...item.legacyComparison, kind: "pair", baselineLabel: "Legacy" }
+          } else if (baseline === "legacy") {
+            item = { ...item, kind: "single", image: item.now.image }
+          } else {
+            item = { ...item, baselineLabel: "Previous" }
+          }
+        }
         const stage = document.getElementById("stage")
         document.getElementById("title").textContent = item.title
+        const info = document.getElementById("capture-info")
+        info.replaceChildren()
+        if (item.now) {
+          const describe = (version) => `${version.capturedAt} · ${version.commit.slice(0, 8)}${version.dirty ? " + edits" : ""}`
+          const before = item.versions.at(-2)
+          info.append(`${baseline === "legacy" && item.legacy?.image ? `Legacy: ${item.legacy.ref.slice(0, 8)} · ` : before ? `Previous: ${describe(before)} · ` : ""}Current: ${describe(item.now)}${item.stale ? " · Source changed since capture (advisory)" : ""} · `)
+          const link = document.createElement("a")
+          link.href = `?view=archive&screen=${encodeURIComponent(item.screenId)}`
+          link.textContent = `History (${item.versions.length})`
+          info.append(link)
+          const linkTo = (target, suffix = "") => {
+            const same = document.createElement("a")
+            same.href = "#"
+            same.textContent = target.title
+            same.addEventListener("click", (event) => {
+              event.preventDefault()
+              select(target.id)
+            })
+            info.append(same, suffix)
+          }
+          for (const [label, others, suffixOf] of [
+            ["identical to", item.duplicates, () => ""],
+            ["looks like", item.similar, (other) => ` (${other.percentDifferent}% differs)`]
+          ]) {
+            if (!others) continue
+            info.append(` · Current image ${label}: `)
+            others.forEach((other, index) => {
+              if (index) info.append(", ")
+              linkTo(other, suffixOf(other))
+            })
+          }
+          const capture = item.versions.at(-1)?.capture
+          if (capture?.pageUrl) info.append(` · Page: ${capture.pageUrl}`)
+        }
+        stage.classList.toggle("hide-regions", !showRegions)
 
         if (item.kind === "pair") {
-          // Always keep the real <img> panels visible. Diff highlighting is
-          // an extra row — never replace the photos with canvases.
+          // Always keep the real <img> panels visible. The tinted canvases and
+          // diff map are an extra row — never replace the photos with canvases.
           stage.innerHTML = `
-            <div id="diff-report-wrap">${reportHtml(item, { pending: !item.byteIdentical })}</div>
-            <div class="compare">
-              ${panel("Before", shotSrc(item.before), `${item.title} before`)}
-              ${panel("After", shotSrc(item.after), `${item.title} after`)}
-            </div>
+            <div id="diff-report-wrap">${reportHtml(item)}</div>
+            ${viewControlsHtml(item)}
+            <div id="view-host">${viewHtml(item)}</div>
             <div class="compare" id="highlight-row" hidden>
               <div id="before-canvas-host"></div>
               <div id="after-canvas-host"></div>
@@ -704,30 +1352,49 @@
             <div class="compare diff-row" id="diff-row" hidden>
               <div id="diff-canvas-host"></div>
             </div>
-            <p class="hint">Magenta = changed pixels (±${PIXEL_THRESHOLD} per channel). Arrow keys: previous / next set.</p>
+            <p class="hint">Boxes mark clusters of changed pixels (${compareLabel()}); they locate changes but don't replace looking at both images. Click a screenshot for actual size. Arrow keys: previous / next set.</p>
           `
 
-          renderNav(document.getElementById("search").value)
+          wireViewControls(item)
+          if (!hasRegions(item)) return
 
-          if (item.byteIdentical) return
-
-          const pixel = await comparePair(item)
-          document.getElementById("diff-report-wrap").innerHTML = reportHtml(item, pixel)
-          renderNav(document.getElementById("search").value)
-
-          if (pixel.dimensionMismatch || pixel.pixelIdentical) return
+          let pixel
+          try {
+            pixel = await comparePair(item)
+          } catch {
+            if (renderVersion === stageRenderVersion) {
+              document.getElementById("diff-report-wrap").textContent = "Could not load comparison images. Restore the files and select this screen again."
+            }
+            return
+          }
+          if (activeId !== item.id || renderVersion !== stageRenderVersion || pixel.dimensionMismatch || pixel.pixelIdentical) return
 
           document.getElementById("highlight-row").hidden = false
           document.getElementById("diff-row").hidden = false
-          wireDiffControls(pixel)
+          wireDiffControls(pixel, item)
           return
         }
 
+        let baselineMessage
+        if (["missing", "corrupt"].includes(item.captureStatus)) {
+          baselineMessage = "The Current screenshot file is missing or corrupt. Restore the original bytes to compare recorded captures."
+        } else if (baseline === "legacy") {
+          baselineMessage = item.legacy?.absent
+            ? "This screen did not exist on the recorded legacy baseline."
+            : item.legacy?.image
+              ? "The recorded Legacy screenshot file is missing or corrupt. Restore the original image."
+              : "Legacy capture not recorded yet."
+        } else {
+          baselineMessage = item.versions?.at(-2)
+            ? "The recorded Previous screenshot file is missing or corrupt. Restore the original image."
+            : "No previous code version has been captured yet."
+        }
         stage.innerHTML = `
-          <div class="compare single">
-            ${panel(item.note || "Image", shotSrc(item.image), item.title)}
+          <div class="compare${archiveView ? " single" : ""}">
+            ${archiveView ? "" : `<figure class="panel"><header>${baseline === "legacy" ? "Legacy" : "Previous"}</header><div class="empty">${baselineMessage}</div></figure>`}
+            ${panel(archiveView ? item.note || "Image" : "Current", shotSrc(item.image), item.title)}
           </div>
-          <p class="hint">Single image — no pair to compare. Arrow keys: previous / next set.</p>
+          <p class="hint">${archiveView ? "Single image — no pair to compare." : ["missing", "corrupt"].includes(item.captureStatus) || (baseline === "legacy" ? item.legacy?.image : item.versions?.at(-2)) ? "Restore missing screenshot files to compare the recorded captures." : "The first capture establishes this screen’s history. Recording another capture will create a Previous / Current comparison."} Arrow keys: previous / next set.</p>
         `
       }
 
@@ -735,23 +1402,22 @@
         const item = items.find((entry) => entry.id === id)
         if (!item) return
         activeId = id
+        if (diffMode && !archiveView) baselineModes.set(id, "legacy")
         renderNav(document.getElementById("search").value)
         renderStage(item)
       }
 
       function selectRelative(delta) {
-        const visible = items.filter((item) => {
-          const q = document.getElementById("search").value.trim().toLowerCase()
-          return !q || item.title.toLowerCase().includes(q) || item.id.toLowerCase().includes(q)
-        })
+        const visible = visibleItems()
         if (!visible.length) return
         const idx = Math.max(0, visible.findIndex((item) => item.id === activeId))
         const next = visible[(idx + delta + visible.length) % visible.length]
         select(next.id)
       }
 
-      async function init() {
-        const res = await fetch(manifestUrl)
+      async function init(preserveSelection = false) {
+        const selectedId = preserveSelection ? activeId : null
+        const res = await fetch(manifestUrl, { cache: "no-store" })
         if (!res.ok) {
           document.getElementById("subtitle").textContent = "Manifest missing — run: yarn screenshots:view"
           document.getElementById("stage").innerHTML =
@@ -760,25 +1426,66 @@
         }
 
         manifest = await res.json()
+        if (manifest.compare) compareOptions = manifest.compare
+        const collection = archiveView ? manifest : manifest.current || { groups: [], singles: [] }
         items = [
-          ...manifest.groups.map((group) => ({ kind: "pair", ...group })),
-          ...manifest.singles.map((single) => ({ kind: "single", ...single }))
-        ]
+          ...collection.groups.map((group) => ({ kind: "pair", ...group })),
+          ...collection.singles.map((single) => ({ kind: "single", ...single })),
+          ...(archiveView ? (manifest.history || []).map((single) => ({ kind: "single", ...single })) : [])
+        ].filter((item) => !archiveView || !historyScreen || item.screenId === historyScreen)
+
+        const archiveLink = document.getElementById("archive-link")
+        if (archiveView) {
+          archiveLink.href = "?"
+          archiveLink.textContent = "Current screens"
+        }
 
         const summary = manifest.summary || {}
         document.getElementById("subtitle").textContent =
-          `${summary.pairs || manifest.groups.length} pairs (${summary.byteIdentical || 0} byte-identical, ${summary.byteDifferent || 0} different), ${manifest.singles.length} singles — ${manifest.shotDir}/`
+          archiveView
+            ? `${historyScreen ? "Screen history" : "Archive — older captures; legacy folders have no recorded source version"} · ${items.length} entries`
+            : `${manifest.current?.branch || "Current branch"} · ${items.length} screens · Left: Previous or Legacy · Right: Current`
 
-        renderNav()
-        if (items.length) select(items[0].id)
+        document.getElementById("review-controls").hidden = archiveView
+        renderNav(document.getElementById("search").value)
+        if (items.length) select(items.some((item) => item.id === selectedId) ? selectedId : items[0].id)
+        else {
+          document.getElementById("stage").textContent = "No screens recorded for this branch yet. Record a capture with yarn screenshots:record; existing captures remain in Archive."
+        }
+        await refreshReviews()
       }
 
       document.getElementById("search").addEventListener("input", (event) => {
         renderNav(event.target.value)
       })
 
+      document.getElementById("recapture-current").addEventListener("click", recaptureCurrent)
+      document.getElementById("approve-current").addEventListener("click", approveCurrent)
+      document.getElementById("refresh-reviews").addEventListener("click", refreshReviews)
+      document.getElementById("review-filter").addEventListener("change", () => {
+        renderNav(document.getElementById("search").value)
+        const current = items.find((item) => item.id === activeId)
+        if (current && matchesReview(current)) return
+        const next = items.find(matchesReview)
+        if (next) select(next.id)
+        else {
+          activeId = null
+          ++stageRenderVersion
+          document.getElementById("stage").textContent = "No screens match this filter."
+          document.getElementById("baseline-tabs").hidden = true
+          renderReview(null)
+        }
+      })
+      document.getElementById("duplicate-filter").addEventListener("change", () => renderNav(document.getElementById("search").value))
+      document.getElementById("diff-mode").addEventListener("change", (event) => setDiffMode(event.target.checked))
+      document.getElementById("diff-show-approved").addEventListener("change", () => renderNav(document.getElementById("search").value))
+      document.getElementById("diff-prev").addEventListener("click", () => selectRelative(-1))
+      document.getElementById("diff-next").addEventListener("click", () => selectRelative(1))
+      document.getElementById("diff-approve-next").addEventListener("click", approveAndNext)
+      window.addEventListener("focus", refreshReviews)
+
       window.addEventListener("keydown", (event) => {
-        if (event.target.matches("input, textarea")) return
+        if (event.target.matches("textarea, select, input:not([type=checkbox])")) return
         if (event.key === "ArrowRight" || event.key === "ArrowDown") {
           event.preventDefault()
           selectRelative(1)
@@ -789,7 +1496,7 @@
         }
       })
 
-      init()
+      init().then(resumeCapture)
     </script>
   </body>
 </html>

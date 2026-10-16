@@ -1,15 +1,9 @@
 /**
- * Vanilla port of the vendored `ng-json-explorer` Angular directive
- * (app/javascript/vendor/ng-json-explorer) — same markup, classnames (styled by
- * angular-json-explorer.css, loaded via core.html.erb) and collapse/expand
- * interaction, without the Angular scope/watch machinery. Only caller today is
- * the debug-matches modal; query_explain's modal still uses the Angular
- * directive directly.
+ * JSON explorer with the existing markup, class names, and
+ * collapse/expand interaction.
  */
 
-export function escapeHtml(value) {
-  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-}
+import { escapeHtml } from "utils/html"
 
 function isRaw(value) {
   return (
@@ -31,15 +25,18 @@ function parseRaw(key, value) {
 
 function parseChildren(key, value, collapser, ellipsis, contents, open, close) {
   let html = key
-    ? `<span class="prop"><a href="#" class="collapser">${collapser}</a>${escapeHtml(key)}</span>: ${open}`
-    : `<span class="prop"><a href="#" class="collapser">${collapser}</a></span> ${open}`
+    ? `<span class="prop"><button type="button" class="collapser">${collapser}</button>${escapeHtml(key)}</span>: ${open}`
+    : `<span class="prop"><button type="button" class="collapser">${collapser}</button></span> ${open}`
   html += `<span class="ellipsis ${ellipsis}">...</span>`
   html += `<ul class="${open === "[" ? "array" : "object"} collapsible ${contents}">`
 
   const entries = open === "[" ? value.map((v) => [null, v]) : Object.entries(value)
-  const items = entries.map(
-    ([k, v]) => `<li>${parseValue(k, v, collapser, ellipsis, contents)},</li>`
-  )
+  const items = entries
+    .map(([k, v]) => {
+      const parsed = parseValue(k, v, collapser, ellipsis, contents)
+      return parsed ? `<li>${parsed},</li>` : ""
+    })
+    .filter(Boolean)
   html += items.join("").replace(/,<\/li>$/, "</li>")
   html += `</ul>${close}`
   return html
@@ -55,19 +52,18 @@ function parseValue(key, value, collapser, ellipsis, contents) {
 }
 
 function wireCollapsers(root) {
-  root.querySelectorAll("a.collapser").forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault()
-      const ellipsisEl = link.parentElement.nextElementSibling
+  root.querySelectorAll(".collapser").forEach((toggle) => {
+    toggle.addEventListener("click", () => {
+      const ellipsisEl = toggle.parentElement.nextElementSibling
       const listEl = ellipsisEl.nextElementSibling
-      if (link.innerHTML === "+") {
+      if (toggle.innerHTML === "+") {
         ellipsisEl.classList.add("hidden")
         listEl.classList.remove("hidden")
-        link.innerHTML = "-"
+        toggle.innerHTML = "-"
       } else {
         ellipsisEl.classList.remove("hidden")
         listEl.classList.add("hidden")
-        link.innerHTML = "+"
+        toggle.innerHTML = "+"
       }
     })
   })
@@ -82,7 +78,7 @@ export function renderJsonExplorer(container, jsonString, { collapsed = false } 
   let data
   try {
     data = JSON.parse(jsonString)
-  } catch (e) {
+  } catch {
     data = { error: "invalid json" }
   }
 
@@ -92,13 +88,16 @@ export function renderJsonExplorer(container, jsonString, { collapsed = false } 
 
   const isArray = Array.isArray(data)
   const entries = isArray ? data.map((v) => [null, v]) : Object.entries(data)
-  const items = entries.map(
-    ([k, v]) => `<li>${parseValue(k, v, collapser, ellipsis, contents)},</li>`
-  )
+  const items = entries
+    .map(([k, v]) => {
+      const parsed = parseValue(k, v, collapser, ellipsis, contents)
+      return parsed ? `<li>${parsed},</li>` : ""
+    })
+    .filter(Boolean)
   const inner = items.join("").replace(/,<\/li>$/, "</li>")
 
   const html = isArray ? `[<ul class="array">${inner}</ul>]` : `{<ul class="object">${inner}</ul>}`
 
-  container.innerHTML = `<div class="angular-json-explorer">${html}</div>`
+  container.innerHTML = `<div class="json-explorer">${html}</div>`
   wireCollapsers(container)
 }

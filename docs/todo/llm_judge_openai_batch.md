@@ -1,5 +1,8 @@
 # LLM-as-Judge via OpenAI Batch API — implementation plan
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > **Deferred — not scheduled.** ADR 0001 (`docs/adr/0001-llm-judge-provider-architecture.md`) D6
 > defers this work and records the trigger for starting it (§5.4). The seam it depends on is built
 > first and is held to a batch-readiness contract (ADR §3), so this plan stays additive.

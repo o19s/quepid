@@ -1,19 +1,15 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
+import { CORE_EVENTS } from "utils/core_events"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
+import { deleteJson, postJson } from "api/json"
 import { apiFetch } from "api/fetch"
-import { getOrCreateBsModal, showBsModal } from "utils/bs_modal"
-import {
-  deactivateListItem,
-  parseTeamsJson,
-  partitionTeams,
-  unsharedTeams
-} from "utils/share_case_teams"
-import { showStatusMessage } from "utils/status_message"
+import { deactivateListItem } from "utils/share_case_teams"
+import { caseNameFromHeader } from "utils/case_header"
+import { isSameId } from "utils/record_identity"
 
 /**
  * Share / unshare from the core case toolbar — list UI, API stay-on-page.
- * Dual-role trigger/modal-root pattern shared via ModalTriggerControllerBase.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "alert",
     "loading",
@@ -33,40 +29,35 @@ export default class extends ModalTriggerControllerBase {
   ]
 
   static values = {
-    teamsUrl: String,
+    catalogUrlTemplate: String,
     teamCasesUrlTemplate: String,
     teamCaseUrlTemplate: String
   }
 
   connect() {
-    if (!this.isModalRoot) return
-
     this.selectedShareTeamId = null
     this.selectedShareTeamName = null
     this.selectedSharedTeamId = null
     this.selectedSharedTeamName = null
     this.currentCaseId = null
-    this.allTeams = []
-    this.sharedTeams = []
-    this.boundOpenFromEvent = (e) => this.openFromExternal(e)
-
-    document.addEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
+    this.teamRows = []
+    this.sharedRows = []
+    // openToken identifies the current opening; null while the modal is closed.
+    this.onHide = () => {
+      this.openToken = null
+    }
+    this.element.addEventListener("hide.bs.modal", this.onHide)
   }
 
   disconnect() {
-    if (!this.isModalRoot) return
-
-    document.removeEventListener("quepid:open-share-case-core", this.boundOpenFromEvent)
+    this.onHide()
+    this.element.removeEventListener("hide.bs.modal", this.onHide)
   }
 
-  get modalElementId() {
-    return "shareCaseModal"
-  }
-
-  async openAsRoot(event) {
-    const btn = event.currentTarget || event.target
-    const caseId = btn?.dataset?.shareCaseCoreIdValue
-    const caseName = btn?.dataset?.shareCaseCoreNameValue
+  async openFor(btn) {
+    this.openToken = Symbol()
+    const caseId = this.triggerValue(btn, "id")
+    const caseName = caseNameFromHeader()
 
     if (this.hasCaseIdTarget) this.caseIdTarget.value = caseId || ""
     if (this.hasUnshareCaseIdTarget) this.unshareCaseIdTarget.value = caseId || ""
@@ -78,32 +69,14 @@ export default class extends ModalTriggerControllerBase {
     this.clearSelections()
     this.clearAlert()
 
-    if (this.hasTeamsUrlValue && this.teamsUrlValue) {
-      await this.loadTeamsFromApi(this.currentCaseId)
-    } else {
-      const sharedTeamsJson = btn?.dataset?.shareCaseCoreSharedTeamsJson
-      const allTeamsJson = btn?.dataset?.shareCaseCoreAllTeamsJson
-      this.applyTeamLists(
-        parseTeamsJson(allTeamsJson),
-        parseTeamsJson(sharedTeamsJson)
-      )
-    }
+    await this.loadTeams(this.currentCaseId)
   }
 
-  openFromExternal(event) {
-    const detail = event.detail || {}
-    if (this.element) {
-      showBsModal(getOrCreateBsModal(this.element))
-    }
-
-    return this.open({
-      preventDefault: () => {},
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: String(detail.caseNo ?? ""),
-          shareCaseCoreNameValue: detail.caseName ?? ""
-        }
-      }
+  // Called through the judgements-core outlet rather than a toolbar link, so
+  // there is no real trigger. Hand Bootstrap a stand-in carrying the case id.
+  openFromExternal(caseNo) {
+    this.show({
+      dataset: { shareCaseCoreIdValue: String(caseNo ?? "") }
     })
   }
 
@@ -166,21 +139,12 @@ export default class extends ModalTriggerControllerBase {
     }
   }
 
-  renderShareableTeams(teams) {
-    if (!this.hasShareableListTarget) return
-
-    this.renderTeamList(this.shareableListTarget, teams, {
-      className: "list-group-item list-group-item-action",
-      onSelect: (e, team) => this.toggleShareSelect(e, team)
-    })
-  }
-
   toggleShareSelect(e, team) {
     if (this.hasShareableListTarget) {
       deactivateListItem(this.shareableListTarget, this.selectedShareTeamId)
     }
 
-    if (String(this.selectedShareTeamId) === String(team.id)) {
+    if (isSameId(this.selectedShareTeamId, team.id)) {
       this.clearShareSelection()
     } else {
       this.clearSharedSelection()
@@ -193,29 +157,16 @@ export default class extends ModalTriggerControllerBase {
     }
   }
 
-  renderSharedTeams(teams) {
-    if (!this.hasSharedListTarget) return
-
-    this.renderTeamList(this.sharedListTarget, teams, {
-      className: "list-group-item list-group-item-action list-group-item-success",
-      onSelect: (e, team) => this.toggleCoreSharedSelect(e, team)
-    })
-
-    this.updateUnshareFooter()
+  selectShareTeam(event) {
+    this.toggleShareSelect(event, this.teamFor(event.currentTarget))
   }
 
-  renderTeamList(target, teams, { className, onSelect }) {
-    target.innerHTML = ""
+  selectSharedTeam(event) {
+    this.toggleCoreSharedSelect(event, this.teamFor(event.currentTarget))
+  }
 
-    teams.forEach((team) => {
-      const item = document.createElement("button")
-      item.type = "button"
-      item.className = className
-      item.textContent = team.name || `Team ${team.id}`
-      item.dataset.teamId = team.id
-      item.addEventListener("click", (e) => onSelect(e, team))
-      target.appendChild(item)
-    })
+  teamFor(row) {
+    return { id: Number(row.dataset.teamId), name: row.textContent }
   }
 
   toggleCoreSharedSelect(e, team) {
@@ -223,7 +174,7 @@ export default class extends ModalTriggerControllerBase {
       deactivateListItem(this.sharedListTarget, this.selectedSharedTeamId)
     }
 
-    if (String(this.selectedSharedTeamId) === String(team.id)) {
+    if (isSameId(this.selectedSharedTeamId, team.id)) {
       this.clearSharedSelection()
     } else {
       this.clearShareSelection()
@@ -235,77 +186,71 @@ export default class extends ModalTriggerControllerBase {
     }
   }
 
-  applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams) {
-    const hasShareable = shareableTeams.length > 0
-    const hasShared = sharedTeams.length > 0
-    const hasNoTeams = allTeams.length === 0
-
-    if (this.hasEmptyShareableTarget) {
-      // A team that already has this case is not shareable again, but it
-      // still means the user has a team. Reserve this empty state for users
-      // with no teams at all.
-      this.emptyShareableTarget.classList.toggle("d-none", !hasNoTeams)
-    }
-    if (this.hasSharePickerTarget) {
-      this.sharePickerTarget.classList.toggle("d-none", !hasShareable)
-    }
-    if (this.hasSharedSectionTarget) {
-      this.sharedSectionTarget.classList.toggle("d-none", !hasShared)
-    }
-
+  refreshSections() {
+    const hasShareable = this.shareableListTarget.children.length > 0
+    const hasShared = this.sharedListTarget.children.length > 0
+    this.toggleVisible("emptyShareable", this.teamRows.length === 0)
+    this.toggleVisible("sharePicker", hasShareable)
+    this.toggleVisible("sharedSection", hasShared)
     if (!hasShareable) this.clearShareSelection()
     if (!hasShared) this.clearSharedSelection()
   }
 
-  rebuildShareableList(allTeams, sharedTeams) {
-    const shareableTeams = unsharedTeams(allTeams, sharedTeams)
-
-    this.renderShareableTeams(shareableTeams)
-    this.applyShareableAndSharedUi(shareableTeams, sharedTeams, allTeams)
-  }
-
-  async loadTeamsFromApi(caseId) {
+  async loadTeams(caseId) {
+    const token = Symbol()
+    this.catalogToken = token
+    const openToken = this.openToken
+    const current = () => token === this.catalogToken && openToken === this.openToken &&
+      isSameId(caseId, this.currentCaseId)
     this.setLoading(true)
     try {
-      const response = await apiFetch(this.teamsUrlValue, {
-        headers: { Accept: "application/json" }
-      })
-      if (!response.ok) {
-        throw new Error(`Failed to load teams (${response.status})`)
-      }
-      const data = await response.json()
-      // Bail if the case changed while this request was in flight (e.g. the
-      // modal was reopened for a different case) — an outdated response must
-      // not clobber the now-current case's share UI.
-      if (caseId !== this.currentCaseId) return
-      const teams = Array.isArray(data.teams) ? data.teams : []
-      const { allTeams, sharedTeams } = partitionTeams(teams, caseId)
-      this.applyTeamLists(allTeams, sharedTeams)
+      const url = this.catalogUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
+      const response = await apiFetch(url, { headers: { Accept: "text/html" } })
+      if (!response.ok || response.redirected) throw new Error("Unable to load teams")
+      const html = new DOMParser().parseFromString(await response.text(), "text/html")
+      const catalog = html.querySelector("[data-share-catalog]")
+      if (!catalog) throw new Error("Missing team catalog")
+      if (!current()) return
+      this.sharedRows = [...catalog.querySelector('[data-catalog-list="shared"]').children]
+      this.teamRows = [...catalog.querySelectorAll("[data-team-id]")].sort(
+        (a, b) => Number(a.dataset.teamOrder) - Number(b.dataset.teamOrder)
+      )
+      this.clearSelections()
+      this.renderTeamLists()
     } catch (error) {
-      if (caseId !== this.currentCaseId) return
+      if (!current()) return
       console.error("share-case-core: load teams failed", error)
       this.showAlert("Unable to load teams. Please try again.", "danger")
-      this.resetTeamListsForError()
+      this.teamRows = []
+      this.sharedRows = []
+      this.shareableListTarget.replaceChildren()
+      this.sharedListTarget.replaceChildren()
+      this.clearSelections()
+      for (const target of ["emptyShareable", "sharePicker", "sharedSection"]) {
+        this.toggleVisible(target, false)
+      }
     } finally {
-      if (caseId === this.currentCaseId) this.setLoading(false)
+      if (current()) this.setLoading(false)
     }
   }
 
-  // Same end state as applyTeamLists([], []) — empty picker/shared section,
-  // selections cleared — except the "no teams" placeholder must stay hidden
-  // here: this is a load failure, not a user with zero teams.
-  resetTeamListsForError() {
-    this.applyTeamLists([], [])
-    if (this.hasEmptyShareableTarget) {
-      this.emptyShareableTarget.classList.add("d-none")
+  renderTeamLists() {
+    const sharedIds = this.sharedRows.map((row) => row.dataset.teamId)
+    const shareable = this.teamRows.filter((row) => !sharedIds.includes(row.dataset.teamId))
+    for (const [target, rows, shared] of [
+      [this.shareableListTarget, shareable, false],
+      [this.sharedListTarget, this.sharedRows, true]
+    ]) {
+      target.replaceChildren(...rows.map((row) => {
+        const copy = row.cloneNode(true)
+        copy.classList.remove("active")
+        copy.classList.toggle("list-group-item-success", shared)
+        copy.dataset.action = `click->share-case-core#${shared ? "selectSharedTeam" : "selectShareTeam"}`
+        return copy
+      }))
     }
-  }
-
-  applyTeamLists(allTeams, sharedTeams) {
-    this.allTeams = allTeams
-    this.sharedTeams = sharedTeams
-    this.rebuildShareableList(allTeams, sharedTeams)
-    this.renderSharedTeams(sharedTeams)
+    this.refreshSections()
+    this.updateUnshareFooter()
   }
 
   async submitShare(event) {
@@ -319,36 +264,37 @@ export default class extends ModalTriggerControllerBase {
       (this.hasCaseIdTarget ? this.caseIdTarget.value : null)
     if (!teamId || !caseId) return
 
+    const submittedRow = this.shareableListTarget.querySelector(`[data-team-id="${teamId}"]`)
+    const openToken = this.openToken
+    const selectedName = this.selectedShareTeamName
     this.setSubmitting(true)
     this.clearAlert()
 
     try {
       const url = this.teamCasesUrlTemplateValue.replaceAll("__TEAM_ID__", teamId)
-      const response = await apiFetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ id: Number(caseId) })
-      })
+      await postJson(url, { id: Number(caseId) })
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || response.statusText)
+      const row = this.teamRows.find((item) => isSameId(item.dataset.teamId, teamId))
+      const team = row ? this.teamFor(row) : {
+        id: Number(teamId), name: selectedName || `Team ${teamId}`
       }
-
-      const team = this.allTeams.find((t) => String(t.id) === String(teamId)) || {
-        id: Number(teamId),
-        name: this.selectedShareTeamName || `Team ${teamId}`
+      if (openToken !== this.openToken) return this.finishLateMutation("added", caseId, team)
+      // Preserve append order without duplicating membership from a fresh catalog.
+      const sharedRow = row || submittedRow?.cloneNode(true)
+      if (!row && sharedRow) sharedRow.textContent = team.name
+      if (sharedRow && !this.sharedRows.some((item) => isSameId(item.dataset.teamId, teamId))) {
+        this.sharedRows = [...this.sharedRows, sharedRow]
       }
-      this.sharedTeams = [...this.sharedTeams, team]
       this.clearShareSelection()
-      this.applyTeamLists(this.allTeams, this.sharedTeams)
+      this.renderTeamLists()
       this.dispatchCaseTeamChanged("added", caseId, team)
       this.showAlert("Case shared with team successfully.", "success")
     } catch (error) {
+      if (openToken !== this.openToken) return
       console.error("share-case-core: share failed", error)
       this.showAlert(error.message || "Unable to share case with team.", "danger")
     } finally {
-      this.setSubmitting(false)
+      if (openToken === this.openToken) this.setSubmitting(false)
     }
   }
 
@@ -363,6 +309,8 @@ export default class extends ModalTriggerControllerBase {
       (this.hasUnshareCaseIdTarget ? this.unshareCaseIdTarget.value : null)
     if (!teamId || !caseId) return
 
+    const openToken = this.openToken
+    const selectedName = this.selectedSharedTeamName
     this.setSubmitting(true)
     this.clearAlert()
 
@@ -370,39 +318,37 @@ export default class extends ModalTriggerControllerBase {
       const url = this.teamCaseUrlTemplateValue
         .replaceAll("__TEAM_ID__", teamId)
         .replaceAll("__CASE_ID__", caseId)
-      const response = await apiFetch(url, {
-        method: "DELETE",
-        headers: { Accept: "application/json" }
-      })
+      await deleteJson(url)
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || response.statusText)
+      const row = this.sharedRows.find((item) => isSameId(item.dataset.teamId, teamId))
+      const team = row ? this.teamFor(row) : {
+        id: Number(teamId), name: selectedName || `Team ${teamId}`
       }
-
-      const team =
-        this.sharedTeams.find((t) => String(t.id) === String(teamId)) || {
-          id: Number(teamId),
-          name: this.selectedSharedTeamName || `Team ${teamId}`
-        }
-      this.sharedTeams = this.sharedTeams.filter(
-        (t) => String(t.id) !== String(teamId)
-      )
+      if (openToken !== this.openToken) return this.finishLateMutation("removed", caseId, team)
+      this.sharedRows = this.sharedRows.filter((item) => !isSameId(item.dataset.teamId, teamId))
       this.clearSharedSelection()
-      this.applyTeamLists(this.allTeams, this.sharedTeams)
+      this.renderTeamLists()
       this.dispatchCaseTeamChanged("removed", caseId, team)
       this.showAlert("Case unshared from team successfully.", "success")
     } catch (error) {
+      if (openToken !== this.openToken) return
       console.error("share-case-core: unshare failed", error)
       this.showAlert(error.message || "Unable to unshare case from team.", "danger")
     } finally {
-      this.setSubmitting(false)
+      if (openToken === this.openToken) this.setSubmitting(false)
     }
+  }
+
+  // A write that finished after its modal opening ended still happened: tell the rest of
+  // the page, and refresh if a newer opening may have read the catalog before the write.
+  async finishLateMutation(action, caseId, team) {
+    this.dispatchCaseTeamChanged(action, caseId, team)
+    if (this.openToken && isSameId(caseId, this.currentCaseId)) await this.loadTeams(caseId)
   }
 
   dispatchCaseTeamChanged(action, caseNo, team) {
     document.dispatchEvent(
-      new CustomEvent("quepid:case-team-changed", {
+      new CustomEvent(CORE_EVENTS.CASE_TEAM_CHANGED, {
         detail: {
           action,
           caseNo: Number(caseNo),
@@ -413,33 +359,12 @@ export default class extends ModalTriggerControllerBase {
   }
 
   setLoading(isLoading) {
-    if (this.hasLoadingTarget) {
-      this.loadingTarget.classList.toggle("d-none", !isLoading)
-    }
-    if (this.hasBodyContentTarget) {
-      this.bodyContentTarget.classList.toggle("d-none", isLoading)
-    }
+    super.setLoading(isLoading)
+    this.toggleVisible("bodyContent", !isLoading)
   }
 
   setSubmitting(isSubmitting) {
-    if (this.hasSubmitButtonTarget) {
-      this.submitButtonTarget.disabled =
-        isSubmitting || !this.selectedShareTeamId
-    }
-    if (this.hasUnshareButtonTarget) {
-      this.unshareButtonTarget.disabled =
-        isSubmitting || !this.selectedSharedTeamId
-    }
-  }
-
-  showAlert(message, variant) {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
-  }
-
-  clearAlert() {
-    if (!this.hasAlertTarget) return
-    this.alertTarget.textContent = ""
-    this.alertTarget.className = "alert d-none"
+    this.setButtonsDisabled(isSubmitting || !this.selectedShareTeamId, ["submitButton"])
+    this.setButtonsDisabled(isSubmitting || !this.selectedSharedTeamId, ["unshareButton"])
   }
 }

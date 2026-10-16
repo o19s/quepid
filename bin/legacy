@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Persistent, isolated pre-migration baseline. Never uses the primary Compose stack.
+APP_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+BASE_SHA=8ceb99e9a7f6db09d99d2ebdae4710a1646bdc65
+SOURCE_DIR="$APP_ROOT/tmp/legacy/source"
+COMPOSE_FILE="$APP_ROOT/docker/legacy/compose.yml"
+
+case "${1:-up}" in
+  up)
+    if [ ! -d "$SOURCE_DIR" ]; then
+      mkdir -p "$(dirname "$SOURCE_DIR")"
+      PREPARE_DIR=$(mktemp -d "$(dirname "$SOURCE_DIR")/prepare.XXXXXX")
+      trap 'rm -rf "$PREPARE_DIR"' EXIT
+      git -C "$APP_ROOT" archive "$BASE_SHA" | tar -x -C "$PREPARE_DIR"
+      cp "$PREPARE_DIR/config/database.yml.sample" "$PREPARE_DIR/config/database.yml"
+      # Cookies are scoped by hostname, not port; use a separate baseline session key.
+      sed "s/_quepid_session/_quepid_legacy_session/" \
+        "$PREPARE_DIR/config/initializers/session_store.rb" > "$PREPARE_DIR/config/initializers/session_store.rb.new"
+      mv "$PREPARE_DIR/config/initializers/session_store.rb.new" "$PREPARE_DIR/config/initializers/session_store.rb"
+      printf '%s\n' "$BASE_SHA" > "$PREPARE_DIR/.legacy-baseline"
+      mv "$PREPARE_DIR" "$SOURCE_DIR"
+      trap - EXIT
+    fi
+    if [ "$(cat "$SOURCE_DIR/.legacy-baseline")" != "$BASE_SHA" ]; then
+      echo "Historical checkout does not match the pinned baseline; inspect $SOURCE_DIR before proceeding." >&2
+      exit 1
+    fi
+    echo "First startup installs assets and seeds its own database; inspect with bin/legacy logs."
+    docker compose --project-name quepid-legacy -f "$COMPOSE_FILE" up -d --wait --wait-timeout 600
+    echo "Ready: historical baseline $BASE_SHA at http://localhost:${LEGACY_APP_PORT:-3001}"
+    ;;
+  status|logs|stop)
+    ACTION="$1"
+    [ "$ACTION" != status ] || ACTION=ps
+    docker compose --project-name quepid-legacy -f "$COMPOSE_FILE" "$ACTION"
+    ;;
+  *)
+    echo "Usage: bin/legacy [up|status|logs|stop]" >&2
+    exit 1
+    ;;
+esac

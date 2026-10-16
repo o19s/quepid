@@ -3,13 +3,12 @@
 class RunJudgeJudyJob < ApplicationJob
   queue_as :default
 
-  # Guarantees only one judging run per (book, judge) is ever in flight -
-  # whether triggered manually or via QueryDocPair's auto-run callback.
-  # Discarding (rather than queueing behind the running job) matches how
-  # QueryDocPair#queue_auto_run_ai_judges can fan out one enqueue per row in a
-  # large bulk population: only the first wins, the rest are redundant no-ops.
+  # Manual launches retain discard-on-conflict behavior. Automatic runs share
+  # this lock but keep a queued continuation for newly added pairs.
   limits_concurrency to:          1,
                      key:         ->(book, judge, *) { "run_judge_judy_#{book.id}_#{judge.id}" },
+                     group:       'RunJudgeJudyJob',
+                     duration:    30.minutes,
                      on_conflict: :discard
 
   # Finds the in-flight (not finished) SolidQueue rows for this job class
@@ -22,7 +21,8 @@ class RunJudgeJudyJob < ApplicationJob
     book_gid  = book.to_global_id.to_s
     judge_gid = judge.to_global_id.to_s
     SolidQueue::Job
-      .where(class_name: name, finished_at: nil)
+      .where(class_name: [ name, 'AutoRunJudgeJudyJob' ], finished_at: nil)
+      .where.missing(:failed_execution)
       .where('arguments LIKE ? AND arguments LIKE ?', "%#{book_gid}%", "%#{judge_gid}%")
       .select do |job|
         args = job.arguments['arguments'] || []
@@ -31,21 +31,12 @@ class RunJudgeJudyJob < ApplicationJob
       end
   end
 
-  # Force-stops any in-flight judging run for this book + judge. The one
-  # place that reaches into a SolidQueue row's internals to cancel it, so
-  # callers (currently just the cancel action) don't need to know that a
-  # claimed (already-running) job must have its execution record destroyed
-  # first, while a merely-queued job can just be discarded.
+  # A running provider response may still save. Its claim and semaphore stay
+  # intact until the worker exits, so a restart cannot select the same pair.
   def self.cancel book, judge
     active_for(book, judge).each do |job|
-      if job.claimed_execution.present?
-        # Job is actively running — force destroy it. #perform checks for
-        # its own SolidQueue row on every iteration and stops as soon as it
-        # notices this row is gone.
-        job.claimed_execution.destroy
-        job.destroy
-      else
-        job.discard
+      job.with_lock do
+        job.update!(arguments: job.arguments.merge('quepid_cancelled' => true))
       end
     end
   end
@@ -55,7 +46,8 @@ class RunJudgeJudyJob < ApplicationJob
   def self.actively_judging_user_ids book
     book_gid = book.to_global_id.to_s
     SolidQueue::Job
-      .where(class_name: name, finished_at: nil)
+      .where(class_name: [ name, 'AutoRunJudgeJudyJob' ], finished_at: nil)
+      .where.missing(:failed_execution)
       .where('arguments LIKE ?', "%#{book_gid}%")
       .filter_map do |job|
         args = job.arguments['arguments'] || []
@@ -65,7 +57,7 @@ class RunJudgeJudyJob < ApplicationJob
         # perform_later is only ever called with one) - its GlobalID encodes
         # the concrete class name, e.g. gid://app/AiJudge/6, never /User/.
         judge_gid_arg = args.find { |a| a.is_a?(Hash) && a['_aj_globalid']&.include?('/AiJudge/') }
-        judge_gid_arg ? GlobalID::Locator.locate(judge_gid_arg['_aj_globalid'])&.id : nil
+        judge_gid_arg ? safely_locate(judge_gid_arg['_aj_globalid'])&.id : nil
       end.compact
   end
 
@@ -81,22 +73,19 @@ class RunJudgeJudyJob < ApplicationJob
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
   def perform book, judge, number_of_pairs
+    judge_pairs(book, judge, number_of_pairs)
+  end
+
+  def judge_pairs book, judge, number_of_pairs
     counter = 0
     total_pairs = book.query_doc_pairs_within_rank_depth.count
+    cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = LlmService.new judge.llm_key, judge.judge_options
-    # The judge is told the book's scale, and never sees the book itself.
     scale = JudgeScale.for(book)
-    # Only jobs actually dispatched through SolidQueue have a row to poll for
-    # cancellation - under the :test adapter (or inline execution) there's
-    # never a row to begin with, so we skip the check rather than misread
-    # "never tracked" as "cancelled".
-    cancellable = SolidQueue::Job.exists?(active_job_id: job_id)
     loop do
       break if number_of_pairs && counter >= number_of_pairs
-      # A cancellation destroys this job's SolidQueue row out from under us;
-      # this is our only chance to notice and stop, since nothing else
-      # interrupts an already-running perform loop.
-      break if cancellable && !SolidQueue::Job.exists?(active_job_id: job_id)
+
+      break if cancellable && cancellation_requested?
 
       query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
       break if query_doc_pair.nil?
@@ -104,16 +93,11 @@ class RunJudgeJudyJob < ApplicationJob
       judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
 
       llm_service.perform_safe_judgement(judgement, scale: scale)
+
       JudgementFinalizer.call(judgement, scale: scale)
 
       judgement.save!
       counter += 1
-      # Sync this one pair's case ratings immediately, same as every human
-      # judging path (JudgementsController, BulkJudgeController) - cheaper
-      # than a full-book UpdateCaseJob resync at the end, and keeps case
-      # ratings current even if a long "judge all" run gets cancelled partway.
-      UpdateCaseRatingsJob.perform_later(query_doc_pair)
-      BroadcastJudgeActivityJob.perform_later(book, judge)
       broadcast_judging_detail(book, judge, counter, total_pairs, judgement)
 
       if number_of_pairs.nil?
@@ -128,6 +112,11 @@ class RunJudgeJudyJob < ApplicationJob
 
   private
 
+  def cancellation_requested?
+    arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)
+    arguments.nil? || arguments['quepid_cancelled']
+  end
+
   def broadcast_judging_detail book, judge, counter, total_pairs, judgement
     Turbo::StreamsChannel.broadcast_update_to(
       book.judgements_broadcast_channel,
@@ -139,8 +128,8 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   def broadcast_update book, counter, query_doc_pair, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/blah',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
@@ -148,8 +137,8 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   def broadcast_update_kraken_mode book, counter, query_doc_pair, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/update_kraken_mode',
       locals:  { book: book, counter: counter, qdp: query_doc_pair, judge: judge }
@@ -157,8 +146,8 @@ class RunJudgeJudyJob < ApplicationJob
   end
 
   def broadcast_complete book, judge
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
+    ProgressBroadcaster.render(
+      book,
       target:  'notifications',
       partial: 'books/complete',
       locals:  { book: book, judge: judge }

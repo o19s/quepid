@@ -15,12 +15,13 @@ class HomeController < ApplicationController
 
     # with_counts adds a `case.queries_count` field, which avoids loading
     # all queries and makes bullet happy.
-    # @cases = recent_cases(30)
     @cases = @current_user.cases_involved_with.not_archived.with_counts
       .includes([ :metadata ])
       .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
                       'case_metadata.last_viewed_at DESC, cases.id DESC'))
       .limit(10)
+
+    LatestCaseScores.preload(@cases)
 
     @most_recent_cases = @cases[0...4].sort_by { |c| c.case_name.downcase }
 
@@ -45,10 +46,6 @@ class HomeController < ApplicationController
     # candidate_cases = @cases.select { |kase| kase.scores.scored.count.positive? }
     # @grouped_cases = candidate_cases.group_by { |kase| kase.case_name.split(':').first }
     # @grouped_cases = @grouped_cases.select { |_key, value| value.count > 1 }
-  end
-
-  def sparklines
-    render layout: false
   end
 
   # rubocop:disable Metrics/AbcSize

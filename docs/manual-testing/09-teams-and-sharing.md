@@ -12,16 +12,19 @@ You'll get much more out of this part with two logged-in accounts — a team own
 
 ### 9.1 Create, rename, and browse teams
 
+With zero teams, confirm the solo-use explanation and **Create your first team** link opens the new-team form. A filtered empty result must not claim you have no teams.
+
 - [ ] **Steps:**
   1. Go to `/teams`. Confirm the table shows ID/Name/Members/Cases, a "Filter by name" box, and a "My Teams" checkbox (auto-submits).
   2. Click **+ Add New**, enter a Name, click **Create Team**.
   3. Confirm you (the creator) are automatically added as a member.
   4. Open the team, use the **Rename Team** card to rename it, click **Rename**.
+  5. In the Cases, Books, Search Endpoints, and Custom Scorers sections, set a search filter. Set the archived filters for cases, books, and endpoints, then submit each search form in turn. Confirm each submission retains the other sections' query and archived filters.
 - **Expected:** New team appears in the list; rename updates immediately with flash "Team renamed."
 - **Edge cases:**
-  - [ ] Submit a blank team name on create or rename — expect validation error.
+  - [ ] Submit a blank team name on create or rename — expect the visible "Name can't be blank" validation error.
   - [ ] Rename to a name identical to the current one — should be a harmless no-op.
-  - [ ] Create two teams with the same name (if allowed) — confirm no confusing collision in the UI.
+  - [ ] Submit an existing team name on create — expect "Name has already been taken", retain the entered name, and create no team.
 
 ### 9.2 Add a team member (existing user)
 
@@ -63,11 +66,13 @@ This same modal pattern appears in two places for each resource type: on the res
   2. Pick a team from "Select a team to share this X with:" (only your own teams appear), click **Share with team**.
   3. Confirm it now appears under "Already shared with:".
   4. Unshare it from the same modal.
-- **Expected:** Both entry points produce identical, consistent results. Repeating an already-done share/unshare shows an informational alert, not an error or duplicate.
+- **Expected:** With no teams, the disabled picker displays "You have no teams yet"; when all teams already have access, it displays "No other teams to share with". Both entry points produce identical, consistent results. Repeating an already-done share/unshare shows an informational alert, not an error or duplicate.
 - **Edge cases:**
   - [ ] Attempt to share a resource you don't have access to — expect "You do not have access to that {case/book/search endpoint/scorer}."
   - [ ] Note: **Scorers** may only support Share (no Unshare control wired into this particular list) — confirm current behavior and flag if unshare is unexpectedly missing.
   - [ ] Use the "+ Create a team" shortcut link inside the modal — confirm it takes you to `/teams/new` without losing context awkwardly.
+  - [ ] As a member of two teams, share one resource with both, then unshare from only one — confirm the other team keeps access and the modal's "Already shared with" list updates correctly.
+  - [ ] With two browser sessions, share/unshare the same resource at nearly the same time — confirm the final state is consistent (no duplicate share, no error page) and a stale modal shows an informational alert.
 
 ### 9.6 Archive / unarchive a Case or Search Endpoint from the team page
 

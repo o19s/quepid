@@ -14,6 +14,7 @@ This part covers the standalone analytics pages: the tries visualization (a grap
   3. Click **Return to Case**.
 - **Expected:** The tree accurately reflects branching try history; if a case's tries have multiple root nodes, confirm they're unified under one synthetic root rather than rendering as disconnected trees.
 - **Edge cases:**
+  - [ ] For an imported/cloned case with a parent try outside this case, confirm that branch renders as a root without changing the stored ancestry.
   - [ ] Log **out**, then visit the same URL for a case that has been made **public** (13.2) — confirm anonymous access works (this page intentionally allows unauthenticated viewing for public cases).
   - [ ] Attempt anonymous access to a **private** case's tries visualization — confirm it's not accessible.
 

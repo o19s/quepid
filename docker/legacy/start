@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd /srv/app
+
+bundle check
+if [ ! -f tmp/legacy-assets-ready ]; then
+  yarn install --frozen-lockfile
+  yarn build
+  mkdir -p tmp
+  touch tmp/legacy-assets-ready
+fi
+bundle exec rails db:prepare
+bundle exec rails runner /legacy/seed.rb
+# This is a fixed archive: assets were built above. Historical esbuild --watch
+# exits on detached stdin and would cause Foreman to terminate web and worker.
+exec foreman s -f /legacy/Procfile -d /srv/app

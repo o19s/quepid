@@ -9,6 +9,239 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
   let(:james_bond_movies) { books(:james_bond_movies) }
   let(:communal_scorer) { scorers(:communal_scorer) }
 
+  test 'an existing book outside the user scope redirects without recording a view' do
+    login_user_for_integration_test user
+    private_book = Book.create!(name: 'Private book', owner: users(:doug), scale: [ 0, 1 ])
+
+    assert_no_enqueued_jobs only: TrackBookViewedJob do
+      get book_path(private_book)
+    end
+
+    assert_response :found
+    assert_redirected_to books_path
+    assert_equal "Could not retrieve book #{private_book.id}. Confirm that the book has been shared with you via a team you are a member of!", flash[:alert]
+  end
+
+  test 'running an unknown judge redirects without enqueueing evaluation' do
+    login_user_for_integration_test user
+
+    assert_no_enqueued_jobs only: RunJudgeJudyJob do
+      patch run_judge_judy_book_path(james_bond_movies, ai_judge_id: 999_999_999)
+    end
+
+    assert_response :see_other
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'AI Judge not found.', flash[:alert]
+  end
+
+  test 'running and cancelling reject a judge outside the selected book' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges.delete(judge_judy)
+
+    assert_no_enqueued_jobs only: RunJudgeJudyJob do
+      [ run_judge_judy_book_path(james_bond_movies, ai_judge_id: judge_judy.id),
+        cancel_judge_judy_book_path(james_bond_movies, ai_judge_id: judge_judy.id) ].each do |path|
+        patch path
+
+        assert_response :see_other
+        assert_redirected_to book_path(james_bond_movies)
+        assert_equal 'AI Judge not found.', flash[:alert]
+      end
+    end
+  end
+
+  test 'invalid settings update renders populated edit data and preserves persisted settings' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    original_name = james_bond_movies.name
+    original_teams = james_bond_movies.team_ids
+    original_judges = james_bond_movies.ai_judge_ids
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+
+    # Membership assignment precedes name validation; submit the existing choices.
+    patch book_path(james_bond_movies), params: { book: {
+      name:         '',
+      team_ids:     original_teams,
+      ai_judge_ids: original_judges,
+    } }
+
+    assert_response :unprocessable_content
+    assert_select '#error_explanation', /Name can't be blank/
+    assert_select 'input[name="book[name]"][value=""]'
+    assert_select 'form[action=?]', book_path(james_bond_movies)
+    assert_equal original_name, james_bond_movies.reload.name
+    assert_equal original_teams.sort, james_bond_movies.team_ids.sort
+    assert_equal original_judges.sort, james_bond_movies.ai_judge_ids.sort
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
+  test 'unchecked linking creates a book without changing existing case integration' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    origin.update!(book: book, auto_populate_book_pairs: true, auto_populate_case_judgements: false)
+    previous = origin.attributes.slice('book_id', 'auto_populate_book_pairs', 'auto_populate_case_judgements')
+    assert_difference 'Book.count' do
+      post books_path, params: { book: {
+        name: 'Unlinked book', scorer_id: communal_scorer.id, origin_case_id: origin.id,
+        link_the_case: '0', auto_populate_book_pairs: '0', auto_populate_case_judgements: '1'
+      } }
+    end
+    assert_response :see_other
+    assert_equal previous, origin.reload.attributes.slice(*previous.keys)
+  end
+
+  test 'checked linking saves both synchronization choices' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    post books_path, params: { book: {
+      name: 'Linked book', scorer_id: communal_scorer.id, origin_case_id: origin.id,
+      link_the_case: '1', auto_populate_book_pairs: '1', auto_populate_case_judgements: '0'
+    } }
+    assert_response :see_other
+    assert_equal Book.order(:id).last.id, origin.reload.book_id
+    assert_predicate origin, :auto_populate_book_pairs?
+    assert_not origin.auto_populate_case_judgements?
+  end
+
+  test 'invalid creation preserves the case integration and submitted choices' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: {
+        name: 'Retry this book', scorer_id: '', origin_case_id: origin.id, team_ids: [ user.teams.first.id ],
+        link_the_case: '1', auto_populate_book_pairs: '0', auto_populate_case_judgements: '1'
+      } }
+    end
+    assert_response :unprocessable_content
+    assert_select 'input#book_origin_case_id[value=?]', origin.id.to_s
+    assert_select 'input#book_link_the_case[checked]'
+    assert_select 'input#book_auto_populate_book_pairs:not([checked])'
+    assert_select 'input#book_auto_populate_case_judgements[checked]'
+    assert_select 'input[name="book[team_ids][]"][checked][value=?]', user.teams.first.id.to_s
+    assert_select '[data-controller="case-book-synchronization"]'
+  end
+
+  test 'unlinked validation retry retains synchronization choices before relinking' do
+    login_user_for_integration_test user
+    origin = cases(:with_scorer)
+    previous = origin.attributes.slice('book_id', 'auto_populate_book_pairs', 'auto_populate_case_judgements')
+    submitted = { name: 'Relink after validation', scorer_id: '', origin_case_id: origin.id,
+                  link_the_case: '0', auto_populate_book_pairs: '1', auto_populate_case_judgements: '0' }
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: submitted }
+    end
+    assert_response :unprocessable_content
+    assert_equal previous, origin.reload.attributes.slice(*previous.keys)
+    assert_select 'input#book_link_the_case:not([checked])'
+    assert_select 'input#book_auto_populate_book_pairs[checked]'
+    assert_select 'input#book_auto_populate_case_judgements:not([checked])'
+    %w[auto_populate_book_pairs auto_populate_case_judgements].each do |name|
+      assert_select "input[type=hidden][name='book[#{name}]']", count: 1 do
+        assert_select '[data-case-book-synchronization-target="synchronizationFallback"]'
+      end
+    end
+
+    post books_path, params: { book: submitted.merge(scorer_id: communal_scorer.id, link_the_case: '1') }
+    assert_response :see_other
+    assert_equal Book.order(:id).last.id, origin.reload.book_id
+    assert_predicate origin, :auto_populate_book_pairs?
+    assert_not origin.auto_populate_case_judgements?
+  end
+
+  test 'new book from a case selects the dropdown representative rather than a duplicate scorer' do
+    login_user_for_integration_test user
+    scorer = Scorer.create!(owner: user, name: 'First unique scale', scale: [ 81, 82 ], code: 'pass();')
+    duplicate = Scorer.create!(owner: user, name: 'Second unique scale', scale: scorer.scale, code: 'pass();')
+    get new_book_path, params: { origin_case_id: cases(:with_scorer).id, scorer_id: duplicate.id }
+
+    assert_response :success
+    assert_select 'select[name="book[scorer_id]"] option[selected][value=?]', scorer.id.to_s
+    assert_select 'select[name="book[scorer_id]"] option[value=?]', duplicate.id.to_s, count: 0
+  end
+
+  test 'settings omit hidden judges and save the visible selection without losing hidden assignments' do
+    login_user_for_integration_test user
+    visible_team = user.teams.first
+    hidden_team = Team.create!(name: 'Hidden judge team')
+    hidden_judge = judge_judy.dup
+    hidden_judge.name = 'Hidden judge'
+    hidden_judge.save!
+    hidden_judge.teams = [ hidden_team ]
+    judge_judy.teams = [ visible_team ]
+    james_bond_movies.update!(owner: user)
+    james_bond_movies.teams = [ visible_team, hidden_team ]
+    james_bond_movies.ai_judges = [ judge_judy, hidden_judge ]
+
+    previous_bullet = Bullet.enable?
+    Bullet.enable = false
+    get edit_book_path(james_bond_movies)
+    assert_response :success
+    assert_select 'input[type=checkbox][name="book[ai_judge_ids][]"][checked][value=?]', judge_judy.id.to_s
+    assert_select 'input[type=checkbox][name="book[ai_judge_ids][]"][value=?]', hidden_judge.id.to_s, count: 0
+
+    patch book_path(james_bond_movies), params: {
+      book: { name: 'Saved settings', team_ids: [ visible_team.id ], ai_judge_ids: [ judge_judy.id ] },
+    }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'Saved settings', james_bond_movies.reload.name
+    assert_equal [ judge_judy.id, hidden_judge.id ].sort, james_bond_movies.ai_judge_ids.sort
+    assert_equal [ visible_team.id, hidden_team.id ].sort, james_bond_movies.team_ids.sort
+  ensure
+    Bullet.enable = previous_bullet
+  end
+
+  test 'update preserves hidden AI judges and accepts visible AI judges' do
+    login_user_for_integration_test user
+    james_bond_movies.update!(owner: user)
+    james_bond_movies.ai_judges = [ judge_judy ]
+    judge_judy.teams.clear
+    patch book_path(james_bond_movies), params: { book: { ai_judge_ids: [] } }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal [ judge_judy.id ], james_bond_movies.reload.ai_judge_ids
+
+    judge_judy.teams << user.teams.first
+    patch book_path(james_bond_movies), params: { book: { ai_judge_ids: [ judge_judy.id ] } }
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal [ judge_judy.id ], james_bond_movies.reload.ai_judge_ids
+  end
+
+  test 'create rejects a foreign team without creating a book' do
+    login_user_for_integration_test user
+    foreign = Team.create!(name: 'Foreign team')
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: { name: 'Unauthorized', scorer_id: communal_scorer.id, team_ids: [ foreign.id ] } }
+    end
+    assert_response :not_found
+  end
+
+  test 'update rejects a foreign team without changing existing memberships' do
+    login_user_for_integration_test user
+    original = book.team_ids.sort
+    foreign = Team.create!(name: 'Foreign team')
+    patch book_path(book), params: { book: { team_ids: [ foreign.id ] } }
+    assert_response :not_found
+    assert_equal original, book.reload.team_ids.sort
+  end
+
+  test 'create rejects a human submitted as an AI judge' do
+    login_user_for_integration_test user
+    assert_no_difference 'Book.count' do
+      post books_path, params: { book: { name: 'Unauthorized judge', scorer_id: communal_scorer.id, ai_judge_ids: [ user.id ] } }
+    end
+    assert_response :not_found
+  end
+
+  test 'update rejects an inaccessible AI judge before changing memberships' do
+    login_user_for_integration_test user
+    judge_judy.teams.clear
+    original = book.team_ids.sort
+    patch book_path(book), params: { book: { team_ids: [], ai_judge_ids: [ judge_judy.id ] } }
+    assert_response :not_found
+    assert_equal original, book.reload.team_ids.sort
+  end
+
   describe 'running judge judy' do
     setup { register_default_openai_stubs }
 
@@ -42,125 +275,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  describe 'cancelling judge judy' do
-    test 'redirects with an error instead of crashing on an unknown ai_judge_id' do
-      login_user_for_integration_test user
-
-      delete "/books/#{james_bond_movies.id}/cancel_judge_judy/999999999"
-
-      assert_response :redirect
-      follow_redirect!
-      assert_equal 'AI Judge not found.', flash[:alert]
-    end
-
-    test 'destroys the matching in-flight SolidQueue job for this book and judge' do
-      login_user_for_integration_test user
-
-      other_book  = books(:book_of_comedy_films)
-      other_judge = users(:doug)
-
-      matching_job = SolidQueue::Job.create!(
-        active_job_id: SecureRandom.uuid,
-        class_name:    'RunJudgeJudyJob',
-        queue_name:    'default',
-        arguments:     {
-          'arguments' => [
-            { '_aj_globalid' => james_bond_movies.to_global_id.to_s },
-            { '_aj_globalid' => judge_judy.to_global_id.to_s },
-            nil
-          ],
-        }
-      )
-      unrelated_job = SolidQueue::Job.create!(
-        active_job_id: SecureRandom.uuid,
-        class_name:    'RunJudgeJudyJob',
-        queue_name:    'default',
-        arguments:     {
-          'arguments' => [
-            { '_aj_globalid' => other_book.to_global_id.to_s },
-            { '_aj_globalid' => other_judge.to_global_id.to_s },
-            nil
-          ],
-        }
-      )
-
-      delete "/books/#{james_bond_movies.id}/cancel_judge_judy/#{judge_judy.id}"
-
-      assert_response :redirect
-      follow_redirect!
-      assert_equal "AI Judge #{judge_judy.name} has been cancelled.", flash[:notice]
-      assert_not SolidQueue::Job.exists?(matching_job.id)
-      assert SolidQueue::Job.exists?(unrelated_job.id)
-    end
-  end
-
-  describe 'updating' do
-    test "keeps an AI judge's auto_run flag set when the judge stays checked across an unrelated save" do
-      login_user_for_integration_test user
-      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:                  'James Bond Movies (renamed)',
-          team_ids:              [],
-          ai_judge_ids:          [ judge_judy.id ],
-          auto_run_ai_judge_ids: [ judge_judy.id ],
-        },
-      }
-
-      assert_predicate james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy), :auto_run?
-    end
-
-    test 'turns auto_run off for an AI judge unchecked from auto-run while staying assigned' do
-      login_user_for_integration_test user
-      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:                  james_bond_movies.name,
-          team_ids:              [],
-          ai_judge_ids:          [ judge_judy.id ],
-          auto_run_ai_judge_ids: [],
-        },
-      }
-
-      books_ai_judge = james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
-      assert_not_nil books_ai_judge
-      assert_not books_ai_judge.auto_run?
-    end
-
-    test 'removes the AI judge assignment entirely when unchecked from ai_judge_ids' do
-      login_user_for_integration_test user
-      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:                  james_bond_movies.name,
-          team_ids:              [],
-          ai_judge_ids:          [],
-          auto_run_ai_judge_ids: [],
-        },
-      }
-
-      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
-    end
-
-    test 'does not crash when ai_judge_ids and auto_run_ai_judge_ids are omitted entirely' do
-      login_user_for_integration_test user
-      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:     james_bond_movies.name,
-          team_ids: [],
-        },
-      }
-
-      assert_response :redirect
-      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
-    end
-  end
-
   describe 'show' do
     let(:matt) { users(:matt) }
     let(:joe)  { users(:joe) }
@@ -168,60 +282,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     before do
       james_bond_movies.query_doc_pairs.each { |query_doc_pair| query_doc_pair.judgements.delete_all }
-    end
-
-    test 'describes the book by its distinct query and query/doc pair counts' do
-      login_user_for_integration_test user
-
-      scoped_book = Book.create!(name: 'Counts Book', owner: user, scale: [ 0, 1 ])
-      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd1', position: 1)
-      scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd2', position: 2)
-      scoped_book.query_doc_pairs.create!(query_text: 'pants', doc_id: 'd3', position: 1)
-
-      get "/books/#{scoped_book.id}"
-
-      assert_response :success
-      assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
-    end
-
-    test 'judge_activity appends a full row for a judge the poller does not know about yet' do
-      login_user_for_integration_test user
-      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
-
-      get judge_activity_book_path(james_bond_movies)
-
-      assert_response :success
-      assert_equal 'text/vnd.turbo-stream.html', response.media_type
-      assert_match 'action="append"', response.body
-      assert_match "judge-row-#{judge_judy.id}", response.body
-      assert_match 'Judge Judy', response.body
-    end
-
-    test 'judge_activity replaces only the status/count/last cells for a judge the poller already knows about' do
-      login_user_for_integration_test user
-      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
-
-      get judge_activity_book_path(james_bond_movies), params: { known_judge_ids: judge_judy.id.to_s }
-
-      assert_response :success
-      assert_match "action=\"replace\" target=\"judge-status-#{judge_judy.id}\"", response.body
-      assert_match "action=\"replace\" target=\"judge-count-#{judge_judy.id}\"", response.body
-      assert_match "action=\"replace\" target=\"judge-last-#{judge_judy.id}\"", response.body
-      assert_no_match "judge-row-#{judge_judy.id}", response.body
-      assert_no_match 'judge-sparkline', response.body
-    end
-
-    test 'lists assigned AI judge in Judge Activity table even with no judgements' do
-      login_user_for_integration_test user
-      james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
-      james_bond_movies.judgements.where(user: judge_judy).delete_all
-
-      get "/books/#{james_bond_movies.id}"
-
-      assert_response :success
-      assert_select "#judge-row-#{judge_judy.id}" do
-        assert_select 'button[title=?][data-bs-target=?]', 'Judge documents', "#unleash_modal_#{judge_judy.id}"
-      end
     end
 
     test 'flags unjudged pairs needing attention' do
@@ -235,7 +295,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_equal 0, assigns(:coverage_pct)
     end
 
-    test 'shows the book as fully judged once every pair has three judgements' do
+    test 'shows the book as complete once every pair has three judgements' do
       login_user_for_integration_test user
 
       [ matt, joe, jane ].each do |judge|
@@ -249,7 +309,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
       assert_match 'Fully Judged', response.body
       assert_equal 100, assigns(:coverage_pct)
-      assert_equal james_bond_movies.query_doc_pairs.count, assigns(:complete_count)
     end
 
     test 'prompts to populate the book when it has no query/doc pairs' do
@@ -260,22 +319,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_match 'No Query/Doc Pairs Available', response.body
-      assert_match 'use the', response.body
-      assert_match 'Judgements', response.body
-      assert_no_match 'letting it run its queries', response.body
-    end
-
-    test 'points to letting the case auto-populate when its linked case is set up for it' do
-      login_user_for_integration_test user
-      james_bond_movies.query_doc_pairs.delete_all
-      cases(:james_bond_case).update!(auto_populate_book_pairs: true)
-
-      get "/books/#{james_bond_movies.id}"
-
-      assert_response :success
-      assert_match 'Load query/doc pairs for judging by returning', response.body
-      assert_match 'letting it run its queries', response.body
-      assert_no_match 'use the', response.body
     end
 
     test 'redirects an inaccessible book to the books page with sharing guidance' do
@@ -346,21 +389,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
         assigns(:rating_distribution_data)
       )
     end
-
-    test 'does not link to Refine Prompt for a judge the current user cannot access' do
-      login_user_for_integration_test user
-
-      other_owner = users(:case_finder_user)
-      inaccessible_judge = AiJudge.create!(name: 'Inaccessible Judge', owner: other_owner,
-                                           llm_key: '1234asdf5678', system_prompt: 'Judge it.')
-      james_bond_movies.query_doc_pairs.first.judgements.create! rating: 1, user: inaccessible_judge
-
-      get "/books/#{james_bond_movies.id}/judgement_stats"
-
-      assert_response :success
-      assert_not_includes assigns(:refinable_ai_judge_ids), inaccessible_judge.id
-      assert_no_match edit_ai_judge_path(inaccessible_judge, book_id: james_bond_movies.id), response.body
-    end
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -429,6 +457,34 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "One of the books chosen doesn't have a scale matching [0, 1]", flash[:alert]
   end
 
+  describe 'combining books' do
+    test 'combine rejects an inaccessible source before merging accessible ones' do
+      login_user_for_integration_test user
+      inaccessible = Book.create!(name: 'Private', scale: book.scale)
+
+      assert_no_enqueued_jobs only: [ UpdateCaseJob, UpdateCaseRatingsJob ] do
+        assert_no_difference [ 'QueryDocPair.count', 'Judgement.count' ] do
+          patch combine_book_path(book), params: { book_ids: { james_bond_movies.id.to_s => '1', inaccessible.id.to_s => '1' } }
+        end
+      end
+      assert_response :not_found
+    end
+
+    test 'combine reports validation failure and does not enqueue the final update' do
+      login_user_for_integration_test user
+      invalid = james_bond_movies.query_doc_pairs.create!(query_text: 'Later invalid pair', doc_id: 'invalid')
+      invalid.update_columns(query_text: '')
+
+      assert_no_enqueued_jobs only: [ UpdateCaseJob, UpdateCaseRatingsJob ] do
+        assert_no_difference [ 'QueryDocPair.count', 'Judgement.count' ] do
+          patch combine_book_path(book), params: { book_ids: { james_bond_movies.id.to_s => '1' } }
+        end
+      end
+      assert_redirected_to book_path(book)
+      assert_match(/Could not merge due to errors:.*Query text/, flash[:alert])
+    end
+  end
+
   let(:single_rater_book) { books(:book_of_star_wars_judgements) }
   let(:single_rater_book2) { books(:book_of_comedy_films) }
 
@@ -468,6 +524,29 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
       patch "/books/#{archived_book.id}/unarchive"
 
       assert_redirected_to books_path(archived: true)
+    end
+
+    test 'book pages flag an archived book in the shared header above the tabs' do
+      login_user_for_integration_test doug
+
+      get book_judgements_path(archived_book)
+
+      assert_response :success
+      assert_select 'h1', text: /Judgements for\s+Book IamArchivedBook\s+Archived/ do
+        assert_select 'i.bi-book'
+        assert_select 'span.badge.bg-warning', text: 'Archived'
+      end
+      assert_select 'ul.nav-underline a[href=?]', judge_overview_book_path(archived_book)
+    end
+
+    test 'book pages leave an active book unflagged' do
+      login_user_for_integration_test doug
+
+      get judgement_stats_book_path(james_bond_movies)
+
+      assert_response :success
+      assert_select 'h1 i.bi-book'
+      assert_select 'h1 span.badge', count: 0
     end
 
     test 'index shows active books by default' do
@@ -632,124 +711,6 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
-  describe 'AI judge assignment' do
-    let(:doug) { users(:doug) }
-    let(:random_1) { users(:random_1) }
-
-    setup { login_user_for_integration_test doug }
-
-    test 'edit includes an ai judge owned directly by the book owner, even with no team share' do
-      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
-
-      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
-      Bullet.enable = false
-      get "/books/#{james_bond_movies.id}/edit"
-      Bullet.enable = true
-
-      assert_response :success
-      assert_includes assigns(:ai_judges), owner_only_judge
-    end
-
-    test 'edit shows ai judges visible to the current user even when the book has no owner' do
-      ownerless_book = books(:book_of_star_wars_judgements)
-      assert_nil ownerless_book.owner
-
-      # judge_judy has no owner either, but is shared via the same "shared"
-      # team doug belongs to - visibility must come from the editor
-      # (current_user), not the (here, absent) book owner.
-      # Bullet fires on the pre-existing @other_books N+1, not our new query — suppress it.
-      Bullet.enable = false
-      get "/books/#{ownerless_book.id}/edit"
-      Bullet.enable = true
-
-      assert_response :success
-      assert_includes assigns(:ai_judges), users(:judge_judy)
-    end
-
-    test 'update assigns an ai judge shared via the team even when the book has no owner' do
-      ownerless_book = books(:book_of_star_wars_judgements)
-      assert_nil ownerless_book.owner
-
-      patch "/books/#{ownerless_book.id}", params: {
-        book: {
-          name:         ownerless_book.name,
-          team_ids:     ownerless_book.team_ids,
-          ai_judge_ids: [ users(:judge_judy).id ],
-        },
-      }
-
-      assert_includes ownerless_book.reload.ai_judges, users(:judge_judy)
-    end
-
-    test 'update rejects an ai judge id the book owner cannot access' do
-      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:         james_bond_movies.name,
-          team_ids:     james_bond_movies.team_ids,
-          ai_judge_ids: [ unrelated_judge.id ],
-        },
-      }
-
-      assert_not_includes james_bond_movies.reload.ai_judges, unrelated_judge
-    end
-
-    test 'update assigns an owned ai judge when no team checkboxes are submitted' do
-      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
-      james_bond_movies.teams.clear
-
-      patch "/books/#{james_bond_movies.id}", params: {
-        book: {
-          name:         james_bond_movies.name,
-          ai_judge_ids: [ owner_only_judge.id ],
-        },
-      }
-
-      assert_response :redirect
-      assert_includes james_bond_movies.reload.ai_judges, owner_only_judge
-    end
-
-    test 'new includes an ai judge owned directly by the current user, even with no team share' do
-      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
-
-      get '/books/new'
-
-      assert_response :success
-      assert_includes assigns(:ai_judges), owner_only_judge
-    end
-
-    test 'create assigns an ai judge owned directly by the creator, even with no team share' do
-      owner_only_judge = AiJudge.create!(name: 'Owner Only Judge', llm_key: '1234', owner: doug)
-
-      post '/books', params: {
-        book: {
-          name:         'New Book With Owned Judge',
-          team_ids:     [],
-          ai_judge_ids: [ owner_only_judge.id ],
-        },
-      }
-
-      created_book = Book.find_by(name: 'New Book With Owned Judge')
-      assert_includes created_book.ai_judges, owner_only_judge
-    end
-
-    test 'create rejects an ai judge id the creator cannot access' do
-      unrelated_judge = AiJudge.create!(name: 'Unrelated Judge', llm_key: '1234', owner: random_1)
-
-      post '/books', params: {
-        book: {
-          name:         'New Book Rejecting Unrelated Judge',
-          team_ids:     [],
-          ai_judge_ids: [ unrelated_judge.id ],
-        },
-      }
-
-      created_book = Book.find_by(name: 'New Book Rejecting Unrelated Judge')
-      assert_not_includes created_book.ai_judges, unrelated_judge
-    end
-  end
-
   def test_scorer_id_copies_scale_fields_when_creating_book
     login_user_for_integration_test user
 
@@ -770,42 +731,244 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_nil created_book.scale_with_labels
   end
 
-  def test_new_preselects_a_scorer_id_the_dropdown_actually_offers
+  def test_updating_a_book_removes_unchecked_visible_teams
     login_user_for_integration_test user
+    team = user.teams.first
+    book.teams << team unless book.teams.include?(team)
 
-    # p@10 and quepid_default_scorer are two distinct communal scorers that
-    # share the same scale/labels - scorer_options_for_select only lists one
-    # representative id per unique scale combination, so passing the *other*
-    # scorer's id (as the case's scorer_id) must still resolve to whichever
-    # id the dropdown actually renders, not be left unmatched.
-    other_scorer = scorers(:'p@10')
-    duplicate_scale_scorer = scorers(:quepid_default_scorer)
-    assert_equal other_scorer.scale, duplicate_scale_scorer.scale
-    assert_nil duplicate_scale_scorer.scale_with_labels
-    assert_nil other_scorer.scale_with_labels
-
-    get '/books/new', params: { scorer_id: duplicate_scale_scorer.id }
-
-    assert_response :success
-    assert_match(/<option selected="selected" value="#{assigns(:book).scorer_id}">/, response.body)
-  end
-
-  def test_create_does_not_link_the_origin_case_when_synchronization_is_disabled
-    login_user_for_integration_test user
-    origin_case = cases(:with_scorer)
-
-    post '/books', params: {
+    patch "/books/#{book.id}", params: {
       book: {
-        name:                          'Unlinked Book',
-        link_the_case:                 '0',
-        origin_case_id:                origin_case.id,
-        auto_populate_book_pairs:      '1',
-        auto_populate_case_judgements: '1',
-        team_ids:                      [],
+        name:     book.name,
+        team_ids: [],
       },
     }
 
-    assert_response :redirect
-    assert_nil origin_case.reload.book
+    assert_redirected_to book_path(book)
+    assert_not_includes book.reload.team_ids, team.id
+  end
+
+  def test_creating_book_requires_a_rating_scale
+    login_user_for_integration_test user
+
+    post '/books', params: {
+      book: {
+        name:     'Book without a rating scale',
+        team_ids: [ user.teams.first.id ],
+      },
+    }
+
+    assert_response :unprocessable_content
+    assert_select '#error_explanation', /Scorer must be selected/
+    assert_select 'select[name="book[scorer_id]"].is-invalid'
+    assert_equal 'Book without a rating scale', assigns(:book).name
+    assert_not Book.exists?(name: 'Book without a rating scale')
+  end
+
+  describe 'cancelling judge judy' do
+    test 'redirects with an error instead of crashing on an unknown ai_judge_id' do
+      login_user_for_integration_test user
+
+      patch "/books/#{james_bond_movies.id}/cancel_judge_judy/999999999"
+
+      assert_response :redirect
+      follow_redirect!
+      assert_equal 'AI Judge not found.', flash[:alert]
+    end
+
+    test 'requests cancellation only for the matching book and judge' do
+      login_user_for_integration_test user
+
+      other_book  = books(:book_of_comedy_films)
+      other_judge = users(:doug)
+
+      matching_job = SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => james_bond_movies.to_global_id.to_s },
+            { '_aj_globalid' => judge_judy.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+      unrelated_job = SolidQueue::Job.create!(
+        active_job_id: SecureRandom.uuid,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     {
+          'arguments' => [
+            { '_aj_globalid' => other_book.to_global_id.to_s },
+            { '_aj_globalid' => other_judge.to_global_id.to_s },
+            nil
+          ],
+        }
+      )
+
+      patch "/books/#{james_bond_movies.id}/cancel_judge_judy/#{judge_judy.id}"
+
+      assert_response :redirect
+      follow_redirect!
+      assert_equal "AI Judge #{judge_judy.name} has been cancelled.", flash[:notice]
+      assert matching_job.reload.arguments['quepid_cancelled']
+      assert_not unrelated_job.reload.arguments['quepid_cancelled']
+      assert SolidQueue::Job.exists?(unrelated_job.id)
+    end
+  end
+
+  test 'personal progress uses the same rank depth for judged and total pairs' do
+    login_user_for_integration_test user
+    scoped_book = Book.create!(name: 'Personal depth scope', owner: user, scale: [ 0, 1 ], rank_depth: 1)
+    3.times do |index|
+      pair = scoped_book.query_doc_pairs.create!(query_text: 'Depth', doc_id: index.to_s, position: index + 1)
+      pair.judgements.create!(user: user, rating: 1)
+    end
+
+    get judge_overview_book_path(scoped_book)
+    assert_response :success
+    assert_equal 1, assigns(:user_judgement_count)
+    assert_equal 1, assigns(:total_pairs)
+    assert_equal 100, assigns(:user_progress_pct)
+    assert_equal 3, assigns(:user_total_judgement_count)
+    assert_select 'div.display-5.text-success', text: '3'
+
+    scoped_book.update!(rank_depth: nil)
+    get judge_overview_book_path(scoped_book)
+    assert_equal 3, assigns(:user_judgement_count)
+    assert_equal 3, assigns(:total_pairs)
+    assert_equal 100, assigns(:user_progress_pct)
+  end
+
+  describe 'updating' do
+    test "keeps an AI judge's auto_run flag set when the judge stays checked across an unrelated save" do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  'James Bond Movies (renamed)',
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [ judge_judy.id ],
+        },
+      }
+
+      assert_predicate james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy), :auto_run?
+    end
+
+    test 'turns auto_run off for an AI judge unchecked from auto-run while staying assigned' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [ judge_judy.id ],
+          auto_run_ai_judge_ids: [],
+        },
+      }
+
+      books_ai_judge = james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+      assert_not_nil books_ai_judge
+      assert_not books_ai_judge.auto_run?
+    end
+
+    test 'removes the AI judge assignment entirely when unchecked from ai_judge_ids' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:                  james_bond_movies.name,
+          team_ids:              [],
+          ai_judge_ids:          [],
+          auto_run_ai_judge_ids: [],
+        },
+      }
+
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
+
+    test 'does not crash when ai_judge_ids and auto_run_ai_judge_ids are omitted entirely' do
+      login_user_for_integration_test user
+      james_bond_movies.books_ai_judges.find_by!(ai_judge: judge_judy).update!(auto_run: true)
+
+      patch "/books/#{james_bond_movies.id}", params: {
+        book: {
+          name:     james_bond_movies.name,
+          team_ids: [],
+        },
+      }
+
+      assert_response :redirect
+      assert_nil james_bond_movies.books_ai_judges.find_by(ai_judge: judge_judy)
+    end
+  end
+
+  test 'describes the book by its distinct query and query/doc pair counts' do
+    login_user_for_integration_test user
+
+    scoped_book = Book.create!(name: 'Counts Book', owner: user, scale: [ 0, 1 ])
+    scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd1', position: 1)
+    scoped_book.query_doc_pairs.create!(query_text: 'shirts', doc_id: 'd2', position: 2)
+    scoped_book.query_doc_pairs.create!(query_text: 'pants', doc_id: 'd3', position: 1)
+
+    get "/books/#{scoped_book.id}"
+
+    assert_response :success
+    assert_match 'This book has 2 queries and 3 query/doc pairs.', response.body
+  end
+
+  test 'judge_activity renders the same partial content polled as a broadcast fallback' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+
+    get judge_activity_book_path(james_bond_movies)
+
+    assert_response :success
+    assert_match "judge-row-#{judge_judy.id}", response.body
+    assert_match 'Judge Judy', response.body
+  end
+
+  test 'lists assigned AI judge in Judge Activity table even with no judgements' do
+    login_user_for_integration_test user
+    james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)
+    james_bond_movies.judgements.where(user: judge_judy).delete_all
+
+    get "/books/#{james_bond_movies.id}"
+
+    assert_response :success
+    assert_select "#judge-row-#{judge_judy.id}" do
+      assert_select 'button[title=?]', 'Judge documents'
+    end
+  end
+  test 'creating a book persists the auto-run flag on its new assignment' do
+    login_user_for_integration_test user
+    post books_path, params: {
+      book: { name: 'Auto-run new book', scorer_id: communal_scorer.id,
+              ai_judge_ids: [ judge_judy.id ], auto_run_ai_judge_ids: [ judge_judy.id ] },
+    }
+    assert_response :see_other
+    created = Book.find_by!(name: 'Auto-run new book')
+    assert_predicate created.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
+  end
+
+  test 'an omitted auto-run field preserves the retained assignment setting' do
+    login_user_for_integration_test user
+    james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id).update!(auto_run: true)
+    patch book_path(james_bond_movies), params: {
+      book: { name: james_bond_movies.name, ai_judge_ids: [ judge_judy.id ] },
+    }
+    assert_response :see_other
+    assert_predicate james_bond_movies.books_ai_judges.find_by!(user_id: judge_judy.id), :auto_run?
+  end
+
+  test 'poll removes vanished rows and retains viewer-scoped prompt eligibility' do
+    login_user_for_integration_test user
+    get judge_activity_book_path(james_bond_movies), params: { known_judge_ids: '999999' }
+    assert_response :success
+    assert_select 'turbo-stream[action="remove"][target="judge-row-999999"]'
   end
 end

@@ -5,7 +5,7 @@ import {
   updateBsTooltipContent
 } from "utils/bs_tooltip"
 
-/** BS5 tooltip for Rails/Stimulus pages, and the migrated core case tooltips (registered in core_stimulus.js). Template-backed popovers on core still use Angular quepid-popover-template. */
+/** BS5 tooltip for Rails and core case pages. */
 export default class extends Controller {
   static values = {
     title: String,

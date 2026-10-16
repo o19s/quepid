@@ -7,8 +7,8 @@ const baseURL = playwrightBaseURL();
 const storageStatePath = path.join(__dirname, '.auth', 'user.json');
 const htmlReportDir = path.join(os.tmpdir(), 'quepid-playwright-html-report');
 
-/** Narrow reflow slice only; desktop tour is `angular_pages.spec.ts`. */
-const narrowViewportSpec = '**/angular_pages_narrow_viewport.spec.ts';
+/** Narrow reflow slice only; desktop tour is `core_pages.spec.ts`. */
+const narrowViewportSpec = '**/core_pages_narrow_viewport.spec.ts';
 
 export default defineConfig({
   globalSetup: path.join(__dirname, 'global-setup.ts'),
@@ -50,7 +50,8 @@ export default defineConfig({
     {
       name: 'chromium',
       dependencies: ['setup'],
-      testIgnore: [narrowViewportSpec],
+      // *.test.mjs files are node:test suites for the screenshot tooling, not browser specs.
+      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts', '**/*.test.mjs'],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },

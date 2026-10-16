@@ -9,9 +9,9 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
   let(:score_data) do
     {
-      all_rated:  [ true, false ].sample,
+      all_rated:  true,
       queries:    {},
-      score:      (1..100).to_a.sample,
+      score:      42,
       try_number: the_try.try_number,
       user_id:    user.id,
     }
@@ -22,11 +22,21 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
       let(:the_case) { cases(:case_without_score) }
 
       test 'raises an error if creation fails' do
-        score_data.delete(:try_number)
+        score_data[:try_number] = 999_999
 
         assert_raises(ActiveRecord::RecordInvalid) do
           service.update score_data
         end
+        assert_not_empty service.errors[:try_number]
+      end
+
+      test 'creates a score without a try when no try_number is given' do
+        score_data.delete(:try_number)
+
+        score = service.update score_data
+
+        assert_predicate score, :persisted?
+        assert_nil score.try_id
       end
     end
 
@@ -60,7 +70,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         }
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1 # otherwise the updated_at doesn't change'
+            travel 1.second # otherwise the updated_at doesn't change
             service.update score_data
 
             the_case.reload
@@ -121,6 +131,37 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
     describe 'case and try with recent score' do
       let(:the_case) { cases(:case_with_score) }
 
+      test 'accepts aggregate-only scores after query scores and ignores an identical repeat' do
+        the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
+                                   score: 0.42, queries: { '174' => { score: 1, text: 'canine' } },
+                                   updated_at: 6.minutes.ago
+        score_data.delete(:queries)
+        score_data[:scorer_id] = the_case.scorer.id
+        score_data[:score] = 0.42
+
+        saved = nil
+        assert_difference 'the_case.scores.count', 1 do
+          saved = service.update score_data
+        end
+        assert_nil saved.queries
+        assert_in_delta 0.42, saved.score
+
+        assert_no_difference 'the_case.scores.count' do
+          assert_equal saved.id, service.update(score_data).id
+        end
+      end
+
+      test 'preserves distinct fractional scores outside the rating update window' do
+        the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
+                                   score: 0.42, queries: {}, updated_at: 6.minutes.ago
+        score_data[:scorer_id] = the_case.scorer.id
+        score_data[:score] = 0.73
+
+        assert_difference 'the_case.scores.count', 1 do
+          assert_in_delta 0.73, service.update(score_data).score
+        end
+      end
+
       test 'updates existing score if last score was last updated less than 5 min ago' do
         the_case.scores.update_all user_id: user.id, try_id: the_try.id, scorer_id: the_case.scorer.id,
                                    updated_at: 1.minute.ago
@@ -135,6 +176,16 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
           assert_not_nil the_case.last_score
           assert_equal the_case.last_score.id, last_score.id
+        end
+      end
+
+      test 'creates a new score when the last score points at a deleted try' do
+        the_case.scores.update_all user_id: user.id, scorer_id: the_case.scorer.id, updated_at: 1.minute.ago
+        the_case.scores.update_all try_id: 0
+        score_data[:scorer_id] = the_case.scorer.id
+
+        assert_difference 'the_case.scores.count' do
+          service.update score_data
         end
       end
 
@@ -229,7 +280,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
 
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload
@@ -256,7 +307,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:score] = 0.99
         assert_no_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload
@@ -271,7 +322,7 @@ class CaseScoreManagerTest < ActiveSupport::TestCase
         score_data[:score] = 0.91
         assert_difference 'the_case.scores.count' do
           assert_changes 'the_case.updated_at' do
-            sleep 1
+            travel 1.second
             service.update score_data
 
             the_case.reload

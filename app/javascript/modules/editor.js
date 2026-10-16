@@ -1,11 +1,15 @@
 // Simplest CodeMirror 6 implementation
-import { EditorState } from "@codemirror/state";
-import { EditorView, lineNumbers } from "@codemirror/view";
+import { Compartment, EditorState, Transaction } from "@codemirror/state";
+import { EditorView, keymap, lineNumbers } from "@codemirror/view";
+import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
+import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
 import { javascript } from "@codemirror/lang-javascript";
 import { json } from "@codemirror/lang-json";
 import { linter, lintGutter } from "@codemirror/lint";
-import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { syntaxHighlighting, HighlightStyle, indentOnInput } from "@codemirror/language";
 import { tags } from "@lezer/highlight";
+import { isJsonEditorMode } from "utils/editor_mode";
+import { prettyPrintJson } from "utils/json_format"
 
 // Syntax highlighting theme - CodeMirror 5 default colors
 const highlightStyle = HighlightStyle.define([
@@ -235,47 +239,57 @@ const jsonLinter = linter(view => {
   return diagnostics;
 });
 
+// "text" is free-form input (e.g. Solr query params): no syntax mode and no linting.
+// JSON modes get JSON support; anything else keeps the historical JavaScript default.
+export function languageFor(mode) {
+  if (mode === "text") return [];
+  return isJsonEditorMode(mode) ? json() : javascript();
+}
+
+export function linterFor(mode) {
+  if (mode === "text") return [];
+  return isJsonEditorMode(mode) ? jsonLinter : javascriptLinter;
+}
+
 /**
  * Create a CodeMirror editor from a textarea
  */
 export function fromTextArea(textarea, options = {}) {
+  const originalDisplay = textarea.style.display
+  let formatTimer
   const wrapper = document.createElement('div');
   textarea.parentNode.insertBefore(wrapper, textarea);
   textarea.style.display = 'none';
   
-  // Choose language extension based on mode
-  let languageExtension;
-  let isJsonMode = false;
-  if (options.mode === 'javascript') {
-    languageExtension = javascript();
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
-    languageExtension = json();
-    isJsonMode = true;
-  } else {
-    // Default to JavaScript
-    languageExtension = javascript();
-  }
-  
-  // Choose appropriate linter
-  let linterExtension;
-  if (options.mode === 'javascript') {
-    linterExtension = javascriptLinter;
-  } else if (options.mode === 'application/json' || options.mode === 'json') {
-    linterExtension = jsonLinter;
-  } else {
-    linterExtension = javascriptLinter; // Default to JavaScript linter
-  }
+  const languageExtension = languageFor(options.mode);
+  const linterExtension = linterFor(options.mode);
+
+  const languageCompartment = new Compartment();
+  const linterCompartment = new Compartment();
   
   // Create editor with minimal extensions including linting
   const extensions = [
     lineNumbers(),
     lintGutter(),
-    languageExtension,
-    linterExtension,
+    // Standard editing: undo/redo, auto-indent, bracket pairing, and Tab to
+    // indent. Outside modals, Esc then Tab moves focus out so keyboard users
+    // aren't trapped; inside a Bootstrap modal, Esc closes the modal instead.
+    history(),
+    indentOnInput(),
+    closeBrackets(),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
+    languageCompartment.of(languageExtension),
+    linterCompartment.of(linterExtension),
     syntaxHighlighting(highlightStyle),
     basicStyles,
     // Additional enhancements
     EditorView.lineWrapping,
+    EditorView.updateListener.of(update => {
+      if (update.docChanged) {
+        textarea.value = update.state.doc.toString()
+        options.onChange?.(textarea.value)
+      }
+    }),
     EditorState.tabSize.of(2)
   ];
   
@@ -308,14 +322,34 @@ export function fromTextArea(textarea, options = {}) {
   // Simple API matching what's used in the form
   const editor = {
     view,
+    destroy: () => {
+      clearTimeout(formatTimer)
+      textarea.value = editor.getValue()
+      textarea.form?.removeEventListener("submit", syncTextarea)
+      view.destroy()
+      wrapper.remove()
+      textarea.style.display = originalDisplay
+      delete textarea.editor
+    },
     getValue: () => view.state.doc.toString(),
+    // Loading content isn't a user edit, so keep it out of undo history:
+    // otherwise Ctrl+Z right after opening would blank the editor.
     setValue: (value) => {
       view.dispatch({
         changes: {
           from: 0,
           to: view.state.doc.length,
           insert: value || ""
-        }
+        },
+        annotations: Transaction.addToHistory.of(false)
+      });
+    },
+    setMode: (mode) => {
+      view.dispatch({
+        effects: [
+          languageCompartment.reconfigure(languageFor(mode)),
+          linterCompartment.reconfigure(linterFor(mode))
+        ]
       });
     },
     setSize: (width, height) => {
@@ -333,7 +367,7 @@ export function fromTextArea(textarea, options = {}) {
         if (!currentValue.trim()) return true;
         
         // Parse and stringify with pretty formatting (2 space indentation)
-        const formatted = JSON.stringify(JSON.parse(currentValue), null, 2);
+        const formatted = prettyPrintJson(currentValue);
         
         // Only update if the formatted content is different
         if (formatted !== currentValue) {
@@ -343,7 +377,8 @@ export function fromTextArea(textarea, options = {}) {
               from: 0,
               to: view.state.doc.length,
               insert: formatted
-            }
+            },
+            annotations: Transaction.addToHistory.of(false)
           });
         }
         return true;
@@ -358,64 +393,21 @@ export function fromTextArea(textarea, options = {}) {
   textarea.editor = editor;
   
   // Update textarea before form submission
-  if (textarea.form) {
-    textarea.form.addEventListener('submit', () => {
-      textarea.value = editor.getValue();
-    });
-  }
+  const syncTextarea = () => { textarea.value = editor.getValue() }
+  textarea.form?.addEventListener("submit", syncTextarea)
   
   // Automatically format JSON content if in JSON mode
-  if (isJsonMode && textarea.value.trim()) {
+  if (isJsonEditorMode(options.mode) && textarea.value.trim()) {
     try {
       // Only format if it's valid JSON
       JSON.parse(textarea.value);
       // Format after a small delay to ensure editor is fully initialized
-      setTimeout(() => editor.formatJSON(), 0);
-    } catch (e) {
+      formatTimer = setTimeout(() => editor.formatJSON(), 0)
+    } catch {
       // If invalid JSON, don't attempt to format
       console.log("Initial JSON content is invalid, skipping auto-formatting");
     }
   }
   
   return editor;
-}
-
-// Helper function to simplify initialization
-export function whenReady(callback) {
-  function checkReady() {
-    if (typeof CodeMirror === 'undefined') {
-      setTimeout(checkReady, 100);
-      return;
-    }
-    
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', callback);
-    } else {
-      callback();
-    }
-  }
-  
-  checkReady();
-}
-
-// Helper function to format JSON string (internal use)
-function formatJSON(json) {
-  try {
-    // Skip empty content
-    if (!json || !json.trim()) return json;
-    
-    return JSON.stringify(JSON.parse(json), null, 2);
-  } catch (e) {
-    console.error("JSON formatting failed:", e);
-    return json;
-  }
-}
-
-// Setup global CodeMirror object for compatibility
-export function setupGlobalCodeMirror() {
-  window.CodeMirror = {
-    fromTextArea,
-    whenReady,
-    formatJSON
-  };
 }

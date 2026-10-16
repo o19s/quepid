@@ -27,9 +27,10 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [III. Run Tests](#iii-run-tests)
 		- [Minitest](#minitest)
 		- [Vitest](#vitest)
+			- [Property-based tests](#property-based-tests)
+		- [Pre-commit hooks](#pre-commit-hooks)
 		- [JS Lint](#js-lint)
 		- [CSS Lint](#css-lint)
-		- [Karma](#karma)
 		- [Playwright E2E](#playwright-e2e)
 		- [Rubocop](#rubocop)
 		- [All Tests](#all-tests)
@@ -56,8 +57,11 @@ This guide provides detailed instructions for developers who want to set up, run
 	- [Modifying the database](#modifying-the-database)
 	- [Updating RubyGems](#updating-rubygems)
 	- [How does the Frontend work?](#how-does-the-frontend-work)
+		- [Partial inputs](#partial-inputs)
 		- [Stimulus HTTP conventions](#stimulus-http-conventions)
-		- [AngularJS code comments](#angularjs-code-comments)
+		- [Error-message policies](#error-message-policies)
+		- [Behavior-preserving refactoring boundaries](#behavior-preserving-refactoring-boundaries)
+		- [Core event bus](#core-event-bus)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)
 	- [How do Personal Access Tokens work?](#how-do-personal-access-tokens-work)
@@ -73,10 +77,8 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Migration Errors](#migration-errors)
 	- [Frontend Issues](#frontend-issues)
 		- [Asset Compilation Errors](#asset-compilation-errors)
-		- [Angular App Not Loading](#angular-app-not-loading)
 	- [Testing Issues](#testing-issues)
 		- [Tests Failing Unexpectedly](#tests-failing-unexpectedly)
-		- [Karma Tests Timeout](#karma-tests-timeout)
 - [QA](#qa)
 	- [Seed Data](#seed-data)
 
@@ -120,13 +122,20 @@ docker compose run --rm app bin/rails db:setup
 
 #### 4. Running the app
 
-Now fire up Quepid locally at http://localhost:
+For a simultaneous pre-Angular-removal / Bootstrap 3 baseline with its own database
+and ports, see [Historical Quepid comparison instance](docs/legacy_comparison.md).
+
+Now fire up Quepid locally at http://localhost:3000 (or the port set by `APP_PORT`):
 
 ```bash
 bin/docker server
 ```
 
 It can take up to a minute for the server to respond as it compiles all the front end assets on the first call.
+
+Restart the running app container after adding an autoload directory or changing
+initializers. Background workers retain their boot-time configuration and autoload
+paths even when the web process reloads code.
 
 We've created a helper script to run and manage the app through docker that wraps around the `docker-compose` command. You will need Ruby installed.
 You can still use `docker compose` directly, but for the basic stuff you can use the following:
@@ -137,10 +146,8 @@ You can still use `docker compose` directly, but for the basic stuff you can use
 * Run any command: `bin/docker run [COMMAND]` or `bin/docker r [COMMAND]`
 * Run dev mode as daemon: `bin/docker daemon` or `bin/docker q`
 * Destroy the Docker env: `bin/docker destroy` or `bin/docker d`
-* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + Karma + linters)
+* Run front end unit tests: `bin/docker r rails test:vitest` (Vitest) or `bin/docker r rails test:frontend` (Vitest + linters)
 * Run back end unit tests: `bin/docker r rails test`
-
-When a development server is running in a one-off container (`bin/docker s` or `bin/docker q`), use `docker compose run --rm --no-deps app [COMMAND]` for additional commands. The `bin/docker r` wrapper passes `--remove-orphans`, which can remove the running server container.
 
 ### Local Setup
 
@@ -150,7 +157,7 @@ This approach lets you run Quepid directly on your machine without Docker. It pr
 
 1. **Ruby**: Check `.ruby-version` for the current version of Ruby.  We track the latest releases.  We recommend using a version manager like [rbenv](https://github.com/rbenv/rbenv) or [RVM](https://rvm.io/).
 
-2. **Node.js**: Install Node.js 22.x or later.
+2. **Node.js**: Install Node.js 24.x (`>=24 <25`), as required by `package.json`.
 
 3. **Yarn**: Install Yarn package manager.
 
@@ -200,7 +207,7 @@ Run the test suite:
 ```bash
 bin/rails test                # Run backend tests
 bin/rails test:vitest         # Vitest (test/javascript/)
-bin/rails test:frontend       # Vitest + Karma + linters
+bin/rails test:frontend       # Vitest + linters
 bundle exec rubocop           # Run Ruby linter
 ```
 
@@ -285,36 +292,69 @@ tail -f log/test.log
 
 ### Vitest
 
-Unit tests for the modern `app/javascript/` tree (Stimulus `controllers/`, `api/`, `utils/`), specs under `test/javascript/` mirroring `app/javascript/` (not colocated):
+See [`docs/js_tooling.md`](docs/js_tooling.md) for the canonical JavaScript tooling scope, commands, import rules, and Vitest PR policy. The quick entry points are:
 
 ```bash
 bin/docker r yarn test:unit          # Vitest
 bin/docker r rails test:vitest       # same as yarn test:unit
 ```
 
-**Vitest PR policy:** new or materially changed logic in `app/javascript/api/` or `app/javascript/utils/` → a `*.test.js` under `test/javascript/` (mirroring the source path, e.g. `app/javascript/utils/foo.js` → `test/javascript/utils/foo.test.js`) in the same PR. Not colocated with the source. Stimulus `controllers/` → add tests when you touch them for migration or behavior changes, not a blanket rewrite for coverage.
+#### Property-based tests
+
+Property tests (fast-check, `test/javascript/utils/*_properties.test.js`) complement example specs for pure `utils/` and `api/` logic with a clear invariant: round trips, aggregations, payload builders, ordering and concurrency helpers. When you add or materially change such a module, consider whether a property fits; when you fix a bug found by one, pin the shrunk counterexample as an example test. Always confirm a new property fails when you deliberately break the code. See [`docs/js_tooling.md` — Property-based tests](docs/js_tooling.md#property-based-tests-fast-check) for conventions.
+
+On the Ruby side there is no property-testing gem. For importer/exporter pairs, prefer a shared fixture that both the Minitest suite and the Vitest suite read (the CSV contract in `test/fixtures/files/csv_round_trip_cases.json` is the model) over randomized Ruby tests.
+
+### Pre-commit hooks
+
+Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+
+Hooks prefer Docker when it is available. RuboCop reuses the running app container
+that mounts the current checkout at `/srv/app` (including one started by
+`bin/docker s` / `q`), so comparison servers for other worktrees do not make the
+selection ambiguous. With no running app container, it falls back to `bin/docker r`; the JS hooks
+also use `bin/docker r`.
+
+Enable hooks:
+
+```bash
+bin/install-git-hooks
+```
+
+`bin/setup` and `bin/setup_docker` call `bin/install-git-hooks` automatically.
+
+Run the hook manually against staged files:
+
+```bash
+.githooks/pre-commit
+```
+
+Run linters directly:
+
+```bash
+bin/pre-commit-rubocop path/to/file.rb
+bin/eslint-staged path/to/app/javascript/file.js
+bin/prettier-staged path/to/app/javascript/file.js
+```
 
 ### JS Lint
 
-**Legacy Angular assets** (`app/assets/javascripts/`) — JSHint:
-
-```bash
-bin/docker r rails test:jshint
-```
-
-**Modern importmap / Stimulus** (`app/javascript/`) — ESLint on the full modern tree; Prettier on `api/` and `utils/` only (see [`docs/js_tooling.md`](docs/js_tooling.md)):
+The detailed JavaScript lint and formatting scope is maintained in [`docs/js_tooling.md`](docs/js_tooling.md). The quick entry points are:
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # Prettier check — api/ and utils/ only; or yarn format:js to fix
+bin/docker r yarn format:js:check    # Prettier check — api/, utils/, classic core scripts; or yarn format:js to fix
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
-Run all Ruby, JavaScript, and CSS linters together:
+Git commits can run linters on staged JS via [pre-commit](https://pre-commit.com):
 
 ```bash
-bin/docker r rails tidy
+pip install pre-commit   # or: pipx install pre-commit
+pre-commit install
 ```
+
+The hook lints scoped files under `app/javascript` (ESLint on everything in scope; Prettier on `api/`, `utils/`, and the classic core scripts). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -328,42 +368,39 @@ bin/docker r rails test:stylelint
 
 Configuration lives in `.stylelintrc.json` (extends `stylelint-config-standard` with pragmatic overrides for legacy Quepid CSS). Built bundles under `app/assets/builds/` and vendored CSS are ignored (see `.stylelintignore`).
 
-### Karma
+Pre-commit can lint staged CSS with the same hook workflow:
 
-Runs tests for the Angular side. There are two modes for the karma tests:
+```bash
+pre-commit install
+```
 
-* Single run: `bin/docker r rails karma:run`
-* Continuous/watched run: `bin/docker r bin/rake karma:start`
-
-**Note:** The karma tests require the assets to be precompiled, which adds a significant amount of time to the test run.
-If you are only making changes to the test/spec files, then it is recommended you run the tests in watch mode (`bin/docker r bin/rake karma:start`).
-The caveat is that any time you make a change to the app files, you will have to restart the process (or use the single run mode).
+The `stylelint-staged` hook only runs on `app/assets/stylesheets/*.css`. Requires `yarn install` so `node_modules/stylelint` exists.
 
 ### Playwright E2E
 
-Golden-path and visual-regression tests against a running app, under `test/playwright/`. Unlike Karma, these hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
+Golden-path and visual-regression tests against a running app, under `test/playwright/`. These hit real HTTP and a real browser, so the app must already be up (`bin/docker s`) before running them.
 
 ```bash
-bin/docker r yarn test:e2e             # run the suite
-bin/docker r yarn test:e2e:ui          # Playwright's interactive UI runner
-bin/docker r yarn test:e2e:update-baselines   # regenerate baseline screenshots
+docker compose exec app yarn test:e2e             # run the suite
+docker compose exec app yarn test:e2e:ui          # Playwright's interactive UI runner
+docker compose exec app yarn test:e2e:update-baselines   # regenerate baseline screenshots
 ```
 
 One-time setup: the Playwright browser binaries aren't part of `node_modules` and don't ship in the app image, so install them once (they only need to be reinstalled if `@playwright/test`'s version changes):
 
 ```bash
-bin/docker r npx playwright install chromium
+docker compose exec app npx playwright install chromium
 ```
 
 Environment variables (all optional, sensible defaults baked in):
 
-* `QUEPID_BASE_URL` — defaults to `http://localhost:33000` (`docker-compose`'s published port). Override for a different host/port, e.g. `QUEPID_BASE_URL=http://localhost:3000` if your setup exposes the app there directly instead of through nginx. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:33000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
+* `QUEPID_BASE_URL` — defaults to `http://localhost:3000` when run inside the app container, or `http://localhost:${APP_PORT:-3000}` from the host (see `test/playwright/env.ts`). Override for a different host/port. With `RAILS_RELATIVE_URL_ROOT`, include the subpath (e.g. `http://localhost:3000/quepid-app`); `test/playwright/env.ts` normalizes a trailing slash so relative `page.goto()` paths resolve under the mount.
 * `QUEPID_E2E_EMAIL` / `QUEPID_E2E_PASSWORD` — sign-in credentials used by `auth.setup.ts`, default to the same sandbox login CLAUDE.md documents for the Playwright MCP flow (`quepid+realisticactivity@o19s.com` / `password`). The resulting session is cached at `test/playwright/.auth/user.json` (gitignored).
-* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `5` (`"10s of Queries"` in the shared dev DB — a case with a working search endpoint and existing queries). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper (`test/playwright/angular_case_helpers.ts`) times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `bin/docker r bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
+* `QUEPID_E2E_CASE_ID` — the case ID the suite navigates to for all case-page specs, defaults to `DEFAULT_RICH_CASE_ID` in `test/playwright/case_helpers.ts` (`"E2E Static Fixture (10s of Queries)"` in the shared dev DB — a clone of case 6 whose try uses a `static` search endpoint, so results are deterministic; that constant's comment explains how to recreate it). **Must be a case with queries** — if your seed data's case has none, the shared `gotoCase()` helper times out waiting for the query list to render, and every case-page spec fails. Override with an ID from your own seed data if it differs, e.g. `QUEPID_E2E_CASE_ID=1`. Note that case IDs in the shared dev DB aren't a fixed fixture — they're just whatever row currently holds that ID, which can drift as the DB is reseeded or mutated over time (e.g. id `1` has been both `"10s of Queries"` and, later, a near-empty `"SOLR CASE"`). If you're regenerating baselines to visually diff against previously committed ones, confirm via `docker compose exec app bundle exec rails runner "puts Case.find(<id>).case_name"` that the ID still resolves to the case you expect before trusting the diff.
 
 Structure:
 
-* `core_smoke.spec.ts`, `angular_pages.spec.ts`, `angular_pages_narrow_viewport.spec.ts` — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
+* Core smoke and narrow-viewport specs — golden-path interaction screenshots (`toHaveScreenshot`) across modals, dropdowns, and the wizard, at desktop and narrow viewports.
 * `share_case.spec.ts` — permanent regression coverage for case sharing: the Stimulus `share-case-core` modal on the core toolbar (incl. the judgements-modal bridge into it) and the Rails cases-index/teams share modal. Mixes `toHaveScreenshot()` baselines with plain behavioral assertions (share/unshare click flow, success alerts) that don't depend on any before/after phase.
 * `stimulus_pages.spec.ts` — smoke and interaction tests for Stimulus pages (cases import modal redirect, bulk judgement save via routed API, mapper wizard) on the `application` layout.
 * `popover_visibility.spec.ts` — computed-style assertions catching invisible-but-present popovers (see the BS5-on-`core` traps documented in CLAUDE.md).
@@ -374,16 +411,51 @@ Baseline screenshots live under `test/playwright/baselines/` and **are checked i
 
 Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.ts`) because they share case state in the database (whichever adapter the dev server is running against) and a single authenticated session — don't assume they're safe to parallelize without addressing that first.
 
-**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern).
+**Clean up anything a spec creates in the shared dev DB.** Because the suite runs against real shared state rather than a fixture DB, any row a test creates (a user, a team, a case) outlives that single run and every later run adds another one — unlike case/session state, there's no reset between runs. If your spec creates a persistent row, delete it in a `test.afterAll` (see `teams.spec.ts`'s or `signup.spec.ts`'s for the pattern). Restore state a test changes on an existing row (sharing, ratings) in `test.afterEach`, not in the test's last lines, which a failure skips.
 
-**Ad-hoc screenshot review** (Playwright MCP captures, migration proofs, etc.) land in `.playwright-mcp/` (gitignored). Organize by **topic subfolder** so the viewer can separate this PR’s shots from older work, e.g. `.playwright-mcp/share-case/`, `.playwright-mcp/prior/`. Filenames stay `*-before.png` / `*-after.png`.
+**Screenshot only what the static fixture controls.** A `toHaveScreenshot()` must not capture account-wide data that other specs or manual sessions change: header "recent cases/books" dropdowns, the cases index, live-search results. Assert those surfaces behaviorally instead, and stub a catalog (`page.route`) when a test needs a specific empty/non-empty precondition.
 
-```bash
-yarn screenshots:view
-# if host Node engines block yarn: node test/playwright/screenshot-viewer-server.mjs
-```
+For ad-hoc screenshots, the comparison viewer, and branch-specific capture history,
+see [Screenshot capture and diffing](docs/screenshot_review.md).
 
-Opens `http://localhost:3456/test/playwright/screenshot-viewer.html` — sidebar groups by folder, pairs before/after, flags **byte-identical** pairs at manifest generation time, and runs a **pixel diff** in the browser (magenta overlay + diff map) when bytes differ. Sidebar badges: `byte =` (identical files), `bytes ≠` / `diff` (changed), `pixel =` (same image, different PNG encoding). Regenerate the manifest: `node test/playwright/generate-screenshot-manifest.mjs`. Override the port with `SCREENSHOT_VIEWER_PORT`. For `dom_migration_screenshots.spec.ts`, set `MIGRATION_SHOT_PHASE=before|after` to pick the phase; group a run's shots by saving them into a topic subfolder as described above. (The share-case surface no longer runs through this ad-hoc flow — its screenshots are ordinary checked-in `toHaveScreenshot()` baselines in `share_case.spec.ts`.)
+### Routine visual regression checks
+
+For CSS/layout changes, run `yarn test:visual` inside the existing server container
+(`docker compose exec app`, or `docker exec <actual-server-name>` for a wrapper-started
+server). This focused suite compares 20 representative desktop/narrow captures
+using native Playwright/Pixelmatch; the full behavioral E2E suite remains separate.
+The screenshot viewer retains dated manual/migration evidence and is not this gate.
+
+The suite uses the existing static-search case selected by `QUEPID_E2E_CASE_ID`,
+blocks external browser requests, and exercises forms without submitting writes.
+It never changes wizard completion, ratings, teams or case contents; background
+score PUTs are fulfilled locally while the browser still calculates real scores. The selected
+case must retain the static snapshot and expected queries; an unavailable/drifted
+fixture is a setup failure, not permission to accept different baselines. Run in
+the same container/browser environment as baseline generation. Real external
+search, persistence and wider migration parity remain covered separately.
+
+Inspect failures in Playwright's HTML report at
+`test/playwright/test-results/visual-report/index.html` (host-mounted, gitignored).
+Run `yarn test:visual:report` on the host to serve it; if the host Node version is
+outside the package engine range, use
+`node node_modules/@playwright/test/cli.js show-report test/playwright/test-results/visual-report`. Review expected/actual/diff images. For an intentional change,
+run `yarn test:visual:update --grep '<affected test>'`, inspect every resulting PNG
+change, then rerun `yarn test:visual`. Update only the affected tests; do not accept
+an unexplained failure by increasing tolerance or masking the affected UI. The
+suite allows at most 100 changed pixels per image, disables animations and hides
+carets; result content, scores and alerts remain visible.
+
+When changing this suite, run it twice unchanged and temporarily introduce a
+visible CSS regression to confirm comparison fails. Restore the CSS and rebuild
+before the final passing run. Add states for observed regression risk rather than
+turning the historical screenshot inventory into a continual recapture queue.
+
+### Combined lint check
+
+Run `rails tidy` in the existing server container to check ESLint/Prettier,
+Stylelint and RuboCop without modifying files. Ruby checks cover application
+source directories; generated scratch files under `tmp` are excluded.
 
 ### Rubocop
 
@@ -464,29 +536,9 @@ bin/docker r bundle exec derailed bundle:mem
 
 While running the application, you can debug the JavaScript using your favorite tool, the way you've always done it.
 
-The JavaScript files will be concatenated into one file, using the rails asset pipeline.
+The core case bundles (`core_case.js`) and the other entries under `app/assets/builds/` are built by esbuild with source maps, so browser dev tools show the original files under `app/javascript/`. With `bin/docker s`, Foreman keeps the bundles rebuilt as you save (see `Procfile.dev`); hard-refresh the page to pick up changes. Run `yarn build:core` only if the watchers are not running.
 
-You can turn that off by toggling the following flag in `config/environments/development.rb`:
-
-```ruby
-# config.assets.debug = true
-config.assets.debug = false
-```
-
-to
-
-```ruby
-config.assets.debug = true
-# config.assets.debug = false
-```
-
-Because there are too many Angular JS files in this application, and in `debug` mode Rails will try to load every file separately, that slows down the application, and becomes really annoying in development mode to wait for the scripts to load. Which is why it is turned off by default.
-
-**PS:** Don't forget to restart the server when you change the config.
-
-Also please note that the files `secure.js`, `application.js`, and `admin.js` are used to load all the
-JavaScript and CSS dependencies via the Rails Asset pipeline. If you are debugging Bootstrap, then
-you will want individual files. So replace `//= require sprockets` with `//= require bootstrap-sprockets`.
+Pages that use the importmap (`application.js`) load `app/javascript/` modules unbundled.
 
 ### Debugging Splainer and other NPM packages
 
@@ -504,23 +556,22 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the bundle via `app/javascript/angular_app.js` and **`splainer_search_adapter.js`**.
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core vendor bundle via **`splainer_search_adapter.js`**.
 
-   With **`bin/docker s`**, Foreman rebuilds the AngularJS bundles when you save; **hard-refresh** the case page.
+   With **`bin/docker s`**, Foreman rebuilds the core bundles when you save; **hard-refresh** the case page.
 
    Manual rebuild only if watchers are not running:
 
    ```bash
-   bin/docker r yarn build:angular
+   bin/docker r yarn build:core
    ```
 
    Then refresh your browser to see the changes.
 
 4. **Why bundles work this way**
-   - Splainer-search ESM modules are inlined into **`app/assets/builds/angular_app.js`** at build time, not runtime (`splainer_search_adapter.js` registers wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI keeps working).
-   - The vendor bundle also inlines npm **Bootstrap 5** JS (for `quepidPopover`, `quepidTooltip`, `quepidModalSvc`, etc.).
-   - Vendored widget CSS (`angular-wizard`, `ng-json-explorer`, `ng-tags-input`) is copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyVendorFiles()`), not by **`build:angular-vendor`**
-   - With **`bin/docker s`**, Foreman watches the vendor import graph (including **`node_modules/splainer-search`**) and keeps **`angular_app.js`** + **`quepid_angular_app.js`** in sync. Save edits and hard-refresh. Run **`yarn build:angular`** only if watchers are not running (that script runs both bundles).
+   - Splainer-search ESM modules are inlined into **`app/assets/builds/core_case.js`** at build time, not runtime.
+   - Linked core stylesheets (currently `json-explorer`) are copied into **`app/assets/builds/`** by **`yarn build:css`** (`build_css.js` → `copyLinkedStylesheets()`), not by **`build:core`**
+   - With **`bin/docker s`**, Foreman watches the import graph (including **`node_modules/splainer-search`**) and keeps **`core_case.js`** in sync. Save edits and hard-refresh. Run **`yarn build:core`** only if watchers are not running.
 
 
 ## Convenience Scripts
@@ -565,7 +616,6 @@ bin/docker r bin/rails routes
 bin/docker r rails test
 bin/docker r rails test:vitest
 bin/docker r rails test:frontend
-bin/docker r bin/rake test:jshint
 bin/docker r rails test:eslint
 bin/docker r bin/rake test:stylelint
 ```
@@ -773,20 +823,6 @@ The below steps are only if you want to customize the setup, and for basic testi
 
 For production deployments, you would typically configure Quepid to use your organization's existing OIDC provider (like Okta, Auth0, Azure AD, etc.) rather than Keycloak.
 
-## Desktop Mode
-
-The macOS application runs Quepid as a single local workspace. It enables Desktop Mode with:
-
-```env
-QUEPID_DESKTOP_MODE=true
-QUEPID_DESKTOP_USER_ID=1
-QUEPID_DESKTOP_USER_NAME=Your Mac Account Name
-```
-
-Desktop Mode selects the configured local user on every request and redirects login pages back to the application. The normal account and authentication behavior remains unchanged when `QUEPID_DESKTOP_MODE` is false. The desktop launcher creates the user and supplies the ID after initializing the SQLite database; `QUEPID_DESKTOP_USER_NAME` is used only for the initial display name.
-
-The packaged application should also bind Rails to loopback, keep its SQLite database and encryption keys outside the application bundle, and protect requests with its per-launch local access token. These are launcher responsibilities rather than defaults for general Quepid deployments.
-
 ## How to use the latest unreleased version via Docker
 
 There is a nightly build of the latest Quepid pushed to DockerHub, just use the tag `quepid:nightly`.
@@ -804,7 +840,7 @@ Followed by `bin/docker r bundle exec rake db:migrate`
 You should also update the schema annotation data by running `bin/docker r bundle exec annotations`
 when you change the schema.
 
-You can rebuild the [ERD](docs/erd.png) (embedded in the [Data Mapping](docs/data_mapping.md) doc) via
+You can rebuild the [ERD](docs/images/erd.png) (embedded in the [Data Mapping](docs/data_mapping.md) doc) via
 `bin/docker r bundle exec rake erd:image`
 
 ## Updating RubyGems
@@ -819,24 +855,278 @@ You will see a updated `Gemfile.lock`, go ahead and check it and `Gemfile` into 
 
 ## How does the Frontend work?
 
-We use Angular 1 for the core interactive application. **`splainer-search`** is **`3.x` from npm** (see root `package.json`); **`app/javascript/splainer_search_adapter.js`** registers the wired singletons on the legacy Angular module **`o19s.splainer-search`** so existing DI (`fieldSpecSvc`, `searchSvc`, …) keeps working. Most other AngularJS-era UI libraries (wizard, pagination, ui-ace, `ng-tags-input`, etc.) remain **under `app/javascript/vendor/`** (see `vendor/README.md`). Only **`angular`**, **`splainer-search`**, and shared utilities (Bootstrap, autocompleter, ...) are npm dependencies for the core Case UI bundle. Esbuild bundles from **`app/javascript/angular_app.js`**.  
-The Angular **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
+The core interactive application is Rails + Stimulus with a module-owned case runtime. **`splainer-search`** is **`3.x` from npm** (see root `package.json`).
+The **`core`** UI loads a built **`core.css`** bundle: npm **Bootstrap 5** plus Quepid sheets (`core-additions.css`, **`bootstrap5-compat.css`**, and screen CSS), wired in **`build_css.js`** (`buildCoreCSS()`). The historical **`bootstrap3-add.css`** navbar slice has been consolidated into **`bootstrap5-compat.css`**.
 
-For the rest of Quepid, we use Bootstrap 5 via npm; the non-Angular UI loads it through `app/javascript/application_modern.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the Angular core bundle and CSS).
+For the rest of Quepid, we use Bootstrap 5 via npm; the application layout loads it through `app/javascript/application.js` (importmap). Assets use **Propshaft** and **jsbundling-rails** (esbuild for the core bundle and CSS).
+
+### Partial inputs
+
+Declare strict locals (`<%# locals: (form:) %>`) in new or substantially changed
+ERB partials, and pass their inputs explicitly from each caller. When changing an
+existing partial for another task, also replace its instance-variable dependencies
+and temporary state with locals, updating all callers while preserving behavior.
 
 ### Stimulus HTTP conventions
 
-Normative patterns for **new** client code on Rails pages (teams, books, admin, …). Legacy Angular patterns on `/case/...` live in [`docs/todo/angularjs_removal_inventory.md`](docs/todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy).
+These apply to all client code: Rails pages and the case page alike. ESLint enforces the first two.
 
-- **Server owns URLs.** Pass Rails path helpers or `url_for` into Stimulus as `data-*-url-value` attributes (see `mapper_wizards/show.html.erb`, `mapper_wizard_controller.js`). For forms, use `this.formTarget.action` (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths for navigation.
-- **CSRF on mutating requests.** Layouts include `csrf_meta_tags`. Use `apiFetch` from `app/javascript/api/fetch.js` (importmap: `api/fetch`) so `X-CSRF-Token` is added automatically. For form submits (e.g. `confirm_delete_controller.js`), use `authenticity_token` instead.
-- **`fetch` shape:** `POST`/`PUT`/`DELETE` with `Content-Type: application/json`, the CSRF header, and `JSON.stringify` body. Check `response.ok`; on failure, parse JSON with `.catch(() => ({}))` before surfacing `data.message`, `data.error`, or `response.statusText`.
-- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs), [`docs/QUEPID_FEATURES.md` §23](docs/QUEPID_FEATURES.md#23-api-surface)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard) — still prefer server-generated URLs over paths built in JS.
-- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import). Prefer `data-*-url-value` for API endpoints.
+- **JSON goes through the `api/json` verb helpers** (importmap: `api/json`):
+
+  | Call | Use for |
+  | --- | --- |
+  | `getJson(url, options)` | reads |
+  | `postJson(url, body, options)`, `putJson(...)`, `patchJson(...)` | writes with a JSON body |
+  | `deleteJson(url, body?, options)` | deletes (a body is rare: rating resets) |
+  | `requestJsonResponse(url, { method, json, ...options })` | only when the caller needs the response status (e.g. a 204 branch) |
+
+  Each helper resolves to the parsed body (`null` for 204/empty), sends `Accept`/`Content-Type` and the CSRF token, and rejects with an `HttpError` (`status`, parsed `data`) on any non-2xx response, so callers never check `response.ok`. `options` is the usual `fetch` init (`headers`, `signal`); never pass `method`, pick the helper for the verb.
+- **Non-JSON responses** (CSV/blob downloads) use `apiFetch` from `api/fetch`, which adds the CSRF header. Nothing outside `app/javascript/api/` calls the global `fetch`.
+- **Persisted UI fragments** may use Rails HTML endpoints alongside JSON APIs. Use Turbo Frames when their navigation/refresh contract fits, or `apiFetch` with an `Accept` of `text/vnd.turbo-stream.html` and `Turbo.renderStreamMessage` for targeted updates outside a Frame (annotations). Rails owns markup; keep browser stores and modal instances outside replaced content.
+- **No injected transports.** Runtimes and controllers import the helpers directly. Specs stub `fetch` (`vi.stubGlobal("fetch", ...)`) or `vi.mock("api/json")` / `vi.mock("api/fetch")`.
+- **Server owns URLs.** Emit concrete URLs with Rails path helpers as `data-*-url-value` attributes, or use `this.formTarget.action` for forms (`import_case_controller.js`). Never hardcode `/` or absolute site-root paths.
+- **API-client modules in `utils/`** (`case_runtime`, `settings_runtime`, `ratings_store`, `query_lifecycle`, …) own their REST paths in one place each, like an SDK. Controllers do not build API paths.
+- **Ids known only in the browser use a URL template.** Emit the path helper with a named placeholder id as `data-<controller>-<action>-url-template-value` on the controller that owns the rows, e.g. `api_case_query_path(@case, "__QUERY_ID__")`. The controller fills it in with `replaceAll("__QUERY_ID__", id)`; ids the server knows are filled in by the server, not left as placeholders. There is no generic client-side URL-template helper.
+- **Form submits** (e.g. `confirm_delete_controller.js`) send `authenticity_token` instead of the header.
+- **REST vs HTML routes.** JSON under `/api/...` is the REST surface ([OpenAPI](/api/docs)). Some Stimulus controllers hit **HTML JSON endpoints** instead (bulk judge, mapper wizard); the same helpers apply.
+- **Subpath deployments.** Layouts set `data-quepid-root-url` on `<body>` via `quepid_root_url`. Use `getQuepidRootUrl()` from `utils/quepid_root` only when navigation cannot be a server-rendered URL (e.g. redirect after import).
+
+### Error-message policies
+
+Explicitly choose an error policy at each
+boundary: contextual server errors via `serverMessage`, unknown rejection
+shapes via `errorMessage`, structured search errors via `flashErrorMessage`.
+Reuse the appropriate existing helper rather than add another extractor.
+Replacing `error.message || fallback` with `errorMessage` expands accepted
+rejection shapes; replacing it with `serverMessage` also changes the fallback
+for body-less HTTP failures. Treat those as intentional changes with focused
+tests, not mechanically equivalent substitutions. Preserve fixed generic
+messages and editor parse diagnostics.
+
+### Turbo navigation
+
+Use Turbo Drive by default on ordinary Rails management and admin pages.
+`application.js` enables Drive; Rails owns navigation URLs and rendered
+HTML, while Stimulus owns behavior and widget lifecycle. Do not add global form
+helpers that opt every form out of Turbo.
+
+Management form actions should use Rails path helpers so they inherit the page's
+protocol. An HTTPS page cannot submit a Turbo fetch to HTTP; keep protocol-changing
+case navigation as a full-page transition. Reverse proxies must forward
+`X-Forwarded-Proto` correctly so Rails generates redirects with the external
+protocol. Do not reintroduce a blanket form opt-out to compensate for an incorrect
+action URL or proxy configuration.
+
+- Successful state-changing HTML submissions redirect with `status: :see_other`
+  (303); validation failures render with `status: :unprocessable_content` (422).
+  `ApplicationResponder` supplies these defaults for `respond_with`.
+- Put `data-turbo-confirm` on the **form** for a destructive submission. With
+  `button_to`, use `form: { data: { turbo_confirm: "…" } }`. Forms that explicitly
+  opt out of Turbo use the `form-confirm` Stimulus controller instead.
+- Use `requestSubmit()` for automatic submissions so validation and Turbo receive
+  the submit event. Initialize widgets in Stimulus `connect()` and release
+  listeners, timers, and widgets in `disconnect()`.
+- Prepare widgets before `turbo:before-cache`: CodeMirror synchronizes its textarea
+  and removes its generated DOM; `page-cache` clears Bootstrap overlays and body
+  scroll locks. Mark one-time flash/animation content `data-turbo-temporary`.
+  Cached previews and history visits reconnect controllers, so initialization must
+  tolerate both. Do not rely on `DOMContentLoaded` for per-page behavior.
+- Hover prefetch is disabled on management/admin layouts because legacy GET routes
+  retain intentional entry/session effects. Application and API controllers reject
+  requests marked `X-Sec-Purpose`, `Sec-Purpose`, or `Purpose: prefetch` before
+  their callbacks. Keep both guards until a separate prefetch decision; see the
+  [GET side-effect audit](#get-side-effect-audit).
+- Broadcast `replace`/`update`/`append` streams, not refreshes. The layout's
+  `<base href>` (kept for relative URLs under `RAILS_RELATIVE_URL_ROOT`) makes
+  Turbo's refresh action visit the app root instead of reloading the page, so
+  `broadcast_refresh_to`, `broadcasts_refreshes` and `turbo_refreshes_with` do not
+  work here. Partials broadcast from jobs render without a request: they cannot
+  use `current_user` or the session, and their forms carry no authenticity token,
+  so keep those forms Turbo submissions, which send the page's CSRF meta token.
+- Keep explicit opt-outs for authentication/session changes, mounted engines, and
+  the AI prompt tester's direct POST-rendered output. Downloads that are fetched
+  by JavaScript continue to use the download helpers. Any new opt-out must have a
+  concrete lifecycle or response reason.
+
+### GET side-effect audit
+
+Judge Later submits a separate POST form, and logout submits a DELETE form with
+Drive disabled. Both return 303; GET/HEAD cannot invoke these actions. Neither
+requires an extra confirmation: deferring a rating and ending a session retain
+their existing one-click behavior. Search-endpoint clone GET only builds an
+unsaved form; scorer cloning already uses POST.
+
+The remaining destinations require deliberate navigation and remain protected
+by the global prefetch guards:
+
+| Destination | Intentional GET effect / boundary |
+| --- | --- |
+| Judging `new` / `judge`, including `skip_judging` redirects | Random pair selection and session counter; Judge and milestone-resume links explicitly opt out of prefetch. |
+| Core case entry and `/cases/new` | Case creation, legacy URL-supplied case/search settings, protocol analytics; full-page workspace boundary. |
+| Home | Marks the displayed announcement viewed. |
+| Book HTML/API reads using `set_book` | Enqueues view tracking to maintain recent-book ordering. |
+| Mapper wizard entry | Deletes prior persisted wizard state to start fresh. |
+| Authentication callbacks | Session/user/token effects; retain authentication opt-outs. |
+| Proxy and mounted engines | Remote/engine-owned behavior; engine links retain Drive opt-outs and their implementation needs separate review before prefetch enablement. |
+
+Other first-party management/admin GET actions build unsaved forms or read/filter
+records. Case/rating/information-need export GETs serialize data; book export GET
+polls status, while update starts the job. Do not infer mutations from route
+names. The retained entry effects mean ordinary GETs are not universally pure;
+this audit does not authorize enabling prefetch. Regression tests live in
+`test/controllers/get_mutations_test.rb`; actual browser coverage is recorded in
+`docs/manual-testing/tracking.yml`.
+
+### Turbo on the case page
+
+The case branch of `app/views/layouts/application.html.erb` loads Turbo through
+`core_stimulus.js` for **Frames and Streams**, with `Turbo.session.drive = false`.
+The case workspace and standalone analytics layout also declare
+`<meta name="turbo-visit-control" content="reload">`: visiting either from a
+Drive-enabled page must create a fresh document. Disabling Drive only in the
+incoming bundle does not establish that boundary, because the previous page's
+JavaScript would already be retained.
+
+Keep full-page navigation for the case workspace until its stores, asynchronous
+searches, and bundle lifecycle support Drive visits. Preserve Solr JSONP's HTTP
+and protocol-switch requirements. Analytics loads Stimulus for its chart and
+clipboard controllers but not Turbo, so its full-page boundary remains.
+
+Frames and Streams remain available on the case workspace. Turbo treats content
+inside a `<turbo-frame>` as navigatable regardless of the Drive setting, unless
+that content explicitly opts out.
+
+Keep interactive regions out of Turbo Frames unless their lifecycle is explicitly supported. When
+server-rendered markup and client-side behavior have to sit together, let the owning Stimulus
+controller reconcile the two (see `case_toolbar_controller.js`).
+
+**Which mechanism re-renders a region depends on who owns the state.** Server-owned state — the case
+name, try, scorer name, badges — re-renders through a Turbo Frame, because Rails can render it. The
+case workspace's scores and search results cannot: live search runs browser → customer engine and
+scoring runs client-side, so the server never sees the documents and has nothing to render from.
+Those re-render from a client-side store that Stimulus controllers subscribe to, writing the DOM
+directly. Reach for a Turbo Stream only when Rails is the source of truth for what changed; on this
+page that is the exception, not the default.
+
+### Stimulus conventions
+
+- Use targets for elements inside a controller's scope and typed values for controller configuration. Keep per-row data on the row when it represents dynamic client-side data rather than controller configuration.
+- Use `data-action` for interactions and document/window events when the receiving controller owns the markup. Stimulus manages listener cleanup. Keep direct listeners for Bootstrap popover/tooltip content relocated outside that scope, and keep store subscriptions paired in `connect()` / `disconnect()`.
+- Use outlets when asking a known peer controller to perform an operation. Keep named events for facts broadcast to multiple consumers or emitted by runtime modules, and stores for shared mutable state.
+- Render static structure in ERB and populate targets. Client-computed query rows, results and scores stay in JavaScript. Keep interactive regions out of Turbo Frames unless their lifecycle is supported.
+- **Rows built in the browser** clone a `<template>` rendered by ERB (`core/_query_list_templates.html.erb`). Keep those partials free of ERB tags other than comments: the Vitest specs load them verbatim through `test/javascript/support/view_template.js`, and `core_controller_test.rb` checks they render. Mark every point the controller fills in with `data-slot="name"`, never a class, a Bootstrap attribute, or another controller's target.
+- **Key rows by record id and reuse them.** A list re-render updates existing rows in place (`li[data-query-id]` in `queries_list_controller.js`) instead of replacing them, so nested controllers keep their state (an open notes form, a half-typed draft) and only see real value changes. Child controllers react through `*ValueChanged` callbacks.
+- **Compare record ids with `isSameId`** from `utils/record_identity.js`, not `===` or `String(a) === String(b)`: ids arrive as numbers or strings, and a missing id never matches.
+- **Per-row data lives on the row.** A modal opened from a row reads the record id with `trigger.closest("[data-query-id]")` and current data from the live store, not from values copied onto the button when the row rendered.
+- Before converting Boolean dataset checks, verify absent and empty values: Stimulus treats an empty value attribute as true. Value callbacks also run during connection.
+
+ESLint enforces a per-controller count ceiling for direct `document.addEventListener` calls and `innerHTML` assignments, recorded in `config/stimulus_conventions_baseline.json`. New controllers have zero allowance. The AST check includes literal computed properties and compound assignments, and ignores reads, comments and strings. It prevents count growth; it does not detect replacing an old use with a different use, aliases or dynamically computed property names. Reduce the baseline when removing existing uses; increases require a documented scope/lifecycle reason reviewed with the change. Run `yarn lint:js` through the established Docker workflow.
+
+### Core event bus
+
+The case page's controllers and module-owned runtime talk to each other with `CustomEvent`s. Most go on `document`; a few stay on a store or on a controller's own element. Every event is emitted by one owner; the rest are listeners. Names are free-form strings, so grep the name before renaming one.
+
+**Lifecycle rules**
+
+- A Stimulus controller that listens on `document`, a store, or `window` adds the listener in `connect()` and removes it in `disconnect()` with the same function reference (keep it on `this`, e.g. `this.onScorePersisted`). Listeners on `this.element` follow the same pattern, so they do not leak when Turbo or a re-render replaces the element.
+- Runtime modules in `utils/` (not Stimulus controllers) add their listeners once when the case runtime is built and never remove them. They live as long as the page. Do not create these runtimes more than once per page load.
+- Fire-and-forget events must not assume a listener exists. When a controller needs a known peer to do something and report back, use a Stimulus outlet that returns a promise instead of an event with a callback (see **Outlets** below).
+- Put an event on `document` only when the emitter and listener are not in the same DOM subtree. Otherwise dispatch on the element with `bubbles: true` and listen on the ancestor.
+- Stores (`stores/*.js`) are `EventTarget`s. Listen to them directly, not through `document`.
+
+**Stores** (`quepid_store.js`; listeners use `getCoreStores()`)
+
+| Store | Events | Main listeners |
+| --- | --- | --- |
+| `queries` | `change`, `reset`, `search-started`, `search-completed`, `search-failed`, `error`, `command` | `queries-list` (`change`, `reset`, `search-started`, `search-failed`), `query-command-bridge` (`command`) |
+| `documents` | `change`, `reset`, `command` | `queries-list` (`change`, `reset`), `query-command-bridge` (`command`) |
+| `scoring` | `rating-changed`, `change`, `scoring-complete` | `qscore-case` and `qgraph` (`scoring-complete`), `qscore-case` (`rating-changed`), `utils/live_query_events` (`rating-changed`) |
+| `diff` | `change` | none today; `qscore-case` reads it on demand |
+
+**`document` events**
+
+`detail` is the payload contract. Ids are numbers unless noted; listeners compare them with `isSameId` (`utils/record_identity.js`).
+
+| Event | `detail` | Emitter | Listeners |
+| --- | --- | --- | --- |
+| `core-bootstrap:failed` | `{ error }` | `core-bootstrap` | none in the app (Playwright and tests read it) |
+| `quepid:case-selected` | `{ caseNo, caseName, bookId, bookName }` (book fields `null` when unset) | `utils/case_runtime` | none; `coreWorkspace.caseState` reads the selected record directly |
+| `quepid:case-renamed` | `{ caseNo, caseName }` | `utils/case_runtime` | `case-toolbar` |
+| `quepid:case-header-stale` | `{ caseNo, reason }` | `utils/case_runtime`, other surfaces that change header state (contract in `core/_case_header.html.erb`) | `case-toolbar` (refetches the header frame) |
+| `quepid:case-team-changed` | `{ action, caseNo, team: { id, name } }` | `share-case-core` | none in the app (tested only) |
+| `case-settings:updated` | `{ caseNo, lastTry }` | `utils/settings_runtime` | `tune-relevance` (`keepDrawerOpen`) |
+| `pick-scorer:selected` | `{ caseId, scorer }` | `pick-scorer-core` | `case-toolbar`, `qscore-case`, `utils/live_query_events` |
+| `query-options:saved` | `{ queryId, options }` (no `caseId`: listeners treat it as the current case) | `query-options-core` | `utils/live_query_events` |
+| `judgements:queries-need-reload`, `imports:queries-need-reload` | `{ caseId }` | `judgements-core`, `import-ratings-core` | `utils/live_query_events` (reloads only for the current case) |
+| `quepid:case-book-updated` | `{ caseId, bookId, bookName, autoPopulateBookPairs, autoPopulateCaseJudgements }` | `utils/case_runtime` (fresh read or successful settings save) | `utils/live_query_events` (reconfigures book sync) |
+| `queries-state:changed` | none | `utils/live_query_runtime_owner` | `queries-list`, `add-query` |
+| `query-diffs:refreshed` | `{ success }` | `utils/live_query_runtime_owner` | `qscore-case` |
+| `case-score:persisted` | `{ caseId }` | `qscore-case` | `qgraph` |
+| `annotations:changed` | `{ caseId }` | `annotations` | `qgraph` |
+| `query-delete:completed` (Stimulus `dispatch` with `target: document`; a re-render can detach the button mid-request) | `{ queryId }` | `query-delete` | `queries-list` |
+| `move-query-core:completed` (Stimulus `dispatch`; the modal is outside the list) | `{ caseId, queryId, targetCaseId }` | `move-query-core` | `queries-list` |
+| `flash:show`, `flash:hide` | `{ type, message, target, html }`, `{ target }` | `utils/flash.js` (`coreFlash`) | `flash` |
+
+**Element-scoped events** (dispatched on a controller's element, handled by an ancestor or a named sibling)
+
+| Event | Emitter | Listener |
+| --- | --- | --- |
+| `dynamic-modal:close` | `utils/dynamic_modal` (on the cloned wrapper) | `dynamic-modal` |
+| `rating-popover:rate`, `rating-popover:reset` | `rating-popover` (bubbles) | `search-results`, `missing-documents` |
+| `search-result:show-document`, `query-notes:close` | `search-result`, `query-notes` (bubbles) | `search-results` |
+| `query-row:toggle` | `queries-list` (on the search-results element); `query-row` also fires a Stimulus `dispatch("toggle")` | `search-results`, `queries-list` |
+| `query-notes:open` | `search-results` | `query-notes` |
+| `add-query:submit` | `add-query` | `query-lifecycle` (ancestor) |
+| `add-query:complete` | `query-lifecycle` | `add-query` |
+
+**Outlets** (a controller calls a peer directly; selectors are document-wide, so a controller on `<body>` is reachable from any modal)
+
+| Caller | Outlet (selector) | Methods |
+| --- | --- | --- |
+| `diff-core` | `snapshot-bridge` (`body`) | `currentSelections()`, `apply({ selections, snapshotsUrl })`, `clear()`, `delete({ snapshotId, snapshotsUrl })` |
+| `take-snapshot-core` | `snapshot-bridge` (`body`) | `create({ caseId, name, recordDocumentFields })` |
+| `wizard-launcher` | `wizard` (`#wizardModal`) | `open()` |
+| `case-toolbar` | `pane` (`.pane_container`) | `toggle()` |
+| `judgements-core` | `share-case-core` (`#shareCaseModal`) | `openFromExternal(caseNo)` |
+| `query-explain` | `queries-list` (`#query-container`) | `explainData(queryId)`, `renderQueryTemplate(queryId)` |
+| `query-delete`, `move-query-core` | `query-command-bridge` (`body`) | `queryRemoved({ caseId, queryId })` |
+| `core-bootstrap` | `case-toolbar` (`#case-actions`) | `showActions()` |
+
+Outlet methods that do work return a promise and reject on failure; the caller shows the error. A missing outlet throws when the caller touches it, so the failure is visible instead of a silent hang. `wizard-launcher` and `core-bootstrap` are the exceptions: they check `hasWizardOutlet` / `hasCaseToolbarOutlet`, because a page without the wizard modal has nothing to auto-open, and a toolbar that connects after bootstrap reads `window.quepidCoreBootstrap.ready` itself.
+
+Stimulus `this.dispatch()` calls (`query-delete:completed`, `move-query-core:completed`, `queries-list:sort-state-changed`, `queries-list:drag-start`, `query-row:toggle` as above, `text-paste:paste`) are prefixed with the controller identifier and are consumed through `data-action` attributes in the views, not `addEventListener`.
+
+**Selected case ownership**
+
+`utils/case_runtime` owns the selected case record and book settings.
+`coreWorkspace.caseState` reads that record directly. Judgements and
+CSV exports use fresh reads through the owner with Rails-provided URLs; concurrent
+reads of the same URL share only their in-flight request. Responses from a prior
+selection or superseded request cannot update the current record. A successful
+book-settings save invalidates older reads and publishes
+`quepid:case-book-updated`; refreshing the selected record publishes the same
+notification so book sync follows externally changed settings too. Navigation
+and query collections retain ids for their own loading lifecycle. Snapshot
+lists have a separate lifecycle.
+
+Global JavaScript event names are exported as `CORE_EVENTS` from
+`utils/core_events`. ERB `@document` actions retain their literal names and must
+be coordinated with that module. Controller-owned notifications use
+`this.dispatch()`; direct calls to a known peer use outlets.
+
+**Adding or changing an event**
+
+1. Pick an owner. Only that controller or module dispatches the event. A second emitter is a sign you want a store instead.
+2. Follow the naming in the tables: `noun:past-tense-verb` (`thing:changed`, `thing:saved`). Use the `quepid:` prefix only for case-level facts the whole page shares.
+3. Add the listener in `connect()` and remove it in `disconnect()`, and cover both with a Vitest spec. Some specs already assert the dispatch, e.g. `share_case_core_controller.test.js` and `case_runtime.test.js`.
+4. Update the tables above.
+
+The remaining globals are `window.Stimulus` (Playwright specs look up controllers through it), `window.bootstrap` (`bootstrap_globals.js`, for the data API), Vega's `vegaEmbed` (`vega_globals.js`). Check their consumers before changing them; Angular compatibility globals are no longer required. CodeMirror is not global: import `fromTextArea` from `modules/editor`.
 
 ## Fonts
 
-The *aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.  
+The *Aller* font face is from FontSquirrel, and the .ttf is converted into .woff2 format.
+Declare its regular, italic, bold and bold-italic faces under one family in `fonts.css`; use `Aller, sans-serif` with CSS weight/style at call sites.
 
 ## How to develop Jupyterlite
 
@@ -973,7 +1263,7 @@ Adapter-specific behavior:
 **Solutions**:
 1. Check for JavaScript or CSS syntax errors:
    ```bash
-   bin/docker r rails test:jshint
+   bin/docker r rails test:eslint
    bin/docker r rails test:stylelint
    ```
 
@@ -989,7 +1279,7 @@ Adapter-specific behavior:
    bin/docker r yarn -v
    ```
 
-### Angular App Not Loading
+### Frontend assets not loading
 
 **Symptom**: Quepid interface doesn't load properly.
 
@@ -1019,20 +1309,24 @@ Adapter-specific behavior:
    bin/docker r rails test -v
    ```
 
-### Karma Tests Timeout
-
-**Symptom**: Karma tests hang or timeout.
-
-**Solutions**:
-1. Run in single-run mode:
-   ```bash
-   bin/docker r rails karma:run
-   ```
-
-2. Check for browser compatibility issues
-3. Increase the timeout in karma.conf.js
-
 # QA
+
+## Rails Pulse
+
+Administrators can open **Admin > Rails Pulse** (`/admin/rails_pulse`) to inspect
+requests, normalized SQL, background jobs and exceptions. Monitoring uses the
+application database. Upstream defaults are retained, including disabled raw-SQL
+and job-argument capture, hourly summaries and daily cleanup with 30-day retention
+and per-table record caps. The route requires an administrator in every environment;
+the engine also authorizes administrators outside development/test.
+
+Deployments must run the regular Rails migrations before restarting web and worker
+processes. A new installation shows a setup screen until requests and summaries
+exist. For an immediate development summary, run
+`rails runner 'RailsPulse::SummaryJob.perform_now(Time.current.beginning_of_hour)'`
+in the existing server container.
+
+## Staging deployment
 
 There is a code deployment pipeline to the http://quepid-staging.herokuapp.com site that
 is run on successful commits to `main`.
@@ -1043,6 +1337,43 @@ If you have pending migrations you will need to run them via:
 heroku run bin/rake db:migrate -a quepid-staging
 heroku restart -a quepid-staging
 ```
+
+## Manual testing tracker
+
+For comparison baselines and capture conventions, follow
+[Screenshot capture and diffing](docs/screenshot_review.md#comparison-baselines).
+
+During incremental development, use a representative sample of affected browser
+flows per meaningful batch, including a success and an error path when relevant.
+A full manual sweep is not required for every commit. Record the sampled coverage
+and deferred flows in the task doc, and update only scenarios actually exercised.
+Run the broader pass separately before declaring full manual coverage; expand the sample
+when a failure or a higher-risk behavior change warrants it.
+
+Run `ruby bin/manual_test_status --due-only` to find scenarios needing review.
+Keep `last_run` as the actual test time. Uncommitted files are compared by edit
+time; committed files are due only when both their edit and commit times are
+newer than the test. Editing, testing, then committing the same files therefore
+keeps the verification current. Never-run scenarios and the default 90-day
+expiry still make a scenario due.
+
+This is a timestamp heuristic. Fresh clones or rebases can still report due;
+tools that preserve or backdate file timestamps can hide changes.
+
+See [the manual testing guide](docs/manual-testing/README.md) for scenarios and
+coverage recording.
+
+## Requiring search endpoint proxying
+
+`REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS=true` requires proxying when endpoints
+are created or edited. It defaults to false and is independent of desktop mode.
+Endpoint forms hide the proxy switch and JSONP choice; the case wizard uses GET
+for new Solr drafts because JSONP cannot be proxied. The wizard rejects incompatible
+existing endpoints at selection, validation and Finish; edit them first or configure
+a new endpoint. Startup warns about incompatible
+existing endpoints without changing them. Review those endpoints explicitly;
+this flag does not migrate their settings or prevent their existing direct searches.
+The credential-only proxy setting remains independently configurable.
 
 ## Seed Data
 

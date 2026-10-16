@@ -1,0 +1,451 @@
+import { endpointSettings } from "utils/endpoint_settings"
+import { Controller } from "@hotwired/stimulus"
+import { fromTextArea } from "modules/editor"
+import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
+import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
+import coreFlash from "utils/core_flash"
+import { searchEngineLabel } from "utils/search_engines"
+import { isSameId } from "utils/record_identity"
+
+const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
+
+// A link with nowhere to go loses its href (reads as plain text) rather than pointing at "#".
+function setLinkHref(link, url) {
+  if (url) link.href = url
+  else link.removeAttribute("href")
+}
+
+export default class extends Controller {
+  static targets = [
+    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
+    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol",
+    "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
+  ]
+
+  static values = { engineLabels: Object }
+  static outlets = ["pane"]
+
+  connect() {
+    this.tab = "developer"
+    this.editor = null
+    this.loadCapabilities()
+  }
+
+  selectTab(event) {
+    this.showTab(event.params.tab)
+  }
+
+  toggleSection(event) {
+    const body = this.sectionBodyTargets.find(body => body.dataset.sectionBody === event.params.section)
+    if (!body) return
+    const collapsed = body.classList.toggle("d-none")
+    const icon = event.currentTarget?.querySelector(".bi")
+    icon?.classList.toggle("bi-plus-circle-fill", collapsed)
+    icon?.classList.toggle("bi-dash-circle-fill", !collapsed)
+  }
+
+  filterEndpoints(event) {
+    this.renderEndpointSuggestions(event.currentTarget.value)
+  }
+
+  submitRename(event) {
+    event.preventDefault()
+    this.renameTry()
+  }
+
+  disconnect() {
+    if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
+    this.editor?.destroy()
+    this.editor = null
+  }
+
+  loadCapabilities() {
+    getTuneRelevanceCapabilities()
+      .then(services => {
+        this.capability = services.capability
+        this.load()
+      })
+      .catch(error => this.showError(error.message || "Unable to load Tune Relevance."))
+  }
+
+  load() {
+    this.settings = this.capability.settings.editable()
+    if (!this.settings) {
+      this.settingsRetry = window.setTimeout(() => this.load(), 200)
+      return
+    }
+    this.settingsRetry = null
+    const keptTab = this.hasPaneOutlet ? this.paneOutlet.handoff?.tab : null
+    if (keptTab && this.panelTargets.some(panel => panel.dataset.tunePanel === keptTab)) this.tab = keptTab
+    this.searchEndpoints = []
+    this.mountEditor()
+    this.refresh()
+    this.capability.endpoints.fetchForCase(this.capability.navigation.currentCaseNo()).then(() => {
+      this.searchEndpoints = this.capability.endpoints.all()
+      this.populateEndpoints()
+      this.refreshEndpointDetails()
+    })
+  }
+
+  refresh() {
+    this.showTab(this.tab)
+    this.refreshQueryEditor()
+    this.refreshCuratorVars()
+    this.refreshSettings()
+    this.refreshTemplateWarning()
+    this.refreshTls()
+    this.refreshHistory()
+  }
+
+  showTab(tab) {
+    this.tab = tab
+    this.tabTargets.forEach(button => {
+      const active = button.dataset.tuneRelevanceTabParam === tab
+      button.classList.toggle("active", active)
+      button.setAttribute("aria-selected", active ? "true" : "false")
+    })
+    this.panelTargets.forEach(panel => { panel.hidden = panel.dataset.tunePanel !== tab })
+    this.actionTargets.forEach(action => { action.hidden = !EDITABLE_TABS.has(tab) })
+  }
+
+  mountEditor() {
+    if (!this.hasQueryEditorTarget || this.editor) return
+    this.editor = fromTextArea(this.queryEditorTarget, {
+      mode: queryParamsMode(this.settings.queryParams),
+      height: 360,
+      onChange: value => {
+        this.settings.queryParams = value
+        this.refreshQueryWarning(value)
+        this.refreshCuratorVars()
+        this.refreshTemplateWarning()
+      }
+    })
+  }
+
+  refreshQueryEditor() {
+    if (!this.settings) return
+    const isStatic = this.settings.searchEngine === "static"
+    if (this.hasStaticEngineMessageTarget) this.staticEngineMessageTarget.hidden = !isStatic
+    if (this.hasStaticKnobsMessageTarget) this.staticKnobsMessageTarget.hidden = !isStatic
+    const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
+    if (editorShell) editorShell.hidden = isStatic
+    const value = this.settings.queryParams || ""
+    if (this.editor && this.editor.getValue() !== value) this.editor.setValue(value)
+    this.refreshQueryWarning(value)
+    if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
+    this.editor?.setMode?.(queryParamsMode(value))
+  }
+
+  refreshQueryWarning(value) {
+    if (!this.hasQueryWarningTarget) return
+    const warning = queryParamsWarning(value)
+    const code = (text) => Object.assign(document.createElement("code"), { textContent: text })
+    this.queryWarningTarget.replaceChildren(
+      ...(warning
+        ? ["Your query params contain ", code(warning.typo), ", you probably meant ", code(warning.correction), "."]
+        : [])
+    )
+    this.queryWarningTarget.hidden = !warning
+  }
+
+  refreshCuratorVars() {
+    if (!this.hasCuratorVarsTarget || !this.hasCuratorVarTemplateTarget) return
+    this.settings?.updateVars?.()
+    const vars = this.settings?.curatorVars || []
+    this.curatorVarsTarget.replaceChildren(...curatorVariableEntries(vars).map(({ item, index }) => {
+      const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
+      row.querySelector("label").textContent = `${item.name}:`
+      const input = row.querySelector("input")
+      input.value = item.value ?? ""
+      input.dataset.tuneRelevanceIndexParam = String(index)
+      return row
+    }))
+  }
+
+  updateCuratorVariable(event) {
+    this.settings.curatorVars[event.params.index].value = event.currentTarget.value
+  }
+
+  refreshSettings() {
+    if (!this.settings) return
+    if (this.hasFieldSpecTarget) this.fieldSpecTarget.value = this.settings.fieldSpec || ""
+    if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = this.settings.numberOfRows || ""
+    if (this.hasEscapeQueryTarget) this.escapeQueryTarget.checked = Boolean(this.settings.escapeQuery)
+    if (this.hasEscapeSettingTarget) this.escapeSettingTarget.hidden = !this.capability.settings.supportsEscapeQuery(this.settings.searchEngine)
+    if (this.hasNightlyTarget) this.nightlyTarget.checked = Boolean(this.capability.case.selected()?.nightly)
+    this.refreshEndpointDetails()
+  }
+
+  populateEndpoints() {
+    if (!this.hasEndpointSelectTarget) return
+    this.endpointSelectTarget.replaceChildren(new Option("Select endpoint", ""))
+    const hasEndpoints = this.searchEndpoints.length > 0
+    this.endpointSelectTarget.hidden = !hasEndpoints
+    if (this.hasEndpointSearchTarget) this.endpointSearchTarget.hidden = !hasEndpoints
+    if (this.hasEndpointChooserTarget) this.endpointChooserTarget.hidden = !hasEndpoints
+    if (this.hasEndpointEmptyTarget) this.endpointEmptyTarget.hidden = hasEndpoints
+    this.searchEndpoints.forEach(endpoint => {
+      const option = new Option(endpoint.name, endpoint.id)
+      option.selected = isSameId(endpoint.id, this.settings.searchEndpointId)
+      this.endpointSelectTarget.add(option)
+    })
+    const selected = this.searchEndpoints.find(item => isSameId(item.id, this.settings.searchEndpointId))
+    if (this.hasEndpointSearchTarget) this.endpointSearchTarget.value = selected?.name || ""
+    this.renderEndpointSuggestions("")
+  }
+
+  renderEndpointSuggestions(query) {
+    if (!this.hasEndpointSuggestionsTarget) return
+    const normalized = query.trim().toLowerCase()
+    const matches = normalized ? this.searchEndpoints.filter(endpoint => endpoint.name.toLowerCase().includes(normalized)) : []
+    this.endpointSuggestionsTarget.replaceChildren(...matches.slice(0, 8).map(endpoint => {
+      const button = document.createElement("button")
+      button.type = "button"
+      button.className = "list-group-item list-group-item-action"
+      button.textContent = endpoint.name
+      button.dataset.action = "click->tune-relevance#selectEndpointSuggestion"
+      button.dataset.tuneRelevanceEndpointIdParam = String(endpoint.id)
+      return button
+    }))
+    if (this.hasEndpointNoResultsTarget) this.endpointNoResultsTarget.hidden = !normalized || matches.length > 0
+  }
+
+  selectEndpointSuggestion(event) {
+    const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.params.endpointId))
+    if (endpoint) this.selectEndpoint(endpoint)
+  }
+
+  selectEndpoint(endpoint) {
+    this.endpointSelectTarget.value = endpoint.id
+    this.updateEndpoint({ target: this.endpointSelectTarget })
+  }
+
+  refreshEndpointDetails() {
+    const selected = this.settings || {}
+    if (this.hasEndpointNameTarget) this.endpointNameTarget.textContent = selected.endpointName || ""
+    if (this.hasEndpointUrlTarget) this.endpointUrlTarget.textContent = this.settings?.searchUrl || ""
+    if (this.hasEndpointIconTarget) {
+      this.endpointIconTarget.hidden = !selected.searchEngine
+      this.endpointIconTarget.src = selected.searchEngine ? `images/${selected.mapperBasedSearchEngineId || selected.searchEngine}-icon.png` : ""
+    }
+    if (this.hasEndpointArchivedTarget) this.endpointArchivedTarget.hidden = !selected.endpointArchived
+    if (this.hasEndpointMoreLinkTarget) {
+      this.endpointMoreLinkTarget.hidden = !selected.searchEndpointId
+      setLinkHref(this.endpointMoreLinkTarget, selected.searchEndpointId && `search_endpoints/${selected.searchEndpointId}`)
+    }
+    if (this.hasTroubleshootingLinkTarget) {
+      const url = this.capability.settings.troubleshootingWikiUrl(selected.searchEngine, selected.mapperBasedSearchEngineId)
+      this.troubleshootingLinkTarget.hidden = !url
+      setLinkHref(this.troubleshootingLinkTarget, url)
+    }
+    if (this.hasTroubleshootingEngineTarget) {
+      this.troubleshootingEngineTarget.textContent = searchEngineLabel(this.engineLabelsValue, selected.mapperBasedSearchEngineName || selected.searchEngine)
+    }
+  }
+
+  refreshTemplateWarning() {
+    if (!this.hasEsTemplateWarningTarget) return
+    let templated = false
+    const queryParams = this.settings?.queryParams || ""
+    if (this.settings?.searchEngine && this.capability.endpoints.isEsOrOs(this.settings.searchEngine)) {
+      try { templated = this.capability.search.isTemplateCall(JSON.parse(queryParams)) } catch { templated = false }
+    }
+    this.esTemplateWarningTarget.hidden = !templated
+  }
+
+  refreshTls() {
+    if (!this.hasTlsWarningTarget) return
+    const settings = this.settings || {}
+    const mismatch = settings.proxyRequests !== true && this.capability.navigation.needToRedirectProtocol(settings.searchUrl)
+    this.tlsWarningTarget.hidden = !mismatch
+    if (mismatch) this.tlsProtocolTarget.textContent = this.capability.navigation.swapUrlTls()[1]
+    const save = this.hasSaveButtonTarget ? this.saveButtonTarget : null
+    if (save) save.hidden = mismatch || !EDITABLE_TABS.has(this.tab)
+  }
+
+  reloadInOtherProtocol() {
+    const settings = this.settings || {}
+    const [url] = this.capability.navigation.swapUrlTls()
+    const params = new URLSearchParams({ searchEngine: settings.searchEngine || "", searchUrl: settings.searchUrl || "", showWizard: "false", apiMethod: settings.apiMethod || "", fieldSpec: settings.fieldSpec || "" })
+    window.location.assign(this.capability.navigation.appendQueryParams(url, params.toString()))
+  }
+
+  refreshHistory() {
+    if (!this.hasHistoryListTarget || !this.hasHistoryItemTemplateTarget) return
+    const tries = this.capability.settings.tries().filter(item => !item.deleted)
+    const urls = [...new Set(tries.map(item => item.searchUrl))]
+    this.historyListTarget.replaceChildren(...tries.map(item => {
+      const row = this.historyItemTemplateTarget.content.firstElementChild.cloneNode(true)
+      row.classList.add(`bucket-${urlBucket(item.searchUrl, urls)}`)
+      row.title = item.searchUrl || ""
+      row.dataset.tryNo = item.tryNo
+      row.querySelector("[data-try-name]").textContent = item.formattedName ? item.formattedName() : item.name
+      row.querySelector("[data-try-query]").textContent = (item.queryParams || "").slice(0, 200)
+      row.querySelector("[data-try-endpoint]").textContent = `using ${item.endpointName || ""}`
+      row.dataset.tuneRelevanceTryNoParam = String(item.tryNo)
+      row.querySelector("[data-try-details]").dataset.tuneRelevanceTryNoParam = String(item.tryNo)
+      return row
+    }))
+  }
+
+  navigateToTry(event) {
+    this.keepDrawerOpen()
+    this.capability.navigation.goToTry(event.params.tryNo)
+  }
+
+  openTryDetails(event) {
+    event.stopPropagation()
+    const item = this.capability.settings.tries().find(item => isSameId(item.tryNo, event.params.tryNo))
+    if (item) this.showTryDetails(item)
+  }
+
+  updateEndpoint(event) {
+    const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.target.value))
+    if (!endpoint) return
+    const selectedEndpointSettings = {
+      ...endpointSettings(endpoint),
+      mapperBasedSearchEngineId: endpoint.mapperBasedSearchEngineId
+    }
+    this.settings.applyEndpoint({ ...selectedEndpointSettings, endpointName: endpoint.name })
+    this.refresh()
+  }
+
+  async save() {
+    if (this.saving) return
+    if (this.editor) this.settings.queryParams = this.editor.getValue()
+    this.settings.fieldSpec = this.fieldSpecTarget.value
+    this.settings.numberOfRows = this.numberOfRowsTarget.value
+    this.settings.escapeQuery = this.escapeQueryTarget.checked
+    if (!validateNumberOfRows(this.settings.numberOfRows)) return this.showError("Number of Results to Show must be between 1 and 100.")
+    const queryParams = this.settings.queryParams || ""
+    const needsJson = this.capability.endpoints.usesJsonQueryParams(this.settings.searchEngine) || (this.settings.searchEngine === "searchapi" && queryParams.trim().startsWith("{"))
+    if (needsJson) {
+      const formatted = formatJson(queryParams)
+      if (!formatted) return this.showError("Please provide a valid formatted JSON object for the query DSL.")
+      this.settings.queryParams = formatted
+    }
+    this.saving = true
+    this.saveButtonTarget.disabled = true
+    try {
+      const savedTry = await this.capability.settings.save(this.settings)
+      if (savedTry) {
+        this.keepDrawerOpen()
+        this.capability.navigation.goToTry(savedTry.tryNo)
+      }
+    } catch (error) {
+      this.showError(error.message || "Unable to save settings. Please try again.")
+    } finally {
+      this.saving = false
+      this.saveButtonTarget.disabled = false
+    }
+  }
+
+  // The wizard still uses case-settings:updated for its existing navigation handoff.
+  keepDrawerOpen() {
+    if (this.hasPaneOutlet) this.paneOutlet.keepOpenAcrossNavigation({ tab: this.tab })
+  }
+
+  updateNightly() {
+    const selectedCase = this.capability.case.selected()
+    if (selectedCase) {
+      selectedCase.nightly = this.nightlyTarget.checked
+      this.capability.case.updateNightly(selectedCase)
+    }
+  }
+
+  runEvaluation() {
+    if (!this.hasRunEvaluationTarget) return
+    this.runEvaluationTarget.disabled = true
+    this.runEvaluationTarget.textContent = "Queuing evaluation job..."
+    this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.tryNo).then(() => {
+      coreFlash.show("success", "Evaluation queued successfully.")
+      window.location.assign(this.capability.navigation.rootUrl())
+    }).catch(() => {
+      coreFlash.show("error", "Unable to queue evaluation.")
+    }).finally(() => {
+      this.runEvaluationTarget.disabled = false
+      this.runEvaluationTarget.textContent = "Rerun My Searches Now in the Background!"
+    })
+  }
+
+  showTryDetails(item) {
+    if (!this.hasTryModalTarget) return
+    this.tryTitleTarget.textContent = item.name || "Try details"
+    this.tryQueryParamsTarget.textContent = item.queryParams || ""
+    this.tryEndpointLinkTarget.textContent = item.endpointName || ""
+    setLinkHref(this.tryEndpointLinkTarget, item.searchEndpointId && `search_endpoints/${item.searchEndpointId}`)
+    this.tryBrowseLinkTarget.hidden = !item.searchUrl
+    setLinkHref(this.tryBrowseLinkTarget, item.searchUrl)
+    this.tryFieldSpecTarget.textContent = item.fieldSpec || ""
+    this.tryVariablesTarget.replaceChildren(...(item.curatorVars || []).map(variable => {
+      const row = document.createElement("div")
+      row.className = "row"
+      const name = document.createElement("div")
+      name.className = "col-sm-3 text-end"
+      name.textContent = `##${variable.name}##`
+      const value = document.createElement("div")
+      value.className = "col-sm-9"
+      value.textContent = variable.value
+      row.append(name, value)
+      return row
+    }))
+    this.tryNameInputTarget.value = item.name || ""
+    this.tryRenameFormTarget.hidden = true
+    this.tryRenameActionTarget.textContent = "Rename"
+    this.tryDeleteTarget.disabled = this.capability.settings.tries().filter(tryItem => !tryItem.deleted).length <= 1
+    this.activeTry = item
+    window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.show()
+  }
+
+  toggleRename() {
+    if (!this.activeTry) return
+    this.tryRenameFormTarget.hidden = !this.tryRenameFormTarget.hidden
+    this.tryRenameActionTarget.textContent = this.tryRenameFormTarget.hidden ? "Rename" : "Cancel Rename"
+    if (!this.tryRenameFormTarget.hidden) this.tryNameInputTarget.focus()
+  }
+
+  duplicateTry() {
+    if (!this.activeTry) return
+    this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
+      coreFlash.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
+      this.reloadSettings()
+      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+    }).catch(() => this.showError("Unable to duplicate try."))
+  }
+
+  renameTry() {
+    const name = this.tryNameInputTarget.value.trim()
+    if (!name || !this.activeTry) return
+    this.capability.settings.renameTry(this.activeTry.tryNo, name).then(() => {
+      coreFlash.show("success", "Try renamed successfully.")
+      this.reloadSettings()
+      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+    }).catch(() => this.showError("Unable to rename try."))
+  }
+
+  deleteTry() {
+    if (!this.activeTry) return
+    const activeTryNo = this.settings.tryNo
+    if (this.activeTry.tryNo === activeTryNo) {
+      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+      return this.showError(`You can not delete the currently active try (${this.activeTry.name})! Please select another try first.`)
+    }
+    const numberOfTries = this.capability.settings.tries().filter(item => !item.deleted).length
+    if (numberOfTries <= 1) return
+    if (!window.confirm(`Are you sure you want to delete ${this.activeTry.name}? This cannot be undone.`)) return
+    this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
+      coreFlash.show("success", "Successfully deleted try!")
+      this.reloadSettings()
+      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+    }).catch(() => this.showError("Unable to delete try."))
+  }
+
+  reloadSettings() {
+    this.settings = this.capability.settings.editable()
+    this.refresh()
+  }
+
+  showError(message) {
+    coreFlash.show("error", message)
+  }
+}

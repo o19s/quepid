@@ -15,6 +15,13 @@
 #
 
 class Team < ApplicationRecord
+  scope :with_member_count, -> {
+    select(<<~SQL.squish)
+      teams.*,
+      (SELECT COUNT(*) FROM teams_members WHERE teams_members.team_id = teams.id) AS members_count
+    SQL
+  }
+
   # Associations
   # too late now!
   # rubocop:disable Rails/HasAndBelongsToMany

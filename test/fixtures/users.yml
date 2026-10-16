@@ -56,7 +56,6 @@ default: &default
   password:         $2a$12$Yf6zIiRvsHWDrhBxN0trXe/b/TTTSE3nK736Qbz2bGsowrjn3n2xC
   agreed_time:      <%= Time.now - 1.day %>
   agreed:           1
-  type:             User
 
 doug:
   <<: *default
@@ -258,7 +257,7 @@ admin:
   administrator:  true
   
 judge_judy:
-  type:           AiJudge
+  type: AiJudge
   name:           Judge Judy
   llm_key:        1234asdf5678
   system_prompt:  You are a grocery store shopper.  You like cheese.  Is this a cheese?

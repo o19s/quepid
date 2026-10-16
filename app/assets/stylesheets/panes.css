@@ -1,31 +1,57 @@
+/* Sized by the core layout's flex column (core-additions.css), so the panes end
+ * at the viewport's bottom edge whatever the header's height. Each pane is its
+ * own stacking context, so z-indexes inside one never compete with the other. */
 .pane_container {
 	 position: relative;
 	 overflow: hidden;
 }
- .pane_main {
-	 display: block;
-	 float: left;
-	 height: calc(100% - 60px);
-	 left: 0;
+.pane_main,
+.pane_east {
+	 bottom: 0;
+	 isolation: isolate;
 	 overflow-y: auto;
-	 position: fixed;
+	 position: absolute;
+	 top: 0;
+}
+ .pane_main {
+	 display: flex;
+	 flex-direction: column;
+	 left: 0;
 	 width: 100%;
 }
- .pane_east {
+/* Keep the existing pane footer visible without moving or duplicating its DOM. */
+.pane_main > * {
+  flex-shrink: 0;
+}
+
+/* The shared footer's py-2 is fully hidden behind the bottom-docked flash on
+   the case page; the extra height keeps its first line visible above it. */
+.pane_main > footer {
+  position: sticky;
+  bottom: 0;
+  margin-top: auto;
+  padding-top: 1.5rem !important;
+  padding-bottom: 2.5rem !important;
+  z-index: 5;
+}
+
+/* Keep the drawer's bottom actions above visible core error/notice banners. */
+.pane_east {
+  bottom: var(--core-flash-height, 0px);
 	 background: #333;
 	 display: none;
-	 height: calc(100% - 60px);
 	 min-width: 300px;
-	 overflow-y: auto;
-	 position: fixed;
 }
  .east-slider {
 	 background: none repeat scroll 0% 0% #ddd;
 	 border: 0px solid #bbb;
+	 bottom: var(--core-flash-height, 0px);
 	 cursor: col-resize;
 	 display: none;
-	 height: 100%;
-	 position: fixed;
+	 position: absolute;
+	 top: 0;
+	 touch-action: none;
+	 user-select: none;
 	 width: 6px;
 	 z-index: 99;
 }
