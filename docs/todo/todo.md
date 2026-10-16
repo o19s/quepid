@@ -277,6 +277,16 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ---
 
+### [PREEXISTING] P3 I0 C1 — Case wizard's Use Mapper Wizard fails silently when the draft case can't be deleted
+
+**Location:** `app/javascript/controllers/wizard_controller.js` (`goToMapperWizard`)
+
+**Observed:** **Use Mapper Wizard** deletes the draft case, then closes the modal and navigates to the Mapper Wizard. The delete promise has no rejection handler, so if the delete fails (network error, 403) the button does nothing, the modal stays open, and the only trace is an unhandled rejection in the console. At `be9b319a`, `goToMapperWizard` chained only `.then` on `caseSvc.deleteCase`, which had no error handling, and the only `$http` interceptor was CSRF, so this predates the migration (source comparison only, not replayed).
+
+**Fix direction:** Add a `.catch` that shows the failure in the wizard's alert (`this.fail(...)`), and a unit test for a rejected delete.
+
+---
+
 ### [PREEXISTING] P2 I0 C2 — Bulk judging reshuffles documents between pages
 
 `BulkJudgeController#new` shuffles each query group before pagination on every request, so consecutive pages can repeat documents and omit others. Current browser replay confirms overlap; Angular `8ceb99e9` has the same ordering code (source comparison only; live historical replay pending). Preserve a stable ordering across a judging session before paginating.

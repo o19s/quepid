@@ -1336,7 +1336,7 @@ Quepid integrates the `splainer-search` library (an OpenSource Connections libra
 | Mixed-Content Warnings | Alerts when HTTPS page tries to access HTTP search engine |
 | Static CSV Upload | Wizard supports CSV upload for "Static" search engines (headers: `Query Text`, `Doc ID`, `Doc Position`); creates a snapshot and serves it as a fake Solr endpoint |
 | Wizard TLS Redirect | On protocol mismatch, offers a matching-protocol reload and carries the current wizard handoff parameters in the URL; credential exposure in this legacy handoff is tracked as a pre-existing todo |
-| Standalone Mapper Wizard | SearchAPI mapper setup is available from Search Endpoints at `/search_endpoints/mapper_wizard`; the compact case wizard does not include an inline shortcut |
+| Wizard → Mapper Wizard | Choosing the generic Search API engine in the case wizard offers "Use Mapper Wizard", which deletes the draft case and opens `/search_endpoints/mapper_wizard`; the Mapper Wizard is also available from Search Endpoints |
 | First-Time Tour Trigger | After wizard close, auto-triggers Shepherd.js guided tour with 1.5s delay if `completedCaseWizard` is still false |
 
 ---

@@ -955,17 +955,19 @@ The wizard modal opens automatically when:
 
 ### Wizard Steps (6-step Stimulus modal)
 
-The current case wizard is intentionally a compact, Rails-rendered/Stimulus-owned
-flow. A numbered step tracker along the top shows progress and lets users jump back to earlier steps (not ahead, and not while an endpoint is being validated). It does not reproduce every Angular-era presentation control.
+The case wizard is a Rails-rendered, Stimulus-owned modal (`shared/_wizard_modal.html.erb`,
+`wizard_controller.js`). A numbered step tracker along the top shows progress and lets users jump back to earlier steps (not ahead, and not while an endpoint is being validated). Endpoint-step elements carry `data-wizard-when` conditions (engine, validation state, proxying) that the controller evaluates on each render.
 
 1. **Welcome**: Short introduction with Doug's photo.
 2. **Case Name**: Text input for naming the case.
-3. **Search Endpoint**: Existing endpoint selector followed by a create-new form. The form uses a plain engine select (no logo tiles), URL and API method fields, query/test-query fields, a raw JSON custom-headers textarea, basic auth, proxy toggle, and static CSV file input. Continue validates the endpoint; there is no separate "ping it" button, Solr curl/config help block, inline Mapper Wizard link, or engine-specific troubleshooting panel.
-   - SearchAPI mapper setup remains available through the standalone Mapper Wizard under Search Endpoints; the case wizard does not provide the former shortcut and does not block a mapper-less draft.
+3. **Search Endpoint**: Existing endpoint selector (with a note that Static File endpoints are not shareable, when the user has any) followed by a create-new form whose engine choice is a row of logo tiles (radio buttons), with mapper-based engines such as Vespa and Qdrant added from their own logos.
+   - Live engines show the URL with a per-engine format tip, a **ping it** button that validates without advancing, the API method (with JSONP guidance for Solr), custom headers (a None / API Key / Custom selector that fills a starting template; the editor is read-only on None), basic auth (hidden for engines that don't support it), and the proxy toggle. SearchAPI-based engines also show the test query and query pattern, with required/`#$query##` warnings.
+   - A failed validation shows the error plus engine-specific troubleshooting for Solr, Elasticsearch, OpenSearch and SearchAPI: a proxy quick fix and CORS advice (only while not proxying), a direct link to the endpoint (through the proxy when proxying), the Solr `queryresponsewriter` curl command with any basic-auth credential, Chrome caveats, and the engine's troubleshooting wiki page. **Skip Validation** appears only after a failure. A `MapperError` instead shows mapper guidance.
+   - Choosing the generic **Search API** engine for a new endpoint shows "Custom Mapper Required" with **Use Mapper Wizard**, which deletes the draft case and opens `/search_endpoints/mapper_wizard`; Continue is unavailable until an existing endpoint is chosen. Mapper-based presets (Vespa, Qdrant) configure directly.
    - TLS mismatch, invalid headers, and proxy/API-method validation alerts remain supported.
-   - Static CSV files import on file selection; the wizard creates the snapshot-backed search URL and queries from the CSV.
-4. **Display Fields**: Plain Title, ID, and comma-separated additional-field inputs. Required validation remains, but there are no discovered-field suggestions or tag/autocomplete controls.
-5. **Queries**: Query text input with "Add Query" and removable query rows. SearchAPI query patterns and static CSV-derived queries remain supported.
+   - **Static File** shows the static explanation, a collapsible Static Dataset format guide with a sample CSV, and the file input; Continue stays disabled until the CSV is imported. The CSV imports on file selection; the wizard creates the snapshot-backed search URL and queries from it.
+4. **Display Fields**: Title, ID and additional fields start from the engine's preset (the demo fields for a demo URL, otherwise its defaults, which leave Title blank and required), re-applied when the engine or endpoint changes; edits made since then are kept if the endpoint is pinged again. Title and ID inputs suggest the fields found during validation; additional fields are comma/space separated, with clickable suggestions filtered by the token being typed (a `media:`, `thumb:` or `image:` prefix is kept). Required validation remains.
+5. **Queries**: Query text input with "Add Query" and removable query rows; for a static endpoint, a note that all uploaded queries will be created. SearchAPI query patterns and static CSV-derived queries remain supported.
 6. **Finish**: "That's It!" confirmation with a Finish button.
 
 ### Special: Static CSV Import
