@@ -22,6 +22,8 @@ Use the checkboxes (`- [ ]`) to track your pass through each test case; check th
 
 [angular-parity-checklist.md](angular-parity-checklist.md) has one row per AngularJS template at the historical baseline, plus the directives that have no template. Use it to confirm each was ported, or deliberately removed, before the Angular code is deleted. `bin/angular_parity_checklist` generated it; edit rows in place.
 
+[Regression prevention execution plan](regression-prevention-plan.md) lists the feature areas to close parity on, convert to real-Stimulus tests and browser-check before the landing gate.
+
 For timestamp comparisons and their limitations, see
 [DEVELOPER_GUIDE.md — Manual testing tracker](../../DEVELOPER_GUIDE.md#manual-testing-tracker).
 Keep `last_run` as the actual test time.

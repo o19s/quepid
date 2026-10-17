@@ -136,6 +136,15 @@ dynamic ERB and visual behavior still need Rails/browser verification.
 `query_unrated_badge_controller_markup.test.js` also covers real target/value
 resolution and store subscription cleanup using the static query-row template.
 
+For dynamic wizard markup, `wizard_controller_markup.test.js` uses checked-in
+Rails-rendered fixtures for both proxy policies. Regenerate them in the existing
+server container with `RAILS_ENV=test bin/rails test:render_wizard_fixture` after
+changing either wizard partial or `config/routes.rb`; a digest check of those
+sources rejects stale fixtures.
+Do not edit the generated HTML by hand. These specs replace the corresponding
+stub-based UI cases; they cover actions, targets, values and lifecycle, while
+browser checks remain responsible for CSS, actionability and real persistence.
+
 Controller specs mock `utils/core_store_access`, `utils/core_capability_access`,
 and `utils/core_flash` with `vi.mock` when substituting workspace dependencies.
 Keep fakes local to the spec; production modules have no test injection hooks.

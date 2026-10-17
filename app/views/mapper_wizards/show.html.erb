@@ -12,7 +12,6 @@
 
 <div class="card"
      data-controller="mapper-wizard"
-     data-mapper-wizard-search-endpoint-id-value="<%= search_endpoint_id %>"
      data-mapper-wizard-fetch-url-value="<%= mapper_wizard_fetch_html_path(search_endpoint_id) %>"
      data-mapper-wizard-generate-url-value="<%= mapper_wizard_generate_mappers_path(search_endpoint_id) %>"
      data-mapper-wizard-test-url-value="<%= mapper_wizard_test_mapper_path(search_endpoint_id) %>"
@@ -236,7 +235,7 @@
         <div class="row g-3 mt-2">
           <div class="col-12">
             <label class="form-label">Share with Teams</label>
-            <div data-mapper-wizard-target="teamsContainer">
+            <div>
               <% existing_team_ids = @search_endpoint.persisted? ? @search_endpoint.team_ids : [] %>
               <% auto_check_single = @current_user.teams.count == 1 && !@search_endpoint.persisted? %>
               <% @current_user.teams.each do |team| %>

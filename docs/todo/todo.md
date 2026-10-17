@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-14
+**Last updated:** 2026-10-16
 
 Outstanding bugs, hardening, and cleanup in the current codebase. When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -45,6 +45,30 @@ are retained only where the current source still supports the unresolved issue.
 Browser coverage and actual verification timestamps live in
 `docs/manual-testing/tracking.yml`.
 Line numbers may drift — re-check cited files before fixing.
+
+## [MIGRATION] Sign-off gate for landing the AngularJS removal
+
+From the [engineering review](../manual-testing/engineering-review-cleanup.md#l1-land-the-branch-before-further-refactoring-migration-followup).
+
+**Scope freeze:** until this gate passes, the branch takes only parity fixes,
+work toward the gate, and fixes for failures the gate turns up. Restructuring
+(stylesheet splits, markup moves, renames, collapsing runtime layers) waits
+until after landing and goes to `main` as ordinary PRs. A change to an owner file
+reopens any closed checklist row that relies on it.
+
+The branch lands when all of these hold on one commit:
+
+- Every row in the [Angular parity checklist](../manual-testing/angular-parity-checklist.md)
+  is closed: each item is ticked, marked N/A, or linked to a decision. Losses
+  without a decision are recorded as tagged entries in this file.
+- No other `[MIGRATION]` entries remain in this file, and every entry titled
+  "before merge" is resolved or reclassified with evidence. Delete this section
+  when the branch lands.
+- `bin/manual_test_status --due-only` lists nothing in parts 03–07 (case
+  management, the core workbench, endpoints and the case wizard).
+- These pass in the server container: `yarn test:unit`, `rails test`,
+  `yarn lint:js`, `yarn lint:css`, `bundle exec rubocop`, and the full local
+  `yarn test:e2e` run (not in CI).
 
 ### [PREEXISTING] P1 I0 C2 — Align RRE export and import formats
 

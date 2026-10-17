@@ -916,37 +916,6 @@ describe("WizardController", () => {
       expect(persistQueries).not.toHaveBeenCalled()
     })
 
-    it("waits for queries and the onboarding write before navigating", async () => {
-      const controller = mount({ step: STEPS.finish })
-      controller.newQueries = [{ queryString: "a" }]
-      let saveQueries
-      let saveUser
-      persistQueries.mockReturnValue(new Promise(resolve => { saveQueries = resolve }))
-      controller.capability.user.shownIntroWizard.mockReturnValue(new Promise(resolve => { saveUser = resolve }))
-      const pending = controller.finish()
-      await flush()
-      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
-      expect(controller.capability.user.shownIntroWizard).not.toHaveBeenCalled()
-      saveQueries({})
-      await flush()
-      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
-      saveUser()
-      await pending
-      expect(controller.capability.navigation.navigateTo).toHaveBeenCalledOnce()
-    })
-
-    it("keeps the wizard open when query persistence fails", async () => {
-      const controller = mount({ step: STEPS.finish })
-      controller.newQueries = [{ queryString: "a" }]
-      persistQueries.mockRejectedValueOnce({ data: { error: "query save failed" } })
-      await controller.finish()
-      expect(controller.error).toContain("query save failed")
-      expect(controller.saving).toBe(false)
-      expect(controller.capability.navigation.navigateTo).not.toHaveBeenCalled()
-      expect(controller.capability.user.shownIntroWizard).not.toHaveBeenCalled()
-      expect(modal.hide).not.toHaveBeenCalled()
-    })
-
     it("requests the tour on the loaded workspace only for first-time wizard users", async () => {
       const first = mount({ step: STEPS.finish })
       await first.finish()
@@ -1021,90 +990,8 @@ describe("WizardController", () => {
     })
   })
 
-  describe("endpoint guidance (restored from the Angular wizard)", () => {
-    // Adds an element gated by `data-wizard-when`, as the ERB declares it.
-    const gated = (controller, when) => {
-      const element = document.createElement("div")
-      element.dataset.wizardWhen = when
-      controller.element.appendChild(element)
-      return element
-    }
-    const failingValidator = (message) =>
-      passingValidator({ validateUrl: vi.fn(() => Promise.reject(new Error(message))) })
-
-    it("shows only the failed engine's troubleshooting, with proxy hints only while not proxying", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "es", proxyRequests: false } })
-      const panel = gated(controller, "url-invalid")
-      const es = gated(controller, "es")
-      const solr = gated(controller, "solr")
-      const quickFix = gated(controller, "no-proxy")
-      controller.capability.search.createValidator.mockReturnValue(failingValidator("Network error"))
-
-      await controller.validate()
-
-      expect([panel.hidden, es.hidden, solr.hidden, quickFix.hidden]).toEqual([false, false, true, false])
-      controller.settings.proxyRequests = true
-      controller.render()
-      expect(quickFix.hidden).toBe(true)
-    })
-
-    it("hides the troubleshooting while the protocol mismatches", async () => {
-      const controller = mount({ step: STEPS.endpoint })
-      const panel = gated(controller, "url-invalid")
-      controller.urlInvalid = true
-      controller.capability.navigation.needToRedirectProtocol.mockReturnValue(true)
-
-      controller.render()
-
-      expect(panel.hidden).toBe(true)
-    })
-
-    it("treats a MapperError as mapper guidance, not a connection failure", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "searchapi", queryParams: "q=#$query##" } })
-      controller.mapperMessageTarget = document.createElement("code")
-      controller.hasMapperMessageTarget = true
-      const mapperPanel = gated(controller, "mapper-invalid")
-      const urlPanel = gated(controller, "url-invalid")
-      controller.capability.search.createValidator.mockReturnValue(failingValidator("MapperError: docsMapper is not a function"))
-
-      await controller.validate()
-
-      expect(controller.mapperInvalid).toBe(true)
-      expect(controller.urlInvalid).toBe(false)
-      expect(controller.error).toBeNull()
-      expect([mapperPanel.hidden, urlPanel.hidden]).toEqual([false, true])
-      expect(controller.mapperMessageTarget.textContent).toBe("MapperError: docsMapper is not a function")
-    })
-
-    it("pings without leaving the step and confirms Quepid can search", async () => {
-      const controller = mount({ step: STEPS.endpoint })
-      const success = gated(controller, "url-valid")
-      controller.capability.search.createValidator.mockReturnValue(passingValidator())
-
-      await controller.ping({ preventDefault: vi.fn() })
-
-      expect(controller.stepIndex).toBe(STEPS.endpoint)
-      expect(success.hidden).toBe(false)
-    })
-
-    it("offers Skip Validation only after the endpoint could not be reached, not after a mapper error", async () => {
-      const skipWhen = WIZARD_ERB.match(/<button\b[^>]*data-wizard-target="skipButton"[^>]*>/)?.[0]
-        .match(/data-wizard-when="([^"]+)"/)?.[1]
-      expect(skipWhen).toBeDefined()
-      const controller = mount({ step: STEPS.endpoint })
-      const skip = gated(controller, skipWhen)
-      controller.render()
-      expect(skip.hidden).toBe(true)
-
-      controller.capability.search.createValidator.mockReturnValue(failingValidator("MapperError: docsMapper is not a function"))
-      await controller.validate()
-      expect(skip.hidden).toBe(true)
-
-      controller.capability.search.createValidator.mockReturnValue(failingValidator("nope"))
-      await controller.validate()
-      expect(skip.hidden).toBe(false)
-    })
-
+  // UI guidance and field-suggestion cases now drive real Stimulus in wizard_controller_markup.test.js.
+  describe("guidance invariants", () => {
     it("knows every condition the wizard partial names in data-wizard-when", () => {
       // An unknown name is silently falsy, which would hide that element for good.
       const names = new Set([...WIZARD_ERB.matchAll(/data-wizard-when="([^"]+)"/g)].flatMap((match) => match[1].split(/\s+/)))
@@ -1114,46 +1001,6 @@ describe("WizardController", () => {
       expect([...names].filter((name) => !known.includes(name))).toEqual([])
     })
 
-    it("requires the Mapper Wizard for a new generic Search API endpoint, but not an existing one", () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "searchapi", searchEnginePreset: "searchapi" } })
-      const notice = gated(controller, "mapper-required")
-      const continueButton = gated(controller, "can-validate")
-      const ping = gated(controller, "can-ping")
-      controller.render()
-      expect([notice.hidden, continueButton.hidden, ping.hidden]).toEqual([false, true, false])
-
-      controller.settings.searchEndpointId = 7
-      controller.render()
-      expect([notice.hidden, continueButton.hidden]).toEqual([true, false])
-    })
-
-    it("abandons the draft case before opening the Mapper Wizard", async () => {
-      const assign = vi.fn()
-      vi.stubGlobal("location", { assign, search: "", protocol: "http:" })
-      const controller = mount({ step: STEPS.endpoint })
-      controller.mapperWizardUrlValue = "http://quepid/search_endpoints/mapper_wizard"
-
-      await controller.goToMapperWizard({ preventDefault: vi.fn() })
-
-      expect(controller.capability.case.delete).toHaveBeenCalledWith({ id: 5 })
-      expect(modal.hide).toHaveBeenCalled()
-      expect(assign).toHaveBeenCalledWith("http://quepid/search_endpoints/mapper_wizard")
-      vi.unstubAllGlobals()
-    })
-
-    it("keeps Continue disabled for a static endpoint until its CSV is imported", () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "static" } })
-      const live = gated(controller, "live")
-      const staticSection = gated(controller, "static")
-      controller.render()
-      expect(controller.continueButtonTargets[0].disabled).toBe(true)
-      expect([live.hidden, staticSection.hidden]).toEqual([true, false])
-
-      controller.staticImported = true
-      controller.render()
-      expect(controller.continueButtonTargets[0].disabled).toBe(false)
-    })
-
     it("ignores a leftover URL's protocol for a static endpoint, whose URL import replaces", () => {
       const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "static", searchUrl: "https://example.com/api/search" } })
       controller.capability.navigation.needToRedirectProtocol.mockReturnValue(true)
@@ -1161,105 +1008,6 @@ describe("WizardController", () => {
       expect(controller.tlsMismatch()).toBe(false)
       controller.settings.searchEngine = "solr"
       expect(controller.tlsMismatch()).toBe(true)
-    })
-
-    it("shows the URL tip and basic auth only where the engine supports them", () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { urlFormat: "http://host:8983/<index>/select", supportsBasicAuth: false } })
-      const tip = gated(controller, "url-format")
-      const basicAuth = gated(controller, "basic-auth")
-      controller.render()
-      expect([tip.hidden, basicAuth.hidden]).toEqual([false, true])
-
-      controller.settings.searchEndpointId = 3
-      controller.render()
-      expect(tip.hidden).toBe(true)
-    })
-
-    it("notes that static endpoints cannot be shared when the user has any", () => {
-      const controller = mount({ step: STEPS.endpoint })
-      const note = gated(controller, "static-endpoints")
-      controller.searchEndpoints = [{ id: 1, searchEngine: "static" }]
-      controller.render()
-      expect(note.hidden).toBe(false)
-    })
-
-    it("fills the Solr curl command, direct link and wiki link from the pending settings", () => {
-      const controller = mount({
-        step: STEPS.endpoint,
-        settings: { searchEngine: "solr", searchUrl: "http://solr:8983/solr/tmdb/select", basicAuthCredential: "u:p", proxyRequests: true, searchEndpointId: 4 }
-      })
-      const link = document.createElement("a")
-      const wiki = document.createElement("a")
-      Object.assign(controller, {
-        curlAuthTarget: document.createElement("span"), hasCurlAuthTarget: true,
-        solrConfigUrlTarget: document.createElement("span"), hasSolrConfigUrlTarget: true,
-        endpointLinkTargets: [link], wikiLinkTargets: [wiki]
-      })
-      controller.capability.settings.troubleshootingWikiUrl = vi.fn(() => "https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid")
-
-      controller.render()
-
-      expect(controller.curlAuthTarget.textContent).toBe("-u u:p ")
-      expect(controller.solrConfigUrlTarget.textContent).toBe("http://solr:8983/solr/tmdb/config")
-      expect(link.getAttribute("href")).toBe("/proxy/1http://solr:8983/solr/tmdb/select")
-      expect(wiki.getAttribute("href")).toBe("https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid")
-      expect(controller.capability.settings.proxyUrlFor).toHaveBeenCalledWith(4)
-    })
-  })
-
-  describe("display field suggestions", () => {
-    it("offers discovered fields, excluding ones already chosen, and adds a clicked one", async () => {
-      const controller = mount({ step: STEPS.endpoint })
-      Object.assign(controller, {
-        searchFieldListTarget: document.createElement("datalist"), hasSearchFieldListTarget: true,
-        idFieldListTarget: document.createElement("datalist"), hasIdFieldListTarget: true,
-        fieldSuggestionsTarget: document.createElement("div"), hasFieldSuggestionsTarget: true
-      })
-      controller.capability.settings.pick.mockReturnValue({ idField: "id", titleField: "title" })
-      controller.capability.search.createValidator.mockReturnValue(passingValidator({ fields: ["title", "body", "year"], idFields: ["id"] }))
-
-      await controller.validate()
-
-      expect([...controller.searchFieldListTarget.options].map((option) => option.value)).toEqual(["title", "body", "year"])
-      expect([...controller.idFieldListTarget.options].map((option) => option.value)).toEqual(["id"])
-      expect([...controller.fieldSuggestionsTarget.children].map((button) => button.textContent)).toEqual(["body", "year"])
-
-      controller.addDisplayField({ params: { field: "year" } })
-      controller.addDisplayField({ params: { field: "year" } })
-
-      expect(controller.settings.additionalFields).toEqual(["year"])
-      expect([...controller.fieldSuggestionsTarget.children].map((button) => button.textContent)).toEqual(["body"])
-    })
-
-    it("filters by the token being typed, keeps a thumb: modifier, and replaces the partial token", () => {
-      const controller = mount({ step: STEPS.fields, settings: { titleField: "title", idField: "id" } })
-      controller.searchFields = ["title", "overview", "poster_path", "cast"]
-      const typed = (value) => controller.updateSetting({ target: { type: "text", value, dataset: { wizardField: "additionalFields" } } })
-
-      typed("cast, thumb:pos")
-      expect(controller.fieldSuggestions()).toEqual(["thumb:poster_path"])
-
-      controller.addDisplayField({ params: { field: "thumb:poster_path" } })
-      expect(controller.settings.additionalFields).toEqual(["cast", "thumb:poster_path"])
-
-      typed("cast, thumb:poster_path, ")
-      expect(controller.fieldSuggestions()).toEqual(["overview"])
-    })
-
-    it("does not rewrite the field list while the user is typing in it", () => {
-      const controller = mount({ step: STEPS.fields })
-      const input = document.body.appendChild(document.createElement("input"))
-      Object.assign(controller, { additionalFieldsTarget: input, hasAdditionalFieldsTarget: true })
-      input.focus()
-      input.value = "overview, "
-
-      controller.updateSetting({ target: { type: "text", value: input.value, dataset: { wizardField: "additionalFields" } } })
-
-      expect(input.value).toBe("overview, ")
-      input.blur()
-      controller.render()
-      expect(input.value).toBe("overview")
-      input.remove()
     })
   })
 
