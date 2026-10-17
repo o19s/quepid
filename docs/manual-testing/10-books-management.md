@@ -23,7 +23,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 ### 10.2 Create a new book
 
 - [ ] **Steps:**
-  1. Click **New Book**. Leave Name blank, submit — confirm a validation error re-renders the form.
+  1. Click **New Book**. Leave Name blank and submit: the browser's required-field check blocks it. Bypass browser validation and submit again — confirm a validation error re-renders the form. This is an intentional change. Both the historical baseline (`8ceb99e9`) and pre-branch `main` mark the Name field `required` in the browser, but `Book` had no presence validation, so a submission that bypassed the browser check saved a book with a blank name. `0439ee00` added `validates :name, presence: true` and a model test, so the server now rejects it too.
   2. Fill Name, check at least one team to share with, pick a **Rating Scale** (scorer), review/edit the auto-populated **Scoring Guidelines**, save.
 - **Expected:** Redirects to the new book's Overview with "Book was successfully created."
 - **Edge cases:**
