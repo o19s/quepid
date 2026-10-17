@@ -343,7 +343,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
     const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
-    const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
+    const shareCaseLink = judgementsModal.getByText('share this case', { exact: true });
     await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });
     await shareCaseLink.click();
     await expect(judgementsModal).toBeHidden({ timeout: 10_000 });
@@ -377,7 +377,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
     await page.setViewportSize({ width: 900, height: 820 });
-    await openHelpPopover(page, modal, /Your own Books and the Books shared with this Case's teams/);
+    await openHelpPopover(page, modal, /Books you own are always listed below/);
     await shot(page, 'judgements-popover');
   });
 

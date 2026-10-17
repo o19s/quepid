@@ -31,6 +31,7 @@ function buildController(bridge = buildBridge()) {
       processingWarning: document.createElement("div"),
       deleteWarning: document.createElement("div"),
       progress: document.createElement("div"),
+      loading: document.createElement("div"),
       updateButton: document.createElement("button"),
       clearButton: document.createElement("button")
     },
@@ -51,7 +52,8 @@ function buildController(bridge = buildBridge()) {
     controller.warningTarget,
     controller.processingWarningTarget,
     controller.deleteWarningTarget,
-    controller.progressTarget
+    controller.progressTarget,
+    controller.loadingTarget
   )
   controller.element.insertAdjacentHTML("beforeend", "<div data-diff-core-target='alert'></div>")
   controller.alertTarget = controller.element.querySelector("[data-diff-core-target='alert']")
@@ -123,12 +125,11 @@ describe("DiffCoreController", () => {
     const controller = buildController()
     controller.selectionValues = ["2", "2"]
     controller.renderSelections()
-    expect(controller.warningTarget.textContent).toContain("same snapshot")
     expect(controller.warningTarget.classList.contains("d-none")).toBe(false)
 
     await controller.update()
 
-    expect(controller.warningTarget.textContent).toContain("same snapshot")
+    expect(controller.warningTarget.classList.contains("d-none")).toBe(false)
     expect(controller.snapshotBridgeOutlet.apply).not.toHaveBeenCalled()
   })
 
@@ -177,7 +178,7 @@ describe("DiffCoreController", () => {
 
     expect(controller.snapshots).toEqual([])
     expect(alertMessages()).toContain("Could not load available snapshots.")
-    expect(controller.progressTarget.classList.contains("d-none")).toBe(true)
+    expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("adds rows up to the maximum and hides Add once it is reached", () => {

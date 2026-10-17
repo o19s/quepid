@@ -54,7 +54,7 @@ describe("buildFrogReportStats", () => {
 })
 
 const TARGETS = [
-  "caseName", "queryCount", "withResults", "withoutResults", "ratingsNeeded",
+  "caseName", "queryCount", "withResults", "withoutResults", "noneWithoutResults", "oneWithoutResults", "manyWithoutResults", "ratingsNeeded",
   "allRated", "notAllRated", "missingRatings", "missingRate", "hopMessage",
   "chart", "refreshButton", "refreshIcon", "bookName", "error"
 ]
@@ -124,6 +124,19 @@ describe("FrogReportController", () => {
     expect(controller.notAllRatedTarget.classList.contains("d-none")).toBe(false)
     expect(controller.hopMessageTarget.classList.contains("d-none")).toBe(false)
     expect(controller.refreshButtonTarget.classList.contains("d-none")).toBe(false)
+  })
+
+  it("words the zero-result count as none, only one, or a number", () => {
+    const wording = (queries) => {
+      const controller = buildController({ queries })
+      controller.render()
+      const hidden = (name) => controller[`${name}Target`].classList.contains("d-none")
+      return [hidden("noneWithoutResults"), hidden("oneWithoutResults"), hidden("manyWithoutResults")]
+    }
+    const docs = [{ id: "a" }]
+    expect(wording({ 1: { docs } })).toEqual([false, true, true])
+    expect(wording({ 1: { docs }, 2: { docs: [] } })).toEqual([true, false, true])
+    expect(wording({ 1: { docs }, 2: { docs: [] }, 3: { docs: [] } })).toEqual([true, true, false])
   })
 
   it("hides the hop message and refresh button for a fully rated case with no book", () => {

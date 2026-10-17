@@ -35,8 +35,28 @@ test('engine settings sections, endpoint suggestions and background evaluation',
   await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
   await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
 
+  // Focusing the empty box lists every endpoint with its engine icon, as the Angular typeahead did;
+  // typing highlights the match.
+  const endpointSearch = page.locator('[data-tune-relevance-target="endpointSearch"]');
+  const suggestions = page.locator('[data-tune-relevance-target="endpointSuggestions"] button');
+  await endpointSearch.focus();
+  await expect(suggestions).toHaveCount(1);
+  await expect(suggestions.locator('img')).toHaveAttribute('src', 'images/solr-icon.png');
+  await endpointSearch.fill('routing');
+  await expect(suggestions.locator('strong')).toHaveText('Routing');
+  await page.locator('[data-tune-relevance-target="engineSettingsTitle"], body').first().click({ position: { x: 1, y: 1 } });
+  await expect(suggestions).toHaveCount(0);
+
+  // Keyboard: Tab into a suggestion keeps the list; Tab out of it closes the list.
+  await endpointSearch.focus();
+  await expect(suggestions).toHaveCount(1);
+  await page.keyboard.press('Tab');
+  await expect(suggestions).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(suggestions).toHaveCount(0);
+
   // Choosing a suggestion only changes the unsaved settings, so nothing persists.
-  await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Routing test');
+  await endpointSearch.fill('Routing test');
   await page.locator('[data-tune-relevance-target="endpointSuggestions"] button').click();
   await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toHaveValue('987654');
   await expect(page.locator('[data-tune-relevance-target="endpointName"]')).toHaveText('Routing test endpoint');
@@ -434,6 +454,11 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await openDrawer(page, 'engineSettings');
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
     await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('prod');
+    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(8);
+    // With a name already in the box (as after choosing an endpoint), focusing still lists them all.
+    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Prod 3');
+    await page.locator('[data-tune-relevance-target="endpointSearch"]').blur();
+    await page.locator('[data-tune-relevance-target="endpointSearch"]').focus();
     await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(8);
     await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('zzz');
     await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(0);

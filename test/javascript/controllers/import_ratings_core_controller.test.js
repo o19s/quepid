@@ -106,10 +106,10 @@ describe("ImportRatingsCoreController", () => {
     const instance = controller()
 
     expect(instance.validate("csv", "query,docid\nfoo,1")).toBe(
-      "Headers mismatch! Please make sure you have the correct headers: query,docid,rating"
+      "Headers mismatch! Please make sure you have the correct headers in your file (check for correct spelling and capitalization): query,docid,rating"
     )
     expect(instance.validate("snapshots", "Snapshot Name,Query Text\nBase,dog")).toBe(
-      `Headers mismatch! Please make sure you have the correct headers: ${SNAPSHOTS_HEADER}`
+      `Required headers mismatch! Please make sure you have the correct headers in your file (check for correct spelling and capitalization): ${SNAPSHOTS_HEADER}`
     )
     expect(instance.validate("information_needs", "query,information_need\nfoo,bar")).toBe("")
     expect(instance.validate("csv", "query,docid,rating\nfoo,1,2")).toBe("")
@@ -459,7 +459,7 @@ describe("ImportRatingsCoreController", () => {
 
     await instance.submit({ preventDefault: vi.fn() })
 
-    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unknown case")
+    expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to import ratings from CSV: Unknown case")
     expect(hideBsModal).not.toHaveBeenCalled()
     expect(instance.busy).toBe(false)
     expect(instance.loadingTarget.classList.contains("d-none")).toBe(true)
@@ -497,7 +497,22 @@ describe("ImportRatingsCoreController", () => {
   })
 
   it("uses a generic message for errors without one", () => {
-    expect(controller().errorMessage(new Error(""))).toBe("Import failed. Please try again.")
+    const instance = controller()
+    instance.selectedType = "csv"
+    expect(instance.errorMessage(new Error(""))).toBe("Unable to import ratings from CSV: Import failed. Please try again.")
+  })
+
+  it.each([
+    ["csv", "Unable to import ratings from CSV: boom"],
+    ["rre", "Unable to import ratings from RRE: boom"],
+    ["ltr", "Unable to import ratings from LTR: boom"],
+    ["information_needs", "Unable to import information needs from CSV. boom"],
+    ["snapshots", "Could not import snapshots successfully! Please try again."],
+    ["", "boom"]
+  ])("prefixes a failed %s import as Legacy did", (selectedType, expected) => {
+    const instance = controller()
+    instance.selectedType = selectedType
+    expect(instance.errorMessage(new Error("boom"))).toBe(expected)
   })
 
   it.each([

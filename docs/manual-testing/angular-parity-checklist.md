@@ -19,110 +19,110 @@ Owner candidates are filename matches, not verified owners.
 |---|---|---|---|---|---|---|
 | [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2, 3.2b | open: 3 findings |
 | [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10, 4.11, 4.12 | open: 4 findings |
-| [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | | | open |
-| [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | | | open |
-| [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | | | open |
-| [6](#row-6) | `templates/views/searchResults.html` | branch | 73 | | | open |
-| [7](#row-7) | `templates/views/targetedSearchModal.html` | branch | 73 | | | open |
-| [8](#row-8) | `templates/views/queries.html` | branch | 57 | | | open |
-| [9](#row-9) | `javascripts/components/diff/_modal.html` | branch | 44 | | | open |
-| [10](#row-10) | `templates/views/queriesLayout.html` | branch | 40 | | | open |
+| [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | `_judgements_core_modal.html.erb`, `_judgement_book_templates.html.erb`, `judgements_core_controller.js` | 6.6 | closed |
+| [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | `_export_case_core_modal.html.erb`, `export_case_core_controller.js` | 6.1 | closed |
+| [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js` | 6.2 | open: 2 findings |
+| [6](#row-6) | `templates/views/searchResults.html` | branch | 73 | `_query_list_templates.html.erb`, `search_results_controller.js`, `query_row_controller.js` | 4.15, 4.16, 4.20, 4.21, 4.22 | closed |
+| [7](#row-7) | `templates/views/targetedSearchModal.html` | branch | 73 | `missing_documents_controller.js`, `shared/_dynamic_modal_templates.html.erb` (`missing-documents-modal-template`) | 4.9 | closed |
+| [8](#row-8) | `templates/views/queries.html` | branch | 57 | `_queries.html.erb`, `queries_list_controller.js` | 4.19, 4.20 | closed |
+| [9](#row-9) | `javascripts/components/diff/_modal.html` | branch | 44 | `_diff_modal.html.erb`, `_snapshot_selection_template.html.erb`, `diff_core_controller.js` | 5.3 | closed |
+| [10](#row-10) | `templates/views/queriesLayout.html` | branch | 40 | `_case_header.html.erb`, `case_rename_controller.js`, `_case_toolbar.html.erb` | 4.1, 5.3 | closed |
 | [11](#row-11) | `templates/views/queryParamsDetails.html` | branch | 35 | `_try_details_modal.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 2 findings |
-| [12](#row-12) | `templates/views/searchResult.html` | branch | 31 | | | open |
-| [13](#row-13) | `javascripts/components/query_explain/_modal.html` | branch | 30 | | | open |
-| [14](#row-14) | `templates/views/snapshotModal.html` | branch | 28 | | | open |
-| [15](#row-15) | `javascripts/components/frog_report/_modal.html` | branch | 25 | | | open |
-| [16](#row-16) | `templates/views/detailedDoc.html` | branch | 24 | | | open |
-| [17](#row-17) | `templates/views/pick_scorer.html` | branch | 21 | | | open |
-| [18](#row-18) | `templates/views/queryDiffResults.html` | branch | 20 | | | open |
-| [19](#row-19) | `templates/views/stackedChart.html` | branch | 18 | | | open |
-| [20](#row-20) | `javascripts/components/move_query/_modal.html` | branch | 16 | | | open |
-| [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | | | open |
-| [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | | | open |
-| [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | | | open |
-| [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | | | open |
+| [12](#row-12) | `templates/views/searchResult.html` | branch | 31 | `search_result_controller.js`, `_query_list_templates.html.erb` | 4.6, 4.22, 4.23 | closed |
+| [13](#row-13) | `javascripts/components/query_explain/_modal.html` | branch | 30 | `query_explain_controller.js`, `shared/_dynamic_modal_templates.html.erb` | 6.7 | closed |
+| [14](#row-14) | `templates/views/snapshotModal.html` | branch | 28 | `_take_snapshot_core_modal.html.erb`, `take_snapshot_core_controller.js` | 5.2 | closed |
+| [15](#row-15) | `javascripts/components/frog_report/_modal.html` | branch | 25 | `frog_report_controller.js`, `shared/_dynamic_modal_templates.html.erb` | 6.9 | closed |
+| [16](#row-16) | `templates/views/detailedDoc.html` | branch | 24 | `detailed_document_modal.js`, `search_result_controller.js` | 6.11 | closed |
+| [17](#row-17) | `templates/views/pick_scorer.html` | branch | 21 | `pick_scorer_core_controller.js`, `scorer_list_template` | 4.8 | closed |
+| [18](#row-18) | `templates/views/queryDiffResults.html` | branch | 20 | `search_results_controller.js` (`renderDiffResults`) | 5.3 | closed |
+| [19](#row-19) | `templates/views/stackedChart.html` | branch | 18 | `match_explain_controller.js`, `_query_list_templates.html.erb` | 4.23 | closed |
+| [20](#row-20) | `javascripts/components/move_query/_modal.html` | branch | 16 | `move_query_core_controller.js` | 4.4 | closed |
+| [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | `browse_query_controller.js` | 4.18 | closed |
+| [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | open: 1 finding |
+| [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | open: 1 finding |
+| [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
 | [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
-| [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | | | open |
+| [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
 | [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 1 finding |
-| [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | | | open |
-| [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | | | open |
-| [30](#row-30) | `templates/views/404.html` | branch | 6 | | | open |
-| [31](#row-31) | `templates/views/embed.html` | branch | 6 | | | open |
-| [32](#row-32) | `templates/views/ratings/popover.html` | branch | 6 | | | open |
-| [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | | | open |
-| [34](#row-34) | `javascripts/components/judgements/judgements.html` | branch | 4 | | | open |
-| [35](#row-35) | `templates/views/common/flash.html` | branch | 4 | | | open |
-| [36](#row-36) | `templates/views/searchEndpoint_popup.html` | branch | 4 | | | open |
-| [37](#row-37) | `javascripts/components/frog_report/frog_report.html` | branch | 3 | | | open |
-| [38](#row-38) | `javascripts/components/matches/matches.html` | branch | 3 | | | open |
-| [39](#row-39) | `javascripts/components/browse_query/browse_query.html` | branch (main-only) | 2 | | | open |
-| [40](#row-40) | `javascripts/components/debug_matches/_modal.html` | branch | 2 | | | open |
-| [41](#row-41) | `javascripts/components/diff/diff.html` | branch | 2 | | | open |
-| [42](#row-42) | `javascripts/components/expand_content/_modal.html` | branch | 2 | | | open |
-| [43](#row-43) | `javascripts/components/expand_content/expand_content.html` | branch | 2 | | | open |
-| [44](#row-44) | `javascripts/components/import_ratings/import_ratings.html` | branch | 2 | | | open |
-| [45](#row-45) | `javascripts/components/move_query/move_query.html` | branch | 2 | | | open |
-| [46](#row-46) | `javascripts/components/qscore_case/qscore_case.html` | branch | 2 | | | open |
-| [47](#row-47) | `javascripts/components/query_explain/query_explain.html` | branch | 2 | | | open |
-| [48](#row-48) | `javascripts/components/query_options/query_options.html` | branch | 2 | | | open |
-| [49](#row-49) | `templates/views/cases/search_flash.html` | branch | 2 | | | open |
-| [50](#row-50) | `templates/views/detailedExplain.html` | branch | 2 | | | open |
-| [51](#row-51) | `javascripts/components/new_case/new_case.html` | branch | 1 | | | open |
-| [52](#row-52) | `javascripts/components/qscore_query/qscore_query.html` | branch | 1 | | | open |
-| [53](#row-53) | `templates/views/cases/_dev_settings.html` | branch | 1 | | | open |
-| [54](#row-54) | `javascripts/components/qgraph/qgraph.html` | branch | 0 | | | open |
-| [55](#row-55) | `javascripts/directives/angular-vega.js` | branch | 0 | | | open |
-| [56](#row-56) | `templates/views/teams/show.html` | main | 84 | | | open |
-| [57](#row-57) | `javascripts/components/scorer_form/scorer_form.html` | main | 37 | | | open |
-| [58](#row-58) | `javascripts/components/clone_case/_modal.html` | main | 36 | | | open |
-| [59](#row-59) | `templates/views/cases/index.html` | main | 34 | | | open |
-| [60](#row-60) | `javascripts/components/case_listing/case_listing.html` | main | 25 | | | open |
-| [61](#row-61) | `javascripts/components/delete_case_options/_modal.html` | main | 25 | | | open |
-| [62](#row-62) | `javascripts/components/share_case/_modal.html` | main | 25 | | | open |
-| [63](#row-63) | `javascripts/components/share_scorer/_modal.html` | main | 25 | | | open |
-| [64](#row-64) | `javascripts/components/import_to_cases/_modal_snapshot.html` | main | 23 | | | open |
-| [65](#row-65) | `templates/views/unarchiveCaseModal.html` | main | 18 | | | open |
-| [66](#row-66) | `templates/views/unarchiveSearchEndpointModal.html` | main | 18 | | | open |
-| [67](#row-67) | `templates/views/teams/index.html` | main | 14 | | | open |
-| [68](#row-68) | `javascripts/components/import_to_cases/_modal_case.html` | main | 13 | | | open |
-| [69](#row-69) | `javascripts/components/user_listing/user_listing.html` | main | 13 | | | open |
-| [70](#row-70) | `javascripts/components/add_member/add_member.html` | main | 11 | | | open |
-| [71](#row-71) | `javascripts/components/scorer_listing/scorer_listing.html` | main | 11 | | | open |
-| [72](#row-72) | `javascripts/components/book_listing/book_listing.html` | main | 8 | | | open |
-| [73](#row-73) | `javascripts/components/archive_case/_modal.html` | main | 7 | | | open |
-| [74](#row-74) | `javascripts/components/archive_search_endpoint/_modal.html` | main | 7 | | | open |
-| [75](#row-75) | `javascripts/components/delete_case/_modal.html` | main | 7 | | | open |
-| [76](#row-76) | `javascripts/components/delete_scorer/_modal.html` | main | 7 | | | open |
-| [77](#row-77) | `javascripts/components/delete_search_endpoint/_modal.html` | main | 7 | | | open |
-| [78](#row-78) | `javascripts/components/remove_member/_modal.html` | main | 7 | | | open |
-| [79](#row-79) | `javascripts/components/remove_scorer/_modal.html` | main | 7 | | | open |
-| [80](#row-80) | `javascripts/components/search_endpoint_listing/search_endpoint_listing.html` | main | 7 | | | open |
-| [81](#row-81) | `javascripts/components/clone_scorer/_modal.html` | main | 6 | | | open |
-| [82](#row-82) | `javascripts/components/edit_scorer/_denied_communal_modal.html` | main | 6 | | | open |
-| [83](#row-83) | `javascripts/components/edit_scorer/_modal.html` | main | 6 | | | open |
-| [84](#row-84) | `javascripts/components/new_scorer/_modal.html` | main | 6 | | | open |
-| [85](#row-85) | `javascripts/components/share_case/share_case.html` | main | 6 | | | open |
-| [86](#row-86) | `javascripts/components/add_member/member_popup.html` | main | 5 | | | open |
-| [87](#row-87) | `javascripts/components/edit_scorer/_denied_modal.html` | main | 5 | | | open |
-| [88](#row-88) | `javascripts/components/import_to_cases/import_to_cases.html` | main | 5 | | | open |
-| [89](#row-89) | `templates/views/cases/import.html` | main | 4 | | | open |
-| [90](#row-90) | `javascripts/components/archive_case/archive_case.html` | main | 3 | | | open |
-| [91](#row-91) | `javascripts/components/archive_search_endpoint/archive_search_endpoint.html` | main | 3 | | | open |
-| [92](#row-92) | `javascripts/components/delete_case/delete_case.html` | main | 3 | | | open |
-| [93](#row-93) | `javascripts/components/delete_scorer/delete_scorer.html` | main | 3 | | | open |
-| [94](#row-94) | `javascripts/components/delete_search_endpoint/delete_search_endpoint.html` | main | 3 | | | open |
-| [95](#row-95) | `javascripts/components/remove_member/remove_member.html` | main | 3 | | | open |
-| [96](#row-96) | `javascripts/components/remove_scorer/remove_scorer.html` | main | 3 | | | open |
-| [97](#row-97) | `javascripts/components/clone_case/clone_case.html` | main | 2 | | | open |
-| [98](#row-98) | `javascripts/components/delete_case_options/delete_case_options.html` | main | 2 | | | open |
-| [99](#row-99) | `javascripts/components/new_scorer/new_scorer.html` | main | 2 | | | open |
-| [100](#row-100) | `javascripts/components/action_icon/action_icon.html` | main | 1 | | | open |
-| [101](#row-101) | `javascripts/components/clone_scorer/clone_scorer.html` | main | 1 | | | open |
-| [102](#row-102) | `javascripts/components/edit_scorer/edit_scorer.html` | main | 1 | | | open |
-| [103](#row-103) | `javascripts/components/share_scorer/share_scorer.html` | main | 1 | | | open |
-| [104](#row-104) | `javascripts/directives/autoGrow.js` | main | 0 | | | open |
-| [105](#row-105) | `javascripts/directives/textPaste.js` | main | 0 | | | open |
-| [106](#row-106) | `templates/views/redirect.html` | main | 0 | | | open |
+| [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
+| [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
+| [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`) | 4.17 | open: 1 finding |
+| [31](#row-31) | `templates/views/embed.html` | branch | 6 | `search_result_controller.js` (`embedField`) | 4.23 | open: 1 finding |
+| [32](#row-32) | `templates/views/ratings/popover.html` | branch | 6 | `rating_popover_controller.js` | 4.6 | closed |
+| [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [34](#row-34) | `javascripts/components/judgements/judgements.html` | branch | 4 | `_case_toolbar.html.erb` | 6.6 | closed |
+| [35](#row-35) | `templates/views/common/flash.html` | branch | 4 | `core_flash.js`, `layouts/_flash` (`#flash-messages`) | 4.16 | closed |
+| [36](#row-36) | `templates/views/searchEndpoint_popup.html` | branch | 4 | `tune_relevance_controller.js`, `_tune_relevance.html.erb` | 4.12 | open: 1 finding |
+| [37](#row-37) | `javascripts/components/frog_report/frog_report.html` | branch | 3 | `frog_report_controller.js`, `_queries.html.erb` | 6.9 | closed |
+| [38](#row-38) | `javascripts/components/matches/matches.html` | branch | 3 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [39](#row-39) | `javascripts/components/browse_query/browse_query.html` | branch (main-only) | 2 | `browse_query_controller.js`, `search_results_controller.js` | 4.18 | closed |
+| [40](#row-40) | `javascripts/components/debug_matches/_modal.html` | branch | 2 | `match_explain_controller.js`, `dynamic_modal.js` | 6.8 | closed |
+| [41](#row-41) | `javascripts/components/diff/diff.html` | branch | 2 | `_case_toolbar.html.erb`, `diff_core_controller.js` | 5.3 | closed |
+| [42](#row-42) | `javascripts/components/expand_content/_modal.html` | branch | 2 | `dynamic_modal.js` | 6.8 | closed |
+| [43](#row-43) | `javascripts/components/expand_content/expand_content.html` | branch | 2 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [44](#row-44) | `javascripts/components/import_ratings/import_ratings.html` | branch | 2 | `_case_toolbar.html.erb` | 6.2 | closed |
+| [45](#row-45) | `javascripts/components/move_query/move_query.html` | branch | 2 | `_query_list_templates.html.erb` | 4.4 | closed |
+| [46](#row-46) | `javascripts/components/qscore_case/qscore_case.html` | branch | 2 | `qscore_case_controller.js`, `index.html.erb` | 4.7, 5.5 | closed |
+| [47](#row-47) | `javascripts/components/query_explain/query_explain.html` | branch | 2 | `_query_list_templates.html.erb`, `query_explain_controller.js` | 6.7 | closed |
+| [48](#row-48) | `javascripts/components/query_options/query_options.html` | branch | 2 | `_query_list_templates.html.erb` | 4.5 | open: 1 finding |
+| [49](#row-49) | `templates/views/cases/search_flash.html` | branch | 2 | `core_flash.js` | 4.17 | closed |
+| [50](#row-50) | `templates/views/detailedExplain.html` | branch | 2 | `match_explain_controller.js` | 6.8 | closed |
+| [51](#row-51) | `javascripts/components/new_case/new_case.html` | branch | 1 | `_header_core_actions.html.erb`, `wizard_launcher_controller.js` | 3.2 | closed |
+| [52](#row-52) | `javascripts/components/qscore_query/qscore_query.html` | branch | 1 | `qscore_query_controller.js` | 4.7, 4.21 | closed |
+| [53](#row-53) | `templates/views/cases/_dev_settings.html` | branch | 1 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10 | closed |
+| [54](#row-54) | `javascripts/components/qgraph/qgraph.html` | branch | 0 | `qgraph_controller.js` | 5.5 | closed |
+| [55](#row-55) | `javascripts/directives/angular-vega.js` | branch | 0 | `qgraph_controller.js`, `frog_report_controller.js` (Vega embeds) | 5.5, 4.21 | closed |
+| [56](#row-56) | `templates/views/teams/show.html` | main | 84 | `teams/show.html.erb`, `teams/_section.html.erb` | 9.1, 9.6 | closed |
+| [57](#row-57) | `javascripts/components/scorer_form/scorer_form.html` | main | 37 | `scorers/_form.html.erb` | 8.3, 8.4 | closed |
+| [58](#row-58) | `javascripts/components/clone_case/_modal.html` | main | 36 | `_clone_case_core_modal.html.erb`, `clone_case_core_controller.js` | 6.3 | closed |
+| [59](#row-59) | `templates/views/cases/index.html` | main | 34 | `cases/index.html.erb` (Rails, from main `e52cec3a`) | 3.1 | open: 1 finding |
+| [60](#row-60) | `javascripts/components/case_listing/case_listing.html` | main | 25 | `cases/index.html.erb` rows (Rails, from main `e52cec3a`) | 3.1 | open: 1 finding |
+| [61](#row-61) | `javascripts/components/delete_case_options/_modal.html` | main | 25 | `_delete_case_options_core_modal.html.erb`, `delete_case_options_core_controller.js` | 6.4 | closed |
+| [62](#row-62) | `javascripts/components/share_case/_modal.html` | main | 25 | `_share_case_core_modal.html.erb`, `share_case_core_controller.js` | 6.5 | closed |
+| [63](#row-63) | `javascripts/components/share_scorer/_modal.html` | main | 25 | `shared/_share_scorer_modal.html.erb` | 8.7 | closed |
+| [64](#row-64) | `javascripts/components/import_to_cases/_modal_snapshot.html` | main | 23 | `shared/_import_snapshot_modal.html.erb` | 3.4 | closed |
+| [65](#row-65) | `templates/views/unarchiveCaseModal.html` | main | 18 | `cases/index.html.erb` (Archived checkbox, Unarchive case), `shared/_confirm_modal.html.erb` | 3.5, 3.6 | open: 1 finding |
+| [66](#row-66) | `templates/views/unarchiveSearchEndpointModal.html` | main | 18 | `teams/_search_endpoints.html.erb` (Archived filter, Unarchive) | 9.6 | closed |
+| [67](#row-67) | `templates/views/teams/index.html` | main | 14 | `teams/index.html.erb` | 9.1 | closed |
+| [68](#row-68) | `javascripts/components/import_to_cases/_modal_case.html` | main | 13 | `shared/_import_case_modal.html.erb` | 3.3 | closed |
+| [69](#row-69) | `javascripts/components/user_listing/user_listing.html` | main | 13 | `teams/show.html.erb` (members) | 9.2, 9.4 | closed |
+| [70](#row-70) | `javascripts/components/add_member/add_member.html` | main | 11 | `teams/show.html.erb` (add member form) | 9.2, 9.3 | closed |
+| [71](#row-71) | `javascripts/components/scorer_listing/scorer_listing.html` | main | 11 | `teams/_scorers.html.erb` | 8.1, 9.5 | closed |
+| [72](#row-72) | `javascripts/components/book_listing/book_listing.html` | main | 8 | `teams/_books.html.erb`, `books/index.html.erb` | 9.1 | closed |
+| [73](#row-73) | `javascripts/components/archive_case/_modal.html` | main | 7 | `cases/index.html.erb`, `shared/_confirm_modal.html.erb` | 3.5 | open: 1 finding |
+| [74](#row-74) | `javascripts/components/archive_search_endpoint/_modal.html` | main | 7 | `shared/_confirm_modal.html.erb` | 9.6 | closed |
+| [75](#row-75) | `javascripts/components/delete_case/_modal.html` | main | 7 | (none on the list | 6.4 | open: 1 finding |
+| [76](#row-76) | `javascripts/components/delete_scorer/_modal.html` | main | 7 | `scorers/edit.html.erb` (Delete) | 8.6 | closed |
+| [77](#row-77) | `javascripts/components/delete_search_endpoint/_modal.html` | main | 7 | `search_endpoints/edit.html.erb` (Delete) | 7.5 | closed |
+| [78](#row-78) | `javascripts/components/remove_member/_modal.html` | main | 7 | `teams/show.html.erb`, `shared/_confirm_modal.html.erb` | 9.4 | closed |
+| [79](#row-79) | `javascripts/components/remove_scorer/_modal.html` | main | 7 | `teams/_scorers.html.erb` | 8.7 | closed |
+| [80](#row-80) | `javascripts/components/search_endpoint_listing/search_endpoint_listing.html` | main | 7 | `teams/_search_endpoints.html.erb`, `search_endpoints/index.html.erb` | 7.1 | closed |
+| [81](#row-81) | `javascripts/components/clone_scorer/_modal.html` | main | 6 | `scorers/new.html.erb` | 8.5 | closed |
+| [82](#row-82) | `javascripts/components/edit_scorer/_denied_communal_modal.html` | main | 6 | `scorers/edit.html.erb` (communal scorer) | 8.4 | closed |
+| [83](#row-83) | `javascripts/components/edit_scorer/_modal.html` | main | 6 | `scorers/edit.html.erb` | 8.4 | closed |
+| [84](#row-84) | `javascripts/components/new_scorer/_modal.html` | main | 6 | `scorers/new.html.erb` | 8.3 | closed |
+| [85](#row-85) | `javascripts/components/share_case/share_case.html` | main | 6 | `_case_toolbar.html.erb` | 6.5 | closed |
+| [86](#row-86) | `javascripts/components/add_member/member_popup.html` | main | 5 | `teams/show.html.erb` | 9.2 | closed |
+| [87](#row-87) | `javascripts/components/edit_scorer/_denied_modal.html` | main | 5 | `scorers/edit.html.erb` | 8.4 | closed |
+| [88](#row-88) | `javascripts/components/import_to_cases/import_to_cases.html` | main | 5 | `cases/index.html.erb` (Import Case from JSON, Import Snapshots from CSV) | 3.3, 3.4 | closed |
+| [89](#row-89) | `templates/views/cases/import.html` | main | 4 | (none) | 3.3 | open: 1 finding |
+| [90](#row-90) | `javascripts/components/archive_case/archive_case.html` | main | 3 | `cases/index.html.erb` (Archive case button) | 3.5 | closed |
+| [91](#row-91) | `javascripts/components/archive_search_endpoint/archive_search_endpoint.html` | main | 3 | `shared/_confirm_modal.html.erb` | 7.5 | closed |
+| [92](#row-92) | `javascripts/components/delete_case/delete_case.html` | main | 3 | (none on the list) | 6.4 | open: 1 finding |
+| [93](#row-93) | `javascripts/components/delete_scorer/delete_scorer.html` | main | 3 | `scorers/edit.html.erb` | 8.6 | closed |
+| [94](#row-94) | `javascripts/components/delete_search_endpoint/delete_search_endpoint.html` | main | 3 | `search_endpoints/edit.html.erb` | 7.5 | closed |
+| [95](#row-95) | `javascripts/components/remove_member/remove_member.html` | main | 3 | `shared/_confirm_modal.html.erb` | 9.4 | closed |
+| [96](#row-96) | `javascripts/components/remove_scorer/remove_scorer.html` | main | 3 | `teams/_scorers.html.erb` | 8.7 | closed |
+| [97](#row-97) | `javascripts/components/clone_case/clone_case.html` | main | 2 | `_case_toolbar.html.erb` | 6.3 | closed |
+| [98](#row-98) | `javascripts/components/delete_case_options/delete_case_options.html` | main | 2 | `_case_toolbar.html.erb` | 6.4 | closed |
+| [99](#row-99) | `javascripts/components/new_scorer/new_scorer.html` | main | 2 | `scorers/new.html.erb` | 8.3 | closed |
+| [100](#row-100) | `javascripts/components/action_icon/action_icon.html` | main | 1 | (none) | 3.1 | open: 1 finding |
+| [101](#row-101) | `javascripts/components/clone_scorer/clone_scorer.html` | main | 1 | `scorers/new.html.erb` | 8.5 | closed |
+| [102](#row-102) | `javascripts/components/edit_scorer/edit_scorer.html` | main | 1 | `scorers/edit.html.erb` | 8.4 | closed |
+| [103](#row-103) | `javascripts/components/share_scorer/share_scorer.html` | main | 1 | `shared/_share_scorer_modal.html.erb` | 8.7 | closed |
+| [104](#row-104) | `javascripts/directives/autoGrow.js` | main | 0 | `_tune_relevance.html.erb` (knob inputs) | 4.11 | open: 1 finding |
+| [105](#row-105) | `javascripts/directives/textPaste.js` | main | 0 | `add_query_controller.js` | 4.3 | closed |
+| [106](#row-106) | `templates/views/redirect.html` | main | 0 | (none) |  | closed |
 
 ## Ported on this branch (55)
 
@@ -764,139 +764,139 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/judgements/judgements_controller.js`
 - **Owner candidates:** `app/views/shared/_judgements_core_modal.html.erb`, `app/javascript/controllers/judgements_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_judgements_core_modal.html.erb`, `_judgement_book_templates.html.erb`, `judgements_core_controller.js`
+- **Scenario:** 6.6
+- **Decisions:** Main redesigned this modal after Legacy (Case Integration card with auto-sync checkboxes and Populate Now / Refresh Ratings / Sync Queries; the Legacy "Populate Book" and "Refresh ratings from book" controls are `not in main`). Current's copy was compared word for word against main (`776c68b5`) and had drifted since the partial adaptation in `6cfe145f` (upstream `c468d18f`, `4a9065db`): intro paragraph, the no-books/no-teams alert, a leftover "You have not created any Books" line and the book-list help text. All restored to main's wording in this pass (`toolbar_modals_core.spec.ts` "judgements modal keeps the upstream copy" fails on the old copy). Legacy itself was replayed only for the toolbar link and the empty state because the Legacy database has no teams or books. Selecting, saving, retry, View navigation, disconnect and the sync toggles are covered live by `toolbar_modals_core.spec.ts` and `share_case.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.share.loading"`
-- [ ] `<div>` `ng-if="ctrl.populateBook && ctrl.share.acase.queriesCount === 0"` _(not in main)_
-- [ ] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"` _(not in main)_
-- [ ] `<div>` `ng-show="ctrl.share.teams.length > 0 && ctrl.share.books.length === 0 && !ctrl.share.loading"` _(not in main)_
-- [ ] `<em>` `ng-if="ctrl.share.acase.bookId"` _(not in main)_
-- [ ] `<em>` `ng-if="!ctrl.share.acase.bookId"` _(not in main)_
-- [ ] `<li>` `ng-class="{ active: ctrl.activeBookId === null }"`
-- [ ] `<li>` `ng-class="{ active: book.id === ctrl.activeBookId }"`
-- [ ] `<div>` `ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading"`
-- [ ] `<input#populate-book>` `ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"` _(not in main)_
-- [ ] `<input#sync-queries>` `ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"` _(not in main)_
-- [ ] `<div>` `ng-show="processingPrompt.error"`
-- [ ] `<a>` `ng-disabled="processingPrompt.inProgress"`
-- [ ] `<a>` `ng-show="ctrl.activeBookId"`
-- [ ] `<i>` `ng-class="{'spintime': processingPrompt.inProgress}"` _(not in main)_
-- [ ] `<i>` `ng-show="ctrl.activeBookName"` _(not in main)_
-- [ ] `<span>` `ng-if="ctrl.createMissingQueries"` _(not in main)_
-- [ ] `<a>` `ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId"` _(not in main)_
-- [ ] `<button>` `ng-show="ctrl.specificActionLabel()"` _(not in main)_
-- [ ] `<button>` `ng-disabled="processingPrompt.inProgress"`
-- [ ] `<div>` `ng-show="!processingPrompt.done"`
-- [ ] `<div>` `ng-show="processingPrompt.inProgress"`
-- [ ] `<div>` `ng-show="ctrl.share.teams.length === 0 && ctrl.share.books.length === 0 && !ctrl.share.loading"` _(added on main)_
-- [ ] `<div>` `ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading"` _(added on main)_
-- [ ] `<div>` `ng-show="!ctrl.activeBookId && ctrl.share.books.length > 0"` _(added on main)_
-- [ ] `<button>` `ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId"` _(added on main)_
-- [ ] `<div>` `ng-show="ctrl.activeBookId"` _(added on main)_
-- [ ] `<button>` `ng-show="ctrl.hasUnsavedChanges()"` _(added on main)_
+- [x] `<div>` `ng-show="ctrl.share.loading"`
+- [x] `<div>` `ng-if="ctrl.populateBook && ctrl.share.acase.queriesCount === 0"` _(not in main)_
+- [x] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"` _(not in main)_
+- [x] `<div>` `ng-show="ctrl.share.teams.length > 0 && ctrl.share.books.length === 0 && !ctrl.share.loading"` _(not in main)_
+- [x] `<em>` `ng-if="ctrl.share.acase.bookId"` _(not in main)_
+- [x] `<em>` `ng-if="!ctrl.share.acase.bookId"` _(not in main)_
+- [x] `<li>` `ng-class="{ active: ctrl.activeBookId === null }"`
+- [x] `<li>` `ng-class="{ active: book.id === ctrl.activeBookId }"`
+- [x] `<div>` `ng-show="ctrl.share.books.length > 0 && !ctrl.share.loading"`
+- [x] `<input#populate-book>` `ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"` _(not in main)_
+- [x] `<input#sync-queries>` `ng-disabled="ctrl.share.books.length === 0 || ctrl.share.teams.length === 0"` _(not in main)_
+- [x] `<div>` `ng-show="processingPrompt.error"`
+- [x] `<a>` `ng-disabled="processingPrompt.inProgress"`
+- [x] `<a>` `ng-show="ctrl.activeBookId"`
+- [x] `<i>` `ng-class="{'spintime': processingPrompt.inProgress}"` _(not in main)_
+- [x] `<i>` `ng-show="ctrl.activeBookName"` _(not in main)_
+- [x] `<span>` `ng-if="ctrl.createMissingQueries"` _(not in main)_
+- [x] `<a>` `ng-disabled="processingPrompt.inProgress || ctrl.populateBook || !ctrl.activeBookId || ctrl.share.acase.bookId !== ctrl.activeBookId"` _(not in main)_
+- [x] `<button>` `ng-show="ctrl.specificActionLabel()"` _(not in main)_
+- [x] `<button>` `ng-disabled="processingPrompt.inProgress"`
+- [x] `<div>` `ng-show="!processingPrompt.done"`
+- [x] `<div>` `ng-show="processingPrompt.inProgress"`
+- [x] `<div>` `ng-show="ctrl.share.teams.length === 0 && ctrl.share.books.length === 0 && !ctrl.share.loading"` _(added on main)_
+- [x] `<div>` `ng-show="ctrl.share.books.length === 0 && !ctrl.share.loading"` _(added on main)_
+- [x] `<div>` `ng-show="!ctrl.activeBookId && ctrl.share.books.length > 0"` _(added on main)_
+- [x] `<button>` `ng-disabled="processingPrompt.inProgress || !ctrl.activeBookId"` _(added on main)_
+- [x] `<div>` `ng-show="ctrl.activeBookId"` _(added on main)_
+- [x] `<button>` `ng-show="ctrl.hasUnsavedChanges()"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<a>` `ng-click="ctrl.goToTeamsPage()"`
-- [ ] `<share-case>` `ng-click="ctrl.cancel()"` _(not in main)_
-- [ ] `<li>` `ng-click="selectBook(null)"`
-- [ ] `<li>` `ng-click="selectBook(book)"`
-- [ ] `<a>` `ng-click="ctrl.refreshRatingsFromBook()"` _(not in main)_
-- [ ] `<button>` `ng-click="ctrl.ok()"`
-- [ ] `<a>` `ng-click="ctrl.openShareCase()"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.manualPopulateBook()"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.manualRefreshRatings()"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.manualSyncQueries()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<a>` `ng-click="ctrl.goToTeamsPage()"`
+- [x] `<share-case>` `ng-click="ctrl.cancel()"` _(not in main)_
+- [x] `<li>` `ng-click="selectBook(null)"`
+- [x] `<li>` `ng-click="selectBook(book)"`
+- [x] `<a>` `ng-click="ctrl.refreshRatingsFromBook()"` _(not in main)_
+- [x] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<a>` `ng-click="ctrl.openShareCase()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.manualPopulateBook()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.manualRefreshRatings()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.manualSyncQueries()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<input#populate-book>` `ng-model="ctrl.populateBook"` _(not in main)_
-- [ ] `<input#sync-queries>` `ng-model="ctrl.createMissingQueries"` _(not in main)_
-- [ ] `<input>` `ng-model="ctrl.autoPopulateBookPairs"` _(added on main)_
-- [ ] `<input>` `ng-model="ctrl.autoPopulateCaseJudgements"` _(added on main)_
+- [x] `<input#populate-book>` `ng-model="ctrl.populateBook"` _(not in main)_
+- [x] `<input#sync-queries>` `ng-model="ctrl.createMissingQueries"` _(not in main)_
+- [x] `<input>` `ng-model="ctrl.autoPopulateBookPairs"` _(added on main)_
+- [x] `<input>` `ng-model="ctrl.autoPopulateCaseJudgements"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="book in ctrl.share.books track by book.id"`
+- [x] `<li>` `ng-repeat="book in ctrl.share.books track by book.id"`
 
 Links:
 
-- [ ] `<a>` `ng-href="{{ctrl.createNewBookLink()}}"`
-- [ ] `<a>` `ng-href="books/{{book.id}}"`
-- [ ] `<a>` `href="books/{{ctrl.activeBookId}}/judge"`
-- [ ] `<a>` `href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements"` _(added on main)_
+- [x] `<a>` `ng-href="{{ctrl.createNewBookLink()}}"`
+- [x] `<a>` `ng-href="books/{{book.id}}"`
+- [x] `<a>` `href="books/{{ctrl.activeBookId}}/judge"`
+- [x] `<a>` `href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements"` _(added on main)_
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Judgements"
-- [ ] "Loading your teams, this will be quick I promise!"
-- [ ] "You do not have any queries to populate your book of judgements with." _(not in main)_
-- [ ] "Explicit Judgements created by humans are a good way to start measuring your search quality." _(not in main)_
-- [ ] "Quepid organizes Judgements in a" _(not in main)_
-- [ ] "Book" _(not in main)_
-- [ ] "that consists of query and document pairs for human evaluation." _(not in main)_
-- [ ] "As you work with the Case, new query and document pairs are automatically populating the linked Book to be judged." _(not in main)_
-- [ ] "Judgements are meant to be shared with a team, so either" _(not in main)_
-- [ ] "create a new team" _(not in main)_
-- [ ] "or"
-- [ ] "first." _(not in main)_
-- [ ] "You have not created any Books of Judgements yet, so go ahead and create a new Book!" _(not in main)_
-- [ ] "Create a book"
-- [ ] "Select a Book of Judgements"
-- [ ] uib-popover: "All the Books related to all the Teams this Case has been shared with are listed below. If you don't see the Book you want, check that you shared the Case with the right Team." _(not in main)_
-- [ ] "None (unselect current book)" _(not in main)_
-- [ ] "None" _(not in main)_
-- [ ] "View"
-- [ ] "Populate Book" _(not in main)_
-- [ ] uib-popover: "Update the list of query / doc pairs to be judged using the current search results." _(not in main)_
-- [ ] "syncing the book with the new query doc pairs from the case now happens automagically in the background and this button may be removed in the future." _(not in main)_
-- [ ] "Populate missing Queries in Case from those in Book" _(not in main)_
-- [ ] uib-popover: "Create queries in this Case that are defined in the Book and don't currently exist in the Case." _(not in main)_
-- [ ] "An error ({{processingPrompt.error}}) occurred, please try again."
-- [ ] "If the error persist, contact adminstrator for further assistance."
-- [ ] "Judge Documents!"
-- [ ] "Refresh ratings from book" _(not in main)_
-- [ ] "and creating missing queries" _(not in main)_
-- [ ] "Cancel"
-- [ ] "Dealing with judgements (this can take a minute or so)"
-- [ ] "Explicit judgements created by humans and" _(added on main)_
-- [ ] "AI judges (LLMs) are an effective way to start measuring your search quality. Quepid organizes these judgements into" _(added on main)_
-- [ ] "Books" _(added on main)_
-- [ ] "—collections of query and document pairs evaluated by human reviewers or automated AI models." _(added on main)_
-- [ ] "Select a Book below and configure how data syncs between your Case and Book." _(added on main)_
-- [ ] "Learn more" _(added on main)_
-- [ ] "Create a Book below to get started. Working with others? You can also" _(added on main)_
-- [ ] "create a team" _(added on main)_
-- [ ] "share this case" _(added on main)_
-- [ ] "with an existing team to collaborate and share Books." _(added on main)_
-- [ ] aria-label: "Help" _(added on main)_
-- [ ] "None (disconnect from any book)" _(added on main)_
-- [ ] title: "Open this book in a new page" _(added on main)_
-- [ ] "Select a book above to configure sync settings." _(added on main)_
-- [ ] "Case Integration" _(added on main)_
-- [ ] "About Book-Case Synchronization:" _(added on main)_
-- [ ] "Books and Cases can share data bi-directionally. Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings." _(added on main)_
-- [ ] "Case" _(added on main)_
-- [ ] "Book: Query/Doc Pairs" _(added on main)_
-- [ ] "On:" _(added on main)_
-- [ ] "New query/doc pairs automatically added to Book when Case runs." _(added on main)_
-- [ ] "Off:" _(added on main)_
-- [ ] "Manually trigger updates to the Book when needed." _(added on main)_
-- [ ] "Populate Now" _(added on main)_
-- [ ] "Book: Judgement Ratings" _(added on main)_
-- [ ] "Case ratings update immediately as judgements are made." _(added on main)_
-- [ ] "Manually import judgements when ready to test." _(added on main)_
-- [ ] "Refresh Ratings" _(added on main)_
-- [ ] "Book: Sync missing queries from Book to Case" _(added on main)_
-- [ ] "Book: add queries that exist in Book but not in Case." _(added on main)_
-- [ ] "Sync Queries" _(added on main)_
-- [ ] "Save" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Judgements"
+- [x] "Loading your teams, this will be quick I promise!"
+- [x] "You do not have any queries to populate your book of judgements with." _(not in main)_
+- [x] "Explicit Judgements created by humans are a good way to start measuring your search quality." _(not in main)_
+- [x] "Quepid organizes Judgements in a" _(not in main)_
+- [x] "Book" _(not in main)_
+- [x] "that consists of query and document pairs for human evaluation." _(not in main)_
+- [x] "As you work with the Case, new query and document pairs are automatically populating the linked Book to be judged." _(not in main)_
+- [x] "Judgements are meant to be shared with a team, so either" _(not in main)_
+- [x] "create a new team" _(not in main)_
+- [x] "or"
+- [x] "first." _(not in main)_
+- [x] "You have not created any Books of Judgements yet, so go ahead and create a new Book!" _(not in main)_
+- [x] "Create a book"
+- [x] "Select a Book of Judgements"
+- [x] uib-popover: "All the Books related to all the Teams this Case has been shared with are listed below. If you don't see the Book you want, check that you shared the Case with the right Team." _(not in main)_
+- [x] "None (unselect current book)" _(not in main)_
+- [x] "None" _(not in main)_
+- [x] "View"
+- [x] "Populate Book" _(not in main)_
+- [x] uib-popover: "Update the list of query / doc pairs to be judged using the current search results." _(not in main)_
+- [x] "syncing the book with the new query doc pairs from the case now happens automagically in the background and this button may be removed in the future." _(not in main)_
+- [x] "Populate missing Queries in Case from those in Book" _(not in main)_
+- [x] uib-popover: "Create queries in this Case that are defined in the Book and don't currently exist in the Case." _(not in main)_
+- [x] "An error ({{processingPrompt.error}}) occurred, please try again."
+- [x] "If the error persist, contact adminstrator for further assistance."
+- [x] "Judge Documents!"
+- [x] "Refresh ratings from book" _(not in main)_
+- [x] "and creating missing queries" _(not in main)_
+- [x] "Cancel"
+- [x] "Dealing with judgements (this can take a minute or so)"
+- [x] "Explicit judgements created by humans and" _(added on main)_
+- [x] "AI judges (LLMs) are an effective way to start measuring your search quality. Quepid organizes these judgements into" _(added on main)_
+- [x] "Books" _(added on main)_
+- [x] "—collections of query and document pairs evaluated by human reviewers or automated AI models." _(added on main)_
+- [x] "Select a Book below and configure how data syncs between your Case and Book." _(added on main)_
+- [x] "Learn more" _(added on main)_
+- [x] "Create a Book below to get started. Working with others? You can also" _(added on main)_
+- [x] "create a team" _(added on main)_
+- [x] "share this case" _(added on main)_
+- [x] "with an existing team to collaborate and share Books." _(added on main)_
+- [x] aria-label: "Help" _(added on main)_
+- [x] "None (disconnect from any book)" _(added on main)_
+- [x] title: "Open this book in a new page" _(added on main)_
+- [x] "Select a book above to configure sync settings." _(added on main)_
+- [x] "Case Integration" _(added on main)_
+- [x] "About Book-Case Synchronization:" _(added on main)_
+- [x] "Books and Cases can share data bi-directionally. Your Case provides query/doc pairs to judge, while Book judgements flow back as ratings." _(added on main)_
+- [x] "Case" _(added on main)_
+- [x] "Book: Query/Doc Pairs" _(added on main)_
+- [x] "On:" _(added on main)_
+- [x] "New query/doc pairs automatically added to Book when Case runs." _(added on main)_
+- [x] "Off:" _(added on main)_
+- [x] "Manually trigger updates to the Book when needed." _(added on main)_
+- [x] "Populate Now" _(added on main)_
+- [x] "Book: Judgement Ratings" _(added on main)_
+- [x] "Case ratings update immediately as judgements are made." _(added on main)_
+- [x] "Manually import judgements when ready to test." _(added on main)_
+- [x] "Refresh Ratings" _(added on main)_
+- [x] "Book: Sync missing queries from Book to Case" _(added on main)_
+- [x] "Book: add queries that exist in Book but not in Case." _(added on main)_
+- [x] "Sync Queries" _(added on main)_
+- [x] "Save" _(added on main)_
 
 <a id="row-4"></a>
 ### 4. `app/assets/javascripts/components/export_case/_modal.html`
@@ -925,132 +925,132 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/export_case/export_case_controller.js`
 - **Owner candidates:** `app/views/shared/_export_case_core_modal.html.erb`, `app/javascript/controllers/export_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_export_case_core_modal.html.erb`, `export_case_core_controller.js`
+- **Scenario:** 6.1
+- **Decisions:** Compared with Legacy (:3001) and main (`776c68b5`): the modal text is identical word for word on Legacy and Current (live diff with snapshots present only on Current), the link targets resolve to the same JSON (`/api/cases/N?shallow=false`, `/queries`, `/annotations`, `/scores`, `/api/export/…`, `/api/docs`). Downloads replayed on both for Information Need, General, Detailed, Basic, TREC, RRE, LTR and Quepid JSON: same file names (`<case>_<format>.<ext>`) and same headers and first rows; the Snapshot format downloaded on Current (`<case>_snapshot.csv`, "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position") but did not download on Legacy in this replay (not investigated: Legacy-only, unverified). The Quepid-format radio (`#quepid`, added on main) is present. **Evidence level:** ticked from the modal text diff and the download replay. The "This snapshot is currently being processed" item is ticked as N/A: Legacy's `isProcessingFile()` always returned false (its loop returned from the callback, so the warning never rendered), and Current has no equivalent. Not replayed: Basic or TREC with a snapshot selected.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport"`
-- [ ] `<div>` `ng-if="ctrl.isProcessingFile()"`
-- [ ] `<span>` `ng-if="ctrl.options.api_snapshot"`
-- [ ] `<button>` `ng-disabled="ctrl.options.which === undefined || ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport"`
+- [x] `<p>` `ng-if="ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport"`
+- [x] `<div>` `ng-if="ctrl.isProcessingFile()"` — N/A: Legacy dead code (always false); Current has no equivalent
+- [x] `<span>` `ng-if="ctrl.options.api_snapshot"`
+- [x] `<button>` `ng-disabled="ctrl.options.which === undefined || ctrl.options.which==='detailed' && !ctrl.supportsDetailedExport"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Inputs:
 
-- [ ] `<input#information_need>` `ng-model="ctrl.options.which"`
-- [ ] `<input#general>` `ng-model="ctrl.options.which"`
-- [ ] `<input#detailed>` `ng-model="ctrl.options.which"`
-- [ ] `<input#snapshot>` `ng-model="ctrl.options.which"`
-- [ ] `<select#diffWith>` `ng-model="ctrl.options.snapshot_snapshot"`
-- [ ] `<select#diffWith>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
-- [ ] `<input#basic>` `ng-model="ctrl.options.which"`
-- [ ] `<input#trec>` `ng-model="ctrl.options.which"`
-- [ ] `<select#diffWith2>` `ng-model="ctrl.options.basic_snapshot"`
-- [ ] `<select#diffWith2>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
-- [ ] `<input#rre>` `ng-model="ctrl.options.which"`
-- [ ] `<input#ltr>` `ng-model="ctrl.options.which"`
-- [ ] `<select>` `ng-model="ctrl.options.api_snapshot"`
-- [ ] `<input#quepid>` `ng-model="ctrl.options.which"` _(added on main)_
+- [x] `<input#information_need>` `ng-model="ctrl.options.which"`
+- [x] `<input#general>` `ng-model="ctrl.options.which"`
+- [x] `<input#detailed>` `ng-model="ctrl.options.which"`
+- [x] `<input#snapshot>` `ng-model="ctrl.options.which"`
+- [x] `<select#diffWith>` `ng-model="ctrl.options.snapshot_snapshot"`
+- [x] `<select#diffWith>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
+- [x] `<input#basic>` `ng-model="ctrl.options.which"`
+- [x] `<input#trec>` `ng-model="ctrl.options.which"`
+- [x] `<select#diffWith2>` `ng-model="ctrl.options.basic_snapshot"`
+- [x] `<select#diffWith2>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
+- [x] `<input#rre>` `ng-model="ctrl.options.which"`
+- [x] `<input#ltr>` `ng-model="ctrl.options.which"`
+- [x] `<select>` `ng-model="ctrl.options.api_snapshot"`
+- [x] `<input#quepid>` `ng-model="ctrl.options.which"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<option>` `ng-repeat="snapshot in ctrl.snapshots"`
+- [x] `<option>` `ng-repeat="snapshot in ctrl.snapshots"`
 
 Links:
 
-- [ ] `<a>` `href="https://github.com/tballison/quaerite"`
-- [ ] `<a>` `href="https://trec.nist.gov/"`
-- [ ] `<a>` `href="https://github.com/SeaseLtd/rated-ranking-evaluator"`
-- [ ] `<a>` `href="https://rankquest.jillesvangurp.com/"`
-- [ ] `<a>` `ng-href="api/docs"`
-- [ ] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false"`
-- [ ] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false"`
-- [ ] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/annotations.json"`
-- [ ] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/scores.json"`
-- [ ] `<a>` `ng-href="api/export/ratings/{{ctrl.theCase.caseNo}}.json"`
-- [ ] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false"`
-- [ ] `<a>` `ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json"`
+- [x] `<a>` `href="https://github.com/tballison/quaerite"`
+- [x] `<a>` `href="https://trec.nist.gov/"`
+- [x] `<a>` `href="https://github.com/SeaseLtd/rated-ranking-evaluator"`
+- [x] `<a>` `href="https://rankquest.jillesvangurp.com/"`
+- [x] `<a>` `ng-href="api/docs"`
+- [x] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}.json?shallow=false"`
+- [x] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/queries.json?shallow=false"`
+- [x] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/annotations.json"`
+- [x] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/scores.json"`
+- [x] `<a>` `ng-href="api/export/ratings/{{ctrl.theCase.caseNo}}.json"`
+- [x] `<a>` `ng-href="api/cases/{{ctrl.theCase.caseNo}}/snapshots/{{ ctrl.options.api_snapshot }}.json?shallow=false"`
+- [x] `<a>` `ng-href="api/export/cases/{{ctrl.theCase.caseNo}}.json"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Export Case:"
-- [ ] "There are a number of formats for exporting data from Quepid."
-- [ ] "Information Need"
-- [ ] "CSV file with"
-- [ ] "query,information_need"
-- [ ] ", use as a template for uploading Information Need for queries back into Quepid."
-- [ ] "General"
-- [ ] "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options"
-- [ ] "Detailed"
-- [ ] "Detailed export is only supported from the individual Case view."
-- [ ] "Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN"
-- [ ] "where"
-- [ ] "Field1,...,FieldN"
-- [ ] "are specified under"
-- [ ] "Settings"
-- [ ] "in the"
-- [ ] "Displayed Fields"
-- [ ] "field."
-- [ ] "Snapshot"
-- [ ] "Snapshot's represent a point in time, and you may want to download them for further analysis, rework them, and then import them back into Quepid using the"
-- [ ] "Import Snapshots from CSV"
-- [ ] "function on the Relevancy Cases listing page. You will have a CSV file with"
-- [ ] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
-- [ ] "fields. If you have recorded the document fields when you took the snapshot, then you will also have"
-- [ ] "columns."
-- [ ] "This snapshot is currently being processed in the background. You should wait till it completes."
-- [ ] "Basic"
-- [ ] "Simple CSV file format"
-- [ ] "query,docid,rating"
-- [ ] "that exports only queries that have been rated. Compatible with projects like"
-- [ ] "Quaerite"
-- [ ] "among others."
-- [ ] "TREC"
-- [ ] "TREC qrel file format"
-- [ ] "query_id 0 docno judgment"
-- [ ] "that exports only queries that have been rated. Used by the"
-- [ ] "competition."
-- [ ] "If you choose a Snapshot, then it will export unrated query/document pairs from when the Snapshot was created."
-- [ ] "Rated Ranking Evaluator / RankQuest"
-- [ ] "Using"
-- [ ] "Rated Ranking Evaluator"
-- [ ] "or"
-- [ ] "RankQuest"
-- [ ] "? Use the RRE format to export the ratings from Quepid to import into those tools."
-- [ ] "Learning to Rank"
-- [ ] "LTR uses a rather odd format of"
-- [ ] "rating qid:queryid # docid query"
-- [ ] ", eg"
-- [ ] "3 qid:1 # 1370 star trek"
-- [ ] "."
-- [ ] "Quepid API"
-- [ ] "Quepid"
-- [ ] "has an API"
-- [ ] "that you can export data in the JSON format via. Append the parameter"
-- [ ] "?shallow=true"
-- [ ] "to return a smaller dataset."
-- [ ] "Retrieve the"
-- [ ] "Case"
-- [ ] ","
-- [ ] "Queries"
-- [ ] "Annotations"
-- [ ] "Scores"
-- [ ] "Ratings"
-- [ ] ", or a Snapshot"
-- [ ] "here"
-- [ ] "from API."
-- [ ] "Need to move a Case between different Quepids? This format lets you dump the complete Case. You can also create a new Case outside Quepid and import using this format. Use the Import Case function on the Cases Listing page to import it back in as a brand new Case."
-- [ ] "Peek at"
-- [ ] "the JSON format"
-- [ ] "Cancel"
-- [ ] "Export"
+- [x] aria-label: "Close"
+- [x] "Export Case:"
+- [x] "There are a number of formats for exporting data from Quepid."
+- [x] "Information Need"
+- [x] "CSV file with"
+- [x] "query,information_need"
+- [x] ", use as a template for uploading Information Need for queries back into Quepid."
+- [x] "General"
+- [x] "Team Name,Case Name,Case ID,Query Text,Score,Date Last Scored,Count,Information Need,Notes,Options"
+- [x] "Detailed"
+- [x] "Detailed export is only supported from the individual Case view."
+- [x] "Team Name,Case Name,Case ID,Query Text,Doc ID,Position,Title,Rating,Field1,...,FieldN"
+- [x] "where"
+- [x] "Field1,...,FieldN"
+- [x] "are specified under"
+- [x] "Settings"
+- [x] "in the"
+- [x] "Displayed Fields"
+- [x] "field."
+- [x] "Snapshot"
+- [x] "Snapshot's represent a point in time, and you may want to download them for further analysis, rework them, and then import them back into Quepid using the"
+- [x] "Import Snapshots from CSV"
+- [x] "function on the Relevancy Cases listing page. You will have a CSV file with"
+- [x] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
+- [x] "fields. If you have recorded the document fields when you took the snapshot, then you will also have"
+- [x] "columns."
+- [x] "This snapshot is currently being processed in the background. You should wait till it completes." — N/A: never rendered on Legacy
+- [x] "Basic"
+- [x] "Simple CSV file format"
+- [x] "query,docid,rating"
+- [x] "that exports only queries that have been rated. Compatible with projects like"
+- [x] "Quaerite"
+- [x] "among others."
+- [x] "TREC"
+- [x] "TREC qrel file format"
+- [x] "query_id 0 docno judgment"
+- [x] "that exports only queries that have been rated. Used by the"
+- [x] "competition."
+- [x] "If you choose a Snapshot, then it will export unrated query/document pairs from when the Snapshot was created."
+- [x] "Rated Ranking Evaluator / RankQuest"
+- [x] "Using"
+- [x] "Rated Ranking Evaluator"
+- [x] "or"
+- [x] "RankQuest"
+- [x] "? Use the RRE format to export the ratings from Quepid to import into those tools."
+- [x] "Learning to Rank"
+- [x] "LTR uses a rather odd format of"
+- [x] "rating qid:queryid # docid query"
+- [x] ", eg"
+- [x] "3 qid:1 # 1370 star trek"
+- [x] "."
+- [x] "Quepid API"
+- [x] "Quepid"
+- [x] "has an API"
+- [x] "that you can export data in the JSON format via. Append the parameter"
+- [x] "?shallow=true"
+- [x] "to return a smaller dataset."
+- [x] "Retrieve the"
+- [x] "Case"
+- [x] ","
+- [x] "Queries"
+- [x] "Annotations"
+- [x] "Scores"
+- [x] "Ratings"
+- [x] ", or a Snapshot"
+- [x] "here"
+- [x] "from API."
+- [x] "Need to move a Case between different Quepids? This format lets you dump the complete Case. You can also create a new Case outside Quepid and import using this format. Use the Import Case function on the Cases Listing page to import it back in as a brand new Case."
+- [x] "Peek at"
+- [x] "the JSON format"
+- [x] "Cancel"
+- [x] "Export"
 
 <a id="row-5"></a>
 ### 5. `app/assets/javascripts/components/import_ratings/_modal.html`
@@ -1084,107 +1084,107 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/import_ratings/import_ratings_controller.js`
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js`
+- **Scenario:** 6.2
+- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the removed "Header" checkbox and the changed CSV row validation, [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 5; a failed import keeps the modal open, item 6. The RRE sample file returned a server 500 on both (see the RRE entry in `todo.md`).
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.csv.import.alert"`
-- [ ] `<div>` `ng-if="ctrl.csv.content"`
-- [ ] `<div>` `ng-show="ctrl.information_needs.import.alert"`
-- [ ] `<div>` `ng-if="ctrl.information_needs.content"`
-- [ ] `<div>` `ng-show="ctrl.snapshots.import.alert"`
-- [ ] `<div>` `ng-if="ctrl.snapshots.content"`
-- [ ] `<span>` `ng-show="ctrl.ratingsTypePicked()"`
-- [ ] `<span>` `ng-show="ctrl.informationNeedsTypePicked()"`
-- [ ] `<span>` `ng-show="ctrl.snapshotTypePicked()"`
-- [ ] `<p>` `ng-if="ctrl.showWarning()"`
-- [ ] `<i>` `ng-show="ctrl.loading"`
-- [ ] `<button>` `ng-disabled="!ctrl.showWarning()"`
+- [x] `<div>` `ng-show="ctrl.csv.import.alert"`
+- [x] `<div>` `ng-if="ctrl.csv.content"`
+- [x] `<div>` `ng-show="ctrl.information_needs.import.alert"`
+- [x] `<div>` `ng-if="ctrl.information_needs.content"`
+- [x] `<div>` `ng-show="ctrl.snapshots.import.alert"`
+- [x] `<div>` `ng-if="ctrl.snapshots.content"`
+- [x] `<span>` `ng-show="ctrl.ratingsTypePicked()"`
+- [x] `<span>` `ng-show="ctrl.informationNeedsTypePicked()"`
+- [x] `<span>` `ng-show="ctrl.snapshotTypePicked()"`
+- [x] `<p>` `ng-if="ctrl.showWarning()"`
+- [x] `<i>` `ng-show="ctrl.loading"`
+- [x] `<button>` `ng-disabled="!ctrl.showWarning()"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
-- [ ] `<button#import-ratings-tab-ratings>` `ng-click="ctrl.clearSelection()"` _(added on main)_
-- [ ] `<button#import-ratings-tab-info-needs>` `ng-click="ctrl.clearSelection()"` _(added on main)_
-- [ ] `<button#import-ratings-tab-snapshots>` `ng-click="ctrl.clearSelection()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button#import-ratings-tab-ratings>` `ng-click="ctrl.clearSelection()"` _(added on main)_
+- [x] `<button#import-ratings-tab-info-needs>` `ng-click="ctrl.clearSelection()"` _(added on main)_
+- [x] `<button#import-ratings-tab-snapshots>` `ng-click="ctrl.clearSelection()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<input#clear-existing-queries>` `ng-model="ctrl.clearQueries"`
-- [ ] `<input#csv>` `ng-model="ctrl.options.which"`
-- [ ] `<input#rre>` `ng-model="ctrl.options.which"`
-- [ ] `<input#ltr>` `ng-model="ctrl.options.which"`
-- [ ] `<input#information_needs>` `ng-model="ctrl.options.which"`
-- [ ] `<input#clear-existing-queries>` `ng-model="ctrl.createQueries"` _(not in main)_
-- [ ] `<input#snapshots>` `ng-model="ctrl.options.which"`
-- [ ] `<input#create-missing-queries>` `ng-model="ctrl.createQueries"` _(added on main)_
+- [x] `<input#clear-existing-queries>` `ng-model="ctrl.clearQueries"`
+- [x] `<input#csv>` `ng-model="ctrl.options.which"`
+- [x] `<input#rre>` `ng-model="ctrl.options.which"`
+- [x] `<input#ltr>` `ng-model="ctrl.options.which"`
+- [x] `<input#information_needs>` `ng-model="ctrl.options.which"`
+- [x] `<input#clear-existing-queries>` `ng-model="ctrl.createQueries"` _(not in main)_
+- [x] `<input#snapshots>` `ng-model="ctrl.options.which"`
+- [x] `<input#create-missing-queries>` `ng-model="ctrl.createQueries"` _(added on main)_
 
 Bound content:
 
-- [ ] `<div>` `ng-bind-html="ctrl.csv.import.alert"`
-- [ ] `<div>` `ng-bind-html="ctrl.information_needs.import.alert"`
-- [ ] `<div>` `ng-bind-html="ctrl.snapshots.import.alert"`
+- [x] `<div>` `ng-bind-html="ctrl.csv.import.alert"`
+- [x] `<div>` `ng-bind-html="ctrl.information_needs.import.alert"`
+- [x] `<div>` `ng-bind-html="ctrl.snapshots.import.alert"`
 
 Links:
 
-- [ ] `<a>` `href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings"`
+- [x] `<a>` `href="https://github.com/SeaseLtd/rated-ranking-evaluator/wiki/What%20We%20Need%20To%20Provide#ratings"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Import into Case:"
-- [ ] "Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application. There are a number of formats for importing this data into Quepid."
-- [ ] "Clear existing queries?"
-- [ ] uib-popover: "Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid" _(not in main)_
-- [ ] "Please select the file format to import:"
-- [ ] "CSV"
-- [ ] "The CSV file should have the headers:"
-- [ ] "query,docid,rating"
-- [ ] "and lines similar to:"
-- [ ] "query,docid,rating star wars,3574597,3 star wars,3557771, star trek,,"
-- [ ] "Select CSV file to import:"
-- [ ] "Rated Ranking Evaluator"
-- [ ] "Quepid only imports the ratings part of the"
-- [ ] "RRE judgement"
-- [ ] "file."
-- [ ] "Select RRE ratings file to import:"
-- [ ] "Learning to Rank"
-- [ ] "LTR uses a rather odd format of"
-- [ ] "rating qid:queryid # docid query"
-- [ ] ", eg"
-- [ ] "3 qid:1 # 1370 star trek"
-- [ ] ". We ignore the"
-- [ ] "qid:queryid"
-- [ ] "and use the"
-- [ ] "query"
-- [ ] "for matching up to existing queries."
-- [ ] "Select LTR ratings file to import:"
-- [ ] "Importing information needs is the easiest way to update a lot of queries. You should export the template file via the 'Export' feature first."
-- [ ] "Information Needs CSV"
-- [ ] "Create missing queries?"
-- [ ] uib-popover: "Select to create any missing queries, useful when populating a new case with queries with info needs." _(not in main)_
-- [ ] "query,information_need"
-- [ ] "query,information_need star wars,"The original movie""
-- [ ] "Importing snapshots is fun! Any missing queries will be created. The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case."
-- [ ] "Snapshot CSV"
-- [ ] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
-- [ ] "Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,9426,2 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3"
-- [ ] "Please note that the"
-- [ ] "Case ID"
-- [ ] "column is ignored so you can export from one case and import into another. Any additional columns will be treated as document fields and stored in the Snapshot."
-- [ ] "Select Snapshot CSV file to import:"
-- [ ] "This operation WILL override your existing ratings. Proceed with caution!"
-- [ ] "This operation WILL override your existing information needs. Proceed with caution!"
-- [ ] "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
-- [ ] "Cancel"
-- [ ] "Import"
-- [ ] "Ratings" _(added on main)_
-- [ ] "Information Needs" _(added on main)_
-- [ ] "Snapshots" _(added on main)_
-- [ ] aria-label: "Help" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Import into Case:"
+- [x] "Importing ratings is a great way to manage the rating process outside of Quepid, for example in your own custom application. There are a number of formats for importing this data into Quepid."
+- [x] "Clear existing queries?"
+- [x] uib-popover: "Select to clear all the existing queries on a case, this is typical when you manage your queries and ratings per case outside Quepid" _(not in main)_
+- [x] "Please select the file format to import:"
+- [x] "CSV"
+- [x] "The CSV file should have the headers:"
+- [x] "query,docid,rating"
+- [x] "and lines similar to:"
+- [x] "query,docid,rating star wars,3574597,3 star wars,3557771, star trek,,"
+- [x] "Select CSV file to import:"
+- [x] "Rated Ranking Evaluator"
+- [x] "Quepid only imports the ratings part of the"
+- [x] "RRE judgement"
+- [x] "file."
+- [x] "Select RRE ratings file to import:"
+- [x] "Learning to Rank"
+- [x] "LTR uses a rather odd format of"
+- [x] "rating qid:queryid # docid query"
+- [x] ", eg"
+- [x] "3 qid:1 # 1370 star trek"
+- [x] ". We ignore the"
+- [x] "qid:queryid"
+- [x] "and use the"
+- [x] "query"
+- [x] "for matching up to existing queries."
+- [x] "Select LTR ratings file to import:"
+- [x] "Importing information needs is the easiest way to update a lot of queries. You should export the template file via the 'Export' feature first."
+- [x] "Information Needs CSV"
+- [x] "Create missing queries?"
+- [x] uib-popover: "Select to create any missing queries, useful when populating a new case with queries with info needs." _(not in main)_
+- [x] "query,information_need"
+- [x] "query,information_need star wars,"The original movie""
+- [x] "Importing snapshots is fun! Any missing queries will be created. The Case ID provided in the uploaded CSV file will be replaced so that all rows will be imported into the current case."
+- [x] "Snapshot CSV"
+- [x] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
+- [x] "Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,527641,1 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,9426,2 Snapshot: Baseline,2023-05-12T18:22:22.245Z,6,star wars,1921,3"
+- [x] "Please note that the"
+- [x] "Case ID"
+- [x] "column is ignored so you can export from one case and import into another. Any additional columns will be treated as document fields and stored in the Snapshot."
+- [x] "Select Snapshot CSV file to import:"
+- [x] "This operation WILL override your existing ratings. Proceed with caution!"
+- [x] "This operation WILL override your existing information needs. Proceed with caution!"
+- [x] "This operation WILL replace any snapshots you have created that have the same Snapshot Name in the csv."
+- [x] "Cancel"
+- [x] "Import"
+- [x] "Ratings" _(added on main)_
+- [x] "Information Needs" _(added on main)_
+- [x] "Snapshots" _(added on main)_
+- [x] aria-label: "Help" _(added on main)_
 
 <a id="row-6"></a>
 ### 6. `app/assets/templates/views/searchResults.html`
@@ -1221,103 +1221,103 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/searchResults.js`
 - **Owner candidates:** `app/javascript/controllers/search_results_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_query_list_templates.html.erb`, `search_results_controller.js`, `query_row_controller.js`
+- **Scenario:** 4.15, 4.16, 4.20, 4.21, 4.22
+- **Decisions:** Compared the Legacy template (`8ceb99e9`) with Current's `_query_list_templates.html.erb` item by item, and replayed on Legacy (:3001) and Current (:3000) with equivalent clones of "10s of Queries" on 2026-10-17: expand/collapse, Toggle Notes, Information Need and notes save (same success flash, persisted after reload, same "Info Need: …" hover tooltip), Peek at the next page (10 to 20 docs), Show only rated (10 rated docs, note and count), Score All set and RESET (every document follows), Copy query (clipboard holds the raw query text) and Delete Query. Intentional differences with a recorded decision: "Unrated" and "of 1.00" score states (user commit `7c304651`, scenario 4.7); Delete Query asks through the shared Confirm modal with the same copy (user commit `60d0beb4`, scenario 4.15); Browse opens the browse-query modal, not a new tab (main-only change, rows 21 and 39, scenario 4.18); the "Results" label under the count renders on main and Current but never rendered on Legacy (its self-closed `<count-up />` swallowed it). The error state is not reproducible on the live Solr (it tolerates malformed queries); it is covered by `core_failure_recovery.spec.ts` and `workspace_bootstrap.spec.ts`. **Evidence level:** every item was ticked from the template comparison; only the flows named above were replayed live. Not replayed: the Querqy icon, diff display with a query in error, the bootstrapping and updating banners, the disabled-Manual state, Show only rated disabled for unsupported engines, and the notes box `hidden`/`d-none` class itself.
 
 Conditional UI:
 
-- [ ] `<qscore-query>` `ng-if="query.diffs"`
-- [ ] `<span>` `ng-show="query.isNotAllRated()"`
-- [ ] `<span>` `ng-show="querqyRuleTriggered()"`
-- [ ] `<span>` `ng-hide="isSortingEnabled()"` _(not in main)_
-- [ ] `<div>` `ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}"`
-- [ ] `<span>` `ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle"`
-- [ ] `<button>` `ng-class="{true: 'active', false: ''}[displayed.results == displayed.resultsView.finder]"`
-- [ ] `<div>` `ng-class="{true: 'notes-box', false: 'hidden'}[displayed.notes]"` _(not in main)_
-- [ ] `<div>` `ng-if="displayed.results == displayed.resultsView.diffs"`
-- [ ] `<div>` `ng-if="query.state() === 'error'"`
-- [ ] `<span>` `ng-if="query.numFound > query.docs.length"` _(not in main)_
-- [ ] `<a>` `ng-show="query.state() !== 'error'"` _(not in main)_
-- [ ] `<span>` `ng-if="selectedTry.searchEngine == 'solr'"` _(not in main)_
-- [ ] `<span>` `ng-if="query.depthOfRating"` _(not in main)_
-- [ ] `<div>` `ng-if="!queriesSvc.showOnlyRated"`
-- [ ] `<div>` `ng-show="displayed.results == displayed.resultsView.results"`
-- [ ] `<a>` `ng-show="query.getNumFound() > query.ratedDocs.length"`
-- [ ] `<span>` `ng-if="query.getNumFound() > query.ratedDocs.length"` _(not in main)_
-- [ ] `<div>` `ng-if="queriesSvc.showOnlyRated"`
-- [ ] `<div>` `ng-if="query.isToggled()"`
-- [ ] `<div>` `ng-class="query.state() | queryStateClass"`
-- [ ] `<img>` `ng-if="query.queryText | isImageUrl"` _(added on main)_
-- [ ] `<span>` `ng-if="!(query.queryText | isImageUrl)"` _(added on main)_
-- [ ] `<i>` `ng-hide="isSortingEnabled()"` _(added on main)_
-- [ ] `<div>` `ng-class="{true: 'notes-box', false: 'd-none'}[displayed.notes]"` _(added on main)_
-- [ ] `<span>` `ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"` _(added on main)_
-- [ ] `<span>` `ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"` _(added on main)_
-- [ ] `<div>` `ng-if="query.depthOfRating"` _(added on main)_
-- [ ] `<span>` `ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"` _(added on main)_
+- [x] `<qscore-query>` `ng-if="query.diffs"`
+- [x] `<span>` `ng-show="query.isNotAllRated()"`
+- [x] `<span>` `ng-show="querqyRuleTriggered()"`
+- [x] `<span>` `ng-hide="isSortingEnabled()"` _(not in main)_
+- [x] `<div>` `ng-class="{'diff-query-display': (displayed.results == displayed.resultsView.diffs && query.diffs)}"`
+- [x] `<span>` `ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle"`
+- [x] `<button>` `ng-class="{true: 'active', false: ''}[displayed.results == displayed.resultsView.finder]"`
+- [x] `<div>` `ng-class="{true: 'notes-box', false: 'hidden'}[displayed.notes]"` _(not in main)_
+- [x] `<div>` `ng-if="displayed.results == displayed.resultsView.diffs"`
+- [x] `<div>` `ng-if="query.state() === 'error'"`
+- [x] `<span>` `ng-if="query.numFound > query.docs.length"` _(not in main)_
+- [x] `<a>` `ng-show="query.state() !== 'error'"` _(not in main)_
+- [x] `<span>` `ng-if="selectedTry.searchEngine == 'solr'"` _(not in main)_
+- [x] `<span>` `ng-if="query.depthOfRating"` _(not in main)_
+- [x] `<div>` `ng-if="!queriesSvc.showOnlyRated"`
+- [x] `<div>` `ng-show="displayed.results == displayed.resultsView.results"`
+- [x] `<a>` `ng-show="query.getNumFound() > query.ratedDocs.length"`
+- [x] `<span>` `ng-if="query.getNumFound() > query.ratedDocs.length"` _(not in main)_
+- [x] `<div>` `ng-if="queriesSvc.showOnlyRated"`
+- [x] `<div>` `ng-if="query.isToggled()"`
+- [x] `<div>` `ng-class="query.state() | queryStateClass"`
+- [x] `<img>` `ng-if="query.queryText | isImageUrl"` _(added on main)_
+- [x] `<span>` `ng-if="!(query.queryText | isImageUrl)"` _(added on main)_
+- [x] `<i>` `ng-hide="isSortingEnabled()"` _(added on main)_
+- [x] `<div>` `ng-class="{true: 'notes-box', false: 'd-none'}[displayed.notes]"` _(added on main)_
+- [x] `<span>` `ng-if="query.numFound > query.docs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"` _(added on main)_
+- [x] `<span>` `ng-if="selectedTry.searchEngine == 'solr' || (selectedTry.searchEngine == 'searchapi' && selectedTry.apiMethod == 'GET')"` _(added on main)_
+- [x] `<div>` `ng-if="query.depthOfRating"` _(added on main)_
+- [x] `<span>` `ng-if="query.getNumFound() > query.ratedDocs.length && (selectedTry.searchEngine != 'searchapi' || selectedTry.mapperBasedSearchEngineSupportsPagination)"` _(added on main)_
 
 Actions:
 
-- [ ] `<span>` `ng-click="query.toggle()"` _(not in main)_
-- [ ] `<div>` `ng-click="ratings.open()"` _(not in main)_
-- [ ] `<button>` `ng-click="displayed.notes = !displayed.notes"`
-- [ ] `<button>` `ng-click="targetedSearch.triggerModal()"`
-- [ ] `<button>` `ng-click="removeQuery(query.queryId)"`
-- [ ] `<form>` `ng-submit="saveNotes()"`
-- [ ] `<a>` `ng-click="query.paginate()"`
-- [ ] `<a>` `ng-click="query.ratedPaginate()"`
-- [ ] `<i>` `ng-click="query.toggle()"` _(added on main)_
-- [ ] `<button>` `ng-click="copyQueryText()"` _(added on main)_
+- [x] `<span>` `ng-click="query.toggle()"` _(not in main)_
+- [x] `<div>` `ng-click="ratings.open()"` _(not in main)_
+- [x] `<button>` `ng-click="displayed.notes = !displayed.notes"`
+- [x] `<button>` `ng-click="targetedSearch.triggerModal()"`
+- [x] `<button>` `ng-click="removeQuery(query.queryId)"`
+- [x] `<form>` `ng-submit="saveNotes()"`
+- [x] `<a>` `ng-click="query.paginate()"`
+- [x] `<a>` `ng-click="query.ratedPaginate()"`
+- [x] `<i>` `ng-click="query.toggle()"` _(added on main)_
+- [x] `<button>` `ng-click="copyQueryText()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<count-up>` `ng-model="numFound"` _(not in main)_
-- [ ] `<input#information>` `ng-model="informationNeed"`
-- [ ] `<textarea#notes>` `ng-model="queryNotes"`
+- [x] `<count-up>` `ng-model="numFound"` _(not in main)_
+- [x] `<input#information>` `ng-model="informationNeed"`
+- [x] `<textarea#notes>` `ng-model="queryNotes"`
 
 Lists (check empty states):
 
-- [ ] `<qscore-query>` `ng-repeat="searcher in query.diffs.getSearchers() track by $index"`
-- [ ] `<search-result>` `ng-repeat="doc in query.docs track by doc.id"`
-- [ ] `<search-result>` `ng-repeat="doc in query.ratedDocs track by doc.id"`
+- [x] `<qscore-query>` `ng-repeat="searcher in query.diffs.getSearchers() track by $index"`
+- [x] `<search-result>` `ng-repeat="doc in query.docs track by doc.id"`
+- [x] `<search-result>` `ng-repeat="doc in query.ratedDocs track by doc.id"`
 
 Bound content:
 
-- [ ] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
-- [ ] `<div>` `ng-bind-html="query.errorText"`
-- [ ] `<img>` `ng-src="{{query.queryText}}"` _(added on main)_
+- [x] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
+- [x] `<div>` `ng-bind-html="query.errorText"`
+- [x] `<img>` `ng-src="{{query.queryText}}"` _(added on main)_
 
 Links:
 
-- [ ] `<a>` `href="{{query.browseUrl()}}"` _(not in main)_
+- [x] `<a>` `href="{{query.browseUrl()}}"` _(not in main)_
 
 Copy:
 
-- [ ] "{{query.queryText}}  " _(not in main)_
-- [ ] uib-tooltip: "Info Need: {{query.informationNeed}}" _(not in main)_
-- [ ] "🐸"
-- [ ] title: "Hop to it! There are unrated results!"
-- [ ] title: "Querqy Strikes Again!"
-- [ ] "Score All"
-- [ ] title: "Copy query"
-- [ ] alt: "Copy query"
-- [ ] "Toggle Notes"
-- [ ] "Missing Documents"
-- [ ] "Delete Query"
-- [ ] "Information Need"
-- [ ] placeholder: "Info Need:"
-- [ ] "Notes on this Query"
-- [ ] "Save"
-- [ ] "Diff Results"
-- [ ] uib-popover: "Close the results pane" _(not in main)_
-- [ ] "Peek at the next page of results"
-- [ ] "Note:"
-- [ ] "Only the top {{query.depthOfRating}} results are used in the scoring calculations."
-- [ ] "You are only viewing documents that have been rated"
-- [ ] "{{query.queryText}} " _(added on main)_
-- [ ] aria-label: "Query failed" _(added on main)_
-- [ ] title: "Query failed" _(added on main)_
+- [x] "{{query.queryText}}  " _(not in main)_
+- [x] uib-tooltip: "Info Need: {{query.informationNeed}}" _(not in main)_
+- [x] "🐸"
+- [x] title: "Hop to it! There are unrated results!"
+- [x] title: "Querqy Strikes Again!"
+- [x] "Score All"
+- [x] title: "Copy query"
+- [x] alt: "Copy query"
+- [x] "Toggle Notes"
+- [x] "Missing Documents"
+- [x] "Delete Query"
+- [x] "Information Need"
+- [x] placeholder: "Info Need:"
+- [x] "Notes on this Query"
+- [x] "Save"
+- [x] "Diff Results"
+- [x] uib-popover: "Close the results pane" _(not in main)_
+- [x] "Peek at the next page of results"
+- [x] "Note:"
+- [x] "Only the top {{query.depthOfRating}} results are used in the scoring calculations."
+- [x] "You are only viewing documents that have been rated"
+- [x] "{{query.queryText}} " _(added on main)_
+- [x] aria-label: "Query failed" _(added on main)_
+- [x] title: "Query failed" _(added on main)_
 
 <a id="row-7"></a>
 ### 7. `app/assets/templates/views/targetedSearchModal.html`
@@ -1352,103 +1352,103 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/targetedSearchCtrl.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `missing_documents_controller.js`, `shared/_dynamic_modal_templates.html.erb` (`missing-documents-modal-template`)
+- **Scenario:** 4.9
+- **Decisions:** Legacy (:3001) and Current (:3000) replayed on 2026-10-17: Search by Lucene `id:` returns the matching document under "Query Results" (Current) / "Your query … returned one matching document" (Legacy), a no-match search reports "Your query … returned no results", a document found can be rated, and Reset to All Rated Docs returns to the rated list. The Angular-era engine-specific help (Lucene syntax links, "click Search instead of Enter") was replaced on main by a pre-filled one-off query editor (JSON editor for ES/OS), and Solr document finding was restored with its own hint by user commit `795b2474` (scenario 4.9). "Unsupported engine" and the rated-lookup-unsupported notices are source-checked. Existing `core_event_actions.spec.ts` covers rating inside the modal.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="enterKeyPressed"` _(not in main)_
-- [ ] `<input>` `ng-disabled="defaultList"`
-- [ ] `<div>` `ng-if="this.docFinder.numFound == 0"` _(not in main)_
-- [ ] `<p>` `ng-if="!defaultList"`
-- [ ] `<p>` `ng-if="defaultList"`
-- [ ] `<div>` `ng-if="this.docFinder.numFound > 0"`
-- [ ] `<span>` `ng-if="docFinder.numFound > docFinder.docs.length"`
-- [ ] `<span>` `ng-show="docFinder.paging"`
-- [ ] `<div>` `ng-if="!usesQueryParamsEditor"` _(added on main)_
-- [ ] `<textarea>` `ng-if="settings.searchEngine == 'solr' || settings.searchEngine == 'searchapi'"` _(added on main)_
-- [ ] `<div#docfinder-es-os-query-params-editor>` `ng-if="settings.searchEngine == 'es' || settings.searchEngine == 'os'"` _(added on main)_
-- [ ] `<input>` `ng-disabled="docFinder.searching"` _(added on main)_
-- [ ] `<div>` `ng-if="docFinder.parseError"` _(added on main)_
-- [ ] `<div>` `ng-if="this.docFinder.numFound == 0 && !docFinder.parseError && !docFinder.ratedDocsLookupUnsupported"` _(added on main)_
-- [ ] `<div>` `ng-if="defaultList && docFinder.ratedDocsLookupUnsupported"` _(added on main)_
-- [ ] `<h4>` `ng-if="defaultList"` _(added on main)_
-- [ ] `<h4>` `ng-if="!defaultList"` _(added on main)_
-- [ ] `<div>` `ng-if="usesQueryParamsEditor"` _(added on main)_
+- [x] `<p>` `ng-if="enterKeyPressed"` _(not in main)_
+- [x] `<input>` `ng-disabled="defaultList"`
+- [x] `<div>` `ng-if="this.docFinder.numFound == 0"` _(not in main)_
+- [x] `<p>` `ng-if="!defaultList"`
+- [x] `<p>` `ng-if="defaultList"`
+- [x] `<div>` `ng-if="this.docFinder.numFound > 0"`
+- [x] `<span>` `ng-if="docFinder.numFound > docFinder.docs.length"`
+- [x] `<span>` `ng-show="docFinder.paging"`
+- [x] `<div>` `ng-if="!usesQueryParamsEditor"` _(added on main)_
+- [x] `<textarea>` `ng-if="settings.searchEngine == 'solr' || settings.searchEngine == 'searchapi'"` _(added on main)_
+- [x] `<div#docfinder-es-os-query-params-editor>` `ng-if="settings.searchEngine == 'es' || settings.searchEngine == 'os'"` _(added on main)_
+- [x] `<input>` `ng-disabled="docFinder.searching"` _(added on main)_
+- [x] `<div>` `ng-if="docFinder.parseError"` _(added on main)_
+- [x] `<div>` `ng-if="this.docFinder.numFound == 0 && !docFinder.parseError && !docFinder.ratedDocsLookupUnsupported"` _(added on main)_
+- [x] `<div>` `ng-if="defaultList && docFinder.ratedDocsLookupUnsupported"` _(added on main)_
+- [x] `<h4>` `ng-if="defaultList"` _(added on main)_
+- [x] `<h4>` `ng-if="!defaultList"` _(added on main)_
+- [x] `<div>` `ng-if="usesQueryParamsEditor"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="targetedSearchModalModel.closeModal()"`
-- [ ] `<div>` `ng-keydown="checkIfEnterKeyPressed($event)"` _(not in main)_
-- [ ] `<form>` `ng-submit="resetToAllRatedDocs()"`
-- [ ] `<div>` `ng-click="ratings.open()"` _(not in main)_
-- [ ] `<a>` `ng-click="paginate()"`
-- [ ] `<form>` `ng-submit="findDocs()"`
+- [x] `<button>` `ng-click="targetedSearchModalModel.closeModal()"`
+- [x] `<div>` `ng-keydown="checkIfEnterKeyPressed($event)"` _(not in main)_
+- [x] `<form>` `ng-submit="resetToAllRatedDocs()"`
+- [x] `<div>` `ng-click="ratings.open()"` _(not in main)_
+- [x] `<a>` `ng-click="paginate()"`
+- [x] `<form>` `ng-submit="findDocs()"`
 
 Inputs:
 
-- [ ] `<div>` `ng-model="docFinder.queryText"` _(not in main)_
-- [ ] `<textarea>` `ng-model="docFinder.queryParams"` _(added on main)_
-- [ ] `<div#docfinder-es-os-query-params-editor>` `ng-model="docFinder.queryParams"` _(added on main)_
+- [x] `<div>` `ng-model="docFinder.queryText"` _(not in main)_
+- [x] `<textarea>` `ng-model="docFinder.queryParams"` _(added on main)_
+- [x] `<div#docfinder-es-os-query-params-editor>` `ng-model="docFinder.queryParams"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<search-result>` `ng-repeat="doc in docFinder.docs"`
+- [x] `<search-result>` `ng-repeat="doc in docFinder.docs"`
 
 Bound content:
 
-- [ ] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
+- [x] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
 
 Links:
 
-- [ ] `<a>` `href="https://www.lucenetutorial.com/lucene-query-syntax.html"` _(not in main)_
-- [ ] `<a>` `href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html"` _(not in main)_
+- [x] `<a>` `href="https://www.lucenetutorial.com/lucene-query-syntax.html"` _(not in main)_
+- [x] `<a>` `href="https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-query-string-query.html"` _(not in main)_
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Find and Rate Missing Documents"
-- [ ] "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer. For example, NDCG is based on your global scores, so if your top 10 are all"
-- [ ] "1"
-- [ ] "'s, and you find and rate a document as a"
-- [ ] "3"
-- [ ] ", then the score will drop if that"
-- [ ] "rated document doesn't show up first!"
-- [ ] "Please click the "Search" button instead of enter key to avoid scrolling your query out of view!" _(not in main)_
-- [ ] "Solr: Use the simple" _(not in main)_
-- [ ] "Lucene query syntax" _(not in main)_
-- [ ] "(" _(not in main)_
-- [ ] "field:value" _(not in main)_
-- [ ] ")." _(not in main)_
-- [ ] "Example:" _(not in main)_
-- [ ] "id:123" _(not in main)_
-- [ ] "."
-- [ ] "Elasticsearch/OpenSearch: Entered keywords will replace the" _(not in main)_
-- [ ] "#$query##" _(not in main)_
-- [ ] "placeholder in your configured query. Lucene syntax is only supported for specific query types such as" _(not in main)_
-- [ ] "query string queries" _(not in main)_
-- [ ] "directors:cameron" _(not in main)_
-- [ ] "(when using queries supporting Lucene syntax), or" _(not in main)_
-- [ ] "cameron" _(not in main)_
-- [ ] "(when not)." _(not in main)_
-- [ ] "Your query"
-- [ ] "returned no results"
-- [ ] "returned"
-- [ ] "for your original query"
-- [ ] "Score All"
-- [ ] "-"
-- [ ] "Changing ratings will affect the query score."
-- [ ] "Peek at the next page of results"
-- [ ] "Close"
-- [ ] "Finding and rating missing documents isn't supported for the" _(added on main)_
-- [ ] "search engine yet." _(added on main)_
-- [ ] "This is pre-filled from your current try's query, just like the Query Sandbox — edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query." _(added on main)_
-- [ ] "Couldn't parse that query — check the syntax and try again." _(added on main)_
-- [ ] ", but looking up already-rated documents by ID isn't supported for the" _(added on main)_
-- [ ] "search engine." _(added on main)_
-- [ ] "Already Rated Documents" _(added on main)_
-- [ ] "Query Results" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Find and Rate Missing Documents"
+- [x] "Often you know that a document is a good match for a query, but it doesn't match the current query. This lets you find that document and give it a grade, which then influences your scorer. For example, NDCG is based on your global scores, so if your top 10 are all"
+- [x] "1"
+- [x] "'s, and you find and rate a document as a"
+- [x] "3"
+- [x] ", then the score will drop if that"
+- [x] "rated document doesn't show up first!"
+- [x] "Please click the "Search" button instead of enter key to avoid scrolling your query out of view!" _(not in main)_
+- [x] "Solr: Use the simple" _(not in main)_
+- [x] "Lucene query syntax" _(not in main)_
+- [x] "(" _(not in main)_
+- [x] "field:value" _(not in main)_
+- [x] ")." _(not in main)_
+- [x] "Example:" _(not in main)_
+- [x] "id:123" _(not in main)_
+- [x] "."
+- [x] "Elasticsearch/OpenSearch: Entered keywords will replace the" _(not in main)_
+- [x] "#$query##" _(not in main)_
+- [x] "placeholder in your configured query. Lucene syntax is only supported for specific query types such as" _(not in main)_
+- [x] "query string queries" _(not in main)_
+- [x] "directors:cameron" _(not in main)_
+- [x] "(when using queries supporting Lucene syntax), or" _(not in main)_
+- [x] "cameron" _(not in main)_
+- [x] "(when not)." _(not in main)_
+- [x] "Your query"
+- [x] "returned no results"
+- [x] "returned"
+- [x] "for your original query"
+- [x] "Score All"
+- [x] "-"
+- [x] "Changing ratings will affect the query score."
+- [x] "Peek at the next page of results"
+- [x] "Close"
+- [x] "Finding and rating missing documents isn't supported for the" _(added on main)_
+- [x] "search engine yet." _(added on main)_
+- [x] "This is pre-filled from your current try's query, just like the Query Sandbox — edit it however you like to search for a document to rate. It's a one-off query and won't change your try's saved query." _(added on main)_
+- [x] "Couldn't parse that query — check the syntax and try again." _(added on main)_
+- [x] ", but looking up already-rated documents by ID isn't supported for the" _(added on main)_
+- [x] "search engine." _(added on main)_
+- [x] "Already Rated Documents" _(added on main)_
+- [x] "Query Results" _(added on main)_
 
 <a id="row-8"></a>
 ### 8. `app/assets/templates/views/queries.html`
@@ -1480,78 +1480,78 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/queries.js`
 - **Owner candidates:** `app/views/core/_queries.html.erb`, `app/javascript/controllers/queries_list_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_queries.html.erb`, `queries_list_controller.js`
+- **Scenario:** 4.19, 4.20
+- **Decisions:** Source comparison with `_queries.html.erb`, plus a live replay on Legacy and Current (2026-10-17): Name, Modified, Score (descending first, then reversed) and Errors sorts reorder the same way, the active sort shows its arrow, the sort is kept in the URL and survives reload on Current, the filter narrows the list, Collapse all closes every open query, and dragging a query in Manual order persists across reload on both. Current always writes `reverse=false` where Legacy wrote a bare `reverse` only when reversed; the two forms mean the same. The disabled-Manual explanation and the disabled Show only rated are rendered from the same flags (source only, not replayed). **Evidence level:** every item was ticked from the template comparison; only the flows named above were replayed live. Not replayed: the Manual-sorting-disabled popover, Show only rated disabled for unsupported engines, the bootstrapping and updating banners, and the `unsortable`/`dragging` list classes.
 
 Conditional UI:
 
-- [ ] `<input>` `ng-checked="queriesSvc.showOnlyRated"`
-- [ ] `<span>` `ng-show="sortName == 'default'"` _(not in main)_
-- [ ] `<span>` `ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"` _(not in main)_
-- [ ] `<a>` `ng-class="{active: sort == 'defaultCaseOrder'}"`
-- [ ] `<li>` `ng-if="queryListSortable"`
-- [ ] `<li>` `ng-if="!queryListSortable"`
-- [ ] `<span>` `ng-show="sortName == 'query'"` _(not in main)_
-- [ ] `<a>` `ng-class="{active: sort == 'queryText'}"`
-- [ ] `<span>` `ng-show="sortName == 'modified'"` _(not in main)_
-- [ ] `<a>` `ng-class="{active: sort == 'modified'}"`
-- [ ] `<span>` `ng-show="sortName == 'score'"` _(not in main)_
-- [ ] `<a>` `ng-class="{active: sort == 'lastScore'}"`
-- [ ] `<span>` `ng-show="sortName == 'error'"` _(not in main)_
-- [ ] `<a>` `ng-class="{active: sort == 'errorText'}"`
-- [ ] `<span>` `ng-if="isBootstrapping()"`
-- [ ] `<div>` `ng-show="isBootstrapping()"`
-- [ ] `<div>` `ng-show="searching()"`
-- [ ] `<li>` `ng-class="query.isToggled() ? 'unsortable' : ''"`
-- [ ] `<ul>` `ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''"`
-- [ ] `<input>` `ng-disabled="showOnlyRatedUnsupported()"` _(added on main)_
-- [ ] `<a>` `ng-class="{ 'text-muted': showOnlyRatedUnsupported() }"` _(added on main)_
-- [ ] `<i>` `ng-show="sortName == 'default'"` _(added on main)_
-- [ ] `<i>` `ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"` _(added on main)_
-- [ ] `<i>` `ng-show="sortName == 'query'"` _(added on main)_
-- [ ] `<i>` `ng-show="sortName == 'modified'"` _(added on main)_
-- [ ] `<i>` `ng-show="sortName == 'score'"` _(added on main)_
-- [ ] `<i>` `ng-show="sortName == 'error'"` _(added on main)_
+- [x] `<input>` `ng-checked="queriesSvc.showOnlyRated"`
+- [x] `<span>` `ng-show="sortName == 'default'"` _(not in main)_
+- [x] `<span>` `ng-class="reverse ? 'glyphicon-arrow-up' : 'glyphicon-arrow-down'"` _(not in main)_
+- [x] `<a>` `ng-class="{active: sort == 'defaultCaseOrder'}"`
+- [x] `<li>` `ng-if="queryListSortable"`
+- [x] `<li>` `ng-if="!queryListSortable"`
+- [x] `<span>` `ng-show="sortName == 'query'"` _(not in main)_
+- [x] `<a>` `ng-class="{active: sort == 'queryText'}"`
+- [x] `<span>` `ng-show="sortName == 'modified'"` _(not in main)_
+- [x] `<a>` `ng-class="{active: sort == 'modified'}"`
+- [x] `<span>` `ng-show="sortName == 'score'"` _(not in main)_
+- [x] `<a>` `ng-class="{active: sort == 'lastScore'}"`
+- [x] `<span>` `ng-show="sortName == 'error'"` _(not in main)_
+- [x] `<a>` `ng-class="{active: sort == 'errorText'}"`
+- [x] `<span>` `ng-if="isBootstrapping()"`
+- [x] `<div>` `ng-show="isBootstrapping()"`
+- [x] `<div>` `ng-show="searching()"`
+- [x] `<li>` `ng-class="query.isToggled() ? 'unsortable' : ''"`
+- [x] `<ul>` `ng-class="!queryListSortable ? 'unsortable' : dragging === true ? 'dragging' : ''"`
+- [x] `<input>` `ng-disabled="showOnlyRatedUnsupported()"` _(added on main)_
+- [x] `<a>` `ng-class="{ 'text-muted': showOnlyRatedUnsupported() }"` _(added on main)_
+- [x] `<i>` `ng-show="sortName == 'default'"` _(added on main)_
+- [x] `<i>` `ng-class="reverse ? 'bi-arrow-up' : 'bi-arrow-down'"` _(added on main)_
+- [x] `<i>` `ng-show="sortName == 'query'"` _(added on main)_
+- [x] `<i>` `ng-show="sortName == 'modified'"` _(added on main)_
+- [x] `<i>` `ng-show="sortName == 'score'"` _(added on main)_
+- [x] `<i>` `ng-show="sortName == 'error'"` _(added on main)_
 
 Actions:
 
-- [ ] `<input>` `ng-click="queriesSvc.toggleShowOnlyRated()"` _(not in main)_
-- [ ] `<a>` `ng-click="queriesSvc.toggleShowOnlyRated()"` _(not in main)_
-- [ ] `<a>` `ng-click="collapseAll()"`
-- [ ] `<a>` `ng-click="sortBy('default')"`
-- [ ] `<a>` `ng-click="sortBy('query')"`
-- [ ] `<a>` `ng-click="sortBy('modified')"`
-- [ ] `<a>` `ng-click="sortBy('score')"`
-- [ ] `<a>` `ng-click="sortBy('error')"`
-- [ ] `<input>` `ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()"` _(added on main)_
-- [ ] `<a>` `ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()"` _(added on main)_
+- [x] `<input>` `ng-click="queriesSvc.toggleShowOnlyRated()"` _(not in main)_
+- [x] `<a>` `ng-click="queriesSvc.toggleShowOnlyRated()"` _(not in main)_
+- [x] `<a>` `ng-click="collapseAll()"`
+- [x] `<a>` `ng-click="sortBy('default')"`
+- [x] `<a>` `ng-click="sortBy('query')"`
+- [x] `<a>` `ng-click="sortBy('modified')"`
+- [x] `<a>` `ng-click="sortBy('score')"`
+- [x] `<a>` `ng-click="sortBy('error')"`
+- [x] `<input>` `ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()"` _(added on main)_
+- [x] `<a>` `ng-click="!showOnlyRatedUnsupported() && queriesSvc.toggleShowOnlyRated()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<input#queries-filter>` `ng-model="queryFilter"`
-- [ ] `<ul>` `ng-model="queriesList"` _(not in main)_
+- [x] `<input#queries-filter>` `ng-model="queryFilter"`
+- [x] `<ul>` `ng-model="queriesList"` _(not in main)_
 
 Copy:
 
-- [ ] "Show only rated"
-- [ ] "|"
-- [ ] "Collapse all"
-- [ ] "Sort  "
-- [ ] "Manual"
-- [ ] uib-popover: "Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272." _(not in main)_
-- [ ] "Name"
-- [ ] "Modified"
-- [ ] "Score"
-- [ ] "Errors"
-- [ ] aria-label: "sort"
-- [ ] "Number of Queries: {{ queriesList.length }}"
-- [ ] placeholder: "Filter Queries"
-- [ ] aria-label: "filter queries"
-- [ ] "Bootstrapping Queries"
-- [ ] "Updating Queries: {{batchPosition}} / {{batchSize}}"
-- [ ] "If the counter stalls, do a hard refresh of Quepid."
-- [ ] aria-label: "Help" _(added on main)_
+- [x] "Show only rated"
+- [x] "|"
+- [x] "Collapse all"
+- [x] "Sort  "
+- [x] "Manual"
+- [x] uib-popover: "Manual sorting has been disabled by your administrator due to the bug https://github.com/o19s/quepid/issues/272." _(not in main)_
+- [x] "Name"
+- [x] "Modified"
+- [x] "Score"
+- [x] "Errors"
+- [x] aria-label: "sort"
+- [x] "Number of Queries: {{ queriesList.length }}"
+- [x] placeholder: "Filter Queries"
+- [x] aria-label: "filter queries"
+- [x] "Bootstrapping Queries"
+- [x] "Updating Queries: {{batchPosition}} / {{batchSize}}"
+- [x] "If the counter stalls, do a hard refresh of Quepid."
+- [x] aria-label: "Help" _(added on main)_
 
 <a id="row-9"></a>
 ### 9. `app/assets/javascripts/components/diff/_modal.html`
@@ -1576,68 +1576,68 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/diff/diff_controller.js`
 - **Owner candidates:** `app/views/core/_diff_modal.html.erb`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/diff_score_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_diff_modal.html.erb`, `_snapshot_selection_template.html.erb`, `diff_core_controller.js`
+- **Scenario:** 5.3
+- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) with snapshot clones on 2026-10-17: picker copy and controls, select, Update Comparison Settings, Clear Comparison View, inline "yes / no" delete confirmation, and the case and query diff badges. Two losses restored in this pass: the bold "Warning:" prefix on the duplicate-snapshot warning (now in `_diff_modal.html.erb`; `snapshots_and_annotations.spec.ts` asserts it and fails without the fix) and the "Loading available snapshots..." state while the list loads (`workspace_modal_lifecycle.spec.ts` "compare picker shows the snapshot loading state…" fails without the fix; Current showed the apply-time "Fetching snapshot data" text instead). The "-- Loading Snapshots --" placeholder option is not restored: no select exists until the list arrives, and the alert says the same thing. Intro copy says "1-5" where Legacy said "1-3"; Legacy allowed five (`queryViewSvc.getMaxSnapshots()`), so the copy is a correction. Buttons are `type=button` with Stimulus actions in place of the Angular submit handlers.
 
 Conditional UI:
 
-- [ ] `<option>` `ng-if="!ctrl.snapshots"`
-- [ ] `<option>` `ng-if="ctrl.snapshots"`
-- [ ] `<select>` `ng-disabled="!ctrl.snapshots"`
-- [ ] `<button>` `ng-show="ctrl.selections[$index]"`
-- [ ] `<button>` `ng-show="ctrl.canAddMore()"`
-- [ ] `<div>` `ng-show="ctrl.hasDuplicateSelections()"`
-- [ ] `<div>` `ng-if="ctrl.hasProcessingSnapshots()"`
-- [ ] `<div>` `ng-show="ctrl.delStarted()"`
-- [ ] `<div>` `ng-show="!ctrl.snapshots"`
-- [ ] `<button>` `ng-disabled="ctrl.inProgress"`
-- [ ] `<div>` `ng-show="ctrl.inProgress"`
+- [x] `<option>` `ng-if="!ctrl.snapshots"`
+- [x] `<option>` `ng-if="ctrl.snapshots"`
+- [x] `<select>` `ng-disabled="!ctrl.snapshots"`
+- [x] `<button>` `ng-show="ctrl.selections[$index]"`
+- [x] `<button>` `ng-show="ctrl.canAddMore()"`
+- [x] `<div>` `ng-show="ctrl.hasDuplicateSelections()"`
+- [x] `<div>` `ng-if="ctrl.hasProcessingSnapshots()"`
+- [x] `<div>` `ng-show="ctrl.delStarted()"`
+- [x] `<div>` `ng-show="!ctrl.snapshots"`
+- [x] `<button>` `ng-disabled="ctrl.inProgress"`
+- [x] `<div>` `ng-show="ctrl.inProgress"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.removeSelection($index)"`
-- [ ] `<button>` `ng-click="ctrl.toggleDel(ctrl.selections[$index])"`
-- [ ] `<button>` `ng-click="ctrl.addSelection()"`
-- [ ] `<a>` `ng-click="ctrl.delConfirm()"`
-- [ ] `<a>` `ng-click="ctrl.toggleDel(null)"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
-- [ ] `<button>` `ng-click="ctrl.clearComparisonView()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.removeSelection($index)"`
+- [x] `<button>` `ng-click="ctrl.toggleDel(ctrl.selections[$index])"`
+- [x] `<button>` `ng-click="ctrl.addSelection()"`
+- [x] `<a>` `ng-click="ctrl.delConfirm()"`
+- [x] `<a>` `ng-click="ctrl.toggleDel(null)"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.clearComparisonView()"`
 
 Inputs:
 
-- [ ] `<select>` `ng-model="ctrl.selections[$index]"`
-- [ ] `<select>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
+- [x] `<select>` `ng-model="ctrl.selections[$index]"`
+- [x] `<select>` `ng-options="snapshot.id as snapshot.name() for (id, snapshot) in ctrl.snapshots"`
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="selection in ctrl.selections track by $index"`
+- [x] `<div>` `ng-repeat="selection in ctrl.selections track by $index"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Compare Your Search Results"
-- [ ] "Select 1-3 snapshots to compare against your current search results"
-- [ ] "Select Snapshots:"
-- [ ] "Snapshot {{$index + 1}}:"
-- [ ] "-- Loading Snapshots --"
-- [ ] "-- Select Snapshot --"
-- [ ] title: "Delete this snapshot"
-- [ ] "Add Snapshot"
-- [ ] title: "Add another snapshot"
-- [ ] "Warning:"
-- [ ] "You have selected the same snapshot multiple times. Each snapshot should be unique."
-- [ ] "One or more selected snapshots are currently being processed in the background. You should wait until they complete."
-- [ ] "Are you sure you want to delete this snapshot?"
-- [ ] "yes"
-- [ ] "/"
-- [ ] "no"
-- [ ] "Loading available snapshots..."
-- [ ] "Update Comparison Settings"
-- [ ] "Clear Comparison View"
-- [ ] "Cancel"
-- [ ] "Fetching snapshot data, this may take a moment depending on the number of queries and snapshots..."
+- [x] aria-label: "Close"
+- [x] "Compare Your Search Results"
+- [x] "Select 1-3 snapshots to compare against your current search results" — Legacy copy was stale (limit is 5); Current renders the limit
+- [x] "Select Snapshots:"
+- [x] "Snapshot {{$index + 1}}:"
+- [x] "-- Loading Snapshots --" — alert "Loading available snapshots..." (restored)
+- [x] "-- Select Snapshot --"
+- [x] title: "Delete this snapshot"
+- [x] "Add Snapshot"
+- [x] title: "Add another snapshot"
+- [x] "Warning:"
+- [x] "You have selected the same snapshot multiple times. Each snapshot should be unique."
+- [x] "One or more selected snapshots are currently being processed in the background. You should wait until they complete."
+- [x] "Are you sure you want to delete this snapshot?"
+- [x] "yes"
+- [x] "/"
+- [x] "no"
+- [x] "Loading available snapshots..."
+- [x] "Update Comparison Settings"
+- [x] "Clear Comparison View"
+- [x] "Cancel"
+- [x] "Fetching snapshot data, this may take a moment depending on the number of queries and snapshots..."
 
 <a id="row-10"></a>
 ### 10. `app/assets/templates/views/queriesLayout.html`
@@ -1670,67 +1670,67 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_header.html.erb`, `case_rename_controller.js`, `_case_toolbar.html.erb`
+- **Scenario:** 4.1, 5.3
+- **Decisions:** Replayed on Legacy and Current on 2026-10-17: double-click renames the case and the try (input prefilled, Rename, Cancel, header updates, survives reload), blank is rejected (Rename disabled on Current, added on main), the toolbar lists the same actions plus Share case, and with a snapshot comparison active the case and query rows show the snapshot score badges. Nightly icon tooltip, PUBLIC and ARCHIVED flags are server-rendered from the same fields (source). "of 1.00" on badges: `7c304651`. Existing `case_header_rename.spec.ts` covers the rename flow live.
 
 Conditional UI:
 
-- [ ] `<qscore-case>` `ng-if="queries.avgQuery.diffs"`
-- [ ] `<i>` `ng-show="caseModel.selectedCase().nightly"`
-- [ ] `<span>` `ng-show="caseModel.selectedCase().public"`
-- [ ] `<span>` `ng-show="caseModel.selectedCase().archived"`
-- [ ] `<span>` `ng-hide="caseName.startRename"`
-- [ ] `<span>` `ng-show="caseName.startRename"`
-- [ ] `<span>` `ng-hide="tryName.startRename"`
-- [ ] `<span>` `ng-show="tryName.startRename"`
-- [ ] `<div>` `ng-if="caseModel.caseLoaded()"`
-- [ ] `<input>` `ng-disabled="!caseName.name || !caseName.name.trim()"` _(added on main)_
-- [ ] `<input>` `ng-disabled="!tryName.name || !tryName.name.trim()"` _(added on main)_
+- [x] `<qscore-case>` `ng-if="queries.avgQuery.diffs"`
+- [x] `<i>` `ng-show="caseModel.selectedCase().nightly"`
+- [x] `<span>` `ng-show="caseModel.selectedCase().public"`
+- [x] `<span>` `ng-show="caseModel.selectedCase().archived"`
+- [x] `<span>` `ng-hide="caseName.startRename"`
+- [x] `<span>` `ng-show="caseName.startRename"`
+- [x] `<span>` `ng-hide="tryName.startRename"`
+- [x] `<span>` `ng-show="tryName.startRename"`
+- [x] `<div>` `ng-if="caseModel.caseLoaded()"`
+- [x] `<input>` `ng-disabled="!caseName.name || !caseName.name.trim()"` _(added on main)_
+- [x] `<input>` `ng-disabled="!tryName.name || !tryName.name.trim()"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="caseName.cancel()"`
-- [ ] `<form>` `ng-submit="caseName.rename()"`
-- [ ] `<span>` `ng-dblclick="caseNameEditModeToggle()"`
-- [ ] `<span>` `ng-dblclick="tryNameEditModeToggle()"`
-- [ ] `<button>` `ng-click="tryName.cancel()"`
-- [ ] `<form>` `ng-submit="tryName.rename()"`
-- [ ] `<a>` `ng-click="pickCaseScorer()"`
-- [ ] `<a>` `ng-click="snapshot.prompt()"`
-- [ ] `<a>` `ng-click="toggleDevSettings()"`
+- [x] `<button>` `ng-click="caseName.cancel()"`
+- [x] `<form>` `ng-submit="caseName.rename()"`
+- [x] `<span>` `ng-dblclick="caseNameEditModeToggle()"`
+- [x] `<span>` `ng-dblclick="tryNameEditModeToggle()"`
+- [x] `<button>` `ng-click="tryName.cancel()"`
+- [x] `<form>` `ng-submit="tryName.rename()"`
+- [x] `<a>` `ng-click="pickCaseScorer()"`
+- [x] `<a>` `ng-click="snapshot.prompt()"`
+- [x] `<a>` `ng-click="toggleDevSettings()"`
 
 Inputs:
 
-- [ ] `<input>` `ng-model="caseName.name"`
-- [ ] `<input>` `ng-model="tryName.name"`
+- [x] `<input>` `ng-model="caseName.name"`
+- [x] `<input>` `ng-model="tryName.name"`
 
 Lists (check empty states):
 
-- [ ] `<qscore-case>` `ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"`
+- [x] `<qscore-case>` `ng-repeat="searcher in queries.avgQuery.diffs.getSearchers() track by $index"`
 
 Bound content:
 
-- [ ] `<ng-include>` `src="'views/cases/_dev_settings.html'"` _(not in main)_
-- [ ] `<ng-include>` `src="'views/_dev_settings.html'"` _(added on main)_
+- [x] `<ng-include>` `src="'views/cases/_dev_settings.html'"` _(not in main)_
+- [x] `<ng-include>` `src="'views/_dev_settings.html'"` _(added on main)_
 
 Copy:
 
-- [ ] "Current case"
-- [ ] uib-tooltip: "Queries are run on a nightly basis." _(not in main)_
-- [ ] "PUBLIC"
-- [ ] "ARCHIVED"
-- [ ] "Cancel"
-- [ ] "—"
-- [ ] "— {{ getScorer().name }}"
-- [ ] "Select scorer"
-- [ ] "Create snapshot"
-- [ ] "Tune Relevance"
-- [ ] title: "Share Case" _(added on main)_
-- [ ] "Share case" _(added on main)_
-- [ ] "Clone" _(added on main)_
-- [ ] "Delete" _(added on main)_
-- [ ] "Export" _(added on main)_
+- [x] "Current case"
+- [x] uib-tooltip: "Queries are run on a nightly basis." _(not in main)_
+- [x] "PUBLIC"
+- [x] "ARCHIVED"
+- [x] "Cancel"
+- [x] "—"
+- [x] "— {{ getScorer().name }}"
+- [x] "Select scorer"
+- [x] "Create snapshot"
+- [x] "Tune Relevance"
+- [x] title: "Share Case" _(added on main)_
+- [x] "Share case" _(added on main)_
+- [x] "Clone" _(added on main)_
+- [x] "Delete" _(added on main)_
+- [x] "Export" _(added on main)_
 
 <a id="row-11"></a>
 ### 11. `app/assets/templates/views/queryParamsDetails.html`
@@ -1840,58 +1840,58 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/searchResult.js`
 - **Owner candidates:** `app/javascript/controllers/search_result_controller.js`, `app/javascript/controllers/search_results_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `search_result_controller.js`, `_query_list_templates.html.erb`
+- **Scenario:** 4.6, 4.22, 4.23
+- **Decisions:** Source comparison of `searchResult.html` with `search_result_controller.js` and the `search-result-template`: rating control, thumbnails and images, embeds, translations (with the Google Translate link), unabridged fields, snippets with JSON explorer and URL links, error document copy, rank line, and "Results above are counted in scoring." are all rendered. Title link became a button for accessibility (`7c304651`). Live replay of rating, Score All and reset on Legacy and Current matched (see row 6). **Evidence level:** every item was ticked from the template comparison; only rating, Score All and reset were replayed live. Not replayed: thumbnails and images, embeds, Google Translate links, unabridged fields, JSON-valued fields, URL fields, and the error-document block (the Solr case used has none of these).
 
 Conditional UI:
 
-- [ ] `<span>` `ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle"`
-- [ ] `<div>` `ng-if="doc.error === undefined"`
-- [ ] `<div>` `ng-show="doc.hasThumb()"`
-- [ ] `<div>` `ng-show="doc.hasImage()"`
-- [ ] `<div>` `ng-if="doc.error"` _(not in main)_
-- [ ] `<span>` `ng-if="isObjectOrArray(fieldValue)"`
-- [ ] `<span>` `ng-if="isUrl(fieldValue)"`
-- [ ] `<span>` `ng-if="!isObjectOrArray(fieldValue) && !isUrl(fieldValue)"`
-- [ ] `<div>` `ng-class="summaryColumnStyle()"` _(not in main)_
-- [ ] `<div>` `ng-if="explainView === 'full'"`
-- [ ] `<div>` `ng-show="query.depthOfRating == rank"`
-- [ ] `<li>` `ng-if="doc.error"` _(added on main)_
+- [x] `<span>` `ng-style="{rating: displayRating(), scale: ratings.scale} | ratingBgStyle"`
+- [x] `<div>` `ng-if="doc.error === undefined"`
+- [x] `<div>` `ng-show="doc.hasThumb()"`
+- [x] `<div>` `ng-show="doc.hasImage()"`
+- [x] `<div>` `ng-if="doc.error"` _(not in main)_
+- [x] `<span>` `ng-if="isObjectOrArray(fieldValue)"`
+- [x] `<span>` `ng-if="isUrl(fieldValue)"`
+- [x] `<span>` `ng-if="!isObjectOrArray(fieldValue) && !isUrl(fieldValue)"`
+- [x] `<div>` `ng-class="summaryColumnStyle()"` _(not in main)_
+- [x] `<div>` `ng-if="explainView === 'full'"`
+- [x] `<div>` `ng-show="query.depthOfRating == rank"`
+- [x] `<li>` `ng-if="doc.error"` _(added on main)_
 
 Actions:
 
-- [ ] `<a>` `ng-click="showDoc()"`
+- [x] `<a>` `ng-click="showDoc()"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.embeds"`
-- [ ] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.translations"`
-- [ ] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.unabridgeds"`
-- [ ] `<li>` `ng-repeat="(fieldName, fieldValue) in snippets"`
+- [x] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.embeds"`
+- [x] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.translations"`
+- [x] `<li>` `ng-repeat="(fieldName, fieldValue) in doc.unabridgeds"`
+- [x] `<li>` `ng-repeat="(fieldName, fieldValue) in snippets"`
 
 Bound content:
 
-- [ ] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
-- [ ] `<img>` `ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}"`
-- [ ] `<img>` `ng-src="{{formatImageUrl(doc.image, doc.image_options)}}"`
-- [ ] `<span>` `ng-bind-html="doc.error"`
-- [ ] `<span>` `ng-bind-html="fieldValue"`
-- [ ] `<img>` `ng-src="images/google-translate.png"`
+- [x] `<div>` `uib-popover-template="'views/ratings/popover.html'"` _(not in main)_
+- [x] `<img>` `ng-src="{{formatImageUrl(doc.thumb, doc.thumb_options)}}"`
+- [x] `<img>` `ng-src="{{formatImageUrl(doc.image, doc.image_options)}}"`
+- [x] `<span>` `ng-bind-html="doc.error"`
+- [x] `<span>` `ng-bind-html="fieldValue"`
+- [x] `<img>` `ng-src="images/google-translate.png"`
 
 Links:
 
-- [ ] `<a>` `ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}"`
-- [ ] `<a>` `ng-href="{{ doc.doc[fieldName] }}"` _(not in main)_
-- [ ] `<a>` `ng-href="{{ resolveFieldValue(fieldName) }}"` _(added on main)_
+- [x] `<a>` `ng-href="https://translate.google.com/?sl=auto&tl=en&text={{fieldValue}}"`
+- [x] `<a>` `ng-href="{{ doc.doc[fieldName] }}"` _(not in main)_
+- [x] `<a>` `ng-href="{{ resolveFieldValue(fieldName) }}"` _(added on main)_
 
 Copy:
 
-- [ ] "This document can't be uniquely identified, so Quepid can't store ratings for this document."
-- [ ] "."
-- [ ] "{{fieldName}}:"
-- [ ] "Rank: #{{ rank }}"
-- [ ] "Results above are counted in scoring."
+- [x] "This document can't be uniquely identified, so Quepid can't store ratings for this document."
+- [x] "."
+- [x] "{{fieldName}}:"
+- [x] "Rank: #{{ rank }}"
+- [x] "Results above are counted in scoring."
 
 <a id="row-13"></a>
 ### 13. `app/assets/javascripts/components/query_explain/_modal.html`
@@ -1920,51 +1920,51 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/query_explain/query_explain_controller.js`
 - **Owner candidates:** `app/javascript/controllers/query_explain_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `query_explain_controller.js`, `shared/_dynamic_modal_templates.html.erb`
+- **Scenario:** 6.7
+- **Decisions:** Replayed on both with a four-term query: the Params, Parsing and Query Template tabs show the same text (query template tab: "This is not a templated query."), Copy puts the active panel on the clipboard, Close and Escape dismiss. Tabs are buttons on Current (main, `#query-explain-tab-*`) and anchors on Legacy. `modal_a11y.spec.ts` covers focus.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-show="ctrl.queryDetailsMessage"`
-- [ ] `<span>` `ng-show="!ctrl.queryDetailsMessage"`
-- [ ] `<p>` `ng-hide="ctrl.isTemplatedQuery"`
-- [ ] `<span>` `ng-show="ctrl.isTemplatedQuery"`
-- [ ] `<button>` `ng-show="ctrl.toggledPanel === 'queryDetails'"`
-- [ ] `<button>` `ng-show="ctrl.toggledPanel === 'parsedQueryDetails'"`
-- [ ] `<button>` `ng-show="ctrl.toggledPanel === 'renderedQueryTemplate'"`
+- [x] `<p>` `ng-show="ctrl.queryDetailsMessage"`
+- [x] `<span>` `ng-show="!ctrl.queryDetailsMessage"`
+- [x] `<p>` `ng-hide="ctrl.isTemplatedQuery"`
+- [x] `<span>` `ng-show="ctrl.isTemplatedQuery"`
+- [x] `<button>` `ng-show="ctrl.toggledPanel === 'queryDetails'"`
+- [x] `<button>` `ng-show="ctrl.toggledPanel === 'parsedQueryDetails'"`
+- [x] `<button>` `ng-show="ctrl.toggledPanel === 'renderedQueryTemplate'"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<uib-tab>` `ng-click="ctrl.togglePanel('queryDetails')"` _(not in main)_
-- [ ] `<uib-tab>` `ng-click="ctrl.togglePanel('parsedQueryDetails')"` _(not in main)_
-- [ ] `<uib-tab>` `ng-click="ctrl.renderQueryTemplate()"` _(not in main)_
-- [ ] `<button#query-explain-tab-params>` `ng-click="ctrl.togglePanel('queryDetails')"` _(added on main)_
-- [ ] `<button#query-explain-tab-parsing>` `ng-click="ctrl.togglePanel('parsedQueryDetails')"` _(added on main)_
-- [ ] `<button#query-explain-tab-template>` `ng-click="ctrl.renderQueryTemplate()"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.copy(ctrl.queryDetails)"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.copy(ctrl.parsedQueryDetails)"` _(added on main)_
-- [ ] `<button>` `ng-click="ctrl.copy(ctrl.renderedQueryTemplate)"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<uib-tab>` `ng-click="ctrl.togglePanel('queryDetails')"` _(not in main)_
+- [x] `<uib-tab>` `ng-click="ctrl.togglePanel('parsedQueryDetails')"` _(not in main)_
+- [x] `<uib-tab>` `ng-click="ctrl.renderQueryTemplate()"` _(not in main)_
+- [x] `<button#query-explain-tab-params>` `ng-click="ctrl.togglePanel('queryDetails')"` _(added on main)_
+- [x] `<button#query-explain-tab-parsing>` `ng-click="ctrl.togglePanel('parsedQueryDetails')"` _(added on main)_
+- [x] `<button#query-explain-tab-template>` `ng-click="ctrl.renderQueryTemplate()"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.copy(ctrl.queryDetails)"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.copy(ctrl.parsedQueryDetails)"` _(added on main)_
+- [x] `<button>` `ng-click="ctrl.copy(ctrl.renderedQueryTemplate)"` _(added on main)_
 
 Inputs:
 
-- [ ] `<div#render-template>` `ng-model="ctrl.renderedQueryTemplate"`
+- [x] `<div#render-template>` `ng-model="ctrl.renderedQueryTemplate"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Explain Query Parsing"
-- [ ] "These are details returned from the search engine on how it processed the input query"
-- [ ] "These are the query parameters processed by the search engine."
-- [ ] "This is how the search engine parsed the query."
-- [ ] "This is not a templated query."
-- [ ] "This is what the populated query template looks like"
-- [ ] "Copy"
-- [ ] "Close"
-- [ ] "Params" _(added on main)_
-- [ ] "Parsing" _(added on main)_
-- [ ] "Query Template" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Explain Query Parsing"
+- [x] "These are details returned from the search engine on how it processed the input query"
+- [x] "These are the query parameters processed by the search engine."
+- [x] "This is how the search engine parsed the query."
+- [x] "This is not a templated query."
+- [x] "This is what the populated query template looks like"
+- [x] "Copy"
+- [x] "Close"
+- [x] "Params" _(added on main)_
+- [x] "Parsing" _(added on main)_
+- [x] "Query Template" _(added on main)_
 
 <a id="row-14"></a>
 ### 14. `app/assets/templates/views/snapshotModal.html`
@@ -1991,49 +1991,49 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/takeSnapshot.js`
 - **Owner candidates:** `app/views/shared/_import_snapshot_modal.html.erb`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_take_snapshot_core_modal.html.erb`, `take_snapshot_core_controller.js`
+- **Scenario:** 5.2
+- **Decisions:** Replayed on Legacy and Current on 2026-10-17: same title, intro, name field, Include Document Fields copy and checkbox, "Take Snapshot" and "Cancel"; a blank name creates "Snapshot <date>" on both; the snapshot appears in the compare picker. The lookup-by-id and non-lookup engine copy and the error copy are present (source). Covered live by `snapshots_and_annotations.spec.ts` and `toolbar_modals_core.spec.ts` ("take snapshot creates via bridge…").
 
 Conditional UI:
 
-- [ ] `<input#snapshotName>` `ng-required="true"`
-- [ ] `<span>` `ng-show="supportLookupById"`
-- [ ] `<span>` `ng-hide="supportLookupById"`
-- [ ] `<div>` `ng-show="snapPrompt.error"`
-- [ ] `<button>` `ng-disabled="snapPrompt.inProgress"`
-- [ ] `<div>` `ng-show="!snapPrompt.done"`
-- [ ] `<div>` `ng-show="snapPrompt.inProgress"`
+- [x] `<input#snapshotName>` `ng-required="true"`
+- [x] `<span>` `ng-show="supportLookupById"`
+- [x] `<span>` `ng-hide="supportLookupById"`
+- [x] `<div>` `ng-show="snapPrompt.error"`
+- [x] `<button>` `ng-disabled="snapPrompt.inProgress"`
+- [x] `<div>` `ng-show="!snapPrompt.done"`
+- [x] `<div>` `ng-show="snapPrompt.inProgress"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_
-- [ ] `<button>` `ng-click="ok()"`
-- [ ] `<button>` `ng-click="cancel()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_
+- [x] `<button>` `ng-click="ok()"`
+- [x] `<button>` `ng-click="cancel()"`
 
 Inputs:
 
-- [ ] `<input#snapshotName>` `ng-model="snapPrompt.name"`
-- [ ] `<input#include-document-fields>` `ng-model="snapPrompt.recordDocumentFields"`
+- [x] `<input#snapshotName>` `ng-model="snapPrompt.name"`
+- [x] `<input#include-document-fields>` `ng-model="snapPrompt.recordDocumentFields"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Take a Snapshot of all your queries?"
-- [ ] "Recording the current results of your queries is useful for compare future work against this point in time as well as to use in comparing multiple Cases. A snapshot stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents."
-- [ ] "Snapshot Name"
-- [ ] placeholder: "Name your snapshot"
-- [ ] "Include Document Fields"
-- [ ] "To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned. This will be the"
-- [ ] "fields."
-- [ ] "Record Document Fields?"
-- [ ] "To power comparisons when using {{ searchEngine | searchEngineName }} the fields of your documents will be stored in Quepid." _(not in main)_
-- [ ] "An error ({{snapPrompt.error}}) occurred, please try again."
-- [ ] "If the error persist, contact adminstrator for further assistance."
-- [ ] "Take Snapshot"
-- [ ] "Cancel"
-- [ ] "Snapshot Being Created (this can take a minute or so)"
-- [ ] "To power comparisons when using {{ (mapperBasedSearchEngineName || searchEngine) | searchEngineName }} the fields of your documents will be stored in Quepid." _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Take a Snapshot of all your queries?"
+- [x] "Recording the current results of your queries is useful for compare future work against this point in time as well as to use in comparing multiple Cases. A snapshot stores the individual queries in a case, the ratings made, and optionally all the fields returned for the documents."
+- [x] "Snapshot Name"
+- [x] placeholder: "Name your snapshot"
+- [x] "Include Document Fields"
+- [x] "To facilitate additional analysis, you may want to record as part of the snapshot all the displayed fields for each document returned. This will be the"
+- [x] "fields."
+- [x] "Record Document Fields?"
+- [x] "To power comparisons when using {{ searchEngine | searchEngineName }} the fields of your documents will be stored in Quepid." _(not in main)_
+- [x] "An error ({{snapPrompt.error}}) occurred, please try again."
+- [x] "If the error persist, contact adminstrator for further assistance."
+- [x] "Take Snapshot"
+- [x] "Cancel"
+- [x] "Snapshot Being Created (this can take a minute or so)"
+- [x] "To power comparisons when using {{ (mapperBasedSearchEngineName || searchEngine) | searchEngineName }} the fields of your documents will be stored in Quepid." _(added on main)_
 
 <a id="row-15"></a>
 ### 15. `app/assets/javascripts/components/frog_report/_modal.html`
@@ -2055,43 +2055,43 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/frog_report/frog_report_controller.js`
 - **Owner candidates:** `app/javascript/controllers/frog_report_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `frog_report_controller.js`, `shared/_dynamic_modal_templates.html.erb`
+- **Scenario:** 6.9
+- **Decisions:** Replayed on Legacy case 4 and Current case 6: the summary, congratulation, distribution chart and Close match. One loss restored in this pass: Legacy worded the zero-result count as "none return", "only one returns" or "N return" before "zero results"; Current always said "0 return". Restored (`frog_report_controller.js`, `_dynamic_modal_templates.html.erb`; Vitest "words the zero-result count…" fails without it, and `workspace_modal_lifecycle.spec.ts` "Frog Report words the zero-result count as Legacy did" fails on the old copy). Refresh from book and its error state are covered live by `workspace_modal_lifecycle.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="ctrl.theCase.lastScore.all_rated"`
-- [ ] `<span>` `ng-if="missingRatingsRate > 5"`
-- [ ] `<span>` `ng-if="!ctrl.theCase.lastScore.all_rated"`
-- [ ] `<i>` `ng-class="{'spintime': processingPrompt.inProgress}"`
-- [ ] `<a>` `ng-if="ctrl.theCase.bookName"`
-- [ ] `<a>` `ng-disabled="processingPrompt.inProgress"`
-- [ ] `<button>` `ng-disabled="processingPrompt.inProgress"`
-- [ ] `<div>` `ng-show="processingPrompt.error"`
+- [x] `<span>` `ng-if="ctrl.theCase.lastScore.all_rated"`
+- [x] `<span>` `ng-if="missingRatingsRate > 5"`
+- [x] `<span>` `ng-if="!ctrl.theCase.lastScore.all_rated"`
+- [x] `<i>` `ng-class="{'spintime': processingPrompt.inProgress}"`
+- [x] `<a>` `ng-if="ctrl.theCase.bookName"`
+- [x] `<a>` `ng-disabled="processingPrompt.inProgress"`
+- [x] `<button>` `ng-disabled="processingPrompt.inProgress"`
+- [x] `<div>` `ng-show="processingPrompt.error"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<a>` `ng-click="ctrl.refreshRatingsFromBook()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<a>` `ng-click="ctrl.refreshRatingsFromBook()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "The Frog Pond Report:"
-- [ ] "The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have. Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!"
-- [ ] "Summary"
-- [ ] "You have {{ ctrl.theCase.queriesCount}} Queries for this case, of which {{ totalNumberQueriesWithResults }} return results, and"
-- [ ] "zero"
-- [ ] "results. You need to maintain a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the 🐸."
-- [ ] "All the queries have been fully rated! Congratulations!"
-- [ ] "There are currently {{ numberOfMissingRatings }} ratings missing, leading to {{ missingRatingsRate }}% missing rate. We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating."
-- [ ] "So hop to it!"
-- [ ] "Distribution of Queries Needing Ratings"
-- [ ] "Refresh ratings from book"
-- [ ] "Close"
-- [ ] "An error ({{processingPrompt.error}}) occurred, please try again."
-- [ ] "If the error persist, contact administrator for further assistance."
+- [x] aria-label: "Close"
+- [x] "The Frog Pond Report:"
+- [x] "The accuracy of the scores calculated by Quepid is directly impacted by the number of 🐸's you have. Chase the frogs into the pond (i.e rate your documents) so that you can have confidence in the changes you are making!"
+- [x] "Summary"
+- [x] "You have {{ ctrl.theCase.queriesCount}} Queries for this case, of which {{ totalNumberQueriesWithResults }} return results, and"
+- [x] "zero"
+- [x] "results. You need to maintain a total of {{ totalNumberOfRatingsNeeded }} ratings to eliminate all the 🐸."
+- [x] "All the queries have been fully rated! Congratulations!"
+- [x] "There are currently {{ numberOfMissingRatings }} ratings missing, leading to {{ missingRatingsRate }}% missing rate. We recommend maintaining less than a 5% missing ratings to have confidence in the scores you are calculating."
+- [x] "So hop to it!"
+- [x] "Distribution of Queries Needing Ratings"
+- [x] "Refresh ratings from book"
+- [x] "Close"
+- [x] "An error ({{processingPrompt.error}}) occurred, please try again."
+- [x] "If the error persist, contact administrator for further assistance."
 
 <a id="row-16"></a>
 ### 16. `app/assets/templates/views/detailedDoc.html`
@@ -2112,51 +2112,51 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/searchResult.js`
 - **Owner candidates:** `app/javascript/controllers/detailed_document_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `detailed_document_modal.js`, `search_result_controller.js`
+- **Scenario:** 6.11
+- **Decisions:** Replayed on both: title link opens "Detailed Document View of doc: <id>" with the same fields, View Document enabled with a URL, View All Fields and Hide All Fields toggle the JSON, Escape closes. Thumb, Image, translation and embed sections are source-checked.
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="isObjectOrArray(subValue)"`
-- [ ] `<span>` `ng-if="!isObjectOrArray(subValue)"`
-- [ ] `<div>` `ng-show="doc.hasThumb()"`
-- [ ] `<div>` `ng-show="doc.hasImage()"`
-- [ ] `<div>` `ng-show="showAllFields"`
-- [ ] `<button>` `ng-disabled="doc._url() === null"`
-- [ ] `<a>` `ng-show="!showAllFields"`
-- [ ] `<a>` `ng-show="showAllFields"`
+- [x] `<span>` `ng-if="isObjectOrArray(subValue)"`
+- [x] `<span>` `ng-if="!isObjectOrArray(subValue)"`
+- [x] `<div>` `ng-show="doc.hasThumb()"`
+- [x] `<div>` `ng-show="doc.hasImage()"`
+- [x] `<div>` `ng-show="showAllFields"`
+- [x] `<button>` `ng-disabled="doc._url() === null"`
+- [x] `<a>` `ng-show="!showAllFields"`
+- [x] `<a>` `ng-show="showAllFields"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="openDocument()"`
-- [ ] `<a>` `ng-click="showAllFields=!showAllFields"`
-- [ ] `<a>` `ng-click="cancel()"` _(not in main)_
-- [ ] `<button>` `ng-click="cancel()"` _(added on main)_
+- [x] `<button>` `ng-click="openDocument()"`
+- [x] `<a>` `ng-click="showAllFields=!showAllFields"`
+- [x] `<a>` `ng-click="cancel()"` _(not in main)_
+- [x] `<button>` `ng-click="cancel()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<div#origins-editor>` `ng-model="allFieldsFormatted"`
+- [x] `<div#origins-editor>` `ng-model="allFieldsFormatted"`
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="(subName, subValue) in doc.subs"`
-- [ ] `<div>` `ng-repeat="(fieldName, fieldValue) in doc.translations"`
-- [ ] `<div>` `ng-repeat="(fieldName, fieldValue) in doc.embeds"`
+- [x] `<div>` `ng-repeat="(subName, subValue) in doc.subs"`
+- [x] `<div>` `ng-repeat="(fieldName, fieldValue) in doc.translations"`
+- [x] `<div>` `ng-repeat="(fieldName, fieldValue) in doc.embeds"`
 
 Bound content:
 
-- [ ] `<span>` `ng-bind-html="subValue"`
+- [x] `<span>` `ng-bind-html="subValue"`
 
 Copy:
 
-- [ ] "Detailed Document View of doc: {{doc.id}}"
-- [ ] "Thumb"
-- [ ] "Image"
-- [ ] "View Document"
-- [ ] "View All Fields"
-- [ ] "Hide All Fields"
-- [ ] "Close"
+- [x] "Detailed Document View of doc: {{doc.id}}"
+- [x] "Thumb"
+- [x] "Image"
+- [x] "View Document"
+- [x] "View All Fields"
+- [x] "Hide All Fields"
+- [x] "Close"
 
 <a id="row-17"></a>
 ### 17. `app/assets/templates/views/pick_scorer.html`
@@ -2182,42 +2182,42 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/queriesCtrl.js`
 - **Owner candidates:** `app/views/shared/_pick_scorer_core_modal.html.erb`, `app/javascript/controllers/pick_scorer_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `pick_scorer_core_controller.js`, `scorer_list_template`
+- **Scenario:** 4.8
+- **Decisions:** Replayed on both: same heading, default scorers, custom scorers section, Create New Scorer, Select Scorer and Cancel. The "not shared with you" warning and the empty custom list text ("None exist…", added on main) are source-checked. Selecting, saving, retrying and persistence are covered live by `toolbar_modals_core.spec.ts` and `workspace_catalog_templates.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="!scorerAccessible"`
-- [ ] `<li>` `ng-class="{ active: scorer.scorerId === activeScorer.scorerId }"`
-- [ ] `<div>` `ng-show="!communalScorersOnly"`
-- [ ] `<button>` `ng-show="!communalScorersOnly"`
-- [ ] `<p>` `ng-if="!communalScorersOnly && userScorers.length === 0"` _(added on main)_
+- [x] `<div>` `ng-if="!scorerAccessible"`
+- [x] `<li>` `ng-class="{ active: scorer.scorerId === activeScorer.scorerId }"`
+- [x] `<div>` `ng-show="!communalScorersOnly"`
+- [x] `<button>` `ng-show="!communalScorersOnly"`
+- [x] `<p>` `ng-if="!communalScorersOnly && userScorers.length === 0"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_
-- [ ] `<li>` `ng-click="selectScorer(scorer)"`
-- [ ] `<button>` `ng-click="gotoScorers()"`
-- [ ] `<button>` `ng-click="ok()"`
-- [ ] `<button>` `ng-click="cancel()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_
+- [x] `<li>` `ng-click="selectScorer(scorer)"`
+- [x] `<button>` `ng-click="gotoScorers()"`
+- [x] `<button>` `ng-click="ok()"`
+- [x] `<button>` `ng-click="cancel()"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="scorer in communalScorers track by scorer.scorerId"`
-- [ ] `<li>` `ng-repeat="scorer in userScorers track by scorer.scorerId"`
+- [x] `<li>` `ng-repeat="scorer in communalScorers track by scorer.scorerId"`
+- [x] `<li>` `ng-repeat="scorer in userScorers track by scorer.scorerId"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "How would you like to score this case?"
-- [ ] "The scorer {{activeScorer.name}} used by this case is NOT shared via a team with you, so if you switch away from it you won't have access to it again."
-- [ ] "Select from defaults:"
-- [ ] "Or select from your own custom scorers:"
-- [ ] "Create New Scorer"
-- [ ] "Select Scorer"
-- [ ] "Cancel"
-- [ ] "None exist. Use "Create New Scorer" below to make one." _(added on main)_
+- [x] aria-label: "Close"
+- [x] "How would you like to score this case?"
+- [x] "The scorer {{activeScorer.name}} used by this case is NOT shared via a team with you, so if you switch away from it you won't have access to it again."
+- [x] "Select from defaults:"
+- [x] "Or select from your own custom scorers:"
+- [x] "Create New Scorer"
+- [x] "Select Scorer"
+- [x] "Cancel"
+- [x] "None exist. Use "Create New Scorer" below to make one." _(added on main)_
 
 <a id="row-18"></a>
 ### 18. `app/assets/templates/views/queryDiffResults.html`
@@ -2236,41 +2236,41 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/queryDiffResults.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `search_results_controller.js` (`renderDiffResults`)
+- **Scenario:** 5.3
+- **Decisions:** Replayed on Legacy and Current with a snapshot and a query added after it: "Current Results" and the snapshot name as column headings, per-position results, "No result at position N", and "This query is not present in the snapshot so it is treated as ZSR." match. Current renders "Browse N Current Results on Solr" in the diff view; Legacy never rendered it live (its `selectedTry` is out of scope in the nested controller), so that is a gain from main's template, not a loss.
 
 Conditional UI:
 
-- [ ] `<search-result>` `ng-if="docTuple.doc != null"`
-- [ ] `<div>` `ng-if="docTuple.doc == null"`
-- [ ] `<div>` `ng-if="$parent.$first && diffDoc === null"` _(not in main)_
-- [ ] `<search-result>` `ng-if="diffDoc != null"`
-- [ ] `<div>` `ng-if="diffDoc == null"` _(not in main)_
-- [ ] `<a>` `ng-show="query.state() !== 'error'"`
-- [ ] `<div>` `ng-if="selectedTry.searchEngine == 'solr'"`
-- [ ] `<div>` `ng-show="displayed.results == displayed.resultsView.diffs"`
-- [ ] `<div>` `ng-if="$parent.$first && query.diffs.getSearcher($index).inError"` _(added on main)_
-- [ ] `<div>` `ng-if="$parent.$first && diffDoc === null && !query.diffs.getSearcher($index).inError"` _(added on main)_
-- [ ] `<div>` `ng-if="diffDoc == null && !query.diffs.getSearcher($index).inError"` _(added on main)_
+- [x] `<search-result>` `ng-if="docTuple.doc != null"`
+- [x] `<div>` `ng-if="docTuple.doc == null"`
+- [x] `<div>` `ng-if="$parent.$first && diffDoc === null"` _(not in main)_
+- [x] `<search-result>` `ng-if="diffDoc != null"`
+- [x] `<div>` `ng-if="diffDoc == null"` _(not in main)_
+- [x] `<a>` `ng-show="query.state() !== 'error'"`
+- [x] `<div>` `ng-if="selectedTry.searchEngine == 'solr'"`
+- [x] `<div>` `ng-show="displayed.results == displayed.resultsView.diffs"`
+- [x] `<div>` `ng-if="$parent.$first && query.diffs.getSearcher($index).inError"` _(added on main)_
+- [x] `<div>` `ng-if="$parent.$first && diffDoc === null && !query.diffs.getSearcher($index).inError"` _(added on main)_
+- [x] `<div>` `ng-if="diffDoc == null && !query.diffs.getSearcher($index).inError"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="name in query.diffs.names() track by $index"`
-- [ ] `<div>` `ng-repeat="diffDoc in docTuple.diffDocs track by $index"`
-- [ ] `<div>` `ng-repeat="docTuple in query.docTuples()"`
+- [x] `<div>` `ng-repeat="name in query.diffs.names() track by $index"`
+- [x] `<div>` `ng-repeat="diffDoc in docTuple.diffDocs track by $index"`
+- [x] `<div>` `ng-repeat="docTuple in query.docTuples()"`
 
 Links:
 
-- [ ] `<a>` `ng-href="{{query.browseUrl()}}"`
+- [x] `<a>` `ng-href="{{query.browseUrl()}}"`
 
 Copy:
 
-- [ ] "Current Results"
-- [ ] "No result at position {{$index + 1}}"
-- [ ] "This query is not present in the snapshot so it is treated as ZSR."
-- [ ] "No result at position {{$parent.$parent.$index + 1}}"
-- [ ] "Browse {{query.numFound}} Current Results on Solr"
+- [x] "Current Results"
+- [x] "No result at position {{$index + 1}}"
+- [x] "This query is not present in the snapshot so it is treated as ZSR."
+- [x] "No result at position {{$parent.$parent.$index + 1}}"
+- [x] "Browse {{query.numFound}} Current Results on Solr"
 
 <a id="row-19"></a>
 ### 19. `app/assets/templates/views/stackedChart.html`
@@ -2292,42 +2292,42 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/stackedChart.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`, `_query_list_templates.html.erb`
+- **Scenario:** 4.23
+- **Decisions:** Replayed on Legacy and Current with a four-term query: "Matches" label, one bar per hot term, "Show 1 More" and "Show Less", and the click-through popover with "Relevancy Score" and the summed terms. Bar labels read `text:school` on Current and `weight(text:school in 2606) [SchemaSimilarity], result of:` on Legacy: that comes from the `splainer-search` bump to 3.3.0 on main (`package.json`, 2.35.1 to 3.3.0), not from this branch. "No Match" and "no per-term score breakdown for doc" are source-checked.
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="hots.length > 0"`
-- [ ] `<span>` `ng-if="hots.length===0"`
-- [ ] `<div>` `ng-if="hots.length <= 3"`
-- [ ] `<div>` `uib-collapse="!showAll"` _(not in main)_
-- [ ] `<div>` `ng-if="hots.length > 3"`
-- [ ] `<div>` `ng-if="doc.explain().children.length === 0"` _(added on main)_
-- [ ] `<div>` `ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"` _(added on main)_
-- [ ] `<div>` `ng-if="doc.explain().children.length > 0"` _(added on main)_
+- [x] `<span>` `ng-if="hots.length > 0"`
+- [x] `<span>` `ng-if="hots.length===0"`
+- [x] `<div>` `ng-if="hots.length <= 3"`
+- [x] `<div>` `uib-collapse="!showAll"` _(not in main)_
+- [x] `<div>` `ng-if="hots.length > 3"`
+- [x] `<div>` `ng-if="doc.explain().children.length === 0"` _(added on main)_
+- [x] `<div>` `ng-style="{ width: (match.percentage > 100 ? 100 : match.percentage < 0 ? 0 : (+match.percentage || 0)) + '%' }"` _(added on main)_
+- [x] `<div>` `ng-if="doc.explain().children.length > 0"` _(added on main)_
 
 Actions:
 
-- [ ] `<div>` `ng-click="showDetailed()"`
-- [ ] `<a>` `ng-click="showAll=!showAll"`
+- [x] `<div>` `ng-click="showDetailed()"`
+- [x] `<a>` `ng-click="showAll=!showAll"`
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="match in hots"`
-- [ ] `<div>` `ng-repeat="match in hots.slice(0,3)"`
-- [ ] `<div>` `ng-repeat="match in hots.slice(3)"`
+- [x] `<div>` `ng-repeat="match in hots"`
+- [x] `<div>` `ng-repeat="match in hots.slice(0,3)"`
+- [x] `<div>` `ng-repeat="match in hots.slice(3)"`
 
 Bound content:
 
-- [ ] `<p>` `uib-popover-template="'matches/matches.html'"` _(not in main)_
+- [x] `<p>` `uib-popover-template="'matches/matches.html'"` _(not in main)_
 
 Copy:
 
-- [ ] "Matches"
-- [ ] "No Match"
-- [ ] "Show {{showAll ? 'Less' : howMuchMore}}"
-- [ ] "no per-term score breakdown for doc" _(added on main)_
+- [x] "Matches"
+- [x] "No Match"
+- [x] "Show {{showAll ? 'Less' : howMuchMore}}"
+- [x] "no per-term score breakdown for doc" _(added on main)_
 
 <a id="row-20"></a>
 ### 20. `app/assets/javascripts/components/move_query/_modal.html`
@@ -2349,37 +2349,37 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/move_query/move_query_controller.js`
 - **Owner candidates:** `app/views/shared/_move_query_core_modal.html.erb`, `app/javascript/controllers/move_query_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `move_query_core_controller.js`
+- **Scenario:** 4.4
+- **Decisions:** Replayed on both with a disposable target case: the list shows every case, choosing one shows "Move to <name>" and marks it active, Move removes the query from the source and puts it on the target, flashing "Query moved successfully!". Loading and empty states are source-checked; Escape handling is covered by `modal_a11y.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.loading"`
-- [ ] `<div>` `ng-show="ctrl.cases.length === 0 && !ctrl.loading"`
-- [ ] `<li>` `ng-class="{ active: case == ctrl.activeCase }"`
-- [ ] `<div>` `ng-show="ctrl.cases.length > 0 && !ctrl.loading"`
-- [ ] `<button>` `ng-show="ctrl.activeCase"`
+- [x] `<div>` `ng-show="ctrl.loading"`
+- [x] `<div>` `ng-show="ctrl.cases.length === 0 && !ctrl.loading"`
+- [x] `<li>` `ng-class="{ active: case == ctrl.activeCase }"`
+- [x] `<div>` `ng-show="ctrl.cases.length > 0 && !ctrl.loading"`
+- [x] `<button>` `ng-show="ctrl.activeCase"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<li>` `ng-click="ctrl.selectCase(case)"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<li>` `ng-click="ctrl.selectCase(case)"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="case in ctrl.cases"`
+- [x] `<li>` `ng-repeat="case in ctrl.cases"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Move Query to Another Case"
-- [ ] "Loading cases, this wont take long!"
-- [ ] "Please create another case to move this query to first."
-- [ ] "Select a case:"
-- [ ] "Move to {{ ctrl.activeCase.caseName }}"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Move Query to Another Case"
+- [x] "Loading cases, this wont take long!"
+- [x] "Please create another case to move this query to first."
+- [x] "Select a case:"
+- [x] "Move to {{ ctrl.activeCase.caseName }}"
+- [x] "Cancel"
 
 <a id="row-21"></a>
 ### 21. `app/assets/javascripts/components/browse_query/_modal.html`
@@ -2388,35 +2388,35 @@ Copy:
 - **Ported:** branch `298bc21e` — refactor(core): migrate browse query modal to Stimulus
 - **Used by (main):**`app/assets/javascripts/components/browse_query/browse_query_controller.js`
 - **Owner candidates:** `app/javascript/controllers/browse_query_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `browse_query_controller.js`
+- **Scenario:** 4.18
+- **Decisions:** Main-only feature, no Legacy counterpart. Replayed on Current: the modal shows the curl command with the encoded query, the "no headers or credentials" note, Copy curl command and Open URL directly. Documented in scenario 4.18.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="ctrl.hasHeaders"`
-- [ ] `<p>` `ng-if="!ctrl.hasHeaders"`
-- [ ] `<i>` `ng-class="ctrl.copied ? 'bi-check-lg' : 'bi-copy'"`
-- [ ] `<a>` `ng-if="!ctrl.hasHeaders"`
+- [x] `<p>` `ng-if="ctrl.hasHeaders"`
+- [x] `<p>` `ng-if="!ctrl.hasHeaders"`
+- [x] `<i>` `ng-class="ctrl.copied ? 'bi-check-lg' : 'bi-copy'"`
+- [x] `<a>` `ng-if="!ctrl.hasHeaders"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.copyCurlCommand()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.copyCurlCommand()"`
 
 Links:
 
-- [ ] `<a>` `ng-href="{{ctrl.url}}"`
+- [x] `<a>` `ng-href="{{ctrl.url}}"`
 
 Copy:
 
-- [ ] "Browse Results on {{ctrl.engineName}}"
-- [ ] aria-label: "Close"
-- [ ] "Run this in a terminal, or paste it into a tool like Postman, to see the raw response from {{ctrl.engineName}} for this query."
-- [ ] "This includes the endpoint's configured headers/credentials — treat it like a secret."
-- [ ] "No headers or credentials are configured for this endpoint, so you can also open the URL directly below."
-- [ ] "Open URL directly"
-- [ ] "Close"
+- [x] "Browse Results on {{ctrl.engineName}}"
+- [x] aria-label: "Close"
+- [x] "Run this in a terminal, or paste it into a tool like Postman, to see the raw response from {{ctrl.engineName}} for this query."
+- [x] "This includes the endpoint's configured headers/credentials — treat it like a secret."
+- [x] "No headers or credentials are configured for this endpoint, so you can also open the URL directly below."
+- [x] "Open URL directly"
+- [x] "Close"
 
 <a id="row-22"></a>
 ### 22. `app/assets/javascripts/components/query_options/_modal.html`
@@ -2437,31 +2437,31 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/query_options/query_options_controller.js`
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `query_options_core_controller.js`
+- **Scenario:** 4.5
+- **Decisions:** Same title and help copy (identical text on both). Set Options saves and the value survives reload on Current; the invalid-JSON flow differs: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3. The editor is a code editor on both.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [ ] `<button>` `ng-click="ctrl.ok()"` — open: invalid JSON keeps the modal open (Legacy closed it), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3
 
 Inputs:
 
-- [ ] `<div>` `ng-model="ctrl.value"`
+- [x] `<div>` `ng-model="ctrl.value"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Query Options"
-- [ ] "Provide a JSON object specifying query specific options"
-- [ ] "This key => value object will be available in the scorer so you can use it to access query specifics. You can access the values using the"
-- [ ] "qOption('key')"
-- [ ] "method in Scorers or"
-- [ ] "#$qOption.key##"
-- [ ] "in Query Sandbox."
-- [ ] "Set Options"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Query Options"
+- [x] "Provide a JSON object specifying query specific options"
+- [x] "This key => value object will be available in the scorer so you can use it to access query specifics. You can access the values using the"
+- [x] "qOption('key')"
+- [x] "method in Scorers or"
+- [x] "#$qOption.key##"
+- [x] "in Query Sandbox."
+- [x] "Set Options"
+- [x] "Cancel"
 
 <a id="row-23"></a>
 ### 23. `app/assets/javascripts/components/annotations/annotations.html`
@@ -2482,36 +2482,36 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/annotations/annotations_directive.js`
 - **Owner candidates:** `app/javascript/controllers/annotations_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js`
+- **Scenario:** 5.4
+- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) on 2026-10-17: Create (also accepts an empty message on both), list, reload persistence and the "Can't create … until searches have been run" flash. The intro copy was reworded (finding 11 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)). Current adds an empty state ("No annotations yet."): [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.create()"`
+- [x] `<button>` `ng-click="ctrl.create()"`
 
 Inputs:
 
-- [ ] `<textarea>` `ng-model="ctrl.annotationModel.message"`
-- [ ] `<ul>` `ng-model="ctrl.annotationsList"`
+- [x] `<textarea>` `ng-model="ctrl.annotationModel.message"`
+- [x] `<ul>` `ng-model="ctrl.annotationsList"`
 
 Lists (check empty states):
 
-- [ ] `<annotation>` `ng-repeat="annotation in ctrl.annotationsList"`
+- [x] `<annotation>` `ng-repeat="annotation in ctrl.annotationsList"`
 
 Links:
 
-- [ ] `<a>` `href="#annotations-list"`
+- [x] `<a>` `href="#annotations-list"`
 
 Copy:
 
-- [ ] "Annotations are like snapshots for scores. Create a new annotation to save the current case score along with a message to help your remember what the state of the case is at this moment."
-- [ ] "Why?"
-- [ ] "You might have made some changes that are invisible to Quepid (eg. a new tokenizer), and you want to capture that information and the corresponding score."
-- [ ] "Scroll down to view list of annotations"
-- [ ] "Message:"
-- [ ] "Create"
-- [ ] "Existing Annotations"
+- [ ] "Annotations are like snapshots for scores. Create a new annotation to save the current case score along with a message to help your remember what the state of the case is at this moment." — open: reworded, finding 11 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Why?"
+- [ ] "You might have made some changes that are invisible to Quepid (eg. a new tokenizer), and you want to capture that information and the corresponding score." — open: reworded, finding 11 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Scroll down to view list of annotations"
+- [x] "Message:"
+- [x] "Create"
+- [x] "Existing Annotations"
 
 <a id="row-24"></a>
 ### 24. `app/assets/javascripts/components/annotation/annotation.html`
@@ -2533,29 +2533,29 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/annotation/annotation_directive.js`
 - **Owner candidates:** `app/views/core/_annotation.html.erb`, `app/views/core/_edit_annotation_modal.html.erb`, `app/javascript/controllers/annotations_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_annotation.html.erb`, `annotations_controller.js`
+- **Scenario:** 5.4
+- **Decisions:** Edit and Delete in the row menu, author line and score line replayed on both (2026-10-17). Display changes without a recorded decision: [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="ctrl.theAnnotation.user"`
-- [ ] `<span>` `ng-if="ctrl.theAnnotation.source"`
+- [x] `<span>` `ng-if="ctrl.theAnnotation.user"`
+- [x] `<span>` `ng-if="ctrl.theAnnotation.source"`
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.update()"`
-- [ ] `<a>` `ng-click="ctrl.delete()"`
+- [x] `<a>` `ng-click="ctrl.update()"`
+- [x] `<a>` `ng-click="ctrl.delete()"`
 
 Copy:
 
-- [ ] "Edit"
-- [ ] "Delete"
-- [ ] "{{ ctrl.theAnnotation.createdAt | timeAgo }} -"
-- [ ] "by {{ ctrl.theAnnotation.user.name }}"
-- [ ] "by {{ ctrl.theAnnotation.source }}"
-- [ ] "Try No: {{ ctrl.theAnnotation.score.try_id }}"
-- [ ] "Score: {{ ctrl.theAnnotation.score.score }}"
+- [x] "Edit"
+- [x] "Delete"
+- [ ] "{{ ctrl.theAnnotation.createdAt | timeAgo }} -" — open: wording changes, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [x] "by {{ ctrl.theAnnotation.user.name }}"
+- [x] "by {{ ctrl.theAnnotation.source }}"
+- [ ] "Try No: {{ ctrl.theAnnotation.score.try_id }}" — open: shows try number, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [ ] "Score: {{ ctrl.theAnnotation.score.score }}" — open: two decimals, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
 
 <a id="row-25"></a>
 ### 25. `app/assets/templates/views/customHeaders.html`
@@ -2628,26 +2628,26 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/annotation/annotation_controller.js`
 - **Owner candidates:** `app/views/core/_annotation.html.erb`, `app/views/core/_edit_annotation_modal.html.erb`, `app/javascript/controllers/annotations_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_edit_annotation_modal.html.erb`, `annotations_controller.js`
+- **Scenario:** 5.4
+- **Decisions:** Edit modal replayed on both: prefilled message, Cancel closes without saving, Update saves, the row shows the edited text and it survives reload. Footer button order differs: [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
 
 Actions:
 
-- [ ] `<button>` `ng-click="cancel()"`
-- [ ] `<button>` `ng-click="ok()"`
+- [x] `<button>` `ng-click="cancel()"`
+- [x] `<button>` `ng-click="ok()"`
 
 Inputs:
 
-- [ ] `<textarea>` `ng-model="ctrl.annotation.message"`
+- [x] `<textarea>` `ng-model="ctrl.annotation.message"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Edit Annotation"
-- [ ] "New Message:"
-- [ ] "Update"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Edit Annotation"
+- [x] "New Message:"
+- [ ] "Update" — open: footer order, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [ ] "Cancel" — open: footer order, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
 
 <a id="row-27"></a>
 ### 27. `app/assets/templates/views/queryParamsHistory.html`
@@ -2703,27 +2703,27 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/add_query/add_query_directive.js`
 - **Owner candidates:** `app/javascript/controllers/add_query_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `add_query_controller.js`, `_queries.html.erb`
+- **Scenario:** 4.2, 4.3
+- **Decisions:** Replayed on both: Add query disabled for blank and whitespace, label becomes "Add queries" with a semicolon, a multi-line paste becomes semicolon-separated, many queries add together, Enter submits one, the box clears, and a duplicate adds nothing but flashes "Query added successfully." (identical on both). Spinner is `d-none`/`hidden` on both; "Adding queries is not supported" for Static engines is source-checked (`live_query_runtime_owner.js`).
 
 Conditional UI:
 
-- [ ] `<input#add-query-submit>` `ng-disabled="!ctrl.canAddQueries || ctrl.textInputIsEmpty()"`
-- [ ] `<i>` `ng-class="{'hidden': !ctrl.loading}"` _(not in main)_
-- [ ] `<i>` `ng-class="{'d-none': !ctrl.loading}"` _(added on main)_
+- [x] `<input#add-query-submit>` `ng-disabled="!ctrl.canAddQueries || ctrl.textInputIsEmpty()"`
+- [x] `<i>` `ng-class="{'hidden': !ctrl.loading}"` _(not in main)_
+- [x] `<i>` `ng-class="{'d-none': !ctrl.loading}"` _(added on main)_
 
 Actions:
 
-- [ ] `<input#add-query-submit>` `ng-click="ctrl.submit()"`
+- [x] `<input#add-query-submit>` `ng-click="ctrl.submit()"`
 
 Inputs:
 
-- [ ] `<input#add-query>` `ng-model="ctrl.text"`
+- [x] `<input#add-query>` `ng-model="ctrl.text"`
 
 Copy:
 
-- [ ] "/>" _(not in main)_
+- [x] "/>" _(not in main)_
 
 <a id="row-29"></a>
 ### 29. `app/assets/javascripts/components/export_case/export_case.html`
@@ -2733,24 +2733,24 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `5a3e8ff5^`)
 - **Used by (legacy):**`app/assets/javascripts/components/export_case/export_case_directive.js`
 - **Owner candidates:** `app/views/shared/_export_case_core_modal.html.erb`, `app/javascript/controllers/export_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.1
+- **Decisions:** The toolbar "Export" link opens the export modal (replayed on both, row 4). The icon-only variant was an Angular option never used on this page.
 
 Conditional UI:
 
-- [ ] `<span>` `ng-show="ctrl.iconOnly"`
-- [ ] `<span>` `ng-show="!ctrl.iconOnly"`
+- [x] `<span>` `ng-show="ctrl.iconOnly"`
+- [x] `<span>` `ng-show="!ctrl.iconOnly"`
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] title: "Export"
-- [ ] alt: "Export"
-- [ ] "Export"
+- [x] title: "Export"
+- [x] alt: "Export"
+- [x] "Export"
 
 <a id="row-30"></a>
 ### 30. `app/assets/templates/views/404.html`
@@ -2768,18 +2768,18 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** Rails 404 (`public/404.html`)
+- **Scenario:** 4.17
+- **Decisions:** Legacy's `404.html` was only reachable through a client route; `/case/x/y/z/garbage` is a Rails routing error on Legacy too (replayed), as on Current. Scenario 4.17 step 4 and `case_shell_navigation.spec.ts` cover it. A missing case id behaves differently: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1.
 
 Copy:
 
-- [ ] "Not found"
-- [ ] ":("
-- [ ] "Sorry, but the page you were trying to view does not exist."
-- [ ] "It looks like this was the result of either:"
-- [ ] "a mistyped address"
-- [ ] "an out-of-date link"
+- [ ] "Not found" — open: see [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1
+- [x] ":("
+- [x] "Sorry, but the page you were trying to view does not exist."
+- [x] "It looks like this was the result of either:"
+- [x] "a mistyped address"
+- [x] "an out-of-date link"
 
 <a id="row-31"></a>
 ### 31. `app/assets/templates/views/embed.html`
@@ -2797,21 +2797,21 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/searchResult.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `search_result_controller.js` (`embedField`)
+- **Scenario:** 4.23
+- **Decisions:** Audio, video and image embeds are built from the same extension lists. Differences in detection: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2 (source only).
 
 Conditional UI:
 
-- [ ] `<audio>` `ng-if="audioSrc"`
-- [ ] `<img>` `ng-if="imageSrc"`
-- [ ] `<video>` `ng-if="videoSrc"`
+- [x] `<audio>` `ng-if="audioSrc"`
+- [x] `<img>` `ng-if="imageSrc"`
+- [x] `<video>` `ng-if="videoSrc"`
 
 Bound content:
 
-- [ ] `<source>` `ng-src="{{audioSrc}}"`
-- [ ] `<img>` `ng-src="{{imageSrc}}"`
-- [ ] `<source>` `ng-src="{{videoSrc}}"`
+- [x] `<source>` `ng-src="{{audioSrc}}"`
+- [x] `<img>` `ng-src="{{imageSrc}}"`
+- [x] `<source>` `ng-src="{{videoSrc}}"`
 
 <a id="row-32"></a>
 ### 32. `app/assets/templates/views/ratings/popover.html`
@@ -2832,27 +2832,27 @@ Bound content:
 
 - **Used by (legacy):**`app/assets/templates/views/searchResult.html`, `app/assets/templates/views/searchResults.html`, `app/assets/templates/views/targetedSearchModal.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `rating_popover_controller.js`
+- **Scenario:** 4.6
+- **Decisions:** Replayed on both: the popover lists each scale value in its colour with its label, choosing one rates, RESET clears, outside click dismisses. Long labelled scales and keyboard use are covered by `modal_a11y.spec.ts` and `popover_visibility.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="!angular.isUndefined(value.showScaleLabels) && value.showScaleLabels === true"`
-- [ ] `<li>` `ng-style="{ 'background-color': value.color }"`
+- [x] `<div>` `ng-if="!angular.isUndefined(value.showScaleLabels) && value.showScaleLabels === true"`
+- [x] `<li>` `ng-style="{ 'background-color': value.color }"`
 
 Actions:
 
-- [ ] `<li>` `ng-click="ratings.rate(rating)"`
-- [ ] `<span>` `ng-click="ratings.reset()"`
+- [x] `<li>` `ng-click="ratings.rate(rating)"`
+- [x] `<span>` `ng-click="ratings.reset()"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="(rating, value) in ratings.scale"`
+- [x] `<li>` `ng-repeat="(rating, value) in ratings.scale"`
 
 Copy:
 
-- [ ] "RESET"
+- [x] "RESET"
 
 <a id="row-33"></a>
 ### 33. `app/assets/javascripts/components/debug_matches/debug_matches.html`
@@ -2872,22 +2872,22 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/debug_matches/debug_matches_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`
+- **Scenario:** 6.8
+- **Decisions:** Debug opens "Debug Explain for <title> (id:<id>)" on both. Disabled when there is no per-term breakdown is source-checked. The popover stays open behind the modal: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
 
 Conditional UI:
 
-- [ ] `<a>` `ng-class="{disabled: ctrl.doc.explain().children.length === 0}"` _(added on main)_
+- [x] `<a>` `ng-class="{disabled: ctrl.doc.explain().children.length === 0}"` _(added on main)_
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.showDetailed()"` _(not in main)_
-- [ ] `<a>` `ng-click="ctrl.doc.explain().children.length > 0 && ctrl.showDetailed()"` _(added on main)_
+- [x] `<a>` `ng-click="ctrl.showDetailed()"` _(not in main)_
+- [x] `<a>` `ng-click="ctrl.doc.explain().children.length > 0 && ctrl.showDetailed()"` _(added on main)_
 
 Copy:
 
-- [ ] "Debug"
+- [x] "Debug"
 
 <a id="row-34"></a>
 ### 34. `app/assets/javascripts/components/judgements/judgements.html`
@@ -2897,19 +2897,19 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/judgements/judgements_directive.js`
 - **Owner candidates:** `app/views/shared/_judgements_core_modal.html.erb`, `app/javascript/controllers/judgements_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.6
+- **Decisions:** The toolbar "Judgements" link opens the modal (replayed on both); the lone Legacy link and book icon are kept.
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] title: "Judgements"
-- [ ] alt: "Judgements"
-- [ ] "Judgements"
+- [x] title: "Judgements"
+- [x] alt: "Judgements"
+- [x] "Judgements"
 
 <a id="row-35"></a>
 ### 35. `app/assets/templates/views/common/flash.html`
@@ -2929,19 +2929,19 @@ Copy:
   </details>
 
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `core_flash.js`, `layouts/_flash` (`#flash-messages`)
+- **Scenario:** 4.16
+- **Decisions:** Replayed on both: a save shows the same green flash with the same text in `#flash-messages`, and the close button dismisses it (`btn-close` with an "Dismiss" label on Current).
 
 Actions:
 
-- [ ] `<button>` `ng-click="hide()"`
+- [x] `<button>` `ng-click="hide()"`
 
 Bound content:
 
-- [ ] `<span>` `ng-bind-html="flash.message"`
-- [ ] `<ng-include>` `src="'views/cases/search_flash.html'"` _(not in main)_
-- [ ] `<ng-include>` `src="'views/common/search_flash.html'"` _(added on main)_
+- [x] `<span>` `ng-bind-html="flash.message"`
+- [x] `<ng-include>` `src="'views/cases/search_flash.html'"` _(not in main)_
+- [x] `<ng-include>` `src="'views/common/search_flash.html'"` _(added on main)_
 
 <a id="row-36"></a>
 ### 36. `app/assets/templates/views/searchEndpoint_popup.html`
@@ -2960,16 +2960,16 @@ Bound content:
 
 - **Used by (legacy):**`app/assets/templates/views/devQueryParams.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `tune_relevance_controller.js`, `_tune_relevance.html.erb`
+- **Scenario:** 4.12
+- **Decisions:** Suggestion rows now show the engine icon and bold the typed text and the list opens on focus (restored in this pass; `tune_relevance.spec.ts`). Open: the eight-row cap, item 13 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision).
 
 Bound content:
 
-- [ ] `<img>` `ng-src="images/{{match.model.searchEngine}}-icon.png"` _(not in main)_
-- [ ] `<span>` `ng-bind-html="match.label | uibTypeaheadHighlight:query"` _(not in main)_
-- [ ] `<img>` `ng-src="images/{{match.model.mapperBasedSearchEngineId || match.model.searchEngine}}-icon.png"` _(added on main)_
-- [ ] `<span>` `ng-bind-html="match.label | quepidTypeaheadHighlight:query"` _(added on main)_
+- [x] `<img>` `ng-src="images/{{match.model.searchEngine}}-icon.png"` _(not in main)_
+- [x] `<span>` `ng-bind-html="match.label | uibTypeaheadHighlight:query"` _(not in main)_ — highlight restored in this pass
+- [x] `<img>` `ng-src="images/{{match.model.mapperBasedSearchEngineId || match.model.searchEngine}}-icon.png"` _(added on main)_
+- [x] `<span>` `ng-bind-html="match.label | quepidTypeaheadHighlight:query"` _(added on main)_ — highlight restored in this pass
 
 <a id="row-37"></a>
 ### 37. `app/assets/javascripts/components/frog_report/frog_report.html`
@@ -2979,18 +2979,18 @@ Bound content:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/frog_report/frog_report_directive.js`
 - **Owner candidates:** `app/javascript/controllers/frog_report_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `frog_report_controller.js`, `_queries.html.erb`
+- **Scenario:** 6.9
+- **Decisions:** The "🐸 Report" link opens the Frog Pond modal (replayed on both).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "🐸"
-- [ ] "Report"
+- [x] "🐸"
+- [x] "Report"
 
 <a id="row-38"></a>
 ### 38. `app/assets/javascripts/components/matches/matches.html`
@@ -3008,18 +3008,18 @@ Copy:
 
 - **Used by (legacy):**`app/assets/templates/views/stackedChart.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`
+- **Scenario:** 6.8
+- **Decisions:** Popover title "Relevancy Score: N", the summed terms and the Debug and Expand actions replayed on both. Main added the empty-explain text; source-checked. Popover stays open behind the modals: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
 
 Conditional UI:
 
-- [ ] `<pre>` `ng-if="doc.explain().children.length > 0"` _(added on main)_
-- [ ] `<pre>` `ng-if="doc.explain().children.length === 0"` _(added on main)_
+- [x] `<pre>` `ng-if="doc.explain().children.length > 0"` _(added on main)_
+- [x] `<pre>` `ng-if="doc.explain().children.length === 0"` _(added on main)_
 
 Copy:
 
-- [ ] title: ""Relevancy Score: " + doc.score()"
+- [x] title: ""Relevancy Score: " + doc.score()"
 
 <a id="row-39"></a>
 ### 39. `app/assets/javascripts/components/browse_query/browse_query.html`
@@ -3028,17 +3028,17 @@ Copy:
 - **Ported:** branch `298bc21e` — refactor(core): migrate browse query modal to Stimulus
 - **Used by (main):**`app/assets/javascripts/components/browse_query/browse_query_directive.js`
 - **Owner candidates:** `app/javascript/controllers/browse_query_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `browse_query_controller.js`, `search_results_controller.js`
+- **Scenario:** 4.18
+- **Decisions:** Main-only: the footer button opens the browse modal and is hidden for a query in error (source). Replayed as row 21.
 
 Conditional UI:
 
-- [ ] `<a>` `ng-show="ctrl.query.state() !== 'error'"`
+- [x] `<a>` `ng-show="ctrl.query.state() !== 'error'"`
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 <a id="row-40"></a>
 ### 40. `app/assets/javascripts/components/debug_matches/_modal.html`
@@ -3048,14 +3048,14 @@ Actions:
 - **Before the port:** unchanged since legacy (compared with `737851b5^`)
 - **Used by (legacy):**`app/assets/javascripts/components/debug_matches/debug_matches_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`, `dynamic_modal.js`
+- **Scenario:** 6.8
+- **Decisions:** Debug modal title "Debug Explain for <title> (id:<id>)" replayed on both.
 
 Copy:
 
-- [ ] "Debug Explain for"
-- [ ] "(id:{{ ctrl.doc.id }})"
+- [x] "Debug Explain for"
+- [x] "(id:{{ ctrl.doc.id }})"
 
 <a id="row-41"></a>
 ### 41. `app/assets/javascripts/components/diff/diff.html`
@@ -3065,17 +3065,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/diff/diff_directive.js`
 - **Owner candidates:** `app/views/core/_diff_modal.html.erb`, `app/javascript/controllers/diff_case_scores_controller.js`, `app/javascript/controllers/diff_core_controller.js`, `app/javascript/controllers/diff_score_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`, `diff_core_controller.js`
+- **Scenario:** 5.3
+- **Decisions:** Toolbar link "Compare snapshots" opens the picker (replayed on both).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Compare snapshots"
+- [x] "Compare snapshots"
 
 <a id="row-42"></a>
 ### 42. `app/assets/javascripts/components/expand_content/_modal.html`
@@ -3094,14 +3094,14 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/expand_content/expand_content_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `dynamic_modal.js`
+- **Scenario:** 6.8
+- **Decisions:** Expand opens the explanation in its own modal (replayed on both); title and content are set as text/HTML by the helper.
 
 Bound content:
 
-- [ ] `<h1>` `ng-bind-html="ctrl.title"`
-- [ ] `<div>` `ng-bind-html="ctrl.content"`
+- [x] `<h1>` `ng-bind-html="ctrl.title"`
+- [x] `<div>` `ng-bind-html="ctrl.content"`
 
 <a id="row-43"></a>
 ### 43. `app/assets/javascripts/components/expand_content/expand_content.html`
@@ -3120,17 +3120,17 @@ Bound content:
 
 - **Used by (legacy):**`app/assets/javascripts/components/expand_content/expand_content_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`
+- **Scenario:** 6.8
+- **Decisions:** Expand replayed on both. Popover stays open: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.expand()"`
+- [x] `<a>` `ng-click="ctrl.expand()"`
 
 Copy:
 
-- [ ] "Expand"
+- [x] "Expand"
 
 <a id="row-44"></a>
 ### 44. `app/assets/javascripts/components/import_ratings/import_ratings.html`
@@ -3140,17 +3140,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/import_ratings/import_ratings_directive.js`
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.2
+- **Decisions:** The toolbar "Import" link opens the import modal (replayed on both, row 5).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.create()"`
+- [x] `<a>` `ng-click="ctrl.create()"`
 
 Copy:
 
-- [ ] "Import"
+- [x] "Import"
 
 <a id="row-45"></a>
 ### 45. `app/assets/javascripts/components/move_query/move_query.html`
@@ -3160,17 +3160,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/move_query/move_query_directive.js`
 - **Owner candidates:** `app/views/shared/_move_query_core_modal.html.erb`, `app/javascript/controllers/move_query_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_query_list_templates.html.erb`
+- **Scenario:** 4.4
+- **Decisions:** The "Move Query" button opens the move modal (replayed on both, row 20).
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.prompt()"`
+- [x] `<button>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Move Query"
+- [x] "Move Query"
 
 <a id="row-46"></a>
 ### 46. `app/assets/javascripts/components/qscore_case/qscore_case.html`
@@ -3180,14 +3180,14 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/qscore_case/qscore_case_directive.js`
 - **Owner candidates:** `app/javascript/controllers/qscore_case_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `qscore_case_controller.js`, `index.html.erb`
+- **Scenario:** 4.7, 5.5
+- **Decisions:** Case score badge and graph replayed on Legacy case 4 and Current case 6 (read-only): the graph renders only with more than one score, the badge colour and "AP@10" label match, and with a snapshot comparison active the snapshot badges appear beside it. "of 1.00" is the accessibility change `7c304651`.
 
 Conditional UI:
 
-- [ ] `<qgraph>` `ng-if="ctrl.scores && (ctrl.scores.length > 1)"`
-- [ ] `<div>` `ng-style="ctrl.style"`
+- [x] `<qgraph>` `ng-if="ctrl.scores && (ctrl.scores.length > 1)"`
+- [x] `<div>` `ng-style="ctrl.style"`
 
 <a id="row-47"></a>
 ### 47. `app/assets/javascripts/components/query_explain/query_explain.html`
@@ -3206,17 +3206,17 @@ Conditional UI:
 
 - **Used by (legacy):**`app/assets/javascripts/components/query_explain/query_explain_directive.js`
 - **Owner candidates:** `app/javascript/controllers/query_explain_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_query_list_templates.html.erb`, `query_explain_controller.js`
+- **Scenario:** 6.7
+- **Decisions:** The "Explain Query" button opens the explain modal (replayed on both, row 13).
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.prompt()"`
+- [x] `<button>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Explain Query"
+- [x] "Explain Query"
 
 <a id="row-48"></a>
 ### 48. `app/assets/javascripts/components/query_options/query_options.html`
@@ -3235,17 +3235,17 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/query_options/query_options_directive.js`
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_query_list_templates.html.erb`
+- **Scenario:** 4.5
+- **Decisions:** The "Set Options" button opens the options modal (replayed on both, row 22; invalid-JSON flow: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3).
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.prompt()"`
+- [x] `<button>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Set Options"
+- [x] "Set Options"
 
 <a id="row-49"></a>
 ### 49. `app/assets/templates/views/cases/search_flash.html`
@@ -3267,17 +3267,17 @@ Copy:
 
 - **Used by (legacy):**`app/assets/templates/views/common/flash.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `core_flash.js`
+- **Scenario:** 4.17
+- **Decisions:** Search-error flash with its dismiss button: source-checked and covered live by `core_failure_recovery.spec.ts` ("a persistent wrapped search error…"); the plain flash was replayed as row 35.
 
 Actions:
 
-- [ ] `<button>` `ng-click="hide()"`
+- [x] `<button>` `ng-click="hide()"`
 
 Bound content:
 
-- [ ] `<span>` `ng-bind-html="flash.message"`
+- [x] `<span>` `ng-bind-html="flash.message"`
 
 <a id="row-50"></a>
 ### 50. `app/assets/templates/views/detailedExplain.html`
@@ -3287,14 +3287,14 @@ Bound content:
 - **Before the port:** unchanged since legacy (compared with `737851b5^`)
 - **Used by (legacy):**`app/assets/javascripts/controllers/searchResult.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `match_explain_controller.js`
+- **Scenario:** 6.8
+- **Decisions:** "Debug Explain for <title> (id:<id>)" heading replayed on both (rows 40).
 
 Copy:
 
-- [ ] "Debug Explain for"
-- [ ] "(id:{{doc.id}})"
+- [x] "Debug Explain for"
+- [x] "(id:{{doc.id}})"
 
 <a id="row-51"></a>
 ### 51. `app/assets/javascripts/components/new_case/new_case.html`
@@ -3312,13 +3312,13 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/new_case/new_case_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/layouts/_header_core_actions.html.erb`, `app/javascript/controllers/wizard_launcher_controller.js`
+- **Scenario:** 3.2
+- **Decisions:** Legacy `newCase()` created a case, opened the wizard and started the tour after the first-case wizard. Current's header button navigates to `cases/new`, which creates the case and lands on `?showWizard=true`; the tour starts from `startTour=true` after the wizard (`wizard_controller.js`, `core_bootstrap_controller.js`). Covered live by `header_footer_navigation.spec.ts` ("case header launches the new-case wizard…", asserts one create request, URL and dialog). Legacy's `?new=true` deep link has no link source anywhere in Legacy (`git grep` at `8ceb99e9`), so it is N/A.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.newCase()"`
+- [x] `<button>` `ng-click="ctrl.newCase()"`
 
 <a id="row-52"></a>
 ### 52. `app/assets/javascripts/components/qscore_query/qscore_query.html`
@@ -3328,13 +3328,13 @@ Actions:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/components/qscore_query/qscore_query_directive.js`
 - **Owner candidates:** `app/javascript/controllers/qscore_query_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `qscore_query_controller.js`
+- **Scenario:** 4.7, 4.21
+- **Decisions:** Per-query badge replayed on both (colour per score, 0.00 for an unscored query, diff badges with a snapshot). "of 1.00" and the text states are `7c304651`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-style="ctrl.style"`
+- [x] `<div>` `ng-style="ctrl.style"`
 
 <a id="row-53"></a>
 ### 53. `app/assets/templates/views/cases/_dev_settings.html`
@@ -3355,13 +3355,13 @@ Conditional UI:
 
 - **Used by (legacy):**`app/assets/templates/views/queriesLayout.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/core/_tune_relevance.html.erb`, `tune_relevance_controller.js`
+- **Scenario:** 4.10
+- **Decisions:** `devSettingsQuery` is never defined in Legacy (`git grep` at `8ceb99e9` finds only this `ng-show`), so the query-params section was always shown. Current always renders it; covered by `tune_relevance.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="!devSettingsQuery.toggle"`
+- [x] `<div>` `ng-show="!devSettingsQuery.toggle"` — N/A: Legacy flag never set, section always visible
 
 <a id="row-54"></a>
 ### 54. `app/assets/javascripts/components/qgraph/qgraph.html`
@@ -3379,10 +3379,10 @@ Conditional UI:
 
 - **Used by (legacy):**`app/assets/javascripts/components/qgraph/qgraph_directive.js`
 - **Owner candidates:** `app/javascript/controllers/qgraph_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
-- [ ] Rendered output reproduced (nothing to extract; compare on the legacy instance)
+- **Owner:** `qgraph_controller.js`
+- **Scenario:** 5.5
+- **Decisions:** Rendered output compared on Legacy case 4 and Current case 6: 150x80 sparkline from the same score history, same shape. Current draws it with Vega (main `7cd92e2f`, "Eliminate D3") and adds a tooltip per score and per annotation marker; the marker for a new annotation appears after create (3 marker lines for 3 annotations).
+- [x] Rendered output reproduced (nothing to extract; compare on the legacy instance)
 
 <a id="row-55"></a>
 ### 55. `app/assets/javascripts/directives/angular-vega.js`
@@ -3399,10 +3399,10 @@ Conditional UI:
   </details>
 
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
-- [ ] Behaviour reproduced (read the directive's link/controller code)
+- **Owner:** `qgraph_controller.js`, `frog_report_controller.js` (Vega embeds)
+- **Scenario:** 5.5, 4.21
+- **Decisions:** The Angular Vega directive only embedded a spec; Current embeds the same charts (score sparkline and frog report) directly. Rendered and replayed as rows 54 and 15.
+- [x] Behaviour reproduced (read the directive's link/controller code)
 
 ## Ported on main before this branch (51)
 
@@ -3416,114 +3416,114 @@ Already shipped; a loss here is an existing gap, not a branch blocker. Triage se
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** `app/views/teams/show.html.erb`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/show.html.erb`, `teams/_section.html.erb`
+- **Scenario:** 9.1, 9.6
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Section copy and actions (members, cases, books, search endpoints, scorers, archived toggles) replayed on main and Current.
 
 Conditional UI:
 
-- [ ] `<div#users-listing>` `ng-if="currentTeam.members.length !== 0"`
-- [ ] `<p>` `ng-if="currentTeam.members.length == 0"`
-- [ ] `<div#cases-listing>` `ng-if="currentTeam.cases.length !== 0"`
-- [ ] `<p>` `ng-if="currentTeam.cases.length == 0"`
-- [ ] `<div#books-listing>` `ng-if="currentTeam.books.length !== 0"`
-- [ ] `<p>` `ng-if="currentTeam.books.length == 0"`
-- [ ] `<div#search-endpoints-listing>` `ng-if="currentTeam.searchEndpoints.length !== 0"`
-- [ ] `<p>` `ng-if="currentTeam.searchEndpoints.length == 0"`
-- [ ] `<div#scorers-listing>` `ng-if="currentTeam.scorers.length !== 0"`
-- [ ] `<p>` `ng-if="currentTeam.scorers.length == 0"`
+- [x] `<div#users-listing>` `ng-if="currentTeam.members.length !== 0"`
+- [x] `<p>` `ng-if="currentTeam.members.length == 0"`
+- [x] `<div#cases-listing>` `ng-if="currentTeam.cases.length !== 0"`
+- [x] `<p>` `ng-if="currentTeam.cases.length == 0"`
+- [x] `<div#books-listing>` `ng-if="currentTeam.books.length !== 0"`
+- [x] `<p>` `ng-if="currentTeam.books.length == 0"`
+- [x] `<div#search-endpoints-listing>` `ng-if="currentTeam.searchEndpoints.length !== 0"`
+- [x] `<p>` `ng-if="currentTeam.searchEndpoints.length == 0"`
+- [x] `<div#scorers-listing>` `ng-if="currentTeam.scorers.length !== 0"`
+- [x] `<p>` `ng-if="currentTeam.scorers.length == 0"`
 
 Actions:
 
-- [ ] `<label>` `ng-click="caseModel.unarchive(currentTeam)"`
-- [ ] `<label>` `ng-click="unarchiveSearchEndpoint(currentTeam)"`
+- [x] `<label>` `ng-click="caseModel.unarchive(currentTeam)"`
+- [x] `<label>` `ng-click="unarchiveSearchEndpoint(currentTeam)"`
 
 Inputs:
 
-- [ ] `<input#team-members-filter>` `ng-model="q"`
-- [ ] `<ul>` `ng-model="currentTeam.members"`
-- [ ] `<label>` `ng-model="casesScope.typeFilter"`
-- [ ] `<label>` `uib-btn-radio="'all'"`
-- [ ] `<input#team-cases-filter>` `ng-model="q1"`
-- [ ] `<ul>` `ng-model="currentTeam.cases"`
-- [ ] `<input#team-books-filter>` `ng-model="q3"`
-- [ ] `<ul>` `ng-model="currentTeam.books"`
-- [ ] `<label>` `ng-model="searchEndpointsScope.typeFilter"`
-- [ ] `<input#team-search-endpoints-filter>` `ng-model="q4"`
-- [ ] `<ul>` `ng-model="currentTeam.searchEndpoints"`
-- [ ] `<input#team-scorers-filter>` `ng-model="q2"`
-- [ ] `<ul>` `ng-model="currentTeam.scorers"`
+- [x] `<input#team-members-filter>` `ng-model="q"`
+- [x] `<ul>` `ng-model="currentTeam.members"`
+- [x] `<label>` `ng-model="casesScope.typeFilter"`
+- [x] `<label>` `uib-btn-radio="'all'"`
+- [x] `<input#team-cases-filter>` `ng-model="q1"`
+- [x] `<ul>` `ng-model="currentTeam.cases"`
+- [x] `<input#team-books-filter>` `ng-model="q3"`
+- [x] `<ul>` `ng-model="currentTeam.books"`
+- [x] `<label>` `ng-model="searchEndpointsScope.typeFilter"`
+- [x] `<input#team-search-endpoints-filter>` `ng-model="q4"`
+- [x] `<ul>` `ng-model="currentTeam.searchEndpoints"`
+- [x] `<input#team-scorers-filter>` `ng-model="q2"`
+- [x] `<ul>` `ng-model="currentTeam.scorers"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="user in currentTeam.members | filter:q"`
-- [ ] `<li>` `ng-repeat="case in currentTeam.cases | filter:q1"`
-- [ ] `<li>` `ng-repeat="book in currentTeam.books | filter:q3"`
-- [ ] `<li>` `ng-repeat="searchEndpoint in currentTeam.searchEndpoints | filter:q4"`
-- [ ] `<li>` `ng-repeat="scorer in currentTeam.scorers | filter:q2"`
+- [x] `<li>` `ng-repeat="user in currentTeam.members | filter:q"`
+- [x] `<li>` `ng-repeat="case in currentTeam.cases | filter:q1"`
+- [x] `<li>` `ng-repeat="book in currentTeam.books | filter:q3"`
+- [x] `<li>` `ng-repeat="searchEndpoint in currentTeam.searchEndpoints | filter:q4"`
+- [x] `<li>` `ng-repeat="scorer in currentTeam.scorers | filter:q2"`
 
 Bound content:
 
-- [ ] `<img>` `ng-src="{{ currentTeam.owner.avatar_url }}"`
+- [x] `<img>` `ng-src="{{ currentTeam.owner.avatar_url }}"`
 
 Links:
 
-- [ ] `<a>` `ng-href="teams"`
-- [ ] `<a>` `ng-href="teams/{{currentTeam.id}}/ai_judges/new"`
-- [ ] `<a>` `href="http://quepidapp.com/docs/#scorers-custom"`
+- [x] `<a>` `ng-href="teams"`
+- [x] `<a>` `ng-href="teams/{{currentTeam.id}}/ai_judges/new"`
+- [x] `<a>` `href="http://quepidapp.com/docs/#scorers-custom"`
 
 Copy:
 
-- [ ] "Team: {{ currentTeam.name }}"
-- [ ] "Back to list"
-- [ ] title: "Avatar image"
-- [ ] "Members"
-- [ ] "Cases"
-- [ ] "Books"
-- [ ] "Scorers"
-- [ ] "Add Team Member"
-- [ ] "Create AI Judge"
-- [ ] placeholder: "Filter members"
-- [ ] aria-label: "filter members"
-- [ ] "No members to show!"
-- [ ] "View    "
-- [ ] "All"
-- [ ] "Archived Cases"
-- [ ] placeholder: "Filter cases"
-- [ ] aria-label: "filter cases"
-- [ ] "ID"
-- [ ] "Case Title"
-- [ ] "Last Try #"
-- [ ] "# of Queries"
-- [ ] "Last Score"
-- [ ] "Last Run On"
-- [ ] "Last Run By"
-- [ ] "Associated"
-- [ ] "Judgements"
-- [ ] "Teams"
-- [ ] "Owner"
-- [ ] "No cases to show!"
-- [ ] "Books of Judgements"
-- [ ] placeholder: "Filter books"
-- [ ] aria-label: "filter books"
-- [ ] "Name"
-- [ ] "Selection Strategy"
-- [ ] "Number of Query/Doc Pairs"
-- [ ] "No judgements to show!"
-- [ ] "Search Endpoints"
-- [ ] "Archived Search Endpoints"
-- [ ] placeholder: "Filter Search Endpoints"
-- [ ] aria-label: "filter search endpoints"
-- [ ] "Search Engine"
-- [ ] "Endpoint URL"
-- [ ] "No search endpoints to show!"
-- [ ] placeholder: "Filter scorers"
-- [ ] aria-label: "filter scorers"
-- [ ] "Code/Scale ("
-- [ ] "learn more"
-- [ ] ")"
-- [ ] "Show scale labels?"
-- [ ] "No scorers to show!"
+- [x] "Team: {{ currentTeam.name }}"
+- [x] "Back to list"
+- [x] title: "Avatar image"
+- [x] "Members"
+- [x] "Cases"
+- [x] "Books"
+- [x] "Scorers"
+- [x] "Add Team Member"
+- [x] "Create AI Judge"
+- [x] placeholder: "Filter members"
+- [x] aria-label: "filter members"
+- [x] "No members to show!"
+- [x] "View    "
+- [x] "All"
+- [x] "Archived Cases"
+- [x] placeholder: "Filter cases"
+- [x] aria-label: "filter cases"
+- [x] "ID"
+- [x] "Case Title"
+- [x] "Last Try #"
+- [x] "# of Queries"
+- [x] "Last Score"
+- [x] "Last Run On"
+- [x] "Last Run By"
+- [x] "Associated"
+- [x] "Judgements"
+- [x] "Teams"
+- [x] "Owner"
+- [x] "No cases to show!"
+- [x] "Books of Judgements"
+- [x] placeholder: "Filter books"
+- [x] aria-label: "filter books"
+- [x] "Name"
+- [x] "Selection Strategy"
+- [x] "Number of Query/Doc Pairs"
+- [x] "No judgements to show!"
+- [x] "Search Endpoints"
+- [x] "Archived Search Endpoints"
+- [x] placeholder: "Filter Search Endpoints"
+- [x] aria-label: "filter search endpoints"
+- [x] "Search Engine"
+- [x] "Endpoint URL"
+- [x] "No search endpoints to show!"
+- [x] placeholder: "Filter scorers"
+- [x] aria-label: "filter scorers"
+- [x] "Code/Scale ("
+- [x] "learn more"
+- [x] ")"
+- [x] "Show scale labels?"
+- [x] "No scorers to show!"
 
 <a id="row-57"></a>
 ### 57. `app/assets/javascripts/components/scorer_form/scorer_form.html`
@@ -3533,64 +3533,64 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/scorer_form/scorer_form_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/_form.html.erb`
+- **Scenario:** 8.3, 8.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Form text identical on main and Current (`/scorers/new` SAME).
 
 Conditional UI:
 
-- [ ] `<input#scorer-name>` `ng-required="true"`
-- [ ] `<div>` `ng-show="ctrl.scorerOptions.showName"`
-- [ ] `<p>` `ng-if="ctrl.updatingScale"`
-- [ ] `<input#scoring-options>` `ng-required="true"`
-- [ ] `<div>` `ng-if="ctrl.scorer.showScaleLabels === true"`
+- [x] `<input#scorer-name>` `ng-required="true"`
+- [x] `<div>` `ng-show="ctrl.scorerOptions.showName"`
+- [x] `<p>` `ng-if="ctrl.updatingScale"`
+- [x] `<input#scoring-options>` `ng-required="true"`
+- [x] `<div>` `ng-if="ctrl.scorer.showScaleLabels === true"`
 
 Actions:
 
-- [ ] `<input#binary>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)"`
-- [ ] `<input#graded>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)"`
-- [ ] `<input#detail>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)"`
-- [ ] `<input#custom>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.custom)"`
-- [ ] `<input#scoring-options>` `ng-change="ctrl.scaleChoice = 'custom'"`
-- [ ] `<input#show-scale-labels>` `ng-change=""`
+- [x] `<input#binary>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.binaryScale)"`
+- [x] `<input#graded>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.gradedScale)"`
+- [x] `<input#detail>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.detailScale)"`
+- [x] `<input#custom>` `ng-change="ctrl.updateScale(ctrl.scaleOptions.custom)"`
+- [x] `<input#scoring-options>` `ng-change="ctrl.scaleChoice = 'custom'"`
+- [x] `<input#show-scale-labels>` `ng-change=""`
 
 Inputs:
 
-- [ ] `<input#scorer-name>` `ng-model="ctrl.scorer.name"`
-- [ ] `<div>` `ng-model="ctrl.scorer.code"`
-- [ ] `<input#binary>` `ng-model="ctrl.scaleChoice"`
-- [ ] `<input#graded>` `ng-model="ctrl.scaleChoice"`
-- [ ] `<input#detail>` `ng-model="ctrl.scaleChoice"`
-- [ ] `<input#custom>` `ng-model="ctrl.scaleChoice"`
-- [ ] `<input#scoring-options>` `ng-model="ctrl.scorer.scale"`
-- [ ] `<input#show-scale-labels>` `ng-model="ctrl.scorer.showScaleLabels"`
-- [ ] `<input>` `ng-model="ctrl.scorer.scaleWithLabels[value]"`
+- [x] `<input#scorer-name>` `ng-model="ctrl.scorer.name"`
+- [x] `<div>` `ng-model="ctrl.scorer.code"`
+- [x] `<input#binary>` `ng-model="ctrl.scaleChoice"`
+- [x] `<input#graded>` `ng-model="ctrl.scaleChoice"`
+- [x] `<input#detail>` `ng-model="ctrl.scaleChoice"`
+- [x] `<input#custom>` `ng-model="ctrl.scaleChoice"`
+- [x] `<input#scoring-options>` `ng-model="ctrl.scorer.scale"`
+- [x] `<input#show-scale-labels>` `ng-model="ctrl.scorer.showScaleLabels"`
+- [x] `<input>` `ng-model="ctrl.scorer.scaleWithLabels[value]"`
 
 Lists (check empty states):
 
-- [ ] `<span>` `ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels"`
+- [x] `<span>` `ng-repeat="(value, label) in ctrl.scorer.scaleWithLabels"`
 
 Links:
 
-- [ ] `<a>` `href="http://quepidapp.com/docs/#scorers-custom"`
+- [x] `<a>` `href="http://quepidapp.com/docs/#scorers-custom"`
 
 Copy:
 
-- [ ] "Name"
-- [ ] placeholder: "Give your scorer a name"
-- [ ] "Code ("
-- [ ] "learn more"
-- [ ] ")"
-- [ ] "Scale for query ratings:"
-- [ ] "Changing scales may invalidate existing ratings. Please review and re-rate your queries as needed!"
-- [ ] "Binary Scale ( {{ ctrl.scaleOptions.binaryScale }} )"
-- [ ] "Graded Scale ( {{ ctrl.scaleOptions.gradedScale }} )"
-- [ ] "Detail Scale ( {{ ctrl.scaleOptions.detailScale }} )"
-- [ ] "Custom"
-- [ ] placeholder: "Provide a list of comma separated INTEGERS to use for the scoring scale"
-- [ ] "Labels:"
-- [ ] "Show Scale Labels"
-- [ ] "{{value}}:"
+- [x] "Name"
+- [x] placeholder: "Give your scorer a name"
+- [x] "Code ("
+- [x] "learn more"
+- [x] ")"
+- [x] "Scale for query ratings:"
+- [x] "Changing scales may invalidate existing ratings. Please review and re-rate your queries as needed!"
+- [x] "Binary Scale ( {{ ctrl.scaleOptions.binaryScale }} )"
+- [x] "Graded Scale ( {{ ctrl.scaleOptions.gradedScale }} )"
+- [x] "Detail Scale ( {{ ctrl.scaleOptions.detailScale }} )"
+- [x] "Custom"
+- [x] placeholder: "Provide a list of comma separated INTEGERS to use for the scoring scale"
+- [x] "Labels:"
+- [x] "Show Scale Labels"
+- [x] "{{value}}:"
 
 <a id="row-58"></a>
 ### 58. `app/assets/javascripts/components/clone_case/_modal.html`
@@ -3619,57 +3619,57 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/clone_case/clone_case_controller.js`
 - **Owner candidates:** `app/views/shared/_clone_case_core_modal.html.erb`, `app/javascript/controllers/clone_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_clone_case_core_modal.html.erb`, `clone_case_core_controller.js`
+- **Scenario:** 6.3
+- **Decisions:** Replayed on Legacy (:3001) and Current (:3000): the Clone modal text and controls are identical (live diff); the only differences are "Cancel" being a button, not a submit, and no other copy change. Clone, history and queries/ratings options and the create flow are covered live by `delete_and_clone_case_options.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="!ctrl.options.queries"`
-- [ ] `<input#newCaseName>` `ng-required="true"`
-- [ ] `<button>` `ng-class="ctrl.options.history ? 'btn-default' : 'btn-primary'"` _(not in main)_
-- [ ] `<button>` `ng-class="ctrl.options.history ? 'btn-primary' : 'btn-default'"` _(not in main)_
-- [ ] `<div>` `ng-show="!ctrl.options.history"`
-- [ ] `<button>` `ng-disabled="ctrl.cannotClone()"`
-- [ ] `<button>` `ng-class="ctrl.options.history ? 'btn-outline-secondary' : 'btn-primary'"` _(added on main)_
-- [ ] `<button>` `ng-class="ctrl.options.history ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
+- [x] `<div>` `ng-if="!ctrl.options.queries"`
+- [x] `<input#newCaseName>` `ng-required="true"`
+- [x] `<button>` `ng-class="ctrl.options.history ? 'btn-default' : 'btn-primary'"` _(not in main)_
+- [x] `<button>` `ng-class="ctrl.options.history ? 'btn-primary' : 'btn-default'"` _(not in main)_
+- [x] `<div>` `ng-show="!ctrl.options.history"`
+- [x] `<button>` `ng-disabled="ctrl.cannotClone()"`
+- [x] `<button>` `ng-class="ctrl.options.history ? 'btn-outline-secondary' : 'btn-primary'"` _(added on main)_
+- [x] `<button>` `ng-class="ctrl.options.history ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.options.history=false"`
-- [ ] `<button>` `ng-click="ctrl.options.history=true"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.options.history=false"`
+- [x] `<button>` `ng-click="ctrl.options.history=true"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Inputs:
 
-- [ ] `<input#newCaseName>` `ng-model="ctrl.options.caseName"`
-- [ ] `<select#try>` `ng-model="ctrl.options.tryId"`
-- [ ] `<select#try>` `ng-options="try.try_number as try.name for try in ctrl.options.tries"`
-- [ ] `<input#include-queries>` `ng-model="ctrl.options.queries"`
-- [ ] `<input#include-ratings>` `ng-model="ctrl.options.ratings"`
+- [x] `<input#newCaseName>` `ng-model="ctrl.options.caseName"`
+- [x] `<select#try>` `ng-model="ctrl.options.tryId"`
+- [x] `<select#try>` `ng-options="try.try_number as try.name for try in ctrl.options.tries"`
+- [x] `<input#include-queries>` `ng-model="ctrl.options.queries"`
+- [x] `<input#include-ratings>` `ng-model="ctrl.options.ratings"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Clone case:"
-- [ ] "You have chosen not to import any queries. The new case will be empty."
-- [ ] "Cloning a case is the best way to reduce the repetitive work of creating multiple cases that use the same search engine. Select the specific elements to include in the new case."
-- [ ] "New case name"
-- [ ] placeholder: "Enter new case name"
-- [ ] "Include case history"
-- [ ] uib-popover: "Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts." _(not in main)_
-- [ ] "Only include a specific try"
-- [ ] "Include the entire try history"
-- [ ] "Select try"
-- [ ] uib-popover: "Select the desired try from your full case history." _(not in main)_
-- [ ] "Select content"
-- [ ] uib-popover: "When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well." _(not in main)_
-- [ ] "Include Queries"
-- [ ] "Include Ratings"
-- [ ] "Cancel"
-- [ ] "Clone"
-- [ ] aria-label: "Help" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Clone case:"
+- [x] "You have chosen not to import any queries. The new case will be empty."
+- [x] "Cloning a case is the best way to reduce the repetitive work of creating multiple cases that use the same search engine. Select the specific elements to include in the new case."
+- [x] "New case name"
+- [x] placeholder: "Enter new case name"
+- [x] "Include case history"
+- [x] uib-popover: "Select to include either a single try or all the tries of your case history if you want to evaluate previous attempts." _(not in main)_
+- [x] "Only include a specific try"
+- [x] "Include the entire try history"
+- [x] "Select try"
+- [x] uib-popover: "Select the desired try from your full case history." _(not in main)_
+- [x] "Select content"
+- [x] uib-popover: "When cloning a case, you typically want to include your existing queries. If you want to preserve ratings, select to import them as well." _(not in main)_
+- [x] "Include Queries"
+- [x] "Include Ratings"
+- [x] "Cancel"
+- [x] "Clone"
+- [x] aria-label: "Help" _(added on main)_
 
 <a id="row-59"></a>
 ### 59. `app/assets/templates/views/cases/index.html`
@@ -3679,55 +3679,55 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** `app/views/cases/index.html.erb`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb` (Rails, from main `e52cec3a`)
+- **Scenario:** 3.1
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. Columns, Filter box, empty list and Archived filter are present. Replaced without a recorded decision: the All / My Cases / Shared With Me view buttons, per-page box, loading spinner and the more-than-30-cases notice: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) items 3.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="casesScope.loadingCases"`
-- [ ] `<span>` `ng-if="casesScope.allCases.length >30"`
-- [ ] `<div>` `ng-if="casesScope.allCases.length !== 0"`
-- [ ] `<p>` `ng-if="casesScope.allCases.length === 0 && !casesScope.loadingCases"`
+- [ ] `<div>` `ng-if="casesScope.loadingCases"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<span>` `ng-if="casesScope.allCases.length >30"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] `<div>` `ng-if="casesScope.allCases.length !== 0"`
+- [ ] `<p>` `ng-if="casesScope.allCases.length === 0 && !casesScope.loadingCases"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 Actions:
 
-- [ ] `<label>` `ng-click="caseModel.unarchive()"`
+- [x] `<label>` `ng-click="caseModel.unarchive()"`
 
 Inputs:
 
-- [ ] `<label>` `ng-model="casesScope.typeFilter"`
-- [ ] `<label>` `uib-btn-radio="'all'"`
-- [ ] `<label>` `uib-btn-radio="'owned'"`
-- [ ] `<label>` `uib-btn-radio="'shared'"`
-- [ ] `<input#cases-filter>` `ng-model="q"`
-- [ ] `<input#cases-per-page>` `ng-model="pagination.cases.pageSize"`
-- [ ] `<ul>` `ng-model="casesScope.allCases"`
+- [ ] `<label>` `ng-model="casesScope.typeFilter"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<label>` `uib-btn-radio="'all'"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<label>` `uib-btn-radio="'owned'"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<label>` `uib-btn-radio="'shared'"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] `<input#cases-filter>` `ng-model="q"`
+- [ ] `<input#cases-per-page>` `ng-model="pagination.cases.pageSize"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] `<ul>` `ng-model="casesScope.allCases"`
 
 Copy:
 
-- [ ] "Relevancy Cases"
-- [ ] "View    "
-- [ ] "All"
-- [ ] "My Cases"
-- [ ] "Shared With Me Cases"
-- [ ] "Archived Cases"
-- [ ] placeholder: "Filter cases"
-- [ ] aria-label: "filter cases"
-- [ ] "Loading Your Cases"
-- [ ] "Showing limited details since you have many many ({{casesScope.allCases.length}}) cases. You may want to archive some or remove yourself from old teams."
-- [ ] "ID"
-- [ ] "Case Title"
-- [ ] "Last Try #"
-- [ ] "# of Queries"
-- [ ] "Last Score"
-- [ ] "Last Run On"
-- [ ] "Last Run By"
-- [ ] "Associated"
-- [ ] "Judgements"
-- [ ] "Teams"
-- [ ] "Owner"
-- [ ] "No cases to show!"
+- [x] "Relevancy Cases"
+- [ ] "View    " — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] "All"
+- [ ] "My Cases" — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "Shared With Me Cases" — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] "Archived Cases"
+- [x] placeholder: "Filter cases"
+- [x] aria-label: "filter cases"
+- [ ] "Loading Your Cases" — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "Showing limited details since you have many many ({{casesScope.allCases.length}}) cases. You may want to archive some or remove yourself from old teams." — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [x] "ID"
+- [x] "Case Title"
+- [x] "Last Try #"
+- [x] "# of Queries"
+- [x] "Last Score"
+- [x] "Last Run On"
+- [x] "Last Run By"
+- [x] "Associated"
+- [x] "Judgements"
+- [x] "Teams"
+- [x] "Owner"
+- [ ] "No cases to show!" — open: not found in Current's copy; empty-list text is not recorded
 
 <a id="row-60"></a>
 ### 60. `app/assets/javascripts/components/case_listing/case_listing.html`
@@ -3737,52 +3737,52 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/case_listing/case_listing_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb` rows (Rails, from main `e52cec3a`)
+- **Scenario:** 3.1
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. Title link, last run, book link and owner are present. Missing since Legacy, no recorded decision: inline Rename, the nightly icon, the unrated frog, team links in the Teams column and the owner shown as "Me": [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) items 1 and 4.
 
 Conditional UI:
 
-- [ ] `<i>` `ng-show="ctrl.thisCase.nightly"`
-- [ ] `<span>` `ng-switch-when="false"`
-- [ ] `<form>` `ng-switch-when="true"`
-- [ ] `<span>` `ng-switch="ctrl.clickToEdit.clicked"`
-- [ ] `<span>` `ng-show="ctrl.thisCase.lastScore.all_rated === false"`
-- [ ] `<span>` `ng-show="ctrl.thisCase.lastScore.created_at"`
-- [ ] `<span>` `ng-hide="ctrl.thisCase.lastScore.created_at"`
-- [ ] `<a>` `ng-if="ctrl.thisCase.bookName"`
-- [ ] `<div>` `ng-if="ctrl.thisCase.owned"`
-- [ ] `<div>` `ng-if="!ctrl.thisCase.owned"`
+- [ ] `<i>` `ng-show="ctrl.thisCase.nightly"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [ ] `<span>` `ng-switch-when="false"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<form>` `ng-switch-when="true"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<span>` `ng-switch="ctrl.clickToEdit.clicked"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<span>` `ng-show="ctrl.thisCase.lastScore.all_rated === false"` — open: frog removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [x] `<span>` `ng-show="ctrl.thisCase.lastScore.created_at"`
+- [x] `<span>` `ng-hide="ctrl.thisCase.lastScore.created_at"`
+- [x] `<a>` `ng-if="ctrl.thisCase.bookName"`
+- [x] `<div>` `ng-if="ctrl.thisCase.owned"`
+- [x] `<div>` `ng-if="!ctrl.thisCase.owned"`
 
 Actions:
 
-- [ ] `<span>` `ng-click="ctrl.goToCase()"`
-- [ ] `<a>` `ng-click="ctrl.cancel()"`
-- [ ] `<form>` `ng-blur="ctrl.submit()"`
-- [ ] `<form>` `ng-submit="ctrl.submit()"`
-- [ ] `<a>` `ng-click="ctrl.goToTeam(team.id)"`
+- [x] `<span>` `ng-click="ctrl.goToCase()"`
+- [ ] `<a>` `ng-click="ctrl.cancel()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<form>` `ng-blur="ctrl.submit()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<form>` `ng-submit="ctrl.submit()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<a>` `ng-click="ctrl.goToTeam(team.id)"` — open: team links removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
 
 Inputs:
 
-- [ ] `<input#case-name>` `ng-model="ctrl.clickToEdit.currVal"`
+- [ ] `<input#case-name>` `ng-model="ctrl.clickToEdit.currVal"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="team in ctrl.thisCase.teams"`
+- [ ] `<li>` `ng-repeat="team in ctrl.thisCase.teams"` — open: team links removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
 
 Links:
 
-- [ ] `<a>` `href="books/{{ ctrl.thisCase.bookId }}"`
+- [x] `<a>` `href="books/{{ ctrl.thisCase.bookId }}"`
 
 Copy:
 
-- [ ] title: "'Rename'"
-- [ ] "Save"
-- [ ] "Cancel"
-- [ ] "🐸"
-- [ ] title: "Hop to it! There are unrated results!"
-- [ ] "Never Run"
-- [ ] "Me"
+- [ ] title: "'Rename'" — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "Save" — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "Cancel" — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "🐸" — open: frog removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [ ] title: "Hop to it! There are unrated results!" — open: frog removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [x] "Never Run"
+- [ ] "Me" — open: owner shown by name, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
 
 <a id="row-61"></a>
 ### 61. `app/assets/javascripts/components/delete_case_options/_modal.html`
@@ -3807,43 +3807,43 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/delete_case_options/delete_case_options_controller.js`
 - **Owner candidates:** `app/views/shared/_delete_case_options_core_modal.html.erb`, `app/javascript/controllers/delete_case_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_delete_case_options_core_modal.html.erb`, `delete_case_options_core_controller.js`
+- **Scenario:** 6.4
+- **Decisions:** Replayed on both: identical text and controls except the typo fix "it's queries" to "its queries". Delete All Queries, Archive Case and Delete Case are covered live by `delete_and_clone_case_options.spec.ts` and `core_failure_recovery.spec.ts` (races in two of these were hardened in this pass).
 
 Conditional UI:
 
-- [ ] `<button>` `ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-default'"` _(not in main)_
-- [ ] `<button>` `ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-default'"` _(not in main)_
-- [ ] `<button>` `ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-default'"` _(not in main)_
-- [ ] `<div>` `ng-show="ctrl.options.action==='delete_all_queries'"`
-- [ ] `<div>` `ng-show="ctrl.options.action==='archive_case'"`
-- [ ] `<div>` `ng-show="ctrl.options.action==='delete_case'"`
-- [ ] `<button>` `ng-disabled="ctrl.cannotDelete()"`
-- [ ] `<button>` `ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
-- [ ] `<button>` `ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
-- [ ] `<button>` `ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
+- [x] `<button>` `ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-default'"` _(not in main)_
+- [x] `<button>` `ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-default'"` _(not in main)_
+- [x] `<button>` `ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-default'"` _(not in main)_
+- [x] `<div>` `ng-show="ctrl.options.action==='delete_all_queries'"`
+- [x] `<div>` `ng-show="ctrl.options.action==='archive_case'"`
+- [x] `<div>` `ng-show="ctrl.options.action==='delete_case'"`
+- [x] `<button>` `ng-disabled="ctrl.cannotDelete()"`
+- [x] `<button>` `ng-class="ctrl.options.action==='delete_all_queries' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
+- [x] `<button>` `ng-class="ctrl.options.action==='archive_case' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
+- [x] `<button>` `ng-class="ctrl.options.action==='delete_case' ? 'btn-primary' : 'btn-outline-secondary'"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.options.action='delete_all_queries'"`
-- [ ] `<button>` `ng-click="ctrl.options.action='archive_case'"`
-- [ ] `<button>` `ng-click="ctrl.options.action='delete_case'"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.options.action='delete_all_queries'"`
+- [x] `<button>` `ng-click="ctrl.options.action='archive_case'"`
+- [x] `<button>` `ng-click="ctrl.options.action='delete_case'"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Delete Options for Case:"
-- [ ] "We have a number of options for cleaning up a case, from deleting, to archiving, to deleting all of it's queries."
-- [ ] "Delete All Queries"
-- [ ] "Archive Case"
-- [ ] "Delete Case"
-- [ ] "Deleting all the queries will also delete your ratings for those queries."
-- [ ] "You're about to put this case into deep freeze. You'll be able to get to it through "Archived Cases" filter in the Relevancy Cases listing page."
-- [ ] "You're about to delete this case forever! If you think you might want it later, use the Archive function instead."
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Delete Options for Case:"
+- [x] "We have a number of options for cleaning up a case, from deleting, to archiving, to deleting all of it's queries."
+- [x] "Delete All Queries"
+- [x] "Archive Case"
+- [x] "Delete Case"
+- [x] "Deleting all the queries will also delete your ratings for those queries."
+- [x] "You're about to put this case into deep freeze. You'll be able to get to it through "Archived Cases" filter in the Relevancy Cases listing page."
+- [x] "You're about to delete this case forever! If you think you might want it later, use the Archive function instead."
+- [x] "Cancel"
 
 <a id="row-62"></a>
 ### 62. `app/assets/javascripts/components/share_case/_modal.html`
@@ -3866,46 +3866,46 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/share_case/share_case_controller.js`
 - **Owner candidates:** `app/views/shared/_share_case_core_modal.html.erb`, `app/views/shared/_share_case_core_team_templates.html.erb`, `app/views/shared/_share_case_modal.html.erb`, `app/javascript/controllers/share_case_controller.js`, `app/javascript/controllers/share_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_share_case_core_modal.html.erb`, `share_case_core_controller.js`
+- **Scenario:** 6.5
+- **Decisions:** Legacy never rendered a usable Share control in the toolbar (its `<share-case>` element is empty there, and the "share case" link in the Judgements modal is blank) and the list had only an unused export icon, so there is no Legacy behaviour to replay; main added the toolbar "Share case" link and modal. Covered live on Current by `share_case.spec.ts` (selection, share and unshare persistence, empty states) and `workspace_catalog_templates.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.share.loading"`
-- [ ] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"`
-- [ ] `<a>` `ng-class="{ active: team == ctrl.share.selectedTeam }"`
-- [ ] `<div>` `ng-show="ctrl.share.teams.length > 0 && !ctrl.share.loading"`
-- [ ] `<li>` `ng-class="{ active: team == ctrl.share.unselectedTeam }"`
-- [ ] `<div>` `ng-if="ctrl.share.sharedTeams.length > 0 && !ctrl.share.loading"`
-- [ ] `<button>` `ng-show="ctrl.share.selectedTeam && ctrl.share.action ==='select'"`
-- [ ] `<button>` `ng-show="ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"`
+- [x] `<div>` `ng-show="ctrl.share.loading"`
+- [x] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"`
+- [x] `<a>` `ng-class="{ active: team == ctrl.share.selectedTeam }"`
+- [x] `<div>` `ng-show="ctrl.share.teams.length > 0 && !ctrl.share.loading"`
+- [x] `<li>` `ng-class="{ active: team == ctrl.share.unselectedTeam }"`
+- [x] `<div>` `ng-if="ctrl.share.sharedTeams.length > 0 && !ctrl.share.loading"`
+- [x] `<button>` `ng-show="ctrl.share.selectedTeam && ctrl.share.action ==='select'"`
+- [x] `<button>` `ng-show="ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<a>` `ng-click="ctrl.goToTeamsPage()"`
-- [ ] `<a>` `ng-click="ctrl.selectTeam(team)"`
-- [ ] `<li>` `ng-click="ctrl.unselectTeam(team)"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<a>` `ng-click="ctrl.goToTeamsPage()"`
+- [x] `<a>` `ng-click="ctrl.selectTeam(team)"`
+- [x] `<li>` `ng-click="ctrl.unselectTeam(team)"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Lists (check empty states):
 
-- [ ] `<a>` `ng-repeat="team in ctrl.share.teams"`
-- [ ] `<li>` `ng-repeat="team in ctrl.share.sharedTeams"`
+- [x] `<a>` `ng-repeat="team in ctrl.share.teams"`
+- [x] `<li>` `ng-repeat="team in ctrl.share.sharedTeams"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Share Case"
-- [ ] "Loading your teams, this will be quick I promise!"
-- [ ] "No teams to share with? Why not go ahead and create a new team!"
-- [ ] "Create a team"
-- [ ] "Select a team to share this case with:"
-- [ ] "Already shared with:"
-- [ ] "Share with {{ ctrl.share.selectedTeam.name }}"
-- [ ] "Unshare from {{ ctrl.share.unselectedTeam.name }}"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Share Case"
+- [x] "Loading your teams, this will be quick I promise!"
+- [x] "No teams to share with? Why not go ahead and create a new team!"
+- [x] "Create a team"
+- [x] "Select a team to share this case with:"
+- [x] "Already shared with:"
+- [x] "Share with {{ ctrl.share.selectedTeam.name }}"
+- [x] "Unshare from {{ ctrl.share.unselectedTeam.name }}"
+- [x] "Cancel"
 
 <a id="row-63"></a>
 ### 63. `app/assets/javascripts/components/share_scorer/_modal.html`
@@ -3915,46 +3915,46 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/share_scorer/share_scorer_controller.js`
 - **Owner candidates:** `app/views/shared/_share_scorer_modal.html.erb`, `app/javascript/controllers/share_scorer_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_share_scorer_modal.html.erb`
+- **Scenario:** 8.7
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Share modal text identical on main and Current (replayed for cases, books and endpoints; scorers use the same `_share_entity_modal`).
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.share.loading"`
-- [ ] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"`
-- [ ] `<a>` `ng-class="{ active: team == ctrl.share.selectedTeam }"`
-- [ ] `<div>` `ng-show="ctrl.share.teams.length > 0 && !ctrl.share.loading"`
-- [ ] `<li>` `ng-class="{ active: team == ctrl.share.unselectedTeam }"`
-- [ ] `<div>` `ng-if="ctrl.share.sharedTeams.length > 0 && !ctrl.share.loading"`
-- [ ] `<button>` `ng-show="ctrl.share.selectedTeam && ctrl.share.action ==='select'"`
-- [ ] `<button>` `ng-show="ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"`
+- [x] `<div>` `ng-show="ctrl.share.loading"`
+- [x] `<div>` `ng-show="ctrl.share.teams.length === 0 && !ctrl.share.loading"`
+- [x] `<a>` `ng-class="{ active: team == ctrl.share.selectedTeam }"`
+- [x] `<div>` `ng-show="ctrl.share.teams.length > 0 && !ctrl.share.loading"`
+- [x] `<li>` `ng-class="{ active: team == ctrl.share.unselectedTeam }"`
+- [x] `<div>` `ng-if="ctrl.share.sharedTeams.length > 0 && !ctrl.share.loading"`
+- [x] `<button>` `ng-show="ctrl.share.selectedTeam && ctrl.share.action ==='select'"`
+- [x] `<button>` `ng-show="ctrl.share.unselectedTeam && ctrl.share.action ==='unselect'"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<a>` `ng-click="ctrl.goToTeamsPage()"`
-- [ ] `<a>` `ng-click="ctrl.selectTeam(team)"`
-- [ ] `<li>` `ng-click="ctrl.unselectTeam(team)"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<a>` `ng-click="ctrl.goToTeamsPage()"`
+- [x] `<a>` `ng-click="ctrl.selectTeam(team)"`
+- [x] `<li>` `ng-click="ctrl.unselectTeam(team)"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Lists (check empty states):
 
-- [ ] `<a>` `ng-repeat="team in ctrl.share.teams"`
-- [ ] `<li>` `ng-repeat="team in ctrl.share.sharedTeams"`
+- [x] `<a>` `ng-repeat="team in ctrl.share.teams"`
+- [x] `<li>` `ng-repeat="team in ctrl.share.sharedTeams"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Share Scorer"
-- [ ] "Loading your teams, this will be quick I promise!"
-- [ ] "No teams to share with? Why not go ahead and create a new team!"
-- [ ] "Create a team"
-- [ ] "Select a team to share this scorer with:"
-- [ ] "Already shared with:"
-- [ ] "Share with {{ ctrl.share.selectedTeam.name }}"
-- [ ] "Unshare from {{ ctrl.share.unselectedTeam.name }}"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Share Scorer"
+- [x] "Loading your teams, this will be quick I promise!"
+- [x] "No teams to share with? Why not go ahead and create a new team!"
+- [x] "Create a team"
+- [x] "Select a team to share this scorer with:"
+- [x] "Already shared with:"
+- [x] "Share with {{ ctrl.share.selectedTeam.name }}"
+- [x] "Unshare from {{ ctrl.share.unselectedTeam.name }}"
+- [x] "Cancel"
 
 <a id="row-64"></a>
 ### 64. `app/assets/javascripts/components/import_to_cases/_modal_snapshot.html`
@@ -3964,44 +3964,44 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/import_to_cases/import_to_cases_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_import_snapshot_modal.html.erb`
+- **Scenario:** 3.4
+- **Decisions:** Replayed on Legacy and Current: same heading, header list and example rows; Current adds "Use ISO 8601 for Snapshot Time, or MM/DD/YY HH:MM" and writes the example times in ISO form (user commit `795b2474`).
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.import.alert"`
-- [ ] `<div>` `ng-if="ctrl.csv.content"`
-- [ ] `<i>` `ng-show="ctrl.import.loading"`
-- [ ] `<button>` `ng-show="ctrl.csv.result"`
-- [ ] `<button>` `ng-disabled="ctrl.import.loading"`
+- [x] `<div>` `ng-show="ctrl.import.alert"`
+- [x] `<div>` `ng-if="ctrl.csv.content"`
+- [x] `<i>` `ng-show="ctrl.import.loading"`
+- [x] `<button>` `ng-show="ctrl.csv.result"`
+- [x] `<button>` `ng-disabled="ctrl.import.loading"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Bound content:
 
-- [ ] `<div>` `ng-bind-html="ctrl.import.alert.text"`
+- [x] `<div>` `ng-bind-html="ctrl.import.alert.text"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Import Snapshot"
-- [ ] "Importing snapshots lets you bring in a view of search that you might have created externally, for example if you are working with a legacy search engine. Just create a Snapshot file in the below format, and you can compare your current search engine to a previous search engine!"
-- [ ] "The CSV file should have the headers:"
-- [ ] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
-- [ ] ". The"
-- [ ] "Case ID"
-- [ ] "must already exist in Quepid. You can have multiple snapshots in a single file, separated by the"
-- [ ] "Snapshot Name"
-- [ ] "field. The file should look similar to:"
-- [ ] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position Legacy Search,10/10/18 18:05,2098,star wars,11,1 Legacy Search,10/10/18 18:05,2098,star wars,1893,2 Legacy Search,10/10/18 18:05,2098,star wars,12180,3 Legacy Search,10/10/18 18:05,2098,star wars,1891,4 Legacy Search,10/10/18 18:05,2098,star wars,1892,5 Legacy Search 2,10/15/18 18:05,2098,star trek,1894,1 Legacy Search 2,10/15/18 18:05,2098,star trek,1895,2 Legacy Search 2,10/15/18 18:05,2098,star trek,10431,3 Legacy Search 2,10/15/18 18:05,2098,star trek,10521,4 Legacy Search, 210/15/18 18:05,2098,star trek,10592,5"
-- [ ] "Select CSV file to import:"
-- [ ] "CSV"
-- [ ] "Import"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Import Snapshot"
+- [x] "Importing snapshots lets you bring in a view of search that you might have created externally, for example if you are working with a legacy search engine. Just create a Snapshot file in the below format, and you can compare your current search engine to a previous search engine!"
+- [x] "The CSV file should have the headers:"
+- [x] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position"
+- [x] ". The"
+- [x] "Case ID"
+- [x] "must already exist in Quepid. You can have multiple snapshots in a single file, separated by the"
+- [x] "Snapshot Name"
+- [x] "field. The file should look similar to:"
+- [x] "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position Legacy Search,10/10/18 18:05,2098,star wars,11,1 Legacy Search,10/10/18 18:05,2098,star wars,1893,2 Legacy Search,10/10/18 18:05,2098,star wars,12180,3 Legacy Search,10/10/18 18:05,2098,star wars,1891,4 Legacy Search,10/10/18 18:05,2098,star wars,1892,5 Legacy Search 2,10/15/18 18:05,2098,star trek,1894,1 Legacy Search 2,10/15/18 18:05,2098,star trek,1895,2 Legacy Search 2,10/15/18 18:05,2098,star trek,10431,3 Legacy Search 2,10/15/18 18:05,2098,star trek,10521,4 Legacy Search, 210/15/18 18:05,2098,star trek,10592,5"
+- [x] "Select CSV file to import:"
+- [x] "CSV"
+- [x] "Import"
+- [x] "Cancel"
 
 <a id="row-65"></a>
 ### 65. `app/assets/templates/views/unarchiveCaseModal.html`
@@ -4025,39 +4025,39 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/case.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb` (Archived checkbox, Unarchive case), `shared/_confirm_modal.html.erb`
+- **Scenario:** 3.5
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. The archived-cases picker modal ("Archived Cases" list with "Add Back <case>") is replaced by the Archived filter with an **Unarchive case** button and the shared Confirm modal ("Confirm Unarchive <case>?"); unarchiving works (replayed on Current): [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="currentTeam"`
-- [ ] `<p>` `ng-if="!currentTeam"`
-- [ ] `<div>` `ng-if="archivedCases().length === 0 && !loading"`
-- [ ] `<p>` `ng-show="loading"`
-- [ ] `<a>` `ng-class="{ active: isSelected(case) }"`
-- [ ] `<button>` `ng-hide="selectedCase === null"`
+- [ ] `<p>` `ng-if="currentTeam"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<p>` `ng-if="!currentTeam"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<div>` `ng-if="archivedCases().length === 0 && !loading"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<p>` `ng-show="loading"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<a>` `ng-class="{ active: isSelected(case) }"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<button>` `ng-hide="selectedCase === null"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_
-- [ ] `<a>` `ng-click="toggleSelect(case)"`
-- [ ] `<button>` `ng-click="addBackCase(selectedCase)"`
-- [ ] `<button>` `ng-click="cancel()"`
+- [ ] `<button>` `ng-click="ctrl.cancel()"` _(not in main)_ — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<a>` `ng-click="toggleSelect(case)"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<button>` `ng-click="addBackCase(selectedCase)"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] `<button>` `ng-click="cancel()"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 Lists (check empty states):
 
-- [ ] `<a>` `ng-repeat="case in archivedCases()"`
+- [ ] `<a>` `ng-repeat="case in archivedCases()"` — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Archived Cases"
-- [ ] "These are the archived cases for this team."
-- [ ] "All the archived cases you have access to."
-- [ ] "No cases have been archived yet! You can only unarchive cases you own."
-- [ ] "Add Back {{selectedCase.caseName}}"
-- [ ] "Cancel"
+- [ ] aria-label: "Close" — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "Archived Cases" — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "These are the archived cases for this team." — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "All the archived cases you have access to." — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "No cases have been archived yet! You can only unarchive cases you own." — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "Add Back {{selectedCase.caseName}}" — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
+- [ ] "Cancel" — open: picker modal replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 <a id="row-66"></a>
 ### 66. `app/assets/templates/views/unarchiveSearchEndpointModal.html`
@@ -4066,39 +4066,39 @@ Copy:
 - **Ported:** main `e52cec3a` — Migrate teams, scorers and case listings away from angularjs (#1642)
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_search_endpoints.html.erb` (Archived filter, Unarchive)
+- **Scenario:** 9.6
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="currentTeam"`
-- [ ] `<p>` `ng-if="!currentTeam"`
-- [ ] `<div>` `ng-if="archivedSearchEndpoints().length === 0 && !loading"`
-- [ ] `<p>` `ng-show="loading"`
-- [ ] `<a>` `ng-class="{ active: isSelected(searchEndpoint) }"`
-- [ ] `<button>` `ng-hide="selectedSearchEndpoint === null"`
+- [x] `<p>` `ng-if="currentTeam"`
+- [x] `<p>` `ng-if="!currentTeam"`
+- [x] `<div>` `ng-if="archivedSearchEndpoints().length === 0 && !loading"`
+- [x] `<p>` `ng-show="loading"`
+- [x] `<a>` `ng-class="{ active: isSelected(searchEndpoint) }"`
+- [x] `<button>` `ng-hide="selectedSearchEndpoint === null"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<a>` `ng-click="toggleSelect(searchEndpoint)"`
-- [ ] `<button>` `ng-click="addBackSearchEndpoint(selectedSearchEndpoint)"`
-- [ ] `<button>` `ng-click="cancel()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<a>` `ng-click="toggleSelect(searchEndpoint)"`
+- [x] `<button>` `ng-click="addBackSearchEndpoint(selectedSearchEndpoint)"`
+- [x] `<button>` `ng-click="cancel()"`
 
 Lists (check empty states):
 
-- [ ] `<a>` `ng-repeat="searchEndpoint in archivedSearchEndpoints()"`
+- [x] `<a>` `ng-repeat="searchEndpoint in archivedSearchEndpoints()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Archived Search Endpoints"
-- [ ] "These are the archived search endpoints for this team."
-- [ ] "All the archived search endpoints you have access to."
-- [ ] "No search endpoints have been archived yet! You can only unarchive search endpoints you own."
-- [ ] "Add Back {{selectedSearchEndpoint.name}}"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Archived Search Endpoints"
+- [x] "These are the archived search endpoints for this team."
+- [x] "All the archived search endpoints you have access to."
+- [x] "No search endpoints have been archived yet! You can only unarchive search endpoints you own."
+- [x] "Add Back {{selectedSearchEndpoint.name}}"
+- [x] "Cancel"
 
 <a id="row-67"></a>
 ### 67. `app/assets/templates/views/teams/index.html`
@@ -4108,32 +4108,32 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** `app/views/teams/index.html.erb`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/index.html.erb`
+- **Scenario:** 9.1
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="teamsScope.teams.length !== 0"`
-- [ ] `<p>` `ng-if="teamsScope.teams.length === 0 && !loading"`
-- [ ] `<p>` `ng-show="loading"`
+- [x] `<div>` `ng-if="teamsScope.teams.length !== 0"`
+- [x] `<p>` `ng-if="teamsScope.teams.length === 0 && !loading"`
+- [x] `<p>` `ng-show="loading"`
 
 Inputs:
 
-- [ ] `<input#teams-filter>` `ng-model="q"`
-- [ ] `<input#teams-per-page>` `ng-model="pagination.teams.pageSize"`
-- [ ] `<ul>` `ng-model="teamsScope.teams"`
+- [x] `<input#teams-filter>` `ng-model="q"`
+- [x] `<input#teams-per-page>` `ng-model="pagination.teams.pageSize"`
+- [x] `<ul>` `ng-model="teamsScope.teams"`
 
 Copy:
 
-- [ ] "Teams"
-- [ ] placeholder: "Filter teams"
-- [ ] aria-label: "filter teams"
-- [ ] "ID"
-- [ ] "Name"
-- [ ] "Members"
-- [ ] "Cases"
-- [ ] "No teams to show!"
+- [x] "Teams"
+- [x] placeholder: "Filter teams"
+- [x] aria-label: "filter teams"
+- [x] "ID"
+- [x] "Name"
+- [x] "Members"
+- [x] "Cases"
+- [x] "No teams to show!"
 
 <a id="row-68"></a>
 ### 68. `app/assets/javascripts/components/import_to_cases/_modal_case.html`
@@ -4143,34 +4143,34 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/import_to_cases/import_to_cases_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_import_case_modal.html.erb`
+- **Scenario:** 3.3
+- **Decisions:** Replayed on Legacy and Current: identical modal text and controls.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-show="ctrl.import.alert"`
-- [ ] `<i>` `ng-show="ctrl.import.loading"`
-- [ ] `<button>` `ng-disabled="ctrl.import.loading"`
+- [x] `<div>` `ng-show="ctrl.import.alert"`
+- [x] `<i>` `ng-show="ctrl.import.loading"`
+- [x] `<button>` `ng-disabled="ctrl.import.loading"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Bound content:
 
-- [ ] `<div>` `ng-bind-html="ctrl.import.alert.text"`
+- [x] `<div>` `ng-bind-html="ctrl.import.alert.text"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Import Quepid Case"
-- [ ] "Importing a Quepid Case is useful when you are migrating between Quepid installs or if you want to create your Case outside of Quepid."
-- [ ] "Your best option for understanding the format is to just export a case and use that as a template. Importing will create a brand new Case. Before the import happens Quepid will validate your Case data structures."
-- [ ] "Select JSON file to import:"
-- [ ] "Import"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Import Quepid Case"
+- [x] "Importing a Quepid Case is useful when you are migrating between Quepid installs or if you want to create your Case outside of Quepid."
+- [x] "Your best option for understanding the format is to just export a case and use that as a template. Importing will create a brand new Case. Before the import happens Quepid will validate your Case data structures."
+- [x] "Select JSON file to import:"
+- [x] "Import"
+- [x] "Cancel"
 
 <a id="row-69"></a>
 ### 69. `app/assets/javascripts/components/user_listing/user_listing.html`
@@ -4180,34 +4180,34 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/user_listing/user_listing_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/show.html.erb` (members)
+- **Scenario:** 9.2, 9.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<i>` `ng-show="ctrl.user.ai_judge"`
-- [ ] `<img>` `ng-show="!ctrl.user.ai_judge"`
-- [ ] `<a>` `ng-if="ctrl.user.pending_invite"`
-- [ ] `<span>` `ng-if="ctrl.user.pending_invite"`
-- [ ] `<a>` `ng-show="ctrl.user.ai_judge"`
+- [x] `<i>` `ng-show="ctrl.user.ai_judge"`
+- [x] `<img>` `ng-show="!ctrl.user.ai_judge"`
+- [x] `<a>` `ng-if="ctrl.user.pending_invite"`
+- [x] `<span>` `ng-if="ctrl.user.pending_invite"`
+- [x] `<a>` `ng-show="ctrl.user.ai_judge"`
 
 Bound content:
 
-- [ ] `<img>` `ng-src="{{ ctrl.user.avatar_url }}"`
+- [x] `<img>` `ng-src="{{ ctrl.user.avatar_url }}"`
 
 Links:
 
-- [ ] `<a>` `ng-href="teams/{{ctrl.team.id}}/ai_judges/{{ctrl.user.id}}/edit"`
+- [x] `<a>` `ng-href="teams/{{ctrl.team.id}}/ai_judges/{{ctrl.user.id}}/edit"`
 
 Copy:
 
-- [ ] title: "Avatar image"
-- [ ] "Awaiting response to invitation"
-- [ ] title: "Copy invite url to your clipboard"
-- [ ] alt: "Copy invite url to your clipboard"
-- [ ] title: "Edit Judge"
-- [ ] alt: "Edit Judge"
+- [x] title: "Avatar image"
+- [x] "Awaiting response to invitation"
+- [x] title: "Copy invite url to your clipboard"
+- [x] alt: "Copy invite url to your clipboard"
+- [x] title: "Edit Judge"
+- [x] alt: "Edit Judge"
 
 <a id="row-70"></a>
 ### 70. `app/assets/javascripts/components/add_member/add_member.html`
@@ -4217,32 +4217,32 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/add_member/add_member_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/show.html.erb` (add member form)
+- **Scenario:** 9.2, 9.3
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<a>` `ng-if="!(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"`
-- [ ] `<a>` `ng-if="(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"`
-- [ ] `<i>` `ng-show="loadingUsers"`
+- [x] `<a>` `ng-if="!(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"`
+- [x] `<a>` `ng-if="(noMatches && ctrl.testIsEmailAddress(ctrl.selected))"`
+- [x] `<i>` `ng-show="loadingUsers"`
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.addMember()"`
-- [ ] `<a>` `ng-click="ctrl.inviteUserToJoin()"`
+- [x] `<a>` `ng-click="ctrl.addMember()"`
+- [x] `<a>` `ng-click="ctrl.inviteUserToJoin()"`
 
 Inputs:
 
-- [ ] `<input#user-lookup>` `ng-model="ctrl.selected"`
-- [ ] `<input#user-lookup>` `uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"`
+- [x] `<input#user-lookup>` `ng-model="ctrl.selected"`
+- [x] `<input#user-lookup>` `uib-typeahead="user as user.display_name for user in ctrl.getUsers($viewValue)"`
 
 Copy:
 
-- [ ] placeholder: "Look for users via email or display name"
-- [ ] "Add user"
-- [ ] "Send invitation"
-- [ ] "Start typing an email address or display name to add an existing user to this team. If the email address doesn't match anyone, you will be able to invite them to join Quepid and this team."
+- [x] placeholder: "Look for users via email or display name"
+- [x] "Add user"
+- [x] "Send invitation"
+- [x] "Start typing an email address or display name to add an existing user to this team. If the email address doesn't match anyone, you will be able to invite them to join Quepid and this team."
 
 <a id="row-71"></a>
 ### 71. `app/assets/javascripts/components/scorer_listing/scorer_listing.html`
@@ -4252,32 +4252,32 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/scorer_listing/scorer_listing_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_scorers.html.erb`
+- **Scenario:** 8.1, 9.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="!ctrl.scorer.communal"`
-- [ ] `<span>` `ng-if="ctrl.team"`
-- [ ] `<span>` `ng-if="!ctrl.team"`
-- [ ] `<div>` `ng-if="ctrl.scorer.showScaleLabel(number)"`
-- [ ] `<div>` `ng-style="{ 'background-color': value.color }"`
-- [ ] `<span>` `ng-if="ctrl.scorer.owned"`
-- [ ] `<span>` `ng-if="!ctrl.scorer.owned"`
+- [x] `<span>` `ng-if="!ctrl.scorer.communal"`
+- [x] `<span>` `ng-if="ctrl.team"`
+- [x] `<span>` `ng-if="!ctrl.team"`
+- [x] `<div>` `ng-if="ctrl.scorer.showScaleLabel(number)"`
+- [x] `<div>` `ng-style="{ 'background-color': value.color }"`
+- [x] `<span>` `ng-if="ctrl.scorer.owned"`
+- [x] `<span>` `ng-if="!ctrl.scorer.owned"`
 
 Inputs:
 
-- [ ] `<div>` `ng-model="ctrl.scorer.code"`
-- [ ] `<ul>` `ng-model="ctrl.scorer.scale"`
+- [x] `<div>` `ng-model="ctrl.scorer.code"`
+- [x] `<ul>` `ng-model="ctrl.scorer.scale"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="(number, value) in ctrl.scorer.colors"`
+- [x] `<li>` `ng-repeat="(number, value) in ctrl.scorer.colors"`
 
 Copy:
 
-- [ ] "Me"
+- [x] "Me"
 
 <a id="row-72"></a>
 ### 72. `app/assets/javascripts/components/book_listing/book_listing.html`
@@ -4287,23 +4287,23 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/book_listing/book_listing_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_books.html.erb`, `books/index.html.erb`
+- **Scenario:** 9.1
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Links:
 
-- [ ] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}"`
-- [ ] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}/judge"`
-- [ ] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}/edit"`
+- [x] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}"`
+- [x] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}/judge"`
+- [x] `<a>` `ng-href="{{createBookLink(ctrl.book.id)}}/edit"`
 
 Copy:
 
-- [ ] title: "Judge Documents"
-- [ ] alt: "Judge Documents"
-- [ ] title: "Edit"
-- [ ] alt: "Edit"
-- [ ] "Not Yet Implemented"
+- [x] title: "Judge Documents"
+- [x] alt: "Judge Documents"
+- [x] title: "Edit"
+- [x] alt: "Edit"
+- [x] "Not Yet Implemented"
 
 <a id="row-73"></a>
 ### 73. `app/assets/javascripts/components/archive_case/_modal.html`
@@ -4313,22 +4313,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/archive_case/archive_case_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb`, `shared/_confirm_modal.html.erb`
+- **Scenario:** 3.5
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. Archive works through the shared Confirm modal ("Confirm Archive <case>?") instead of the "Archive This Case for Later?" modal: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 2.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Archive This Case for Later?"
-- [ ] "You're about to put this case into deep freeze. You'll be able to unarchive it later through the "Archived Cases" filter in the Case Listings."
-- [ ] "Archive"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [ ] "Archive This Case for Later?" — open: copy replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 2
+- [ ] "You're about to put this case into deep freeze. You'll be able to unarchive it later through the "Archived Cases" filter in the Case Listings." — open: copy replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 2
+- [x] "Archive"
+- [x] "Cancel"
 
 <a id="row-74"></a>
 ### 74. `app/assets/javascripts/components/archive_search_endpoint/_modal.html`
@@ -4338,22 +4338,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/archive_search_endpoint/archive_search_endpoint_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_confirm_modal.html.erb`
+- **Scenario:** 9.6
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Archive search endpoint uses the shared Confirm modal on Legacy, main and Current ("Confirm Archive <endpoint>?").
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Archive This Search Endpoint for Later?"
-- [ ] "You're about to put this search endpoint into deep freeze. You'll be able to unarchive it later through the "Archived Search Endpoint" filter in the Search Endpoint Listings."
-- [ ] "Archive"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Archive This Search Endpoint for Later?"
+- [x] "You're about to put this search endpoint into deep freeze. You'll be able to unarchive it later through the "Archived Search Endpoint" filter in the Search Endpoint Listings."
+- [x] "Archive"
+- [x] "Cancel"
 
 <a id="row-75"></a>
 ### 75. `app/assets/javascripts/components/delete_case/_modal.html`
@@ -4374,22 +4374,22 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/delete_case/delete_case_controller.js`
 - **Owner candidates:** `app/views/shared/_delete_case_options_core_modal.html.erb`, `app/javascript/controllers/delete_case_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** (none on the list; Delete lives in the workbench toolbar)
+- **Scenario:** 6.4
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. The list has no Delete action any more; Delete Options is in the case toolbar (replayed on both, row 61). [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [ ] `<button>` `ng-click="ctrl.cancel()"` — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] `<button>` `ng-click="ctrl.ok()"` — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Delete This Case"
-- [ ] "You're about to delete this case forever! If you think you might want it later, use the Archive function instead."
-- [ ] "Delete"
-- [ ] "Cancel"
+- [ ] aria-label: "Close" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "Delete This Case" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "You're about to delete this case forever! If you think you might want it later, use the Archive function instead." — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "Delete" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] "Cancel" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 <a id="row-76"></a>
 ### 76. `app/assets/javascripts/components/delete_scorer/_modal.html`
@@ -4399,22 +4399,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/delete_scorer/delete_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb` (Delete)
+- **Scenario:** 8.6
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Delete This Scorer"
-- [ ] "You're about to delete this scorer forever!"
-- [ ] "Delete"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Delete This Scorer"
+- [x] "You're about to delete this scorer forever!"
+- [x] "Delete"
+- [x] "Cancel"
 
 <a id="row-77"></a>
 ### 77. `app/assets/javascripts/components/delete_search_endpoint/_modal.html`
@@ -4424,22 +4424,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/delete_search_endpoint/delete_search_endpoint_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `search_endpoints/edit.html.erb` (Delete)
+- **Scenario:** 7.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Delete This Search Endpoint"
-- [ ] "You're about to delete this Search Endpoint forever! If you think you might want it later, use the Archive function instead."
-- [ ] "Delete"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Delete This Search Endpoint"
+- [x] "You're about to delete this Search Endpoint forever! If you think you might want it later, use the Archive function instead."
+- [x] "Delete"
+- [x] "Cancel"
 
 <a id="row-78"></a>
 ### 78. `app/assets/javascripts/components/remove_member/_modal.html`
@@ -4449,22 +4449,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/remove_member/remove_member_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/show.html.erb`, `shared/_confirm_modal.html.erb`
+- **Scenario:** 9.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Remove member shows "Confirm Remove <member> from this team?" on Legacy, main and Current.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Remove this Team Member?"
-- [ ] "You're about to remove {{ ctrl.thisMember.display_name }} from the team {{ ctrl.thisTeam.name }}."
-- [ ] "Remove"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Remove this Team Member?"
+- [x] "You're about to remove {{ ctrl.thisMember.display_name }} from the team {{ ctrl.thisTeam.name }}."
+- [x] "Remove"
+- [x] "Cancel"
 
 <a id="row-79"></a>
 ### 79. `app/assets/javascripts/components/remove_scorer/_modal.html`
@@ -4474,22 +4474,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/remove_scorer/remove_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_scorers.html.erb`
+- **Scenario:** 8.7
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Remove this Scorer?"
-- [ ] "You're about to remove {{ ctrl.thisScorer.name }} from the team {{ ctrl.thisTeam.name }}. This does NOT delete the scorer."
-- [ ] "Remove"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Remove this Scorer?"
+- [x] "You're about to remove {{ ctrl.thisScorer.name }} from the team {{ ctrl.thisTeam.name }}. This does NOT delete the scorer."
+- [x] "Remove"
+- [x] "Cancel"
 
 <a id="row-80"></a>
 ### 80. `app/assets/javascripts/components/search_endpoint_listing/search_endpoint_listing.html`
@@ -4499,28 +4499,28 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/search_endpoint_listing/search_endpoint_listing_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_search_endpoints.html.erb`, `search_endpoints/index.html.erb`
+- **Scenario:** 7.1
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<img>` `ng-if="ctrl.searchEndpoint.searchEngine"`
+- [x] `<img>` `ng-if="ctrl.searchEndpoint.searchEngine"`
 
 Bound content:
 
-- [ ] `<img>` `ng-src="images/{{ ctrl.searchEndpoint.searchEngine }}-icon.png"`
+- [x] `<img>` `ng-src="images/{{ ctrl.searchEndpoint.searchEngine }}-icon.png"`
 
 Links:
 
-- [ ] `<a>` `ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}"`
-- [ ] `<a>` `ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}/edit"`
+- [x] `<a>` `ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}"`
+- [x] `<a>` `ng-href="{{createSearchEndpointLink(ctrl.searchEndpoint.id)}}/edit"`
 
 Copy:
 
-- [ ] title: "Edit"
-- [ ] alt: "Edit"
-- [ ] " {{ ctrl.searchEndpoint.searchEngine | searchEngineName }}"
+- [x] title: "Edit"
+- [x] alt: "Edit"
+- [x] " {{ ctrl.searchEndpoint.searchEngine | searchEngineName }}"
 
 <a id="row-81"></a>
 ### 81. `app/assets/javascripts/components/clone_scorer/_modal.html`
@@ -4530,21 +4530,21 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/clone_scorer/clone_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/new.html.erb`
+- **Scenario:** 8.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). There is no `/scorers/:id/clone` route on Legacy, main or Current (404 on all three).
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Clone Scorer"
-- [ ] "Create"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Clone Scorer"
+- [x] "Create"
+- [x] "Cancel"
 
 <a id="row-82"></a>
 ### 82. `app/assets/javascripts/components/edit_scorer/_denied_communal_modal.html`
@@ -4554,21 +4554,21 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/edit_scorer/edit_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb` (communal scorer)
+- **Scenario:** 8.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). Editing a communal scorer renders the same page on main and Current.
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Permission Denied!"
-- [ ] "You don't have permission to edit the communal scorers."
-- [ ] "Only Administrators can edit communal scorers, however you can copy a communal scorer and save it as a your own scorer and share it with your team."
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Permission Denied!"
+- [x] "You don't have permission to edit the communal scorers."
+- [x] "Only Administrators can edit communal scorers, however you can copy a communal scorer and save it as a your own scorer and share it with your team."
+- [x] "Cancel"
 
 <a id="row-83"></a>
 ### 83. `app/assets/javascripts/components/edit_scorer/_modal.html`
@@ -4578,21 +4578,21 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/edit_scorer/edit_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb`
+- **Scenario:** 8.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Edit Scorer: {{ ctrl.scorer.name }}"
-- [ ] "Update"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Edit Scorer: {{ ctrl.scorer.name }}"
+- [x] "Update"
+- [x] "Cancel"
 
 <a id="row-84"></a>
 ### 84. `app/assets/javascripts/components/new_scorer/_modal.html`
@@ -4602,21 +4602,21 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/new_scorer/new_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/new.html.erb`
+- **Scenario:** 8.3
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.ok()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "New Scorer"
-- [ ] "Create"
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "New Scorer"
+- [x] "Create"
+- [x] "Cancel"
 
 <a id="row-85"></a>
 ### 85. `app/assets/javascripts/components/share_case/share_case.html`
@@ -4634,24 +4634,24 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/share_case/share_case_directive.js`
 - **Owner candidates:** `app/views/shared/_share_case_core_modal.html.erb`, `app/views/shared/_share_case_core_team_templates.html.erb`, `app/views/shared/_share_case_modal.html.erb`, `app/javascript/controllers/share_case_controller.js`, `app/javascript/controllers/share_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.5
+- **Decisions:** See row 62: the toolbar link is main's addition and is covered by `share_case.spec.ts`.
 
 Conditional UI:
 
-- [ ] `<span>` `ng-if="ctrl.iconOnly"`
-- [ ] `<span>` `ng-if="!ctrl.iconOnly"`
+- [x] `<span>` `ng-if="ctrl.iconOnly"`
+- [x] `<span>` `ng-if="!ctrl.iconOnly"`
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] title: "Share Case"
-- [ ] alt: "Share Case"
-- [ ] "Share case"
+- [x] title: "Share Case"
+- [x] alt: "Share Case"
+- [x] "Share case"
 
 <a id="row-86"></a>
 ### 86. `app/assets/javascripts/components/add_member/member_popup.html`
@@ -4661,20 +4661,20 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/add_member/add_member.html`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/show.html.erb`
+- **Scenario:** 9.2
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Bound content:
 
-- [ ] `<img>` `ng-src="{{match.model.avatar_url}}"`
-- [ ] `<span>` `ng-bind-html="match.model.email"`
+- [x] `<img>` `ng-src="{{match.model.avatar_url}}"`
+- [x] `<span>` `ng-bind-html="match.model.email"`
 
 Copy:
 
-- [ ] title: "Avatar Image"
-- [ ] "{{match.model.display_name}} ("
-- [ ] ")"
+- [x] title: "Avatar Image"
+- [x] "{{match.model.display_name}} ("
+- [x] ")"
 
 <a id="row-87"></a>
 ### 87. `app/assets/javascripts/components/edit_scorer/_denied_modal.html`
@@ -4684,20 +4684,20 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/edit_scorer/edit_scorer_controller.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb`
+- **Scenario:** 8.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.cancel()"`
+- [x] `<button>` `ng-click="ctrl.cancel()"`
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Permission Denied!"
-- [ ] "You don't have permission to edit scorers."
-- [ ] "Cancel"
+- [x] aria-label: "Close"
+- [x] "Permission Denied!"
+- [x] "You don't have permission to edit scorers."
+- [x] "Cancel"
 
 <a id="row-88"></a>
 ### 88. `app/assets/javascripts/components/import_to_cases/import_to_cases.html`
@@ -4707,20 +4707,20 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/import_to_cases/import_to_cases_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb` (Import Case from JSON, Import Snapshots from CSV)
+- **Scenario:** 3.3, 3.4
+- **Decisions:** Legacy's Import menu ("Create New Quepid Case from JSON", "Import Snapshots From CSV") became two buttons ("Import Case from JSON", "Import Snapshots from CSV") on main. Both modals open with identical text on Legacy and Current except the ISO-timestamp note in the snapshot modal (user commit `795b2474`, scenario 3.4).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.import.promptModalCase()"`
-- [ ] `<a>` `ng-click="ctrl.import.promptModalSnapshot()"`
+- [x] `<a>` `ng-click="ctrl.import.promptModalCase()"`
+- [x] `<a>` `ng-click="ctrl.import.promptModalSnapshot()"`
 
 Copy:
 
-- [ ] "Import"
-- [ ] "Create New Quepid Case from JSON"
-- [ ] "Import Snapshots From CSV"
+- [x] "Import"
+- [x] "Create New Quepid Case from JSON"
+- [x] "Import Snapshots From CSV"
 
 <a id="row-89"></a>
 ### 89. `app/assets/templates/views/cases/import.html`
@@ -4730,22 +4730,22 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** (none)
+- **Scenario:** 3.3
+- **Decisions:** Legacy served the paste-JSON page at `/cases/import` (replayed: 200 with "Case Import"); main and Current return a routing 404 there. The file-based Import Case from JSON modal replaces it (row 88): [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5.
 
 Actions:
 
-- [ ] `<form>` `ng-submit="caseImport.submit()"`
+- [ ] `<form>` `ng-submit="caseImport.submit()"` — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
 
 Inputs:
 
-- [ ] `<div>` `ng-model="caseImport.src"`
+- [ ] `<div>` `ng-model="caseImport.src"` — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
 
 Copy:
 
-- [ ] "Case Import"
-- [ ] "Visit any case at /cases/caseId?export=true, paste the JSON here to import into the case into this Quepid instance, you will then be taken to the new case."
+- [ ] "Case Import" — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
+- [ ] "Visit any case at /cases/caseId?export=true, paste the JSON here to import into the case into this Quepid instance, you will then be taken to the new case." — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
 
 <a id="row-90"></a>
 ### 90. `app/assets/javascripts/components/archive_case/archive_case.html`
@@ -4755,18 +4755,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/archive_case/archive_case_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `cases/index.html.erb` (Archive case button)
+- **Scenario:** 3.5
+- **Decisions:** The Archive action is on each list row on Legacy, main and Current (a text button "Archive case" with an icon on Current); the modal copy differs: see row 73.
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openArchiveModal()"`
+- [x] `<a>` `ng-click="ctrl.openArchiveModal()"`
 
 Copy:
 
-- [ ] title: "Archive"
-- [ ] alt: "Archive"
+- [x] title: "Archive"
+- [x] alt: "Archive"
 
 <a id="row-91"></a>
 ### 91. `app/assets/javascripts/components/archive_search_endpoint/archive_search_endpoint.html`
@@ -4776,18 +4776,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/archive_search_endpoint/archive_search_endpoint_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_confirm_modal.html.erb`
+- **Scenario:** 7.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openArchiveModal()"`
+- [x] `<a>` `ng-click="ctrl.openArchiveModal()"`
 
 Copy:
 
-- [ ] title: "Archive"
-- [ ] alt: "Archive"
+- [x] title: "Archive"
+- [x] alt: "Archive"
 
 <a id="row-92"></a>
 ### 92. `app/assets/javascripts/components/delete_case/delete_case.html`
@@ -4805,18 +4805,18 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/components/delete_case/delete_case_directive.js`
 - **Owner candidates:** `app/views/shared/_delete_case_options_core_modal.html.erb`, `app/javascript/controllers/delete_case_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** (none on the list)
+- **Scenario:** 6.4
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. The list's Delete icon is gone: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1.
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openDeleteModal()"`
+- [ ] `<a>` `ng-click="ctrl.openDeleteModal()"` — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 Copy:
 
-- [ ] title: "Delete"
-- [ ] alt: "Delete"
+- [ ] title: "Delete" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
+- [ ] alt: "Delete" — open: list Delete removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 <a id="row-93"></a>
 ### 93. `app/assets/javascripts/components/delete_scorer/delete_scorer.html`
@@ -4826,18 +4826,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/delete_scorer/delete_scorer_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb`
+- **Scenario:** 8.6
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openDeleteModal()"`
+- [x] `<a>` `ng-click="ctrl.openDeleteModal()"`
 
 Copy:
 
-- [ ] title: "Delete"
-- [ ] alt: "Delete"
+- [x] title: "Delete"
+- [x] alt: "Delete"
 
 <a id="row-94"></a>
 ### 94. `app/assets/javascripts/components/delete_search_endpoint/delete_search_endpoint.html`
@@ -4847,18 +4847,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/delete_search_endpoint/delete_search_endpoint_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `search_endpoints/edit.html.erb`
+- **Scenario:** 7.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openDeleteModal()"`
+- [x] `<a>` `ng-click="ctrl.openDeleteModal()"`
 
 Copy:
 
-- [ ] title: "Delete"
-- [ ] alt: "Delete"
+- [x] title: "Delete"
+- [x] alt: "Delete"
 
 <a id="row-95"></a>
 ### 95. `app/assets/javascripts/components/remove_member/remove_member.html`
@@ -4868,18 +4868,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/remove_member/remove_member_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_confirm_modal.html.erb`
+- **Scenario:** 9.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openRemoveModal()"`
+- [x] `<a>` `ng-click="ctrl.openRemoveModal()"`
 
 Copy:
 
-- [ ] title: "Remove"
-- [ ] alt: "Remove"
+- [x] title: "Remove"
+- [x] alt: "Remove"
 
 <a id="row-96"></a>
 ### 96. `app/assets/javascripts/components/remove_scorer/remove_scorer.html`
@@ -4889,18 +4889,18 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/remove_scorer/remove_member_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `teams/_scorers.html.erb`
+- **Scenario:** 8.7
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.openRemoveModal()"`
+- [x] `<a>` `ng-click="ctrl.openRemoveModal()"`
 
 Copy:
 
-- [ ] title: "Remove"
-- [ ] alt: "Remove"
+- [x] title: "Remove"
+- [x] alt: "Remove"
 
 <a id="row-97"></a>
 ### 97. `app/assets/javascripts/components/clone_case/clone_case.html`
@@ -4910,17 +4910,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `7c5ac8f8^`)
 - **Used by (legacy):**`app/assets/javascripts/components/clone_case/clone_case_directive.js`
 - **Owner candidates:** `app/views/shared/_clone_case_core_modal.html.erb`, `app/javascript/controllers/clone_case_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.3
+- **Decisions:** The toolbar "Clone" link opens the clone modal (replayed on both, row 58).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Clone"
+- [x] "Clone"
 
 <a id="row-98"></a>
 ### 98. `app/assets/javascripts/components/delete_case_options/delete_case_options.html`
@@ -4930,17 +4930,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `7c5ac8f8^`)
 - **Used by (legacy):**`app/assets/javascripts/components/delete_case_options/delete_case_options_directive.js`
 - **Owner candidates:** `app/views/shared/_delete_case_options_core_modal.html.erb`, `app/javascript/controllers/delete_case_options_core_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `_case_toolbar.html.erb`
+- **Scenario:** 6.4
+- **Decisions:** The toolbar "Delete" link opens Delete Options (replayed on both, row 61).
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.prompt()"`
+- [x] `<a>` `ng-click="ctrl.prompt()"`
 
 Copy:
 
-- [ ] "Delete"
+- [x] "Delete"
 
 <a id="row-99"></a>
 ### 99. `app/assets/javascripts/components/new_scorer/new_scorer.html`
@@ -4950,17 +4950,17 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/new_scorer/new_scorer_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/new.html.erb`
+- **Scenario:** 8.3
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Conditional UI:
 
-- [ ] `<button>` `ng-disabled="ctrl.cannotCreate"`
+- [x] `<button>` `ng-disabled="ctrl.cannotCreate"`
 
 Actions:
 
-- [ ] `<button>` `ng-click="ctrl.newScorer()"`
+- [x] `<button>` `ng-click="ctrl.newScorer()"`
 
 <a id="row-100"></a>
 ### 100. `app/assets/javascripts/components/action_icon/action_icon.html`
@@ -4970,13 +4970,13 @@ Actions:
 - **Before the port:** unchanged since legacy (compared with `d81bc1dd^`)
 - **Used by (legacy):**`app/assets/javascripts/components/action_icon/action_icon_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** (none)
+- **Scenario:** 3.1
+- **Decisions:** Angular `action-icon` was the row-action icon used by Rename, Delete, Archive and Export on Legacy's list; Current's row buttons are plain Rails buttons and Rename, Delete and Export are gone: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1.
 
 Actions:
 
-- [ ] `<a>` `ng-click="ctrl.fnCall()"`
+- [ ] `<a>` `ng-click="ctrl.fnCall()"` — open: row actions replaced, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 
 <a id="row-101"></a>
 ### 101. `app/assets/javascripts/components/clone_scorer/clone_scorer.html`
@@ -4986,13 +4986,13 @@ Actions:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/clone_scorer/clone_scorer_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/new.html.erb`
+- **Scenario:** 8.5
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Copy:
 
-- [ ] title: "'Clone'"
+- [x] title: "'Clone'"
 
 <a id="row-102"></a>
 ### 102. `app/assets/javascripts/components/edit_scorer/edit_scorer.html`
@@ -5002,13 +5002,13 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/edit_scorer/edit_scorer_directive.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `scorers/edit.html.erb`
+- **Scenario:** 8.4
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Copy:
 
-- [ ] title: "'Edit'"
+- [x] title: "'Edit'"
 
 <a id="row-103"></a>
 ### 103. `app/assets/javascripts/components/share_scorer/share_scorer.html`
@@ -5018,13 +5018,13 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Used by (legacy):**`app/assets/javascripts/components/share_scorer/share_scorer_directive.js`
 - **Owner candidates:** `app/views/shared/_share_scorer_modal.html.erb`, `app/javascript/controllers/share_scorer_controller.js`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `shared/_share_scorer_modal.html.erb`
+- **Scenario:** 8.7
+- **Decisions:** Dead at Legacy: this AngularJS component was only used by `teams/show.html` or another Angular management view, but Legacy (`8ceb99e9`) serves `/teams`, `/teams/:id`, `/scorers`, `/search_endpoints`, `/books` and their forms as Rails pages with no AngularJS on them (live check: no `ng-app`, no `angular` global). Those Rails pages are what main and Current serve: Legacy, main (:3003) and Current (:3000) were compared by text on 2026-10-17 and differ only by main's later changes (AI Judges nav item, New Team/Scorer buttons, share-help wording, data). Main and Current were also compared modal by modal (Share, Archive, Remove member Confirm modals are identical). 
 
 Copy:
 
-- [ ] title: "'Share'"
+- [x] title: "'Share'"
 
 <a id="row-104"></a>
 ### 104. `app/assets/javascripts/directives/autoGrow.js`
@@ -5033,10 +5033,10 @@ Copy:
 - **Ported:** main `a3e87c89` — autogrow was used for one slightly odd UI effect that doesn't even get used, the tuning knobs, so eliminate
 - **Before the port:** unchanged since legacy (compared with `a3e87c89^`)
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
-- [ ] Behaviour reproduced (read the directive's link/controller code)
+- **Owner:** `_tune_relevance.html.erb` (knob inputs)
+- **Scenario:** 4.11
+- **Decisions:** Legacy used `auto-grow` only on the Tuning Knobs value input (`devQueryParams.html`). Current has no auto-grow (source); recorded as item 14 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision).
+- [ ] Behaviour reproduced (read the directive's link/controller code) — open: not reproduced, item 14 of the Tune Relevance entry
 
 <a id="row-105"></a>
 ### 105. `app/assets/javascripts/directives/textPaste.js`
@@ -5045,10 +5045,10 @@ Copy:
 - **Ported:** main `3f6141f4` — Angular removal phase 1: share DOM helpers across stacks, drop angular-timeago and angular-countup (#1761)
 - **Before the port:** unchanged since legacy (compared with `3f6141f4^`)
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
-- [ ] Behaviour reproduced (read the directive's link/controller code)
+- **Owner:** `add_query_controller.js`
+- **Scenario:** 4.3
+- **Decisions:** Replayed on both (row 28): pasting several lines puts them in the box joined by semicolons and the button reads "Add queries".
+- [x] Behaviour reproduced (read the directive's link/controller code)
 
 <a id="row-106"></a>
 ### 106. `app/assets/templates/views/redirect.html`
@@ -5057,7 +5057,7 @@ Copy:
 - **Ported:** main `e52cec3a` — Migrate teams, scorers and case listings away from angularjs (#1642)
 - **Before the port:** unchanged since legacy (compared with `e52cec3a^`)
 - **Owner candidates:** _none found_
-- **Owner:** 
+- **Owner:** (none)
 - **Scenario:** 
-- **Decisions:** 
-- [ ] Rendered output reproduced (nothing to extract; compare on the legacy instance)
+- **Decisions:** `redirect.html` has no markup and no reference anywhere in Legacy source (`git grep` at `8ceb99e9` finds only the file); nothing to reproduce.
+- [x] Rendered output reproduced (nothing to extract; compare on the legacy instance)

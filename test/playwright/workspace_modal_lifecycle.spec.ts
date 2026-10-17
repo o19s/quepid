@@ -71,6 +71,18 @@ test.describe('Workspace modal lifecycle', () => {
     await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(0);
   });
 
+  test('Frog Report words the zero-result count as Legacy did', async ({ page }) => {
+    await gotoCase(page);
+    await page.getByRole('button', { name: 'Report', exact: true }).click();
+    // The fixture case has results for every query, so the count reads "none return zero results".
+    const summary = page.locator('.modal.show .frog-pond-content');
+    await expect(summary.locator('[data-frog-report-target="noneWithoutResults"]')).toBeVisible();
+    await expect(summary.locator('[data-frog-report-target="oneWithoutResults"]')).toBeHidden();
+    await expect(summary.locator('[data-frog-report-target="manyWithoutResults"]')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.modal.show')).toHaveCount(0);
+  });
+
   test('Frog Report retries refresh errors and isolates late refresh/chart completion', async ({ page }) => {
     await gotoCase(page);
     await page.evaluate(() => {
@@ -158,6 +170,26 @@ test.describe('Workspace modal lifecycle', () => {
     }
     await outer.locator('.modal-footer [data-bs-dismiss="modal"]').click();
     await expect(page.locator('.modal.show, .modal-backdrop')).toHaveCount(0);
+  });
+
+  test('compare picker shows the snapshot loading state until the list arrives', async ({ page }) => {
+    await gotoCase(page);
+    let release: () => void = () => {};
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    await page.route('**/snapshots?shallow=true', async route => {
+      await gate;
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ snapshots: [{ id: 7, name: 'Loaded' }] }) });
+    });
+    await page.getByText('Compare snapshots', { exact: false }).first().click();
+    const modal = page.locator('#diffModal.show');
+    await expect(modal.getByText('Loading available snapshots...')).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Update Comparison Settings' })).toBeDisabled();
+    release();
+    await expect(modal.getByText('Loading available snapshots...')).toBeHidden();
+    await expect(modal.locator('select').first().locator('option', { hasText: 'Loaded' })).toHaveCount(1);
+    await expect(modal.getByRole('button', { name: 'Update Comparison Settings' })).toBeEnabled();
+    await page.keyboard.press('Escape');
+    await expect(modal).toBeHidden();
   });
 
   test('snapshot selection retains the focused select and updates duplicate warnings', async ({ page }) => {

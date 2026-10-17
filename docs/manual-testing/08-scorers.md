@@ -34,7 +34,7 @@ A Scorer is a JavaScript formula that turns a set of graded judgements into a si
 ### 8.3 Create a custom scorer
 
 - [ ] **Steps:**
-  1. Click **+ Add New**.
+  1. Click **New Scorer**.
   2. Enter a Name (help text suggests including depth, e.g. "nDCG@10 mine").
   3. Write/paste scoring JavaScript in the **Code** editor.
   4. Choose a **Scale for query ratings**: Binary (0,1), Graded (0,1,2,3), or Custom (type your own comma-separated list).

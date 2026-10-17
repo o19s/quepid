@@ -131,12 +131,12 @@ test.describe('Book import/export', () => {
 
       await page.getByRole('button', { name: 'Export' }).click();
 
-      // ExportController#update redirects back to the book show page with a
-      // "queued" notice; ExportBookJob then attaches export_file async.
-      await page.waitForURL(`**/books/${bookId}`, { timeout: 10_000 });
+      // ExportController#update redirects back to the export page with a "queued" notice;
+      // ExportBookJob then attaches export_file async and the page updates itself.
+      await page.waitForURL(`**/books/${bookId}/export`, { timeout: 10_000 });
       await expect(page.locator('#flash-messages')).toContainText(/queued up export/i);
 
-      const exportLink = page.getByRole('link', { name: 'Download JSON', exact: true });
+      const exportLink = page.getByRole('link', { name: /available to download/ });
       await expect(async () => {
         await page.reload();
         await expect(exportLink).toBeVisible();

@@ -25,7 +25,7 @@ export function buildFrogReportStats(queries) {
 
 export default class extends Controller {
   static targets = [
-    "caseName", "queryCount", "withResults", "withoutResults", "ratingsNeeded",
+    "caseName", "queryCount", "withResults", "withoutResults", "noneWithoutResults", "oneWithoutResults", "manyWithoutResults", "ratingsNeeded",
     "allRated", "notAllRated", "missingRatings", "missingRate", "hopMessage",
     "chart", "refreshButton", "refreshIcon", "bookName", "error"
   ]
@@ -82,6 +82,9 @@ export default class extends Controller {
     this.setText("queryCount", queries.length)
     this.setText("withResults", withResults)
     this.setText("withoutResults", withoutResults)
+    this.toggleHidden("noneWithoutResults", withoutResults !== 0)
+    this.toggleHidden("oneWithoutResults", withoutResults !== 1)
+    this.toggleHidden("manyWithoutResults", withoutResults < 2)
     this.setText("ratingsNeeded", ratingsNeeded)
     this.setText("missingRatings", missingRatings)
     this.setText("missingRate", missingRate)
@@ -92,6 +95,12 @@ export default class extends Controller {
     this.hopMessageTarget.classList.toggle("d-none", allRated || missingRate <= 5)
     this.refreshButtonTarget.classList.toggle("d-none", !capabilities.caseState?.bookId)
     this.renderChart(this.distribution(queries))
+  }
+
+  toggleHidden(target, hidden) {
+    if (this[`has${target[0].toUpperCase()}${target.slice(1)}Target`]) {
+      this[`${target}Target`].classList.toggle("d-none", hidden)
+    }
   }
 
   setText(target, value) {

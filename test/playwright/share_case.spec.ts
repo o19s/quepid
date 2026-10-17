@@ -238,7 +238,7 @@ test.describe('core case toolbar: share-case modal (share-case-core Stimulus con
     await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
     const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
-    const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
+    const shareCaseLink = judgementsModal.getByText('share this case', { exact: true });
     await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });
     await shareCaseLink.click();
     await expect(judgementsModal).toBeHidden({ timeout: 10_000 });

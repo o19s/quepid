@@ -72,7 +72,7 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 
 ### 15.8 Turbo Drive navigation and lifecycle
 
-- [ ] On Teams, open **Add New** and submit an empty name. Confirm the invalid
+- [ ] On Teams, open **New Team** and submit an empty name. Confirm the invalid
   field renders, then enter a unique name and create the team successfully.
 - [ ] Repeat the form check through HTTPS where a TLS proxy is configured. Confirm
   both the submission and successful redirect remain HTTPS, without mixed-content

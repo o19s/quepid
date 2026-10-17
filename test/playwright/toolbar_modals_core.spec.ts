@@ -138,6 +138,22 @@ test.describe('core toolbar: pick-scorer-core / take-snapshot-core / judgements-
     // Deleting the disposable case in afterAll removes its snapshots too.
   });
 
+  test('judgements modal keeps the upstream copy', async ({ page }) => {
+    const caseId = await createDisposableCase(page, 'Judgements-Copy');
+    try {
+      await gotoCase(page, caseId);
+      await page.locator('button[data-bs-target="#judgementsModal"]').click();
+      const modal = page.locator('#judgementsModal.show');
+      await expect(modal).toContainText('humans and AI judges (LLMs) are an effective way to start measuring your search quality');
+      await expect(modal).toContainText('Quepid organizes these judgements into Books');
+      await expect(modal.locator('[data-judgements-core-target="noTeams"]')).toContainText('Create a Book below to get started. Working with others? You can also create a team or share this case with an existing team to collaborate and share Books.');
+      await expect(modal.locator('[data-judgements-core-target="noBooks"]')).not.toContainText('You have not created any Books');
+      await expect(modal.locator('[data-bs-popover-content-value*="Books you own are always listed below"]')).toHaveCount(1);
+    } finally {
+      await deleteCaseViaApi(page, caseId);
+    }
+  });
+
   test('judgements book choices cancel, retry, persist, navigate and disconnect', async ({ page }) => {
     const caseId = await createDisposableCase(page, 'Judgements');
     judgementsCaseId = caseId;

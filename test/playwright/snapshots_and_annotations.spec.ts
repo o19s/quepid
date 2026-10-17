@@ -72,7 +72,7 @@ test.describe('snapshots', () => {
       await select.selectOption(selectedId);
       await compareModal.getByRole('button', { name: 'Add Snapshot', exact: true }).click();
       await compareModal.locator('select').nth(1).selectOption(selectedId);
-      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toContainText('You have selected the same snapshot multiple times.');
+      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toContainText('Warning: You have selected the same snapshot multiple times.');
       await compareModal.locator('select').nth(1).selectOption('');
       await expect(compareModal.locator('[data-diff-core-target="warning"]')).toBeHidden();
       await compareModal.getByRole('button', { name: 'Update Comparison Settings', exact: true }).click();

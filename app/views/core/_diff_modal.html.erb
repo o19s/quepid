@@ -8,7 +8,9 @@
     <button type="button" class="btn btn-sm btn-success" data-diff-core-target="addButton" data-action="diff-core#addSelection">
       <i class="bi bi-plus" aria-hidden="true"></i> Add Snapshot
     </button>
-    <div data-diff-core-target="warning" class="alert alert-warning d-none mt-3" role="alert"></div>
+    <div data-diff-core-target="warning" class="alert alert-warning d-none mt-3" role="alert">
+      <strong>Warning:</strong> You have selected the same snapshot multiple times. Each snapshot should be unique.
+    </div>
     <div data-diff-core-target="processingWarning" class="alert alert-warning d-none mt-3" role="alert">
       One or more selected snapshots are currently being processed in the background. You should wait until they complete.
     </div>
@@ -17,6 +19,9 @@
       <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->diff-core#confirmDelete">yes</button> /
       <button type="button" class="btn btn-link p-0 border-0 align-baseline" data-action="click->diff-core#cancelDelete">no</button>
     </div>
+  </div>
+  <div data-diff-core-target="loading" class="alert alert-info d-none mt-3">
+    <i class="bi bi-hourglass-split" aria-hidden="true"></i> Loading available snapshots...
   </div>
   <div data-diff-core-target="progress" class="alert alert-info d-none mt-3">
     Fetching snapshot data, this may take a moment depending on the number of queries and snapshots...

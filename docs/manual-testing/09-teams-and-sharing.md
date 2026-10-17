@@ -16,7 +16,7 @@ With zero teams, confirm the solo-use explanation and **Create your first team**
 
 - [ ] **Steps:**
   1. Go to `/teams`. Confirm the table shows ID/Name/Members/Cases, a "Filter by name" box, and a "My Teams" checkbox (auto-submits).
-  2. Click **+ Add New**, enter a Name, click **Create Team**.
+  2. Click **New Team**, enter a Name, click **Create Team**.
   3. Confirm you (the creator) are automatically added as a member.
   4. Open the team, use the **Rename Team** card to rename it, click **Rename**.
   5. In the Cases, Books, Search Endpoints, and Custom Scorers sections, set a search filter. Set the archived filters for cases, books, and endpoints, then submit each search form in turn. Confirm each submission retains the other sections' query and archived filters.

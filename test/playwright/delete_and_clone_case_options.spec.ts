@@ -62,11 +62,19 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
       await modal.getByRole('button', { name: 'Delete All Queries' }).click();
       const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]');
       await expect(confirmButton).toBeEnabled();
+      // The page is already on a /case/ URL, so waiting for that URL proves nothing: wait for the
+      // DELETE itself, then for the queries to be gone.
+      const deleted = page.waitForResponse(response =>
+        response.request().method() === 'DELETE' && /\/cases\/\d+\/queries/.test(response.url())
+      );
       await confirmButton.click();
-
-      // submitDestructiveForm posts a real hidden form -> full navigation.
-      await page.waitForURL(/\/case\//, { timeout: 15_000 });
-      expect(await fetchQueryCount(page, caseId)).toBe(0);
+      expect((await deleted).ok()).toBeTruthy();
+      // The success redirect reloads the page; reading the CSRF token mid-navigation throws, so retry.
+      await expect.poll(
+        () => fetchQueryCount(page, caseId).catch(() => -1),
+        { timeout: 15_000 }
+      ).toBe(0);
+      await page.waitForLoadState('load');
       expect(await caseExists(page, caseId)).toBeTruthy();
     } finally {
       await deleteCaseViaApi(page, caseId);

@@ -22,6 +22,7 @@ export default class extends CoreModalControllerBase {
     "processingWarning",
     "deleteWarning",
     "progress",
+    "loading",
     "updateButton",
     "clearButton"
   ]
@@ -51,7 +52,8 @@ export default class extends CoreModalControllerBase {
   }
 
   async loadSnapshots() {
-    this.setBusy(true)
+    this.toggleVisible(this.loadingTarget, true)
+    this.setButtonsDisabled(true, ["updateButton", "clearButton"])
     try {
       const payload = await getJson(`${this.snapshotsUrlValue}?shallow=true`)
       this.snapshots = payload.snapshots || []
@@ -61,7 +63,8 @@ export default class extends CoreModalControllerBase {
       this.snapshots = []
       this.renderSelections()
     } finally {
-      this.setBusy(false)
+      this.toggleVisible(this.loadingTarget, false)
+      this.setButtonsDisabled(false, ["updateButton", "clearButton"])
     }
   }
 
@@ -101,7 +104,7 @@ export default class extends CoreModalControllerBase {
   async update() {
     const selections = this.validSelections()
     if (this.hasDuplicateSelections()) {
-      this.showWarning("You have selected the same snapshot multiple times. Each snapshot should be unique.")
+      this.warningTarget.classList.remove("d-none")
       return
     }
 
@@ -202,7 +205,6 @@ export default class extends CoreModalControllerBase {
 
   renderSelectionWarnings() {
     this.toggleVisible(this.addButtonTarget, this.selectionValues.length < this.maxSnapshotsValue)
-    this.warningTarget.textContent = "You have selected the same snapshot multiple times. Each snapshot should be unique."
     this.toggleVisible(this.warningTarget, this.hasDuplicateSelections())
     const processing = this.selectionValues.some((id) => {
       const snapshot = this.snapshots.find((candidate) => isSameId(candidate.id, id))
@@ -259,11 +261,6 @@ export default class extends CoreModalControllerBase {
     this.processingWarningTarget.classList.add("d-none")
     this.deleteWarningTarget.classList.add("d-none")
     this.clearAlert()
-  }
-
-  showWarning(message) {
-    this.warningTarget.textContent = message
-    this.warningTarget.classList.remove("d-none")
   }
 
   // Unlike the base showError, shows the message as-is in the alert.

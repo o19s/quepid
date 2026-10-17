@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
-import { CASE_ID } from './case_helpers';
+import { CASE_ID, apiHeaders, createDisposableCase } from './case_helpers';
 
 // Read the existing static fixture. All destructive/settings writes are fulfilled
-// in the browser; this spec creates no records in the shared development DB.
+// in the browser. The session-expiry tests below use a disposable case, because the request
+// they send is real and would otherwise reach the shared fixture if the cookie clear raced.
 test('core delete failures keep the workspace and permit a second attempt', async ({ page }) => {
   await page.route('**/api/**', async route => {
     if (['PUT', 'POST', 'DELETE'].includes(route.request().method())) return route.fulfill({ status: 204 });
@@ -66,18 +67,28 @@ test('a persistent wrapped search error leaves Rerun reachable', async ({ page }
 
 for (const [option, label] of [['Delete All Queries', 'Delete All Queries'], ['Archive Case', 'Archive'], ['Delete Case', 'Delete']]) {
   test(`${option} navigates to sign-in when the session expires`, async ({ page }) => {
-    await page.route('**/api/**', async route => {
-      if (['PUT', 'POST', 'DELETE'].includes(route.request().method())) return route.fulfill({ status: 204 });
-      return route.continue();
-    });
-    await page.goto(`case/${CASE_ID}`);
-    await expect(page.locator('.results-list-element').first()).toBeVisible();
-    await page.getByRole('button', { name: 'Delete', exact: true }).click();
-    const modal = page.locator('#deleteCaseOptionsModal');
-    await modal.getByRole('button', { name: option, exact: true }).first().click();
-    await page.context().clearCookies();
-    await modal.getByRole('button', { name: label, exact: true }).last().click();
-    await expect(page).toHaveURL(/\/sessions\/new$/);
-    await expect(page.locator('#login')).toBeVisible();
+    const caseId = await createDisposableCase(page, 'Session-Expiry');
+    try {
+      await page.goto(`case/${caseId}`);
+      await page.waitForSelector('#case-actions', { timeout: 20_000 });
+      await page.getByRole('button', { name: 'Delete', exact: true }).click();
+      const modal = page.locator('#deleteCaseOptionsModal');
+      await modal.getByRole('button', { name: option, exact: true }).first().click();
+      await page.context().clearCookies();
+      await modal.getByRole('button', { name: label, exact: true }).last().click();
+      await expect(page).toHaveURL(/\/sessions\/new$/);
+      await expect(page.locator('#login')).toBeVisible();
+    } finally {
+      // A fresh signed-in context removes the case; a 404 means the UI already deleted it.
+      const cleanup = await page.context().browser()!.newContext({ storageState: 'test/playwright/.auth/user.json' });
+      try {
+        const cleanupPage = await cleanup.newPage();
+        await cleanupPage.goto('cases');
+        const removed = await cleanupPage.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(cleanupPage) });
+        expect.soft([204, 404], `Case ${caseId} cleanup failed: ${removed.status()}`).toContain(removed.status());
+      } finally {
+        await cleanup.close();
+      }
+    }
   });
 }

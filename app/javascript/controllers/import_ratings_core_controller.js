@@ -164,7 +164,10 @@ export default class extends CoreModalControllerBase {
     if (!content.trim()) return "The selected file is empty."
     const { headers, rows, errors } = this.parseCsv(content)
     const missing = REQUIRED_HEADERS[type].filter((header) => !headers.includes(header))
-    if (missing.length) return `Headers mismatch! Please make sure you have the correct headers: ${REQUIRED_HEADERS[type].join(",")}`
+    if (missing.length) {
+      const lead = type === "snapshots" ? "Required headers mismatch!" : "Headers mismatch!"
+      return `${lead} Please make sure you have the correct headers in your file (check for correct spelling and capitalization): ${REQUIRED_HEADERS[type].join(",")}`
+    }
     if (errors.length) return `CSV format error: ${errors.join(" ")}`
     if (rows.length === 0) return "The selected file has no data rows."
     return ""
@@ -199,7 +202,17 @@ export default class extends CoreModalControllerBase {
   successMessage() {
     return this.selectedType === "snapshots" ? "Snapshots imported successfully!" : this.selectedType === "information_needs" ? "Successfully imported information needs from CSV." : `Successfully imported ${this.selectedType === "csv" ? "ratings from CSV" : `ratings from ${this.selectedType.toUpperCase()}`}.`
   }
-  errorMessage(error) { return error.message || "Import failed. Please try again." }
+  errorMessage(error) {
+    const detail = error.message || "Import failed. Please try again."
+    switch (this.selectedType) {
+      case "csv": return `Unable to import ratings from CSV: ${detail}`
+      case "rre": return `Unable to import ratings from RRE: ${detail}`
+      case "ltr": return `Unable to import ratings from LTR: ${detail}`
+      case "information_needs": return `Unable to import information needs from CSV. ${detail}`
+      case "snapshots": return "Could not import snapshots successfully! Please try again."
+      default: return detail
+    }
+  }
   dispatchReload() { document.dispatchEvent(new CustomEvent(CORE_EVENTS.IMPORTS_QUERIES_NEED_RELOAD, { detail: { caseId: this.caseIdValue } })) }
   flash(type, message) { coreFlash.show(type, message) }
   setBusy(busy) {

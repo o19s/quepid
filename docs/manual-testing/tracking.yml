@@ -320,9 +320,9 @@ parts:
           cases-id-filter: "3.1/cases-id-filter"
           cases-name-filter: "3.1/cases-name-filter"
           cases-active: "3.1/cases-active"
-        last_run: 2026-10-15T00:17:18Z
+        last_run: 2026-10-17T14:49:11Z
         result: pass
-        notes: "Live Current: verified columns and own case rows, partial-name and exact-ID filters, empty no-match and Archived lists without first-case prompt, own-team filter and combined team/text/archived empty result. Six Current captures refreshed at prior dimensions; team fixture shared through actual UI. Not covered: zero-case account, pagination, long score history/System scores, unrelated-account privacy in this pass."
+        notes: "Legacy vs main vs Current on /cases: columns and Filter box match, the Archived filter lists archived cases with Unarchive case. Differences from Legacy (row actions, view filter, frog, nightly icon, team links) are recorded in todo.md (\"Case list lost Legacy row actions and details\"). Not covered: pagination, Team filter results."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_head_common.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/models/score.rb", "db/migrate/20261006151000_add_case_latest_score_index.rb", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css"]
       "3.2":
         title: "Create a new case (setup wizard)"
@@ -357,9 +357,9 @@ parts:
           json-import-complete: "3.3/json-import-complete"
           json-import-ready: "3.3/json-import-ready"
           json-import-form: "3.3/json-import-form"
-        last_run: 2026-10-15T00:11:52Z
+        last_run: 2026-10-17T14:49:11Z
         result: pass
-        notes: "Live Current: cancelled blank import, rejected invalid JSON inline, exported owned Solr case in Quepid format and imported that exact download into new case 1067523399; all three queries including comma and quoted phrase and endpoint loaded successfully. Reopened file selection then cancelled without importing. Four Current states refreshed; current-export-compatibility uses successful live-export import workspace. Not covered: very large file, valid JSON with invalid structure, historical live import."
+        notes: "Legacy vs Current: the Import Case from JSON modal opens with identical text and controls. Not covered: an actual import."
         paths: ["app/controllers/cases_controller.rb", "app/controllers/api/v1/import/cases_controller.rb", "app/services/case_importer.rb", "app/javascript/controllers/import_case_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/application.js", "config/importmap.rb", "app/views/shared/_import_case_modal.html.erb", "app/views/api/v1/import/cases/create.json.jbuilder", "test/javascript/controllers/import_case_controller.test.js", "test/controllers/api/v1/import/cases_controller_test.rb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/controllers/status_message_behavior.js"]
       "3.4":
         title: "Import snapshots from CSV"
@@ -368,9 +368,9 @@ parts:
           snapshot-import-complete: "3.4/snapshot-import-complete"
           snapshot-import-preview: "3.4/snapshot-import-preview"
           snapshot-import-form: "3.4/snapshot-import-form"
-        last_run: 2026-10-15T00:13:39Z
+        last_run: 2026-10-17T14:49:11Z
         result: pass
-        notes: "Live Current: blank Import disabled; missing required headers rejected; valid CSV preview and import created two named snapshots in owned case. Compare picker displayed both dates; database read verified exact ISO and MM/DD/YY timestamps, original comma/quoted query identities and no split queries. Four Current states refreshed at previous viewport dimensions. Not covered: export/import round trip, nonexistent case, malformed row, invalid date; those remain deferred."
+        notes: "Legacy vs Current: the Import Snapshots from CSV modal text matches except the ISO-timestamp note; CSV snapshot import itself was replayed on a case through the workbench Import tab (6.2). Not covered: the /cases-page import."
         paths: ["app/controllers/cases_controller.rb", "app/services/snapshot_importer.rb", "app/services/snapshot_manager.rb", "app/javascript/controllers/import_snapshot_controller.js", "app/javascript/controllers/import_form_controller_base.js", "app/javascript/utils/csv.js", "test/javascript/controllers/import_snapshot_controller.test.js", "test/javascript/utils/csv.test.js", "app/views/shared/_import_snapshot_modal.html.erb", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/snapshot_import.js", "test/javascript/utils/snapshot_import.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "3.5":
         title: "Archive / unarchive a case from the list"
@@ -379,9 +379,9 @@ parts:
           unarchive-confirm: "3.5/unarchive-confirm"
           archived-list: "3.5/archived-list"
           archive-confirm: "3.5/archive-confirm"
-        last_run: 2026-10-15T00:14:38Z
+        last_run: 2026-10-17T14:49:11Z
         result: pass
-        notes: "Live Current: archived owned imported case via list confirmation, absent from active list and present in Archived; unarchive confirmation restored active case, unchecked Archived automatically and showed unarchived notice. Four Current states refreshed. Not covered: team-only ownership transfer, deleted case race."
+        notes: "Current: Archived filter lists archived cases and Unarchive case asks \"Confirm Unarchive <case>?\" then restores the case (used to restore a fixture case). Legacy used a different modal (recorded in todo.md). Not covered: Archive case from the list."
         paths: ["app/controllers/cases_controller.rb", "app/views/cases/index.html.erb", "app/javascript/controllers/destructive_form_behavior.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/views/shared/_index_filters.html.erb", "app/views/shared/_index_pagination.html.erb", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/javascript/application.js"]
       "3.6":
         title: "Share a case from the list"
@@ -416,18 +416,18 @@ parts:
           query-reloaded: "4.2/query-reloaded"
           query-added: "4.2/query-added"
           add-query-ready: "4.2/add-query-ready"
-        last_run: 2026-10-15T00:22:05Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Live Current: whitespace-only Add disabled; added matrix, searched to seven results and persisted after reload. Static Add disabled verified in 3.2b. Three Current captures visually inspected and registered. Not covered: failed search branch."
+        notes: "Legacy vs Current replay: Add query disabled for blank/whitespace, Enter submits, box clears, duplicate text adds nothing and flashes \"Query added successfully.\". Not covered: static-engine \"Adding queries is not supported\"."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_model.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/models/query.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/navbar-brand.css"]
       "4.3":
         title: "Add multiple queries (bulk)"
         screenshots:
           bulk-queries-added: "4.3/bulk-queries-added"
           bulk-query-ready: "4.3/bulk-query-ready"
-        last_run: 2026-10-15T00:22:05Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Live Current: semicolon-separated star trek and batman changed Add queries label; both persisted, searched and scored, distinct bulk success flash. Two Current captures visually inspected and registered. Not covered: multiline paste or partial failure."
+        notes: "Legacy vs Current replay: semicolon switches the label to \"Add queries\", multi-line paste becomes semicolon-separated, several queries add together. Not covered: failures in one of many queries."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js"]
       "4.4":
         title: "Move a query to another case"
@@ -436,9 +436,9 @@ parts:
           query-moved: "4.4/query-moved"
           move-query-selected: "4.4/move-query-selected"
           move-query-form: "4.4/move-query-form"
-        last_run: 2026-10-15T00:22:56Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Live Current: expanded matrix, selected owned imported destination, saved move removed source row/count; destination loaded transferred query with seven results. Four Current captures inspected and registered. Not covered: rated/history transfer, empty destinations, failure or pending-response races."
+        notes: "Legacy vs Current replay with a disposable target case: the picker lists cases, choosing one shows \"Move to <name>\", Move puts the query on the target and flashes \"Query moved successfully!\". Not covered: empty list, load failure."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
@@ -446,9 +446,9 @@ parts:
           query-options-saved: "4.5/query-options-saved"
           query-options-edited: "4.5/query-options-edited"
           query-options-form: "4.5/query-options-form"
-        last_run: 2026-10-15T00:26:13Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Live Current: invalid JSON retained modal with validation flash; valid refresh_weight object saved, rescored and appeared formatted on reopen. Three Current captures inspected and registered. Not covered: save failure and concurrent response races."
+        notes: "Current: saved options survive reload and invalid JSON keeps the modal open with the \"valid JSON\" flash. Legacy closes the modal on invalid JSON (recorded in todo.md). Not covered: save failure."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.6":
         title: "Rate a document"
@@ -458,9 +458,9 @@ parts:
           rated-document: "4.6/rated-document"
           rating-popover: "4.6/rating-popover"
           expanded-results: "4.6/expanded-results"
-        last_run: 2026-10-15T00:26:55Z
+        last_run: 2026-10-17T14:00:08Z
         result: pass
-        notes: "Live Current: expanded star wars, rated first document Relevant (1), query reached 1.00; reload retained rating and RESET returned Unrated. Five Current captures inspected and registered. Not covered: duplicate/missing IDs, keyboard focus or rating-depth boundary."
+        notes: "Legacy vs Current replay: rating popover lists each scale value with its label, picking rates, RESET clears; Score All applies to every document. Not covered: per-document rating of a single result persisting across reload, long labelled scales (modal_a11y.spec.ts), keyboard use."
         paths: ["app/controllers/ratings_controller.rb", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/query_unrated_badge_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/scoring.js", "app/javascript/utils/query_scoring.js", "app/javascript/utils/ratings_store.js", "app/javascript/utils/core_flash.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/quepid_store.js", "app/javascript/stores/case_score_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/frog_report_controller.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/core_runtime.js", "app/javascript/core_stimulus.js", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "config/importmap.rb", "package.json", "Procfile.dev", "test/javascript/utils/ratings_store.test.js", "test/javascript/utils/query_scoring.test.js", "test/playwright/case_helpers.ts", "app/javascript/utils/bs_popover.js", "app/javascript/utils/live_query_events.js", "app/javascript/utils/query_state.js", "app/javascript/utils/query_model.js", "app/javascript/utils/scorer_runtime.js", "app/javascript/api/json.js", "app/models/concerns/text_search.rb", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/live_query_lifecycle.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/query_documents.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/modal_a11y.spec.ts"]
       "4.7":
         title: "Case & query score badges"
@@ -495,9 +495,9 @@ parts:
           finder-ready: "4.9/finder-ready"
           finder-rating-popover: "4.9/finder-rating-popover"
           finder-empty: "4.9/finder-empty"
-        last_run: 2026-10-15T00:34:47Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Live Current: blank Solr finder, id:527641 search returned Five Feet Apart; original star wars explanation retained. Rated Relevant and Reset to All Rated Docs displayed saved off-query rating. Six Current captures inspected and registered. Not covered: keyboard focus/Escape, JSON params, pagination or request failure/dismissal races."
+        notes: "Legacy vs Current replay on Solr: Lucene id: search returns the document, a no-match search reports no results, the document can be rated, Reset to All Rated Docs returns to the rated list. Not covered: ES/OS JSON editor, unsupported engines, pagination of results."
         paths: ["app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/search_results_template.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -557,9 +557,9 @@ parts:
           annotation-created: "4.14/annotation-created"
           annotation-draft: "4.14/annotation-draft"
           annotations-empty: "4.14/annotations-empty"
-        last_run: 2026-10-15T00:50:55Z
+        last_run: 2026-10-17T14:00:08Z
         result: pass
-        notes: "Live Current: empty state, draft/create, actions dropdown, edit/cancel retained original, successful update survived reload with try 6 / score 0.00, delete restored empty state without confirmation. Seven captures inspected and registered. Not covered: pre-search disabled Create, failed create/edit, concurrent delete/edit or sparkline marker tooltip."
+        notes: "Legacy vs Current replay on disposable clones: create, edit (Cancel then Update), delete without confirmation, reload persistence, graph marker. Display differences recorded in todo.md (\"Annotation list display changes\"). Not covered: failed create/edit, concurrent delete/edit."
         paths: ["app/controllers/api/v1/annotations_controller.rb", "app/javascript/controllers/annotations_controller.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "app/views/core/_annotation.html.erb", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "4.15":
         title: "Per-query quick actions (Copy, Delete Query)"
@@ -569,9 +569,9 @@ parts:
           delete-cancelled: "4.15/delete-cancelled"
           query-copied: "4.15/query-copied"
           query-actions: "4.15/query-actions"
-        last_run: 2026-10-15T00:50:55Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Live Current: Copy query clipboard exactly batman; confirmation question visible, Cancel preserved query, settled focus returned to Delete Query (rechecked on star trek); confirmed deletion removed only batman and count became four. Five captures inspected and registered. Not covered: deletion with ratings or delayed rated-document lookup. Legacy delete confirmation opened/dismissed as native browser prompt; PagePNG cannot capture chrome. Remains unrecorded pending native-dialog evidence facility."
+        notes: "Legacy vs Current replay: Copy query puts the raw query text on the clipboard; Delete Query asks \"Are you absolutely sure you want to delete?\" (native confirm on Legacy, shared Confirm modal on Current) and removes only that query. Not covered: Cancel/Escape focus return, deletion with ratings."
         paths: ["app/javascript/controllers/query_command_bridge_controller.js", "app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/utils/confirm_dialog.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_runtime.js"]
       "4.16":
         title: "Query Notes & Information Need"
@@ -581,9 +581,9 @@ parts:
           notes-saved: "4.16/notes-saved"
           notes-draft: "4.16/notes-draft"
           notes-empty: "4.16/notes-empty"
-        last_run: 2026-10-15T00:53:36Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Live Current: opened blank star trek notes, edited Information Need and Notes, Save success flash auto-collapsed panel; reopening and reload retained both exact values. Five captures inspected and registered. Not covered: failed save, immediate typing/load race, blank save or Information Need export round trip."
+        notes: "Legacy vs Current replay on disposable clones: Toggle Notes, Information Need and notes save with the same success flash, values persist after reload, hover tooltip reads \"Info Need: ...\". Not covered: failed save, typing/load race (covered by query_notes.spec.ts)."
         paths: ["app/models/query.rb", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/query_notes_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/core_stimulus.js", "app/javascript/api/fetch.js", "app/javascript/controllers/flash_controller.js", "app/javascript/utils/flash.js", "config/importmap.rb", "test/javascript/controllers/query_notes_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/style.css"]
       "4.17":
         title: "Workbench boot & case/try navigation"
@@ -605,9 +605,9 @@ parts:
           direct-url: "4.18/direct-url"
           curl-copied: "4.18/curl-copied"
           browse-modal: "4.18/browse-modal"
-        last_run: 2026-10-15T01:01:47Z
+        last_run: 2026-10-17T14:00:08Z
         result: pass
-        notes: "Live Current: Browse Solr modal exposed encoded curl and direct URL without headers/credentials; copied command exactly replaced prior clipboard, Copied! shown and direct link opened actual Solr response in own popup, then closed. Browser clipboard read/write permissions granted for verification. Three captures inspected and registered. Not covered: credentials/header warning branch, insecure fallback, forced clipboard failure/race."
+        notes: "Current replay (main-only feature): Browse N Results on Solr opens the modal with the encoded curl command, the no-credentials note, Copy curl command (clipboard holds the command) and Open URL directly. Not covered: a Search API GET endpoint, endpoints with headers, clipboard failure."
         paths: ["app/javascript/controllers/browse_query_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/utils/browse_query.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "config/importmap.rb", "test/javascript/utils/browse_query.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "app/javascript/utils/clipboard.js", "app/javascript/utils/temporary_feedback.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/browse_query_controller.test.js", "test/javascript/utils/clipboard.test.js"]
       "4.19":
         title: "Query-list controls"
@@ -616,9 +616,9 @@ parts:
           name-sort: "4.19/name-sort"
           filter-cleared: "4.19/filter-cleared"
           filter-empty: "4.19/filter-empty"
-        last_run: 2026-10-15T01:01:47Z
+        last_run: 2026-10-17T14:00:08Z
         result: pass
-        notes: "Live Current: no-match filter emptied rows, clearing restored four; Name toggled descending ordering and URL sort=query/reverse=true without navigation; expanded then Collapse all closed results. Four captures inspected and registered. Not covered: manual drag and loading/filter/sort reopen race."
+        notes: "Legacy vs Current replay: Add query, sort links, filter, Collapse all and Show only rated behave the same. Not covered: bootstrapping/updating banners, narrow viewport."
         paths: ["app/javascript/utils/live_query_runtime_owner.js", "app/views/core/_queries.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/qscore_case_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/stores/query_documents_store.js", "app/javascript/controllers/query_command_bridge_controller.js", "app/javascript/core_stimulus.js", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/search_results_controller.test.js", "test/javascript/controllers/search_results_template.test.js", "test/javascript/stores/query_collection_store.test.js", "test/javascript/controllers/query_command_bridge_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js"]
       "4.20":
         title: "Query-list sorting, pagination & Show only rated"
@@ -629,9 +629,9 @@ parts:
           name-sort: "4.20/name-sort"
           page-two: "4.20/page-two"
           page-one: "4.20/page-one"
-        last_run: 2026-10-15T01:07:27Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Live Current: bulk-created 16 owned fixture queries (20 total), 15/5 pagination; dragged finding nemo on Manual page 2 and reloaded to verify persisted order. Keyboard activated Name and Errors, URLs updated; filter clamped page. Alien Relevant rating yielded one result with Show only rated and restored 133 total on toggle off. Six captures inspected and registered. Not covered: mixed error ordering, Modified/Score keyboard directions, 25-rated-doc paging, ES/OS/SearchAPI; all 21 failures and progress clearing verified in 4.21."
+        notes: "Legacy vs Current replay: Name, Modified, Score (descending then reversed) and Errors sorts, arrow on the active sort, sort kept in the URL and after reload (Current), filter box, Collapse all, Show only rated (10 rated docs, note, count), Manual drag order persisted across reload on both. Not covered: pagination controls, disabled Manual sorting, Show only rated disabled for unsupported engines."
         paths: ["app/javascript/utils/query_service.js", "test/javascript/utils/query_service.test.js", "app/javascript/controllers/queries_list_controller.js", "app/views/core/_queries.html.erb", "app/javascript/utils/query_state.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "test/playwright/modal_a11y.spec.ts", "app/javascript/utils/query_runtime.js", "app/javascript/utils/live_query_runtime_owner.js"]
       "4.21":
         title: "Query row states & score badge values"
@@ -655,9 +655,9 @@ parts:
           rated-only: "4.22/rated-only"
           all-rated: "4.22/all-rated"
           score-all-picker: "4.22/score-all-picker"
-        last_run: 2026-10-15T01:18:15Z
-        result: fail
-        notes: "Live Current: one bulk ratings request rated five visible Alien docs, reload retained ratings, rated-only displayed all five after reload; bulk RESET cleared all. Peek failed: proxied Solr next page requested external URL directly and CORS blocked it; source solrSearcherFactory buildPagerOptions omits proxyUrl. Pinned Angular source 8ceb99e9 queriesSvc.js:625 also delegates pager().search(); its older splainer dependency source/live replay is still needed for classification. Appended-state capture uses actual Solr response with browser-only allow-origin/credentials headers; then ten unique docs appended. Override removed, no application fix. Five captures inspected and registered. Not covered: finder bulk rate, last page, rated-only pagination. Follow-up source audit: installed historical splainer-search2.36.2 Solr pager() also omits proxyUrl, establishing pre-existing provenance by dependency-source comparison (no new live historical paging replay). Separate todo records the deferred fix."
+        last_run: 2026-10-17T13:43:42Z
+        result: pass
+        notes: "Legacy vs Current replay: Score All set to 1 rated every document and RESET cleared them to unrated on both; Peek at the next page went from 10 to 20 documents on both. Not covered: rated-only paging, depth-of-rating note."
         paths: ["app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/store_subscription.js", "app/assets/stylesheets/style.css"]
       "4.23":
         title: "Search result rendering"
@@ -703,9 +703,9 @@ parts:
           snapshot-created: "5.2/snapshot-created"
           snapshot-named: "5.2/snapshot-named"
           snapshot-form: "5.2/snapshot-form"
-        last_run: 2026-10-15T01:36:07Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass
-        notes: "Partial: named 21-query Solr snapshot with document fields completed/catalog verified; blank name generated a label. Injected POST failure surfaced and retry succeeded. Four Current captures inspected/registered. Larger-case and non-Solr checks pending."
+        notes: "Legacy vs Current replay: modal copy and controls match; a blank name creates \"Snapshot <date>\" on both and lists in the compare picker. Not covered: Record Document Fields checked, non-lookup engines, create failure."
         paths: ["app/javascript/controllers/take_snapshot_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/views/shared/_take_snapshot_core_modal.html.erb", "app/javascript/utils/snapshot_payload.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/services/snapshot_generator.rb", "app/models/snapshot.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/status_message_behavior.js"]
       "5.3":
         title: "Compare snapshots (diff)"
@@ -720,9 +720,9 @@ parts:
           duplicate-warning: "5.3/duplicate-warning"
           snapshot-picker: "5.3/snapshot-picker"
           picker-focus: "5.3/picker-focus"
-        last_run: 2026-10-15T11:55:05Z
+        last_run: 2026-10-17T13:43:42Z
         result: pass_with_fixes
-        notes: "Partial: applied three snapshots; per-query/case badges, five-row limit, duplicate warning, selection removal, focus and clear checked. Catalog/apply/delete failures injected; retry retained selections/prompt; cancel and actual disposable deletion persisted after reopen. Snapshot-picker regression fixed: after successful delete, catalog and all selectors remove the ID immediately; failed delete retains options/selection/confirmation. Follow-up MCP on static case219 created only snapshot959136795, Cancel preserved it, confirmed204 removed it while preserving original options2/27/33/35; reopen confirms absent. Real behavioral test covers failed DELETE then real retry;21unit tests and6native visual tests pass. New selected captures inspected; original history retained. Processing warning uses browser catalog-flag fixture, labeled. Nine Current captures inspected/registered. Different-query refresh while popover open, reranked/non-Solr comparisons and delayed-fetch controls pending."
+        notes: "Legacy (:3001) vs Current (:3000) replay, disposable clones: picker copy and controls, select, Update/Clear, inline yes/no delete prompt, case and query snapshot badges, diff columns, \"No result at position N\" and the ZSR line. Found and fixed: the duplicate-snapshot warning lost its bold \"Warning:\" prefix (now in _diff_modal.html.erb, asserted in snapshots_and_annotations.spec.ts) and the picker showed the apply-time \"Fetching snapshot data\" text instead of \"Loading available snapshots...\" while the list loaded (workspace_modal_lifecycle.spec.ts). Both new assertions fail without the fix. Intro says 1-5 where Legacy said 1-3 (Legacy allowed five). Not covered: a snapshot still being processed in the background, deleting a snapshot, three or more snapshots."
         paths: ["app/views/core/_snapshot_selection_template.html.erb", "test/playwright/workspace_catalog_templates.spec.ts", "app/javascript/stores/query_collection_store.js", "app/javascript/controllers/search_results_controller.js", "test/javascript/controllers/search_results_controller.test.js", "app/assets/stylesheets/qscore.css", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/snapshot_bridge_controller.js", "app/javascript/controllers/diff_score_controller.js", "app/javascript/controllers/diff_case_scores_controller.js", "app/javascript/utils/diff_scores.js", "app/javascript/utils/diff_results.js", "app/javascript/utils/snapshot_searcher.js", "app/javascript/utils/snapshot_api.js", "app/javascript/utils/snapshot_model.js", "app/javascript/utils/snapshot_hydration.js", "app/javascript/utils/doc_cache.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/diff_state_store.js", "app/views/core/_diff_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "test/javascript/controllers/diff_score_controller.test.js", "test/javascript/controllers/diff_case_scores_controller.test.js", "test/javascript/controllers/snapshot_bridge_controller.test.js", "test/javascript/stores/query_documents_store.test.js", "test/javascript/stores/diff_state_store.test.js", "test/javascript/utils/diff_scores.test.js", "test/javascript/utils/diff_results.test.js", "test/javascript/utils/snapshot_searcher.test.js", "test/javascript/utils/snapshot_api.test.js", "test/javascript/utils/snapshot_model.test.js", "test/javascript/utils/snapshot_hydration.test.js", "test/javascript/utils/doc_cache.test.js", "test/playwright/snapshots_and_annotations.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "app/javascript/utils/parse_explain.js", "test/javascript/utils/date_format.test.js", "test/javascript/utils/parse_explain.test.js", "app/javascript/controllers/status_message_behavior.js"]
       "5.4":
         title: "Annotations"
@@ -734,9 +734,9 @@ parts:
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-15T06:37:09Z
-        result: fail
-        notes: "Currentcreate/edit/cancel/reload/failureretries/persistence coveredasrecorded. LiveAngular8ceb99e9 nowmatchesemptyprior-scorefixture: zeroquerycase33withstored0 permitsCreate/persistsannotationScore0. Never-scoredemptycasefirstrejects with runsearchesmessage; Createbuttonenabledinbothstates. Thus universaldisable-on-emptyexpectationunsupported/pre-existing, no migrationfix. Legacysettledprior-scorecapture andsupplementalrejected/createdretained; originalCurrent7statesinspected."
+        last_run: 2026-10-17T13:43:42Z
+        result: pass
+        notes: "Legacy vs Current replay: create (an empty message is accepted on both), edit with Cancel and Update, delete without confirmation, reload persistence, graph marker. Display differences are recorded in todo.md (\"Annotation list display changes\"). Not covered: failed create/edit, concurrent delete/edit."
         paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core-additions.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"
@@ -767,9 +767,9 @@ parts:
           export-snapshot: "6.1/export-snapshot"
           export-formats: "6.1/export-formats"
           export-form: "6.1/export-form"
-        last_run: 2026-10-15T01:43:04Z
+        last_run: 2026-10-17T14:49:21Z
         result: pass
-        notes: "Live nine export formats downloaded; CSV headers/records, TREC qrel, LTR and JSON structures inspected. Empty format and missing snapshot disable export; Basic/TREC dropdown retains format. Seven API links returned valid JSON. Twelve matched-viewport captures inspected/registered; old export-formats failure image preserved. Detailed outside single-case context pending."
+        notes: "Legacy vs Current replay: Export modal text identical; downloads for Information Need, General, Detailed, Basic, TREC, RRE, LTR and Quepid JSON have the same names and headers on both; the Snapshot format downloaded on Current only (Legacy produced no download in this replay, not investigated). Not covered: Basic/TREC with a snapshot, a snapshot still processing."
         paths: ["app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/export_case_core_controller.js", "app/javascript/utils/case_csv.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/download_file.js", "app/views/shared/_export_case_core_modal.html.erb", "app/controllers/api/v1/export", "app/services/trec_export.rb", "app/services/ltr_export.rb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/core_runtime.js", "app/javascript/utils/date_format.js", "test/javascript/utils/date_format.test.js", "test/javascript/controllers/export_case_core_controller.test.js", "test/playwright/todo_fixes.spec.ts", "app/javascript/controllers/status_message_behavior.js"]
       "6.2":
         title: "Import into a case (ratings / information needs / snapshots)"
@@ -782,9 +782,9 @@ parts:
           import-valid-csv: "6.2/import-valid-csv"
           import-invalid-headers: "6.2/import-invalid-headers"
           import-ratings: "6.2/import-ratings"
-        last_run: 2026-10-15T01:45:52Z
-        result: fail
-        notes: "CSV, quoted query, Information Needs/create-missing, Snapshot/current-case ID override and LTR imports driven; header/column errors, wrong-tab and cancel, injected server failure/retry checked. Eight captures inspected/registered. RRE gain-object JSON was accepted but created doc IDs [\"gain\", 1]/[\"gain\", 0] rated 11/9426. Same importer loop and gain-object exporter at Angular 8ceb99e9 confirm pre-existing format mismatch; source comparison, not historical live replay. Clear-existing toggle mutation pending."
+        last_run: 2026-10-17T14:49:11Z
+        result: pass_with_fixes
+        notes: "Legacy vs Current replay on disposable clones: modal text, warnings, CSV preview, ratings CSV, LTR, information needs and snapshot imports, header-mismatch alert, failure flashes. Found and fixed: the header-mismatch wording and the \"Unable to import ... from CSV/RRE/LTR\" and snapshot failure prefixes had been shortened (restored; case_import_ratings.spec.ts and Vitest cases fail on the old copy). Recorded in todo.md: the removed \"Header\" checkbox and stricter CSV row validation, and that a failed import keeps the modal open. The RRE sample file returned a server 500 on both. Not covered: RRE success."
         paths: ["app/views/api/v1/export/queries/information_needs/show.csv.erb", "app/controllers/api/v1/export/queries/information_needs_controller.rb", "app/javascript/utils/core_events.js", "app/controllers/api/v1/import/ratings_controller.rb", "app/services/ratings_importer.rb", "app/controllers/api/v1/import/queries/information_needs_controller.rb", "app/services/snapshot_importer.rb", "app/javascript/controllers/import_ratings_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_import_ratings_core_modal.html.erb", "app/views/core/_case_toolbar.html.erb", "app/views/core/index.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "test/javascript/controllers/import_ratings_core_controller.test.js", "test/playwright/dom_migration_screenshots.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "6.3":
         title: "Clone a case"
@@ -796,9 +796,9 @@ parts:
           clone-created: "6.3/clone-created"
           clone-history: "6.3/clone-history"
           clone-form: "6.3/clone-form"
-        last_run: 2026-10-15T01:48:15Z
+        last_run: 2026-10-17T14:49:11Z
         result: pass
-        notes: "Live blank-name disable, entire six-try history with 21 queries/five ratings, empty clone and single older try without ratings verified in browser and guarded DB read. Injected failure retained form and retry succeeded. Seven captures inspected/registered; all clones recorded for cleanup."
+        notes: "Legacy vs Current replay: the Clone modal text and controls are identical. Not covered: performing a clone (delete_and_clone_case_options.spec.ts covers it live)."
         paths: ["app/controllers/api/v1/clone/cases_controller.rb", "test/controllers/api/v1/clone/cases_controller_test.rb", "app/models/case.rb", "app/views/shared/_clone_case_core_modal.html.erb", "app/javascript/controllers/clone_case_core_controller.js", "app/javascript/utils/error_message.js", "app/views/core/_case_toolbar.html.erb", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/status_message_behavior.js"]
       "6.4":
         title: "Delete / Archive / Delete-all-queries (in-case toolbar)"
@@ -815,9 +815,9 @@ parts:
           queries-error: "6.4/queries-error"
           html-error: "6.4/html-error"
           expired-session: "6.4/expired-session"
-        last_run: 2026-10-15T13:08:56Z
-        result: pass_with_fixes
-        notes: "Covered live: Playwright MCP opened Delete All Queries on static case219, cleared only its browser session, and confirmed401 followed by full-page sign-in with no destructive mutation. Native Playwright verifies all three expired-session actions plus existing500 retry and wrapped-banner recovery. Fixed JSON auth guard returns server-generated sign-in URL, consumed by core modal. Not covered live: authenticated successful mutations and annotation/snapshot preservation were not repeated in this follow-up; earlier evidence remains in the dated findings report."
+        last_run: 2026-10-17T14:49:11Z
+        result: pass
+        notes: "Legacy vs Current replay: Delete Options modal identical except the typo fix \"its\". Not covered: performing each action (delete_and_clone_case_options.spec.ts, core_failure_recovery.spec.ts)."
         paths: ["app/controllers/cases_controller.rb", "app/views/shared/_delete_case_options_core_modal.html.erb", "app/javascript/controllers/delete_case_options_core_controller.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/core_modal_controller_base.js", "app/models/concerns/text_search.rb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/api/json.js", "app/javascript/utils/error_message.js"]
       "6.5":
         title: "Share a case (in-case toolbar)"
@@ -846,9 +846,9 @@ parts:
           book-linked: "6.6/book-linked"
           book-selected: "6.6/book-selected"
           book-picker: "6.6/book-picker"
-        last_run: 2026-10-15T02:03:54Z
-        result: pass
-        notes: "Partial: private owned book offered on teamless clone; create-book and judge shortcuts driven. Saved both sync flags; injected save failure retained state/retry, reopen hid unchanged Save. Populate Now created 168 real pairs; UI judgement jaws/85=1 reached case via Refresh Ratings. Prepared extra book pair/judgement then Sync Queries added missing query and rating (21 to22). None/disconnect persisted after reload, flags/controls off. Four captures inspected/registered. Multi-team dedup, View/cancel, catalog/read failure, 50+ background and share outlet pending."
+        last_run: 2026-10-17T14:49:21Z
+        result: pass_with_fixes
+        notes: "Current replay plus source comparison with main: modal copy had drifted from main (intro, empty-state alert, book help text, a leftover \"no books\" line) and is restored (toolbar_modals_core.spec.ts \"judgements modal keeps the upstream copy\"). Legacy only replayed for the toolbar link and empty state (its database has no books). Selecting/saving/disconnect remain covered by toolbar_modals_core.spec.ts. Not covered live by hand: sync toggles and Refresh Ratings against a real book."
         paths: ["app/controllers/core/modal_catalogs_controller.rb", "config/routes.rb", "app/javascript/utils/case_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/judgements_core_controller.js", "app/javascript/utils/error_message.js", "app/views/shared/_judgements_core_modal.html.erb", "app/views/core/_judgement_book_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/book_sync.js", "test/javascript/utils/book_sync.test.js", "app/controllers/judgements_controller.rb", "app/views/judgements/show.html.erb", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/services/judgement_sync.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/core_runtime.js", "app/controllers/api/v1/books_controller.rb", "app/javascript/controllers/status_message_behavior.js"]
       "6.7":
         title: "Explain a query (Explain Query modal)"
@@ -857,9 +857,9 @@ parts:
           explain-template: "6.7/explain-template"
           explain-parsing: "6.7/explain-parsing"
           explain-params: "6.7/explain-params"
-        last_run: 2026-10-15T02:05:38Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Partial: real Solr Params and Parsing checked (alien, title boost3, five rows); non-template message shown. Params Copy produced matching JSON clipboard, Copied! reset to Copy after two seconds. Four captures inspected/registered. Clipboard denial not reproduced by permission change; templated engine/render failures and request races pending."
+        notes: "Legacy vs Current replay on a four-term query: Params, Parsing and Query Template tabs show the same text, Copy puts the active panel on the clipboard. Not covered: a templated query, Copy failure."
         paths: ["app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/query_explain_controller.js", "app/javascript/utils/temporary_feedback.js", "app/javascript/utils/clipboard.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/core_stimulus.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/javascript/controllers/query_explain_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.8":
         title: "Explain a single document (Debug Explain)"
@@ -867,9 +867,9 @@ parts:
           debug-hot-match: "6.8/debug-hot-match"
           debug-collapsed: "6.8/debug-collapsed"
           debug-expanded: "6.8/debug-expanded"
-        last_run: 2026-10-15T02:08:14Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Real Solr Alien/348 raw explain opened fully expanded from Matches\u2192Debug; collapsed/expanded JSON details and hot-match bar opening verified. Three matched-viewport captures inspected/registered; Escape dismisses correctly."
+        notes: "Legacy vs Current replay: Matches popover title and summed terms, Debug and Expand modals open with the same headings. Finding recorded in todo.md: the popover stays open behind the modals on Current. Not covered: disabled Debug when there is no per-term breakdown."
         paths: ["app/javascript/utils/bs_modal.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/controllers/search_result_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.11":
         title: "View a document's details (Detailed Document View)"
@@ -878,9 +878,9 @@ parts:
           document-hidden: "6.11/document-hidden"
           document-raw: "6.11/document-raw"
           document-fields: "6.11/document-fields"
-        last_run: 2026-10-15T02:09:03Z
+        last_run: 2026-10-17T13:59:39Z
         result: pass
-        notes: "Live Alien/348: array overview/scalar vote_average, raw fields reveal/hide, reopen resets raw visibility; Close, Escape and settled backdrop dismissal leave no backdrop or scroll lock. Four captures inspected/registered using equivalent valid displayed-fields fixture (no cast/thumbnail configured). Engine View Document link checked separately; translated/embed/object fixtures pending."
+        notes: "Legacy vs Current replay: Detailed Document View shows the same fields, View Document, View All Fields / Hide All Fields toggle the JSON, Escape closes. Not covered: thumb/image fields, a document with no URL."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.9":
         title: "Frog Report"
@@ -888,9 +888,9 @@ parts:
           frog-complete: "6.9/frog-complete"
           frog-chart: "6.9/frog-chart"
           frog-partial: "6.9/frog-partial"
-        last_run: 2026-10-15T02:12:13Z
-        result: pass
-        notes: "Live 21-query Solr report: 20 with results, one zero-result, 95 required/91 missing (95.8%) and distribution checked. Fully rated owned static fixture: two queries/three docs congratulation state. Linked book refresh failure displayed/re-enabled retry; successful refresh and delayed completion across close/reopen left one chart, enabled button and no stale error. Three captures inspected/registered."
+        last_run: 2026-10-17T13:59:39Z
+        result: pass_with_fixes
+        notes: "Legacy case 4 vs Current case 6: summary, congratulation text and distribution chart match. Found and fixed: Legacy worded the zero-result count as \"none return\" / \"only one returns\" / \"N return\"; Current always said \"0 return\". Restored with a Vitest case (fails without the fix) and a Playwright check in workspace_modal_lifecycle.spec.ts. Not covered: Refresh from book against a real book (stubbed in the existing spec)."
         paths: ["app/javascript/controllers/frog_report_controller.js", "app/views/shared/_dynamic_modal_templates.html.erb", "app/views/core/_queries.html.erb", "app/assets/stylesheets/froggy.css", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
       "6.10":
         title: "Unarchive case (from a list's Archived filter)"

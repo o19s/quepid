@@ -7,6 +7,27 @@ import coreFlash from "utils/core_flash"
 import { searchEngineLabel } from "utils/search_engines"
 import { isSameId } from "utils/record_identity"
 
+// Wraps each case-insensitive occurrence of `query` in <strong>, as the typeahead rows did.
+function appendHighlighted(parent, text, query) {
+  if (!query) {
+    parent.textContent = text
+    return
+  }
+  const lower = text.toLowerCase()
+  const needle = query.toLowerCase()
+  let from = 0
+  let at = lower.indexOf(needle, from)
+  while (at !== -1) {
+    parent.append(text.slice(from, at))
+    const strong = document.createElement("strong")
+    strong.textContent = text.slice(at, at + needle.length)
+    parent.append(strong)
+    from = at + needle.length
+    at = lower.indexOf(needle, from)
+  }
+  parent.append(text.slice(from))
+}
+
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
 // A link with nowhere to go loses its href (reads as plain text) rather than pointing at "#".
@@ -18,7 +39,7 @@ function setLinkHref(link, url) {
 export default class extends Controller {
   static targets = [
     "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
-    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol",
+    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointSuggestionTemplate", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
@@ -46,6 +67,23 @@ export default class extends Controller {
 
   filterEndpoints(event) {
     this.renderEndpointSuggestions(event.currentTarget.value)
+  }
+
+  // Focusing lists every endpoint, even when the box already holds the selected endpoint's name.
+  showEndpointSuggestions() {
+    this.renderEndpointSuggestions("")
+  }
+
+  closeEndpointSuggestions(event) {
+    const next = event.relatedTarget
+    if (next && (this.endpointSuggestionsTarget.contains(next) || this.endpointSearchTarget === next)) return
+    this.endpointSuggestionsTarget.replaceChildren()
+    if (this.hasEndpointNoResultsTarget) this.endpointNoResultsTarget.hidden = true
+  }
+
+  // Keep focus in the search box while a suggestion is clicked, so focusout does not remove it first.
+  keepEndpointSearchFocus(event) {
+    event.preventDefault()
   }
 
   submitRename(event) {
@@ -191,19 +229,18 @@ export default class extends Controller {
     })
     const selected = this.searchEndpoints.find(item => isSameId(item.id, this.settings.searchEndpointId))
     if (this.hasEndpointSearchTarget) this.endpointSearchTarget.value = selected?.name || ""
-    this.renderEndpointSuggestions("")
+    if (this.hasEndpointSuggestionsTarget) this.endpointSuggestionsTarget.replaceChildren()
   }
 
   renderEndpointSuggestions(query) {
     if (!this.hasEndpointSuggestionsTarget) return
     const normalized = query.trim().toLowerCase()
-    const matches = normalized ? this.searchEndpoints.filter(endpoint => endpoint.name.toLowerCase().includes(normalized)) : []
+    const matches = normalized ? this.searchEndpoints.filter(endpoint => endpoint.name.toLowerCase().includes(normalized)) : this.searchEndpoints
     this.endpointSuggestionsTarget.replaceChildren(...matches.slice(0, 8).map(endpoint => {
-      const button = document.createElement("button")
-      button.type = "button"
-      button.className = "list-group-item list-group-item-action"
-      button.textContent = endpoint.name
-      button.dataset.action = "click->tune-relevance#selectEndpointSuggestion"
+      const button = this.endpointSuggestionTemplateTarget.content.firstElementChild.cloneNode(true)
+      const icon = button.querySelector("img")
+      icon.src = `images/${endpoint.mapperBasedSearchEngineId || endpoint.searchEngine}-icon.png`
+      appendHighlighted(button.querySelector("[data-slot='label']"), endpoint.name, query.trim())
       button.dataset.tuneRelevanceEndpointIdParam = String(endpoint.id)
       return button
     }))

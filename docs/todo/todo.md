@@ -330,7 +330,55 @@ Found closing rows [2](../manual-testing/angular-parity-checklist.md#row-2) (`de
 11. **Annotations tab intro text was reworded** (found on the way, belongs to rows 23 and 24): the typos "help your remember" and "You might have made some changes … (eg. a new tokenizer)" became "help you remember" and a shorter second paragraph.
 12. **A try whose endpoint is on the other protocol hides the whole case toolbar.** Current's bootstrap throws "Blocked Request: mixed-content" before `ready()` runs, so Select scorer, Judgements, Clone, Delete, Export and Tune Relevance never appear and the only way out is the flash's link to the endpoint's edit page. Legacy selects the case before the check, so its toolbar and drawer stay usable (replayed on both with a disposable case and an https endpoint, 2026-10-17).
 
+13. **Endpoint suggestion list lost its engine icon, match highlight and show-on-focus** (found closing row [36](../manual-testing/angular-parity-checklist.md#row-36), `searchEndpoint_popup.html`). Legacy and main showed every endpoint with its engine icon when the box was focused and bolded the typed text. Current listed nothing until you typed and showed plain text. **Restored in this pass** (`tune_relevance.spec.ts` "engine settings sections…" fails without it). Still open: Current caps the list at eight; Legacy had no cap (main's `quepid-typeahead-limit="0"`). The cap appears only in an agent-written feature doc line and its own test, so it is not a recorded decision.
+14. **The knob value input no longer grows with its value** (row [104](../manual-testing/angular-parity-checklist.md#row-104), `autoGrow.js`). Legacy's `auto-grow` directive (jQuery `autoGrowInput`) widened the number input in Tuning Knobs as the value got longer; main removed it too and Current's input has a fixed width (source only: no auto-grow code or `field-sizing` in the drawer partial or stylesheets). Cosmetic; recommended: record as dropped or add `field-sizing: content`.
+
+
 **Fix direction:** 2, 3, 5, 9, 10 and 12 are plain restorations (for 12, show the toolbar before blocking). 1, 4, 7 and 11 are copy or flow changes that may have been deliberate. 6 and 8 need a product call. Whatever is kept needs a NOT-DOING or scenario line.
+
+---
+
+### [MIGRATION-FOLLOWUP] P3 I0 C1 — Annotation list display changes with no recorded decision
+
+Found closing rows [23](../manual-testing/angular-parity-checklist.md#row-23) (`annotations.html`), [24](../manual-testing/angular-parity-checklist.md#row-24) (`annotation.html`) and [26](../manual-testing/angular-parity-checklist.md#row-26) (`_update.html`). Owners: `_annotation.html.erb`, `_edit_annotation_modal.html.erb`, `annotations_controller.js`. Create, edit, delete (no confirmation on either), reload persistence and the graph markers match Legacy (replayed on Legacy :3001 and Current :3000 with equivalent cases, 2026-10-17). The Annotations tab intro rewording is item 11 of the [Tune Relevance entry](#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision). Scenario 5.4 describes the behaviours below but records no decision to depart from Legacy.
+
+1. **Score is rounded to two decimals.** Current shows `Score: 0.53`; Legacy showed the raw float (`0.5572889180924896` right after creating, `0.557289` after reload).
+2. **"Try No" shows the try number.** Current shows `1`; Legacy showed `score.try_id`, the database id of the try (`154`). Legacy looks wrong here.
+3. **Relative time wording.** Current shows "1 second ago" or "now"; Legacy showed "less than a minute ago" (`timeAgo` filter, removed in `6656949e`).
+4. **Empty state and disabled Create.** Current shows "No annotations yet." under Existing Annotations and disables Create until a case score exists (the "Can't create a new annotation until searches have been run!" flash is kept). Legacy showed an empty list and the flash only.
+5. **Edit Annotation footer order.** Current shows Cancel before Update; Legacy showed Update then Cancel.
+
+**Fix direction:** 1, 2 and 4 look like improvements; keep them and add the line to scenario 5.4 as a decision. 3 and 5 are cosmetic; either restore or keep. Not decided here because each is a copy or flow change, not a plain restoration.
+
+---
+
+### [MIGRATION-FOLLOWUP] P2 I0 C1 — Core workbench behaviour changes with no recorded decision
+
+Found closing the core workbench rows of the [parity checklist](../manual-testing/angular-parity-checklist.md). Each was replayed on Legacy (:3001) and Current (:3000) on 2026-10-17 unless it says source only. None has a NOT-DOING entry or a user-approved decision; where a scenario describes the new behaviour, that is noted.
+
+1. **A missing or unshared case id is a bare 404.** Row [30](../manual-testing/angular-parity-checklist.md#row-30). Legacy loaded an empty workspace with "Could not retrieve case N. Confirm that the case has been shared with you via a team you are a member of!". Current renders the generic Rails 404 ("The page you were looking for doesn't exist"). Scenario 4.17 and a `CoreController` comment describe the 404 (no embedded workspace data, no case created by a GET); neither records the lost explanation. Recommended: keep the 404 and add the sharing hint to it, or record the decision.
+2. **Embedded media detection differs.** Row [31](../manual-testing/angular-parity-checklist.md#row-31), source only. Legacy matched the extension anywhere in the value (so `clip.mp3#t=5` embedded) and rendered nothing when no extension matched. Current uses the last path segment before `?` and shows the raw value as text when nothing matches. Recommended: keep the text fallback; accept the fragment case or match the extension before `#` as well.
+3. **Query Options modal handles invalid JSON differently.** Rows [22](../manual-testing/angular-parity-checklist.md#row-22) and [48](../manual-testing/angular-parity-checklist.md#row-48). Legacy closed the modal on **Set Options** and then flashed "Please provide a valid JSON object." (the edit was lost). Current keeps the modal open with the same flash, so the text can be fixed. A query with no options opens as `{}` on Current; Legacy opened a blank editor. Both look like improvements. Recommended: keep and record.
+4. **The Matches popover stays open behind the Debug and Expand modals.** Rows [33](../manual-testing/angular-parity-checklist.md#row-33), [38](../manual-testing/angular-parity-checklist.md#row-38) and [43](../manual-testing/angular-parity-checklist.md#row-43). On Legacy the popover (outside-click trigger) closed once the modal opened. On Current it stays open, so after the modal closes the next click on **Matches** closes it instead of reopening it. Recommended: close the popover when Debug or Expand opens. Not done here because the popover helper is shared with the rating popover.
+5. **The Import modal lost the "Header" checkbox and validates CSV rows differently.** Rows [5](../manual-testing/angular-parity-checklist.md#row-5) and [44](../manual-testing/angular-parity-checklist.md#row-44). Legacy's uploader showed a "Header" checkbox next to each CSV file chooser; Current has none and always treats the first line as the header. Legacy rejected only lines with more than three (ratings) or two (information needs) columns, and listed the offending lines under the preview; Current requires every line to match the header's column count and reports "CSV format error: line N: expected X columns but found Y." Both changes look deliberate but have no recorded decision. Recommended: keep Current's validation and record it; restore the checkbox only if headerless files matter.
+6. **A failed import keeps the Import modal open.** Row [5](../manual-testing/angular-parity-checklist.md#row-5). Legacy closed the modal and flashed the error; Current flashes the same error (prefixes restored in this pass) and leaves the modal open for a retry. Looks like an improvement; recorded for completeness.
+
+---
+
+### [MIGRATION-FOLLOWUP] P2 I0 C2 — Case list lost Legacy row actions and details (inherited from main)
+
+Found closing the ported-on-main rows [59](../manual-testing/angular-parity-checklist.md#row-59) (`cases/index.html`), [60](../manual-testing/angular-parity-checklist.md#row-60) (`case_listing.html`), [65](../manual-testing/angular-parity-checklist.md#row-65), [73](../manual-testing/angular-parity-checklist.md#row-73) and [75](../manual-testing/angular-parity-checklist.md#row-75). Legacy's `/cases` (the only management page that was AngularJS at `8ceb99e9`) was replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17. Main's Rails list, from `e52cec3a` (#1642, "Migrate teams, scorers and case listings away from angularjs"), is what Current has: the branch did not change it (live text and controls are identical on main and Current). The PR is the only decision on record; none of the losses below is named in a NOT-DOING entry or scenario.
+
+1. **Row actions.** Legacy rows offered Rename (inline), Delete (modal "Delete This Case — You're about to delete this case forever! …"), Archive, Export (the export modal) and Share. The list now has Share and Archive only. Rename, Delete and Export remain in the case workbench (header double-click, toolbar).
+2. **Archive confirmation copy.** Legacy: "Archive This Case for Later? You're about to put this case into deep freeze. You'll be able to unarchive it later through the \"Archived Cases\" filter …". Now the shared Confirm modal: "Confirm Archive <case>?".
+3. **View filter.** Legacy's All / My Cases / Shared With Me Cases / Archived Cases buttons became a Team select plus an Archived checkbox, so "mine" and "shared with me" cannot be filtered. Legacy also had a per-page number box, a "Loading Your Cases" spinner and a notice when there are more than 30 cases; the list is now server-paginated.
+4. **Row details.** The unrated frog beside the score (title "Hop to it! There are unrated results!"), the nightly icon beside the title, team links in the Teams column (now "—"), the full-precision score (`0.490414`, now `0.464`) and the relative last-run time ("about 2 hours ago", now "17 Oct 14:16") are gone.
+
+5. **The paste-JSON import page is gone.** Legacy served `/cases/import` ("Case Import — Visit any case at /cases/caseId?export=true, paste the JSON here…"), reachable by URL only. Main and Current return a routing 404 there; the file-based **Import Case from JSON** modal covers the same job.
+
+Everything else on the page matches: the Import case from JSON and Import snapshots modals (the snapshot modal also has the ISO-timestamp note from `795b2474`), the Share modal, the archived list with **Unarchive case**, and every column.
+
+**Fix direction:** 4 (frog, nightly icon, team links) are plain restorations if wanted; 1 to 3 are product calls. Not changed here: the branch inherited them, they pre-date it, and restoring them reaches into main's Rails pages.
 
 ---
 

@@ -37,6 +37,7 @@ This part covers the remaining case-toolbar actions (Export, Import, Clone, Dele
 - **Edge cases:**
   - [ ] If the ratings importer fails unexpectedly, expect "Unable to import ratings. Please try again." rather than internal exception details; the modal permits retry.
   - [ ] Upload a Ratings CSV with mismatched headers — confirm a red "Headers mismatch!" alert lists the expected headers.
+  - [ ] The mismatch alert reads "Headers mismatch! Please make sure you have the correct headers in your file (check for correct spelling and capitalization): …" ("Required headers mismatch!" on the Snapshots tab). A failed import flashes "Unable to import ratings from CSV: …" (RRE and LTR likewise), "Unable to import information needs from CSV. …", or "Could not import snapshots successfully! Please try again." and leaves the modal open for a retry.
   - [ ] Upload a Ratings CSV where a row has more than 3 comma-separated values without quote-wrapping — confirm a red alert lists the specific offending line number(s). Repeat for Information Needs with the 2-column limit.
   - [ ] Upload the wrong file into the wrong tab (e.g., an Information Needs CSV into the Ratings tab) — confirm this is caught by header validation rather than silently corrupting data.
   - [ ] Cancel out of the modal after uploading but before confirming — confirm nothing was imported.
@@ -142,6 +143,7 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
   1. Click the frog icon at the top-right of the query list.
   2. Review "The Frog Pond Report: {case name}" — summary stats on ratings coverage (queries with/without results, total ratings needed, % missing).
   3. On a fully-rated case, confirm the "All the queries have been fully rated!" congratulations state appears.
+     The summary reads "…of which N return results, and none return zero results" (no query without results), "only one returns zero results", or "N return zero results".
   4. Review the bar chart of query counts grouped by missing-rating depth.
   5. If the case is linked to a Book, use **Refresh ratings from book {book name}**. Force a save failure, confirm the error and re-enabled button, then retry.
   6. Close/reopen while a chart or refresh is pending. Confirm one current chart and no late error or button changes from the closed modal; a completed refresh still updates shared query data.
