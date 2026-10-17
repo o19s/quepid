@@ -107,7 +107,8 @@ for (const { idField, docId } of [
         // Endpoint assignment deduplicates by configuration; isolate this test's row.
         const url = modal.getByPlaceholder('Search endpoint URL');
         await url.fill(`${await url.inputValue()}?${endpointMarker}`);
-        await expect(modal.getByLabel('API method')).toHaveValue('POST');
+        // Only Solr offers an API method; Qdrant keeps its preset's POST.
+        await expect(modal.getByLabel('API method')).toBeHidden();
         await expect(modal.getByLabel('Proxy requests through Quepid')).toBeChecked();
         await next().click();
         await expect(modal.locator('[data-wizard-target="alert"]')).toBeVisible();

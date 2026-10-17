@@ -17,7 +17,7 @@ Owner candidates are filename matches, not verified owners.
 
 | # | Source | Ported | Items | Owner | Scenario | Status |
 |---|---|---|---|---|---|---|
-| [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | | | open |
+| [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2, 3.2b | open: 3 findings |
 | [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | | | open |
 | [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | | | open |
 | [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | | | open |
@@ -172,338 +172,338 @@ Blocks landing until closed.
 
 - **Used by (legacy):**`app/assets/javascripts/components/new_case/new_case_controller.js`, `app/assets/javascripts/controllers/wizardCtrl.js`
 - **Owner candidates:** `app/views/shared/_wizard_modal.html.erb`
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/shared/_wizard_modal.html.erb`, `_wizard_engine_tile.html.erb`, `app/javascript/controllers/wizard_controller.js`
+- **Scenario:** 3.2, 3.2b, 7 (Mapper Wizard handoff)
+- **Decisions:** P1 restore `8ce48fc3` (tiles, ping it, troubleshooting, header types, field suggestions, Static guide). The typo confirm, Enter submission, required test query and Solr-only API method had no decision and are restored in this pass. The API method select is restored to Solr-only. Three open findings have no decision: [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision). Checked by source against `8ceb99e9` and `776c68b5` plus a live run on Current (3.2); Legacy not replayed.
 
 Conditional UI:
 
-- [ ] `<p>` `ng-if="!pendingWizardSettings.searchEngine === 'static'"` _(not in main)_
-- [ ] `<div>` `ng-show="invalidHeaders"`
-- [ ] `<div>` `ng-show="showTLSChangeWarning"`
-- [ ] `<div>` `ng-show="invalidProxyApiMethod"`
-- [ ] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"`
-- [ ] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'es'"`
-- [ ] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'os'"`
-- [ ] `<li>` `ng-if="isChrome"`
-- [ ] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'solr'"`
-- [ ] `<div>` `ng-if="urlInvalid && !showTLSChangeWarning"`
-- [ ] `<div>` `ng-if="mapperInvalid"`
-- [ ] `<div>` `ng-if="urlValid"`
-- [ ] `<button>` `ng-disabled="showTLSChangeWarning"`
-- [ ] `<p>` `ng-show="pendingWizardSettings.urlFormat"`
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
-- [ ] `<div>` `ng-show="staticContent.import.alert"`
-- [ ] `<button>` `ng-disabled="listOfStaticQueries.length > 0"`
-- [ ] `<div>` `ng-if="staticContent.content"`
-- [ ] `<div>` `uib-collapse="!isStaticCollapsed"` _(not in main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'static'"`
-- [ ] `<div>` `uib-collapse="!isSolrCollapsed"` _(not in main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr'"` _(not in main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` _(not in main)_
-- [ ] `<div>` `uib-collapse="!isHeaderConfigCollapsed"` _(not in main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
-- [ ] `<span>` `ng-hide="validating"`
-- [ ] `<span>` `ng-show="validating"`
-- [ ] `<button>` `ng-show="!showTLSChangeWarning"`
-- [ ] `<button>` `ng-disabled="!readyToContinue()"`
-- [ ] `<button>` `ng-show="urlInvalid && !showTLSChangeWarning"`
-- [ ] `<button>` `ng-disabled="validating"`
-- [ ] `<span>` `ng-show="showTLSChangeWarning"`
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEngine !== 'searchapi'"` _(not in main)_
-- [ ] `<div>` `ng-if="listSearchEndpoints().length === 0"`
-- [ ] `<select#searchEndpoint>` `ng-if="listSearchEndpoints().length > 0"`
-- [ ] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning"`
-- [ ] `<p>` `ng-if="hasStaticEndpoints"`
-- [ ] `<p>` `ng-if="!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0"`
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'"`
-- [ ] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))"`
-- [ ] `<p>` `ng-if="titleFieldRequired"`
-- [ ] `<p>` `ng-if="idFieldRequired"`
-- [ ] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"`
-- [ ] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"`
-- [ ] `<p>` `ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0"`
-- [ ] `<p>` `ng-if="pendingWizardSettings.queryParams && pendingWizardSettings.queryParams.trim().length > 0 && pendingWizardSettings.queryParams.indexOf('#$query##') === -1"`
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"`
-- [ ] `<button>` `ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)"`
-- [ ] `<button>` `ng-disabled="!pendingWizardSettings.caseName || !pendingWizardSettings.caseName.trim()"` _(added on main)_
-- [ ] `<button>` `ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_
-- [ ] `<p>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"` _(added on main)_
-- [ ] `<li>` `ng-if="!pendingWizardSettings.proxyRequests"` _(added on main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr' && !proxyRequiredForAllEndpoints"` _(added on main)_
-- [ ] `<span>` `ng-if="pendingWizardSettings.searchEnginePreset === 'searchapi'"` _(added on main)_
-- [ ] `<label>` `ng-if="!proxyRequiredForAllEndpoints"` _(added on main)_
-- [ ] `<div>` `ng-if="!proxyRequiredForAllEndpoints"` _(added on main)_
-- [ ] `<label>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
-- [ ] `<div>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEnginePreset !== 'searchapi'"` _(added on main)_
-- [ ] `<div#wizardEndpointAccordionCreate>` `ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_
-- [ ] `<button>` `ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_
-- [ ] `<div#wizardEndpointAccordionExisting>` `ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_
-- [ ] `<div>` `ng-show="finishSaveError"` _(added on main)_
-- [ ] `<button>` `ng-disabled="savingFinish"` _(added on main)_
+- [x] `<p>` `ng-if="!pendingWizardSettings.searchEngine === 'static'"` _(not in main)_ — N/A: legacy bug, never rendered; main fixed it and Current shows the copy for live engines
+- [x] `<div>` `ng-show="invalidHeaders"`
+- [x] `<div>` `ng-show="showTLSChangeWarning"`
+- [x] `<div>` `ng-show="invalidProxyApiMethod"`
+- [x] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"`
+- [x] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'es'"`
+- [x] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'os'"`
+- [x] `<li>` `ng-if="isChrome"`
+- [x] `<ul>` `ng-if="pendingWizardSettings.searchEngine === 'solr'"`
+- [x] `<div>` `ng-if="urlInvalid && !showTLSChangeWarning"`
+- [x] `<div>` `ng-if="mapperInvalid"`
+- [x] `<div>` `ng-if="urlValid"`
+- [x] `<button>` `ng-disabled="showTLSChangeWarning"`
+- [x] `<p>` `ng-show="pendingWizardSettings.urlFormat"`
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
+- [ ] `<div>` `ng-show="staticContent.import.alert"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<button>` `ng-disabled="listOfStaticQueries.length > 0"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<div>` `ng-if="staticContent.content"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `uib-collapse="!isStaticCollapsed"` _(not in main)_ — `<details>`
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'static'"`
+- [x] `<div>` `uib-collapse="!isSolrCollapsed"` _(not in main)_ — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr'"` _(not in main)_
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` _(not in main)_
+- [ ] `<div>` `uib-collapse="!isHeaderConfigCollapsed"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
+- [x] `<span>` `ng-hide="validating"`
+- [x] `<span>` `ng-show="validating"`
+- [x] `<button>` `ng-show="!showTLSChangeWarning"`
+- [x] `<button>` `ng-disabled="!readyToContinue()"`
+- [x] `<button>` `ng-show="urlInvalid && !showTLSChangeWarning"`
+- [x] `<button>` `ng-disabled="validating"`
+- [x] `<span>` `ng-show="showTLSChangeWarning"`
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEngine !== 'searchapi'"` _(not in main)_
+- [x] `<div>` `ng-if="listSearchEndpoints().length === 0"` — placeholder option and disabled select
+- [x] `<select#searchEndpoint>` `ng-if="listSearchEndpoints().length > 0"`
+- [x] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || showTLSChangeWarning"`
+- [x] `<p>` `ng-if="hasStaticEndpoints"`
+- [x] `<p>` `ng-if="!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0"`
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEndpointId != null && pendingWizardSettings.searchEngine === 'searchapi'"`
+- [x] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))"`
+- [x] `<p>` `ng-if="titleFieldRequired"`
+- [x] `<p>` `ng-if="idFieldRequired"`
+- [ ] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<p>` `ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0"`
+- [x] `<p>` `ng-if="pendingWizardSettings.queryParams && pendingWizardSettings.queryParams.trim().length > 0 && pendingWizardSettings.queryParams.indexOf('#$query##') === -1"`
+- [ ] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)"`
+- [x] `<button>` `ng-disabled="!pendingWizardSettings.caseName || !pendingWizardSettings.caseName.trim()"` _(added on main)_
+- [ ] `<button>` `ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<p>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"` _(added on main)_
+- [x] `<li>` `ng-if="!pendingWizardSettings.proxyRequests"` _(added on main)_
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr' && !proxyRequiredForAllEndpoints"` _(added on main)_ — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] `<span>` `ng-if="pendingWizardSettings.searchEnginePreset === 'searchapi'"` _(added on main)_
+- [x] `<label>` `ng-if="!proxyRequiredForAllEndpoints"` _(added on main)_
+- [x] `<div>` `ng-if="!proxyRequiredForAllEndpoints"` _(added on main)_
+- [x] `<label>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
+- [x] `<div>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEnginePreset !== 'searchapi'"` _(added on main)_
+- [ ] `<div#wizardEndpointAccordionCreate>` `ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<button>` `ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<div#wizardEndpointAccordionExisting>` `ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-show="finishSaveError"` _(added on main)_
+- [x] `<button>` `ng-disabled="savingFinish"` _(added on main)_
 
 Actions:
 
-- [ ] `<button>` `ng-click="cancel()"`
-- [ ] `<input>` `ng-change="changeSearchEngine()"`
-- [ ] `<input>` `ng-change="reset()"`
-- [ ] `<button>` `ng-click="validate(true)"`
-- [ ] `<button>` `ng-click="isStaticCollapsed = !isStaticCollapsed"`
-- [ ] `<button>` `ng-click="createSnapshot()"`
-- [ ] `<button>` `ng-click="isSolrCollapsed = !isSolrCollapsed"`
-- [ ] `<select>` `ng-change="resetUrlValid()"`
-- [ ] `<button>` `ng-click="goToMapperWizard()"`
-- [ ] `<button>` `ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed"` _(not in main)_
-- [ ] `<input#proxy-requests>` `ng-change="changeProxySetting()"`
-- [ ] `<input>` `ng-change="resetUrlValid()"`
-- [ ] `<button>` `ng-click="validate()"`
-- [ ] `<button>` `ng-click="skipValidation()"`
-- [ ] `<div>` `ng-click="switchToCreateNewSearchEndpoint()"` _(not in main)_
-- [ ] `<select#searchEndpoint>` `ng-change="changeSearchEndpoint()"`
-- [ ] `<input>` `ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)"`
-- [ ] `<input>` `ng-change="updateDisplayFields('id', pendingWizardSettings.idField)"`
-- [ ] `<button>` `ng-click="validateFieldSpec()"`
-- [ ] `<button>` `ng-click="pendingWizardSettings.addQueryStaticQueries()"`
-- [ ] `<input>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
-- [ ] `<button>` `ng-click="pendingWizardSettings.deleteQuery($index)"`
-- [ ] `<button>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
-- [ ] `<button>` `ng-click="switchToCreateNewSearchEndpoint()"` _(added on main)_
-- [ ] `<button>` `ng-click="toggleHeaderConfig()"` _(added on main)_
+- [x] `<button>` `ng-click="cancel()"`
+- [x] `<input>` `ng-change="changeSearchEngine()"`
+- [x] `<input>` `ng-change="reset()"`
+- [x] `<button>` `ng-click="validate(true)"`
+- [x] `<button>` `ng-click="isStaticCollapsed = !isStaticCollapsed"`
+- [ ] `<button>` `ng-click="createSnapshot()"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="isSolrCollapsed = !isSolrCollapsed"` — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] `<select>` `ng-change="resetUrlValid()"` — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] `<button>` `ng-click="goToMapperWizard()"`
+- [ ] `<button>` `ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<input#proxy-requests>` `ng-change="changeProxySetting()"`
+- [x] `<input>` `ng-change="resetUrlValid()"`
+- [x] `<button>` `ng-click="validate()"`
+- [x] `<button>` `ng-click="skipValidation()"`
+- [ ] `<div>` `ng-click="switchToCreateNewSearchEndpoint()"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<select#searchEndpoint>` `ng-change="changeSearchEndpoint()"`
+- [x] `<input>` `ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)"`
+- [x] `<input>` `ng-change="updateDisplayFields('id', pendingWizardSettings.idField)"`
+- [x] `<button>` `ng-click="validateFieldSpec()"` — typo confirm restored in this pass
+- [x] `<button>` `ng-click="pendingWizardSettings.addQueryStaticQueries()"`
+- [x] `<input>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
+- [x] `<button>` `ng-click="pendingWizardSettings.deleteQuery($index)"`
+- [x] `<button>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
+- [ ] `<button>` `ng-click="switchToCreateNewSearchEndpoint()"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] `<button>` `ng-click="toggleHeaderConfig()"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
 
 Inputs:
 
-- [ ] `<input>` `ng-model="pendingWizardSettings.caseName"` _(not in main)_
-- [ ] `<input>` `ng-model="pendingWizardSettings.searchEngine"` _(not in main)_
-- [ ] `<input>` `ng-model="pendingWizardSettings.searchUrl"`
-- [ ] `<select>` `ng-model="pendingWizardSettings.apiMethod"`
-- [ ] `<input#proxy-requests>` `ng-model="pendingWizardSettings.proxyRequests"`
-- [ ] `<input>` `ng-model="pendingWizardSettings.basicAuthCredential"`
-- [ ] `<select#searchEndpoint>` `ng-model="pendingWizardSettings.searchEndpointId"`
-- [ ] `<select#searchEndpoint>` `ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints() | filter: {searchEngine: '!static'}"`
-- [ ] `<input>` `ng-model="pendingWizardSettings.testQuery"`
-- [ ] `<input>` `ng-model="pendingWizardSettings.titleField"`
-- [ ] `<input>` `uib-typeahead="field for field in searchFields | filter:$viewValue | limitTo:8"` _(not in main)_
-- [ ] `<input>` `ng-model="pendingWizardSettings.idField"`
-- [ ] `<input>` `uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8"` _(not in main)_
-- [ ] `<tags-input>` `ng-model="pendingWizardSettings.additionalFields"`
-- [ ] `<input>` `ng-model="pendingWizardSettings.queryParams"`
-- [ ] `<textarea>` `ng-model="pendingWizardSettings.queryParams"`
-- [ ] `<input>` `ng-model="pendingWizardSettings.text"`
-- [ ] `<input#wizardCaseName>` `ng-model="pendingWizardSettings.caseName"` _(added on main)_
-- [ ] `<input>` `ng-model="pendingWizardSettings.searchEnginePreset"` _(added on main)_
+- [x] `<input>` `ng-model="pendingWizardSettings.caseName"` _(not in main)_
+- [x] `<input>` `ng-model="pendingWizardSettings.searchEngine"` _(not in main)_ — engine tiles bind searchEnginePreset, as on main
+- [x] `<input>` `ng-model="pendingWizardSettings.searchUrl"`
+- [x] `<select>` `ng-model="pendingWizardSettings.apiMethod"` — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] `<input#proxy-requests>` `ng-model="pendingWizardSettings.proxyRequests"`
+- [x] `<input>` `ng-model="pendingWizardSettings.basicAuthCredential"`
+- [x] `<select#searchEndpoint>` `ng-model="pendingWizardSettings.searchEndpointId"`
+- [x] `<select#searchEndpoint>` `ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints() | filter: {searchEngine: '!static'}"`
+- [x] `<input>` `ng-model="pendingWizardSettings.testQuery"`
+- [x] `<input>` `ng-model="pendingWizardSettings.titleField"`
+- [x] `<input>` `uib-typeahead="field for field in searchFields | filter:$viewValue | limitTo:8"` _(not in main)_ — datalist suggestions (8ce48fc3)
+- [x] `<input>` `ng-model="pendingWizardSettings.idField"`
+- [x] `<input>` `uib-typeahead="field for field in idFields | filter:$viewValue | limitTo:8"` _(not in main)_ — datalist suggestions (8ce48fc3)
+- [x] `<tags-input>` `ng-model="pendingWizardSettings.additionalFields"` — comma/space text with suggestion buttons (8ce48fc3)
+- [x] `<input>` `ng-model="pendingWizardSettings.queryParams"`
+- [x] `<textarea>` `ng-model="pendingWizardSettings.queryParams"`
+- [x] `<input>` `ng-model="pendingWizardSettings.text"`
+- [x] `<input#wizardCaseName>` `ng-model="pendingWizardSettings.caseName"` _(added on main)_
+- [x] `<input>` `ng-model="pendingWizardSettings.searchEnginePreset"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="query in pendingWizardSettings.newQueries track by $id(query)"`
-- [ ] `<label>` `ng-repeat="engine in mapperBasedSearchEngines"` _(added on main)_
+- [x] `<div>` `ng-repeat="query in pendingWizardSettings.newQueries track by $id(query)"`
+- [x] `<label>` `ng-repeat="engine in mapperBasedSearchEngines"` _(added on main)_
 
 Bound content:
 
-- [ ] `<img>` `ng-src="images/doug.jpg"`
-- [ ] `<img>` `ng-src="images/solr.png"`
-- [ ] `<img>` `ng-src="images/es.png"`
-- [ ] `<img>` `ng-src="images/os.png"`
-- [ ] `<img>` `ng-src="images/vectara.png"`
-- [ ] `<img>` `ng-src="images/static.png"`
-- [ ] `<img>` `ng-src="images/searchapi.png"`
-- [ ] `<img>` `ng-src="images/algolia.png"`
-- [ ] `<div>` `ng-bind-html="staticContent.import.alert"`
-- [ ] `<img>` `ng-src="images/{{engine.logo}}.png"` _(added on main)_
-- [ ] `<span>` `ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"` _(added on main)_
-- [ ] `<span>` `ng-bind="solrQueryResponseWriterCurlJson"` _(added on main)_
-- [ ] `<span>` `ng-bind="extractSolrConfigApiUrl(pendingWizardSettings.searchUrl)"` _(added on main)_
+- [x] `<img>` `ng-src="images/doug.jpg"`
+- [x] `<img>` `ng-src="images/solr.png"`
+- [x] `<img>` `ng-src="images/es.png"`
+- [x] `<img>` `ng-src="images/os.png"`
+- [x] `<img>` `ng-src="images/vectara.png"`
+- [x] `<img>` `ng-src="images/static.png"`
+- [x] `<img>` `ng-src="images/searchapi.png"`
+- [x] `<img>` `ng-src="images/algolia.png"`
+- [ ] `<div>` `ng-bind-html="staticContent.import.alert"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<img>` `ng-src="images/{{engine.logo}}.png"` _(added on main)_
+- [x] `<span>` `ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"` _(added on main)_
+- [x] `<span>` `ng-bind="solrQueryResponseWriterCurlJson"` _(added on main)_
+- [x] `<span>` `ng-bind="extractSolrConfigApiUrl(pendingWizardSettings.searchUrl)"` _(added on main)_
 
 Links:
 
-- [ ] `<a>` `ng-href="{{linkToSearchEndpointUrl()}}"`
-- [ ] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/"` _(not in main)_
-- [ ] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/"` _(not in main)_
-- [ ] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/"` _(not in main)_
-- [ ] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid"` _(not in main)_
-- [ ] `<a>` `href="http://quepidapp.com/how-quepid-works/"`
-- [ ] `<a>` `href="{{quepidUrlToSwitchTo}}"`
-- [ ] `<a>` `href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true"`
-- [ ] `<a>` `ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}"` _(added on main)_
+- [x] `<a>` `ng-href="{{linkToSearchEndpointUrl()}}"`
+- [x] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-SearchAPI-and-Quepid/"` _(not in main)_
+- [x] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-Elasticsearch-and-Quepid/"` _(not in main)_
+- [x] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-OpenSearch-and-Quepid/"` _(not in main)_
+- [x] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid"` _(not in main)_
+- [x] `<a>` `href="http://quepidapp.com/how-quepid-works/"`
+- [x] `<a>` `href="{{quepidUrlToSwitchTo}}"`
+- [ ] `<a>` `href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true"` — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<a>` `ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}"` _(added on main)_
 
 Copy:
 
-- [ ] aria-label: "Close"
-- [ ] "Welcome To Quepid!"
-- [ ] "Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!"
-- [ ] "Continue"
-- [ ] title: "Welcome"
-- [ ] "Name Your Case!"
-- [ ] "Give an informative name to the problem you're solving."
-- [ ] "New Case Name:"
-- [ ] title: "Name"
-- [ ] "What Search Endpoint do you want to connect to?"
-- [ ] alt: "Solr"
-- [ ] alt: "Elasticsearch"
-- [ ] alt: "OpenSearch"
-- [ ] alt: "Vectara"
-- [ ] alt: "Static"
-- [ ] alt: "Search API"
-- [ ] alt: "Algolia"
-- [ ] "Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):"
-- [ ] "Custom Headers must be a valid JSON object"
-- [ ] "You have specified a search endpoint url that is on a different protocol ("
-- [ ] ") than Quepid is running, and this triggers your browser to prevent communciation with the search endpoint."
-- [ ] "Option 1: Reload Quepid to run on the correct protocol"
-- [ ] "Option 2: Proxy the requests THROUGH the Quepid server."
-- [ ] "You must change from JSONP to another API method when proxying."
-- [ ] "Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}." _(not in main)_
-- [ ] "Is your Search API behind a firewall or proxy? Try accessing the" _(not in main)_
-- [ ] "URL directly"
-- [ ] "and see if you get a response" _(not in main)_
-- [ ] "Do you need an API Key? If so, set one up under Advanced pane --> Custom Headers." _(not in main)_
-- [ ] "Use the browser"
-- [ ] "Network Inspector"
-- [ ] "to see the actual request."
-- [ ] "See the"
-- [ ] "Troubleshooting Search API and Quepid" _(not in main)_
-- [ ] "wiki page for more help!"
-- [ ] "Is your Elasticsearch behind a firewall or proxy? Try accessing the" _(not in main)_
-- [ ] "Does your Elasticsearch accept HTTP POST requests?"
-- [ ] "Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?" _(not in main)_
-- [ ] "Troubleshooting Elasticsearch and Quepid"
-- [ ] "Is your OpenSearch behind a firewall or proxy? Try accessing the" _(not in main)_
-- [ ] "Does your OpenSearch accept HTTP POST requests?"
-- [ ] "Is your OpenSearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?" _(not in main)_
-- [ ] "Troubleshooting OpenSearch and Quepid"
-- [ ] "Do you see any errors when you visit your"
-- [ ] "Solr URL directly?"
-- [ ] "Use the Proxy option under" _(not in main)_
-- [ ] "Advanced"
-- [ ] "!" _(not in main)_
-- [ ] "You may need to configure the JSON"
-- [ ] "wt=json"
-- [ ] "to be"
-- [ ] "application/javascript"
-- [ ] "to work with Quepid. You can do this via the below curl command:"
-- [ ] "curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential : ''}} -k -X POST -H 'Content-type:application/json' -d '{ "create-queryresponsewriter": { "name": "json", "class": "solr.JSONResponseWriter", "content-type": "application/javascript; charset=UTF-8" } }' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}" _(not in main)_
-- [ ] "If you get a error message back, change"
-- [ ] "create-queryresponsewriter"
-- [ ] "to"
-- [ ] "update-queryresponsewriter"
-- [ ] "and re-run."
-- [ ] "If Solr responds, check if you have an ad blocker blocking your queries."
-- [ ] "Chrome does not accept self signed certificates on Solr, try Firefox."
-- [ ] "Chrome does not allow basic auth to Solr, try Firefox."
-- [ ] "Troubleshooting Solr and Quepid"
-- [ ] "Good news, we are getting results from the API, however we can't parse them into Quepid's expected format due to:"
-- [ ] "You can use the Search API Response panel to see the JSON returned from your API."
-- [ ] "Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks."
-- [ ] "Quepid can search this! Hit 'Continue' to keep working through setup."
-- [ ] "ping it"
-- [ ] title: "Manually validates Quepid can get retrieve search results from your URL before continuing"
-- [ ] "Unsure?"
-- [ ] "Learn More"
-- [ ] "about Quepid's light touch with your search engine & data."
-- [ ] "Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}."
-- [ ] "A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine."
-- [ ] "Static Dataset"
-- [ ] "Create the CSV file and upload it here. Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint."
-- [ ] "The CSV file should have the headers:"
-- [ ] "Query Text,Doc ID,Doc Position"
-- [ ] ". Then, all the document fields you want displayed follow as columns with the header being the name of the field."
-- [ ] "Query Text,Doc ID,Doc Position, MovieTitle star wars,527641,1, Star Wars star wars,9426,2, Star Wars: The Empire Strikes Back star wars,1921,3, Star Wars: Return of the Jedi"
-- [ ] "Please note that the additional columns that a Snapshot export file contains are ignored when you import them here."
-- [ ] "Select CSV file to import:"
-- [ ] "CSV"
-- [ ] "Import"
-- [ ] "Solr Configuration"
-- [ ] "API Method"
-- [ ] "JSONP"
-- [ ] "GET"
-- [ ] "Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET."
-- [ ] "Custom Mapper Required"
-- [ ] "Search API endpoints require a custom mapper to translate your API's response format into Quepid's expected format."
-- [ ] "To set up a Search API endpoint:"
-- [ ] "Use the"
-- [ ] "Mapper Wizard"
-- [ ] "to create your custom mapper code"
-- [ ] "Return here and select your new endpoint from"
-- [ ] ""Use an existing Search Endpoint""
-- [ ] "below"
-- [ ] "Use Mapper Wizard"
-- [ ] "Proxy Requests"
-- [ ] "Fighting with CORS issues? Proxy your search requests through Quepid server." _(not in main)_
-- [ ] "Basic Authentication"
-- [ ] placeholder: "username:password"
-- [ ] "Specify your"
-- [ ] "username:password"
-- [ ] "here to access Basic Auth protected endpoints."
-- [ ] "Validating..."
-- [ ] "Skip Validation"
-- [ ] "Reload Quepid in"
-- [ ] "Protocol"
-- [ ] "You do not have any Search Endpoints created yet."
-- [ ] "FYI: your existing Static File endpoints are NOT sharable across cases."
-- [ ] "Endpoint:"
-- [ ] "Test Query"
-- [ ] "Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step."
-- [ ] placeholder: "shirts without stripes"
-- [ ] "Test query is required to validate the endpoint."
-- [ ] title: "Endpoint"
-- [ ] "How Should We Display Your Results?"
-- [ ] "Title Field"
-- [ ] placeholder: "Begin typing to show suggestions"
-- [ ] "What field should we treat as the 'title' when displaying results?"
-- [ ] "This field is required. Please select a title field."
-- [ ] "ID Field"
-- [ ] "What field is the unique identifier for your search results?"
-- [ ] "This field is required. Please select an ID field."
-- [ ] "Additional Display Fields"
-- [ ] placeholder: "Add a field"
-- [ ] "Would any extra fields be handy to display?"
-- [ ] title: "Fields"
-- [ ] "Search Queries"
-- [ ] "All of the queries defined in the static upload will be created."
-- [ ] "Add Your Search Queries"
-- [ ] "Start out tuning a couple important search queries:"
-- [ ] "Query Pattern"
-- [ ] "Modify your query structure to include"
-- [ ] "#$query##"
-- [ ] "where the search text should be substituted. Quepid will replace"
-- [ ] "with each query you add below."
-- [ ] placeholder: "q=#$query##"
-- [ ] placeholder: "{ "query": "#$query##" }" _(not in main)_
-- [ ] "Query pattern is required."
-- [ ] "Your query pattern should include"
-- [ ] "so Quepid can substitute the search text."
-- [ ] "X"
-- [ ] title: "Query"
-- [ ] "That's It!"
-- [ ] "Go to "Tune Relevance" to iterate on your relevance and manipulate searches"
-- [ ] "Finish"
-- [ ] title: "Finish"
-- [ ] "Create a new Search Endpoint" _(added on main)_
-- [ ] ") than Quepid is running, and this triggers your browser to prevent communication with the search endpoint." _(added on main)_
-- [ ] "Option 1: Reload Quepid to run on the correct protocol." _(added on main)_
-- [ ] "Sorry, we're not getting any search results from your {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }}." _(added on main)_
-- [ ] "Quick fix:" _(added on main)_
-- [ ] "check" _(added on main)_
-- [ ] "below so Quepid's server talks to your Search API instead of your browser." _(added on main)_
-- [ ] "Or configure CORS" _(added on main)_
-- [ ] "on your Search API if your team prefers direct browser access." _(added on main)_
-- [ ] "Can you open the" _(added on main)_
-- [ ] "in a new tab? If yes but Quepid still fails, check the browser console for CORS errors." _(added on main)_
-- [ ] "Do you need an API Key? If so, set one up in" _(added on main)_
-- [ ] "Custom Headers" _(added on main)_
-- [ ] "below." _(added on main)_
-- [ ] "Troubleshooting {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }} and Quepid" _(added on main)_
-- [ ] "below so Quepid's server talks to Elasticsearch instead of your browser. No cluster changes required." _(added on main)_
-- [ ] "on Elasticsearch to allow Quepid's domain if your team prefers direct browser access." _(added on main)_
-- [ ] "below so Quepid's server talks to OpenSearch instead of your browser. No cluster changes required." _(added on main)_
-- [ ] "on OpenSearch to allow Quepid's domain if your team prefers direct browser access." _(added on main)_
-- [ ] "below so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required." _(added on main)_
-- [ ] "If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors." _(added on main)_
-- [ ] "curl" _(added on main)_
-- [ ] "-k -X POST -H 'Content-type:application/json' -d '" _(added on main)_
-- [ ] "'" _(added on main)_
-- [ ] "Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure." _(added on main)_
-- [ ] "Use an existing Search Endpoint" _(added on main)_
+- [x] aria-label: "Close"
+- [x] "Welcome To Quepid!"
+- [x] "Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!"
+- [x] "Continue"
+- [x] title: "Welcome"
+- [x] "Name Your Case!"
+- [x] "Give an informative name to the problem you're solving."
+- [x] "New Case Name:"
+- [x] title: "Name"
+- [x] "What Search Endpoint do you want to connect to?"
+- [x] alt: "Solr"
+- [x] alt: "Elasticsearch"
+- [x] alt: "OpenSearch"
+- [x] alt: "Vectara"
+- [x] alt: "Static"
+- [x] alt: "Search API"
+- [x] alt: "Algolia"
+- [x] "Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):"
+- [x] "Custom Headers must be a valid JSON object"
+- [x] "You have specified a search endpoint url that is on a different protocol ("
+- [x] ") than Quepid is running, and this triggers your browser to prevent communciation with the search endpoint."
+- [x] "Option 1: Reload Quepid to run on the correct protocol"
+- [x] "Option 2: Proxy the requests THROUGH the Quepid server."
+- [x] "You must change from JSONP to another API method when proxying."
+- [x] "Sorry, we're not getting any search results from your {{ pendingWizardSettings.searchEngine | searchEngineName }}." _(not in main)_
+- [x] "Is your Search API behind a firewall or proxy? Try accessing the" _(not in main)_
+- [x] "URL directly"
+- [x] "and see if you get a response" _(not in main)_
+- [x] "Do you need an API Key? If so, set one up under Advanced pane --> Custom Headers." _(not in main)_
+- [x] "Use the browser"
+- [x] "Network Inspector"
+- [x] "to see the actual request."
+- [x] "See the"
+- [x] "Troubleshooting Search API and Quepid" _(not in main)_
+- [x] "wiki page for more help!"
+- [x] "Is your Elasticsearch behind a firewall or proxy? Try accessing the" _(not in main)_
+- [x] "Does your Elasticsearch accept HTTP POST requests?"
+- [x] "Is your Elasticsearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?" _(not in main)_
+- [x] "Troubleshooting Elasticsearch and Quepid"
+- [x] "Is your OpenSearch behind a firewall or proxy? Try accessing the" _(not in main)_
+- [x] "Does your OpenSearch accept HTTP POST requests?"
+- [x] "Is your OpenSearch setup for CORS to talk to Quepid's web app (http://go.quepidapp.com)?" _(not in main)_
+- [x] "Troubleshooting OpenSearch and Quepid"
+- [x] "Do you see any errors when you visit your"
+- [x] "Solr URL directly?"
+- [x] "Use the Proxy option under" _(not in main)_
+- [ ] "Advanced" — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "!" _(not in main)_
+- [x] "You may need to configure the JSON"
+- [x] "wt=json"
+- [x] "to be"
+- [x] "application/javascript"
+- [x] "to work with Quepid. You can do this via the below curl command:"
+- [x] "curl {{pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential : ''}} -k -X POST -H 'Content-type:application/json' -d '{ "create-queryresponsewriter": { "name": "json", "class": "solr.JSONResponseWriter", "content-type": "application/javascript; charset=UTF-8" } }' {{ extractSolrConfigApiUrl(pendingWizardSettings.searchUrl) }}" _(not in main)_
+- [x] "If you get a error message back, change"
+- [x] "create-queryresponsewriter"
+- [x] "to"
+- [x] "update-queryresponsewriter"
+- [x] "and re-run."
+- [x] "If Solr responds, check if you have an ad blocker blocking your queries."
+- [x] "Chrome does not accept self signed certificates on Solr, try Firefox."
+- [x] "Chrome does not allow basic auth to Solr, try Firefox."
+- [x] "Troubleshooting Solr and Quepid"
+- [x] "Good news, we are getting results from the API, however we can't parse them into Quepid's expected format due to:"
+- [x] "You can use the Search API Response panel to see the JSON returned from your API."
+- [x] "Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks."
+- [x] "Quepid can search this! Hit 'Continue' to keep working through setup."
+- [x] "ping it"
+- [x] title: "Manually validates Quepid can get retrieve search results from your URL before continuing"
+- [x] "Unsure?"
+- [x] "Learn More"
+- [x] "about Quepid's light touch with your search engine & data."
+- [x] "Tip: Your URL should look like this {{pendingWizardSettings.urlFormat}}."
+- [x] "A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing evaluation tools without requiring a live connection to a search engine."
+- [x] "Static Dataset"
+- [x] "Create the CSV file and upload it here. Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to to create Static search endpoint."
+- [x] "The CSV file should have the headers:"
+- [x] "Query Text,Doc ID,Doc Position"
+- [x] ". Then, all the document fields you want displayed follow as columns with the header being the name of the field."
+- [x] "Query Text,Doc ID,Doc Position, MovieTitle star wars,527641,1, Star Wars star wars,9426,2, Star Wars: The Empire Strikes Back star wars,1921,3, Star Wars: Return of the Jedi"
+- [x] "Please note that the additional columns that a Snapshot export file contains are ignored when you import them here."
+- [x] "Select CSV file to import:"
+- [ ] "CSV" — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [ ] "Import" — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Solr Configuration" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] "API Method" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] "JSONP" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] "GET" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
+- [x] "Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET."
+- [x] "Custom Mapper Required"
+- [x] "Search API endpoints require a custom mapper to translate your API's response format into Quepid's expected format."
+- [x] "To set up a Search API endpoint:"
+- [x] "Use the"
+- [x] "Mapper Wizard"
+- [x] "to create your custom mapper code"
+- [x] "Return here and select your new endpoint from"
+- [x] ""Use an existing Search Endpoint""
+- [x] "below"
+- [x] "Use Mapper Wizard"
+- [x] "Proxy Requests"
+- [x] "Fighting with CORS issues? Proxy your search requests through Quepid server." _(not in main)_
+- [x] "Basic Authentication"
+- [x] placeholder: "username:password"
+- [x] "Specify your"
+- [x] "username:password"
+- [x] "here to access Basic Auth protected endpoints."
+- [x] "Validating..."
+- [x] "Skip Validation"
+- [x] "Reload Quepid in"
+- [x] "Protocol"
+- [x] "You do not have any Search Endpoints created yet."
+- [x] "FYI: your existing Static File endpoints are NOT sharable across cases."
+- [x] "Endpoint:"
+- [x] "Test Query"
+- [ ] "Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step." — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] placeholder: "shirts without stripes"
+- [x] "Test query is required to validate the endpoint." — restored in this pass
+- [x] title: "Endpoint"
+- [x] "How Should We Display Your Results?"
+- [x] "Title Field"
+- [x] placeholder: "Begin typing to show suggestions"
+- [x] "What field should we treat as the 'title' when displaying results?"
+- [x] "This field is required. Please select a title field."
+- [x] "ID Field"
+- [x] "What field is the unique identifier for your search results?"
+- [x] "This field is required. Please select an ID field."
+- [x] "Additional Display Fields"
+- [x] placeholder: "Add a field"
+- [x] "Would any extra fields be handy to display?"
+- [x] title: "Fields"
+- [x] "Search Queries"
+- [x] "All of the queries defined in the static upload will be created."
+- [x] "Add Your Search Queries"
+- [x] "Start out tuning a couple important search queries:"
+- [ ] "Query Pattern" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Modify your query structure to include"
+- [x] "#$query##"
+- [x] "where the search text should be substituted. Quepid will replace"
+- [x] "with each query you add below."
+- [x] placeholder: "q=#$query##"
+- [x] placeholder: "{ "query": "#$query##" }" _(not in main)_
+- [x] "Query pattern is required."
+- [x] "Your query pattern should include"
+- [x] "so Quepid can substitute the search text."
+- [x] "X"
+- [x] title: "Query"
+- [x] "That's It!"
+- [x] "Go to "Tune Relevance" to iterate on your relevance and manipulate searches"
+- [x] "Finish"
+- [x] title: "Finish"
+- [ ] "Create a new Search Endpoint" _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] ") than Quepid is running, and this triggers your browser to prevent communication with the search endpoint." _(added on main)_
+- [x] "Option 1: Reload Quepid to run on the correct protocol." _(added on main)_
+- [x] "Sorry, we're not getting any search results from your {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }}." _(added on main)_
+- [x] "Quick fix:" _(added on main)_
+- [x] "check" _(added on main)_
+- [x] "below so Quepid's server talks to your Search API instead of your browser." _(added on main)_
+- [x] "Or configure CORS" _(added on main)_
+- [x] "on your Search API if your team prefers direct browser access." _(added on main)_
+- [x] "Can you open the" _(added on main)_
+- [x] "in a new tab? If yes but Quepid still fails, check the browser console for CORS errors." _(added on main)_
+- [x] "Do you need an API Key? If so, set one up in" _(added on main)_
+- [x] "Custom Headers" _(added on main)_
+- [x] "below." _(added on main)_
+- [x] "Troubleshooting {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }} and Quepid" _(added on main)_
+- [x] "below so Quepid's server talks to Elasticsearch instead of your browser. No cluster changes required." _(added on main)_
+- [x] "on Elasticsearch to allow Quepid's domain if your team prefers direct browser access." _(added on main)_
+- [x] "below so Quepid's server talks to OpenSearch instead of your browser. No cluster changes required." _(added on main)_
+- [x] "on OpenSearch to allow Quepid's domain if your team prefers direct browser access." _(added on main)_
+- [x] "below so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required." _(added on main)_
+- [x] "If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors." _(added on main)_
+- [x] "curl" _(added on main)_
+- [x] "-k -X POST -H 'Content-type:application/json' -d '" _(added on main)_
+- [x] "'" _(added on main)_
+- [x] "Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure." _(added on main)_
+- [x] "Use an existing Search Endpoint" _(added on main)_
 
 <a id="row-2"></a>
 ### 2. `app/assets/templates/views/devQueryParams.html`

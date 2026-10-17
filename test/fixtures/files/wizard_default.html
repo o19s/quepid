@@ -47,12 +47,14 @@
         <section data-wizard-target="step" hidden>
           <h2>Name Your Case!</h2>
           <p>Give an informative name to the problem you're solving.</p>
-          <label for="wizardCaseName">New Case Name:</label>
-          <input id="wizardCaseName" class="form-control"
-                 data-wizard-target="caseName"
-                 data-wizard-field="caseName"
-                 data-action="input->wizard#updateSetting">
-          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <form data-action="submit->wizard#next">
+            <label for="wizardCaseName">New Case Name:</label>
+            <input id="wizardCaseName" class="form-control"
+                   data-wizard-target="caseName"
+                   data-wizard-field="caseName"
+                   data-action="input->wizard#updateSetting">
+            <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          </form>
         </section>
         <section data-wizard-target="step" hidden>
           <h2>What Search Endpoint do you want to connect to?</h2>
@@ -200,16 +202,17 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             </div>
             <p class="form-text" data-wizard-when="url-format" hidden>Tip: Your URL should look like this <code data-wizard-target="urlFormat"></code>.</p>
 
-            <label class="form-label mt-3" for="wizardApiMethod">API method</label>
-            <select id="wizardApiMethod" class="form-select"
-                    data-wizard-target="apiMethod"
-                    data-wizard-field="apiMethod"
-                    data-action="change->wizard#updateSetting">
-              <option value="GET">GET</option>
-              <option value="POST">POST</option>
-                <option value="JSONP">JSONP</option>
-            </select>
-            <p class="form-text" data-wizard-when="solr" hidden>Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+              <div data-wizard-when="solr" hidden>
+                <label class="form-label mt-3" for="wizardApiMethod">API method</label>
+                <select id="wizardApiMethod" class="form-select"
+                        data-wizard-target="apiMethod"
+                        data-wizard-field="apiMethod"
+                        data-action="change->wizard#updateSetting">
+                  <option value="JSONP">JSONP</option>
+                  <option value="GET">GET</option>
+                </select>
+                <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+              </div>
 
             <div data-wizard-when="searchapi" hidden>
               <label class="form-label mt-3" for="wizardTestQuery">Test Query</label>
@@ -218,6 +221,7 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
                      data-wizard-field="testQuery"
                      data-action="input->wizard#updateSetting">
               <p class="form-text">Enter a test query to validate the endpoint works.</p>
+              <p class="text-danger" data-wizard-when="test-query-required" hidden>Test query is required to validate the endpoint.</p>
               <label class="form-label" for="wizardQueryParams">Query pattern / request body</label>
               <textarea id="wizardQueryParams" class="form-control" rows="5"
                         data-wizard-target="queryParams queryPattern"
@@ -380,13 +384,15 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
           <div data-wizard-when="live">
             <h2>Add Your Search Queries</h2>
             <p>Start out tuning a couple important search queries:</p>
-            <input class="form-control"
-                   data-wizard-target="queryText"
-                   data-wizard-field="text"
-                   data-action="input->wizard#updateSetting"
-                   placeholder="Search query"
-                   aria-label="Search query">
-            <button type="button" class="btn btn-success mt-2" data-action="wizard#addQuery">Add Query</button>
+            <form data-action="submit->wizard#addQuery">
+              <input class="form-control"
+                     data-wizard-target="queryText"
+                     data-wizard-field="text"
+                     data-action="input->wizard#updateSetting"
+                     placeholder="Search query"
+                     aria-label="Search query">
+              <button type="button" class="btn btn-success mt-2" data-action="wizard#addQuery">Add Query</button>
+            </form>
           </div>
           <div class="mt-3" data-wizard-target="queryList"></div>
           <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>

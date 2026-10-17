@@ -301,6 +301,18 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ---
 
+### [MIGRATION] P2 I1 C2 — Case wizard behaviour changes with no recorded decision
+
+Found closing row 1 of the [parity checklist](../manual-testing/angular-parity-checklist.md#row-1) (`wizardModal.html`). The Stimulus port (`3f919211`) made these changes and the feature docs later described them, but no NOT-DOING entry, scenario or commit records a decision. Each needs one: keep it (record why) or restore main's behaviour. (A fourth, the API method select shown for every engine, was restored to main's Solr-only JSONP/GET.)
+
+1. **Search API query pattern moved from the Query step to the Endpoint step.** The Query step no longer shows the pattern with the endpoint URL and method badge. Moving it lets a new mapper-based endpoint validate with its pattern, but nobody decided it.
+2. **Static CSV import has no preview or Import button.** Legacy showed the parsed CSV (a "CSV" heading, the raw content and an error block) and imported on **Import**. Current imports as soon as a file is chosen and reports only a status line.
+3. **The Endpoint step's accordion is gone.** "Create a new Search Endpoint" and "Use an existing Search Endpoint" are both visible at once, and the "Advanced" and "Solr Configuration" collapses are expanded permanently. The TLS reload for an existing endpoint (`existingSearchEndpoint=true`) is no longer sent. Legacy reopened only the accordion, not the selection, so in both versions the user chooses the endpoint again.
+
+Source comparison against `8ceb99e9` and `776c68b5` plus a live replay on Current only; Legacy (:3001) was not replayed.
+
+---
+
 ### [PREEXISTING] P3 I0 C1 — Case wizard's Use Mapper Wizard fails silently when the draft case can't be deleted
 
 **Location:** `app/javascript/controllers/wizard_controller.js` (`goToMapperWizard`)

@@ -122,7 +122,7 @@ describe("wizard Rails markup with real Stimulus", () => {
         caseNo: () => 123,
         navigateTo: vi.fn()
       },
-      search: { createValidator: vi.fn(() => ({ validateUrl, fields: ["title", "body", "year", "poster_path", "cast"], idFields: ["id"] })) },
+      search: { createValidator: vi.fn(() => ({ validateUrl, fields: ["id", "title", "body", "year", "poster_path", "cast"], idFields: ["id"] })) },
       case: { selected: () => ({ id: 123 }), delete: vi.fn().mockResolvedValue(undefined), rename: vi.fn().mockResolvedValue(undefined) }
     }
     getWizardCapabilities.mockResolvedValue({ capability })
@@ -160,7 +160,7 @@ describe("wizard Rails markup with real Stimulus", () => {
     expect(step().textContent).toContain("What Search Endpoint")
     next()
     await vi.waitFor(() => expect(step().textContent).toContain("How Should We Display"))
-    expect([...find("#wizardSearchFields").options].map(option => option.value)).toEqual(["title", "body", "year", "poster_path", "cast"])
+    expect([...find("#wizardSearchFields").options].map(option => option.value)).toEqual(["id", "title", "body", "year", "poster_path", "cast"])
     expect([...find("#wizardIdFields").options].map(option => option.value)).toEqual(["id"])
     expect(find("#wizardTitleField").value).toBe("title")
     expect(find("#wizardIdField").value).toBe("id")
@@ -228,6 +228,34 @@ describe("wizard Rails markup with real Stimulus", () => {
     expect(shown(find('[data-wizard-target~="endpointContinue"]'))).toBe(true)
   })
 
+  it("requires a test query before continuing with an existing Search API endpoint", async () => {
+    await mount()
+    endpoint()
+    input("#wizardEndpoint", "7", "change")
+    const continueButton = find('[data-wizard-target~="endpointContinue"]')
+    expect(shown(find('[data-wizard-when="test-query-required"]'))).toBe(true)
+    expect(continueButton.disabled).toBe(true)
+    expect(find("button[data-wizard-target~='pingButton']").disabled).toBe(false)
+    input("#wizardTestQuery", "shirts")
+    expect(shown(find('[data-wizard-when="test-query-required"]'))).toBe(false)
+    expect(continueButton.disabled).toBe(false)
+  })
+
+  it("submits the case name and adds a query on Enter", async () => {
+    await mount()
+    next()
+    input("#wizardCaseName", "Enter test")
+    find("#wizardCaseName").form.requestSubmit()
+    expect(step().textContent).toContain("What Search Endpoint")
+    next()
+    await vi.waitFor(() => expect(step().textContent).toContain("How Should We Display"))
+    next()
+    input('[aria-label="Search query"]', "star wars")
+    find('[aria-label="Search query"]').form.requestSubmit()
+    expect(step().textContent).toContain("Add Your Search Queries")
+    expect(find('[data-wizard-target="queryList"]').textContent).toContain("star wars")
+  })
+
   it("deletes the draft before following the Rails-provided Mapper Wizard URL", async () => {
     await mount()
     endpoint()
@@ -268,6 +296,20 @@ describe("wizard Rails markup with real Stimulus", () => {
     expect(shown(find('[data-wizard-target="basicAuth"]'))).toBe(false)
     input("#wizardEndpoint", "7", "change")
     expect(shown(find('[data-wizard-when="url-format"]'))).toBe(false)
+  })
+
+  it("offers the API method only for Solr, leaving other engines' preset method alone", async () => {
+    await mount()
+    endpoint()
+    const apiMethod = find("#wizardApiMethod")
+    expect(shown(apiMethod)).toBe(true)
+    expect([...apiMethod.options].map(option => option.value)).toEqual(["JSONP", "GET"])
+    for (const name of ["es", "os", "vectara", "algolia", "searchapi"]) {
+      engine(name)
+      expect(shown(apiMethod), name).toBe(false)
+    }
+    engine("solr")
+    expect(shown(apiMethod)).toBe(true)
   })
 
   it("fills the actual Solr curl command and troubleshooting links from entered settings", async () => {
@@ -314,7 +356,7 @@ describe("wizard Rails markup with real Stimulus", () => {
     expect(controller.proxyRequiredValue).toBe(true)
     expect(controller.settings.proxyRequests).toBe(true)
     expect(element.querySelector("#wizardProxy")).toBeNull()
-    expect([...find('[data-wizard-target="apiMethod"]').options].map(option => option.value)).not.toContain("JSONP")
+    expect(element.querySelector('[data-wizard-target="apiMethod"]')).toBeNull()
   })
 
   it("keeps Finish disabled and waits for queries and onboarding before navigating", async () => {

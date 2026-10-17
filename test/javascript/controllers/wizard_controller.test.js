@@ -523,6 +523,33 @@ describe("WizardController", () => {
       expect(controller.fieldError).toMatch(/select a title field/)
     })
 
+    it("confirms a title or ID field that validation did not discover, except for Search API", () => {
+      const controller = mount({ step: STEPS.fields, settings: { idField: "id", titleField: "titel" } })
+      controller.searchFields = ["id", "title"]
+      window.confirm.mockReturnValue(false)
+      controller.validateFields()
+      expect(window.confirm).toHaveBeenCalledWith(expect.stringMatching(/could be a typo/))
+      expect(controller.stepIndex).toBe(STEPS.fields)
+
+      window.confirm.mockReturnValue(true)
+      controller.validateFields()
+      expect(controller.stepIndex).toBe(STEPS.query)
+
+      window.confirm.mockClear()
+      const searchApi = mount({ step: STEPS.fields, settings: { searchEngine: "searchapi", idField: "id", titleField: "name" } })
+      searchApi.validateFields()
+      expect(window.confirm).not.toHaveBeenCalled()
+      expect(searchApi.stepIndex).toBe(STEPS.query)
+    })
+
+    it("does not confirm discovered fields", () => {
+      const controller = mount({ step: STEPS.fields, settings: { idField: "id", titleField: "title" } })
+      controller.searchFields = ["id", "title"]
+      controller.validateFields()
+      expect(window.confirm).not.toHaveBeenCalled()
+      expect(controller.stepIndex).toBe(STEPS.query)
+    })
+
     it("builds the fieldSpec including additional fields and continues", () => {
       const controller = mount({
         step: STEPS.fields,

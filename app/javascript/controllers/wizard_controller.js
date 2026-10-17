@@ -360,6 +360,10 @@ export default class extends Controller {
     if (!this.settings.idField?.trim()) this.fieldError = "This field is required. Please select an ID field."
     if (!this.settings.titleField?.trim()) this.fieldError = "This field is required. Please select a title field."
     if (this.fieldError) return this.render()
+    // Search API fields come from the mapper code, so only other engines can have a typo here.
+    const customField = [this.settings.titleField, this.settings.idField].some((field) => !this.searchFields.includes(field))
+    if (customField && this.settings.searchEngine !== "searchapi" &&
+      !window.confirm("You are using a custom field for the title or ID (could be a typo), are you sure you want to continue?")) return
     this.settings.fieldSpec = buildFieldSpec(this.settings.idField, this.settings.titleField, this.settings.additionalFields)
     this.stepIndex = 4
     this.render()
@@ -528,6 +532,7 @@ export default class extends Controller {
       "can-validate": !mapperRequired && !tls,
       "can-ping": !tls,
       "selected-searchapi": Boolean(settings.searchEndpointId) && engine === "searchapi",
+      "test-query-required": this.testQueryRequired(),
       "static-endpoints": this.searchEndpoints.some((endpoint) => endpoint.searchEngine === "static"),
       "url-format": Boolean(settings.urlFormat) && !settings.searchEndpointId,
       "basic-auth": settings.supportsBasicAuth !== false,
@@ -543,6 +548,12 @@ export default class extends Controller {
       validating: Boolean(this.validating),
       "field-suggestions": this.fieldSuggestions().length > 0
     }
+  }
+
+  // An existing Search API endpoint is validated with its test query, so Continue needs one.
+  testQueryRequired() {
+    const { searchEndpointId, searchEngine, testQuery } = this.settings || {}
+    return Boolean(searchEndpointId) && searchEngine === "searchapi" && !testQuery?.trim()
   }
 
   renderConditions() {
@@ -716,8 +727,9 @@ export default class extends Controller {
     }
     // A static endpoint has nothing to validate until its CSV has been imported.
     const awaitingStaticImport = this.stepIndex === 2 && this.settings?.searchEngine === "static" && !this.staticImported
+    const awaitingTestQuery = this.stepIndex === 2 && this.testQueryRequired()
     this.continueButtonTargets.forEach((button) => {
-      button.disabled = this.validating || awaitingStaticImport || (this.stepIndex === 1 && !this.settings?.caseName?.trim())
+      button.disabled = this.validating || awaitingStaticImport || awaitingTestQuery || (this.stepIndex === 1 && !this.settings?.caseName?.trim())
     })
     this.pingButtonTargets.forEach((button) => { button.disabled = Boolean(this.validating) })
     if (this.hasFinishButtonTarget) this.finishButtonTarget.disabled = this.saving
