@@ -84,9 +84,9 @@ function makeCapability(settingsOverrides = {}) {
   return { capability, settings }
 }
 
-// Copied from the <template> rows in app/views/core/_tune_relevance.html.erb. Specs using
-// these cannot detect drift in the ERB's data-action wiring; that is covered by manual scenarios
-// 4.11 and 4.13.
+// Logic-only specs: these call controller methods on hand-built targets and so cannot detect drift in the
+// ERB's data-action/target wiring. That wiring, and everything the user clicks, is covered against the
+// live app in test/playwright/tune_relevance.spec.ts.
 function template(html) {
   const node = document.createElement("template")
   node.innerHTML = html
@@ -172,40 +172,6 @@ describe("TuneRelevanceController", () => {
     vi.unstubAllGlobals()
   })
 
-  describe("declared Stimulus actions", () => {
-    it("shows the tab and toggles the section named by the action params", () => {
-      const { controller } = mount()
-      controller.selectTab({ params: { tab: "history" } })
-      expect(controller.tab).toBe("history")
-
-      const body = document.createElement("div")
-      body.dataset.sectionBody = "fields"
-      controller.sectionBodyTargets = [body]
-      const header = document.createElement("div")
-      header.innerHTML = '<i class="bi bi-dash-circle-fill"></i>'
-      const icon = header.querySelector(".bi")
-      controller.toggleSection({ params: { section: "fields" }, currentTarget: header })
-      expect(body.classList.contains("d-none")).toBe(true)
-      expect(icon.className).toBe("bi bi-plus-circle-fill")
-      controller.toggleSection({ params: { section: "fields" }, currentTarget: header })
-      expect(body.classList.contains("d-none")).toBe(false)
-      expect(icon.className).toBe("bi bi-dash-circle-fill")
-    })
-
-    it("filters endpoints from the search input and submits renames without navigating", () => {
-      const { controller } = mount()
-      controller.renderEndpointSuggestions = vi.fn()
-      controller.renameTry = vi.fn()
-      controller.endpointSearchTarget.value = "movies"
-      controller.filterEndpoints({ currentTarget: controller.endpointSearchTarget })
-      expect(controller.renderEndpointSuggestions).toHaveBeenCalledWith("movies")
-      const preventDefault = vi.fn()
-      controller.submitRename({ preventDefault })
-      expect(preventDefault).toHaveBeenCalledOnce()
-      expect(controller.renameTry).toHaveBeenCalledOnce()
-    })
-  })
-
   describe("loading", () => {
     it("shows an error when capabilities fail to load", async () => {
       getTuneRelevanceCapabilities.mockRejectedValue(new Error("boom"))
@@ -278,20 +244,6 @@ describe("TuneRelevanceController", () => {
       expect(controller.queryWarningTarget.textContent).toContain("defType")
       controller.editor.view.destroy()
     })
-    it("activates the chosen tab, shows only its panel, and hides save on read-only tabs", () => {
-      const { controller, element } = mount()
-
-      controller.showTab("history")
-
-      expect(element.querySelector('[data-tune-relevance-tab-param="history"]').classList.contains("active")).toBe(true)
-      expect(element.querySelector('[data-tune-relevance-tab-param="history"]').getAttribute("aria-selected")).toBe("true")
-      expect(element.querySelector('[data-tune-panel="history"]').hidden).toBe(false)
-      expect(element.querySelector('[data-tune-panel="developer"]').hidden).toBe(true)
-      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(true)
-
-      controller.showTab("curator")
-      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(false)
-    })
   })
 
   describe("curator variables", () => {
@@ -342,16 +294,6 @@ describe("TuneRelevanceController", () => {
         .toBeLessThan(capability.navigation.goToTry.mock.invocationCallOrder[0])
     })
 
-    it("rejects an out-of-range number of results without saving", () => {
-      const { controller, capability } = mount()
-      controller.numberOfRowsTarget.value = "101"
-
-      controller.save()
-
-      expect(capability.settings.save).not.toHaveBeenCalled()
-      expect(errorFlash()).toEqual(["Number of Results to Show must be between 1 and 100."])
-    })
-
     it("rejects a non-numeric number of results", () => {
       const { controller, capability } = mount()
       controller.numberOfRowsTarget.value = "abc"
@@ -398,25 +340,6 @@ describe("TuneRelevanceController", () => {
       expect(capability.settings.save).not.toHaveBeenCalled()
     })
 
-    it("reports failed saves, preserves the editor/form values and allows retry", async () => {
-      const { controller, capability, settings } = mount()
-      capability.settings.save.mockRejectedValueOnce(new Error("Settings save unavailable"))
-      controller.fieldSpecTarget.value = "id title unsaved"
-      controller.numberOfRowsTarget.value = "23"
-      settings.selectedTry.queryParams = "q=edited"
-
-      await controller.save()
-
-      expect(errorFlash()).toEqual(["Settings save unavailable"])
-      expect(controller.saveButtonTarget.disabled).toBe(false)
-      expect(controller.settings).toBe(settings)
-      expect(settings.selectedTry.queryParams).toBe("q=edited")
-      expect(controller.fieldSpecTarget.value).toBe("id title unsaved")
-      expect(controller.numberOfRowsTarget.value).toBe("23")
-      await controller.save()
-      expect(capability.settings.save).toHaveBeenCalledTimes(2)
-    })
-
     it("blocks repeat submissions while a save is pending", async () => {
       const { controller, capability } = mount()
       let resolve
@@ -431,19 +354,6 @@ describe("TuneRelevanceController", () => {
       expect(controller.saveButtonTarget.disabled).toBe(false)
     })
 
-    it("copies the form fields into settings before saving", () => {
-      const { controller, capability, settings } = mount()
-      controller.fieldSpecTarget.value = "id title body"
-      controller.numberOfRowsTarget.value = "25"
-      controller.escapeQueryTarget.checked = true
-
-      controller.save()
-
-      expect(settings.fieldSpec).toBe("id title body")
-      expect(settings.numberOfRows).toBe("25")
-      expect(settings.escapeQuery).toBe(true)
-      expect(capability.settings.save).toHaveBeenCalledWith(settings)
-    })
   })
 
   describe("endpoints", () => {
@@ -486,192 +396,9 @@ describe("TuneRelevanceController", () => {
       expect(refresh).not.toHaveBeenCalled()
     })
 
-    it("suggests matching endpoints, capped at eight, and reports no results", () => {
-      const { controller } = mount()
-      controller.searchEndpoints = Array.from({ length: 12 }, (_, i) => ({ id: i, name: `Prod ${i}` }))
-
-      controller.renderEndpointSuggestions("prod")
-      expect(controller.endpointSuggestionsTarget.children).toHaveLength(8)
-      expect(controller.endpointNoResultsTarget.hidden).toBe(true)
-
-      controller.renderEndpointSuggestions("zzz")
-      expect(controller.endpointSuggestionsTarget.children).toHaveLength(0)
-      expect(controller.endpointNoResultsTarget.hidden).toBe(false)
-
-      controller.renderEndpointSuggestions("  ")
-      expect(controller.endpointNoResultsTarget.hidden).toBe(true)
-    })
-
-    it("selecting a suggestion updates the endpoint", () => {
-      const { controller } = mount()
-      controller.searchEndpoints = [endpoint]
-      const update = vi.spyOn(controller, "updateEndpoint").mockImplementation(() => {})
-
-      controller.renderEndpointSuggestions("prod")
-      const button = controller.endpointSuggestionsTarget.querySelector("button")
-      expect(button.dataset.action).toBe("click->tune-relevance#selectEndpointSuggestion")
-      expect(button.dataset.tuneRelevanceEndpointIdParam).toBe("9")
-      controller.selectEndpointSuggestion({ params: { endpointId: 9 } })
-
-      expect(update).toHaveBeenCalledWith({ target: controller.endpointSelectTarget })
-    })
-  })
-
-  describe("warnings", () => {
-    it("shows the TLS warning and hides save when the protocol mismatches", () => {
-      const { controller, capability, element } = mount()
-      capability.navigation.needToRedirectProtocol.mockReturnValue(true)
-
-      controller.refreshTls()
-
-      expect(controller.tlsWarningTarget.hidden).toBe(false)
-      expect(controller.tlsProtocolTarget.textContent).toBe("https")
-      expect(element.querySelector('[data-tune-relevance-target="action"]').hidden).toBe(true)
-    })
-
-    it("reloads Quepid on the other protocol, carrying the endpoint settings", () => {
-      const assign = vi.fn()
-      vi.stubGlobal("location", { assign })
-      const { controller } = mount()
-
-      controller.reloadInOtherProtocol()
-
-      expect(assign).toHaveBeenCalledOnce()
-      expect(assign.mock.calls[0][0]).toMatch(/^https:\/\/x\?.*showWizard=false/)
-    })
-
-    it("does not warn when requests are proxied", () => {
-      const { controller, capability } = mount({ proxyRequests: true })
-      capability.navigation.needToRedirectProtocol.mockReturnValue(true)
-
-      controller.refreshTls()
-
-      expect(controller.tlsWarningTarget.hidden).toBe(true)
-    })
-
-    it("flags a likely Solr param typo in the query", () => {
-      const { controller, settings } = mount()
-      settings.selectedTry.queryParams = "q=foo&deftype=edismax"
-
-      controller.refreshQueryEditor()
-
-      expect(controller.queryWarningTarget.hidden).toBe(false)
-      expect(controller.queryWarningTarget.innerHTML).toBe(
-        "Your query params contain <code>deftype</code>, you probably meant <code>defType</code>."
-      )
-
-      settings.selectedTry.queryParams = "q=foo&defType=edismax"
-      controller.refreshQueryEditor()
-
-      expect(controller.queryWarningTarget.hidden).toBe(true)
-      expect(controller.queryWarningTarget.innerHTML).toBe("")
-    })
-
-    it("hides the static-engine messages unless the engine is static", () => {
-      const { controller, settings } = mount()
-      controller.hasStaticEngineMessageTarget = true
-      controller.staticEngineMessageTarget = document.createElement("div")
-
-      controller.refreshQueryEditor()
-      expect(controller.staticEngineMessageTarget.hidden).toBe(true)
-
-      settings.searchEngine = "static"
-      controller.refreshQueryEditor()
-      expect(controller.staticEngineMessageTarget.hidden).toBe(false)
-    })
-  })
-
-  describe("history", () => {
-    it("lists non-deleted tries and navigates to a try when clicked", () => {
-      const { controller, capability, settings } = mount()
-      settings.tries.push(makeTry({ tryNo: 3, deleted: true }))
-
-      controller.refreshHistory()
-
-      const rows = controller.historyListTarget.querySelectorAll("li")
-      expect(rows).toHaveLength(2)
-      expect(rows[1].dataset.tuneRelevanceTryNoParam).toBe("2")
-      controller.hasPaneOutlet = true
-      controller.paneOutlet = { keepOpenAcrossNavigation: vi.fn() }
-      controller.showTab("history")
-      controller.navigateToTry({ params: { tryNo: 2 } })
-      expect(controller.paneOutlet.keepOpenAcrossNavigation).toHaveBeenCalledWith({ tab: "history" })
-      expect(capability.navigation.goToTry).toHaveBeenCalledWith(2)
-    })
-
-    it("opens try details without navigating", () => {
-      const { controller, capability } = mount()
-      controller.refreshHistory()
-
-      const details = controller.historyListTarget.querySelector("[data-try-details]")
-      expect(details.dataset.tuneRelevanceTryNoParam).toBe("1")
-      const stopPropagation = vi.fn()
-      controller.openTryDetails({ params: { tryNo: 1 }, stopPropagation })
-      expect(stopPropagation).toHaveBeenCalledOnce()
-
-      expect(capability.navigation.goToTry).not.toHaveBeenCalled()
-      expect(controller.tryTitleTarget.textContent).toBe("Try 1")
-      expect(controller.activeTry.tryNo).toBe(1)
-    })
-  })
-
-  describe("endpoint details", () => {
-    it("names the engine in the troubleshooting link and links to the endpoint", () => {
-      const { controller, capability } = mount({ selectedTry: makeTry({ searchEngine: "solr", searchEndpointId: 44 }) })
-      capability.settings.troubleshootingWikiUrl.mockReturnValue("https://wiki/solr")
-      controller.engineLabelsValue = { solr: "Solr" }
-      const target = (name, node) => {
-        controller[`has${name.charAt(0).toUpperCase()}${name.slice(1)}Target`] = true
-        controller[`${name}Target`] = node
-      }
-      target("troubleshootingLink", document.createElement("a"))
-      target("troubleshootingEngine", document.createElement("span"))
-      target("endpointMoreLink", document.createElement("a"))
-
-      controller.refreshEndpointDetails()
-
-      expect(controller.troubleshootingEngineTarget.textContent).toBe("Solr")
-      expect(controller.troubleshootingLinkTarget.hidden).toBe(false)
-      expect(controller.endpointMoreLinkTarget.getAttribute("href")).toBe("search_endpoints/44")
-      expect(controller.endpointMoreLinkTarget.hidden).toBe(false)
-    })
   })
 
   describe("try management", () => {
-    it("disables delete when only one try remains", () => {
-      const { controller, settings } = mount()
-      settings.tries = [makeTry()]
-
-      controller.showTryDetails(settings.tries[0])
-
-      expect(controller.tryDeleteTarget.disabled).toBe(true)
-    })
-
-    it("drops the endpoint and browse hrefs for a try without them, rather than linking to #", () => {
-      const { controller } = mount()
-      controller.showTryDetails(makeTry({ endpointName: "Old", searchEndpointId: 5, searchUrl: "http://x" }))
-      expect(controller.tryEndpointLinkTarget.getAttribute("href")).toBe("search_endpoints/5")
-
-      controller.showTryDetails(makeTry({ endpointName: "", searchEndpointId: null, searchUrl: "" }))
-
-      expect(controller.tryEndpointLinkTarget.hasAttribute("href")).toBe(false)
-      expect(controller.tryBrowseLinkTarget.hasAttribute("href")).toBe(false)
-      expect(controller.tryBrowseLinkTarget.hidden).toBe(true)
-    })
-
-    it("toggles the rename form", () => {
-      const { controller, settings } = mount()
-      controller.showTryDetails(settings.tries[0])
-
-      controller.toggleRename()
-      expect(controller.tryRenameFormTarget.hidden).toBe(false)
-      expect(controller.tryRenameActionTarget.textContent).toBe("Cancel Rename")
-
-      controller.toggleRename()
-      expect(controller.tryRenameFormTarget.hidden).toBe(true)
-      expect(controller.tryRenameActionTarget.textContent).toBe("Rename")
-    })
-
     it("ignores try actions when no try is open", () => {
       const { controller, capability } = mount()
       controller.tryRenameFormTarget.hidden = true
@@ -683,123 +410,9 @@ describe("TuneRelevanceController", () => {
       expect(capability.settings.deleteTry).not.toHaveBeenCalled()
     })
 
-    it("renames a try, reloads settings, and confirms", async () => {
-      const { controller, capability, settings } = mount()
-      controller.showTryDetails(settings.tries[1])
-      controller.tryNameInputTarget.value = "  Better name  "
-
-      controller.renameTry()
-      await flush()
-
-      expect(capability.settings.renameTry).toHaveBeenCalledWith(2, "Better name")
-      expect(capability.settings.editable).toHaveBeenCalled()
-      expect(flash.show).toHaveBeenCalledWith("success", "Try renamed successfully.")
-    })
-
-    it("does not rename to a blank name", () => {
-      const { controller, capability, settings } = mount()
-      controller.showTryDetails(settings.tries[1])
-      controller.tryNameInputTarget.value = "   "
-
-      controller.renameTry()
-
-      expect(capability.settings.renameTry).not.toHaveBeenCalled()
-    })
-
-    it("reports a failed rename", async () => {
-      const { controller, capability, settings } = mount()
-      capability.settings.renameTry.mockRejectedValue(new Error("x"))
-      controller.showTryDetails(settings.tries[1])
-      controller.tryNameInputTarget.value = "New"
-
-      controller.renameTry()
-      await flush()
-
-      expect(errorFlash()).toEqual(["Unable to rename try."])
-    })
-
-    it("refuses to delete the active try", () => {
-      const { controller, capability, settings } = mount()
-      controller.showTryDetails(settings.tries[0])
-
-      controller.deleteTry()
-
-      expect(capability.settings.deleteTry).not.toHaveBeenCalled()
-      expect(errorFlash()[0]).toMatch(/can not delete the currently active try \(Try 1\)/)
-    })
-
-    it("does not delete a try when the confirm is cancelled", () => {
-      const { controller, capability, settings } = mount()
-      vi.stubGlobal("confirm", vi.fn(() => false))
-      controller.showTryDetails(settings.tries[1])
-
-      controller.deleteTry()
-
-      expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining(settings.tries[1].name))
-      expect(capability.settings.deleteTry).not.toHaveBeenCalled()
-    })
-
-    it("deletes a non-active try after confirming and reloads", async () => {
-      const { controller, capability, settings } = mount()
-      vi.stubGlobal("confirm", vi.fn(() => true))
-      controller.showTryDetails(settings.tries[1])
-
-      controller.deleteTry()
-      await flush()
-
-      expect(window.confirm).toHaveBeenCalled()
-      expect(capability.settings.deleteTry).toHaveBeenCalledWith(2)
-      expect(flash.show).toHaveBeenCalledWith("success", "Successfully deleted try!")
-    })
-
-    it("reports a failed delete", async () => {
-      const { controller, capability, settings } = mount()
-      capability.settings.deleteTry.mockRejectedValue(new Error("x"))
-      vi.stubGlobal("confirm", vi.fn(() => true))
-      controller.showTryDetails(settings.tries[1])
-
-      controller.deleteTry()
-      await flush()
-
-      expect(errorFlash()).toEqual(["Unable to delete try."])
-    })
-
-    it("duplicates a try and reports the new name", async () => {
-      const { controller, capability, settings } = mount()
-      controller.showTryDetails(settings.tries[0])
-
-      controller.duplicateTry()
-      await flush()
-
-      expect(capability.settings.duplicateTry).toHaveBeenCalledWith(1)
-      expect(flash.show).toHaveBeenCalledWith("success", "Try Try 1 duplicated successfully as Try 3.")
-    })
-
-    it("reports a failed duplicate", async () => {
-      const { controller, capability, settings } = mount()
-      capability.settings.duplicateTry.mockReturnValue(Promise.reject(new Error("x")))
-      controller.showTryDetails(settings.tries[0])
-
-      controller.duplicateTry()
-      await flush()
-
-      expect(errorFlash()).toEqual(["Unable to duplicate try."])
-    })
   })
 
   describe("nightly and evaluation", () => {
-    it("persists the nightly checkbox on the selected case", () => {
-      const { controller, capability } = mount()
-      const kase = { nightly: false }
-      capability.case.selected.mockReturnValue(kase)
-      controller.nightlyTarget.checked = true
-
-      controller.updateNightly()
-
-      expect(kase.nightly).toBe(true)
-      expect(capability.case.updateNightly).toHaveBeenCalledWith(kase)
-    })
-
     it("does nothing when no case is selected", () => {
       const { controller, capability } = mount()
       capability.case.selected.mockReturnValue(null)
@@ -809,37 +422,5 @@ describe("TuneRelevanceController", () => {
       expect(capability.case.updateNightly).not.toHaveBeenCalled()
     })
 
-    it("queues an evaluation for the selected try, disabling the button while it runs", async () => {
-      const assign = vi.fn()
-      vi.stubGlobal("location", { assign })
-      const { controller, capability } = mount()
-
-      controller.runEvaluation()
-      expect(controller.runEvaluationTarget.disabled).toBe(true)
-      expect(controller.runEvaluationTarget.textContent).toBe("Queuing evaluation job...")
-      await flush()
-
-      expect(capability.case.runEvaluation).toHaveBeenCalledWith(5, 1)
-      expect(flash.show).toHaveBeenCalledWith("success", "Evaluation queued successfully.")
-      expect(assign).toHaveBeenCalledWith("/")
-      expect(controller.runEvaluationTarget.disabled).toBe(false)
-      expect(controller.runEvaluationTarget.textContent).toBe("Rerun My Searches Now in the Background!")
-      vi.unstubAllGlobals()
-    })
-
-    it("reports a failed evaluation and re-enables the button", async () => {
-      const assign = vi.fn()
-      vi.stubGlobal("location", { assign })
-      const { controller, capability } = mount()
-      capability.case.runEvaluation.mockReturnValue(Promise.reject(new Error("x")))
-
-      controller.runEvaluation()
-      await flush()
-
-      expect(errorFlash()).toEqual(["Unable to queue evaluation."])
-      expect(assign).not.toHaveBeenCalled()
-      expect(controller.runEvaluationTarget.disabled).toBe(false)
-      vi.unstubAllGlobals()
-    })
   })
 })

@@ -1,5 +1,5 @@
-import { test, expect } from '@playwright/test';
-import { createDisposableCase, deleteCaseViaApi } from './case_helpers';
+import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpers';
 
 const EDITABLE_CASE_ID = Number(process.env.QUEPID_E2E_EDITABLE_CASE_ID || 2);
 
@@ -144,5 +144,313 @@ test.describe('try management on a disposable case', () => {
     await openTuneRelevance('history');
     await expect(historyRows).toHaveCount(1);
     await expect(historyRows.first()).toHaveAttribute('data-try-no', activeTryNo);
+  });
+});
+
+/**
+ * The drawer against a disposable case with its own endpoint and try, so nothing here touches shared
+ * fixtures. The case has no queries, so the endpoint URL is never contacted. `page.route` is used only to
+ * inject failures or to fake the endpoint list, never to replace the behaviour under test.
+ */
+test.describe('drawer on a disposable case with its own endpoint', () => {
+  let caseId: number;
+  let endpointIds: number[] = [];
+
+  const flash = (page: Page) => page.locator('#flash-messages');
+  const drawer = (page: Page) => page.locator('#dev-settings');
+  const tab = (page: Page, name: string) => page.locator(`[data-tune-relevance-tab-param="${name}"]`);
+  const historyRows = (page: Page) => page.locator('[data-tune-relevance-target="historyList"] li');
+  const modal = (page: Page) => page.locator('[data-tune-relevance-target="tryModal"]');
+
+  async function createEndpoint(page: Page, attrs: Record<string, unknown> = {}): Promise<{ id: number; name: string }> {
+    const name = `Playwright Tune Endpoint ${Date.now()}-${endpointIds.length}`;
+    const response = await page.request.post('api/search_endpoints', {
+      headers: await apiHeaders(page, { 'Content-Type': 'application/json' }),
+      data: { search_endpoint: { name, endpoint_url: 'http://tune.invalid/solr/select', search_engine: 'solr', api_method: 'GET', ...attrs } }
+    });
+    expect(response.ok(), `endpoint create: ${response.status()}`).toBeTruthy();
+    const created = await response.json();
+    const id = Number(created.search_endpoint_id ?? created.id);
+    expect(id).toBeGreaterThan(0);
+    endpointIds.push(id);
+    return { id, name };
+  }
+
+  async function createTry(page: Page, endpointId: number, attrs: Record<string, unknown> = {}): Promise<number> {
+    const response = await page.request.post(`api/cases/${caseId}/tries`, {
+      headers: await apiHeaders(page, { 'Content-Type': 'application/json' }),
+      data: { try: { search_endpoint_id: endpointId, query_params: 'q=#$query##', field_spec: 'id:id title:title', number_of_rows: 10, ...attrs } }
+    });
+    expect(response.ok(), `try create: ${response.status()}`).toBeTruthy();
+    const tryNo = Number((await response.json()).try_number);
+    expect(tryNo).toBeGreaterThan(0);
+    return tryNo;
+  }
+
+  /** Opens the drawer on a tab, whether or not it is already open (the toolbar button toggles it). */
+  async function openDrawer(page: Page, name: string) {
+    if (!(await drawer(page).isVisible())) await page.getByRole('button', { name: 'Tune Relevance', exact: true }).click();
+    await tab(page, name).click();
+  }
+
+  async function gotoTry(page: Page, tryNo: number, tabName: string) {
+    await page.goto(`case/${caseId}/try/${tryNo}`);
+    await openDrawer(page, tabName);
+  }
+
+  async function openTryDetails(page: Page, tryNo: number) {
+    const row = historyRows(page).and(page.locator(`[data-try-no="${tryNo}"]`));
+    await row.hover();
+    await row.locator('[data-try-details]').click();
+    await expect(modal(page)).toBeVisible();
+  }
+
+  test.beforeEach(async ({ page }) => {
+    caseId = await createDisposableCase(page, 'Tune Drawer');
+    endpointIds = [];
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.goto('cases');
+    if (caseId) await deleteCaseViaApi(page, caseId);
+    for (const id of endpointIds) {
+      const response = await page.request.delete(`api/search_endpoints/${id}`, { headers: await apiHeaders(page) });
+      expect(response.ok(), `endpoint ${id} cleanup failed: ${response.status()}`).toBeTruthy();
+    }
+  });
+
+  test('tabs show one panel at a time and Rerun only on the editable tabs', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'developer');
+    await expect(drawer(page).locator('[data-tune-relevance-target="tab"]')).toHaveText(
+      ['Query', 'Tuning Knobs', 'Settings', 'History', 'Annotations']);
+
+    const editable: Record<string, boolean> = { developer: true, curator: true, engineSettings: true, history: false, annotations: false };
+    for (const [name, canRerun] of Object.entries(editable)) {
+      await tab(page, name).click();
+      await expect(tab(page, name)).toHaveClass(/active/);
+      for (const other of Object.keys(editable)) {
+        await expect(page.locator(`[data-tune-panel="${other}"]`)).toBeVisible({ visible: other === name });
+      }
+      await expect(page.locator('#query-sandbox-action')).toBeVisible({ visible: canRerun });
+    }
+  });
+
+  test('the query tab warns about a Solr parameter typo as you type', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'developer');
+    const warning = page.locator('[data-tune-relevance-target="queryWarning"]');
+    await expect(warning).toBeHidden();
+    await page.locator('#query-params-editor .cm-content').fill('q=foo&deftype=edismax');
+    await expect(warning).toHaveText('Your query params contain deftype, you probably meant defType.');
+    await page.locator('#query-params-editor .cm-content').fill('q=foo&defType=edismax');
+    await expect(warning).toBeHidden();
+  });
+
+  test('a Static endpoint has no query settings or knobs to edit', async ({ page }) => {
+    const endpoint = await createEndpoint(page, { search_engine: 'static', endpoint_url: 'http://tune.invalid/api/cases/1/snapshots/1/search' });
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'developer');
+    await expect(page.locator('[data-tune-relevance-target="staticEngineMessage"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="editorShell"]')).toBeHidden();
+    await tab(page, 'curator').click();
+    await expect(page.locator('[data-tune-relevance-target="staticKnobsMessage"]')).toBeVisible();
+  });
+
+  test('Rerun saves a new try with the form values, which survive a reload', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##titleBoost##' });
+    await gotoTry(page, tryNo, 'curator');
+    await expect(page.locator('[data-tune-relevance-target="curatorVars"] .slider-wrap')).toHaveCount(1);
+    await page.locator('[data-tune-relevance-target="curatorVars"] input').fill('7');
+    await tab(page, 'engineSettings').click();
+    await page.locator('[data-tune-relevance-target="fieldSpec"]').fill('id:id title:title overview');
+    await page.locator('[data-tune-relevance-target="numberOfRows"]').fill('25');
+    await page.locator('.dev-header[data-tune-relevance-section-param="escape"]').click();
+    await page.locator('#escape-queries-checkbox').uncheck();
+    await page.locator('#query-sandbox-action').click();
+    await expect(page).toHaveURL(new RegExp(`/case/${caseId}/try/${tryNo + 1}\\b`));
+
+    await page.reload();
+    await openDrawer(page, 'engineSettings');
+    await expect(page.locator('[data-tune-relevance-target="fieldSpec"]')).toHaveValue('id:id title:title overview');
+    await expect(page.locator('[data-tune-relevance-target="numberOfRows"]')).toHaveValue('25');
+    await page.locator('.dev-header[data-tune-relevance-section-param="escape"]').click();
+    await expect(page.locator('#escape-queries-checkbox')).not.toBeChecked();
+    await tab(page, 'curator').click();
+    await expect(page.locator('[data-tune-relevance-target="curatorVars"] input')).toHaveValue('7');
+  });
+
+  test('Rerun rejects an out-of-range result count, and reports a failed save so the user can retry', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'engineSettings');
+    await page.locator('[data-tune-relevance-target="numberOfRows"]').fill('101');
+    await page.locator('#query-sandbox-action').click();
+    await expect(flash(page)).toContainText('Number of Results to Show must be between 1 and 100.');
+    await expect(page).toHaveURL(new RegExp(`/try/${tryNo}\\b`));
+
+    await page.locator('[data-tune-relevance-target="numberOfRows"]').fill('12');
+    const failSave = (route: import('@playwright/test').Route) =>
+      route.request().method() === 'POST' ? route.fulfill({ status: 500, json: { error: 'boom' } }) : route.continue();
+    await page.route(`**/api/cases/${caseId}/tries**`, failSave);
+    await page.locator('#query-sandbox-action').click();
+    await expect(flash(page).locator('.alert-danger, .alert-error, .alert').first()).toBeVisible();
+    await expect(page).toHaveURL(new RegExp(`/try/${tryNo}\\b`));
+    await expect(page.locator('[data-tune-relevance-target="numberOfRows"]')).toHaveValue('12');
+    await expect(page.locator('#query-sandbox-action')).toBeEnabled();
+
+    await page.unroute(`**/api/cases/${caseId}/tries**`, failSave);
+    await page.locator('#query-sandbox-action').click();
+    await expect(page).toHaveURL(new RegExp(`/try/${tryNo + 1}\\b`));
+  });
+
+  test('history rows go to their try, and the ... button opens the details instead', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const first = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##boost##' });
+    const second = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=body' });
+    await gotoTry(page, second, 'history');
+    const row = historyRows(page).and(page.locator(`[data-try-no="${first}"]`));
+    await expect(row).toContainText(endpoint.name);
+
+    await openTryDetails(page, first);
+    await expect(page).toHaveURL(new RegExp(`/try/${second}\\b`));
+    await expect(modal(page).locator('[data-tune-relevance-target="tryQueryParams"]')).toHaveText('q=#$query##&qf=title^##boost##');
+    await expect(modal(page).locator('[data-tune-relevance-target="tryEndpointLink"]')).toHaveText(endpoint.name);
+    await expect(modal(page).locator('[data-tune-relevance-target="tryFieldSpec"]')).toHaveText('id:id title:title');
+    await expect(modal(page).locator('[data-tune-relevance-target="tryVariables"]')).toContainText('##boost##');
+    await modal(page).getByRole('button', { name: 'Dismiss' }).last().click();
+    await expect(modal(page)).toBeHidden();
+
+    await row.click();
+    await expect(page).toHaveURL(new RegExp(`/try/${first}\\b`));
+  });
+
+  test('a blank try name is not saved, and failed rename, duplicate and delete are reported', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const first = await createTry(page, endpoint.id);
+    const second = await createTry(page, endpoint.id);
+    await gotoTry(page, second, 'history');
+
+    let renames = 0;
+    page.on('request', request => { if (request.method() === 'PUT' && request.url().includes(`/tries/${first}`)) renames += 1; });
+    await openTryDetails(page, first);
+    await modal(page).locator('[data-tune-relevance-target="tryRenameAction"]').click();
+    await modal(page).locator('[data-tune-relevance-target="tryNameInput"]').fill('   ');
+    await modal(page).locator('[data-tune-relevance-target="tryRenameForm"] button[type="submit"]').click();
+    await expect(modal(page)).toBeVisible();
+    expect(renames).toBe(0);
+
+    const failing = (route: import('@playwright/test').Route) => route.request().method() === 'GET'
+      ? route.continue() : route.fulfill({ status: 500, json: { error: 'boom' } });
+    await page.route(`**/api/cases/${caseId}/tries**`, failing);
+    await page.route(`**/api/clone/cases/${caseId}/tries/**`, failing);
+    await modal(page).locator('[data-tune-relevance-target="tryNameInput"]').fill('Will not save');
+    await modal(page).locator('[data-tune-relevance-target="tryRenameForm"] button[type="submit"]').click();
+    await expect(flash(page)).toContainText('Unable to rename try.');
+    await modal(page).getByRole('button', { name: 'Duplicate' }).click();
+    await expect(flash(page)).toContainText('Unable to duplicate try.');
+    page.once('dialog', dialog => dialog.accept());
+    await modal(page).locator('[data-tune-relevance-target="tryDelete"]').click();
+    await expect(flash(page)).toContainText('Unable to delete try.');
+    await page.unroute(`**/api/cases/${caseId}/tries**`, failing);
+    await page.unroute(`**/api/clone/cases/${caseId}/tries/**`, failing);
+    // The case's own default Try 1 plus the two created here.
+    await expect(historyRows(page)).toHaveCount(3);
+  });
+
+  test('a cancelled delete keeps the try', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const first = await createTry(page, endpoint.id);
+    const second = await createTry(page, endpoint.id);
+    await gotoTry(page, second, 'history');
+    await openTryDetails(page, first);
+    let asked = '';
+    page.once('dialog', dialog => { asked = dialog.message(); return dialog.dismiss(); });
+    await modal(page).locator('[data-tune-relevance-target="tryDelete"]').click();
+    await expect.poll(() => asked).toContain(`Try ${first}`);
+    await expect(historyRows(page)).toHaveCount(3);
+  });
+
+  test('endpoint details name the endpoint and link to it and to troubleshooting', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'engineSettings');
+    await expect(page.locator('[data-tune-relevance-target="endpointName"]')).toHaveText(endpoint.name);
+    await expect(page.locator('[data-tune-relevance-target="endpointUrl"]')).toHaveText('http://tune.invalid/solr/select');
+    await expect(page.locator('[data-tune-relevance-target="endpointMoreLink"]')).toHaveAttribute('href', `search_endpoints/${endpoint.id}`);
+    const troubleshooting = page.locator('[data-tune-relevance-target="troubleshootingLink"]');
+    await expect(troubleshooting).toContainText('Troubleshooting Solr and Quepid');
+    await expect(troubleshooting).toHaveAttribute('href', /^https?:\/\//);
+  });
+
+  test('an archived endpoint is flagged', async ({ page }) => {
+    const endpoint = await createEndpoint(page, { archived: true });
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'engineSettings');
+    await expect(page.locator('[data-tune-relevance-target="endpointArchived"]')).toContainText('This search endpoint has been archived');
+  });
+
+  test('choosing an endpoint on the other protocol replaces Rerun with a reload button', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    // The case's list only holds endpoints shared with its teams, so serve one on the other protocol.
+    await page.route(`**/api/cases/${caseId}/search_endpoints`, route => route.fulfill({ json: { search_endpoints: [
+      { search_endpoint_id: 900001, name: 'Other protocol', search_engine: 'solr', endpoint_url: 'https://tune.invalid/solr/select', api_method: 'GET' }
+    ] } }));
+    await gotoTry(page, tryNo, 'engineSettings');
+    await expect(page.locator('[data-tune-relevance-target="tlsWarning"]')).toBeHidden();
+    await expect(page.locator('#query-sandbox-action')).toBeVisible();
+
+    await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
+    await page.locator('[data-tune-relevance-target="endpointSelect"]').selectOption({ label: 'Other protocol' });
+    const warning = page.locator('[data-tune-relevance-target="tlsWarning"]');
+    await expect(warning).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="tlsProtocol"]')).toHaveText('https');
+    await expect(page.locator('#query-sandbox-action')).toBeHidden();
+
+    await page.route(/^https:\/\//, route => route.abort());
+    const reload = page.waitForRequest(request => request.url().startsWith('https://') && request.url().includes('showWizard=false'));
+    await warning.getByRole('button').click();
+    expect((await reload).url()).toContain(`/case/${caseId}/try/${tryNo}`);
+  });
+
+  test('the endpoint picker says so when there are none, and caps suggestions at eight', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    const stub = (search_endpoints: unknown[]) => page.route(`**/api/cases/${caseId}/search_endpoints`, route => route.fulfill({ json: { search_endpoints } }));
+
+    await stub([]);
+    await gotoTry(page, tryNo, 'engineSettings');
+    await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
+    await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toBeHidden();
+
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+    await stub(Array.from({ length: 12 }, (_, i) => ({ search_endpoint_id: 900000 + i, name: `Prod ${i}`, search_engine: 'solr' })));
+    await page.reload();
+    await openDrawer(page, 'engineSettings');
+    await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
+    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('prod');
+    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(8);
+    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('zzz');
+    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(0);
+    await expect(page.locator('[data-tune-relevance-target="endpointNoResults"]')).toBeVisible();
+  });
+
+  test('a failed background evaluation is reported and the button recovers', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await page.route(`**/api/cases/${caseId}/run_evaluation**`, route => route.fulfill({ status: 500, json: { error: 'boom' } }));
+    await gotoTry(page, tryNo, 'engineSettings');
+    await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
+    const run = page.locator('[data-tune-relevance-target~="runEvaluation"]');
+    await run.click();
+    await expect(flash(page)).toContainText('Unable to queue evaluation.');
+    await expect(run).toBeEnabled();
+    await expect(run).toHaveText('Rerun My Searches Now in the Background!');
+    await expect(page).toHaveURL(new RegExp(`/case/${caseId}/`));
   });
 });

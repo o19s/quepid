@@ -303,13 +303,34 @@ that rely on any non-empty value enabling detailed errors will change behavior.
 
 ### [MIGRATION] P2 I1 C2 — Case wizard behaviour changes with no recorded decision
 
-Found closing row 1 of the [parity checklist](../manual-testing/angular-parity-checklist.md#row-1) (`wizardModal.html`). The Stimulus port (`3f919211`) made these changes and the feature docs later described them, but no NOT-DOING entry, scenario or commit records a decision. Each needs one: keep it (record why) or restore main's behaviour. (A fourth, the API method select shown for every engine, was restored to main's Solr-only JSONP/GET.)
+Found closing row 1 of the [parity checklist](../manual-testing/angular-parity-checklist.md#row-1) (`wizardModal.html`). The Stimulus port (`3f919211`) made these changes and the feature docs later described them, but no NOT-DOING entry, scenario or commit records a decision. Each needs one: keep it (record why) or restore main's behaviour.
 
 1. **Search API query pattern moved from the Query step to the Endpoint step.** The Query step no longer shows the pattern with the endpoint URL and method badge. Moving it lets a new mapper-based endpoint validate with its pattern, but nobody decided it.
 2. **Static CSV import has no preview or Import button.** Legacy showed the parsed CSV (a "CSV" heading, the raw content and an error block) and imported on **Import**. Current imports as soon as a file is chosen and reports only a status line.
 3. **The Endpoint step's accordion is gone.** "Create a new Search Endpoint" and "Use an existing Search Endpoint" are both visible at once, and the "Advanced" and "Solr Configuration" collapses are expanded permanently. The TLS reload for an existing endpoint (`existingSearchEndpoint=true`) is no longer sent. Legacy reopened only the accordion, not the selection, so in both versions the user chooses the endpoint again.
 
-Source comparison against `8ceb99e9` and `776c68b5` plus a live replay on Current only; Legacy (:3001) was not replayed.
+Source comparison against `8ceb99e9` and `776c68b5`, plus a live replay of all three on Legacy (:3001) and Current (:3000) on 2026-10-17: Legacy shows the query pattern with the endpoint URL and method badge on the Query step, a CSV preview with an **Import** button, and a collapsed endpoint accordion; Current shows none of them. The static CSV flow persists the same two queries in CSV order on both after a reload.
+
+---
+
+### [MIGRATION] P2 I1 C2 — Tune Relevance drawer behaviour changes with no recorded decision
+
+Found closing rows [2](../manual-testing/angular-parity-checklist.md#row-2) (`devQueryParams.html`), [11](../manual-testing/angular-parity-checklist.md#row-11) (`queryParamsDetails.html`) and [27](../manual-testing/angular-parity-checklist.md#row-27) (`queryParamsHistory.html`). Owners: `_tune_relevance.html.erb`, `_try_details_modal.html.erb`, `tune_relevance_controller.js`. No NOT-DOING entry, scenario or feature-doc line records a decision for any item. Each needs one: keep it (record why) or restore the Angular behaviour. Items 1 to 4, 6 to 9 and 12 were replayed on Legacy (:3001) and Current (:3000) with equivalent cases on 2026-10-17; the rest are source comparison against `8ceb99e9` and `776c68b5`.
+
+1. **Tuning Knobs empty state is gone.** Legacy and main show "What's this tab do? Knobs allow you to fine tune your search! …" when the try has no knobs, plus a short "Add and remove knobs from here by editing your query." tip always. Current shows one merged note always.
+2. **The Evaluate Nightly? and Escape Queries tooltips are gone.** Both exist on Legacy and main ("Run all the queries every night and store the results and the scores as a snapshot." and the escape-syntax advice).
+3. **Settings sections were reordered.** Escape Queries now sits before Evaluate Nightly; Legacy and main have them the other way round. (Search Endpoints moving last was main's own change and is kept.)
+4. **Endpoint picker copy changed.** "Pick Shared Endpoints:", "You do not have any search endpoints shared with this case. Share the case with a team first." and "No search endpoints found. Check your spelling!" became "No search endpoints found. Create or share an endpoint to use it here." and "No matching search endpoints found." The select and the type-to-search box still read the same list.
+5. **The protocol-mismatch explanation is gone from the drawer** (source only). Choosing an endpoint on the other protocol in Settings shows only **Reload Quepid in {protocol} Protocol** (live, Current). Legacy and main also rendered "You have specified a search engine url that is on a different protocol … Please either swap to the proxied connection, or make sure the search endpoint is running on the same HTTP protocol" with a link to the endpoint's edit page in Endpoint Details. Loading a mismatched try shows that explanation as a flash on Current, so it is not lost entirely.
+6. **Rerun My Searches! keeps the drawer open** on the new try. Legacy closes it. Commit `e3605dc5` and scenario 4.12 describe the new behaviour; neither records a decision to depart from Legacy.
+7. **Renaming a try closes the Try Details modal and flashes "Try renamed successfully."** Legacy and main kept the modal open, returned to the read-only title and showed no flash. "Unable to rename try." is new.
+8. **Deleting a try asks `confirm("Are you sure you want to delete Try N? This cannot be undone.")`** (`e09d68e7`). Legacy and main deleted immediately. The active-try error and the disabled Delete on a single try match.
+9. **History rows lost their per-endpoint colours.** Legacy and main shaded rows `#666`, `#64647D` or `#667A66` by search URL. Current sets `bucket-N` classes that no stylesheet uses, so every row is `#666` (computed style checked live). The feature doc's "Color-coded by search URL" is inaccurate.
+10. **History row hover text lost the variables.** Legacy and main listed `name=value` for each knob under the search URL (source only; Current sets the URL only).
+11. **Annotations tab intro text was reworded** (found on the way, belongs to rows 23 and 24): the typos "help your remember" and "You might have made some changes … (eg. a new tokenizer)" became "help you remember" and a shorter second paragraph.
+12. **A try whose endpoint is on the other protocol hides the whole case toolbar.** Current's bootstrap throws "Blocked Request: mixed-content" before `ready()` runs, so Select scorer, Judgements, Clone, Delete, Export and Tune Relevance never appear and the only way out is the flash's link to the endpoint's edit page. Legacy selects the case before the check, so its toolbar and drawer stay usable (replayed on both with a disposable case and an https endpoint, 2026-10-17).
+
+**Fix direction:** 2, 3, 5, 9, 10 and 12 are plain restorations (for 12, show the toolbar before blocking). 1, 4, 7 and 11 are copy or flow changes that may have been deliberate. 6 and 8 need a product call. Whatever is kept needs a NOT-DOING or scenario line.
 
 ---
 

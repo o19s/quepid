@@ -45,7 +45,10 @@ function makeCapability() {
       caseNo: vi.fn(() => 5),
       navigateTo: vi.fn()
     },
-    search: { createValidator: vi.fn() },
+    search: {
+      createValidator: vi.fn(),
+      evaluateMapper: vi.fn(() => ({ numberOfResultsMapper: () => 1, docsMapper: () => [] }))
+    },
     case: {
       selected: vi.fn(() => ({ id: 5 })),
       rename: vi.fn(() => Promise.resolve()),
@@ -354,6 +357,44 @@ describe("WizardController", () => {
       expect(controller.settings.additionalFields).toEqual(["overview"])
       expect(controller.settings.fieldSpec).toBe("id:id, title:title, overview")
       expect(controller.validating).toBe(false)
+    })
+
+    describe("Search API mapper", () => {
+      const searchApi = () => mount({
+        step: STEPS.endpoint,
+        settings: { searchEngine: "searchapi", searchEnginePreset: "searchapi", searchUrl: "http://api/search", queryParams: "q=#$query##", testQuery: "shirts", mapperCode: "docsMapper = function () {}" }
+      })
+
+      it("validates with the endpoint's evaluated mapper functions", async () => {
+        const controller = searchApi()
+        const mapper = { numberOfResultsMapper: () => 1, docsMapper: () => [] }
+        controller.capability.search.evaluateMapper.mockReturnValue(mapper)
+        controller.capability.settings.pick.mockReturnValue({ idField: "id", titleField: "title" })
+        controller.capability.search.createValidator.mockReturnValue(passingValidator())
+
+        await controller.validate()
+
+        expect(controller.capability.search.evaluateMapper).toHaveBeenCalledWith("docsMapper = function () {}")
+        expect(controller.capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining(mapper))
+        expect(controller.stepIndex).toBe(STEPS.fields)
+      })
+
+      it.each([
+        ["code that throws", () => { throw new Error("Unexpected token") }, "Mapper code evaluation failed: Unexpected token"],
+        ["no numberOfResultsMapper", () => ({ docsMapper: () => [] }), 'You need to define a "numberOfResultsMapper"'],
+        ["no docsMapper", () => ({ numberOfResultsMapper: () => 1 }), 'You need to define a "docsMapper"']
+      ])("stops with a mapper message for %s, without searching", async (_label, evaluate, message) => {
+        const controller = searchApi()
+        controller.capability.search.evaluateMapper.mockImplementation(evaluate)
+
+        await controller.validate()
+
+        expect(controller.mapperInvalid).toBe(true)
+        expect(controller.mapperErrorMessage).toBe(message)
+        expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
+        expect(controller.stepIndex).toBe(STEPS.endpoint)
+        expect(controller.validating).toBe(false)
+      })
     })
 
     it("leaves Title blank when the preset has none, instead of using the first discovered field", async () => {
@@ -740,37 +781,6 @@ describe("WizardController", () => {
       expect(controller.engineDisplayName()).toBe("Elasticsearch")
     })
 
-    it("fills a header template for the chosen header type and makes None read-only", () => {
-      const controller = mount({ step: STEPS.endpoint })
-      Object.assign(controller, {
-        headerTypeTarget: document.createElement("select"), hasHeaderTypeTarget: true,
-        customHeadersTarget: document.createElement("textarea"), hasCustomHeadersTarget: true
-      })
-      controller.headerTypeTarget.innerHTML = "<option>None</option><option>API Key</option><option>Custom</option>"
-
-      controller.changeHeaderType({ target: { value: "API Key" } })
-      expect(controller.customHeadersTarget.value).toBe('{\n  "Authorization": "ApiKey XXX"\n}')
-      expect(controller.customHeadersTarget.readOnly).toBe(false)
-
-      controller.changeHeaderType({ target: { value: "None" } })
-      expect(controller.customHeadersTarget.value).toBe("")
-      expect(controller.customHeadersTarget.readOnly).toBe(true)
-    })
-
-    it("shows an existing endpoint's headers as Custom even though presets default to None", () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { headerType: "None", customHeaders: { "X-Key": "1" } } })
-      Object.assign(controller, {
-        headerTypeTarget: document.createElement("select"), hasHeaderTypeTarget: true,
-        customHeadersTarget: document.createElement("textarea"), hasCustomHeadersTarget: true
-      })
-      controller.headerTypeTarget.innerHTML = "<option>None</option><option>API Key</option><option>Custom</option>"
-
-      controller.render()
-
-      expect(controller.headerTypeTarget.value).toBe("Custom")
-      expect(controller.customHeadersTarget.readOnly).toBe(false)
-    })
-
     it("disables the dropdown when there are no endpoints", () => {
       const controller = mount()
       controller.hasEndpointSelectTarget = true
@@ -1017,7 +1027,7 @@ describe("WizardController", () => {
     })
   })
 
-  // UI guidance and field-suggestion cases now drive real Stimulus in wizard_controller_markup.test.js.
+  // UI guidance, troubleshooting and field-suggestion cases drive the live app in test/playwright/wizard_behaviour.spec.ts.
   describe("guidance invariants", () => {
     it("knows every condition the wizard partial names in data-wizard-when", () => {
       // An unknown name is silently falsy, which would hide that element for good.

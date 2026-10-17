@@ -334,9 +334,9 @@ parts:
           wizard-endpoint: "3.2/wizard-endpoint"
           wizard-name: "3.2/wizard-name"
           wizard-welcome: "3.2/wizard-welcome"
-        last_run: 2026-10-17T02:37:00Z
+        last_run: 2026-10-17T04:20:00Z
         result: pass_with_fixes
-        notes: "Partial run on Current :3000 while closing parity-checklist row 1. Restored four losses from the Stimulus port (no recorded decision): the 'could be a typo' confirm for an undiscovered Title/ID field, Enter submitting the case name and adding a query, and the required test query for an existing Search API endpoint. Covered live: Solr demo ping and Continue, the typo confirm, Enter on Name and Query, Finish, and case name and query persisting after reload; unreachable Solr URL troubleshooting with Skip Validation; HTTPS-URL TLS warning hidden by proxying; test query required for the Vespa endpoint but not Edinburgh (has one). Restored the Solr-only API method select (JSONP/GET), which the port had shown for every engine and left blank for AUTO mapper endpoints; checked live for Solr, ES, OS, Vectara, Algolia, the Vespa endpoint and TMDB Solr. wizard_completion and qdrant_wizard E2E pass. Not covered: delayed or failed Finish, tour, other engines, Legacy replay, screenshot refresh."
+        notes: "Partial run on Current :3000 while closing parity-checklist row 1. Restored four losses from the Stimulus port (no recorded decision): the 'could be a typo' confirm for an undiscovered Title/ID field, Enter submitting the case name and adding a query, and the required test query for an existing Search API endpoint. Covered live: Solr demo ping and Continue, the typo confirm, Enter on Name and Query, Finish, and case name and query persisting after reload; unreachable Solr URL troubleshooting with Skip Validation; HTTPS-URL TLS warning hidden by proxying; test query required for the Vespa endpoint but not Edinburgh (has one). Restored the Solr-only API method select (JSONP/GET), which the port had shown for every engine and left blank for AUTO mapper endpoints; checked live for Solr, ES, OS, Vectara, Algolia, the Vespa endpoint and TMDB Solr. wizard_completion and qdrant_wizard E2E pass. Not covered: delayed or failed Finish, tour, other engines, Legacy replay, screenshot refresh. Later: restored Search API mapper evaluation in the Endpoint step's validation (a throwing, incomplete or invalid mapper now stops with a message; a working mapper's fields are discovered); replayed Legacy vs Current and covered by wizard_behaviour.spec.ts."
         paths: ["app/javascript/utils/endpoint_settings.js", "app/controllers/core_controller.rb", "app/javascript/controllers/wizard_controller.js", "app/javascript/controllers/wizard_launcher_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/core_capabilities_runtime.js", "app/javascript/utils/case_runtime.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/mapper_search_runtime.js", "app/javascript/utils/wizard_contracts.js", "app/javascript/utils/snapshot_import.js", "config/importmap.rb", "app/views/layouts/_header_core_app.html.erb", "app/views/core/index.html.erb", "app/views/shared/_wizard_modal.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_lifecycle.js", "test/javascript/utils/case_runtime.test.js", "test/playwright/wizard_completion.spec.ts", "app/javascript/api/json.js", "app/views/layouts/_header_navigation.html.erb", "app/views/layouts/_header_help_links.html.erb", "app/views/layouts/_header_core_actions.html.erb", "app/views/layouts/_header_management_actions.html.erb", "app/javascript/core_runtime.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/utils/navigation_runtime.js", "app/javascript/utils/settings_runtime.js", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/core-additions.css"]
       "3.2b":
         title: "Case wizard: Static CSV endpoint"
@@ -346,9 +346,9 @@ parts:
           static-queries: "3.2b/static-queries"
           static-fields: "3.2b/static-fields"
           static-endpoint: "3.2b/static-endpoint"
-        last_run: 2026-10-15T00:10:32Z
+        last_run: 2026-10-17T03:05:00Z
         result: pass
-        notes: "Live Current: rejected missing required header and malformed column count; valid CSV imported on selection, generated snapshot URL, prefilled two queries, completed wizard without returning-user tour. Expanded results retained CSV order and title/overview fields; Add Query disabled and Query tab showed static-engine message. Five Current captures refreshed; prior images retained. Fixture differs from previous: two queries and title/overview columns. Not covered: whitespace/blank-line/quoted multiline/non-CSV variants, metadata header rejection, live historical replay."
+        notes: "Replayed on Legacy :3001 and Current :3000 with the same 3-row CSV (extra title column): both finish with 2 queries in CSV order after reload, Title blank and ID `id` on Fields. Legacy previews the CSV and imports on its Import button; Current imports on file selection with no preview (todo finding 2). Static guide collapsed on both. Test cases deleted afterwards. Not covered: missing-header, whitespace, blank-line, quoted multiline and non-CSV variants; metadata header rejection; screenshot refresh."
         paths: ["app/javascript/controllers/wizard_controller.js", "app/javascript/utils/wizard_contracts.js", "app/views/shared/_wizard_modal.html.erb", "app/controllers/api/v1/snapshots/imports_controller.rb", "app/javascript/utils/csv.js", "app/javascript/utils/snapshot_import.js"]
       "3.3":
         title: "Import a case from JSON"
@@ -517,9 +517,9 @@ parts:
           knobs-edited: "4.11/knobs-edited"
           knobs-variable: "4.11/knobs-variable"
           knobs-empty: "4.11/knobs-empty"
-        last_run: 2026-10-15T00:43:21Z
+        last_run: 2026-10-17T03:25:00Z
         result: pass
-        notes: "Live Current: empty knobs explained placeholders; titleBoost template produced numeric input, changed 10 to 3 and reran into try 3 retaining value. Four Current captures inspected and registered."
+        notes: "Replayed on Legacy :3001 and Current :3000 on scratch cases (deleted afterwards): titleBoost listed as one numeric input, edited to 5 and rerun into Try 3 retaining 5 on both. Legacy closes the drawer after the rerun, Current keeps it open (todo finding 6). Empty-state copy differs from Legacy (finding 1), though Current still explains the ## convention. Not covered: score change after the rerun, unused-knob filtering live, screenshot refresh."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
@@ -543,9 +543,9 @@ parts:
           ratings-page: "4.13/ratings-page"
           scores-page: "4.13/scores-page"
           history-list: "4.13/history-list"
-        last_run: 2026-10-15T00:50:55Z
+        last_run: 2026-10-17T03:25:00Z
         result: pass
-        notes: "Live Current: History listed six tries with names, truncated parameters and endpoint labels; three link URLs verified, Scores/Ratings/tries visualization loaded. Four Current captures inspected and registered. Not covered: score deletion/Check All and rating search filters, deferred to Part 5."
+        notes: "Replayed on Legacy :3001 and Current :3000 on scratch cases (deleted afterwards): list contents, Try Details open, rename (Current closes the modal and flashes, Legacy stays open: finding 7), duplicate (same flash and result on both), delete (Legacy deletes immediately and refuses the active try; Current asks confirm first, observed and dismissed, finding 8). Row colours lost on Current (finding 9). Not covered live: Current's active-try refusal and a confirmed delete (unit-tested), Check Scores and Ratings filters, screenshot refresh."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/utils/settings_runtime.js", "app/controllers/scores_controller.rb", "app/controllers/ratings_controller.rb", "app/views/scores/index.html.erb", "app/views/ratings/index.html.erb", "app/controllers/analytics/tries_visualization_controller.rb", "app/views/analytics/tries_visualization/_tree.json.jbuilder", "app/views/core/_try_details_modal.html.erb", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css", "app/views/shared/_modal_shell.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/score_selection_controller.js", "app/assets/stylesheets/fonts.css", "app/javascript/application.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb"]
       "4.14":
         title: "Tune Relevance drawer — Annotations tab"

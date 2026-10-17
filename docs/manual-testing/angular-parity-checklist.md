@@ -18,7 +18,7 @@ Owner candidates are filename matches, not verified owners.
 | # | Source | Ported | Items | Owner | Scenario | Status |
 |---|---|---|---|---|---|---|
 | [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2, 3.2b | open: 3 findings |
-| [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | | | open |
+| [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10, 4.11, 4.12 | open: 4 findings |
 | [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | | | open |
 | [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | | | open |
 | [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | | | open |
@@ -27,7 +27,7 @@ Owner candidates are filename matches, not verified owners.
 | [8](#row-8) | `templates/views/queries.html` | branch | 57 | | | open |
 | [9](#row-9) | `javascripts/components/diff/_modal.html` | branch | 44 | | | open |
 | [10](#row-10) | `templates/views/queriesLayout.html` | branch | 40 | | | open |
-| [11](#row-11) | `templates/views/queryParamsDetails.html` | branch | 35 | | | open |
+| [11](#row-11) | `templates/views/queryParamsDetails.html` | branch | 35 | `_try_details_modal.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 2 findings |
 | [12](#row-12) | `templates/views/searchResult.html` | branch | 31 | | | open |
 | [13](#row-13) | `javascripts/components/query_explain/_modal.html` | branch | 30 | | | open |
 | [14](#row-14) | `templates/views/snapshotModal.html` | branch | 28 | | | open |
@@ -41,9 +41,9 @@ Owner candidates are filename matches, not verified owners.
 | [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | | | open |
 | [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | | | open |
 | [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | | | open |
-| [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | | | open |
+| [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
 | [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | | | open |
-| [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | | | open |
+| [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 1 finding |
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | | | open |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | | | open |
 | [30](#row-30) | `templates/views/404.html` | branch | 6 | | | open |
@@ -174,7 +174,7 @@ Blocks landing until closed.
 - **Owner candidates:** `app/views/shared/_wizard_modal.html.erb`
 - **Owner:** `app/views/shared/_wizard_modal.html.erb`, `_wizard_engine_tile.html.erb`, `app/javascript/controllers/wizard_controller.js`
 - **Scenario:** 3.2, 3.2b, 7 (Mapper Wizard handoff)
-- **Decisions:** P1 restore `8ce48fc3` (tiles, ping it, troubleshooting, header types, field suggestions, Static guide). The typo confirm, Enter submission, required test query and Solr-only API method had no decision and are restored in this pass. The API method select is restored to Solr-only. Three open findings have no decision: [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision). Checked by source against `8ceb99e9` and `776c68b5` plus a live run on Current (3.2); Legacy not replayed.
+- **Decisions:** P1 restore `8ce48fc3` (tiles, ping it, troubleshooting, header types, field suggestions, Static guide). The typo confirm, Enter submission, required test query and Solr-only API method had no decision and are restored in this pass. The API method select is restored to Solr-only. Search API mapper evaluation during validation is restored (`applyMapperFunctions`): Current handed the endpoint's mapper code to the validator as a string, so a failing or missing mapper passed silently and no fields were discovered; replayed on Legacy and Current. Three open findings have no decision: [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision). Checked by source against `8ceb99e9` and `776c68b5`, a live run on Current (3.2), and a Legacy (:3001) vs Current replay of the Endpoint, Search API, existing-endpoint and static CSV flows on 2026-10-17 (screenshots in `.playwright-mcp/wizard-parity/`).
 
 Conditional UI:
 
@@ -540,196 +540,196 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/queryParams.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/core/_tune_relevance.html.erb`, `app/javascript/controllers/tune_relevance_controller.js`
+- **Scenario:** 4.10, 4.11, 4.12
+- **Decisions:** Findings 1 to 5, 9 to 12 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision) (items 1 to 4 replayed Legacy vs Current on 2026-10-17; 5 source only). Ticked items were checked by source against `8ceb99e9` and `776c68b5`, and live on Current for the tabs, section defaults, knob edit and rerun, and Endpoint Details; the ES/OS, Vectara, Algolia and Search API editor modes, the nightly toggle, escape-queries visibility and the TLS reload were checked by source only. The "not currently used" knob message sits inside the `inQueryParams` block, so no version ever showed it.
 
 Conditional UI:
 
-- [ ] `<li#developerTab>` `ng-class="{tabBoxSelected: qp.curTab == 'developer'}"` _(not in main)_
-- [ ] `<li#curatorTab>` `ng-class="{tabBoxSelected: qp.curTab == 'curator'}"` _(not in main)_
-- [ ] `<li#engineTab>` `ng-class="{tabBoxSelected: qp.curTab == 'engineSettings'}"` _(not in main)_
-- [ ] `<li#historyTab>` `ng-class="{tabBoxSelected: qp.curTab == 'history'}"` _(not in main)_
-- [ ] `<li#annotationsTab>` `ng-class="{tabBoxSelected: qp.curTab == 'annotations'}"` _(not in main)_
-- [ ] `<p>` `ng-if="settings.searchEngine == 'static'"`
-- [ ] `<p#query-params-warn>` `ng-show="showQueryParamsWarning"`
-- [ ] `<textarea>` `ng-show="settings.searchEngine == 'solr'"` _(not in main)_
-- [ ] `<div#es-query-params-editor>` `ng-show="settings.searchEngine == 'es'"`
-- [ ] `<div#os-query-params-editor>` `ng-show="settings.searchEngine == 'os'"`
-- [ ] `<div#vectara-query-params-editor>` `ng-show="settings.searchEngine == 'vectara'"`
-- [ ] `<div#algolia-query-params-editor>` `ng-show="settings.searchEngine == 'algolia'"`
-- [ ] `<div#searchapi-query-params-editor>` `ng-show="settings.searchEngine == 'searchapi'"`
-- [ ] `<div#query-params-editor>` `ng-if="settings.searchEngine !== 'static'"`
-- [ ] `<div>` `ng-show="qp.curTab == 'developer'"`
-- [ ] `<p>` `ng-show="settings.selectedTry.curatorVars.length == 0"`
-- [ ] `<p>` `ng-show="curatorVar.inQueryParams != true"`
-- [ ] `<div>` `ng-show="curatorVar.inQueryParams"`
-- [ ] `<div>` `ng-if="settings.searchEngine !== 'static'"`
-- [ ] `<div>` `ng-show="qp.curTab == 'curator'"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEndpoint.toggle]"` _(not in main)_
-- [ ] `<span>` `ng-show="listSearchEndpoints().length == 0"`
-- [ ] `<div>` `ng-if="noResults"`
-- [ ] `<div>` `ng-show="devSettingsSearchEndpoint.toggle"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEndpointDetails.toggle]"` _(not in main)_
-- [ ] `<p>` `ng-if="settings.selectedTry.endpointArchived"`
-- [ ] `<img>` `ng-if="settings.selectedTry.searchEngine"`
-- [ ] `<span>` `ng-show="showTLSChangeWarning"`
-- [ ] `<div>` `ng-show="devSettingsEndpointDetails.toggle"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsFields.toggle]"` _(not in main)_
-- [ ] `<span>` `ng-show="showESTemplateWarning"`
-- [ ] `<div>` `ng-show="devSettingsFields.toggle"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNumResults.toggle]"` _(not in main)_
-- [ ] `<div>` `ng-show="devSettingsNumResults.toggle"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNightly.toggle]"` _(not in main)_
-- [ ] `<span>` `ng-hide="runningEvaluation"`
-- [ ] `<span>` `ng-show="runningEvaluation"`
-- [ ] `<button>` `ng-disabled="runningEvaluation"`
-- [ ] `<div>` `ng-show="devSettingsNightly.toggle"`
-- [ ] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEscapeQueries.toggle]"` _(not in main)_
-- [ ] `<div>` `ng-show="devSettingsEscapeQueries.toggle"`
-- [ ] `<div>` `ng-show="qp.curTab == 'engineSettings'"`
-- [ ] `<div>` `ng-show="qp.curTab == 'history'"`
-- [ ] `<div>` `ng-show="qp.curTab == 'annotations'"`
-- [ ] `<span#query-sandbox-action>` `ng-show="!showTLSChangeWarning"`
-- [ ] `<span>` `ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'"`
-- [ ] `<button#developerTab>` `ng-class="{active: qp.curTab == 'developer'}"` _(added on main)_
-- [ ] `<button#curatorTab>` `ng-class="{active: qp.curTab == 'curator'}"` _(added on main)_
-- [ ] `<button#engineTab>` `ng-class="{active: qp.curTab == 'engineSettings'}"` _(added on main)_
-- [ ] `<button#historyTab>` `ng-class="{active: qp.curTab == 'history'}"` _(added on main)_
-- [ ] `<button#annotationsTab>` `ng-class="{active: qp.curTab == 'annotations'}"` _(added on main)_
-- [ ] `<div#solr-query-params-editor>` `ng-show="settings.searchEngine == 'solr'"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEndpointDetails.toggle]"` _(added on main)_
-- [ ] `<p>` `ng-if="troubleshootingWikiUrl()"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsFields.toggle]"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNumResults.toggle]"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNightly.toggle]"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEscapeQueries.toggle]"` _(added on main)_
-- [ ] `<div>` `ng-show="supportsEscapeQuery()"` _(added on main)_
-- [ ] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsSearchEndpoint.toggle]"` _(added on main)_
+- [x] `<li#developerTab>` `ng-class="{tabBoxSelected: qp.curTab == 'developer'}"` _(not in main)_
+- [x] `<li#curatorTab>` `ng-class="{tabBoxSelected: qp.curTab == 'curator'}"` _(not in main)_
+- [x] `<li#engineTab>` `ng-class="{tabBoxSelected: qp.curTab == 'engineSettings'}"` _(not in main)_
+- [x] `<li#historyTab>` `ng-class="{tabBoxSelected: qp.curTab == 'history'}"` _(not in main)_
+- [x] `<li#annotationsTab>` `ng-class="{tabBoxSelected: qp.curTab == 'annotations'}"` _(not in main)_
+- [x] `<p>` `ng-if="settings.searchEngine == 'static'"`
+- [x] `<p#query-params-warn>` `ng-show="showQueryParamsWarning"`
+- [x] `<textarea>` `ng-show="settings.searchEngine == 'solr'"` _(not in main)_
+- [x] `<div#es-query-params-editor>` `ng-show="settings.searchEngine == 'es'"`
+- [x] `<div#os-query-params-editor>` `ng-show="settings.searchEngine == 'os'"`
+- [x] `<div#vectara-query-params-editor>` `ng-show="settings.searchEngine == 'vectara'"`
+- [x] `<div#algolia-query-params-editor>` `ng-show="settings.searchEngine == 'algolia'"`
+- [x] `<div#searchapi-query-params-editor>` `ng-show="settings.searchEngine == 'searchapi'"`
+- [x] `<div#query-params-editor>` `ng-if="settings.searchEngine !== 'static'"`
+- [x] `<div>` `ng-show="qp.curTab == 'developer'"`
+- [ ] `<p>` `ng-show="settings.selectedTry.curatorVars.length == 0"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<p>` `ng-show="curatorVar.inQueryParams != true"` — N/A: only rendered inside the `inQueryParams` block, so never shown on Legacy or main
+- [x] `<div>` `ng-show="curatorVar.inQueryParams"`
+- [x] `<div>` `ng-if="settings.searchEngine !== 'static'"`
+- [x] `<div>` `ng-show="qp.curTab == 'curator'"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEndpoint.toggle]"` _(not in main)_
+- [ ] `<span>` `ng-show="listSearchEndpoints().length == 0"` — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] `<div>` `ng-if="noResults"` — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-show="devSettingsSearchEndpoint.toggle"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEndpointDetails.toggle]"` _(not in main)_
+- [x] `<p>` `ng-if="settings.selectedTry.endpointArchived"`
+- [x] `<img>` `ng-if="settings.selectedTry.searchEngine"`
+- [ ] `<span>` `ng-show="showTLSChangeWarning"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-show="devSettingsEndpointDetails.toggle"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsFields.toggle]"` _(not in main)_
+- [x] `<span>` `ng-show="showESTemplateWarning"`
+- [x] `<div>` `ng-show="devSettingsFields.toggle"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNumResults.toggle]"` _(not in main)_
+- [x] `<div>` `ng-show="devSettingsNumResults.toggle"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsNightly.toggle]"` _(not in main)_
+- [x] `<span>` `ng-hide="runningEvaluation"`
+- [x] `<span>` `ng-show="runningEvaluation"`
+- [x] `<button>` `ng-disabled="runningEvaluation"`
+- [x] `<div>` `ng-show="devSettingsNightly.toggle"`
+- [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEscapeQueries.toggle]"` _(not in main)_
+- [x] `<div>` `ng-show="devSettingsEscapeQueries.toggle"`
+- [x] `<div>` `ng-show="qp.curTab == 'engineSettings'"`
+- [x] `<div>` `ng-show="qp.curTab == 'history'"`
+- [x] `<div>` `ng-show="qp.curTab == 'annotations'"`
+- [ ] `<span#query-sandbox-action>` `ng-show="!showTLSChangeWarning"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<span>` `ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'"`
+- [x] `<button#developerTab>` `ng-class="{active: qp.curTab == 'developer'}"` _(added on main)_
+- [x] `<button#curatorTab>` `ng-class="{active: qp.curTab == 'curator'}"` _(added on main)_
+- [x] `<button#engineTab>` `ng-class="{active: qp.curTab == 'engineSettings'}"` _(added on main)_
+- [x] `<button#historyTab>` `ng-class="{active: qp.curTab == 'history'}"` _(added on main)_
+- [x] `<button#annotationsTab>` `ng-class="{active: qp.curTab == 'annotations'}"` _(added on main)_
+- [x] `<div#solr-query-params-editor>` `ng-show="settings.searchEngine == 'solr'"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEndpointDetails.toggle]"` _(added on main)_
+- [x] `<p>` `ng-if="troubleshootingWikiUrl()"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsFields.toggle]"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNumResults.toggle]"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsNightly.toggle]"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsEscapeQueries.toggle]"` _(added on main)_
+- [x] `<div>` `ng-show="supportsEscapeQuery()"` _(added on main)_
+- [x] `<i>` `ng-class="{true: 'bi-plus-circle-fill', false: 'bi-dash-circle-fill'}[!devSettingsSearchEndpoint.toggle]"` _(added on main)_
 
 Actions:
 
-- [ ] `<li#developerTab>` `ng-click="qp.toggleTab('developer')"` _(not in main)_
-- [ ] `<li#curatorTab>` `ng-click="qp.toggleTab('curator')"` _(not in main)_
-- [ ] `<li#engineTab>` `ng-click="qp.toggleTab('engineSettings')"` _(not in main)_
-- [ ] `<li#historyTab>` `ng-click="qp.toggleTab('history')"` _(not in main)_
-- [ ] `<li#annotationsTab>` `ng-click="qp.toggleTab('annotations')"` _(not in main)_
-- [ ] `<textarea>` `ng-change="validateQueryParams()"` _(not in main)_
-- [ ] `<div>` `ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle"`
-- [ ] `<div>` `ng-click="devSettingsEndpointDetails.toggle = !devSettingsEndpointDetails.toggle"`
-- [ ] `<div>` `ng-click="devSettingsFields.toggle = !devSettingsFields.toggle"`
-- [ ] `<div>` `ng-click="devSettingsNumResults.toggle = !devSettingsNumResults.toggle"`
-- [ ] `<div>` `ng-click="devSettingsNightly.toggle = !devSettingsNightly.toggle"`
-- [ ] `<input>` `ng-change="updateNightly()"` _(not in main)_
-- [ ] `<button>` `ng-click="runCaseInBackground(caseNo, settings.selectedTry.tryNo)"`
-- [ ] `<div>` `ng-click="devSettingsEscapeQueries.toggle = !devSettingsEscapeQueries.toggle"`
-- [ ] `<span#query-sandbox-action>` `ng-click="settings.submit()"`
-- [ ] `<button#developerTab>` `ng-click="qp.toggleTab('developer')"` _(added on main)_
-- [ ] `<button#curatorTab>` `ng-click="qp.toggleTab('curator')"` _(added on main)_
-- [ ] `<button#engineTab>` `ng-click="qp.toggleTab('engineSettings')"` _(added on main)_
-- [ ] `<button#historyTab>` `ng-click="qp.toggleTab('history')"` _(added on main)_
-- [ ] `<button#annotationsTab>` `ng-click="qp.toggleTab('annotations')"` _(added on main)_
-- [ ] `<div#solr-query-params-editor>` `ng-change="validateQueryParams()"` _(added on main)_
-- [ ] `<input#evaluate-nightly-checkbox>` `ng-change="updateNightly()"` _(added on main)_
+- [x] `<li#developerTab>` `ng-click="qp.toggleTab('developer')"` _(not in main)_
+- [x] `<li#curatorTab>` `ng-click="qp.toggleTab('curator')"` _(not in main)_
+- [x] `<li#engineTab>` `ng-click="qp.toggleTab('engineSettings')"` _(not in main)_
+- [x] `<li#historyTab>` `ng-click="qp.toggleTab('history')"` _(not in main)_
+- [x] `<li#annotationsTab>` `ng-click="qp.toggleTab('annotations')"` _(not in main)_
+- [x] `<textarea>` `ng-change="validateQueryParams()"` _(not in main)_
+- [x] `<div>` `ng-click="devSettingsSearchEndpoint.toggle = !devSettingsSearchEndpoint.toggle"`
+- [x] `<div>` `ng-click="devSettingsEndpointDetails.toggle = !devSettingsEndpointDetails.toggle"`
+- [x] `<div>` `ng-click="devSettingsFields.toggle = !devSettingsFields.toggle"`
+- [x] `<div>` `ng-click="devSettingsNumResults.toggle = !devSettingsNumResults.toggle"`
+- [x] `<div>` `ng-click="devSettingsNightly.toggle = !devSettingsNightly.toggle"`
+- [x] `<input>` `ng-change="updateNightly()"` _(not in main)_
+- [x] `<button>` `ng-click="runCaseInBackground(caseNo, settings.selectedTry.tryNo)"`
+- [x] `<div>` `ng-click="devSettingsEscapeQueries.toggle = !devSettingsEscapeQueries.toggle"`
+- [x] `<span#query-sandbox-action>` `ng-click="settings.submit()"`
+- [x] `<button#developerTab>` `ng-click="qp.toggleTab('developer')"` _(added on main)_
+- [x] `<button#curatorTab>` `ng-click="qp.toggleTab('curator')"` _(added on main)_
+- [x] `<button#engineTab>` `ng-click="qp.toggleTab('engineSettings')"` _(added on main)_
+- [x] `<button#historyTab>` `ng-click="qp.toggleTab('history')"` _(added on main)_
+- [x] `<button#annotationsTab>` `ng-click="qp.toggleTab('annotations')"` _(added on main)_
+- [x] `<div#solr-query-params-editor>` `ng-change="validateQueryParams()"` _(added on main)_
+- [x] `<input#evaluate-nightly-checkbox>` `ng-change="updateNightly()"` _(added on main)_
 
 Inputs:
 
-- [ ] `<textarea>` `ng-model="settings.selectedTry.queryParams"` _(not in main)_
-- [ ] `<div#es-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
-- [ ] `<div#os-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
-- [ ] `<div#vectara-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
-- [ ] `<div#algolia-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
-- [ ] `<div#searchapi-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
-- [ ] `<input>` `ng-model="curatorVar.value"`
-- [ ] `<select>` `ng-model="settings.searchEndpointId"`
-- [ ] `<select>` `ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"`
-- [ ] `<input>` `ng-model="selectedItem"`
-- [ ] `<input>` `uib-typeahead="searchEndpoint as searchEndpoint.name for searchEndpoint in searchOptions($viewValue)"` _(not in main)_
-- [ ] `<input>` `ng-model="settings.fieldSpec"`
-- [ ] `<input>` `ng-model="settings.numberOfRows"`
-- [ ] `<input>` `ng-model="caseModel.selectedCase().nightly"` _(not in main)_
-- [ ] `<input>` `ng-model="settings.escapeQuery"` _(not in main)_
-- [ ] `<div#solr-query-params-editor>` `ng-model="settings.selectedTry.queryParams"` _(added on main)_
-- [ ] `<input#evaluate-nightly-checkbox>` `ng-model="caseModel.selectedCase().nightly"` _(added on main)_
-- [ ] `<input#escape-queries-checkbox>` `ng-model="settings.escapeQuery"` _(added on main)_
+- [x] `<textarea>` `ng-model="settings.selectedTry.queryParams"` _(not in main)_
+- [x] `<div#es-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
+- [x] `<div#os-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
+- [x] `<div#vectara-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
+- [x] `<div#algolia-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
+- [x] `<div#searchapi-query-params-editor>` `ng-model="settings.selectedTry.queryParams"`
+- [x] `<input>` `ng-model="curatorVar.value"`
+- [x] `<select>` `ng-model="settings.searchEndpointId"`
+- [x] `<select>` `ng-options="searchEndpoint.id as searchEndpoint.name for searchEndpoint in listSearchEndpoints()"`
+- [x] `<input>` `ng-model="selectedItem"`
+- [x] `<input>` `uib-typeahead="searchEndpoint as searchEndpoint.name for searchEndpoint in searchOptions($viewValue)"` _(not in main)_
+- [x] `<input>` `ng-model="settings.fieldSpec"`
+- [x] `<input>` `ng-model="settings.numberOfRows"`
+- [x] `<input>` `ng-model="caseModel.selectedCase().nightly"` _(not in main)_
+- [x] `<input>` `ng-model="settings.escapeQuery"` _(not in main)_
+- [x] `<div#solr-query-params-editor>` `ng-model="settings.selectedTry.queryParams"` _(added on main)_
+- [x] `<input#evaluate-nightly-checkbox>` `ng-model="caseModel.selectedCase().nightly"` _(added on main)_
+- [x] `<input#escape-queries-checkbox>` `ng-model="settings.escapeQuery"` _(added on main)_
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="curatorVar in settings.selectedTry.curatorVars"`
+- [x] `<div>` `ng-repeat="curatorVar in settings.selectedTry.curatorVars"`
 
 Bound content:
 
-- [ ] `<p#query-params-warn>` `ng-bind-html="queryParamsWarning"`
-- [ ] `<img>` `ng-src="images/{{ settings.selectedTry.searchEngine }}-icon.png"` _(not in main)_
-- [ ] `<a>` `uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"` _(not in main)_
-- [ ] `<a>` `uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'"` _(not in main)_
-- [ ] `<img>` `ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png"` _(added on main)_
+- [x] `<p#query-params-warn>` `ng-bind-html="queryParamsWarning"`
+- [x] `<img>` `ng-src="images/{{ settings.selectedTry.searchEngine }}-icon.png"` _(not in main)_
+- [ ] `<a>` `uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"` _(not in main)_ — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] `<a>` `uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'"` _(not in main)_ — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<img>` `ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png"` _(added on main)_
 
 Links:
 
-- [ ] `<a>` `href="http://quepidapp.com/docs/#tuning"`
-- [ ] `<a>` `ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}"`
-- [ ] `<a>` `href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit"`
-- [ ] `<a>` `ng-href="analytics/tries_visualization/{{ caseNo }}"`
-- [ ] `<a>` `ng-href="cases/{{ caseNo }}/scores"`
-- [ ] `<a>` `ng-href="cases/{{ caseNo }}/ratings"`
-- [ ] `<a>` `href="{{quepidUrlToSwitchTo}}"`
-- [ ] `<a>` `ng-href="{{troubleshootingWikiUrl()}}"` _(added on main)_
+- [x] `<a>` `href="http://quepidapp.com/docs/#tuning"`
+- [x] `<a>` `ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}"`
+- [ ] `<a>` `href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<a>` `ng-href="analytics/tries_visualization/{{ caseNo }}"`
+- [x] `<a>` `ng-href="cases/{{ caseNo }}/scores"`
+- [x] `<a>` `ng-href="cases/{{ caseNo }}/ratings"`
+- [x] `<a>` `href="{{quepidUrlToSwitchTo}}"`
+- [x] `<a>` `ng-href="{{troubleshootingWikiUrl()}}"` _(added on main)_
 
 Copy:
 
-- [ ] "Query"
-- [ ] "Tuning Knobs"
-- [ ] "Settings"
-- [ ] "History"
-- [ ] "Annotations"
-- [ ] "With a Static search endpoint there are no query settings to play with ;-(."
-- [ ] "Query Sandbox:"
-- [ ] "With a Static search endpoint there are no tuning knobs to play with ;-(."
-- [ ] "What's this tab do? Knobs allow you to fine tune your search! Define variables in your query template with"
-- [ ] "##"
-- [ ] ", such as this boost:"
-- [ ] "title^##titleBoost##"
-- [ ] ". Play with the values in this tab. Submit to rerun with the new values!"
-- [ ] "Add and remove knobs from here by editing your query."
-- [ ] "{{ curatorVar.name }}:"
-- [ ] "This knob/dial is not currently used by the query!"
-- [ ] "Search Endpoints"
-- [ ] "Pick Shared Endpoints:"
-- [ ] "You do not have any search endpoints shared with this case. Share the case with a team first."
-- [ ] "OR"
-- [ ] placeholder: "Select endpoint to use"
-- [ ] "No search endpoints found. Check your spelling!"
-- [ ] "Endpoint Details"
-- [ ] "This search endpoint has been archived. Consider switching to an active endpoint."
-- [ ] "Name: {{ settings.selectedTry.endpointName }}"
-- [ ] "  {{settings.searchUrl}}"
-- [ ] "More"
-- [ ] "You have specified a search engine url that is on a different protocol ("
-- [ ] ") than Quepid is on. Please either"
-- [ ] "swap to the proxied connection"
-- [ ] ", or make sure the search endpoint is running on the same HTTP protocol. This is to comply with browser security constraints."
-- [ ] "Displayed Fields"
-- [ ] "When using ES/OS Query Templates, make sure that either your template includes the fields above in its source field filter section ("
-- [ ] "_source"
-- [ ] "declaration) or does not restrict the fields returned via"
-- [ ] "at all."
-- [ ] "Number of Results to Show"
-- [ ] "Evaluate Nightly?"
-- [ ] "Evaluate Case Nightly"
-- [ ] "Rerun My Searches Now in the Background!"
-- [ ] "Queuing evaluation job..."
-- [ ] "Escape Queries"
-- [ ] "Visualize your tries"
-- [ ] "|"
-- [ ] "Check Scores"
-- [ ] "Check Ratings"
-- [ ] "To switch back to a previous try, click on the try listing."
-- [ ] "Click on the "..." when you hover over a listing to edit a try."
-- [ ] "Reload Quepid in"
-- [ ] "Protocol"
-- [ ] "Rerun My Searches!"
-- [ ] "Troubleshooting {{ (settings.selectedTry.mapperBasedSearchEngineName || settings.selectedTry.searchEngine) | searchEngineName }} and Quepid" _(added on main)_
+- [x] "Query"
+- [x] "Tuning Knobs"
+- [x] "Settings"
+- [x] "History"
+- [x] "Annotations"
+- [x] "With a Static search endpoint there are no query settings to play with ;-(."
+- [x] "Query Sandbox:"
+- [x] "With a Static search endpoint there are no tuning knobs to play with ;-(."
+- [ ] "What's this tab do? Knobs allow you to fine tune your search! Define variables in your query template with" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "##"
+- [ ] ", such as this boost:" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "title^##titleBoost##"
+- [ ] ". Play with the values in this tab. Submit to rerun with the new values!" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] "Add and remove knobs from here by editing your query." — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "{{ curatorVar.name }}:"
+- [x] "This knob/dial is not currently used by the query!" — N/A: only rendered inside the `inQueryParams` block, so never shown on Legacy or main
+- [x] "Search Endpoints"
+- [ ] "Pick Shared Endpoints:" — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] "You do not have any search endpoints shared with this case. Share the case with a team first." — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "OR"
+- [x] placeholder: "Select endpoint to use"
+- [ ] "No search endpoints found. Check your spelling!" — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Endpoint Details"
+- [x] "This search endpoint has been archived. Consider switching to an active endpoint."
+- [x] "Name: {{ settings.selectedTry.endpointName }}"
+- [x] "  {{settings.searchUrl}}"
+- [x] "More"
+- [ ] "You have specified a search engine url that is on a different protocol (" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] ") than Quepid is on. Please either" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] "swap to the proxied connection" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [ ] ", or make sure the search endpoint is running on the same HTTP protocol. This is to comply with browser security constraints." — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Displayed Fields"
+- [x] "When using ES/OS Query Templates, make sure that either your template includes the fields above in its source field filter section ("
+- [x] "_source"
+- [x] "declaration) or does not restrict the fields returned via"
+- [x] "at all."
+- [x] "Number of Results to Show"
+- [x] "Evaluate Nightly?"
+- [x] "Evaluate Case Nightly"
+- [x] "Rerun My Searches Now in the Background!"
+- [x] "Queuing evaluation job..."
+- [x] "Escape Queries"
+- [x] "Visualize your tries"
+- [x] "|"
+- [x] "Check Scores"
+- [x] "Check Ratings"
+- [x] "To switch back to a previous try, click on the try listing."
+- [x] "Click on the "..." when you hover over a listing to edit a try."
+- [x] "Reload Quepid in"
+- [x] "Protocol"
+- [x] "Rerun My Searches!"
+- [x] "Troubleshooting {{ (settings.selectedTry.mapperBasedSearchEngineName || settings.selectedTry.searchEngine) | searchEngineName }} and Quepid" _(added on main)_
 
 <a id="row-3"></a>
 ### 3. `app/assets/javascripts/components/judgements/_modal.html`
@@ -1758,65 +1758,65 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/controllers/queryParamsHistory.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/core/_try_details_modal.html.erb`, `app/javascript/controllers/tune_relevance_controller.js`
+- **Scenario:** 4.13, 5.1
+- **Decisions:** Findings 7 and 8 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision). Open, rename, duplicate and delete replayed on Legacy and Current with scratch cases (Legacy 37, Current 1067523497, deleted afterwards); duplicate matches including the flash. The Variables list for a try with knobs was checked by source only.
 
 Conditional UI:
 
-- [ ] `<div>` `ng-if="tryName.startRename"`
-- [ ] `<h4>` `ng-if="!tryName.startRename"`
-- [ ] `<img>` `ng-if="aTry.searchEngine"`
-- [ ] `<button>` `ng-if="tryName.startRename"`
-- [ ] `<button>` `ng-if="!tryName.startRename"`
-- [ ] `<button>` `ng-disabled="numTries() === 1"`
+- [x] `<div>` `ng-if="tryName.startRename"`
+- [x] `<h4>` `ng-if="!tryName.startRename"`
+- [x] `<img>` `ng-if="aTry.searchEngine"`
+- [x] `<button>` `ng-if="tryName.startRename"`
+- [x] `<button>` `ng-if="!tryName.startRename"`
+- [x] `<button>` `ng-disabled="numTries() === 1"`
 
 Actions:
 
-- [ ] `<form>` `ng-submit="tryName.rename()"`
-- [ ] `<button>` `ng-click="tryName.startRename = false"`
-- [ ] `<button>` `ng-click="tryName.startRename = true"`
-- [ ] `<button>` `ng-click="duplicateTry(aTry)"`
-- [ ] `<button>` `ng-click="deleteTry(aTry)"`
-- [ ] `<button>` `ng-click="cancel()"`
+- [ ] `<form>` `ng-submit="tryName.rename()"` — open: finding 7 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="tryName.startRename = false"`
+- [x] `<button>` `ng-click="tryName.startRename = true"`
+- [x] `<button>` `ng-click="duplicateTry(aTry)"`
+- [ ] `<button>` `ng-click="deleteTry(aTry)"` — open: finding 8 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="cancel()"`
 
 Inputs:
 
-- [ ] `<input>` `ng-model="tryName.name"`
+- [x] `<input>` `ng-model="tryName.name"`
 
 Lists (check empty states):
 
-- [ ] `<div>` `ng-repeat="var in aTry.curatorVars"` _(not in main)_
-- [ ] `<div>` `ng-repeat="curatorVar in aTry.curatorVars"` _(added on main)_
+- [x] `<div>` `ng-repeat="var in aTry.curatorVars"` _(not in main)_
+- [x] `<div>` `ng-repeat="curatorVar in aTry.curatorVars"` _(added on main)_
 
 Bound content:
 
-- [ ] `<img>` `ng-src="images/{{ aTry.searchEngine }}-icon.png"` _(not in main)_
-- [ ] `<img>` `ng-src="images/{{ aTry.mapperBasedSearchEngineId || aTry.searchEngine }}-icon.png"` _(added on main)_
+- [x] `<img>` `ng-src="images/{{ aTry.searchEngine }}-icon.png"` _(not in main)_
+- [x] `<img>` `ng-src="images/{{ aTry.mapperBasedSearchEngineId || aTry.searchEngine }}-icon.png"` _(added on main)_
 
 Links:
 
-- [ ] `<a>` `ng-href="search_endpoints/{{ aTry.searchEndpointId }}"`
-- [ ] `<a>` `href="{{aTry.searchUrl}}"`
+- [x] `<a>` `ng-href="search_endpoints/{{ aTry.searchEndpointId }}"`
+- [x] `<a>` `href="{{aTry.searchUrl}}"`
 
 Copy:
 
-- [ ] "Name:"
-- [ ] "Arguments"
-- [ ] "Search Endpoint"
-- [ ] "--"
-- [ ] "Browse Search Endpoint"
-- [ ] "Displayed Fields"
-- [ ] "Variables"
-- [ ] "#$query##"
-- [ ] "The user's query being searched"
-- [ ] "##{{var.name}}##" _(not in main)_
-- [ ] "Cancel Rename"
-- [ ] "Rename"
-- [ ] "Duplicate"
-- [ ] "Delete"
-- [ ] "Dismiss"
-- [ ] "##{{curatorVar.name}}##" _(added on main)_
+- [x] "Name:"
+- [x] "Arguments"
+- [x] "Search Endpoint"
+- [x] "--"
+- [x] "Browse Search Endpoint"
+- [x] "Displayed Fields"
+- [x] "Variables"
+- [x] "#$query##"
+- [x] "The user's query being searched"
+- [x] "##{{var.name}}##" _(not in main)_
+- [x] "Cancel Rename"
+- [x] "Rename"
+- [x] "Duplicate"
+- [x] "Delete"
+- [x] "Dismiss"
+- [x] "##{{curatorVar.name}}##" _(added on main)_
 
 <a id="row-12"></a>
 ### 12. `app/assets/templates/views/searchResult.html`
@@ -2579,31 +2579,31 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/directives/customHeaders.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/shared/_wizard_modal.html.erb`, `app/javascript/controllers/wizard_controller.js`
+- **Scenario:** 3.2
+- **Decisions:** No findings. The None / API Key / Custom starting templates match `customHeaders.js` at `8ceb99e9` exactly; None makes the editor read-only and an existing endpoint with headers shows Custom (`wizard_controller_markup.test.js`, real Stimulus against the Rails-rendered wizard). The editor is wizard-only: the Settings tab never had one (feature doc, Custom Headers). Checked by source and the markup spec; the live Legacy and Current wizard screenshots show the selector.
 
 Conditional UI:
 
-- [ ] `<option>` `ng-selected="settings.headerType"`
-- [ ] `<div#custom-header-editor>` `ng-readonly="settings.headerType === 'None'"`
+- [x] `<option>` `ng-selected="settings.headerType"`
+- [x] `<div#custom-header-editor>` `ng-readonly="settings.headerType === 'None'"`
 
 Actions:
 
-- [ ] `<select>` `ng-change="updateHeaders()"`
+- [x] `<select>` `ng-change="updateHeaders()"`
 
 Inputs:
 
-- [ ] `<select>` `ng-model="settings.headerType"`
-- [ ] `<div#custom-header-editor>` `ng-model="settings.customHeaders"`
+- [x] `<select>` `ng-model="settings.headerType"`
+- [x] `<div#custom-header-editor>` `ng-model="settings.customHeaders"`
 
 Copy:
 
-- [ ] "Custom Headers"
-- [ ] "If you need to send headers to authenticate with your search engine you can specify them here."
-- [ ] "None"
-- [ ] "API Key"
-- [ ] "Custom"
+- [x] "Custom Headers"
+- [x] "If you need to send headers to authenticate with your search engine you can specify them here."
+- [x] "None"
+- [x] "API Key"
+- [x] "Custom"
 
 <a id="row-26"></a>
 ### 26. `app/assets/javascripts/components/annotation/_update.html`
@@ -2657,29 +2657,29 @@ Copy:
 - **Before the port:** unchanged since legacy (compared with `776c68b5`)
 - **Used by (legacy):**`app/assets/javascripts/directives/queryParamsHistory.js`
 - **Owner candidates:** _none found_
-- **Owner:** 
-- **Scenario:** 
-- **Decisions:** 
+- **Owner:** `app/views/core/_tune_relevance.html.erb` (History panel), `app/javascript/controllers/tune_relevance_controller.js`
+- **Scenario:** 4.13, 5.1
+- **Decisions:** Findings 9 and 10 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision). List contents, click-to-open, the ... button and the empty trailing `using` text replayed Legacy vs Current on 2026-10-17.
 
 Conditional UI:
 
-- [ ] `<li>` `ng-if="!try.deleted"`
-- [ ] `<li>` `ng-style="{'background-color': ['#666', '#64647D', '#667A66'][urlBucket(try.searchUrl, 3)]}"`
+- [x] `<li>` `ng-if="!try.deleted"`
+- [ ] `<li>` `ng-style="{'background-color': ['#666', '#64647D', '#667A66'][urlBucket(try.searchUrl, 3)]}"` — open: finding 9 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
 
 Actions:
 
-- [ ] `<button>` `ng-click="tryDetails(try); $event.stopPropagation()"`
-- [ ] `<li>` `ng-click="navigateToTry(try);"`
+- [x] `<button>` `ng-click="tryDetails(try); $event.stopPropagation()"`
+- [x] `<li>` `ng-click="navigateToTry(try);"`
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="try in settings.tries"`
+- [x] `<li>` `ng-repeat="try in settings.tries"`
 
 Copy:
 
-- [ ] "..."
-- [ ] "{{try.queryParams.slice(0,200)}}..."
-- [ ] "using {{ try.endpointName }}"
+- [x] "..."
+- [x] "{{try.queryParams.slice(0,200)}}..."
+- [x] "using {{ try.endpointName }}"
 
 <a id="row-28"></a>
 ### 28. `app/assets/javascripts/components/add_query/add_query.html`

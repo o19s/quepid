@@ -205,6 +205,27 @@ class CoreControllerTest < ActionController::TestCase
                     "http://test.host/api/cases/#{kase.id}/snapshots/__SNAPSHOT_ID__/search"
     end
 
+    test 'offers the optional proxy and JSONP controls in the wizard unless the instance requires proxying' do
+      kase = cases(:one)
+      params = { id: kase.id, try_number: tries(:one).try_number }
+
+      get :index, params: params
+      assert_select '#wizardModal[data-wizard-proxy-required-value=?]', 'false'
+      assert_select '#wizardProxy', 1
+      assert_select '#wizardApiMethod', 1
+
+      original = Rails.application.config.require_proxy_for_all_search_endpoints
+      begin
+        Rails.application.config.require_proxy_for_all_search_endpoints = true
+        get :index, params: params
+        assert_select '#wizardModal[data-wizard-proxy-required-value=?]', 'true'
+        assert_select '#wizardProxy', 0
+        assert_select '#wizardApiMethod', 0
+      ensure
+        Rails.application.config.require_proxy_for_all_search_endpoints = original
+      end
+    end
+
     test 'renders the case annotations with the page' do
       annotation = annotations(:one)
       login_user annotation.user

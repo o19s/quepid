@@ -279,6 +279,13 @@ export default class extends Controller {
         settings.testQuery || queryParams.replace(/#\$query##/g, "test"),
         settings.bareQueryParam
       )
+      const mapperError = this.applyMapperFunctions(settings)
+      if (mapperError) {
+        this.setBusy(false)
+        this.mapperInvalid = true
+        this.mapperErrorMessage = mapperError
+        return this.render()
+      }
     }
     if (settings.proxyRequests) settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
 
@@ -309,6 +316,22 @@ export default class extends Controller {
       }
       this.render()
     }
+  }
+
+  // Search API results can only be read through the endpoint's mapper functions, so build them for the
+  // validation search, as the Angular wizard did. Returns a message when the mapper cannot be used.
+  applyMapperFunctions(settings) {
+    let mapper
+    try {
+      mapper = this.capability.search.evaluateMapper(settings.mapperCode)
+    } catch (error) {
+      return `Mapper code evaluation failed: ${error.message}`
+    }
+    if (!mapper.numberOfResultsMapper) return 'You need to define a "numberOfResultsMapper"'
+    if (!mapper.docsMapper) return 'You need to define a "docsMapper"'
+    settings.numberOfResultsMapper = mapper.numberOfResultsMapper
+    settings.docsMapper = mapper.docsMapper
+    return null
   }
 
   ping(event) {

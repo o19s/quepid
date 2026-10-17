@@ -8,6 +8,7 @@ import { createNavigationRuntime } from "utils/navigation_runtime"
 import { caseRuntime } from "utils/case_runtime"
 import { createLiveQueryRuntimeOwner } from "utils/live_query_runtime_owner"
 import { createDocCache } from "utils/doc_cache"
+import { evaluateMapperFunctions } from "utils/query_service"
 
 /** Construct the case workspace in dependency order before any controller connects.
  * Query state belongs to the live-query owner; controllers receive complete
@@ -179,7 +180,8 @@ function createWizardCapabilities(
       all: () => mapperSearchRuntime.all()
     },
     search: {
-      createValidator: (value) => splainerSearch.searchSvc.createValidator(value)
+      createValidator: (value) => splainerSearch.searchSvc.createValidator(value),
+      evaluateMapper: (mapperCode) => evaluateMapperFunctions(mapperCode || "")
     },
     user: {
       current: () => userRuntime.current(),
