@@ -61,6 +61,29 @@ The baseline stays pinned across runs. Do not replace its archive or change its
 revision while its server is running. Rebuilding or reseeding this stack should
 never require stopping the current development server.
 
+## Scripted side-by-side captures
+
+For repeat comparisons of the same states, `scripts/legacy_comparison/` drives
+both instances with Playwright and writes `<item>-legacy.png` / `<item>-current.png`
+pairs, with the parts that differ outlined in pink. Run them on the host while
+both servers are up:
+
+```bash
+node scripts/legacy_comparison/capture_wizard.mjs          # W1–W3: case wizard
+node scripts/legacy_comparison/capture_tune_relevance.mjs  # T1–T14: Tune Relevance drawer
+```
+
+Item IDs are those of the 2026-10-17 parity review. Output goes to
+`tmp/legacy_comparison/` (`--out <dir>` to change it); `--sides legacy` or
+`--sides current` captures one side. Both scripts sign in as the sample-data user,
+find fixtures by name ("10s of Queries", "Edinburgh University Website"), create
+scratch cases, tries and endpoints, and delete them when done. States a screenshot
+can't show (hover text, native dialogs) go to `notes-<side>.json`. Override the
+instances with `LEGACY_URL` / `CURRENT_URL`; Legacy defaults to `127.0.0.1:3001`
+so its session cookie stays apart from Current's on `localhost`. Add a capture
+for a new item to the matching script, or start a new `capture_<surface>.mjs`
+with the helpers in `lib.mjs`. Inspect every pair before claiming parity.
+
 ## Setup verification — 2026-10-07
 
 Verified separate networks and database volume; historical database
