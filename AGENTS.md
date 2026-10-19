@@ -7,6 +7,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Preserve behavior unless the user specifically authorizes a change. Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
 - Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts. Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved.
 - Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
+- In Angular parity work, "fix" or "restore" an item means make it match Legacy (`8ceb99e9`). Do not substitute an alternative, even one you recommended, unless the user chooses it by name; if the instruction is ambiguous, ask. Record only user-chosen departures in [NOT-DOING.md](docs/todo/NOT-DOING.md).
 - Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
 - Keep documentation concise: state each rule once, link to shared guidance and retain only necessary rationale and verification evidence.
 - Preserve existing and imported documentation wording and structure. Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.

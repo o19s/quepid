@@ -42,8 +42,8 @@ Quepid is a **search relevance evaluation platform** (cases, queries, ratings, b
 | Whole-app feature inventory | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) |
 | Case workspace (`/case/...`) | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) |
 | Core UI implementation quirks | [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md) |
-| Frontend cleanup after Angular removal | [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) |
-| Open bugs and hardening | [`todo/todo.md`](./todo/todo.md) |
+| Frontend cleanup after Angular removal | [`todo/todo.md`](./todo/after-angular-removal.md) |
+| Open bugs and hardening | [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) (pre-existing), [`todo/todo.md`](./todo/todo.md) (migration) |
 | Encryption | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) |
 | Deployment and ops | [`operating_documentation.md`](./operating_documentation.md) |
 | Solr / OpenSearch endpoint notes | [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md) |

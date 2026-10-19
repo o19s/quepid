@@ -1,6 +1,6 @@
 # Quepid Core UI: Query Evaluation Page
 
-> **Role:** Deep dive on `/case/...` only (~50% of rewrite difficulty). App-wide inventory: [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md). Schema / HTML routes / business rules: [`complete_application_specification.md`](../complete_application_specification.md). Frontend cleanup: [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal).
+> **Role:** Deep dive on `/case/...` only (~50% of rewrite difficulty). App-wide inventory: [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md). Schema / HTML routes / business rules: [`complete_application_specification.md`](../complete_application_specification.md). Frontend cleanup: [`after-angular-removal.md`](./after-angular-removal.md).
 >
 > The query evaluation page is the heart of Quepid and is where search engineers spend most of their time. This document enumerates its functionality, interaction model, and technical complexity.
 >
@@ -1444,7 +1444,7 @@ There is no `awaitRatedDocs()`. Rated documents are loaded by `refreshRatedDocs(
 
 File-level inventories and internals change quickly, so they are not duplicated in this behavior-focused doc.
 
-**Canonical source for remaining work:** [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal)
+**Canonical source for remaining work:** [`after-angular-removal.md`](./after-angular-removal.md)
 
 **Read source for deep internals:** [`core_stimulus.js`](../../app/javascript/core_stimulus.js) (registered controllers), `core_bootstrap_controller.js`, `live_query_runtime_owner.js`, `query_service.js`, `query_scoring.js`, `scorer_runtime.js`, `diff_results.js`, `core_controller.rb`, `tour.js`.
 

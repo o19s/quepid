@@ -231,4 +231,4 @@ Unit tests are **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared
 
 - [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Playwright
 - [`app_structure.md`](./app_structure.md) — frontend layout
-- [`todo/todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal) — frontend cleanup after Angular removal
+- [`todo/todo.md`](./todo/after-angular-removal.md) — frontend cleanup after Angular removal

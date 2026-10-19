@@ -17,8 +17,8 @@ Owner candidates are filename matches, not verified owners.
 
 | # | Source | Ported | Items | Owner | Scenario | Status |
 |---|---|---|---|---|---|---|
-| [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2, 3.2b | open: 3 findings |
-| [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10, 4.11, 4.12 | open: 4 findings |
+| [1](#row-1) | `templates/views/wizardModal.html` | branch | 308 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2, 3.2b | closed |
+| [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10, 4.11, 4.12 | closed |
 | [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | `_judgements_core_modal.html.erb`, `_judgement_book_templates.html.erb`, `judgements_core_controller.js` | 6.6 | closed |
 | [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | `_export_case_core_modal.html.erb`, `export_case_core_controller.js` | 6.1 | closed |
 | [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js` | 6.2 | open: 2 findings |
@@ -27,7 +27,7 @@ Owner candidates are filename matches, not verified owners.
 | [8](#row-8) | `templates/views/queries.html` | branch | 57 | `_queries.html.erb`, `queries_list_controller.js` | 4.19, 4.20 | closed |
 | [9](#row-9) | `javascripts/components/diff/_modal.html` | branch | 44 | `_diff_modal.html.erb`, `_snapshot_selection_template.html.erb`, `diff_core_controller.js` | 5.3 | closed |
 | [10](#row-10) | `templates/views/queriesLayout.html` | branch | 40 | `_case_header.html.erb`, `case_rename_controller.js`, `_case_toolbar.html.erb` | 4.1, 5.3 | closed |
-| [11](#row-11) | `templates/views/queryParamsDetails.html` | branch | 35 | `_try_details_modal.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 2 findings |
+| [11](#row-11) | `templates/views/queryParamsDetails.html` | branch | 35 | `_try_details_modal.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
 | [12](#row-12) | `templates/views/searchResult.html` | branch | 31 | `search_result_controller.js`, `_query_list_templates.html.erb` | 4.6, 4.22, 4.23 | closed |
 | [13](#row-13) | `javascripts/components/query_explain/_modal.html` | branch | 30 | `query_explain_controller.js`, `shared/_dynamic_modal_templates.html.erb` | 6.7 | closed |
 | [14](#row-14) | `templates/views/snapshotModal.html` | branch | 28 | `_take_snapshot_core_modal.html.erb`, `take_snapshot_core_controller.js` | 5.2 | closed |
@@ -43,7 +43,7 @@ Owner candidates are filename matches, not verified owners.
 | [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
 | [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
 | [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
-| [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | open: 1 finding |
+| [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
 | [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`) | 4.17 | open: 1 finding |
@@ -52,7 +52,7 @@ Owner candidates are filename matches, not verified owners.
 | [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | open: 1 finding |
 | [34](#row-34) | `javascripts/components/judgements/judgements.html` | branch | 4 | `_case_toolbar.html.erb` | 6.6 | closed |
 | [35](#row-35) | `templates/views/common/flash.html` | branch | 4 | `core_flash.js`, `layouts/_flash` (`#flash-messages`) | 4.16 | closed |
-| [36](#row-36) | `templates/views/searchEndpoint_popup.html` | branch | 4 | `tune_relevance_controller.js`, `_tune_relevance.html.erb` | 4.12 | open: 1 finding |
+| [36](#row-36) | `templates/views/searchEndpoint_popup.html` | branch | 4 | `tune_relevance_controller.js`, `_tune_relevance.html.erb` | 4.12 | closed |
 | [37](#row-37) | `javascripts/components/frog_report/frog_report.html` | branch | 3 | `frog_report_controller.js`, `_queries.html.erb` | 6.9 | closed |
 | [38](#row-38) | `javascripts/components/matches/matches.html` | branch | 3 | `match_explain_controller.js` | 6.8 | open: 1 finding |
 | [39](#row-39) | `javascripts/components/browse_query/browse_query.html` | branch (main-only) | 2 | `browse_query_controller.js`, `search_results_controller.js` | 4.18 | closed |
@@ -174,7 +174,7 @@ Blocks landing until closed.
 - **Owner candidates:** `app/views/shared/_wizard_modal.html.erb`
 - **Owner:** `app/views/shared/_wizard_modal.html.erb`, `_wizard_engine_tile.html.erb`, `app/javascript/controllers/wizard_controller.js`
 - **Scenario:** 3.2, 3.2b, 7 (Mapper Wizard handoff)
-- **Decisions:** P1 restore `8ce48fc3` (tiles, ping it, troubleshooting, header types, field suggestions, Static guide). The typo confirm, Enter submission, required test query and Solr-only API method had no decision and are restored in this pass. The API method select is restored to Solr-only. Search API mapper evaluation during validation is restored (`applyMapperFunctions`): Current handed the endpoint's mapper code to the validator as a string, so a failing or missing mapper passed silently and no fields were discovered; replayed on Legacy and Current. Three open findings have no decision: [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision). Checked by source against `8ceb99e9` and `776c68b5`, a live run on Current (3.2), and a Legacy (:3001) vs Current replay of the Endpoint, Search API, existing-endpoint and static CSV flows on 2026-10-17 (screenshots in `.playwright-mcp/wizard-parity/`).
+- **Decisions:** P1 restore `8ce48fc3` (tiles, ping it, troubleshooting, header types, field suggestions, Static guide). The typo confirm, Enter submission, required test query and Solr-only API method had no decision and are restored in this pass. The API method select is restored to Solr-only. Search API mapper evaluation during validation is restored (`applyMapperFunctions`): Current handed the endpoint's mapper code to the validator as a string, so a failing or missing mapper passed silently and no fields were discovered; replayed on Legacy and Current. The three remaining differences were decided on 2026-10-17: the static CSV preview and Import button (with success no longer shown in the error alert) and the collapsed Solr Configuration and Advanced sections are restored (`wizard_behaviour.spec.ts`); the Legacy frame is restored (no "Create a Quepid case" title bar or Cancel footer, added in `3f919211`; step dots along the bottom instead of the numbered tabs `b11ce954` put at the top); the create-new / use-existing accordion is restored (both panels closed on arrival, the TLS reload reopens the existing panel); the Search API query pattern is restored to the Query step (one-line input for GET, a textarea otherwise), seeded from the endpoint's test query, with "Query pattern is required." shown at once and Continue disabled while it is empty (`wizard_behaviour.spec.ts`). Checked by source against `8ceb99e9` and `776c68b5`, a live run on Current (3.2), and a Legacy (:3001) vs Current replay of the Endpoint, Search API, existing-endpoint and static CSV flows on 2026-10-17 (screenshots in `.playwright-mcp/wizard-parity/`).
 
 Conditional UI:
 
@@ -193,15 +193,15 @@ Conditional UI:
 - [x] `<button>` `ng-disabled="showTLSChangeWarning"`
 - [x] `<p>` `ng-show="pendingWizardSettings.urlFormat"`
 - [x] `<div>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
-- [ ] `<div>` `ng-show="staticContent.import.alert"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<button>` `ng-disabled="listOfStaticQueries.length > 0"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<div>` `ng-if="staticContent.content"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-show="staticContent.import.alert"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] `<button>` `ng-disabled="listOfStaticQueries.length > 0"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] `<div>` `ng-if="staticContent.content"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<div>` `uib-collapse="!isStaticCollapsed"` _(not in main)_ — `<details>`
 - [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'static'"`
 - [x] `<div>` `uib-collapse="!isSolrCollapsed"` _(not in main)_ — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
 - [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr'"` _(not in main)_
 - [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` _(not in main)_
-- [ ] `<div>` `uib-collapse="!isHeaderConfigCollapsed"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `uib-collapse="!isHeaderConfigCollapsed"` _(not in main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<span>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"`
 - [x] `<span>` `ng-hide="validating"`
 - [x] `<span>` `ng-show="validating"`
@@ -220,14 +220,14 @@ Conditional UI:
 - [x] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))"`
 - [x] `<p>` `ng-if="titleFieldRequired"`
 - [x] `<p>` `ng-if="idFieldRequired"`
-- [ ] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
+- [x] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 - [x] `<p>` `ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0"`
 - [x] `<p>` `ng-if="pendingWizardSettings.queryParams && pendingWizardSettings.queryParams.trim().length > 0 && pendingWizardSettings.queryParams.indexOf('#$query##') === -1"`
-- [ ] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 - [x] `<button>` `ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)"`
 - [x] `<button>` `ng-disabled="!pendingWizardSettings.caseName || !pendingWizardSettings.caseName.trim()"` _(added on main)_
-- [ ] `<button>` `ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<p>` `ng-if="pendingWizardSettings.searchEngine !== 'static'"` _(added on main)_
 - [x] `<li>` `ng-if="!pendingWizardSettings.proxyRequests"` _(added on main)_
 - [x] `<span>` `ng-if="pendingWizardSettings.searchEngine === 'solr' && !proxyRequiredForAllEndpoints"` _(added on main)_ — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
@@ -237,9 +237,9 @@ Conditional UI:
 - [x] `<label>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
 - [x] `<div>` `ng-if="pendingWizardSettings.supportsBasicAuth !== false"` _(added on main)_
 - [x] `<div>` `ng-if="pendingWizardSettings.searchEnginePreset !== 'searchapi'"` _(added on main)_
-- [ ] `<div#wizardEndpointAccordionCreate>` `ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<button>` `ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<div#wizardEndpointAccordionExisting>` `ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div#wizardEndpointAccordionCreate>` `ng-class="{show: shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] `<button>` `ng-class="{collapsed: !shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] `<div#wizardEndpointAccordionExisting>` `ng-class="{show: shouldExistingSearchEndpointDefaultToOpen}"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<div>` `ng-show="finishSaveError"` _(added on main)_
 - [x] `<button>` `ng-disabled="savingFinish"` _(added on main)_
 
@@ -250,16 +250,16 @@ Actions:
 - [x] `<input>` `ng-change="reset()"`
 - [x] `<button>` `ng-click="validate(true)"`
 - [x] `<button>` `ng-click="isStaticCollapsed = !isStaticCollapsed"`
-- [ ] `<button>` `ng-click="createSnapshot()"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="createSnapshot()"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<button>` `ng-click="isSolrCollapsed = !isSolrCollapsed"` — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
 - [x] `<select>` `ng-change="resetUrlValid()"` — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
 - [x] `<button>` `ng-click="goToMapperWizard()"`
-- [ ] `<button>` `ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="isHeaderConfigCollapsed = !isHeaderConfigCollapsed"` _(not in main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<input#proxy-requests>` `ng-change="changeProxySetting()"`
 - [x] `<input>` `ng-change="resetUrlValid()"`
 - [x] `<button>` `ng-click="validate()"`
 - [x] `<button>` `ng-click="skipValidation()"`
-- [ ] `<div>` `ng-click="switchToCreateNewSearchEndpoint()"` _(not in main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-click="switchToCreateNewSearchEndpoint()"` _(not in main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<select#searchEndpoint>` `ng-change="changeSearchEndpoint()"`
 - [x] `<input>` `ng-change="updateDisplayFields('title', pendingWizardSettings.titleField)"`
 - [x] `<input>` `ng-change="updateDisplayFields('id', pendingWizardSettings.idField)"`
@@ -268,8 +268,8 @@ Actions:
 - [x] `<input>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
 - [x] `<button>` `ng-click="pendingWizardSettings.deleteQuery($index)"`
 - [x] `<button>` `ng-click="pendingWizardSettings.addQuery(pendingWizardSettings.text)"`
-- [ ] `<button>` `ng-click="switchToCreateNewSearchEndpoint()"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] `<button>` `ng-click="toggleHeaderConfig()"` _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="switchToCreateNewSearchEndpoint()"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] `<button>` `ng-click="toggleHeaderConfig()"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 
 Inputs:
 
@@ -308,7 +308,7 @@ Bound content:
 - [x] `<img>` `ng-src="images/static.png"`
 - [x] `<img>` `ng-src="images/searchapi.png"`
 - [x] `<img>` `ng-src="images/algolia.png"`
-- [ ] `<div>` `ng-bind-html="staticContent.import.alert"` — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<div>` `ng-bind-html="staticContent.import.alert"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<img>` `ng-src="images/{{engine.logo}}.png"` _(added on main)_
 - [x] `<span>` `ng-bind="pendingWizardSettings.basicAuthCredential ? '-u ' + pendingWizardSettings.basicAuthCredential + ' ' : ''"` _(added on main)_
 - [x] `<span>` `ng-bind="solrQueryResponseWriterCurlJson"` _(added on main)_
@@ -323,7 +323,7 @@ Links:
 - [x] `<a>` `href="https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid"` _(not in main)_
 - [x] `<a>` `href="http://quepidapp.com/how-quepid-works/"`
 - [x] `<a>` `href="{{quepidUrlToSwitchTo}}"`
-- [ ] `<a>` `href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true"` — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] `<a>` `href="{{quepidUrlToSwitchTo}}&existingSearchEndpoint=true"` — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] `<a>` `ng-href="{{troubleshootingWikiUrl(pendingWizardSettings.searchEngine, pendingWizardSettings.searchEnginePreset)}}"` _(added on main)_
 
 Copy:
@@ -374,7 +374,7 @@ Copy:
 - [x] "Do you see any errors when you visit your"
 - [x] "Solr URL directly?"
 - [x] "Use the Proxy option under" _(not in main)_
-- [ ] "Advanced" — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Advanced" — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] "!" _(not in main)_
 - [x] "You may need to configure the JSON"
 - [x] "wt=json"
@@ -410,8 +410,8 @@ Copy:
 - [x] "Query Text,Doc ID,Doc Position, MovieTitle star wars,527641,1, Star Wars star wars,9426,2, Star Wars: The Empire Strikes Back star wars,1921,3, Star Wars: Return of the Jedi"
 - [x] "Please note that the additional columns that a Snapshot export file contains are ignored when you import them here."
 - [x] "Select CSV file to import:"
-- [ ] "CSV" — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
-- [ ] "Import" — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "CSV" — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
+- [x] "Import" — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] "Solr Configuration" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
 - [x] "API Method" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
 - [x] "JSONP" — Solr-only JSONP/GET select, hidden when proxy is required (restored in this pass)
@@ -442,7 +442,7 @@ Copy:
 - [x] "FYI: your existing Static File endpoints are NOT sharable across cases."
 - [x] "Endpoint:"
 - [x] "Test Query"
-- [ ] "Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step." — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step." — restored in this pass
 - [x] placeholder: "shirts without stripes"
 - [x] "Test query is required to validate the endpoint." — restored in this pass
 - [x] title: "Endpoint"
@@ -462,7 +462,7 @@ Copy:
 - [x] "All of the queries defined in the static upload will be created."
 - [x] "Add Your Search Queries"
 - [x] "Start out tuning a couple important search queries:"
-- [ ] "Query Pattern" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Query Pattern" — restored in this pass
 - [x] "Modify your query structure to include"
 - [x] "#$query##"
 - [x] "where the search text should be substituted. Quepid will replace"
@@ -478,7 +478,7 @@ Copy:
 - [x] "Go to "Tune Relevance" to iterate on your relevance and manipulate searches"
 - [x] "Finish"
 - [x] title: "Finish"
-- [ ] "Create a new Search Endpoint" _(added on main)_ — open: finding 3 in [todo](../todo/todo.md#migration-p2-i1-c2--case-wizard-behaviour-changes-with-no-recorded-decision)
+- [x] "Create a new Search Endpoint" _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
 - [x] ") than Quepid is running, and this triggers your browser to prevent communication with the search endpoint." _(added on main)_
 - [x] "Option 1: Reload Quepid to run on the correct protocol." _(added on main)_
 - [x] "Sorry, we're not getting any search results from your {{ searchEngineDisplayName(pendingWizardSettings.searchEnginePreset || pendingWizardSettings.searchEngine) | searchEngineName }}." _(added on main)_
@@ -542,7 +542,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `app/views/core/_tune_relevance.html.erb`, `app/javascript/controllers/tune_relevance_controller.js`
 - **Scenario:** 4.10, 4.11, 4.12
-- **Decisions:** Findings 1 to 5, 9 to 12 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision) (items 1 to 4 replayed Legacy vs Current on 2026-10-17; 5 source only). Ticked items were checked by source against `8ceb99e9` and `776c68b5`, and live on Current for the tabs, section defaults, knob edit and rerun, and Endpoint Details; the ES/OS, Vectara, Algolia and Search API editor modes, the nightly toggle, escape-queries visibility and the TLS reload were checked by source only. The "not currently used" knob message sits inside the `inQueryParams` block, so no version ever showed it.
+- **Decisions:** Restored on 2026-10-17 (`tune_relevance.spec.ts`): the Evaluate Nightly? and Escape Queries tooltips, their Legacy order, the endpoint picker copy and empty state, the protocol-mismatch explanation, history shading and hover text, and the case toolbar on a try with an endpoint on the other protocol. Search Endpoints stays last, as Eric Pugh ordered it on main in #1775 (`334df0ea`). Kept: the Annotations intro copy. The Tuning Knobs empty-state note and tip are also restored ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Rerun keeping the drawer open matches Legacy. Ticked items were checked by source against `8ceb99e9` and `776c68b5`, and live on Current for the tabs, section defaults, knob edit and rerun, and Endpoint Details; the ES/OS, Vectara, Algolia and Search API editor modes, the nightly toggle, escape-queries visibility and the TLS reload were checked by source only. The "not currently used" knob message sits inside the `inQueryParams` block, so no version ever showed it.
 
 Conditional UI:
 
@@ -561,19 +561,19 @@ Conditional UI:
 - [x] `<div#searchapi-query-params-editor>` `ng-show="settings.searchEngine == 'searchapi'"`
 - [x] `<div#query-params-editor>` `ng-if="settings.searchEngine !== 'static'"`
 - [x] `<div>` `ng-show="qp.curTab == 'developer'"`
-- [ ] `<p>` `ng-show="settings.selectedTry.curatorVars.length == 0"` — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<p>` `ng-show="settings.selectedTry.curatorVars.length == 0"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<p>` `ng-show="curatorVar.inQueryParams != true"` — N/A: only rendered inside the `inQueryParams` block, so never shown on Legacy or main
 - [x] `<div>` `ng-show="curatorVar.inQueryParams"`
 - [x] `<div>` `ng-if="settings.searchEngine !== 'static'"`
 - [x] `<div>` `ng-show="qp.curTab == 'curator'"`
 - [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsSearchEndpoint.toggle]"` _(not in main)_
-- [ ] `<span>` `ng-show="listSearchEndpoints().length == 0"` — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] `<div>` `ng-if="noResults"` — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<span>` `ng-show="listSearchEndpoints().length == 0"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] `<div>` `ng-if="noResults"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<div>` `ng-show="devSettingsSearchEndpoint.toggle"`
 - [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsEndpointDetails.toggle]"` _(not in main)_
 - [x] `<p>` `ng-if="settings.selectedTry.endpointArchived"`
 - [x] `<img>` `ng-if="settings.selectedTry.searchEngine"`
-- [ ] `<span>` `ng-show="showTLSChangeWarning"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<span>` `ng-show="showTLSChangeWarning"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<div>` `ng-show="devSettingsEndpointDetails.toggle"`
 - [x] `<span>` `ng-class="{true: 'glyphicon-plus-sign', false: 'glyphicon-minus-sign'}[!devSettingsFields.toggle]"` _(not in main)_
 - [x] `<span>` `ng-show="showESTemplateWarning"`
@@ -590,7 +590,7 @@ Conditional UI:
 - [x] `<div>` `ng-show="qp.curTab == 'engineSettings'"`
 - [x] `<div>` `ng-show="qp.curTab == 'history'"`
 - [x] `<div>` `ng-show="qp.curTab == 'annotations'"`
-- [ ] `<span#query-sandbox-action>` `ng-show="!showTLSChangeWarning"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<span#query-sandbox-action>` `ng-show="!showTLSChangeWarning"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<span>` `ng-show="qp.curTab == 'developer' || qp.curTab == 'engineSettings' || qp.curTab == 'curator'"`
 - [x] `<button#developerTab>` `ng-class="{active: qp.curTab == 'developer'}"` _(added on main)_
 - [x] `<button#curatorTab>` `ng-class="{active: qp.curTab == 'curator'}"` _(added on main)_
@@ -661,15 +661,15 @@ Bound content:
 
 - [x] `<p#query-params-warn>` `ng-bind-html="queryParamsWarning"`
 - [x] `<img>` `ng-src="images/{{ settings.selectedTry.searchEngine }}-icon.png"` _(not in main)_
-- [ ] `<a>` `uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"` _(not in main)_ — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] `<a>` `uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'"` _(not in main)_ — open: finding 2 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<a>` `uib-tooltip-html="'Run all the queries every night and store the results<br/> and the scores as a snapshot.'"` _(not in main)_ — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] `<a>` `uib-tooltip-html="'(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch <br/>query syntax (like text:law) then disable this feature'"` _(not in main)_ — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<img>` `ng-src="images/{{ settings.selectedTry.mapperBasedSearchEngineId || settings.selectedTry.searchEngine }}-icon.png"` _(added on main)_
 
 Links:
 
 - [x] `<a>` `href="http://quepidapp.com/docs/#tuning"`
 - [x] `<a>` `ng-href="{{createSearchEndpointLink(settings.selectedTry.searchEndpointId)}}"`
-- [ ] `<a>` `href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit"` — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<a>` `href="{{createSearchEndpointLink(settingsSvc.editableSettings().searchEndpointId)}}/edit"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<a>` `ng-href="analytics/tries_visualization/{{ caseNo }}"`
 - [x] `<a>` `ng-href="cases/{{ caseNo }}/scores"`
 - [x] `<a>` `ng-href="cases/{{ caseNo }}/ratings"`
@@ -686,29 +686,29 @@ Copy:
 - [x] "With a Static search endpoint there are no query settings to play with ;-(."
 - [x] "Query Sandbox:"
 - [x] "With a Static search endpoint there are no tuning knobs to play with ;-(."
-- [ ] "What's this tab do? Knobs allow you to fine tune your search! Define variables in your query template with" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "What's this tab do? Knobs allow you to fine tune your search! Define variables in your query template with" — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "##"
-- [ ] ", such as this boost:" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] ", such as this boost:" — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "title^##titleBoost##"
-- [ ] ". Play with the values in this tab. Submit to rerun with the new values!" — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] "Add and remove knobs from here by editing your query." — open: finding 1 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] ". Play with the values in this tab. Submit to rerun with the new values!" — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] "Add and remove knobs from here by editing your query." — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "{{ curatorVar.name }}:"
 - [x] "This knob/dial is not currently used by the query!" — N/A: only rendered inside the `inQueryParams` block, so never shown on Legacy or main
 - [x] "Search Endpoints"
-- [ ] "Pick Shared Endpoints:" — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] "You do not have any search endpoints shared with this case. Share the case with a team first." — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Pick Shared Endpoints:" — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] "You do not have any search endpoints shared with this case. Share the case with a team first." — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "OR"
 - [x] placeholder: "Select endpoint to use"
-- [ ] "No search endpoints found. Check your spelling!" — open: finding 4 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "No search endpoints found. Check your spelling!" — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "Endpoint Details"
 - [x] "This search endpoint has been archived. Consider switching to an active endpoint."
 - [x] "Name: {{ settings.selectedTry.endpointName }}"
 - [x] "  {{settings.searchUrl}}"
 - [x] "More"
-- [ ] "You have specified a search engine url that is on a different protocol (" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] ") than Quepid is on. Please either" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] "swap to the proxied connection" — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
-- [ ] ", or make sure the search endpoint is running on the same HTTP protocol. This is to comply with browser security constraints." — open: finding 5 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "You have specified a search engine url that is on a different protocol (" — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] ") than Quepid is on. Please either" — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] "swap to the proxied connection" — restored 2026-10-17 (`tune_relevance.spec.ts`)
+- [x] ", or make sure the search endpoint is running on the same HTTP protocol. This is to comply with browser security constraints." — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] "Displayed Fields"
 - [x] "When using ES/OS Query Templates, make sure that either your template includes the fields above in its source field filter section ("
 - [x] "_source"
@@ -1086,7 +1086,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
 - **Owner:** `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js`
 - **Scenario:** 6.2
-- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the removed "Header" checkbox and the changed CSV row validation, [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 5; a failed import keeps the modal open, item 6. The RRE sample file returned a server 500 on both (see the RRE entry in `todo.md`).
+- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the removed "Header" checkbox and the changed CSV row validation, [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 5; a failed import keeps the modal open, item 6. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
 
 Conditional UI:
 
@@ -1760,7 +1760,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `app/views/core/_try_details_modal.html.erb`, `app/javascript/controllers/tune_relevance_controller.js`
 - **Scenario:** 4.13, 5.1
-- **Decisions:** Findings 7 and 8 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision). Open, rename, duplicate and delete replayed on Legacy and Current with scratch cases (Legacy 37, Current 1067523497, deleted afterwards); duplicate matches including the flash. The Variables list for a try with knobs was checked by source only.
+- **Decisions:** Rename staying in the modal without a flash is restored on 2026-10-17 (`tune_relevance.spec.ts`); the delete confirmation is kept ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Open, rename, duplicate and delete replayed on Legacy and Current with scratch cases (Legacy 37, Current 1067523497, deleted afterwards); duplicate matches including the flash. The Variables list for a try with knobs was checked by source only.
 
 Conditional UI:
 
@@ -1773,11 +1773,11 @@ Conditional UI:
 
 Actions:
 
-- [ ] `<form>` `ng-submit="tryName.rename()"` — open: finding 7 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<form>` `ng-submit="tryName.rename()"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 - [x] `<button>` `ng-click="tryName.startRename = false"`
 - [x] `<button>` `ng-click="tryName.startRename = true"`
 - [x] `<button>` `ng-click="duplicateTry(aTry)"`
-- [ ] `<button>` `ng-click="deleteTry(aTry)"` — open: finding 8 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<button>` `ng-click="deleteTry(aTry)"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 - [x] `<button>` `ng-click="cancel()"`
 
 Inputs:
@@ -2484,7 +2484,7 @@ Copy:
 - **Owner candidates:** `app/javascript/controllers/annotations_controller.js`
 - **Owner:** `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js`
 - **Scenario:** 5.4
-- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) on 2026-10-17: Create (also accepts an empty message on both), list, reload persistence and the "Can't create … until searches have been run" flash. The intro copy was reworded (finding 11 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)). Current adds an empty state ("No annotations yet."): [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
+- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) on 2026-10-17: Create (also accepts an empty message on both), list, reload persistence and the "Can't create … until searches have been run" flash. The intro copy was reworded and is kept ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Current adds an empty state ("No annotations yet."): [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
 
 Actions:
 
@@ -2505,9 +2505,9 @@ Links:
 
 Copy:
 
-- [ ] "Annotations are like snapshots for scores. Create a new annotation to save the current case score along with a message to help your remember what the state of the case is at this moment." — open: reworded, finding 11 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "Annotations are like snapshots for scores. Create a new annotation to save the current case score along with a message to help your remember what the state of the case is at this moment." — reworded, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 - [x] "Why?"
-- [ ] "You might have made some changes that are invisible to Quepid (eg. a new tokenizer), and you want to capture that information and the corresponding score." — open: reworded, finding 11 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] "You might have made some changes that are invisible to Quepid (eg. a new tokenizer), and you want to capture that information and the corresponding score." — reworded, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 - [x] "Scroll down to view list of annotations"
 - [x] "Message:"
 - [x] "Create"
@@ -2659,12 +2659,12 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `app/views/core/_tune_relevance.html.erb` (History panel), `app/javascript/controllers/tune_relevance_controller.js`
 - **Scenario:** 4.13, 5.1
-- **Decisions:** Findings 9 and 10 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision). List contents, click-to-open, the ... button and the empty trailing `using` text replayed Legacy vs Current on 2026-10-17.
+- **Decisions:** History shading by search URL and the knob lines in the hover text are restored on 2026-10-17 (`tune_relevance.spec.ts`). List contents, click-to-open, the ... button and the empty trailing `using` text replayed Legacy vs Current on 2026-10-17.
 
 Conditional UI:
 
 - [x] `<li>` `ng-if="!try.deleted"`
-- [ ] `<li>` `ng-style="{'background-color': ['#666', '#64647D', '#667A66'][urlBucket(try.searchUrl, 3)]}"` — open: finding 9 in [todo](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision)
+- [x] `<li>` `ng-style="{'background-color': ['#666', '#64647D', '#667A66'][urlBucket(try.searchUrl, 3)]}"` — restored 2026-10-17 (`tune_relevance.spec.ts`)
 
 Actions:
 
@@ -2962,7 +2962,7 @@ Bound content:
 - **Owner candidates:** _none found_
 - **Owner:** `tune_relevance_controller.js`, `_tune_relevance.html.erb`
 - **Scenario:** 4.12
-- **Decisions:** Suggestion rows now show the engine icon and bold the typed text and the list opens on focus (restored in this pass; `tune_relevance.spec.ts`). Open: the eight-row cap, item 13 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision).
+- **Decisions:** Suggestion rows now show the engine icon and bold the typed text and the list opens on focus (restored in this pass; `tune_relevance.spec.ts`). The eight-row cap is removed on 2026-10-17, so every match is listed as in Legacy (`tune_relevance.spec.ts`).
 
 Bound content:
 
@@ -5035,8 +5035,8 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `_tune_relevance.html.erb` (knob inputs)
 - **Scenario:** 4.11
-- **Decisions:** Legacy used `auto-grow` only on the Tuning Knobs value input (`devQueryParams.html`). Current has no auto-grow (source); recorded as item 14 of the [Tune Relevance entry](../todo/todo.md#migration-p2-i1-c2--tune-relevance-drawer-behaviour-changes-with-no-recorded-decision).
-- [ ] Behaviour reproduced (read the directive's link/controller code) — open: not reproduced, item 14 of the Tune Relevance entry
+- **Decisions:** Legacy used `auto-grow` only on the Tuning Knobs value input (`devQueryParams.html`). Current has no auto-grow (source); removed on main in `a3e87c89` and kept ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). The input no longer clips long values: it sizes to its value between Legacy's auto-grow limits through CSS `field-sizing`, with a 14ch fallback (`tune_relevance.spec.ts`, 2026-10-19).
+- [x] Behaviour reproduced (read the directive's link/controller code) — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
 
 <a id="row-105"></a>
 ### 105. `app/assets/javascripts/directives/textPaste.js`

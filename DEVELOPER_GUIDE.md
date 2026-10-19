@@ -60,7 +60,6 @@ This guide provides detailed instructions for developers who want to set up, run
 		- [Partial inputs](#partial-inputs)
 		- [Stimulus HTTP conventions](#stimulus-http-conventions)
 		- [Error-message policies](#error-message-policies)
-		- [Behavior-preserving refactoring boundaries](#behavior-preserving-refactoring-boundaries)
 		- [Core event bus](#core-event-bus)
 	- [Fonts](#fonts)
 	- [How to develop Jupyterlite](#how-to-develop-jupyterlite)

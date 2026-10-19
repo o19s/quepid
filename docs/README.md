@@ -15,7 +15,8 @@
 | [`adr/0001-llm-judge-provider-architecture.md`](./adr/0001-llm-judge-provider-architecture.md) | Why the LLM-as-Judge adapter seam exists, why Jev lands now and OpenAI Batch is deferred, and the deployable step order |
 | [`todo/judgements-escalation.md`](./todo/judgements-escalation.md) | Risks and open questions for judgement escalation — read alongside the plan |
 | [`todo/escalating_judges.md`](./todo/escalating_judges.md) | Planned: a cheap judge that wakes an expensive one when it is unsure (explicit escalation order per book) |
-| [`todo/todo.md`](./todo/todo.md) | Open bugs, hardening, and cleanup on `main` (excludes obviated Angular UI — see [§ Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular)) |
+| [`todo/todo.md`](./todo/todo.md) | AngularJS-removal sign-off gate and migration follow-ups |
+| [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) | Work deferred until the AngularJS-removal branch lands: frontend consolidation, Legacy behaviour kept only for parity, and pre-existing bugs, security and backend fixes |
 | [`operating_documentation.md`](./operating_documentation.md) | Deployment, configuration, health checks, integrations, and operational runbooks |
 | [`manual-testing/README.md`](./manual-testing/README.md) | Manual-test guide, scenario index, and execution policy |
 
@@ -40,11 +41,10 @@
 ## Dedup rules (Aug 2026)
 
 - **Encryption:** one living doc — [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md).
-- **Frontend cleanup:** one living section — [`todo.md` § Frontend cleanup after Angular removal](./todo/todo.md#frontend-cleanup-after-angular-removal). Former migration-plan documents are historical.
-- **Open bugs / hardening:** one living doc — [`todo/todo.md`](./todo/todo.md). Outstanding work only; remove entries when fixed (no completed section).
+- **Frontend cleanup:** tracked in [`todo/after-angular-removal.md`](./todo/after-angular-removal.md). Former migration-plan documents are historical.
+- **Open bugs / hardening:** [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) (pre-existing) and [`todo/todo.md`](./todo/todo.md) (migration). Outstanding work only; remove entries when fixed (no completed section).
 - **Data model:** narrative — [`data_mapping.md`](./data_mapping.md); feature relationships — [`todo/QUEPID_FEATURES.md` §3](./todo/QUEPID_FEATURES.md#3-data-model--relationships); schema columns — [`complete_application_specification.md` §3](./complete_application_specification.md#3-data-model).
 - **JavaScript tooling:** detailed scope, commands, and policy — [`js_tooling.md`](./js_tooling.md); the developer guide keeps only setup/test entry points and links back here.
 - **REST API:** canonical list — OpenAPI at `/api/docs`; Stimulus client conventions — [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions); HTML routes — [`complete_application_specification.md` §20.5](./complete_application_specification.md#205-html-rails-routes-non-api).
 - **Core UI implementation quirks:** [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md), not duplicated in [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) or COREUI §23+.
-- **Obviated Angular UI bugs:** listed in [`todo/todo.md` § Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular); remaining frontend cleanup in [`todo.md` § Frontend cleanup after Angular removal](./todo/todo.md#frontend-cleanup-after-angular-removal).
 - **Business rules / edge cases:** [`complete_application_specification.md` § Edge Cases](./complete_application_specification.md#edge-cases-and-business-rules); architectural narrative — [`todo/QUEPID_FEATURES.md` §35](./todo/QUEPID_FEATURES.md#35-key-architectural-decisions).

@@ -1,6 +1,6 @@
 # Quepid: Complete Feature & Function Enumeration
 
-> **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For frontend cleanup after Angular removal see [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal).
+> **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For frontend cleanup after Angular removal see [`after-angular-removal.md`](./after-angular-removal.md).
 >
 > **Last reviewed:** August 2026 against branch `angular-phase-10` (`Rails 8.1.3.1` / `Ruby 4.0.6` / AngularJS removed). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
 
@@ -1548,8 +1548,8 @@ Book scales cannot be changed once any judgement exists — this is a data integ
 The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md). Key cross-references:
 - [`complete_application_specification.md`](../complete_application_specification.md) — canonical schema columns, HTML routes, and business rules (feature behavior lives in this file and COREUI)
 - [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md) / [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md) — app-wide and case-workspace feature inventories
-- [`todo.md`](./todo.md#frontend-cleanup-after-angular-removal) — frontend cleanup after Angular removal
-- [`todo/todo.md`](./todo/todo.md) — open bugs and hardening
+- [`after-angular-removal.md`](./after-angular-removal.md) — frontend cleanup after Angular removal, plus pre-existing bugs and hardening
+- [`todo.md`](./todo.md) — AngularJS-removal migration work
 - [`data_mapping.md`](./data_mapping.md) / [`app_structure.md`](./app_structure.md) — canonical data model and architecture explanations
 - [`operating_documentation.md`](./operating_documentation.md) — operations/deployment guide covering Nginx, OAuth, Thor scripts, etc.
 - [`endpoints_solr.md`](./endpoints_solr.md) / [`endpoints_opensearch.md`](./endpoints_opensearch.md) — detailed per-engine query documentation

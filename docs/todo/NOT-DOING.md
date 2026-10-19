@@ -31,6 +31,18 @@ Rails already renders the list with the case page; only the graph makes an initi
 
 **Revisit if:** representative production measurements justify the coordination and a concrete design preserves list errors, graph refresh and `annotations:changed`. See the [annotation read assessment](rails_stimulus_json_workspace_plan.md#annotation-read-assessment) for contracts, measurements and verification.
 
+## Angular parity: changes kept after the 2026-10-17 review
+
+The parity review compared these with Legacy (`8ceb99e9`, replayed on :3001) and found no recorded decision for any of them. On 2026-10-17 the user chose which to restore. The ones below were not chosen, so they stay. Item-level evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 2, 11, 27, 36 and 104.
+
+- **Deleting a try asks for confirmation** ("Are you sure you want to delete … This cannot be undone."). Legacy deleted immediately. Kept because the deletion can't be undone.
+- **Annotations tab intro copy** fixes Legacy's typos ("help your remember") and shortens the second paragraph.
+- **The knob value input does not auto-grow.** Removed on `main` by Eric Pugh in `a3e87c89` ("autogrow … doesn't even get used … so eliminate"). The input still widens to fit its value, through CSS (`field-sizing`) rather than the removed script.
+
+Rerun My Searches! keeping the drawer open was listed with these but is not a change: Legacy keeps it open too (`mainCtrl.js` stores `devSettings` for this), and `e3605dc5` restored it.
+
+**Revisit if:** users report missing the Legacy behaviour for any of these.
+
 ## [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
 
 The `http`↔`https` switch is a cross-origin navigation, so browser storage and `Secure` session cookies cannot provide a direct handoff. A short-lived, single-use opaque token could retrieve server-side pending state without sharing those cookies, keeping the credential itself out of browser history and URL logs. Redemption over plaintext `http` would still carry transport risk. This mitigation is deferred, not technically impossible.

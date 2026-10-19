@@ -1,6 +1,6 @@
 # Core UI Implementation Reference
 
-> **Role:** Deep internals for the `/case/...` workspace — quirks, edge cases, and field maps removed from [`QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) during condensation. **Behavior/UX** stays in COREUI §1–22. **Frontend cleanup** is tracked in [`todo.md`](./todo/todo.md#frontend-cleanup-after-angular-removal).
+> **Role:** Deep internals for the `/case/...` workspace — quirks, edge cases, and field maps removed from [`QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) during condensation. **Behavior/UX** stays in COREUI §1–22. **Frontend cleanup** is tracked in [`after-angular-removal.md`](./todo/after-angular-removal.md).
 
 Source of truth is always the code; update this doc when you change the listed files.
 
@@ -297,6 +297,6 @@ through `ratingsStore`, while `adapter.rate`/`rateAll` call the doc's
 | Doc | Purpose |
 |-----|---------|
 | [QUEPID_COREUI_FEATURES.md](./todo/QUEPID_COREUI_FEATURES.md) | Case UI behavior (§1–22) — search flow, scoring, wizard, state, API |
-| [todo.md](./todo/todo.md#frontend-cleanup-after-angular-removal) | Frontend cleanup after Angular removal |
+| [after-angular-removal.md](./todo/after-angular-removal.md) | Frontend cleanup after Angular removal |
 | [DEVELOPER_GUIDE](../DEVELOPER_GUIDE.md#stimulus-http-conventions) | Stimulus fetch / URL conventions |
 | OpenAPI at `/api/docs` | Full REST surface (broader than §5 Rails snippets) |
