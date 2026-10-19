@@ -73,15 +73,6 @@ The branch lands when all of these hold on one commit:
   `yarn lint:js`, `yarn lint:css`, `bundle exec rubocop`, `yarn test:visual`, and
   the full local `yarn test:e2e` run (not in CI).
 
-### [MIGRATION-FOLLOWUP] P1 I0 C2 — Classify the required-proxy wizard failure before merge
-
-Manual scenario 7.13 retains an unresolved failure: new-engine Finish selected an
-archived endpoint with dummy credentials and search failed; explicit endpoint
-selection worked. Reproduce with controlled endpoint fixtures and distinguish
-inherited lookup behavior from a regression in the new required-proxy flow.
-The historical application lacks this flag; its absence alone proves neither
-parity nor regression. Do not change endpoint reuse semantics without that evidence.
-
 ## [MIGRATION-FOLLOWUP] P2 — Product bugs
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Annotation list display changes with no recorded decision
@@ -102,7 +93,6 @@ Found closing rows [23](../manual-testing/angular-parity-checklist.md#row-23) (`
 
 Found closing the core workbench rows of the [parity checklist](../manual-testing/angular-parity-checklist.md). Each was replayed on Legacy (:3001) and Current (:3000) on 2026-10-17 unless it says source only. None has a NOT-DOING entry or a user-approved decision; where a scenario describes the new behaviour, that is noted.
 
-1. **The Import modal validates CSV rows differently.** Rows [5](../manual-testing/angular-parity-checklist.md#row-5) and [44](../manual-testing/angular-parity-checklist.md#row-44). Legacy's uploader declared a "Header" switch, but it was an Angular Material `md-switch` and that library isn't loaded, so it never rendered (re-checked live 2026-10-19); both versions treat the first line as the header. Legacy rejected only lines with more than three (ratings) or two (information needs) columns, and listed the offending lines under the preview; Current requires every line to match the header's column count and reports "CSV format error: line N: expected X columns but found Y." The change looks deliberate but has no recorded decision. Recommended: keep Current's validation and record it.
 2. **A failed import keeps the Import modal open.** Row [5](../manual-testing/angular-parity-checklist.md#row-5). Legacy closed the modal and flashed the error; Current flashes the same error (prefixes restored in this pass) and leaves the modal open for a retry. Looks like an improvement; recorded for completeness.
 
 ---

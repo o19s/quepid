@@ -45,11 +45,13 @@ Rerun My Searches! keeping the drawer open was listed with these but is not a ch
 
 ## Angular parity: changes kept after the 2026-10-19 review
 
-Same review as above; on 2026-10-19 the user chose to keep these. Evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 22, 31 and 48.
+Same review as above; on 2026-10-19 the user chose to keep these. Evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 5, 22, 31 and 48.
 
 - **Query Options keeps the modal open on invalid JSON.** Legacy closed it on **Set Options** and then flashed "Please provide a valid JSON object.", losing the edit. Current shows the same flash with the modal still open, so the text can be fixed.
 - **A `media:` field with no media extension shows its value as text.** Legacy showed only the label.
 - **Media detection requires a literal dot.** Otherwise it is Legacy's rule (the extension anywhere in the value, case-sensitive, audio then image then video), but Legacy's regex left the `.` unescaped, so `/mp3s/list` would have embedded as audio.
+
+- **Import CSV rows must match the header's column count.** Legacy rejected only lines with too many columns and listed them under the preview. Current also rejects short lines and reports each in the top alert ("line N: expected X columns but found Y"). Legacy's hint is kept for ratings and information needs: "every line needs N columns, like the header. Wrap queries that contain commas in double quotes."
 
 **Revisit if:** users report missing the Legacy behaviour for either.
 

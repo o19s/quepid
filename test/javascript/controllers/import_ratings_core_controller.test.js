@@ -136,7 +136,10 @@ describe("ImportRatingsCoreController", () => {
     const instance = controller()
 
     expect(instance.validate("csv", "query,docid,rating\nfoo,doc-1,2,unexpected")).toBe(
-      "CSV format error: line 2: expected 3 columns but found 4."
+      "CSV format error: every line needs 3 columns, like the header. Wrap queries that contain commas in double quotes. line 2: expected 3 columns but found 4."
+    )
+    expect(instance.validate("information_needs", "query,information_need\nfoo")).toBe(
+      "CSV format error: every line needs 2 columns, like the header. Wrap queries that contain commas in double quotes. line 2: expected 2 columns but found 1."
     )
     expect(instance.validate("csv", 'query,docid,rating\n"foo,doc-1,2')).toContain("unclosed quote")
   })

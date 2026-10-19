@@ -168,7 +168,11 @@ export default class extends CoreModalControllerBase {
       const lead = type === "snapshots" ? "Required headers mismatch!" : "Headers mismatch!"
       return `${lead} Please make sure you have the correct headers in your file (check for correct spelling and capitalization): ${REQUIRED_HEADERS[type].join(",")}`
     }
-    if (errors.length) return `CSV format error: ${errors.join(" ")}`
+    if (errors.length) {
+      // Legacy's hint: an unquoted comma in a query is the usual cause of an extra column.
+      const hint = type === "snapshots" ? "" : `every line needs ${headers.length} columns, like the header. Wrap queries that contain commas in double quotes. `
+      return `CSV format error: ${hint}${errors.join(" ")}`
+    }
     if (rows.length === 0) return "The selected file has no data rows."
     return ""
   }

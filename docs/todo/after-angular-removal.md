@@ -251,6 +251,15 @@ Worker or equivalent browser isolation. The batch path already uses the shared
 scorer runtime through V8/MiniRacer; keep browser and batch scorer behavior
 aligned when adding isolation.
 
+### [PREEXISTING] P3 I0 C1 — Wizard Finish reuses archived search endpoints
+
+Scenario 7.13: new-engine Finish attached an archived endpoint with dummy
+credentials, so searches failed. `SearchEndpoint.find_or_initialize_for_user`
+(from #1705, `b1a9d26b`) doesn't exclude archived rows. Same on `main` with the
+required-proxy flag on or off. Fix: add `.not_archived` to the lookup and cover
+it with a controller test. Keep reusing credentialed endpoints when Finish sends
+a blank credential: hidden-credential deployments rely on it.
+
 ## [PREEXISTING] Security
 
 ### [PREEXISTING] P0 I0 C3 — User API IDOR and cross-account write path
