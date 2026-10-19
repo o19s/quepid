@@ -35,6 +35,7 @@ class JudgementFromRatingJob < ApplicationJob
 
   def perform user, rating
     ids = rating.is_a?(Array) ? rating : [ rating.id ]
+    books = {}
     JudgementSync.batch do
       Rating.where(id: ids).includes(query: :case).find_each do |item|
         book = item.query.case.book
@@ -45,8 +46,9 @@ class JudgementFromRatingJob < ApplicationJob
         judgement = pair.judgements.find_or_initialize_by(user: user)
         judgement.rating = item.rating
         judgement.save!
-        BroadcastLinkedCasesJob.perform_later(book)
+        books[book.id] = book
       end
     end
+    books.each_value { |book| BroadcastLinkedCasesJob.perform_later(book) }
   end
 end

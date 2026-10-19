@@ -263,6 +263,54 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal 'id:id title:title', current_try.field_spec
     end
 
+    # The wizard's http<->https reload passes the tile it was on, which for a
+    # mapper-based preset is the preset id rather than a search engine.
+    %w[vespa qdrant].each do |preset_id|
+      test "resolves the #{preset_id} preset id to its search engine and mapper" do
+        kase = cases(:one)
+        current_try = tries(:one)
+        preset = MapperBasedSearchEngine.find(preset_id)
+
+        get :index, params: {
+          id:                  kase.id,
+          try_number:          current_try.try_number,
+          searchEngine:        preset.id,
+          searchUrl:           preset.search_url,
+          apiMethod:           preset.api_method,
+          basicAuthCredential: '',
+        }
+
+        assert_response :success
+        endpoint = current_try.reload.search_endpoint
+        assert_equal 'searchapi', endpoint.search_engine
+        assert_equal preset.id, endpoint.mapper_based_search_engine_id
+        assert_equal preset.mapper_code, endpoint.mapper_code
+        assert_equal preset.search_url, endpoint.endpoint_url
+        assert_equal preset.api_method, endpoint.api_method
+      end
+    end
+
+    test 'keeps the try on its endpoint when the requested endpoint fails validation' do
+      kase = cases(:one)
+      current_try = tries(:one)
+      original_endpoint = current_try.search_endpoint
+
+      with_require_proxy_for_all_search_endpoints(true) do
+        assert_no_difference 'SearchEndpoint.count' do
+          get :index, params: {
+            id:           kase.id,
+            try_number:   current_try.try_number,
+            searchEngine: 'solr',
+            searchUrl:    'https://search.example.test/solr',
+            apiMethod:    'GET',
+          }
+        end
+      end
+
+      assert_response :success
+      assert_equal original_endpoint, current_try.reload.search_endpoint
+    end
+
     test 'returns not found for an inaccessible case without creating one' do
       assert_no_difference 'Case.count' do
         get :index, params: { id: cases(:not_shared).id }

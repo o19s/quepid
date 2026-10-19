@@ -932,6 +932,19 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     assert_match 'Judge Judy', response.body
   end
 
+  test 'polling judge_activity does not record a book view, while opening the book does' do
+    login_user_for_integration_test user
+
+    assert_no_enqueued_jobs only: TrackBookViewedJob do
+      get judge_activity_book_path(james_bond_movies)
+    end
+    assert_response :success
+
+    assert_enqueued_jobs 1, only: TrackBookViewedJob do
+      get book_path(james_bond_movies)
+    end
+  end
+
   test 'lists assigned AI judge in Judge Activity table even with no judgements' do
     login_user_for_integration_test user
     james_bond_movies.ai_judges << judge_judy unless james_bond_movies.ai_judges.include?(judge_judy)

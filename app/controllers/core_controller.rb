@@ -54,15 +54,23 @@ class CoreController < ApplicationController
       # Deal with front end UI changes to search engine being stored in backend
       if params[:searchEngine].present?
 
+        # The wizard's protocol-switch reload passes a mapper-based preset's id (e.g. 'vespa')
+        # so it can restore that tile; store it as the preset's real engine and mapper.
+        requested_engine = params[:searchEngine]
+        preset = MapperBasedSearchEngine.find(requested_engine)
         search_endpoint_params = {
-          search_engine:         params[:searchEngine],
+          search_engine:         preset&.search_engine || requested_engine,
           endpoint_url:          params[:searchUrl],
           api_method:            params[:apiMethod],
           basic_auth_credential: params[:basicAuthCredential],
 
         }
-        search_endpoint = SearchEndpoint.find_or_create_by search_endpoint_params
-        @try.search_endpoint = search_endpoint
+        search_endpoint_params[:mapper_based_search_engine_id] = preset.id if preset
+        search_endpoint = SearchEndpoint.create_with(mapper_code: preset&.mapper_code)
+          .find_or_create_by search_endpoint_params
+        # An endpoint that fails validation (e.g. the instance requires proxying, which this
+        # URL can't carry) would otherwise be saved onto the try as no endpoint at all.
+        @try.search_endpoint = search_endpoint if search_endpoint.persisted?
         @try.field_spec = params[:fieldSpec]
       end
       @try.save

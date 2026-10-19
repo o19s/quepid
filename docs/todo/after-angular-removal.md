@@ -283,6 +283,32 @@ The proxy validates the initial DNS resolution and blocks private ranges, but Fa
 
 **Fix direction:** Use a single validated connection target, disable redirects by default, or validate each redirect target. Tests: redirect-to-private-address, IPv6/link-local, rebinding, non-default ports, credential forwarding.
 
+The same block (`634aa4a5`, from `main`) also stops proxied search to engines on internal networks: localhost, RFC1918 and Docker-network hosts are rejected, and there is no allow-list. Legacy (`8ceb99e9`) proxied to them. A deployment that sets `REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS` cannot search an internal engine at all.
+
+**Decision needed:** Whether internal engines must stay reachable through the proxy. If they must, add an operator-configured allow-list of hosts or CIDR ranges, with a test that a listed private address passes and an unlisted one is still blocked.
+
+---
+
+### [PREEXISTING] P1 I0 C1 — `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY` is ignored
+
+**Location:** `app/controllers/search_endpoints_controller.rb`, `config/initializers/customize_quepid.rb:130`
+
+`32b427b6` (#1592) added `require_admin_if_restricted` so that, with `SEARCH_ENDPOINT_VIEWS_ADMIN_ONLY=true`, only administrators can manage search endpoints. `dc2f46af` ("Basic Auth Credentials are encrypted", on `main`) removed the `before_action` and the method; nothing else in that commit relates to it. The setting is still read and is still documented in `QUEPID_FEATURES.md`, so a deployment that enables it silently lets every user manage endpoints.
+
+**Fix direction:** Restore the guard with a controller test for both values of the setting. If the removal was intended, delete the setting and its documentation instead.
+
+---
+
+### [PREEXISTING] P1 I0 C2 — Team member suggestions expose other accounts
+
+**Location:** `app/controllers/teams_controller.rb:268-366` (`suggest_members`)
+
+From `e52cec3a` (#1642, on `main`). A full email address matches any registered user, regardless of team or domain, and returns their name, email and avatar, so any signed-in team member can test whether an address has an account. Prefix and name matches are limited to shared teams or the caller's email domain; for a public domain such as `gmail.com` that is every user on that domain. Each request also logs about a dozen timing lines at `info` and returns an `X-Performance-Timing` header.
+
+**Decision needed:** What the add-member form may reveal about users outside the caller's teams.
+
+**Fix direction:** Limit suggestions to users who share a team with the caller (and, if wanted, a configured organisation domain rather than any domain). Let a full email address be submitted without echoing account details back. Remove the timing logs and header. Add tests for an outside exact-email match and a public-domain prefix match.
+
 ---
 
 ### [PREEXISTING] P1 I0 C3 — Static Active Record encryption keys committed as production fallbacks
@@ -626,6 +652,22 @@ text, so `resolved_api_method` can select the wrong request method.
 **Fix direction:** Strip surrounding whitespace for dispatch (while preserving
 the original payload), and add tests for leading/trailing whitespace.
 
+### [PREEXISTING] P2 I0 C1 — Core search-endpoint lookup can never match a stored credential
+
+**Location:** `app/controllers/core_controller.rb:47-70` (`populate_from_params`)
+
+`populate_from_params` calls `SearchEndpoint.find_or_create_by` including `basic_auth_credential`. Since `dc2f46af` (on `main`) that column is encrypted non-deterministically, so a query on it never matches a stored value. Every load of `/case/:id` with `searchEngine` and a `basicAuthCredential` parameter creates another ownerless endpoint and attaches it to the try. An empty value is encrypted too, so it never matches either; the wizard's http↔https reload always sends `basicAuthCredential=`, so each reload of that URL adds an endpoint (confirmed in the browser on 2026-10-19). `SearchEndpoint.find_or_initialize_for_user` already excludes the credential from its lookup for this reason. Related to the global-lookup entry above; fix them together.
+
+**Fix direction:** Look up without the credential (reuse `find_or_initialize_for_user`), set or compare the credential afterwards, and set the owner on create. Add a controller test that reloading the same URL twice creates at most one endpoint.
+
+### [PREEXISTING] P3 I0 C1 — Rating remap returns 500 for out-of-range values
+
+**Location:** `app/controllers/books_controller.rb:441-481` (`remap_judgement_ratings`)
+
+From `e77dcfb8` (#1751, on `main`). Submitted values pass through `to_f` and are interpolated into a SQL `CASE`. A value such as `1e400` becomes `Infinity`, the SQL is invalid and the request fails with a 500. Non-numeric text silently becomes `0.0`.
+
+**Fix direction:** Parse with `Float(value, exception: false)`, reject non-finite or non-numeric values with a flash alert, and add a controller test for both.
+
 ---
 
 ## [PREEXISTING] P3 — Code quality
@@ -685,6 +727,22 @@ Status cleanup alone does not change scoring inputs.
 `ApplicationJob` already discards jobs whose records have been
 deleted (`DeserializationError`), but `retry_on` remains commented out.
 Decide on a default retry policy for the jobs that take Active Record arguments.
+
+### [PREEXISTING] P2 I1 C1 — Linked Cases card queries the job queue per case
+
+**Location:** `app/views/books/_linked_cases_list.html.erb:17-18`, `app/jobs/update_case_ratings_job.rb` (`active_for`)
+
+From `dafb7f52` (#1792, on `main`). Each render checks four job classes for every linked case, and each check loads every unfinished Solid Queue row of that class. `UpdateCaseRatingsJob.active_for` then runs one query per queued job to find its book, because the job's arguments carry pair ids, not the book. The card re-renders on every `BroadcastLinkedCasesJob`, and AI judging queues one sync per judgement, so a render during a run costs (linked cases × queued sync jobs) queries.
+
+**Fix direction:** Drop the `UpdateCaseRatingsJob` check: a pair sync takes a fraction of a second, so its pulse is almost never visible. If the pulse is kept, look up each job class once per book rather than once per case, and pass the book as a job argument so the filter can be done in SQL. Recording sync start/finish on the book is the fuller fix if the page is still slow during AI judging.
+
+### [PREEXISTING] P2 I0 C1 — Overlapping AI-judge runs fail on duplicate judgements
+
+**Location:** `app/jobs/run_judge_judy_job.rb` (`limits_concurrency`, `judge_pairs`)
+
+The one-run-per-book-and-judge lock expires after its `duration`: Solid Queue's 3-minute default on `main`, 30 minutes here. A "judge all" run on a large book outlasts it, so a second manual run can start alongside the first. Nothing reserves a pair for a run, so both can pick the same pair; the unique `(user_id, query_doc_pair_id)` index then raises `RecordNotUnique` at `judgement.save!` and that job fails.
+
+**Fix direction:** Rescue `RecordNotUnique` on the save, treat the pair as judged and continue. Add a job test that pre-creates the judgement the job is about to save.
 
 ---
 

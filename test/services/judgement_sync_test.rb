@@ -35,6 +35,28 @@ class JudgementSyncTest < ActiveSupport::TestCase
     end
   end
 
+  test 'each judgement outside a batch broadcasts judge activity' do
+    other_pair = @pair.book.query_doc_pairs.create!(query_text: 'sync verification', doc_id: 'other-doc')
+
+    assert_enqueued_jobs 2, only: BroadcastJudgeActivityJob do
+      @pair.judgements.create!(user: users(:doug), rating: 1)
+      other_pair.judgements.create!(user: users(:doug), rating: 2)
+    end
+  end
+
+  test 'a batch broadcasts judge activity once per book and judge' do
+    other_pair = @pair.book.query_doc_pairs.create!(query_text: 'sync verification', doc_id: 'other-doc')
+
+    assert_enqueued_jobs 2, only: BroadcastJudgeActivityJob do
+      JudgementSync.batch do
+        @pair.judgements.create!(user: users(:doug), rating: 1)
+        other_pair.judgements.create!(user: users(:doug), rating: 2)
+        @pair.judgements.create!(user: users(:random), rating: 3)
+        assert_no_enqueued_jobs only: BroadcastJudgeActivityJob
+      end
+    end
+  end
+
   test 'rolled back judgement changes do not enqueue sync' do
     assert_no_enqueued_jobs only: UpdateCaseRatingsJob do
       Judgement.transaction do

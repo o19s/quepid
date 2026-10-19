@@ -38,9 +38,11 @@ class UpdateCaseRatingsJob < ApplicationJob
 
   def perform query_doc_pair
     ids = query_doc_pair.is_a?(Array) ? query_doc_pair : [ query_doc_pair.id ]
+    books = {}
     QueryDocPair.where(id: ids).includes(:book).find_each do |pair|
       RatingsManager.new(pair.book).sync_ratings_for_query_doc_pair(pair)
-      BroadcastLinkedCasesJob.perform_later(pair.book)
+      books[pair.book_id] = pair.book
     end
+    books.each_value { |book| BroadcastLinkedCasesJob.perform_later(book) }
   end
 end

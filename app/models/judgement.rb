@@ -76,7 +76,7 @@ class Judgement < ApplicationRecord
 
   def broadcast_judge_activity
     pair = QueryDocPair.find_by(id: query_doc_pair_id)
-    BroadcastJudgeActivityJob.perform_later(pair.book, user) if pair && user
+    JudgementSync.activity(pair.book, user) if pair && user
   end
 
   def sync_case_ratings
