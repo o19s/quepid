@@ -46,7 +46,7 @@ Owner candidates are filename matches, not verified owners.
 | [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
-| [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`) | 4.17 | open: 1 finding |
+| [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`), `core/case_not_found.html.erb` | 4.17 | closed |
 | [31](#row-31) | `templates/views/embed.html` | branch | 6 | `search_result_controller.js` (`embedField`) | 4.23 | open: 1 finding |
 | [32](#row-32) | `templates/views/ratings/popover.html` | branch | 6 | `rating_popover_controller.js` | 4.6 | closed |
 | [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | open: 1 finding |
@@ -1086,7 +1086,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
 - **Owner:** `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js`
 - **Scenario:** 6.2
-- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the removed "Header" checkbox and the changed CSV row validation, [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 5; a failed import keeps the modal open, item 6. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
+- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the changed CSV row validation (Legacy's "Header" switch was an Angular Material `md-switch` that never rendered, because that library isn't loaded; re-checked live 2026-10-19), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4; a failed import keeps the modal open, item 5. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
 
 Conditional UI:
 
@@ -2439,12 +2439,12 @@ Copy:
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
 - **Owner:** `query_options_core_controller.js`
 - **Scenario:** 4.5
-- **Decisions:** Same title and help copy (identical text on both). Set Options saves and the value survives reload on Current; the invalid-JSON flow differs: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3. The editor is a code editor on both.
+- **Decisions:** Same title and help copy (identical text on both). Set Options saves and the value survives reload on Current; the invalid-JSON flow differs: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2. The editor is a code editor on both.
 
 Actions:
 
 - [x] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"` — open: invalid JSON keeps the modal open (Legacy closed it), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3
+- [ ] `<button>` `ng-click="ctrl.ok()"` — open: invalid JSON keeps the modal open (Legacy closed it), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2
 
 Inputs:
 
@@ -2768,13 +2768,13 @@ Copy:
 
 - **Used by (legacy):**`app/assets/javascripts/routes.js`
 - **Owner candidates:** _none found_
-- **Owner:** Rails 404 (`public/404.html`)
+- **Owner:** Rails 404 (`public/404.html`); `core/case_not_found.html.erb` for a missing case id
 - **Scenario:** 4.17
-- **Decisions:** Legacy's `404.html` was only reachable through a client route; `/case/x/y/z/garbage` is a Rails routing error on Legacy too (replayed), as on Current. Scenario 4.17 step 4 and `case_shell_navigation.spec.ts` cover it. A missing case id behaves differently: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1.
+- **Decisions:** Legacy's `404.html` was only reachable through a client route; `/case/x/y/z/garbage` is a Rails routing error on Legacy too (replayed), as on Current. Scenario 4.17 step 4 and `case_shell_navigation.spec.ts` cover it. A missing or unshared case id kept Legacy's explanation: Legacy loaded an empty workspace with "Could not retrieve case N. Confirm that the case has been shared with you via a team you are a member of!"; Current returns a 404 page with that message and no workspace data (decided 2026-10-19; scenario 4.17, `core_controller_test.rb`, `case_shell_navigation.spec.ts`).
 
 Copy:
 
-- [ ] "Not found" — open: see [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1
+- [x] "Not found" — a missing case id returns a 404 page with Legacy's "Could not retrieve case N…" message (scenario 4.17)
 - [x] ":("
 - [x] "Sorry, but the page you were trying to view does not exist."
 - [x] "It looks like this was the result of either:"
@@ -2799,7 +2799,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `search_result_controller.js` (`embedField`)
 - **Scenario:** 4.23
-- **Decisions:** Audio, video and image embeds are built from the same extension lists. Differences in detection: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2 (source only).
+- **Decisions:** Audio, video and image embeds are built from the same extension lists. Differences in detection: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1 (source only).
 
 Conditional UI:
 
@@ -2874,7 +2874,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Debug opens "Debug Explain for <title> (id:<id>)" on both. Disabled when there is no per-term breakdown is source-checked. The popover stays open behind the modal: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
+- **Decisions:** Debug opens "Debug Explain for <title> (id:<id>)" on both. Disabled when there is no per-term breakdown is source-checked. The popover stays open behind the modal: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
 
 Conditional UI:
 
@@ -3010,7 +3010,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Popover title "Relevancy Score: N", the summed terms and the Debug and Expand actions replayed on both. Main added the empty-explain text; source-checked. Popover stays open behind the modals: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
+- **Decisions:** Popover title "Relevancy Score: N", the summed terms and the Debug and Expand actions replayed on both. Main added the empty-explain text; source-checked. Popover stays open behind the modals: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
 
 Conditional UI:
 
@@ -3122,7 +3122,7 @@ Bound content:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Expand replayed on both. Popover stays open: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4.
+- **Decisions:** Expand replayed on both. Popover stays open: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
 
 Actions:
 
@@ -3237,7 +3237,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
 - **Owner:** `_query_list_templates.html.erb`
 - **Scenario:** 4.5
-- **Decisions:** The "Set Options" button opens the options modal (replayed on both, row 22; invalid-JSON flow: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3).
+- **Decisions:** The "Set Options" button opens the options modal (replayed on both, row 22; invalid-JSON flow: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2).
 
 Actions:
 
@@ -3739,11 +3739,11 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `cases/index.html.erb` rows (Rails, from main `e52cec3a`)
 - **Scenario:** 3.1
-- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. Title link, last run, book link and owner are present. Missing since Legacy, no recorded decision: inline Rename, the nightly icon, the unrated frog, team links in the Teams column and the owner shown as "Me": [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) items 1 and 4.
+- **Decisions:** Legacy `/cases` (AngularJS) replayed against main (:3003, `776c68b5`) and Current (:3000) on 2026-10-17; main and Current are identical (text and controls), so the branch did not change this page. Title link, last run, book link and owner are present. Missing since Legacy, no recorded decision: inline Rename, the unrated frog and the owner shown as "Me". The nightly icon (now in Last Run By) and team links are present; the 2026-10-17 capture used a case with no team: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) items 1 and 4.
 
 Conditional UI:
 
-- [ ] `<i>` `ng-show="ctrl.thisCase.nightly"` — open: [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [x] `<i>` `ng-show="ctrl.thisCase.nightly"` — present on Current: re-checked live 2026-10-19 (Legacy :3001 vs Current :3000, "10s of Queries"); the icon sits in Last Run By instead of beside the title
 - [ ] `<span>` `ng-switch-when="false"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 - [ ] `<form>` `ng-switch-when="true"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 - [ ] `<span>` `ng-switch="ctrl.clickToEdit.clicked"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
@@ -3760,7 +3760,7 @@ Actions:
 - [ ] `<a>` `ng-click="ctrl.cancel()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 - [ ] `<form>` `ng-blur="ctrl.submit()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
 - [ ] `<form>` `ng-submit="ctrl.submit()"` — open: inline Rename removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 1
-- [ ] `<a>` `ng-click="ctrl.goToTeam(team.id)"` — open: team links removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [x] `<a>` `ng-click="ctrl.goToTeam(team.id)"` — present on Current: re-checked live 2026-10-19 (Legacy :3001 vs Current :3000, "10s of Queries"); each team links to its page
 
 Inputs:
 
@@ -3768,7 +3768,7 @@ Inputs:
 
 Lists (check empty states):
 
-- [ ] `<li>` `ng-repeat="team in ctrl.thisCase.teams"` — open: team links removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 4
+- [x] `<li>` `ng-repeat="team in ctrl.thisCase.teams"` — present on Current: re-checked live 2026-10-19 (Legacy :3001 vs Current :3000, "10s of Queries"); teams are comma-separated links
 
 Links:
 

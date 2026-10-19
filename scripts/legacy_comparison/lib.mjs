@@ -121,7 +121,26 @@ export async function deleteCase(page, id) {
   console.log(`deleted case ${id}: ${response.status()}`);
 }
 
-export async function deleteSearchEndpoint(page, id) {
+/**
+ * Ids of every search endpoint the user can see, archived or not. A new try reuses an existing
+ * endpoint with the same URL, so take this before creating tries and delete only the ids not in it.
+ */
+export async function existingSearchEndpointIds(page) {
+  const ids = new Set();
+  for (const archived of ['false', 'true']) {
+    const response = await page.request.get(`/api/search_endpoints?archived=${archived}`, { headers: await apiHeaders(page) });
+    if (!response.ok()) throw new Error(`GET /api/search_endpoints: ${response.status()}`);
+    for (const endpoint of (await response.json()).search_endpoints || []) ids.add(endpoint.search_endpoint_id ?? endpoint.id);
+  }
+  return ids;
+}
+
+/** Deletes a search endpoint unless it is in `existing` (from existingSearchEndpointIds). */
+export async function deleteSearchEndpoint(page, id, existing) {
+  if (!existing || existing.has(id)) {
+    console.log(`kept search endpoint ${id}: it existed before this run`);
+    return;
+  }
   const response = await page.request.delete(`/api/search_endpoints/${id}`, { headers: await apiHeaders(page) });
   console.log(`deleted search endpoint ${id}: ${response.status()}`);
 }

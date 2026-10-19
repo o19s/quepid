@@ -1,4 +1,5 @@
-<% case_page = controller_name == "core" %>
+<%# Core's case-not-found 404 has no case, so it gets the ordinary page chrome. %>
+<% case_page = controller_name == "core" && @case.present? %>
 <!DOCTYPE html>
 <html lang="en">
 <% if content_for?(:debug_info) %>

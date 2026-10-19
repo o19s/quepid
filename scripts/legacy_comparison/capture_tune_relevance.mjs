@@ -7,7 +7,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
-  apiHeaders, chromium, clearOutlines, deleteCase, deleteSearchEndpoint, findCase, isLegacy, openSide,
+  apiHeaders, chromium, clearOutlines, deleteCase, deleteSearchEndpoint, existingSearchEndpointIds, findCase, isLegacy, openSide,
   outline, parseCaptureArgs, shots,
 } from './lib.mjs';
 
@@ -58,6 +58,7 @@ for (const side of sides) {
   };
   let cloneId = null;
   const endpoints = [];
+  const existingEndpoints = await existingSearchEndpointIds(page);
 
   try {
     const source = await findCase(page, SOURCE_CASE);
@@ -198,7 +199,7 @@ for (const side of sides) {
   writeFileSync(join(out, `notes-${side}.json`), JSON.stringify(notes, null, 2));
   await page.goto('/cases');
   if (cloneId) await deleteCase(page, cloneId);
-  for (const id of endpoints.filter(Boolean)) await deleteSearchEndpoint(page, id);
+  for (const id of endpoints.filter(Boolean)) await deleteSearchEndpoint(page, id, existingEndpoints);
   await page.context().close();
 }
 await browser.close();

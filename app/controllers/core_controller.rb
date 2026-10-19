@@ -32,7 +32,12 @@ class CoreController < ApplicationController
 
     unless @case
       # An explicit id that doesn't resolve is a 404; GET must never create a case as a side effect.
-      raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', params[:id]) if params[:id].present?
+      # The page keeps Legacy's hint that the case may not be shared with the user.
+      if params[:id].present?
+        raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', params[:id]) unless request.format.html?
+
+        return render(:case_not_found, status: :not_found)
+      end
 
       return redirect_to(case_new_path)
     end

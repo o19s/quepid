@@ -311,12 +311,18 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal original_endpoint, current_try.reload.search_endpoint
     end
 
+    def case_not_found_message id
+      "Could not retrieve case #{id}. Confirm that the case has been shared with you via a team you are a member of!"
+    end
+
     test 'returns not found for an inaccessible case without creating one' do
       assert_no_difference 'Case.count' do
         get :index, params: { id: cases(:not_shared).id }
       end
 
       assert_response :not_found
+      assert_select '.alert-danger', case_not_found_message(cases(:not_shared).id)
+      assert_select 'body[data-core-bootstrap-case-no-value]', count: 0
     end
 
     test 'returns not found for a missing case without creating one' do
@@ -325,6 +331,15 @@ class CoreControllerTest < ActionController::TestCase
       end
 
       assert_response :not_found
+      assert_select '.alert-danger', case_not_found_message(0)
+      assert_select 'body[data-core-bootstrap-case-no-value]', count: 0
+    end
+
+    test 'returns a JSON not found for a missing case requested as JSON' do
+      get :index, params: { id: 0 }, format: :json
+
+      assert_response :not_found
+      assert_equal 'application/json', response.media_type
     end
 
     test 'bootstraps a new case when no id is given and the user has no cases' do

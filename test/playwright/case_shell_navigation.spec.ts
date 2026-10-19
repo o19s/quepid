@@ -91,6 +91,15 @@ test.describe('core case shell: 404 handling without a client-side 404 route', (
     }
   });
 
+  test('a missing case id is a 404 that keeps Legacy\'s sharing hint and boots no workspace', async ({ page }) => {
+    const response = await page.goto('case/987654321/try/1');
+    expect(response?.status()).toBe(404);
+    await expect(page.getByRole('alert')).toHaveText(
+      'Could not retrieve case 987654321. Confirm that the case has been shared with you via a team you are a member of!'
+    );
+    await expect(page.locator('#case-actions')).toHaveCount(0);
+  });
+
   test('an unrouted path still 404s via Rails, not a client-side route', async ({ page }) => {
     const response = await page.goto('case/1/try/1/some/unrouted/garbage');
     expect(response?.status()).toBe(404);
