@@ -2770,11 +2770,11 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** Rails 404 (`public/404.html`); `core/case_not_found.html.erb` for a missing case id
 - **Scenario:** 4.17
-- **Decisions:** Legacy's `404.html` was only reachable through a client route; `/case/x/y/z/garbage` is a Rails routing error on Legacy too (replayed), as on Current. Scenario 4.17 step 4 and `case_shell_navigation.spec.ts` cover it. A missing or unshared case id kept Legacy's explanation: Legacy loaded an empty workspace with "Could not retrieve case N. Confirm that the case has been shared with you via a team you are a member of!"; Current returns a 404 page with that message and no workspace data (decided 2026-10-19; scenario 4.17, `core_controller_test.rb`, `case_shell_navigation.spec.ts`).
+- **Decisions:** Legacy's `404.html` was only reachable through a client route; `/case/x/y/z/garbage` is a Rails routing error on Legacy too (replayed), as on Current. Scenario 4.17 step 4 and `case_shell_navigation.spec.ts` cover it. A missing or unshared case id kept Legacy's explanation: Legacy loaded an empty workspace with "Could not retrieve case N. Confirm that the case has been shared with you via a team you are a member of!"; Current returns a 404 page with no workspace data (decided 2026-10-19). The page rewords the same explanation ("Case N isn't available… deleted, or not shared with a team you belong to") and adds View all cases / View your teams / Create a case buttons, since Legacy's toast left a dead end (decided 2026-10-19; scenario 4.17, `core_controller_test.rb`, `case_shell_navigation.spec.ts`).
 
 Copy:
 
-- [x] "Not found" — a missing case id returns a 404 page with Legacy's "Could not retrieve case N…" message (scenario 4.17)
+- [x] "Not found" — a missing case id returns a 404 page explaining it may be deleted or unshared, with ways on (scenario 4.17)
 - [x] ":("
 - [x] "Sorry, but the page you were trying to view does not exist."
 - [x] "It looks like this was the result of either:"

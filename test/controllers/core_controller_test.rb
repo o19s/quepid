@@ -311,8 +311,12 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal original_endpoint, current_try.reload.search_endpoint
     end
 
-    def case_not_found_message id
-      "Could not retrieve case #{id}. Confirm that the case has been shared with you via a team you are a member of!"
+    def assert_case_not_found_page id
+      assert_select 'h1', "Case #{id} isn't available"
+      assert_select 'p', /hasn't been shared with a team you belong to/
+      assert_select 'a.btn-primary[href=?]', cases_path, text: 'View all cases'
+      assert_select 'a.btn-primary[href=?]', teams_path, text: 'View your teams'
+      assert_select 'a.btn-primary[href=?]', case_new_path, text: 'Create a case'
     end
 
     test 'returns not found for an inaccessible case without creating one' do
@@ -321,7 +325,7 @@ class CoreControllerTest < ActionController::TestCase
       end
 
       assert_response :not_found
-      assert_select '.alert-danger', case_not_found_message(cases(:not_shared).id)
+      assert_case_not_found_page cases(:not_shared).id
       assert_select 'body[data-core-bootstrap-case-no-value]', count: 0
     end
 
@@ -331,7 +335,7 @@ class CoreControllerTest < ActionController::TestCase
       end
 
       assert_response :not_found
-      assert_select '.alert-danger', case_not_found_message(0)
+      assert_case_not_found_page 0
       assert_select 'body[data-core-bootstrap-case-no-value]', count: 0
     end
 
