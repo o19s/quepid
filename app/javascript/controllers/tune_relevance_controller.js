@@ -191,9 +191,11 @@ export default class extends Controller {
   refreshCuratorVars() {
     if (!this.hasCuratorVarsTarget || !this.hasCuratorVarTemplateTarget) return
     this.settings?.updateVars?.()
-    const entries = curatorVariableEntries(this.settings?.curatorVars || [])
-    // As in the Angular drawer, a try without knobs explains what the tab is for.
-    if (this.hasKnobsIntroTarget) this.knobsIntroTarget.hidden = entries.length > 0 || this.settings?.searchEngine === "static"
+    const vars = this.settings?.curatorVars || []
+    const entries = curatorVariableEntries(vars)
+    // As in the Angular drawer, a try without knobs explains what the tab is for. A knob removed from the
+    // query stays on the try (unused), so it still counts.
+    if (this.hasKnobsIntroTarget) this.knobsIntroTarget.hidden = vars.length > 0 || this.settings?.searchEngine === "static"
     this.curatorVarsTarget.replaceChildren(...entries.map(({ item, index }) => {
       const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
       row.querySelector("label").textContent = `${item.name}:`

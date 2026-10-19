@@ -288,6 +288,12 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await tab(page, 'curator').click();
     await expect(intro).toBeHidden();
     await expect(page.locator('[data-tune-panel="curator"] .tip')).toBeVisible();
+    // A knob removed from the query stays on the try, so the intro stays hidden, as in the Angular drawer.
+    await tab(page, 'developer').click();
+    await page.locator('#query-params-editor .cm-content').fill('q=#$query##');
+    await tab(page, 'curator').click();
+    await expect(page.locator('[data-tune-relevance-target="curatorVars"] input')).toHaveCount(0);
+    await expect(intro).toBeHidden();
   });
 
   test('a knob value input widens to show a long value', async ({ page }) => {

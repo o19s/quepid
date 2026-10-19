@@ -535,7 +535,6 @@ header .dropdown-item:focus {
 	position: relative;
 }
 .history-list li:hover {
-	background: #555;
 	cursor: pointer;
 }
 
