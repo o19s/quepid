@@ -38,7 +38,7 @@ Owner candidates are filename matches, not verified owners.
 | [19](#row-19) | `templates/views/stackedChart.html` | branch | 18 | `match_explain_controller.js`, `_query_list_templates.html.erb` | 4.23 | closed |
 | [20](#row-20) | `javascripts/components/move_query/_modal.html` | branch | 16 | `move_query_core_controller.js` | 4.4 | closed |
 | [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | `browse_query_controller.js` | 4.18 | closed |
-| [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | open: 1 finding |
+| [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | closed |
 | [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | open: 1 finding |
 | [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
 | [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
@@ -47,24 +47,24 @@ Owner candidates are filename matches, not verified owners.
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
 | [30](#row-30) | `templates/views/404.html` | branch | 6 | Rails 404 (`public/404.html`), `core/case_not_found.html.erb` | 4.17 | closed |
-| [31](#row-31) | `templates/views/embed.html` | branch | 6 | `search_result_controller.js` (`embedField`) | 4.23 | open: 1 finding |
+| [31](#row-31) | `templates/views/embed.html` | branch | 6 | `search_result_controller.js` (`embedField`) | 4.23 | closed |
 | [32](#row-32) | `templates/views/ratings/popover.html` | branch | 6 | `rating_popover_controller.js` | 4.6 | closed |
-| [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [33](#row-33) | `javascripts/components/debug_matches/debug_matches.html` | branch | 4 | `match_explain_controller.js` | 6.8 | closed |
 | [34](#row-34) | `javascripts/components/judgements/judgements.html` | branch | 4 | `_case_toolbar.html.erb` | 6.6 | closed |
 | [35](#row-35) | `templates/views/common/flash.html` | branch | 4 | `core_flash.js`, `layouts/_flash` (`#flash-messages`) | 4.16 | closed |
 | [36](#row-36) | `templates/views/searchEndpoint_popup.html` | branch | 4 | `tune_relevance_controller.js`, `_tune_relevance.html.erb` | 4.12 | closed |
 | [37](#row-37) | `javascripts/components/frog_report/frog_report.html` | branch | 3 | `frog_report_controller.js`, `_queries.html.erb` | 6.9 | closed |
-| [38](#row-38) | `javascripts/components/matches/matches.html` | branch | 3 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [38](#row-38) | `javascripts/components/matches/matches.html` | branch | 3 | `match_explain_controller.js` | 6.8 | closed |
 | [39](#row-39) | `javascripts/components/browse_query/browse_query.html` | branch (main-only) | 2 | `browse_query_controller.js`, `search_results_controller.js` | 4.18 | closed |
 | [40](#row-40) | `javascripts/components/debug_matches/_modal.html` | branch | 2 | `match_explain_controller.js`, `dynamic_modal.js` | 6.8 | closed |
 | [41](#row-41) | `javascripts/components/diff/diff.html` | branch | 2 | `_case_toolbar.html.erb`, `diff_core_controller.js` | 5.3 | closed |
 | [42](#row-42) | `javascripts/components/expand_content/_modal.html` | branch | 2 | `dynamic_modal.js` | 6.8 | closed |
-| [43](#row-43) | `javascripts/components/expand_content/expand_content.html` | branch | 2 | `match_explain_controller.js` | 6.8 | open: 1 finding |
+| [43](#row-43) | `javascripts/components/expand_content/expand_content.html` | branch | 2 | `match_explain_controller.js` | 6.8 | closed |
 | [44](#row-44) | `javascripts/components/import_ratings/import_ratings.html` | branch | 2 | `_case_toolbar.html.erb` | 6.2 | closed |
 | [45](#row-45) | `javascripts/components/move_query/move_query.html` | branch | 2 | `_query_list_templates.html.erb` | 4.4 | closed |
 | [46](#row-46) | `javascripts/components/qscore_case/qscore_case.html` | branch | 2 | `qscore_case_controller.js`, `index.html.erb` | 4.7, 5.5 | closed |
 | [47](#row-47) | `javascripts/components/query_explain/query_explain.html` | branch | 2 | `_query_list_templates.html.erb`, `query_explain_controller.js` | 6.7 | closed |
-| [48](#row-48) | `javascripts/components/query_options/query_options.html` | branch | 2 | `_query_list_templates.html.erb` | 4.5 | open: 1 finding |
+| [48](#row-48) | `javascripts/components/query_options/query_options.html` | branch | 2 | `_query_list_templates.html.erb` | 4.5 | closed |
 | [49](#row-49) | `templates/views/cases/search_flash.html` | branch | 2 | `core_flash.js` | 4.17 | closed |
 | [50](#row-50) | `templates/views/detailedExplain.html` | branch | 2 | `match_explain_controller.js` | 6.8 | closed |
 | [51](#row-51) | `javascripts/components/new_case/new_case.html` | branch | 1 | `_header_core_actions.html.erb`, `wizard_launcher_controller.js` | 3.2 | closed |
@@ -1086,7 +1086,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
 - **Owner:** `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js`
 - **Scenario:** 6.2
-- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the changed CSV row validation (Legacy's "Header" switch was an Angular Material `md-switch` that never rendered, because that library isn't loaded; re-checked live 2026-10-19), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 4; a failed import keeps the modal open, item 5. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
+- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). Open: the changed CSV row validation (Legacy's "Header" switch was an Angular Material `md-switch` that never rendered, because that library isn't loaded; re-checked live 2026-10-19), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1; a failed import keeps the modal open, item 2. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
 
 Conditional UI:
 
@@ -2439,12 +2439,12 @@ Copy:
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
 - **Owner:** `query_options_core_controller.js`
 - **Scenario:** 4.5
-- **Decisions:** Same title and help copy (identical text on both). Set Options saves and the value survives reload on Current; the invalid-JSON flow differs: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2. The editor is a code editor on both.
+- **Decisions:** Same title and help copy (identical text on both). Set Options saves and the value survives reload on Current; invalid JSON keeps the modal open (Legacy closed it), kept by decision: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review). The editor is a code editor on both.
 
 Actions:
 
 - [x] `<button>` `ng-click="ctrl.cancel()"`
-- [ ] `<button>` `ng-click="ctrl.ok()"` — open: invalid JSON keeps the modal open (Legacy closed it), [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2
+- [x] `<button>` `ng-click="ctrl.ok()"` — invalid JSON keeps the modal open (Legacy closed it), kept by decision: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
 
 Inputs:
 
@@ -2799,7 +2799,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `search_result_controller.js` (`embedField`)
 - **Scenario:** 4.23
-- **Decisions:** Audio, video and image embeds are built from the same extension lists. Differences in detection: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 1 (source only).
+- **Decisions:** Audio, video and image embeds are built from the same extension lists. Detection follows Legacy again (2026-10-19: extension anywhere in the value, case-sensitive, audio then image then video), with the dot now literal; a value with no media extension shows as text (Legacy: label only). Both departures kept by decision: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review).
 
 Conditional UI:
 
@@ -2874,7 +2874,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Debug opens "Debug Explain for <title> (id:<id>)" on both. Disabled when there is no per-term breakdown is source-checked. The popover stays open behind the modal: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
+- **Decisions:** Debug opens "Debug Explain for <title> (id:<id>)" on both. Disabled when there is no per-term breakdown is source-checked. Opening the modal closes the popover, as on Legacy (fixed 2026-10-19).
 
 Conditional UI:
 
@@ -3010,7 +3010,7 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Popover title "Relevancy Score: N", the summed terms and the Debug and Expand actions replayed on both. Main added the empty-explain text; source-checked. Popover stays open behind the modals: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
+- **Decisions:** Popover title "Relevancy Score: N", the summed terms and the Debug and Expand actions replayed on both. Main added the empty-explain text; source-checked. Opening either modal closes the popover, as on Legacy (fixed 2026-10-19).
 
 Conditional UI:
 
@@ -3122,7 +3122,7 @@ Bound content:
 - **Owner candidates:** _none found_
 - **Owner:** `match_explain_controller.js`
 - **Scenario:** 6.8
-- **Decisions:** Expand replayed on both. Popover stays open: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 3.
+- **Decisions:** Expand replayed on both. Opening it closes the popover, as on Legacy (fixed 2026-10-19, replayed on Current).
 
 Actions:
 
@@ -3237,7 +3237,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_query_options_core_modal.html.erb`, `app/javascript/controllers/query_options_core_controller.js`
 - **Owner:** `_query_list_templates.html.erb`
 - **Scenario:** 4.5
-- **Decisions:** The "Set Options" button opens the options modal (replayed on both, row 22; invalid-JSON flow: [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2).
+- **Decisions:** The "Set Options" button opens the options modal (replayed on both, row 22; invalid-JSON flow kept by decision: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)).
 
 Actions:
 

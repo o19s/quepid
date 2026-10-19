@@ -207,7 +207,12 @@ export default class extends Controller {
     return body
   }
 
+  hidePopover() {
+    this.popoverHandle?.instance?.hide()
+  }
+
   openDebugModal(data) {
+    this.hidePopover()
     const modal = openDynamicModal({
       templateId: "match-explain-debug-modal-template",
       ariaLabelledBy: "match-explain-debug-modal-title",
@@ -218,6 +223,7 @@ export default class extends Controller {
   }
 
   openExpandModal(data) {
+    this.hidePopover()
     const modal = openDynamicModal({
       templateId: "match-explain-expand-modal-template",
       ariaLabelledBy: "match-explain-expand-modal-title",

@@ -249,6 +249,17 @@ describe("MatchExplainController", () => {
     expect(renderJsonExplorer.mock.calls[0][2]).toEqual({ collapsed: false })
   })
 
+  it("closes the popover when Debug or Expand opens a modal", () => {
+    const controller = buildController(element, baseData())
+    MatchExplainController.prototype.connect.call(controller)
+
+    lastBody().querySelector(".match-explain-debug").click()
+    expect(popoverHandle.instance.hide).toHaveBeenCalledTimes(1)
+
+    lastBody().querySelector(".match-explain-expand").click()
+    expect(popoverHandle.instance.hide).toHaveBeenCalledTimes(2)
+  })
+
   it("Expand opens a full-screen-modal with the same explanation text", () => {
     const controller = buildController(element, baseData())
     MatchExplainController.prototype.connect.call(controller)

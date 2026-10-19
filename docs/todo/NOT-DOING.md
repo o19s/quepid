@@ -43,6 +43,16 @@ Rerun My Searches! keeping the drawer open was listed with these but is not a ch
 
 **Revisit if:** users report missing the Legacy behaviour for any of these.
 
+## Angular parity: changes kept after the 2026-10-19 review
+
+Same review as above; on 2026-10-19 the user chose to keep these. Evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 22, 31 and 48.
+
+- **Query Options keeps the modal open on invalid JSON.** Legacy closed it on **Set Options** and then flashed "Please provide a valid JSON object.", losing the edit. Current shows the same flash with the modal still open, so the text can be fixed.
+- **A `media:` field with no media extension shows its value as text.** Legacy showed only the label.
+- **Media detection requires a literal dot.** Otherwise it is Legacy's rule (the extension anywhere in the value, case-sensitive, audio then image then video), but Legacy's regex left the `.` unescaped, so `/mp3s/list` would have embedded as audio.
+
+**Revisit if:** users report missing the Legacy behaviour for either.
+
 ## [PREEXISTING] Wizard TLS reload exposes basic-auth credentials
 
 The `http`↔`https` switch is a cross-origin navigation, so browser storage and `Secure` session cookies cannot provide a direct handoff. A short-lived, single-use opaque token could retrieve server-side pending state without sharing those cookies, keeping the credential itself out of browser history and URL logs. Redemption over plaintext `http` would still carry transport risk. This mitigation is deferred, not technically impossible.

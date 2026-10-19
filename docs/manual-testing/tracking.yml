@@ -665,9 +665,9 @@ parts:
           matches-popover: "4.23/matches-popover"
           document-details: "4.23/document-details"
           results-layout: "4.23/results-layout"
-        last_run: 2026-10-15T01:24:38Z
-        result: pass
-        notes: "Live Current: Alien numeric rating/title/overview array/vote_average and explanation columns, Detailed Document and Relevancy Score Matches popover with Debug/Expand. Three Current captures inspected and registered. Fixture uses overview/vote_average rather than Previous poster/id-only fields. Not covered: URLs/media/translations, injected markup, huge values/narrow widths."
+        last_run: 2026-10-19T20:00:36Z
+        result: pass_with_fixes
+        notes: "2026-10-19 partial, case 219: Matches popover closes when Expand opens and reopens on the next Matches click (fixed this pass). Debug path covered only by Vitest (no result in case 219 has an enabled Debug); media detection (restored to Legacy's rule) covered only by Vitest. Earlier pass 2026-10-15 — Live Current: Alien numeric rating/title/overview array/vote_average and explanation columns, Detailed Document and Relevancy Score Matches popover with Debug/Expand. Three Current captures inspected and registered. Fixture uses overview/vote_average rather than Previous poster/id-only fields. Not covered: URLs/media/translations, injected markup, huge values/narrow widths."
         paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_template.js", "app/javascript/controllers/match_explain_controller.js", "app/javascript/controllers/match_explain_modal_controller.js", "app/javascript/controllers/json_explorer_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js"]
       "4.24":
         title: "Workbench layout: Tune Relevance pane open/close & resize"

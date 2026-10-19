@@ -89,6 +89,35 @@ describe("SearchResultController", () => {
     expect(label.parentElement.textContent).toContain("structure: Corporations")
   })
 
+  it("embeds media when an extension appears anywhere in the value, as Legacy did", () => {
+    const embeds = {
+      fragment: "https://example.org/clip.mp3#t=5",
+      queryString: "https://example.org/stream?file=a.wav",
+      movie: "https://example.org/movie.webm",
+      imageBeforeVideo: "https://example.org/clip.mp4?poster=x.jpg"
+    }
+    const controller = buildController(snapshotFor({ embeds }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+
+    const srcs = (selector) => [...controller.contentTarget.querySelectorAll(selector)].map(el => el.getAttribute("src"))
+    expect(srcs("audio.media-embed")).toEqual([embeds.fragment, embeds.queryString])
+    expect(srcs("video.media-embed")).toEqual([embeds.movie])
+    expect(srcs("img.media-embed")).toEqual([embeds.imageBeforeVideo])
+  })
+
+  it("shows a value with no media extension as text, matching the extension's case and a literal dot", () => {
+    const controller = buildController(snapshotFor({
+      embeds: { upper: "https://example.org/CLIP.MP3", noDot: "https://example.org/mp3s/list", overview: "plain text" }
+    }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+
+    const content = controller.contentTarget
+    expect(content.querySelector(".media-embed")).toBeNull()
+    expect(content.textContent).toContain("upper: https://example.org/CLIP.MP3")
+    expect(content.textContent).toContain("noDot: https://example.org/mp3s/list")
+    expect(content.textContent).toContain("overview: plain text")
+  })
+
   it("preserves falsy field values", () => {
     const controller = buildController(snapshotFor({
       snippets: { zero: "0", falseValue: "false" },
