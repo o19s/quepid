@@ -464,14 +464,17 @@ describe("WizardController", () => {
       expect(controller.error).toBe("Quepid could not search this endpoint.")
     })
 
-    it("requires a query pattern for Search API endpoints", async () => {
-      const controller = mount({ step: STEPS.endpoint, settings: { searchEngine: "searchapi", queryParams: "" } })
+    it("validates a Search API endpoint with its test query before any query pattern is set", async () => {
+      const controller = mount({
+        step: STEPS.endpoint,
+        settings: { searchEngine: "searchapi", queryParams: "", testQuery: "shirts" }
+      })
+      controller.capability.search.createValidator.mockReturnValue(passingValidator())
 
       await controller.validate()
 
-      expect(controller.error).toBe("Query pattern is required for Search API endpoints.")
-      expect(controller.capability.search.createValidator).not.toHaveBeenCalled()
-      expect(controller.validating).toBe(false)
+      expect(controller.error).toBeFalsy()
+      expect(controller.capability.search.createValidator.mock.calls[0][0].args).toBe("shirts")
     })
 
     it("rejects custom headers that are not a JSON object", async () => {
@@ -697,14 +700,51 @@ describe("WizardController", () => {
       expect(controller.settings.customHeaders).toBe(JSON.stringify({ a: "b" }, null, 2))
     })
 
-    it("seeds a searchapi endpoint's query pattern from its test query when it has a placeholder", () => {
+    it.each(["q=#$query##", "shirts"])("seeds a searchapi endpoint's query pattern from its test query %s, as the Angular wizard did", (testQuery) => {
       const controller = mount({ step: STEPS.endpoint })
-      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", endpointUrl: "http://x", testQuery: "q=#$query##" }]
+      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", endpointUrl: "http://x", testQuery }]
       controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET" })
 
       controller.selectEndpoint({ target: { value: "4" } })
 
-      expect(controller.settings.queryParams).toBe("q=#$query##")
+      expect(controller.settings.queryParams).toBe(testQuery)
+    })
+
+    it("leaves a searchapi endpoint without a test query with an empty pattern, reported missing straight away", () => {
+      const controller = mount({ step: STEPS.endpoint })
+      controller.searchEndpoints = [{ id: 4, searchEngine: "searchapi", endpointUrl: "http://x", apiMethod: "POST", testQuery: "" }]
+      controller.capability.settings.pick.mockReturnValue({ apiMethod: "GET" })
+
+      controller.selectEndpoint({ target: { value: "4" } })
+
+      expect(controller.settings.queryParams).toBe("")
+      expect(controller.conditions()).toMatchObject({ "query-pattern-empty": true, "api-get": false, "api-body": true })
+    })
+
+    it("disables ping in the existing-endpoint panel until an endpoint is chosen", () => {
+      const controller = mount({ step: STEPS.endpoint })
+      controller.pingButtonTargets = [document.createElement("button")]
+      controller.endpointMode = "existing"
+      controller.render()
+      expect(controller.pingButtonTargets[0].disabled).toBe(true)
+
+      controller.settings.searchEndpointId = 4
+      controller.render()
+      expect(controller.pingButtonTargets[0].disabled).toBe(false)
+
+      controller.settings.searchEndpointId = null
+      controller.endpointMode = "new"
+      controller.render()
+      expect(controller.pingButtonTargets[0].disabled).toBe(false)
+    })
+
+    it("keeps Continue on the query step disabled while a searchapi pattern is empty", () => {
+      const controller = mount({ step: STEPS.query, settings: { searchEngine: "searchapi", queryParams: "" } })
+      controller.render()
+      expect(controller.continueButtonTarget.disabled).toBe(true)
+
+      controller.updateSetting({ target: { type: "text", value: "q=#$query##", dataset: { wizardField: "queryParams" } } })
+      expect(controller.continueButtonTarget.disabled).toBe(false)
     })
 
     it.each([undefined, null, ""])("retains wizard defaults for absent endpoint method %s", apiMethod => {
@@ -792,20 +832,96 @@ describe("WizardController", () => {
     })
   })
 
-  describe("importStatic", () => {
+  describe("endpoint accordion", () => {
+    const withPanels = controller => {
+      controller.hasCreatePanelTarget = true
+      controller.hasExistingPanelTarget = true
+      controller.createPanelTarget = document.createElement("details")
+      controller.existingPanelTarget = document.createElement("details")
+      return controller
+    }
+
+    it("shows Continue only once a panel is open, and needs an endpoint in the existing panel", () => {
+      const controller = withPanels(mount({ step: STEPS.endpoint }))
+      expect(controller.conditions()["endpoint-open"]).toBe(false)
+
+      controller.existingPanelTarget.open = true
+      controller.endpointPanelToggled()
+      expect(controller.conditions()["endpoint-open"]).toBe(true)
+      expect(controller.continueButtonTargets.every(button => button.disabled)).toBe(true)
+
+      controller.searchEndpoints = [{ id: 4, searchEngine: "solr", endpointUrl: "http://s" }]
+      controller.selectEndpoint({ target: { value: "4" } })
+      expect(controller.continueButtonTargets.every(button => !button.disabled)).toBe(true)
+    })
+
+    it("drops the chosen existing endpoint when Create a new Search Endpoint is opened", () => {
+      const controller = withPanels(mount({ step: STEPS.endpoint }))
+      controller.searchEndpoints = [{ id: 4, searchEngine: "solr", endpointUrl: "http://s" }]
+      controller.existingPanelTarget.open = true
+      controller.endpointPanelToggled()
+      controller.selectEndpoint({ target: { value: "4" } })
+
+      controller.existingPanelTarget.open = false
+      controller.createPanelTarget.open = true
+      controller.endpointPanelToggled()
+
+      expect(controller.endpointMode).toBe("new")
+      expect(controller.settings.searchEndpointId).toBeNull()
+    })
+
+    it("sends existingSearchEndpoint on a protocol reload from the existing panel, and reopens that panel", () => {
+      const assign = vi.fn()
+      vi.stubGlobal("location", { assign, search: "?searchEngine=solr&existingSearchEndpoint=true" })
+      const controller = withPanels(mount({ step: STEPS.endpoint }))
+      controller.endpointMode = "existing"
+
+      controller.reloadInOtherProtocol()
+      expect(assign.mock.calls[0][0]).toContain("existingSearchEndpoint=true")
+
+      controller.endpointMode = null
+      controller.openReloadPanel()
+      expect(controller.existingPanelTarget.open).toBe(true)
+      expect(controller.createPanelTarget.open).toBe(false)
+      expect(controller.endpointMode).toBe("existing")
+      vi.unstubAllGlobals()
+    })
+  })
+
+  describe("static CSV preview and import", () => {
     const csvFile = text => ({ target: { files: [{ text: async () => text }] } })
     const HEADER = "Query Text,Doc ID,Doc Position,title"
+    const chooseAndImport = async (controller, text) => {
+      await controller.previewStatic(csvFile(text))
+      await controller.importStatic()
+    }
 
     it("does nothing when no file is chosen", async () => {
       const controller = mount()
-      await controller.importStatic({ target: { files: [] } })
+      await controller.previewStatic({ target: { files: [] } })
+      await controller.importStatic()
+      expect(controller.staticFileContent).toBeUndefined()
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
+    })
+
+    it("shows the chosen file without importing it until Import", async () => {
+      importSnapshotsToCase.mockResolvedValue([{ id: 11 }])
+      const controller = mount()
+      const text = `${HEADER}\nq,d,1,x`
+
+      await controller.previewStatic(csvFile(text))
+
+      expect(controller.staticFileContent).toBe(text)
+      expect(controller.conditions()["static-preview"]).toBe(true)
+      expect(importSnapshotsToCase).not.toHaveBeenCalled()
+      await controller.importStatic()
+      expect(importSnapshotsToCase).toHaveBeenCalledOnce()
     })
 
     it("reports missing required headers and imports nothing", async () => {
       const controller = mount()
 
-      await controller.importStatic(csvFile("Foo,Bar\n1,2"))
+      await chooseAndImport(controller, "Foo,Bar\n1,2")
 
       expect(controller.staticAlert).toMatch(/Required headers mismatch/)
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
@@ -813,14 +929,14 @@ describe("WizardController", () => {
 
     it("rejects malformed rows before posting an import", async () => {
       const controller = mount()
-      await controller.importStatic(csvFile(`${HEADER}\nq,d`))
+      await chooseAndImport(controller, `${HEADER}\nq,d`)
       expect(controller.staticAlert).toMatch(/CSV format error: line 2: expected 4 columns but found 2/)
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
     })
 
     it("rejects unclosed quoted fields before posting an import", async () => {
       const controller = mount()
-      await controller.importStatic(csvFile(`${HEADER}\nq,d,1,"unfinished`))
+      await chooseAndImport(controller, `${HEADER}\nq,d,1,"unfinished`)
       expect(controller.staticAlert).toMatch(/unclosed quote/)
       expect(importSnapshotsToCase).not.toHaveBeenCalled()
     })
@@ -830,7 +946,7 @@ describe("WizardController", () => {
       const controller = mount()
       controller.snapshotSearchUrlTemplateValue = "http://quepid/api/cases/5/snapshots/__SNAPSHOT_ID__/search"
 
-      await controller.importStatic(csvFile(`${HEADER}\nstar wars,d1,1,A\n\n   \nstar wars,d2,2,B\nalien,d3,1,C\n,,,\n\n`))
+      await chooseAndImport(controller, `${HEADER}\nstar wars,d1,1,A\n\n   \nstar wars,d2,2,B\nalien,d3,1,C\n,,,\n\n`)
 
       expect(importSnapshotsToCase).toHaveBeenCalledWith(
         [
@@ -845,7 +961,10 @@ describe("WizardController", () => {
       expect(controller.settings.searchUrl).toBe("http://quepid/api/cases/5/snapshots/11/search")
       expect(controller.staticQueries).toEqual([{ queryString: "star wars" }, { queryString: "alien" }])
       expect(controller.activeQueries()).toBe(controller.staticQueries)
-      expect(controller.staticAlert).toBe("Static data imported successfully.")
+      // Success is a status line, never the wizard's error alert.
+      expect(controller.staticStatus).toBe("Static data imported successfully.")
+      expect(controller.staticAlert).toBeNull()
+      expect(controller.error).toBeFalsy()
     })
 
     it("keeps the imported snapshot when switching engines and back, without another import", async () => {
@@ -856,9 +975,10 @@ describe("WizardController", () => {
       controller.staticFileTarget = document.createElement("input")
       const pickEngine = (value) => controller.updateSetting({ target: { type: "radio", value, dataset: { wizardField: "searchEnginePreset" } } })
 
-      await controller.importStatic(csvFile(`${HEADER}\nq,d,1,x`))
+      await chooseAndImport(controller, `${HEADER}\nq,d,1,x`)
       pickEngine("solr")
       pickEngine("static")
+      await controller.importStatic()
 
       expect(importSnapshotsToCase).toHaveBeenCalledTimes(1)
       expect(controller.staticImported).toBe(true)
@@ -871,9 +991,10 @@ describe("WizardController", () => {
       importSnapshotsToCase.mockRejectedValue(new Error("boom"))
       const controller = mount()
 
-      await controller.importStatic(csvFile(`${HEADER}\nq,d,1,x`))
+      await chooseAndImport(controller, `${HEADER}\nq,d,1,x`)
 
       expect(controller.staticAlert).toBe("Could not import static data successfully.")
+      expect(controller.staticStatus).toBeNull()
     })
   })
 

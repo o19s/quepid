@@ -31,14 +31,16 @@ const MAX_FIELD_SUGGESTIONS = 12
 export default class extends Controller {
   static targets = [
     "step", "tracker", "caseName", "endpointSelect", "searchUrl", "apiMethod",
-    "queryParams", "testQuery", "proxyRequests", "basicAuth", "customHeaders", "titleField",
+    "testQuery", "proxyRequests", "basicAuth", "customHeaders", "titleField",
     "idField", "additionalFields", "queryText", "queryList", "staticFile",
     "alert", "continueButton", "finishButton", "skipButton",
     "mapperEngines", "queryPattern",
     "tlsWarning", "tlsProtocol", "endpointContinue", "loading", "pingButton", "urlFormat",
     "selectedEndpointUrl", "selectedEndpointMethod", "mapperMessage", "engineName", "endpointLink",
     "wikiLink", "curlAuth", "solrConfigUrl", "fieldSuggestions", "searchFieldList", "idFieldList",
-    "engineOption", "engineTileTemplate", "headerType"
+    "engineOption", "engineTileTemplate", "headerType",
+    "staticAlert", "staticContent", "staticImportButton", "staticStatus",
+    "createPanel", "existingPanel"
   ]
 
   static values = {
@@ -103,6 +105,7 @@ export default class extends Controller {
     this.renderEndpointChoices()
     this.applySettings(this.settings.searchEnginePreset, this.settings.searchUrl)
     this.applyReloadParams()
+    this.openReloadPanel()
 
     if (user.current()?.completedCaseWizard) this.stepIndex = 1
     // Steps stay hidden until now, so the Welcome step never flashes up and then jumps to Name.
@@ -124,6 +127,30 @@ export default class extends Controller {
     }
     Object.entries(overrides).forEach(([key, value]) => { if (value) this.settings[key] = value })
     this.forceProxyIfRequired()
+  }
+
+  // Both panels start closed; a protocol-switch reload reopens the one the user was in, as the Angular wizard did.
+  openReloadPanel() {
+    const query = new URLSearchParams(window.location.search)
+    if (!query.get("searchEngine")) return
+    const existing = Boolean(query.get("existingSearchEndpoint"))
+    const panel = existing ? (this.hasExistingPanelTarget && this.existingPanelTarget) : (this.hasCreatePanelTarget && this.createPanelTarget)
+    if (panel) panel.open = true
+    this.endpointMode = existing ? "existing" : "new"
+  }
+
+  // Opening "Create a new Search Endpoint" drops any chosen existing endpoint, as the Angular wizard did.
+  endpointPanelToggled() {
+    const createOpen = this.hasCreatePanelTarget && this.createPanelTarget.open
+    const existingOpen = this.hasExistingPanelTarget && this.existingPanelTarget.open
+    const mode = createOpen ? "new" : existingOpen ? "existing" : null
+    if (mode === this.endpointMode) return
+    this.endpointMode = mode
+    if (mode === "new" && this.settings?.searchEndpointId) {
+      this.settings.searchEndpointId = null
+      this.clearValidation()
+    }
+    this.render()
   }
 
   forceProxyIfRequired() {
@@ -172,7 +199,7 @@ export default class extends Controller {
     if (this.stepIndex === 1 && !this.settings.caseName?.trim()) return
     if (this.stepIndex === 2) return this.validate()
     if (this.stepIndex === 3) return this.validateFields()
-    if (this.stepIndex === 4 && this.settings.searchEngine === "searchapi" && !this.settings.queryParams?.trim()) return
+    if (this.stepIndex === 4 && this.queryPatternRequired()) return
     if (this.stepIndex === 4) this.addQuery()
     this.stepIndex = Math.min(this.stepIndex + 1, steps.length - 1)
     this.render()
@@ -237,8 +264,10 @@ export default class extends Controller {
       searchEnginePreset,
       apiMethod: endpoint.apiMethod || defaults.apiMethod,
       testQuery: endpoint.testQuery,
+      // As in the Angular wizard, a Search API endpoint's saved test query seeds the pattern set on the
+      // Query step, unless its mapper-based engine has a pattern of its own.
       queryParams: endpoint.searchEngine === "searchapi"
-        ? defaults.queryParams || (endpoint.testQuery?.includes("#$query##") ? endpoint.testQuery : "")
+        ? defaults.queryParams || endpoint.testQuery || ""
         : defaults.queryParams || ""
     }
     this.forceProxyIfRequired()
@@ -264,7 +293,6 @@ export default class extends Controller {
     if (proxyError) return this.fail(proxyError)
     if (this.tlsMismatch()) return this.render()
     this.setBusy(true)
-    if (this.settings.searchEngine === "searchapi" && !this.settings.queryParams?.trim()) return this.fail("Query pattern is required for Search API endpoints.")
     const headerValue = this.hasCustomHeadersTarget ? this.customHeadersTarget.value : this.settings.customHeaders
     this.settings.customHeaders = headerValue
     const headerResult = parseCustomHeaders(headerValue)
@@ -412,24 +440,30 @@ export default class extends Controller {
     return this.settings?.searchEngine === "static" ? this.staticQueries : this.newQueries
   }
 
-  async importStatic(event) {
+  // Choosing a file shows its content (and any problems with it) under "CSV"; Import does the import.
+  async previewStatic(event) {
     const file = event.target.files?.[0]
     if (!file) return
     const content = await file.text()
+    this.staticFileContent = content
+    this.staticAlert = null
+    this.staticStatus = null
+    this.staticRows = []
     const { rows, headers, errors } = parseCsv(content)
     const headerResult = validateStaticHeaders(headers.join(","))
-    if (!headerResult.valid) {
-      this.staticAlert = headerResult.errors.join(" ")
-      return this.render()
-    }
-    if (errors.length) {
-      this.staticAlert = `CSV format error: ${errors.join(" ")}`
-      return this.render()
-    }
-    this.staticRows = rows.filter((row) => Object.values(row).some(Boolean))
+    if (!headerResult.valid) this.staticAlert = headerResult.errors.join(" ")
+    else if (errors.length) this.staticAlert = `CSV format error: ${errors.join(" ")}`
+    else this.staticRows = rows.filter((row) => Object.values(row).some(Boolean))
+    this.render()
+  }
+
+  async importStatic(event) {
+    event?.preventDefault()
+    if (this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length) return
     this.settings.searchEngine = "static"
     this.settings.searchEnginePreset = "static"
-    this.staticAlert = "Importing static data…"
+    this.staticImporting = true
+    this.staticStatus = "Importing static data…"
     this.render()
     try {
       const importedSnapshots = await importSnapshotsToCase(
@@ -442,10 +476,12 @@ export default class extends Controller {
       this.settings.searchUrl = this.staticSearchUrl
       this.staticQueries = [...new Set(this.staticRows.map((row) => row["Query Text"]).filter(Boolean))].map((queryString) => ({ queryString }))
       this.staticImported = true
-      this.staticAlert = "Static data imported successfully."
+      this.staticStatus = "Static data imported successfully."
     } catch {
+      this.staticStatus = null
       this.staticAlert = "Could not import static data successfully."
     }
+    this.staticImporting = false
     this.render()
   }
 
@@ -560,7 +596,12 @@ export default class extends Controller {
       "url-format": Boolean(settings.urlFormat) && !settings.searchEndpointId,
       "basic-auth": settings.supportsBasicAuth !== false,
       "query-pattern-empty": !pattern,
+      "static-preview": this.staticFileContent != null,
+      "endpoint-open": Boolean(this.endpointMode),
       "query-pattern-no-placeholder": Boolean(pattern) && !pattern.includes("#$query##"),
+      // A GET pattern is a one-line query string; anything else is a request body.
+      "api-get": settings.apiMethod === "GET",
+      "api-body": settings.apiMethod !== "GET",
       "url-valid": Boolean(this.urlValid),
       "url-invalid": Boolean(this.urlInvalid) && !tls,
       "mapper-invalid": Boolean(this.mapperInvalid),
@@ -571,6 +612,11 @@ export default class extends Controller {
       validating: Boolean(this.validating),
       "field-suggestions": this.fieldSuggestions().length > 0
     }
+  }
+
+  // A Search API endpoint's queries are sent through its query pattern, so the Query step needs one.
+  queryPatternRequired() {
+    return this.settings?.searchEngine === "searchapi" && !this.settings.queryParams?.trim()
   }
 
   // An existing Search API endpoint is validated with its test query, so Continue needs one.
@@ -635,11 +681,8 @@ export default class extends Controller {
     if (this.hasSolrConfigUrlTarget) this.solrConfigUrlTarget.textContent = `${searchUrl.substring(0, searchUrl.lastIndexOf("/"))}/config`
     if (this.hasUrlFormatTarget) this.urlFormatTarget.textContent = settings.urlFormat || ""
     if (this.hasMapperMessageTarget) this.mapperMessageTarget.textContent = this.mapperErrorMessage || ""
-    if (this.hasSelectedEndpointUrlTarget) this.selectedEndpointUrlTarget.textContent = searchUrl
-    if (this.hasSelectedEndpointMethodTarget) this.selectedEndpointMethodTarget.textContent = settings.apiMethod || ""
-    if (this.hasQueryPatternTarget) {
-      this.queryPatternTarget.placeholder = settings.apiMethod === "GET" ? "q=#$query##" : '{ "query": "#$query##" }'
-    }
+    if (this.hasSelectedEndpointUrlTarget) this.selectedEndpointUrlTargets.forEach((target) => { target.textContent = searchUrl })
+    if (this.hasSelectedEndpointMethodTarget) this.selectedEndpointMethodTargets.forEach((target) => { target.textContent = settings.apiMethod || "" })
   }
 
   renderFieldChoices() {
@@ -682,6 +725,7 @@ export default class extends Controller {
       apiMethod: apiMethod || "",
       basicAuthCredential: basicAuthCredential || ""
     })
+    if (this.endpointMode === "existing") params.set("existingSearchEndpoint", "true")
     window.location.assign(this.capability.navigation.appendQueryParams(url, params.toString()))
   }
 
@@ -691,6 +735,7 @@ export default class extends Controller {
     this.stepTargets.forEach((step, index) => step.hidden = !this.loaded || index !== this.stepIndex)
     this.trackerTargets.forEach((item, index) => {
       item.classList.toggle("active", index === this.stepIndex)
+      item.classList.toggle("done", index < this.stepIndex)
       item.disabled = this.validating || index > this.stepIndex
       if (index === this.stepIndex) item.setAttribute("aria-current", "step")
       else item.removeAttribute("aria-current")
@@ -701,7 +746,6 @@ export default class extends Controller {
     if (this.hasCaseNameTarget) this.caseNameTarget.value = this.settings?.caseName || ""
     if (this.hasSearchUrlTarget) this.searchUrlTarget.value = this.settings?.searchUrl || ""
     if (this.hasApiMethodTarget) this.apiMethodTarget.value = this.settings?.apiMethod || ""
-    if (this.hasQueryParamsTarget) this.queryParamsTarget.value = this.settings?.queryParams || ""
     if (this.hasTestQueryTarget) this.testQueryTarget.value = this.settings?.testQuery || ""
     if (this.hasBasicAuthTarget) this.basicAuthTarget.value = this.settings?.basicAuthCredential || ""
     if (this.hasCustomHeadersTarget) {
@@ -728,13 +772,16 @@ export default class extends Controller {
     if (this.hasAdditionalFieldsTarget && document.activeElement !== this.additionalFieldsTarget) {
       this.additionalFieldsTarget.value = (this.settings?.additionalFields || []).map((field) => field.text ?? field).join(", ")
     }
-    if (this.hasQueryPatternTarget) this.queryPatternTarget.value = this.settings?.queryParams || ""
+    if (this.hasQueryPatternTarget) this.queryPatternTargets.forEach((target) => { target.value = this.settings?.queryParams || "" })
     if (this.hasQueryTextTarget) this.queryTextTarget.value = this.settings?.text || ""
     if (this.hasQueryListTarget) {
       this.queryListTarget.replaceChildren(...this.activeQueries().map((query, index) => {
         const item = document.createElement("span")
         item.className = "wiz_new_query"
-        item.textContent = query.queryString
+        const text = document.createElement("span")
+        text.className = "query_text"
+        text.textContent = query.queryString
+        item.append(text)
         const remove = document.createElement("button")
         remove.type = "button"
         remove.textContent = "X"
@@ -745,16 +792,31 @@ export default class extends Controller {
       }))
     }
     if (this.hasAlertTarget) {
-      this.alertTarget.textContent = this.error || this.fieldError || this.staticAlert || ""
+      this.alertTarget.textContent = this.error || this.fieldError || ""
       this.alertTarget.hidden = !this.alertTarget.textContent
+    }
+    if (this.hasStaticAlertTarget) {
+      this.staticAlertTarget.textContent = this.staticAlert || ""
+      this.staticAlertTarget.hidden = !this.staticAlert
+    }
+    if (this.hasStaticContentTarget) this.staticContentTarget.textContent = this.staticFileContent || ""
+    if (this.hasStaticImportButtonTarget) {
+      this.staticImportButtonTarget.disabled = Boolean(this.staticImporting || this.staticImported || this.staticAlert || !this.staticRows.length)
+    }
+    if (this.hasStaticStatusTarget) {
+      this.staticStatusTarget.textContent = this.staticStatus || ""
+      this.staticStatusTarget.hidden = !this.staticStatus
     }
     // A static endpoint has nothing to validate until its CSV has been imported.
     const awaitingStaticImport = this.stepIndex === 2 && this.settings?.searchEngine === "static" && !this.staticImported
     const awaitingTestQuery = this.stepIndex === 2 && this.testQueryRequired()
+    const awaitingExistingEndpoint = this.stepIndex === 2 && this.endpointMode === "existing" && !this.settings?.searchEndpointId
+    const awaitingQueryPattern = this.stepIndex === 4 && this.queryPatternRequired()
     this.continueButtonTargets.forEach((button) => {
-      button.disabled = this.validating || awaitingStaticImport || awaitingTestQuery || (this.stepIndex === 1 && !this.settings?.caseName?.trim())
+      button.disabled = this.validating || awaitingStaticImport || awaitingTestQuery || awaitingExistingEndpoint || awaitingQueryPattern || (this.stepIndex === 1 && !this.settings?.caseName?.trim())
     })
-    this.pingButtonTargets.forEach((button) => { button.disabled = Boolean(this.validating) })
+    // As in the Angular wizard, the existing panel's ping waits for an endpoint to be chosen.
+    this.pingButtonTargets.forEach((button) => { button.disabled = Boolean(this.validating || awaitingExistingEndpoint) })
     if (this.hasFinishButtonTarget) this.finishButtonTarget.disabled = this.saving
     if (this.hasStaticFileTarget) this.staticFileTarget.disabled = Boolean(this.staticImported)
     this.renderTls()

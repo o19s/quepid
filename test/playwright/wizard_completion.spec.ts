@@ -71,6 +71,7 @@ test.describe('Case creation wizard', () => {
 
       // --- Endpoint step: use the existing, real "TMDB Solr" endpoint ---
       await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible({ timeout: 15_000 });
+      await modal.locator('summary', { hasText: 'Use an existing Search Endpoint' }).click();
       await modal.getByLabel('Use an existing Search Endpoint').selectOption({ label: 'TMDB Solr' });
       // validate() makes a real search request to confirm the endpoint works
       // before advancing — give it real network time.

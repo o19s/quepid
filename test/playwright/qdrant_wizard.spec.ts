@@ -103,6 +103,7 @@ for (const { idField, docId } of [
         if (completedWizard === false) await next().click();
         await modal.getByLabel('New Case Name:').fill('Qdrant E2E');
         await next().click();
+        await modal.locator('summary', { hasText: 'Create a new Search Endpoint' }).click();
         await modal.getByRole('radio', { name: 'Qdrant' }).check();
         // Endpoint assignment deduplicates by configuration; isolate this test's row.
         const url = modal.getByPlaceholder('Search endpoint URL');

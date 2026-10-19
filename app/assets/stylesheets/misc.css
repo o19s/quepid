@@ -29,6 +29,133 @@
 	 max-width: 700px;
 }
 
+/* Case wizard text, as in the Angular (Bootstrap 3) wizard: its Helvetica Neue font (BS5's system
+   font reads noticeably smaller at the same size), help text at full size rather than BS5's smaller
+   .form-text, and 30px step headings. */
+.wizard-modal-window .modal-content {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.wizard-modal-window .form-text {
+  font-size: 1em;
+}
+
+.wizard-modal-window .wizard-body > section > h2 {
+  font-size: 30px;
+}
+
+/* Case wizard frame, as in the Angular wizard: a close button in the corner instead of a title bar,
+   and the steps as dots along the bottom (green done, dark grey current, light grey to come). */
+.wizard-body {
+  position: relative;
+}
+
+/* Each step contains its floated Continue button, so the step dots keep their gap below it. */
+.wizard-body > section {
+  display: flow-root;
+}
+
+.wizard-query-input {
+  width: 250px;
+}
+
+.wizard-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+}
+
+.wizard-body > section > h2:first-of-type {
+  padding-right: 2.5rem;
+}
+
+.wizard-steps {
+  clear: both;
+  display: flex;
+  justify-content: space-between;
+  list-style: none;
+  margin: 2rem 0 0;
+  padding: 0;
+  position: relative;
+}
+
+.wizard-steps::before {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 8%;
+  right: 8%;
+  border-top: 1px solid #e6e6e6;
+}
+
+.wizard-steps li {
+  flex: 1 1 0;
+  text-align: center;
+  position: relative;
+}
+
+.wizard-step {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 0;
+  background: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #808080;
+}
+
+.wizard-step:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.wizard-step-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #e6e6e6;
+}
+
+.wizard-step.done .wizard-step-dot {
+  background: #339933;
+}
+
+.wizard-step.active .wizard-step-dot {
+  background: #808080;
+}
+
+/* Case wizard Endpoint step: the "Create a new" / "Use an existing" accordion, as in the Angular wizard. */
+.wizard-endpoint-accordion {
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  overflow: hidden;
+}
+
+.wizard-endpoint-panel + .wizard-endpoint-panel {
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.wizard-endpoint-panel-heading {
+  padding: 0.75rem 1rem;
+  background: var(--bs-tertiary-bg);
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.wizard-endpoint-panel[open] > .wizard-endpoint-panel-heading {
+  border-bottom: 1px solid var(--bs-border-color);
+}
+
+.wizard-endpoint-panel-body {
+  padding: 1rem;
+}
+
 /* Case wizard — engine logo tiles (radio + logo), as in the Angular wizard. */
 .wizard-engine-row {
   display: flex;

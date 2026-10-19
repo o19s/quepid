@@ -153,6 +153,8 @@ test('wizard name and endpoint forms', async ({ page }) => {
   await shot(page, 'wizard-name', modal.locator('.modal-dialog'));
   await modal.getByRole('button', { name: /^Continue$/i }).filter({ visible: true }).click();
   await expect(modal.getByRole('heading', { name: /What Search Endpoint/i })).toBeVisible();
+  // Both endpoint panels start closed; open Create so the engine tiles and their form are covered.
+  await modal.locator('summary', { hasText: 'Create a new Search Endpoint' }).click();
   await shot(page, 'wizard-endpoint', modal.locator('.modal-dialog'));
   // No Finish/Cancel: neither persist nor delete the shared fixture.
 });

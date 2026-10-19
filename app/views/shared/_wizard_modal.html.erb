@@ -1,43 +1,15 @@
 <%# locals: (kase:) %>
-<div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-labelledby="wizardModalLabel" aria-hidden="true"
+<div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-label="Create a Quepid case" aria-hidden="true"
      data-controller="wizard"
      data-wizard-proxy-required-value="<%= require_proxy_for_all_search_endpoints? %>"
      data-wizard-mapper-wizard-url-value="<%= new_mapper_wizard_url %>"
      data-wizard-snapshot-search-url-template-value="<%= api_case_snapshot_search_index_url(kase, '__SNAPSHOT_ID__') if kase %>">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title" id="wizardModalLabel">Create a Quepid case</h1>
-        <button type="button" class="btn-close" data-action="wizard#close" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
+      <%# As in the Angular wizard: no title bar or footer, just the steps with a close button, and the step dots along the bottom. %>
+      <div class="modal-body wizard-body">
+        <button type="button" class="btn-close wizard-close" data-action="wizard#close" aria-label="Close"></button>
         <div class="alert alert-danger" role="alert" data-wizard-target="alert" hidden></div>
-        <ol class="nav nav-pills small mb-3" aria-label="Wizard steps">
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="0">1. Welcome</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="1">2. Name</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="2">3. Endpoint</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="3">4. Fields</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="4">5. Query</button>
-          </li>
-          <li class="nav-item">
-            <button type="button" class="nav-link" data-wizard-target="tracker" data-action="wizard#setStep"
-                    data-wizard-index-param="5">6. Finish</button>
-          </li>
-        </ol>
         <p class="text-muted" data-wizard-target="loading">Loading…</p>
         <section data-wizard-target="step" hidden>
           <img src="images/doug.jpg" alt="Doug, creator of Quepid" class="float-start me-4 mb-3" width="100">
@@ -61,17 +33,12 @@
         <%# Elements with data-wizard-when are shown only while every listed condition holds; see WizardController#conditions. %>
         <section data-wizard-target="step" hidden>
           <h2>What Search Endpoint do you want to connect to?</h2>
-          <label class="form-label" for="wizardEndpoint">Use an existing Search Endpoint</label>
-          <select id="wizardEndpoint" class="form-select" data-wizard-target="endpointSelect" data-action="change->wizard#selectEndpoint"></select>
-          <p class="form-text" data-wizard-when="static-endpoints" hidden>FYI: your existing Static File endpoints are NOT sharable across cases.</p>
-          <div class="bg-light p-2 rounded border mt-2" data-wizard-when="selected-searchapi" hidden>
-            <p class="form-text mb-0">
-              <strong>Endpoint:</strong> <code data-wizard-target="selectedEndpointUrl"></code>
-              <span class="badge bg-secondary" data-wizard-target="selectedEndpointMethod"></span>
-            </p>
-          </div>
-          <hr>
-          <p class="form-label" id="wizardEngineLabel">Create a new endpoint</p>
+          <%# As in the Angular wizard: two accordion panels, both closed on arrival; opening one closes the other. %>
+          <div class="wizard-endpoint-accordion">
+          <details class="wizard-endpoint-panel" name="wizardEndpointMode" data-wizard-target="createPanel" data-action="toggle->wizard#endpointPanelToggled">
+          <summary class="wizard-endpoint-panel-heading">Create a new Search Endpoint</summary>
+          <div class="wizard-endpoint-panel-body">
+          <p class="visually-hidden" id="wizardEngineLabel">Search engine</p>
           <div class="wizard-engine-tiles" role="radiogroup" aria-labelledby="wizardEngineLabel">
             <div class="wizard-engine-row">
               <%= render 'shared/wizard_engine_tile', engine: 'solr' %>
@@ -103,7 +70,7 @@
             <p><strong>To set up a Search API endpoint:</strong></p>
             <ol>
               <li>Use the <strong>Mapper Wizard</strong> to create your custom mapper code</li>
-              <li>Return here and select your new endpoint from <strong>"Use an existing Search Endpoint"</strong> above</li>
+              <li>Return here and select your new endpoint from <strong>"Use an existing Search Endpoint"</strong> below</li>
             </ol>
             <button type="button" class="btn btn-primary" data-action="wizard#goToMapperWizard">
               <i class="bi bi-stars" aria-hidden="true"></i> Use Mapper Wizard
@@ -136,7 +103,15 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             <label class="form-label" for="wizardStaticFile">Select CSV file to import:</label>
             <input id="wizardStaticFile" type="file" accept=".csv,text/csv" class="form-control"
                    data-wizard-target="staticFile"
-                   data-action="change->wizard#importStatic">
+                   data-action="change->wizard#previewStatic">
+            <%# As in the Angular wizard, the chosen file is shown before anything is imported. %>
+            <div class="mt-3" data-wizard-when="static-preview" hidden>
+              <h2>CSV</h2>
+              <div class="alert alert-danger" data-wizard-target="staticAlert" hidden></div>
+              <pre class="border rounded p-2 bg-light" data-wizard-target="staticContent"></pre>
+              <button type="button" class="btn btn-primary" data-wizard-target="staticImportButton" data-action="wizard#importStatic">Import</button>
+            </div>
+            <p class="mt-2 mb-0" data-wizard-target="staticStatus" hidden></p>
           </div>
 
           <div data-wizard-when="live">
@@ -158,43 +133,27 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
 
             <%# Only Solr has a method to choose; other engines keep their preset's (mapper engines use AUTO). Required proxying forces GET. %>
             <% unless require_proxy_for_all_search_endpoints? %>
-              <div data-wizard-when="solr" hidden>
-                <label class="form-label mt-3" for="wizardApiMethod">API method</label>
-                <select id="wizardApiMethod" class="form-select"
-                        data-wizard-target="apiMethod"
-                        data-wizard-field="apiMethod"
-                        data-action="change->wizard#updateSetting">
-                  <option value="JSONP">JSONP</option>
-                  <option value="GET">GET</option>
-                </select>
-                <p class="form-text">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
-              </div>
+              <%# Collapsed until opened, as the Angular wizard's Solr Configuration and Advanced sections were. %>
+              <details class="mt-3" data-wizard-when="solr" hidden>
+                <summary class="btn btn-sm btn-outline-secondary">Solr Configuration</summary>
+                <div class="bg-light p-2 rounded border mt-2">
+                  <label class="form-label" for="wizardApiMethod">API method</label>
+                  <select id="wizardApiMethod" class="form-select"
+                          data-wizard-target="apiMethod"
+                          data-wizard-field="apiMethod"
+                          data-action="change->wizard#updateSetting">
+                    <option value="JSONP">JSONP</option>
+                    <option value="GET">GET</option>
+                  </select>
+                  <p class="form-text mb-0">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                </div>
+              </details>
             <% end %>
 
-            <div data-wizard-when="searchapi" hidden>
-              <label class="form-label mt-3" for="wizardTestQuery">Test Query</label>
-              <input id="wizardTestQuery" class="form-control" placeholder="shirts without stripes"
-                     data-wizard-target="testQuery"
-                     data-wizard-field="testQuery"
-                     data-action="input->wizard#updateSetting">
-              <p class="form-text">Enter a test query to validate the endpoint works.</p>
-              <p class="text-danger" data-wizard-when="test-query-required" hidden>Test query is required to validate the endpoint.</p>
-              <label class="form-label" for="wizardQueryParams">Query pattern / request body</label>
-              <textarea id="wizardQueryParams" class="form-control" rows="5"
-                        data-wizard-target="queryParams queryPattern"
-                        data-wizard-field="queryParams"
-                        data-action="input->wizard#updateSetting"></textarea>
-              <p class="form-text">
-                Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
-                Quepid will replace <code>#$query##</code> with each query you add.
-              </p>
-              <p class="text-danger" data-wizard-when="query-pattern-empty" hidden>Query pattern is required.</p>
-              <p class="text-warning" data-wizard-when="query-pattern-no-placeholder" hidden>
-                Your query pattern should include <code>#$query##</code> so Quepid can substitute the search text.
-              </p>
-            </div>
-
-            <label class="form-label mt-3" for="wizardHeaderType">Custom Headers</label>
+            <details class="mt-3">
+            <summary class="btn btn-sm btn-outline-secondary">Advanced</summary>
+            <div class="bg-light p-2 rounded border mt-2">
+            <label class="form-label" for="wizardHeaderType">Custom Headers</label>
             <p class="form-text mb-1">If you need to send headers to authenticate with your search engine you can specify them here.</p>
             <select id="wizardHeaderType" class="form-select mb-2"
                     data-wizard-target="headerType"
@@ -227,7 +186,43 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             <% else %>
               <p class="form-text mt-3">This Quepid instance requires all search requests to be proxied.</p>
             <% end %>
+            </div>
+            </details>
           </div>
+          </div>
+          </details>
+
+          <details class="wizard-endpoint-panel" name="wizardEndpointMode" data-wizard-target="existingPanel" data-action="toggle->wizard#endpointPanelToggled">
+          <summary class="wizard-endpoint-panel-heading">Use an existing Search Endpoint</summary>
+          <div class="wizard-endpoint-panel-body">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <label class="visually-hidden" for="wizardEndpoint">Use an existing Search Endpoint</label>
+              <select id="wizardEndpoint" class="form-select" data-wizard-target="endpointSelect" data-action="change->wizard#selectEndpoint"></select>
+              <button type="button" class="btn btn-link btn-sm text-nowrap" data-wizard-when="can-ping"
+                      title="Manually validates Quepid can retrieve search results from your URL before continuing"
+                      data-wizard-target="pingButton"
+                      data-action="wizard#ping">ping it</button>
+            </div>
+            <p class="form-text" data-wizard-when="static-endpoints" hidden>FYI: your existing Static File endpoints are NOT sharable across cases.</p>
+            <div class="bg-light p-2 rounded border mt-2" data-wizard-when="selected-searchapi" hidden>
+              <p class="form-text mb-0">
+                <strong>Endpoint:</strong> <code data-wizard-target="selectedEndpointUrl"></code>
+                <span class="badge bg-secondary" data-wizard-target="selectedEndpointMethod"></span>
+              </p>
+              <label class="form-label mt-3" for="wizardTestQuery">Test Query</label>
+              <p class="form-text mt-0">Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.</p>
+              <input id="wizardTestQuery" class="form-control" placeholder="shirts without stripes"
+                     data-wizard-target="testQuery"
+                     data-wizard-field="testQuery"
+                     data-action="input->wizard#updateSetting">
+              <p class="text-danger" data-wizard-when="test-query-required" hidden>Test query is required to validate the endpoint.</p>
+            </div>
+          </div>
+          </details>
+          </div>
+
+          <%# Validation feedback and Continue belong to whichever panel is open. %>
+          <div data-wizard-when="endpoint-open" hidden>
 
           <div class="alert alert-warning mt-3" data-wizard-target="tlsWarning" hidden>
             You have specified a search endpoint url that is on a different protocol ( <code data-wizard-target="tlsProtocol"></code> ) than Quepid is running,
@@ -306,6 +301,7 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
                   data-action="wizard#next"><span data-wizard-when="idle">Continue</span><span data-wizard-when="validating" hidden>Validating...</span></button>
           <button type="button" class="btn btn-danger mt-3" data-wizard-when="url-invalid can-validate" hidden
                   data-wizard-target="skipButton" data-action="wizard#skipValidation">Skip Validation</button>
+          </div>
         </section>
         <section data-wizard-target="step" hidden>
           <h2>How Should We Display Your Results?</h2>
@@ -344,28 +340,79 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
           </div>
           <div data-wizard-when="live">
             <h2>Add Your Search Queries</h2>
-            <p>Start out tuning a couple important search queries:</p>
-            <form data-action="submit->wizard#addQuery">
-              <input class="form-control"
+            <p class="form-text">Start out tuning a couple important search queries:</p>
+            <%# As in the Angular wizard, a Search API endpoint's query pattern is set here rather than on the Endpoint step. %>
+            <div class="bg-light p-2 rounded border mb-3" data-wizard-when="searchapi" hidden>
+              <label class="form-label" id="wizardQueryPatternLabel">Query Pattern</label>
+              <p class="form-text mb-1">
+                <strong>Endpoint:</strong> <code data-wizard-target="selectedEndpointUrl"></code>
+                <span class="badge bg-secondary" data-wizard-target="selectedEndpointMethod"></span>
+              </p>
+              <p class="form-text">
+                Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
+                Quepid will replace <code>#$query##</code> with each query you add below.
+              </p>
+              <input class="form-control" placeholder="q=#$query##" aria-labelledby="wizardQueryPatternLabel"
+                     data-wizard-when="api-get" hidden
+                     data-wizard-target="queryPattern"
+                     data-wizard-field="queryParams"
+                     data-action="input->wizard#updateSetting">
+              <textarea class="form-control" rows="3" placeholder='{ "query": "#$query##" }' aria-labelledby="wizardQueryPatternLabel"
+                        data-wizard-when="api-body"
+                        data-wizard-target="queryPattern"
+                        data-wizard-field="queryParams"
+                        data-action="input->wizard#updateSetting"></textarea>
+              <p class="text-danger mt-1 mb-0" data-wizard-when="query-pattern-empty" hidden>Query pattern is required.</p>
+              <p class="text-warning-emphasis mt-1 mb-0" data-wizard-when="query-pattern-no-placeholder" hidden>
+                Your query pattern should include <code>#$query##</code> so Quepid can substitute the search text.
+              </p>
+            </div>
+            <%# As in the Angular wizard: a short input with a small Add Query button beside it. %>
+            <form class="d-flex align-items-center gap-1" data-action="submit->wizard#addQuery">
+              <input class="form-control form-control-sm wizard-query-input"
                      data-wizard-target="queryText"
                      data-wizard-field="text"
                      data-action="input->wizard#updateSetting"
                      placeholder="Search query"
                      aria-label="Search query">
-              <button type="button" class="btn btn-success mt-2" data-action="wizard#addQuery">Add Query</button>
+              <button type="button" class="btn btn-success btn-sm" data-action="wizard#addQuery">Add Query</button>
             </form>
           </div>
-          <div class="mt-3" data-wizard-target="queryList"></div>
-          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <%# Continue floats beside the added queries, as in the Angular wizard. %>
+          <button type="button" class="btn btn-primary float-end mt-2" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <div data-wizard-target="queryList"></div>
         </section>
         <section data-wizard-target="step" hidden>
           <h2>That's It!</h2>
           <p>Go to “Tune Relevance” to iterate on your relevance and manipulate searches.</p>
           <button type="button" class="btn btn-primary float-end" data-wizard-target="finishButton" data-action="wizard#finish">Finish</button>
         </section>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-action="wizard#close">Cancel</button>
+        <ol class="wizard-steps" aria-label="Wizard steps">
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="0" aria-label="Step 1: Welcome"><span class="wizard-step-dot" aria-hidden="true"></span>Welcome</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="1" aria-label="Step 2: Name"><span class="wizard-step-dot" aria-hidden="true"></span>Name</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="2" aria-label="Step 3: Endpoint"><span class="wizard-step-dot" aria-hidden="true"></span>Endpoint</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="3" aria-label="Step 4: Fields"><span class="wizard-step-dot" aria-hidden="true"></span>Fields</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="4" aria-label="Step 5: Query"><span class="wizard-step-dot" aria-hidden="true"></span>Query</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="5" aria-label="Step 6: Finish"><span class="wizard-step-dot" aria-hidden="true"></span>Finish</button>
+          </li>
+        </ol>
       </div>
     </div>
   </div>
