@@ -146,13 +146,13 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Switch to **Settings**. Search Endpoints, Evaluate Nightly? and Escape Queries start collapsed (+); click a header to expand it (−).
-  2. **Search Endpoints**: pick a different shared endpoint from the dropdown, or use the typeahead search. Focusing the empty search box lists the endpoints (up to eight) with each engine's icon, and typing bolds the matching text. The list only contains endpoints shared with one of **this case's** teams (`api/cases/:id/search_endpoints`), so on a case that isn't shared with a team it shows "No search endpoints found. Create or share an endpoint to use it here." — share the case and an endpoint with the same team first.
-  3. **Endpoint Details**: confirm read-only name/URL/icon show, and the "More" link works; if the endpoint is archived, confirm the warning banner appears.
+  2. **Search Endpoints**: pick a different shared endpoint from the dropdown, or use the typeahead search. Focusing the empty search box lists every endpoint with its engine's icon, and typing bolds the matching text; a search with no match shows "No search endpoints found. Check your spelling!". The list only contains endpoints shared with one of **this case's** teams (`api/cases/:id/search_endpoints`), so on a case that isn't shared with a team "Pick Shared Endpoints:" is followed by "You do not have any search endpoints shared with this case. Share the case with a team first." (the empty select and search box stay visible) — share the case and an endpoint with the same team first.
+  3. **Endpoint Details**: confirm read-only name/URL/icon show, and the "More" link works; if the endpoint is archived, confirm the warning banner appears. Choosing an endpoint on the other protocol (and not proxied) explains the mismatch here, with a "swap to the proxied connection" link to the endpoint's edit page, and replaces **Rerun My Searches!** with **Reload Quepid in {protocol} Protocol**.
   4. **Displayed Fields**: change the comma-separated list of fields shown per result, confirm the result rows update.
   5. **Number of Results to Show**: change the numeric value (max 100), confirm the result count changes accordingly.
-  6. **Evaluate Nightly?**: toggle on, then click **Rerun My Searches Now in the Background!**.
-  7. **Escape Queries**: toggle the Lucene-syntax escaping option and confirm query behavior changes as expected.
-- **Expected:** Each control's change takes effect either immediately or after the next search run, as appropriate. The section list scrolls inside the drawer; **Rerun My Searches!** stays pinned at the drawer's bottom (check at a 900px-tall window).
+  6. **Evaluate Nightly?**: hover the **?** badge for its tooltip, toggle on, then click **Rerun My Searches Now in the Background!**.
+  7. **Escape Queries**: hover the **?** badge for its tooltip, toggle the Lucene-syntax escaping option and confirm query behavior changes as expected.
+- **Expected:** The sections are, in order, Endpoint Details, Displayed Fields, Number of Results to Show, Evaluate Nightly?, Escape Queries and Search Endpoints (Search Endpoints last as on main since #1775). Each control's change takes effect either immediately or after the next search run, as appropriate. The section list scrolls inside the drawer; **Rerun My Searches!** stays pinned at the drawer's bottom (check at a 900px-tall window).
 - **Edge cases:**
   - [ ] Set Number of Results above the max (100) — confirm it's clamped/rejected.
   - [ ] Force the new-try POST to fail: an error appears, the form/editor values remain, and the save button becomes enabled for retry. While pending, repeat clicks must not create multiple tries.
@@ -167,7 +167,7 @@ Covered in depth in Part 5 (Tries / History). Quick smoke test here:
 
 - [ ] **Steps:**
   1. Switch to **History**, confirm links "Visualize your tries", "Check Scores", "Check Ratings" are present and navigate correctly.
-  2. Confirm the try list below renders, with tries color-coded by search URL. Each row shows the try name, the query params in plain text truncated inline with "...", and "using {endpoint}".
+  2. Confirm the try list below renders, with tries color-coded by search URL (up to three shades, kept on hover). Hovering a row shows its search URL and one `name=value` line per tuning knob. Each row shows the try name, the query params in plain text truncated inline with "...", and "using {endpoint}".
 - **Expected:** "Check Scores" goes to `/cases/:id/scores` — a table of all scores with Scorer/Try Number/Score/Day columns, filterable by scorer, with a bulk **Delete** action (checkboxes + a confirm dialog) and a link to "Understand Score Duplication" (Part 13). "Check Ratings" goes to `/cases/:id/ratings` — a page headed "Ratings for Case …" with a searchable (`query, doc id, or rating`) table of every rating with Rating ID/Query/Doc ID/Rating/User/Created/Updated columns.
 - **Edge cases:**
   - [ ] On the Scores page, select several scores via checkboxes, confirm **Delete** is disabled until at least one is checked, then confirm deletion requires a confirm dialog and actually removes just those score rows (not the whole case).

@@ -19,6 +19,7 @@ Every time case/query/engine settings change, Quepid saves a new **Try** so you 
 - **Edge cases:**
   - [ ] Change a setting (e.g., Displayed Fields) and confirm a *new* try is created rather than mutating the old one.
   - [ ] Switch to a much older try, then switch back to the newest — confirm no data is lost or corrupted by the round trip.
+  - [ ] Rename a try from its "..." details: the modal stays open, its title shows the new name, the rename form closes, and no flash appears; the history row updates.
 
 ### 5.2 Create a snapshot
 

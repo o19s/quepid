@@ -140,6 +140,13 @@ test.describe('try management on a disposable case', () => {
     const renamed = `Renamed try ${Date.now()}`;
     await modal.locator('[data-tune-relevance-target="tryNameInput"]').fill(renamed);
     await modal.locator('[data-tune-relevance-target="tryRenameForm"] button[type="submit"]').click();
+    // As in the Angular modal, a rename stays in the modal, back on the read-only title, without a flash.
+    await expect(modal.locator('[data-tune-relevance-target="tryTitle"]')).toHaveText(renamed);
+    await expect(modal.locator('[data-tune-relevance-target="tryRenameForm"]')).toBeHidden();
+    await expect(modal).toBeVisible();
+    await expect(page.locator('#flash-messages')).not.toContainText('renamed');
+    await expect(historyRows.and(page.locator(`[data-try-no="${duplicateTryNo}"]`))).toContainText(renamed);
+    await modal.getByRole('button', { name: 'Dismiss' }).last().click();
     await expect(modal).toBeHidden();
 
     // Without a try in the URL the case opens on its newest try, so pin the original one.
@@ -267,6 +274,33 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(warning).toHaveText('Your query params contain deftype, you probably meant defType.');
     await page.locator('#query-params-editor .cm-content').fill('q=foo&defType=edismax');
     await expect(warning).toBeHidden();
+  });
+
+  test('Tuning Knobs explains the tab until the query has a knob', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'curator');
+    const intro = page.locator('[data-tune-relevance-target="knobsIntro"]');
+    await expect(intro).toHaveText("What's this tab do? Knobs allow you to fine tune your search! Define variables in your query template with ##, such as this boost: title^##titleBoost##. Play with the values in this tab. Submit to rerun with the new values!");
+    await expect(page.locator('[data-tune-panel="curator"] .tip')).toHaveText('Add and remove knobs from here by editing your query.');
+    await tab(page, 'developer').click();
+    await page.locator('#query-params-editor .cm-content').fill('q=#$query##&qf=title^##titleBoost##');
+    await tab(page, 'curator').click();
+    await expect(intro).toBeHidden();
+    await expect(page.locator('[data-tune-panel="curator"] .tip')).toBeVisible();
+  });
+
+  test('a knob value input widens to show a long value', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##titleBoost##' });
+    await gotoTry(page, tryNo, 'curator');
+    const knob = page.locator('[data-tune-relevance-target="curatorVars"] input');
+    const width = async () => knob.evaluate(input => input.getBoundingClientRect().width);
+    await knob.fill('1');
+    const short = await width();
+    await knob.fill('123456789012345');
+    expect(await width()).toBeGreaterThan(short);
+    expect(await knob.evaluate(input => input.scrollWidth <= input.clientWidth)).toBe(true);
   });
 
   test('a Static endpoint has no query settings or knobs to edit', async ({ page }) => {
@@ -430,6 +464,10 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(warning).toBeVisible();
     await expect(page.locator('[data-tune-relevance-target="tlsProtocol"]')).toHaveText('https');
     await expect(page.locator('#query-sandbox-action')).toBeHidden();
+    // Endpoint Details explains why, and links to the endpoint's edit page, as the Angular drawer did.
+    const explanation = page.locator('[data-tune-relevance-target="tlsExplanation"]');
+    await expect(explanation).toContainText('You have specified a search engine url that is on a different protocol ( https ) than Quepid is on.');
+    await expect(explanation.getByRole('link', { name: 'swap to the proxied connection' })).toHaveAttribute('href', 'search_endpoints/900001/edit');
 
     await page.route(/^https:\/\//, route => route.abort());
     const reload = page.waitForRequest(request => request.url().startsWith('https://') && request.url().includes('showWizard=false'));
@@ -437,7 +475,7 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     expect((await reload).url()).toContain(`/case/${caseId}/try/${tryNo}`);
   });
 
-  test('the endpoint picker says so when there are none, and caps suggestions at eight', async ({ page }) => {
+  test('the endpoint picker says so when there are none, and suggests every match', async ({ page }) => {
     const endpoint = await createEndpoint(page);
     const tryNo = await createTry(page, endpoint.id);
     const stub = (search_endpoints: unknown[]) => page.route(`**/api/cases/${caseId}/search_endpoints`, route => route.fulfill({ json: { search_endpoints } }));
@@ -445,24 +483,91 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await stub([]);
     await gotoTry(page, tryNo, 'engineSettings');
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
-    await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toBeVisible();
-    await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toBeHidden();
+    // The Angular drawer's copy, with the select and search box still shown.
+    await expect(page.locator('[data-section-body="search"]')).toContainText('Pick Shared Endpoints:');
+    await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toHaveText(
+      'You do not have any search endpoints shared with this case. Share the case with a team first.');
+    await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="endpointSearch"]')).toBeVisible();
 
     await page.unrouteAll({ behavior: 'ignoreErrors' });
     await stub(Array.from({ length: 12 }, (_, i) => ({ search_endpoint_id: 900000 + i, name: `Prod ${i}`, search_engine: 'solr' })));
     await page.reload();
     await openDrawer(page, 'engineSettings');
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
+    await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toBeHidden();
     await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('prod');
-    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(8);
+    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(12);
     // With a name already in the box (as after choosing an endpoint), focusing still lists them all.
     await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Prod 3');
     await page.locator('[data-tune-relevance-target="endpointSearch"]').blur();
     await page.locator('[data-tune-relevance-target="endpointSearch"]').focus();
-    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(8);
+    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(12);
     await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('zzz');
     await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(0);
-    await expect(page.locator('[data-tune-relevance-target="endpointNoResults"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="endpointNoResults"]')).toHaveText('No search endpoints found. Check your spelling!');
+  });
+
+  test('settings sections keep the Angular order, with help on Evaluate Nightly and Escape Queries', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    await gotoTry(page, tryNo, 'engineSettings');
+    const headers = page.locator('[data-tune-panel="engineSettings"] .dev-header');
+    expect((await headers.allInnerTexts()).map(text => text.trim())).toEqual([
+      'Endpoint Details', 'Displayed Fields', 'Number of Results to Show', 'Evaluate Nightly?', 'Escape Queries', 'Search Endpoints']);
+
+    for (const [section, help] of [
+      ['nightly', 'Run all the queries every night and store the results and the scores as a snapshot.'],
+      ['escape', '(advanced) -- If your queries use Solr|Elasticsearch|OpenSearch query syntax (like text:law) then disable this feature']
+    ]) {
+      await page.locator(`.dev-header[data-tune-relevance-section-param="${section}"]`).click();
+      await page.locator(`[data-section-body="${section}"] .setting-help`).hover();
+      await expect(page.locator('.tooltip')).toHaveText(help);
+      await page.mouse.move(0, 0);
+      await expect(page.locator('.tooltip')).toHaveCount(0);
+    }
+  });
+
+  test('history rows are shaded by search URL and list their knobs on hover', async ({ page }) => {
+    const first = await createEndpoint(page);
+    const second = await createEndpoint(page, { endpoint_url: 'http://tune.invalid/solr/other' });
+    const knobbed = await page.request.post(`api/cases/${caseId}/tries`, {
+      headers: await apiHeaders(page, { 'Content-Type': 'application/json' }),
+      data: { try: { search_endpoint_id: first.id, query_params: 'q=#$query##&qf=title^##boost##', field_spec: 'id:id title:title' }, curator_vars: { boost: 3 } }
+    });
+    expect(knobbed.ok()).toBeTruthy();
+    const knobbedTryNo = Number((await knobbed.json()).try_number);
+    const otherTryNo = await createTry(page, second.id);
+    await gotoTry(page, otherTryNo, 'history');
+
+    const row = (tryNo: number) => historyRows(page).and(page.locator(`[data-try-no="${tryNo}"]`));
+    const background = (tryNo: number) => row(tryNo).evaluate(element => getComputedStyle(element).backgroundColor);
+    // The case's default Try 1 has no endpoint URL, so the three tries use three different shades.
+    expect(new Set([await background(1), await background(knobbedTryNo), await background(otherTryNo)]).size).toBe(3);
+    await row(knobbedTryNo).hover();
+    expect(await background(knobbedTryNo)).not.toBe('rgb(85, 85, 85)');
+    await expect(row(knobbedTryNo)).toHaveAttribute('title', 'http://tune.invalid/solr/select\nboost=3\n');
+    await expect(row(otherTryNo)).toHaveAttribute('title', 'http://tune.invalid/solr/other\n');
+  });
+
+  test('a try on the other protocol keeps the case toolbar and explains the mismatch', async ({ page }) => {
+    const endpoint = await createEndpoint(page, { endpoint_url: 'https://tune.invalid/solr/select' });
+    const tryNo = await createTry(page, endpoint.id);
+    await page.goto(`case/${caseId}/try/${tryNo}`);
+    await expect(flash(page)).toContainText('Blocked Request: mixed-content');
+    for (const action of ['Select scorer', 'Judgements', 'Clone', 'Export', 'Tune Relevance']) {
+      await expect(page.getByRole('button', { name: action, exact: true }).or(page.getByRole('link', { name: action, exact: true })).first()).toBeVisible();
+    }
+    await openDrawer(page, 'engineSettings');
+    await expect(page.locator('[data-tune-relevance-target="endpointName"]')).toHaveText(endpoint.name);
+    await expect(page.locator('[data-tune-relevance-target="tlsExplanation"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="tlsWarning"]')).toBeVisible();
+    // Switching tabs keeps Reload in place of Rerun, and neither shows on tabs without Rerun.
+    for (const [name, reload] of [['developer', true], ['curator', true], ['history', false], ['engineSettings', true]] as const) {
+      await tab(page, name).click();
+      await expect(page.locator('[data-tune-relevance-target="tlsWarning"]')).toBeVisible({ visible: reload });
+      await expect(page.locator('#query-sandbox-action')).toBeHidden();
+    }
   });
 
   test('a failed background evaluation is reported and the button recovers', async ({ page }) => {

@@ -113,8 +113,11 @@ test.describe('Workspace tuning drafts and saved tries', () => {
     await modal.getByRole('button', { name: 'Rename', exact: true }).click();
     await modal.locator('[data-tune-relevance-target="tryNameInput"]').fill('Original settings');
     await modal.locator('button[type="submit"]').click();
-    await expect(modal).toBeHidden();
+    // As in the Angular modal, a rename stays in the modal, showing the new name.
+    await expect(modal.locator('[data-tune-relevance-target="tryTitle"]')).toHaveText('Original settings');
     await expect(history).toContainText('Original settings');
+    await modal.getByRole('button', { name: 'Dismiss' }).last().click();
+    await expect(modal).toBeHidden();
     await history.locator('[data-try-no="1"]').hover();
     await details(1).click();
     await page.route(`**/api/clone/cases/${caseId}/tries/1`, route =>

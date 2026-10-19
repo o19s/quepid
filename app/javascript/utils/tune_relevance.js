@@ -49,6 +49,12 @@ export function urlBucket(url, urls) {
   return (index === -1 ? urls.length : index) % 3
 }
 
+// History row hover text: the search URL, then one `name=value` line per tuning knob.
+export function historyTitle(aTry) {
+  const vars = (aTry.curatorVars || []).map(variable => `${variable.name}=${variable.value}\n`).join("")
+  return `${aTry.searchUrl || ""}\n${vars}`
+}
+
 export function curatorVariableEntries(variables) {
   return (variables || [])
     .map((item, index) => ({ item, index }))

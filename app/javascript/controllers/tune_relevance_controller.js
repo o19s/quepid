@@ -2,7 +2,7 @@ import { endpointSettings } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
-import { curatorVariableEntries, formatJson, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
+import { curatorVariableEntries, formatJson, historyTitle, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { searchEngineLabel } from "utils/search_engines"
 import { isSameId } from "utils/record_identity"
@@ -38,8 +38,8 @@ function setLinkHref(link, url) {
 
 export default class extends Controller {
   static targets = [
-    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
-    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointSuggestionTemplate", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol",
+    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "knobsIntro", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
+    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointSuggestionTemplate", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol", "tlsExplanation", "tlsExplanationProtocol", "tlsEditLink",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
@@ -144,6 +144,8 @@ export default class extends Controller {
     })
     this.panelTargets.forEach(panel => { panel.hidden = panel.dataset.tunePanel !== tab })
     this.actionTargets.forEach(action => { action.hidden = !EDITABLE_TABS.has(tab) })
+    // The Rerun / Reload choice also depends on the protocol check, so re-apply it after every tab change.
+    if (this.settings) this.refreshTls()
   }
 
   mountEditor() {
@@ -189,8 +191,10 @@ export default class extends Controller {
   refreshCuratorVars() {
     if (!this.hasCuratorVarsTarget || !this.hasCuratorVarTemplateTarget) return
     this.settings?.updateVars?.()
-    const vars = this.settings?.curatorVars || []
-    this.curatorVarsTarget.replaceChildren(...curatorVariableEntries(vars).map(({ item, index }) => {
+    const entries = curatorVariableEntries(this.settings?.curatorVars || [])
+    // As in the Angular drawer, a try without knobs explains what the tab is for.
+    if (this.hasKnobsIntroTarget) this.knobsIntroTarget.hidden = entries.length > 0 || this.settings?.searchEngine === "static"
+    this.curatorVarsTarget.replaceChildren(...entries.map(({ item, index }) => {
       const row = this.curatorVarTemplateTarget.content.firstElementChild.cloneNode(true)
       row.querySelector("label").textContent = `${item.name}:`
       const input = row.querySelector("input")
@@ -217,11 +221,8 @@ export default class extends Controller {
   populateEndpoints() {
     if (!this.hasEndpointSelectTarget) return
     this.endpointSelectTarget.replaceChildren(new Option("Select endpoint", ""))
-    const hasEndpoints = this.searchEndpoints.length > 0
-    this.endpointSelectTarget.hidden = !hasEndpoints
-    if (this.hasEndpointSearchTarget) this.endpointSearchTarget.hidden = !hasEndpoints
-    if (this.hasEndpointChooserTarget) this.endpointChooserTarget.hidden = !hasEndpoints
-    if (this.hasEndpointEmptyTarget) this.endpointEmptyTarget.hidden = hasEndpoints
+    // As in the Angular drawer, the select and search box stay visible beside the empty-state note.
+    if (this.hasEndpointEmptyTarget) this.endpointEmptyTarget.hidden = this.searchEndpoints.length > 0
     this.searchEndpoints.forEach(endpoint => {
       const option = new Option(endpoint.name, endpoint.id)
       option.selected = isSameId(endpoint.id, this.settings.searchEndpointId)
@@ -236,7 +237,7 @@ export default class extends Controller {
     if (!this.hasEndpointSuggestionsTarget) return
     const normalized = query.trim().toLowerCase()
     const matches = normalized ? this.searchEndpoints.filter(endpoint => endpoint.name.toLowerCase().includes(normalized)) : this.searchEndpoints
-    this.endpointSuggestionsTarget.replaceChildren(...matches.slice(0, 8).map(endpoint => {
+    this.endpointSuggestionsTarget.replaceChildren(...matches.map(endpoint => {
       const button = this.endpointSuggestionTemplateTarget.content.firstElementChild.cloneNode(true)
       const icon = button.querySelector("img")
       icon.src = `images/${endpoint.mapperBasedSearchEngineId || endpoint.searchEngine}-icon.png`
@@ -294,8 +295,16 @@ export default class extends Controller {
     if (!this.hasTlsWarningTarget) return
     const settings = this.settings || {}
     const mismatch = settings.proxyRequests !== true && this.capability.navigation.needToRedirectProtocol(settings.searchUrl)
-    this.tlsWarningTarget.hidden = !mismatch
+    // As in the Angular drawer, the Reload button replaces Rerun only on the tabs that have Rerun.
+    this.tlsWarningTarget.hidden = !mismatch || !EDITABLE_TABS.has(this.tab)
     if (mismatch) this.tlsProtocolTarget.textContent = this.capability.navigation.swapUrlTls()[1]
+    if (this.hasTlsExplanationTarget) {
+      this.tlsExplanationTarget.hidden = !mismatch
+      if (mismatch) {
+        this.tlsExplanationProtocolTarget.textContent = this.tlsProtocolTarget.textContent
+        setLinkHref(this.tlsEditLinkTarget, settings.searchEndpointId && `search_endpoints/${settings.searchEndpointId}/edit`)
+      }
+    }
     const save = this.hasSaveButtonTarget ? this.saveButtonTarget : null
     if (save) save.hidden = mismatch || !EDITABLE_TABS.has(this.tab)
   }
@@ -314,7 +323,7 @@ export default class extends Controller {
     this.historyListTarget.replaceChildren(...tries.map(item => {
       const row = this.historyItemTemplateTarget.content.firstElementChild.cloneNode(true)
       row.classList.add(`bucket-${urlBucket(item.searchUrl, urls)}`)
-      row.title = item.searchUrl || ""
+      row.title = historyTitle(item)
       row.dataset.tryNo = item.tryNo
       row.querySelector("[data-try-name]").textContent = item.formattedName ? item.formattedName() : item.name
       row.querySelector("[data-try-query]").textContent = (item.queryParams || "").slice(0, 200)
@@ -453,10 +462,13 @@ export default class extends Controller {
   renameTry() {
     const name = this.tryNameInputTarget.value.trim()
     if (!name || !this.activeTry) return
+    // As in the Angular modal, a successful rename stays in the modal and returns to the read-only title.
     this.capability.settings.renameTry(this.activeTry.tryNo, name).then(() => {
-      coreFlash.show("success", "Try renamed successfully.")
+      this.tryTitleTarget.textContent = name
+      this.tryRenameFormTarget.hidden = true
+      this.tryRenameActionTarget.textContent = "Rename"
       this.reloadSettings()
-      window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
+      this.activeTry = this.capability.settings.tries().find(item => isSameId(item.tryNo, this.activeTry.tryNo)) || this.activeTry
     }).catch(() => this.showError("Unable to rename try."))
   }
 

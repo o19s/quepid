@@ -101,8 +101,16 @@ export default class extends Controller {
       )
     } catch (error) {
       this.handleBootstrapError(error)
+      // As in the Angular app, a protocol mismatch only blocks searching: the case is already
+      // selected, so its toolbar (including Tune Relevance, where the endpoint can be changed) stays usable.
+      if (String(error?.message).startsWith("Blocked Request")) this.showCaseActions()
       this.fail(error)
     }
+  }
+
+  showCaseActions() {
+    window.quepidCoreBootstrap = { ...window.quepidCoreBootstrap, actionsAvailable: true }
+    if (this.hasCaseToolbarOutlet) this.caseToolbarOutlet.showActions()
   }
 
   handleBootstrapError(error) {

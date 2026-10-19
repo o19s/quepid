@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   curatorVariableEntries,
   formatJson,
+  historyTitle,
   queryParamsMode,
   queryParamsWarning,
   urlBucket,
@@ -40,6 +41,13 @@ describe("tune relevance utilities", () => {
   it("groups endpoint URLs into three history buckets", () => {
     expect(urlBucket("a", ["a", "b", "c"])).toBe(0)
     expect(urlBucket("c", ["a", "b", "c"])).toBe(2)
+  })
+
+  it("titles a history row with its search URL and one name=value line per knob", () => {
+    expect(historyTitle({ searchUrl: "http://s/select", curatorVars: [{ name: "boost", value: 2 }, { name: "tie", value: 0.1 }] }))
+      .toBe("http://s/select\nboost=2\ntie=0.1\n")
+    expect(historyTitle({ searchUrl: "http://s/select" })).toBe("http://s/select\n")
+    expect(historyTitle({})).toBe("\n")
   })
 
   it("keeps original indexes for filtered curator variables", () => {

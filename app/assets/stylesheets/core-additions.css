@@ -502,9 +502,19 @@ header .dropdown-item:focus {
 #queryParamsCanvas .slider-wrap input {
   /* Color comes from the `#dev-settings input.form-control` white-box
      override in bootstrap5-compat.css now that this input carries
-     .form-control. Room for 4 digits plus the number input's spin-button
-     chrome. */
-  width: 7ch;
+     .form-control. It grows with its value between Legacy's auto-grow limits
+     (50px to 200px) without the removed autogrow script; browsers without
+     field-sizing get room for the largest allowed value (max 10000000000). */
+  width: 14ch;
+}
+
+@supports (field-sizing: content) {
+  #queryParamsCanvas .slider-wrap input {
+    field-sizing: content;
+    width: auto;
+    min-width: max(50px, 7ch);
+    max-width: 200px;
+  }
 }
 
 /*
@@ -527,6 +537,22 @@ header .dropdown-item:focus {
 .history-list li:hover {
 	background: #555;
 	cursor: pointer;
+}
+
+/* The Settings help tooltips keep the Angular drawer's width, so each <br/>-split line stays on one line. */
+.setting-help-tooltip .tooltip-inner {
+	max-width: 350px;
+}
+
+/* Rows are shaded by search URL (urlBucket), and, as in the Angular drawer, keep that shade on hover. */
+.history-list li.bucket-0 {
+	background: #666;
+}
+.history-list li.bucket-1 {
+	background: #64647d;
+}
+.history-list li.bucket-2 {
+	background: #667a66;
 }
 
 .history-list li:hover .try-details {

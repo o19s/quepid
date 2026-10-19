@@ -210,21 +210,26 @@ describe("CoreBootstrapController", () => {
         core().navigation.getQuepidProtocol = () => "https"
         core().navigation.createSearchEndpointLink = (id) => `/search_endpoints/${id}`
       },
-      ["error", expect.stringMatching(/^Blocked Request: mixed-content\. You have specified a search engine url .*<code>https<\/code>/), "search-error", { html: true }]
+      ["error", expect.stringMatching(/^Blocked Request: mixed-content\. You have specified a search engine url .*<code>https<\/code>/), "search-error", { html: true }],
+      true
     ],
     [
       "anything else goes wrong",
       () => core().case.initialize.mockImplementation(() => { throw new Error("boom") }),
       ["error", "Could not load the case 2 due to: boom", "search-error"]
     ]
-  ])("explains the failure when %s", async (_label, arrange, flashArgs) => {
+  ])("explains the failure when %s", async (_label, arrange, flashArgs, toolbarShown = false) => {
     arrange()
 
     const { flash, failed, ready } = await bootstrapCase()
 
     expect(flash.show).toHaveBeenCalledWith(...flashArgs)
     expect(failed).toHaveBeenCalledOnce()
-    expect(ready).not.toHaveBeenCalled()
+    // Only a protocol mismatch leaves the case usable: its toolbar shows, but it never becomes ready to search.
+    expect(ready).toHaveBeenCalledTimes(toolbarShown ? 1 : 0)
+    expect(Boolean(window.quepidCoreBootstrap?.ready)).toBe(false)
+    expect(Boolean(window.quepidCoreBootstrap?.actionsAvailable)).toBe(toolbarShown)
+    delete window.quepidCoreBootstrap
   })
 
   it("does not block a proxied endpoint on a protocol mismatch", async () => {

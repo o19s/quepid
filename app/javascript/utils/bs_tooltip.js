@@ -29,7 +29,8 @@ export function createBsTooltip(element, options = {}) {
     trigger: "hover focus",
     delay: Number.isFinite(delayMs) ? { show: delayMs, hide: 0 } : 0,
     container: "body",
-    animation: false
+    animation: false,
+    customClass: options.customClass || ""
   })
 }
 
