@@ -213,6 +213,49 @@ describe('Service: querySnapshotSvc', function () {
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
+    it('records thumb and image fields along with the displayed fields', inject(function(fieldSpecSvc) {
+      settingsSvc.setMockFieldSpec(fieldSpecSvc.createFieldSpec('id:id, title:title, overview, thumb:poster_path, image:backdrop_path'));
+
+      var docWithImages = function(id) {
+        return {
+          id:         id,
+          explain:    explFunc,
+          title:      'The Lord of the Rings',
+          titleField: 'title',
+          subsList:   [{field: 'overview', value: 'One ring to rule them all'}],
+          thumb:      '/poster.jpg',
+          image:      '/backdrop.jpg',
+          hasThumb:   function() { return true; },
+          hasImage:   function() { return true; }
+        };
+      };
+      var queriesWithImages = [{
+        queryId:      0,
+        currentScore: {score: 1, allRated: false},
+        docs:         [docWithImages('123')],
+        ratedDocs:    [docWithImages('456')]
+      }];
+      var expectedFields = {
+        overview:      'One ring to rule them all',
+        title:         'The Lord of the Rings',
+        poster_path:   '/poster.jpg',
+        backdrop_path: '/backdrop.jpg'
+      };
+
+      var sentDocs = null;
+      $httpBackend.expectPOST('api/cases/2/snapshots', function(body) {
+        sentDocs = angular.fromJson(body).snapshot.docs['0'];
+        return true;
+      }).respond(200, addedSnapResp);
+
+      querySnapshotSvc.addSnapshot('myname', true, queriesWithImages);
+      $httpBackend.flush();
+
+      expect(sentDocs[0].fields).toEqual(expectedFields);
+      expect(sentDocs[1].rated_only).toBe(true);
+      expect(sentDocs[1].fields).toEqual(expectedFields);
+    }));
+
     it('updates the version on new snapshot', function() {
       var priorVersion = querySnapshotSvc.version();
       $httpBackend.expectPOST('api/cases/2/snapshots')
@@ -508,7 +551,37 @@ describe('Service: querySnapshotSvc', function () {
     });
   });
   
-  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+  describe('looking up docs for engines without lookup by id', function() {
+    it('queries the snapshot search endpoint directly, never through the proxy', function() {
+      spyOn(settingsSvc, 'supportLookupById').and.returnValue(false);
+      spyOn(settingsSvc, 'editableSettings').and.returnValue({
+        searchEngine:     'searchapi',
+        searchUrl:        'https://qdrant.example.com/collections/tmdb/points/query',
+        apiMethod:        'POST',
+        proxyRequests:    true,
+        searchEndpointId: 7,
+        fieldSpec:        'id:id, title:title, overview',
+        customHeaders:    '{"api-key": "secret"}'
+      });
+
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, {
+        snapshots: [
+          {id: '5', name: 'dense', time: '1516190400000', docs: {'0': [{id: '123', explain: rawExpl}]}}
+        ]
+      });
+      querySnapshotSvc.bootstrap(3);
+      $httpBackend.flush();
+
+      var lookupSettings = docResolverSvc.createResolver.calls.mostRecent().args[1];
+      expect(lookupSettings.searchEngine).toBe('solr');
+      expect(lookupSettings.searchUrl).toMatch(/\/snapshots\/5\/search$/);
+      expect(lookupSettings.proxyRequests).toBe(false);
+      expect(lookupSettings.proxyUrl).toBeUndefined();
+      expect(lookupSettings.customHeaders).toBeNull();
+    });
+  });
+
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {
     it('handles various patterns', function() {
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');
