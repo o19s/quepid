@@ -213,6 +213,49 @@ describe('Service: querySnapshotSvc', function () {
       $httpBackend.verifyNoOutstandingExpectation();
     });
 
+    it('records thumb and image fields along with the displayed fields', inject(function(fieldSpecSvc) {
+      settingsSvc.setMockFieldSpec(fieldSpecSvc.createFieldSpec('id:id, title:title, overview, thumb:poster_path, image:backdrop_path'));
+
+      var docWithImages = function(id) {
+        return {
+          id:         id,
+          explain:    explFunc,
+          title:      'The Lord of the Rings',
+          titleField: 'title',
+          subsList:   [{field: 'overview', value: 'One ring to rule them all'}],
+          thumb:      '/poster.jpg',
+          image:      '/backdrop.jpg',
+          hasThumb:   function() { return true; },
+          hasImage:   function() { return true; }
+        };
+      };
+      var queriesWithImages = [{
+        queryId:      0,
+        currentScore: {score: 1, allRated: false},
+        docs:         [docWithImages('123')],
+        ratedDocs:    [docWithImages('456')]
+      }];
+      var expectedFields = {
+        overview:      'One ring to rule them all',
+        title:         'The Lord of the Rings',
+        poster_path:   '/poster.jpg',
+        backdrop_path: '/backdrop.jpg'
+      };
+
+      var sentDocs = null;
+      $httpBackend.expectPOST('api/cases/2/snapshots', function(body) {
+        sentDocs = angular.fromJson(body).snapshot.docs['0'];
+        return true;
+      }).respond(200, addedSnapResp);
+
+      querySnapshotSvc.addSnapshot('myname', true, queriesWithImages);
+      $httpBackend.flush();
+
+      expect(sentDocs[0].fields).toEqual(expectedFields);
+      expect(sentDocs[1].rated_only).toBe(true);
+      expect(sentDocs[1].fields).toEqual(expectedFields);
+    }));
+
     it('updates the version on new snapshot', function() {
       var priorVersion = querySnapshotSvc.version();
       $httpBackend.expectPOST('api/cases/2/snapshots')

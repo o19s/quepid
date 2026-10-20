@@ -113,10 +113,29 @@ angular.module('QuepidApp')
           });
       };
 
+      // Keyed by source field name so the snapshot /search endpoint can hand the
+      // fields back for a doc lookup. Thumb and image live outside subsList on a
+      // normal doc, so without them a snapshot column renders with no images.
+      var recordedFields = function(doc, fieldSpec) {
+        var fields = {};
+        angular.forEach(Object.values(doc.subsList), function(field) {
+          fields[field['field']] = field['value'];
+        });
+        fields[doc.titleField] = doc.title;
+        if (doc.hasThumb()) {
+          fields[fieldSpec.thumb] = doc.thumb;
+        }
+        if (doc.hasImage()) {
+          fields[fieldSpec.image] = doc.image;
+        }
+        return fields;
+      };
+
       this.addSnapshot = function(name, recordDocumentFields, queries) {
         // we may want to refactor the payload structure in the future.
         var docs = {};
         var queriesPayload = {};
+        var fieldSpec = recordDocumentFields ? settingsSvc.editableSettings().createFieldSpec() : null;
         angular.forEach(queries, function(query) {
           queriesPayload[query.queryId] = {
             'score': query.currentScore.score,
@@ -137,13 +156,7 @@ angular.module('QuepidApp')
 
             var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': false};
             if (recordDocumentFields) {
-              var fields = {};
-              angular.forEach(Object.values(doc.subsList), function(field) {
-                fields[field['field']] = field['value'];
-              });
-              fields[doc.titleField] = doc.title;
-
-              docPayload['fields'] = fields;
+              docPayload['fields'] = recordedFields(doc, fieldSpec);
             }
 
             docs[query.queryId].push(docPayload);
@@ -155,12 +168,7 @@ angular.module('QuepidApp')
             var docPayload = {'id': doc.id, 'explain': doc.explain().rawStr(), 'rated_only': true};
 
             if (recordDocumentFields) {
-              var fields = {};
-              angular.forEach(Object.values(doc.subsList), function(field) {
-                fields[field['field']] = field['value'];
-              });
-
-              docPayload['fields'] = fields;
+              docPayload['fields'] = recordedFields(doc, fieldSpec);
             }
             docs[query.queryId].push(docPayload);
           });

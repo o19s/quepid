@@ -297,13 +297,13 @@ parts:
         title: "Create a snapshot"
         last_run: 2026-10-20T18:59:08Z
         result: pass
-        notes: "Driven via Claude in Chrome on a Qdrant case (Search API, Record Document Fields forced on). Took a named snapshot ('BM25') of one rated query; it processed to 10 snapshot_docs, all with stored fields. The blank-name case, forced server error, and large-case background behavior weren't tested this pass."
+        notes: "Driven via Claude in Chrome on a Qdrant case (Search API, Record Document Fields forced on). Took a named snapshot ('BM25') of one rated query; it processed to 10 snapshot_docs, all with stored fields (including the thumb:poster_path value). The blank-name case, forced server error, and large-case background behavior weren't tested this pass."
         paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
         last_run: 2026-10-20T18:59:08Z
         result: pass_with_fixes
-        notes: "Driven via Claude in Chrome on a Qdrant (proxied Search API) case for #1843. Before the fix, the snapshot column showed the ZSR warning and 'No result at position N', snapshot score 0.00, with the doc lookup proxied to /proxy/fetch?url=.../snapshots/:id/search and returning 400. After the fix the lookup hits /api/cases/:id/snapshots/:id/search directly (200), the column lists the recorded docs with their rating, and the snapshot score is 1.00. Also compared three snapshots at once (Dense, BM25, BM25 with offset 5, each holding docs the others lack) against live dense results: all four columns populated, no ZSR or 'No result at position' messages, scores 1.00/1.00/1.00/0.00 (offset5 lacks the rated doc). Vespa, Clear Comparison View, and the modal's warnings/delete weren't exercised this pass."
+        notes: "Driven via Claude in Chrome on a Qdrant (proxied Search API) case for #1843. Before the fix, the snapshot column showed the ZSR warning and 'No result at position N', snapshot score 0.00, with the doc lookup proxied to /proxy/fetch?url=.../snapshots/:id/search and returning 400. After the fix the lookup hits /api/cases/:id/snapshots/:id/search directly (200), the column lists the recorded docs with their rating, and the snapshot score is 1.00. Also compared three snapshots at once (Dense, BM25, BM25 with offset 5, each holding docs the others lack) against live dense results: all four columns populated, no ZSR or 'No result at position' messages, scores 1.00/1.00/1.00/0.00 (offset5 lacks the rated doc). With thumb:/image: now recorded, a fresh snapshot stored poster_path for all 10 docs and the snapshot column showed the posters. Vespa, Clear Comparison View, and the modal's warnings/delete weren't exercised this pass."
         paths: ["app/models/snapshot.rb", "app/assets/javascripts/services/querySnapshotSvc.js", "app/controllers/api/v1/snapshots/search_controller.rb"]
       "5.4":
         title: "Annotations"
