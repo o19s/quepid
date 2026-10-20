@@ -508,7 +508,37 @@ describe('Service: querySnapshotSvc', function () {
     });
   });
   
-  describe('Mapping fieldSpec back to /search endpoint expectations', function() {    
+  describe('looking up docs for engines without lookup by id', function() {
+    it('queries the snapshot search endpoint directly, never through the proxy', function() {
+      spyOn(settingsSvc, 'supportLookupById').and.returnValue(false);
+      spyOn(settingsSvc, 'editableSettings').and.returnValue({
+        searchEngine:     'searchapi',
+        searchUrl:        'https://qdrant.example.com/collections/tmdb/points/query',
+        apiMethod:        'POST',
+        proxyRequests:    true,
+        searchEndpointId: 7,
+        fieldSpec:        'id:id, title:title, overview',
+        customHeaders:    '{"api-key": "secret"}'
+      });
+
+      $httpBackend.expectGET('api/cases/3/snapshots?shallow=true').respond(200, {
+        snapshots: [
+          {id: '5', name: 'dense', time: '1516190400000', docs: {'0': [{id: '123', explain: rawExpl}]}}
+        ]
+      });
+      querySnapshotSvc.bootstrap(3);
+      $httpBackend.flush();
+
+      var lookupSettings = docResolverSvc.createResolver.calls.mostRecent().args[1];
+      expect(lookupSettings.searchEngine).toBe('solr');
+      expect(lookupSettings.searchUrl).toMatch(/\/snapshots\/5\/search$/);
+      expect(lookupSettings.proxyRequests).toBe(false);
+      expect(lookupSettings.proxyUrl).toBeUndefined();
+      expect(lookupSettings.customHeaders).toBeNull();
+    });
+  });
+
+  describe('Mapping fieldSpec back to /search endpoint expectations', function() {
     it('handles various patterns', function() {
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:id title:title body')).toBe('id:id title:title body');
       expect(querySnapshotSvc.mapFieldSpecToSolrFormat('id:_id title:title body')).toBe('id:id title:title body');

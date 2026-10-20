@@ -61,6 +61,11 @@ angular.module('QuepidApp')
               settingsForLookup.fieldSpec = fieldSpecSvc.createFieldSpec(solrSpecificFieldSpecStr);
               settingsForLookup.searchEndpointId = null;
               settingsForLookup.customHeaders = null;
+              // The lookup targets Quepid's own snapshot search endpoint, so it must go
+              // straight from the browser with the session cookie. Proxying it (e.g. a
+              // Qdrant/Vespa case, or proxy-all-endpoints mode) sends a cookieless
+              // server-side request to Quepid itself, which fails and drops every doc.
+              settingsForLookup.proxyRequests = false;
               
               let snapshotId = snapshots[0].id;
               settingsForLookup.searchUrl = `${caseTryNavSvc.getQuepidRootUrl()}/api/cases/${caseTryNavSvc.getCaseNo()}/snapshots/${snapshotId}/search`;
