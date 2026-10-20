@@ -105,7 +105,7 @@ Owner candidates are filename matches, not verified owners.
 | [86](#row-86) | `javascripts/components/add_member/member_popup.html` | main | 5 | `teams/show.html.erb` | 9.2 | closed |
 | [87](#row-87) | `javascripts/components/edit_scorer/_denied_modal.html` | main | 5 | `scorers/edit.html.erb` | 8.4 | closed |
 | [88](#row-88) | `javascripts/components/import_to_cases/import_to_cases.html` | main | 5 | `cases/index.html.erb` (Import Case from JSON, Import Snapshots from CSV) | 3.3, 3.4 | closed |
-| [89](#row-89) | `templates/views/cases/import.html` | main | 4 | (none) | 3.3 | open: 1 finding |
+| [89](#row-89) | `templates/views/cases/import.html` | main | 4 | (none) | 3.3 | closed |
 | [90](#row-90) | `javascripts/components/archive_case/archive_case.html` | main | 3 | `cases/index.html.erb` (Archive case button) | 3.5 | closed |
 | [91](#row-91) | `javascripts/components/archive_search_endpoint/archive_search_endpoint.html` | main | 3 | `shared/_confirm_modal.html.erb` | 7.5 | closed |
 | [92](#row-92) | `javascripts/components/delete_case/delete_case.html` | main | 3 | (none on the list) | 6.4 | open: 1 finding |
@@ -220,11 +220,11 @@ Conditional UI:
 - [x] `<button>` `ng-disabled="pendingWizardSettings.searchEndpointId == null || (pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.testQuery || pendingWizardSettings.testQuery.trim().length === 0))"`
 - [x] `<p>` `ng-if="titleFieldRequired"`
 - [x] `<p>` `ng-if="idFieldRequired"`
-- [x] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
-- [x] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
+- [x] `<input>` `ng-if="pendingWizardSettings.apiMethod === 'GET'"` — restored (see Decisions: Search API query pattern)
+- [x] `<textarea>` `ng-if="pendingWizardSettings.apiMethod !== 'GET'"` — restored (see Decisions: Search API query pattern)
 - [x] `<p>` `ng-if="!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0"`
 - [x] `<p>` `ng-if="pendingWizardSettings.queryParams && pendingWizardSettings.queryParams.trim().length > 0 && pendingWizardSettings.queryParams.indexOf('#$query##') === -1"`
-- [x] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` — kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)
+- [x] `<div>` `ng-if="pendingWizardSettings.searchEngine === 'searchapi'"` — restored (see Decisions: Search API query pattern)
 - [x] `<button>` `ng-disabled="pendingWizardSettings.searchEngine === 'searchapi' && (!pendingWizardSettings.queryParams || pendingWizardSettings.queryParams.trim().length === 0)"`
 - [x] `<button>` `ng-disabled="!pendingWizardSettings.caseName || !pendingWizardSettings.caseName.trim()"` _(added on main)_
 - [x] `<button>` `ng-class="{collapsed: !shouldCreateNewSearchEndpointDefaultToOpen}"` _(added on main)_ — restored 2026-10-17 (`wizard_behaviour.spec.ts`)
@@ -4732,20 +4732,20 @@ Copy:
 - **Owner candidates:** _none found_
 - **Owner:** (none)
 - **Scenario:** 3.3
-- **Decisions:** Legacy served the paste-JSON page at `/cases/import` (replayed: 200 with "Case Import"); main and Current return a routing 404 there. The file-based Import Case from JSON modal replaces it (row 88): [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5.
+- **Decisions:** Legacy served the paste-JSON page at `/cases/import` (replayed: 200 with "Case Import"); main and Current return a routing 404 there. The file-based Import Case from JSON modal replaces it (row 88): [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review).
 
 Actions:
 
-- [ ] `<form>` `ng-submit="caseImport.submit()"` — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
+- [x] `<form>` `ng-submit="caseImport.submit()"` — removed, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
 
 Inputs:
 
-- [ ] `<div>` `ng-model="caseImport.src"` — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
+- [x] `<div>` `ng-model="caseImport.src"` — removed, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
 
 Copy:
 
-- [ ] "Case Import" — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
-- [ ] "Visit any case at /cases/caseId?export=true, paste the JSON here to import into the case into this Quepid instance, you will then be taken to the new case." — open: page removed, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 5
+- [x] "Case Import" — removed, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
+- [x] "Visit any case at /cases/caseId?export=true, paste the JSON here to import into the case into this Quepid instance, you will then be taken to the new case." — removed, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
 
 <a id="row-90"></a>
 ### 90. `app/assets/javascripts/components/archive_case/archive_case.html`

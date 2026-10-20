@@ -82,7 +82,7 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 
 /**
  * Whether a repo-relative path is in the Prettier format scope
- * (api/, utils/, and the classic core scripts).
+ * (api/ and utils/).
  * Narrow scope avoids a one-shot Prettier reformat of all controllers/modules;
  * project style is double quotes (see docs/js_tooling.md).
  * @param {string} path

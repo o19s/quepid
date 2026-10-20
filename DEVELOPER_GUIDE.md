@@ -342,7 +342,7 @@ The detailed JavaScript lint and formatting scope is maintained in [`docs/js_too
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # Prettier check — api/, utils/, classic core scripts; or yarn format:js to fix
+bin/docker r yarn format:js:check    # Prettier check — api/, utils/; or yarn format:js to fix
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
@@ -353,7 +353,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints scoped files under `app/javascript` (ESLint on everything in scope; Prettier on `api/`, `utils/`, and the classic core scripts). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints scoped files under `app/javascript` (ESLint on everything in scope; Prettier on `api/` and `utils/`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 

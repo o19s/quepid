@@ -328,15 +328,6 @@ Two modules own scorers; nothing else builds or loads them.
 
 The live-query runtime reaches the catalog as `domain.scorer` and exposes it as `queryCapabilities.setScorer(apiJson)` / `getDefaultScorer()`. `changeSettings()` bootstraps the scorer when the case changes; `core-bootstrap` does not.
 
-Migration from the older shape:
-
-| Before | Now |
-|--------|-----|
-| `catalog.constructFromData(data)` then `catalog.setDefault(scorer)` | `catalog.select(data)` |
-| `createScorerCatalog({ constructFromData, initialDefault })` | `createScorerCatalog({ request, promiseApi, scorerOptions })` |
-| `capabilities.core.scoring.bootstrap(caseNo)` in `core-bootstrap` | removed: `changeSettings()` already bootstraps, so the case's scorers were fetched twice |
-| `domain.scorer` wrapper object re-exposing the catalog | `domain.scorer` is the catalog |
-
 ### Server-Side Differences
 
 The server evaluates `scorer_runtime.js` itself, so every helper (`avgRating100`, `pass`, `assert`, `max`, ...) behaves the same in both places. `JavascriptScorer` adapts the stored snapshot to the runtime's inputs:
@@ -872,10 +863,7 @@ scoreAllQueries(scorables):
 - Normal scores: linear HSL interpolation from red (0%) to green (100%)
 
 ### Score Deduplication (Server-Side)
-The `CaseScoreManager` uses 3-tier dedup logic when persisting scores:
-1. Score within last 5 minutes → update existing record
-2. Same score exists for same day → ignore (don't duplicate)
-3. Otherwise → create new score record
+See [`QUEPID_FEATURES.md` §7 — Score Storage & Deduplication](./QUEPID_FEATURES.md#score-storage--deduplication).
 
 ---
 
@@ -1214,10 +1202,6 @@ SearchAPI mapper code evaluated via `new Function()` constructor in non-strict m
 - Sets functions on `window` object globally
 - No sandboxing or isolation
 - Error handling is try/catch around eval
-
-### jQuery Dependencies
-- The `pane` controller uses plain DOM APIs (no jQuery)
-- Query drag-and-drop is owned by the Stimulus `queries-list` controller and uses SortableJS
 
 ### Hardcoded Constants
 - 15 queries per page (hardcoded)

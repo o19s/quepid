@@ -23,13 +23,13 @@ The HTML user page does not display the digest. Migration only needs the JSON ex
 
 Retain the scoped adapters and named async accessors used by bootstrap, wizard, tuning and snapshots. Removing forwarding would move dependency selection and receiver binding into consumers without removing an owner, request or state copy. A generic facade would duplicate the existing capability groups.
 
-**Revisit if:** a concrete dependency design meaningfully simplifies consumers while preserving shared instances, startup order, Promise/error/microtask timing, method receivers and tuning's `draft()` versus wizard's `editable()`. See the [runtime forwarding assessment](rails_stimulus_json_workspace_plan.md#runtime-forwarding-assessment) for contracts and verification.
+**Revisit if:** a concrete dependency design meaningfully simplifies consumers while preserving shared instances, startup order, Promise/error/microtask timing, method receivers and tuning's `draft()` versus wizard's `editable()`.
 
 ## [MIGRATION-FOLLOWUP] Share initial annotation reads between the list and graph
 
 Rails already renders the list with the case page; only the graph makes an initial annotation JSON GET. Retain the separate projections: removing the remaining GET would change startup freshness and independent failure handling, while a shared store would add mutation and invalidation coordination. The measured saving does not justify that work. Snapshot catalogs also retain a fresh read on every modal open.
 
-**Revisit if:** representative production measurements justify the coordination and a concrete design preserves list errors, graph refresh and `annotations:changed`. See the [annotation read assessment](rails_stimulus_json_workspace_plan.md#annotation-read-assessment) for contracts, measurements and verification.
+**Revisit if:** representative production measurements justify the coordination and a concrete design preserves list errors, graph refresh and `annotations:changed`.
 
 ## Angular parity: changes kept after the 2026-10-17 review
 
@@ -45,18 +45,16 @@ Rerun My Searches! keeping the drawer open was listed with these but is not a ch
 
 ## Angular parity: changes kept after the 2026-10-19 review
 
-Same review as above; on 2026-10-19 the user chose to keep these. Evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 5, 22, 24, 31 and 48.
+Same review as above; on 2026-10-19 the user chose to keep these. Evidence is in [parity checklist](../manual-testing/angular-parity-checklist.md) rows 5, 22, 24, 31, 48 and 89.
 
 - **Query Options keeps the modal open on invalid JSON.** Legacy closed it on **Set Options** and then flashed "Please provide a valid JSON object.", losing the edit. Current shows the same flash with the modal still open, so the text can be fixed.
 - **A `media:` field with no media extension shows its value as text.** Legacy showed only the label.
 - **Media detection requires a literal dot.** Otherwise it is Legacy's rule (the extension anywhere in the value, case-sensitive, audio then image then video), but Legacy's regex left the `.` unescaped, so `/mp3s/list` would have embedded as audio.
-
 - **A failed import keeps the Import modal open.** Legacy closed the modal and flashed the error. Current flashes the same error, also shows it in the modal's alert (scrolled into view, since the page flash is hidden behind the backdrop), and leaves the modal open with the file loaded for a retry.
-
 - **Import CSV rows must match the header's column count.** Legacy rejected only lines with too many columns and listed them under the preview. Current also rejects short lines and reports each in the top alert ("line N: expected X columns but found Y"). Legacy's hint is kept for ratings and information needs: "every line needs N columns, like the header. Wrap queries that contain commas in double quotes."
-
 - **An annotation's "Try No" shows the try number.** Legacy showed `score.try_id`, the try's database id (`154` for try 1), which matches nothing else in the UI. Changed in `0439ee00`.
 - **An annotation's relative time uses `Intl.RelativeTimeFormat` wording** ("now", "1 second ago"). Legacy's `timeAgo` filter said "less than a minute ago". The difference only lasts for the first minute, and matching it would mean custom thresholds in the shared `relative-time` controller. Changed in `6656949e`.
+- **The paste-JSON page at `/cases/import` is gone.** Legacy served it by URL only (no link to it) and created the case in the browser from pasted JSON. Removed on `main` by Eric Pugh in `e52cec3a` (#1642); the **Import Case from JSON** modal on `/cases` does the same job from a file, validated on the server.
 
 **Revisit if:** users report missing the Legacy behaviour for any of these.
 
@@ -72,7 +70,7 @@ The same server-side handoff could preserve the full pending endpoint configurat
 
 **Why deferred:** Plain `http` search engines must remain supported, and direct browser searches against them need the stored `api_basic_auth_credential` and custom headers in the client. Withholding secrets means mandatory server-side proxying, which a direct browser search cannot use; an HTTPS-hosted Quepid also cannot call `http` engines from the browser (mixed content). Needs a decision on the credential-sharing contract before any change.
 
-**Location:** `app/models/concerns/maskable_credential.rb:21-28`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:22-25`
+**Location:** `app/models/concerns/maskable_credential.rb:26-32`, `app/views/api/v1/search_endpoints/_search_endpoint.json.jbuilder:11-15`, `app/views/api/v1/tries/_try.json.jbuilder:25`
 
 `api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses.
 

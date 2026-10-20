@@ -314,38 +314,9 @@ Uses a custom fractional indexing algorithm:
 | Code Editor | CodeMirror 6 (`modules/editor.js`) for editing scorer code |
 | Built-in Metrics | 7 communal scorers seeded: **nDCG@10**, **DCG@10**, **CG@10** (scale 0-3: Poor/Fair/Good/Perfect), **P@10**, **AP@10**, **RR@10** (scale 0-1: Irrelevant/Relevant), **ERR@10** (scale 0-3); plus legacy **v1** scorer (`avgRating100 - editDistanceFromBest`); also `nDCG_CUT@10` variant (ideal DCG cut at k vs. all judged docs); each as a JavaScript file in `db/scorers/` |
 
-### Scorer Runtime API
+### Scorer Runtime and Execution
 
-All scorers (both client-side and server-side) have access to these helper functions:
-
-| Function | Description |
-|----------|-------------|
-| `eachDoc(fn, k)` | Loop over top-k returned docs |
-| `eachDocWithRating(fn)` | Loop over ALL rated docs (not just top-k) |
-| `eachRatedDoc(fn, k)` | Loop over top-k rated docs only (client and server) |
-| `eachDocWithRatingEqualTo(score, fn)` | Loop over docs matching a specific rating |
-| `hasDocRating(i)` | Check if doc at position i has a rating |
-| `docRating(i)` | Get rating for doc at position i |
-| `docAt(i)` | Access doc object at position i (rich client-side / plain server-side) |
-| `numFound()` | Total number found by search engine |
-| `numReturned()` | Number of docs actually returned |
-| `topRatings(k)` | Get top-k sorted ratings from bestDocs |
-| `avgRating(k)` / `avgRating100(k)` | Average rating of top-k (plain / scaled to 0-100; client-side only) |
-| `editDistanceFromBest(k)` | Edit distance from ideal ranking (client-side only, used by legacy v1 scorer) |
-| `setScore(score)` | Set the final score value |
-| `pass()` / `fail()` | Unit-test-style assertions for per-query pass/fail scorers |
-| `assert(cond)` / `assertOrScore(cond, score)` | Conditional scoring assertions |
-| `max` | The scorer's maximum rating value |
-| `qOption(key)` | Read query-level options |
-
-### Dual Execution Model
-
-| Context | Engine | Entry Point | Key Difference |
-|---------|--------|-------------|----------------|
-| Client-side | `new Function`, scheduled with `queueMicrotask` | `utils/scorer_runtime.js` `runCode()` | `docAt()` returns rich splainer-search doc objects |
-| Server-side | MiniRacer (V8) | `JavascriptScorer.score()` | Loads the same `scorer_runtime.js`; `docAt()` returns the stored snapshot doc fields |
-
-Client-side scoring clips negative scores to 0. There is no upper bound: scores are not capped at the rating scale max (CG@10, DCG@10, and v1 routinely exceed it). Returns `'zsr'` for zero search results, `'--'` for no ratings. Case score is the average of all non-zsr/non-`--` per-query scores.
+The helper functions available to scorer code, the client/server execution model and score clipping are documented in [`QUEPID_COREUI_FEATURES.md` §6–7](./QUEPID_COREUI_FEATURES.md#6-scoring-engine).
 
 ### Score Calculation Pipeline
 
@@ -1542,44 +1513,3 @@ The architecture explicitly avoids Redis: Solid Queue (jobs), Solid Cable (WebSo
 ### Scale Immutability
 
 Book scales cannot be changed once any judgement exists — this is a data integrity guard, since existing judgement ratings would become invalid. Labels can still be updated independently.
-
-### Documentation Suite
-
-The [`docs/`](../README.md) directory is indexed in [`README.md`](../README.md). Key cross-references:
-- [`complete_application_specification.md`](../complete_application_specification.md) — canonical schema columns, HTML routes, and business rules (feature behavior lives in this file and COREUI)
-- [`QUEPID_FEATURES.md`](./QUEPID_FEATURES.md) / [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md) — app-wide and case-workspace feature inventories
-- [`after-angular-removal.md`](./after-angular-removal.md) — frontend cleanup after Angular removal, plus pre-existing bugs and hardening
-- [`todo.md`](./todo.md) — AngularJS-removal migration work
-- [`data_mapping.md`](./data_mapping.md) / [`app_structure.md`](./app_structure.md) — canonical data model and architecture explanations
-- [`operating_documentation.md`](./operating_documentation.md) — operations/deployment guide covering Nginx, OAuth, Thor scripts, etc.
-- [`endpoints_solr.md`](./endpoints_solr.md) / [`endpoints_opensearch.md`](./endpoints_opensearch.md) — detailed per-engine query documentation
-- [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md), [`jupyterlite.md`](./jupyterlite.md), [`agentic_javascript_extraction.md`](./agentic_javascript_extraction.md) — feature-specific docs
-- [`erd.png`](../images/erd.png) — entity-relationship diagram (generated via `rake erd:image`)
-- `Quepid-Data-Storage-Briefing.pdf` — stakeholder briefing document
-
----
-
-## Summary Statistics
-
-Counts drift as the tree changes — re-count before citing exact numbers.
-
-| Metric | Count (Sep 2026) |
-|--------|------------------|
-| Database Tables | 53 |
-| Database Migrations | 187 |
-| Models (`app/models/*.rb`) | 27 |
-| Controllers (total) | 95 (47 under `app/controllers/api`) |
-| API Endpoints | 80+ (canonical list: OpenAPI `/api/docs`) |
-| Services (`app/services`) | 13 |
-| Background Jobs (`app/jobs`) | 13 (plus recurring scheduled) |
-| RubyLLM Tools | 3 |
-| Validators | 4 |
-| Routing Constraints | 2 |
-| View Helpers | 9 |
-| Analytics Trackers | 9 |
-| Stimulus Controllers | 70 |
-| Vitest spec files (`test/javascript`) | ~138 |
-| Test Files (Ruby, `*_test.rb`) | 156 |
-| Supported Search Engines | 7 (`splainer-search` 3.3.0) |
-| Feature Flags / env settings (§25 table) | 13 |
-| Gem Dependencies | 70+ |

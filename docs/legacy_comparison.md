@@ -84,33 +84,6 @@ so its session cookie stays apart from Current's on `localhost`. Add a capture
 for a new item to the matching script, or start a new `capture_<surface>.mjs`
 with the helpers in `lib.mjs`. Inspect every pair before claiming parity.
 
-## Setup verification — 2026-10-07
-
-Verified separate networks and database volume; historical database
-`quepid_legacy_development` at migration `20260114150154`, current database
-`quepid_development` at `20261007160000`, and different session cookie keys.
-Historical seeds created six users, seven cases, one book and 24 queries.
-HTTP sign-in succeeded; case 4 and all nine linked JS/CSS assets returned 200.
-The current server retained its original container and start time.
-
-Playwright MCP takeover completed with permission. All initially due scenarios
-were attempted against equivalent fixtures where the baseline supports the flow;
-`bin/manual_test_status --due-only` now reports 0/168 due. This is a freshness
-check, not a parity pass: the tracker retains four failures and six blocked
-scenarios, including historical share binding and unavailable provider coverage.
-Actual scenario results and coverage limits are recorded in
-`docs/manual-testing/tracking.yml`; inspected screenshot pairs are under
-`.playwright-mcp/dual-parity/`. Identical historical case JSON was imported into
-disposable cases because sample queries are randomly generated. The disposable
-parity fixtures were removed from both databases; both servers remain running.
-
-Setup recovery checks passed: failed archive extraction cleans up and a subsequent
-attempt succeeds; in a disposable historical database, a simulated Solr outage
-rolled back partial seed rows, the real retry succeeded, and repeated setup retained
-all fixture counts. A fresh database was seeded despite a stale filesystem marker.
-The existing historical data was adopted without reseeding; the disposable database
-was removed. Ruby lint, shell syntax and diff checks passed.
-
 ## Supplemental sharing comparison
 
 The pinned `8ceb99e9` cannot render sharing: `eba45615` deleted `teamSvc` while

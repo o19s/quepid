@@ -220,6 +220,25 @@ Retain the explicit state owners described in [Application structure](../app_str
 
 Follow [Scope and change control](../../AGENTS.md#scope-and-change-control) for module moves. Moving root-level `build_css.js` or `audit_css.js` alone has modest payoff and affects build/lint paths; prioritize command drift and CI coverage.
 
+### [MIGRATION-FOLLOWUP] P3 I0 C2 — Patch upstream Stimulus LSP controller detection
+
+Submit an upstream [stimulus-parser](https://github.com/marcoroth/stimulus-parser)
+patch to resolve Rails importmap paths (`controllers/...`) and mixin inheritance
+such as `extends withStatusMessages(Controller)` and
+`extends withDestructiveForm(CoreModalControllerBase)`. Verify controller
+discovery, inherited actions, targets and values against Quepid's shared bases
+and ordinary `extends Controller` classes. Stimulus LSP 1.1.2's bundled parser
+misses these controllers; `.stimulus-lsp/config.json` temporarily suppresses
+`stimulus.controller.invalid` for the affected identifiers. Remove those ignores
+once an extension release detects them correctly.
+
+Also patch [Stimulus LSP](https://github.com/marcoroth/stimulus-lsp) to exclude
+Bootstrap's `data-bs-target` from Stimulus target validation; it currently
+reports a nonexistent `bs` controller. Verify Bootstrap targets produce no
+Stimulus diagnostics while real Stimulus target validation still works, then
+remove the temporary `data-bs-target` entry from `ignoredAttributes` in the
+same config.
+
 ## [PREEXISTING] Found during parity testing
 
 Moved from [todo.md](todo.md) on 2026-10-19, with every other `[PREEXISTING]`
