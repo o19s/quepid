@@ -58,6 +58,8 @@ test('a failed information-needs import names the format and keeps the modal ope
   await modal.getByRole('button', { name: 'Import', exact: true }).click();
   await expect(page.locator('#flash-messages')).toContainText('Unable to import information needs from CSV.');
   await expect(modal).toBeVisible();
+  await expect(modal.locator('[data-import-ratings-core-target="alert"]')).toContainText('Unable to import information needs from CSV.');
+  await expect(modal.getByRole('button', { name: 'Import', exact: true })).toBeEnabled();
 });
 
 test('a ratings CSV imports and says so', async ({ page }) => {

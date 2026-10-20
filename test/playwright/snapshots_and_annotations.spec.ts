@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { DEFAULT_RICH_CASE_ID, apiHeaders, waitForSearchSettled } from './case_helpers';
+import { DEFAULT_RICH_CASE_ID, apiHeaders, createDisposableCase, deleteCaseViaApi, waitForSearchSettled } from './case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
@@ -12,8 +12,8 @@ import { DEFAULT_RICH_CASE_ID, apiHeaders, waitForSearchSettled } from './case_h
  * default CASE_ID now points at. Snapshot creation doesn't strictly require
  * live results (it posts whatever query docs are in memory, even none), but
  * annotation creation does: the annotation controller refuses with "Can't create
- * a new annotation until searches have been run!" unless the case already has
- * a last score, which this one does.
+ * a new annotation until searches have been run!" unless a query scored in this
+ * run or the case has a recorded score, both true here.
  */
 
 const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAULT_RICH_CASE_ID);
@@ -130,6 +130,24 @@ test.describe('snapshots', () => {
 });
 
 test.describe('annotations', () => {
+  // Legacy refused Create until the case had a recorded score, which a case with no queries never gets.
+  test('Create is disabled on a case with no queries', async ({ page }) => {
+    const caseId = await createDisposableCase(page, 'Empty annotations');
+    try {
+      await page.goto(`case/${caseId}/try/1`);
+      await expect(page.locator('#case-actions .col-sm-12')).toBeVisible({ timeout: 20_000 });
+      await waitForSearchSettled(page, 20_000);
+      await page.locator('#tune-relevance-link button').click();
+      await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
+
+      const annotations = page.locator('#annotations');
+      await expect(annotations.getByText('No annotations yet.')).toBeVisible();
+      await expect(annotations.getByRole('button', { name: 'Create', exact: true })).toBeDisabled();
+    } finally {
+      await deleteCaseViaApi(page, caseId);
+    }
+  });
+
   test('creating an annotation appends it to the case annotations list', async ({ page }) => {
     await gotoSnapshotCase(page);
 

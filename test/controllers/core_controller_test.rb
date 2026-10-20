@@ -239,6 +239,22 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '#annotations-list .annotations-empty', text: 'No annotations yet.'
     end
 
+    test 'gives the annotations controller the case recorded score, or none for a case never scored' do
+      kase = cases(:one)
+      get :index, params: { id: kase.id }
+
+      assert_response :success
+      last_score = JSON.parse(css_select('[data-controller~="annotations"]').first['data-annotations-last-score-value'])
+      assert_equal kase.latest_score.score, last_score['score']
+      assert_equal %w[all_rated queries score try_id], last_score.keys.sort
+
+      unscored = Case.create!(case_name: 'Never scored', owner: users(:doug))
+      get :index, params: { id: unscored.id }
+
+      assert_response :success
+      assert_select '[data-controller~="annotations"][data-annotations-last-score-value="{}"]'
+    end
+
     test 'renames a case and updates its search endpoint settings' do
       kase = cases(:one)
       current_try = tries(:one)

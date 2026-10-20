@@ -30,7 +30,8 @@ function buildController() {
       url: "/cases/7/annotations",
       annotationUrlTemplate: "/cases/7/annotations/__ANNOTATION_ID__",
       caseId: 7,
-      tryId: 3
+      tryId: 3,
+      lastScore: {}
     }
   })
   controller.scoringStore = {
@@ -156,6 +157,37 @@ describe("AnnotationsController", () => {
 
     expect(apiFetch).not.toHaveBeenCalled()
     expect(event.preventDefault).toHaveBeenCalled()
+  })
+
+  it("falls back to the case's recorded score when no query scored this run, as Legacy did", async () => {
+    const controller = buildController()
+    controller.scoringStore.caseScore = { score: "--", allRated: true }
+    controller.scoringStore.snapshot = () => ({ queryScores: {} })
+    controller.lastScoreValue = { all_rated: false, score: 0.4, try_id: 2, queries: { "11": { score: 0.4 } } }
+    apiFetch.mockResolvedValueOnce(streamResponse(stream("prepend", "case-annotations", rowHtml(9, "Endpoint down"))))
+    controller.messageTarget.value = "Endpoint down"
+
+    controller.updateCreateState()
+    expect(controller.createButtonTarget.disabled).toBe(false)
+
+    await controller.create({ preventDefault: vi.fn() })
+    expect(JSON.parse(apiFetch.mock.calls[0][1].body).score).toEqual(controller.lastScoreValue)
+  })
+
+  it("refuses Create on a case with no queries even though it has a '--' score", async () => {
+    const controller = buildController()
+    controller.scoringStore.caseScore = { score: "--", allRated: true }
+    controller.scoringStore.snapshot = () => ({ queryScores: {} })
+
+    controller.updateCreateState()
+    expect(controller.createButtonTarget.disabled).toBe(true)
+
+    await controller.create({ preventDefault: vi.fn() })
+    expect(apiFetch).not.toHaveBeenCalled()
+    expect(coreFlash.show).toHaveBeenCalledWith(
+      "error",
+      "Can't create a new annotation until searches have been run! Please rerun your searches."
+    )
   })
 
   it("deletes an annotation and notifies the graph bridge", async () => {

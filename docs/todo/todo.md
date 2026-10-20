@@ -77,23 +77,12 @@ The branch lands when all of these hold on one commit:
 
 ### [MIGRATION-FOLLOWUP] P3 I0 C1 — Annotation list display changes with no recorded decision
 
-Found closing rows [23](../manual-testing/angular-parity-checklist.md#row-23) (`annotations.html`), [24](../manual-testing/angular-parity-checklist.md#row-24) (`annotation.html`) and [26](../manual-testing/angular-parity-checklist.md#row-26) (`_update.html`). Owners: `_annotation.html.erb`, `_edit_annotation_modal.html.erb`, `annotations_controller.js`. Create, edit, delete (no confirmation on either), reload persistence and the graph markers match Legacy (replayed on Legacy :3001 and Current :3000 with equivalent cases, 2026-10-17). The Annotations tab intro rewording is kept ([NOT-DOING](NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Scenario 5.4 describes the behaviours below but records no decision to depart from Legacy.
+Found closing rows [23](../manual-testing/angular-parity-checklist.md#row-23) (`annotations.html`) and [26](../manual-testing/angular-parity-checklist.md#row-26) (`_update.html`). Owners: `_annotation.html.erb`, `_edit_annotation_modal.html.erb`, `annotations_controller.js`. Create, edit, delete (no confirmation on either), reload persistence and the graph markers match Legacy (replayed on Legacy :3001 and Current :3000 with equivalent cases, 2026-10-17). The Annotations tab intro rewording is kept ([NOT-DOING](NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Scenario 5.4 describes the behaviours below but records no decision to depart from Legacy.
 
-1. **Score is rounded to two decimals.** Current shows `Score: 0.53`; Legacy showed the raw float (`0.5572889180924896` right after creating, `0.557289` after reload).
-2. **"Try No" shows the try number.** Current shows `1`; Legacy showed `score.try_id`, the database id of the try (`154`). Legacy looks wrong here.
-3. **Relative time wording.** Current shows "1 second ago" or "now"; Legacy showed "less than a minute ago" (`timeAgo` filter, removed in `6656949e`).
-4. **Empty state, and Create on a case that has never been run.** Current shows "No annotations yet." under Existing Annotations; Legacy showed an empty list. On a new case with no queries, Legacy refuses Create with "Can't create a new annotation until searches have been run! Please rerun your searches." Current leaves Create enabled and saves an annotation with an empty message and Score 0.00 ("New Annotation created successfully!"). Re-checked live 2026-10-19; this part is a bug, not a decision: scenario 5.4's last check expects Create to be disabled here and fails.
-5. **Edit Annotation footer order.** Current shows Cancel before Update; Legacy showed Update then Cancel.
+1. **Empty state.** Current shows "No annotations yet." under Existing Annotations; Legacy showed an empty list.
+2. **Edit Annotation footer order.** Current shows Cancel before Update; Legacy showed Update then Cancel.
 
-**Fix direction:** 1, 2 and the "No annotations yet." empty state look like improvements; keep them and add the line to scenario 5.4 as a decision. Creating an annotation on a never-run case is a bug: restore Legacy's refusal. 3 and 5 are cosmetic; either restore or keep. Not decided here because each is a copy or flow change, not a plain restoration.
-
----
-
-### [MIGRATION-FOLLOWUP] P2 I0 C1 — Core workbench behaviour changes with no recorded decision
-
-Found closing the core workbench rows of the [parity checklist](../manual-testing/angular-parity-checklist.md). Each was replayed on Legacy (:3001) and Current (:3000) on 2026-10-17 unless it says source only. None has a NOT-DOING entry or a user-approved decision; where a scenario describes the new behaviour, that is noted.
-
-2. **A failed import keeps the Import modal open.** Row [5](../manual-testing/angular-parity-checklist.md#row-5). Legacy closed the modal and flashed the error; Current flashes the same error (prefixes restored in this pass) and leaves the modal open for a retry. Looks like an improvement; recorded for completeness.
+**Fix direction:** The "No annotations yet." empty state looks like an improvement; keep it and add the line to scenario 5.4 as a decision. 2 is cosmetic; either restore or keep. Not decided here because it is a flow change, not a plain restoration.
 
 ---
 

@@ -70,12 +70,12 @@ continues to supply the graph and external clients.
 - [ ] **Steps:**
   1. Open Tune Relevance → **Annotations** tab.
   2. Type a note (e.g., "disabled synonyms, see what happens") in the message box, click **Create**.
-  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp, the current try's score formatted to two decimals, and your message. The score formatting stays consistent after reload or edit.
+  3. Confirm the new annotation appears at the top of the "Existing Annotations" list with a relative timestamp ("now" or "N seconds ago"), "Try No:" showing the try number (not its database id), the current try's score as the raw value, and your message. As in Legacy, the score shows full precision right after Create and about six significant digits after a reload or edit on MySQL (it stores a single-precision float). The time wording and the try number differ from Legacy on purpose ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)).
   4. Open the per-annotation dropdown menu (list icon), click **Edit**, change the message, click **Update** (or Cancel).
   5. Delete an annotation via the same dropdown.
 - **Expected:** Annotations record a point-in-time note tied to the current score; edits/deletes reflect immediately in the list and on the score graph (5.5).
 - **Edge cases:**
-  - [ ] On a brand-new case where no search has been run yet (`lastScore` undefined), confirm the **Create** button is disabled until a case score exists, so no annotation can be created. (The controller's flash "Can't create a new annotation until searches have been run! Please rerun your searches." is a fallback that the disabled button normally keeps unreachable.)
+  - [ ] On a brand-new case with no queries, confirm the **Create** button is disabled (as in Legacy, which never recorded a score for such a case), and that it enables once a query returns a score. On a case that has been scored before, Create stays enabled even when every search fails, and the annotation records the case's last recorded score (Legacy behaviour, see [after AngularJS removal](../todo/after-angular-removal.md#migration-followup-p3-i0-c1--maybe-annotations-reuse-a-stale-recorded-score)). (The controller's flash "Can't create a new annotation until searches have been run! Please rerun your searches." is a fallback that the disabled button normally keeps unreachable.)
   - [ ] Open Edit, change the message, then click **Cancel** — confirm the original message is restored (no partial edit leaks through).
   - [ ] On a case with no annotations, confirm "No annotations yet." shows, hides after Create, and returns after deleting the last one.
   - [ ] Force a save failure: failed create/edit retains the draft and allows retry. Reload after a successful edit to confirm persistence and score formatting.

@@ -35,6 +35,7 @@ export default class extends CoreModalControllerBase {
     this.files = {}
     this.contents = {}
     this.errors = {}
+    this.importFailure = null
     this.busy = false
     if (this.hasLoadingTarget) this.loadingTarget.classList.add("d-none")
   }
@@ -49,6 +50,7 @@ export default class extends CoreModalControllerBase {
     this.files = {}
     this.contents = {}
     this.errors = {}
+    this.importFailure = null
     this.contentTargets.forEach((target) => { target.textContent = "" })
     this.setError(this.hasAlertTarget ? this.alertTarget : null, "")
     if (this.hasClearQueriesTarget) this.clearQueriesTarget.checked = false
@@ -75,6 +77,7 @@ export default class extends CoreModalControllerBase {
 
     // Choosing a file selects its import type, even if reading it fails, so the error shows.
     this.selectedType = type
+    if (this.importFailure?.type === type) this.importFailure = null
     try {
       const content = await file.text()
       this.files[type] = file
@@ -92,6 +95,7 @@ export default class extends CoreModalControllerBase {
     event.preventDefault()
     if (this.busy || !this.canImport()) return
 
+    this.importFailure = null
     this.setBusy(true)
     try {
       if (this.selectedType === "snapshots") await this.importSnapshots()
@@ -101,8 +105,13 @@ export default class extends CoreModalControllerBase {
       this.flash("success", this.successMessage())
       this.hide()
     } catch (error) {
-      this.flash("error", this.errorMessage(error))
+      const message = this.errorMessage(error)
+      // The page flash sits behind the modal backdrop, so the modal shows the failure too.
+      this.importFailure = { type: this.selectedType, message }
+      this.flash("error", message)
       this.setBusy(false)
+      // The alert is at the top of a tall modal; Import is at the bottom.
+      if (this.hasAlertTarget) this.alertTarget.scrollIntoView?.({ block: "nearest" })
     }
   }
 
@@ -188,8 +197,9 @@ export default class extends CoreModalControllerBase {
   }
 
   refreshUi() {
-    const activeError = this.errors[this.selectedType]
-    this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError || "")
+    const failure = this.importFailure?.type === this.selectedType ? this.importFailure.message : ""
+    const activeError = this.errors[this.selectedType] || failure
+    this.setError(this.hasAlertTarget ? this.alertTarget : null, activeError)
     this.toggleVisible("warning", this.selectedType)
     if (this.hasWarningTextTarget && this.selectedType) this.warningTextTarget.textContent = this.warningMessage()
     if (this.hasImportButtonTarget) this.importButtonTarget.disabled = !this.canImport() || this.busy

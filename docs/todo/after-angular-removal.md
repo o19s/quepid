@@ -31,6 +31,17 @@ as the endpoint's saved test query (`wizard_controller.js#selectEndpoint`,
    otherwise, both bound to `queryParams`, need the `api-get`/`api-body`
    conditions and a plural `queryPattern` target. One textarea would do.
 
+### [MIGRATION-FOLLOWUP] P3 I0 C1 — Maybe: annotations reuse a stale recorded score
+
+Kept as Legacy on 2026-10-19. When no query scores in the current run (for
+example every search fails because the endpoint is down), Create falls back to
+the case's last recorded score and saves the annotation with it
+(`annotations_controller.js#scorePayload`, `data-annotations-last-score-value`
+in `core/index.html.erb`). The annotation then shows a score that does not
+match what the user is looking at. Refusing Create until a query scores in the
+current run would be more accurate. A case that has never scored a query is
+refused either way.
+
 ## Frontend consolidation
 
 Moved from [todo.md](todo.md) on 2026-10-19. These change or restructure the

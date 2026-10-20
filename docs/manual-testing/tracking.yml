@@ -735,9 +735,9 @@ parts:
           annotation-edit: "5.4/annotation-edit"
           annotation-updated: "5.4/annotation-updated"
           annotation-deleted: "5.4/annotation-deleted"
-        last_run: 2026-10-17T13:43:42Z
-        result: pass
-        notes: "Legacy vs Current replay: create (an empty message is accepted on both), edit with Cancel and Update, delete without confirmation, reload persistence, graph marker. Display differences are recorded in todo.md (\"Annotation list display changes\"). Not covered: failed create/edit, concurrent delete/edit."
+        last_run: 2026-10-19T22:12:00Z
+        result: pass_with_fixes
+        notes: "Covered live: on a new case with no queries Current left Create enabled and saved an annotation with Score 0.00, where Legacy refused. Cause: the guard read the live case score, which is \"--\" (not null) after an empty scoring pass; Legacy read the case's recorded score, never saved for a case with no queries. Fixed in annotations_controller.js#scorePayload: use the live score only when a query scored, else the recorded score (data-annotations-last-score-value in core/index.html.erb), else refuse. Verified: empty case shows \"No annotations yet.\" with Create disabled, and stays disabled after adding a query that errors (no endpoint); create, edit, reload and delete on case 219 still pass (snapshots_and_annotations.spec.ts, whose new empty-case test fails without the fix); the recorded score renders with all_rated/score/try_id/queries. Not covered live: the recorded-score fallback on a previously scored case whose searches all fail (unit test only), failed create/edit, concurrent delete/edit."
         paths: ["app/controllers/case_annotations_controller.rb", "app/controllers/concerns/annotation_persistence.rb", "app/views/core/_annotation.html.erb", "config/routes.rb", "app/views/api/v1/annotations/_annotation.json.jbuilder", "app/controllers/api/v1/annotations_controller.rb", "app/models/annotation.rb", "app/javascript/controllers/annotations_controller.js", "app/javascript/controllers/relative_time_controller.js", "app/assets/stylesheets/core-additions.css", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "test/playwright/snapshots_and_annotations.spec.ts", "app/views/core/_edit_annotation_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/utils/store_subscription.js"]
       "5.5":
         title: "Score graph (sparkline) & annotation markers"

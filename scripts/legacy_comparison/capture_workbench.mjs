@@ -1,7 +1,7 @@
 /**
  * Captures the core workbench and annotation differences on Legacy and Current for side-by-side
- * comparison: B1–B6 ("Core workbench behaviour changes with no recorded decision" in
- * docs/todo/todo.md) and A1–A5 ("Annotation list display changes"). Everything runs on a clone of
+ * comparison: B1–B6 (core workbench behaviour changes, now decided in docs/todo/NOT-DOING.md or
+ * restored) and A1–A5 ("Annotation list display changes"). Everything runs on a clone of
  * the sample-data case "10s of Queries" and an empty scratch case, both deleted afterwards. Flash
  * text and native dialog messages go to notes-<side>.json.
  */

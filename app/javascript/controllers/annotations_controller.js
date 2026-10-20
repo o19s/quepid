@@ -15,7 +15,8 @@ export default class extends Controller {
     url: String,
     annotationUrlTemplate: String,
     caseId: Number,
-    tryId: Number
+    tryId: Number,
+    lastScore: Object
   }
 
   connect() {
@@ -118,13 +119,19 @@ export default class extends Controller {
 
   scorePayload() {
     const score = this.scoringStore?.caseScore
-    if (!score) return null
-    return {
-      all_rated: score.allRated,
-      score: score.score,
-      try_id: this.tryIdValue,
-      queries: this.scoringStore.snapshot().queryScores
+    const queries = score ? this.scoringStore.snapshot().queryScores : {}
+    if (Object.keys(queries).length > 0) {
+      return {
+        all_rated: score.allRated,
+        score: score.score,
+        try_id: this.tryIdValue,
+        queries
+      }
     }
+    // No query scored this run (no queries, or every search failed). Like Legacy, fall back to the
+    // case's recorded score; a case that has never scored a query has none, so Create is refused.
+    if (!score || Object.keys(this.lastScoreValue).length === 0) return null
+    return this.lastScoreValue
   }
 
   updateCreateState() {

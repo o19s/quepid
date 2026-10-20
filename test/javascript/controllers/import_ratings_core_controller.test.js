@@ -455,7 +455,7 @@ describe("ImportRatingsCoreController", () => {
     expect(instance.loadingTarget.classList.contains("d-none")).toBe(false)
   })
 
-  it("flashes the server's error and lets the user retry", async () => {
+  it("shows the server's error in the modal and the flash, and lets the user retry", async () => {
     respond({ message: "Unknown case" }, { ok: false, status: 404, statusText: "Not Found" })
     const instance = modalController()
     await chooseFile(instance, "csv", RATINGS_CSV)
@@ -463,10 +463,61 @@ describe("ImportRatingsCoreController", () => {
     await instance.submit({ preventDefault: vi.fn() })
 
     expect(coreFlash.show).toHaveBeenCalledWith("error", "Unable to import ratings from CSV: Unknown case")
+    expect(instance.alertTarget.textContent).toBe("Unable to import ratings from CSV: Unknown case")
+    expect(instance.alertTarget.classList.contains("d-none")).toBe(false)
     expect(hideBsModal).not.toHaveBeenCalled()
     expect(instance.busy).toBe(false)
     expect(instance.loadingTarget.classList.contains("d-none")).toBe(true)
     expect(instance.importButtonTarget.disabled).toBe(false)
+  })
+
+  it("scrolls the import failure into view", async () => {
+    respond({ message: "Unknown case" }, { ok: false, status: 404, statusText: "Not Found" })
+    const instance = modalController()
+    instance.alertTarget.scrollIntoView = vi.fn()
+    await chooseFile(instance, "csv", RATINGS_CSV)
+
+    await instance.submit({ preventDefault: vi.fn() })
+
+    expect(instance.alertTarget.scrollIntoView).toHaveBeenCalledWith({ block: "nearest" })
+  })
+
+  it("clears the import failure on a new file, another type or a retry", async () => {
+    respond({ message: "Unknown case" }, { ok: false, status: 404, statusText: "Not Found" })
+    const instance = modalController()
+    const alertShown = () => !instance.alertTarget.classList.contains("d-none")
+    await chooseFile(instance, "csv", RATINGS_CSV)
+    await instance.submit({ preventDefault: vi.fn() })
+    expect(alertShown()).toBe(true)
+
+    instance.selectType({ target: { value: "ltr" } })
+    expect(alertShown()).toBe(false)
+    instance.selectType({ target: { value: "csv" } })
+    expect(alertShown()).toBe(true)
+
+    await chooseFile(instance, "csv", RATINGS_CSV)
+    expect(alertShown()).toBe(false)
+
+    await instance.submit({ preventDefault: vi.fn() })
+    expect(alertShown()).toBe(true)
+    respond({})
+    const retry = instance.submit({ preventDefault: vi.fn() })
+    expect(alertShown()).toBe(false)
+    await retry
+  })
+
+  it("hides an import failure when the modal is reopened", async () => {
+    respond({ message: "Unknown case" }, { ok: false, status: 404, statusText: "Not Found" })
+    const instance = modalController()
+    await chooseFile(instance, "csv", RATINGS_CSV)
+    await instance.submit({ preventDefault: vi.fn() })
+    expect(instance.alertTarget.classList.contains("d-none")).toBe(false)
+
+    instance.openFor()
+    instance.selectType({ target: { value: "csv" } })
+
+    expect(instance.alertTarget.textContent).toBe("")
+    expect(instance.alertTarget.classList.contains("d-none")).toBe(true)
   })
 
   it.each([

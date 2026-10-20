@@ -13,7 +13,7 @@ class CaseAnnotationsControllerTest < ActionController::TestCase
   test 'renders rows with escaped messages and two-decimal scores' do
     annotation = annotations(:one)
     annotation.update!(source: '<b>import</b>')
-    annotation.score.update!(score: 0.08723905360685648)
+    annotation.score.update!(score: 0.125)
 
     put :update, params: { case_id: annotation.case.id, id: annotation.id, annotation: { message: '<script>alert("x")</script>' } }
 
@@ -22,7 +22,7 @@ class CaseAnnotationsControllerTest < ActionController::TestCase
     assert_turbo_stream action: :replace, target: annotation do
       assert_select "template li.annotation##{dom_id(annotation)}[data-annotation-id='#{annotation.id}']" do
         assert_select '.annotation-message', text: '<script>alert("x")</script>'
-        assert_select '.annotation-score', text: 'Score: 0.09'
+        assert_select '.annotation-score', text: 'Score: 0.125'
         assert_select '.annotation-source', text: 'by <b>import</b>'
         assert_select "time[data-controller='relative-time'][datetime=?]", annotation.created_at.iso8601(3)
       end
@@ -38,7 +38,7 @@ class CaseAnnotationsControllerTest < ActionController::TestCase
       post :create, params: {
         case_id:    acase.id,
         annotation: { message: 'Captured score' },
-        score:      { score: 0.62, all_rated: true, try_id: first_try.id, queries: { '11' => { score: 1 } } },
+        score:      { score: 0.6352053099017385, all_rated: true, try_id: first_try.id, queries: { '11' => { score: 1 } } },
       }
     end
     assert_response :success
@@ -46,7 +46,7 @@ class CaseAnnotationsControllerTest < ActionController::TestCase
     assert_turbo_stream action: :prepend, target: 'case-annotations' do
       assert_select "template li.annotation##{dom_id(annotation)}", count: 1
       assert_select 'template .annotation-message', text: 'Captured score'
-      assert_select 'template .annotation-score', text: 'Score: 0.62'
+      assert_select 'template .annotation-score', text: 'Score: 0.6352053099017385'
     end
     assert_equal users(:random), annotation.user
     assert_equal first_try.id, annotation.score.try_id

@@ -40,7 +40,7 @@ Owner candidates are filename matches, not verified owners.
 | [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | `browse_query_controller.js` | 4.18 | closed |
 | [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | closed |
 | [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | open: 1 finding |
-| [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
+| [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | closed |
 | [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
 | [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
 | [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
@@ -1086,7 +1086,7 @@ Copy:
 - **Owner candidates:** `app/views/shared/_import_ratings_core_modal.html.erb`, `app/javascript/controllers/import_ratings_core_controller.js`
 - **Owner:** `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js`
 - **Scenario:** 6.2
-- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). The stricter CSV row validation is kept with Legacy's quoting hint added ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)); Legacy's "Header" switch was an Angular Material `md-switch` that never rendered, because that library isn't loaded (re-checked live 2026-10-19). Open: a failed import keeps the modal open, [todo](../todo/todo.md#migration-followup-p2-i0-c1--core-workbench-behaviour-changes-with-no-recorded-decision) item 2. The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
+- **Decisions:** Replayed on Legacy and Current with disposable clones: modal text identical (live diff; tabs are buttons on Current, from main), the per-type "This operation WILL override…" warning, CSV preview, ratings CSV import and "Successfully imported ratings from CSV.", LTR import, information-needs import (and its missing-query error), snapshot import ("Snapshots imported successfully!"). Restored in this pass: the header-mismatch wording ("…in your file (check for correct spelling and capitalization)", "Required headers mismatch!" for snapshots) and the "Unable to import … from CSV/RRE/LTR" and "Could not import snapshots successfully!" prefixes (`case_import_ratings.spec.ts` fails on the old copy; Vitest cases added). The stricter CSV row validation is kept with Legacy's quoting hint added ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)); Legacy's "Header" switch was an Angular Material `md-switch` that never rendered, because that library isn't loaded (re-checked live 2026-10-19). A failed import keeps the modal open and shows the error inside it ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)). The RRE sample file returned a server 500 on both (see the RRE entry in `after-angular-removal.md`).
 
 Conditional UI:
 
@@ -2535,7 +2535,7 @@ Copy:
 - **Owner candidates:** `app/views/core/_annotation.html.erb`, `app/views/core/_edit_annotation_modal.html.erb`, `app/javascript/controllers/annotations_controller.js`
 - **Owner:** `_annotation.html.erb`, `annotations_controller.js`
 - **Scenario:** 5.4
-- **Decisions:** Edit and Delete in the row menu, author line and score line replayed on both (2026-10-17). Display changes without a recorded decision: [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
+- **Decisions:** Edit and Delete in the row menu, author line and score line replayed on both (2026-10-17). The score shows the raw value as in Legacy (restored 2026-10-19). The try number in place of the try id and the relative-time wording are kept by decision: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review).
 
 Conditional UI:
 
@@ -2551,11 +2551,11 @@ Copy:
 
 - [x] "Edit"
 - [x] "Delete"
-- [ ] "{{ ctrl.theAnnotation.createdAt | timeAgo }} -" — open: wording changes, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [x] "{{ ctrl.theAnnotation.createdAt | timeAgo }} -" — wording changed, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
 - [x] "by {{ ctrl.theAnnotation.user.name }}"
 - [x] "by {{ ctrl.theAnnotation.source }}"
-- [ ] "Try No: {{ ctrl.theAnnotation.score.try_id }}" — open: shows try number, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
-- [ ] "Score: {{ ctrl.theAnnotation.score.score }}" — open: two decimals, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [x] "Try No: {{ ctrl.theAnnotation.score.try_id }}" — shows try number, kept: [NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-19-review)
+- [x] "Score: {{ ctrl.theAnnotation.score.score }}" — raw value, restored
 
 <a id="row-25"></a>
 ### 25. `app/assets/templates/views/customHeaders.html`
