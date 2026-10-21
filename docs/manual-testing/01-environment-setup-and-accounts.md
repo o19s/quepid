@@ -34,7 +34,7 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
 ### 1.1 Sign up for a new account
 
 - [ ] **Steps:**
-  1. Go to `/` while logged out (redirects to `/sessions/new`; there is no `/login` route).
+  1. Go to `/` while logged out (redirects to `/sessions/new`; `/login` also opens the sign-in page).
   2. On the right panel, "Sign up to get started!" (only visible if signups are enabled), fill in Full Name, Email, Password, Confirm Password.
   3. If a "Agree to terms & conditions?" checkbox is shown, check it.
   4. If a "Keep me in the know..." marketing opt-in checkbox is shown, leave it as desired.

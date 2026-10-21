@@ -114,4 +114,18 @@ Confirm **Back to Judge Overview** returns to your personal Judge Overview.
 - **Expected:** All CRUD and search operations behave as described.
 - **Edge cases:**
   - [ ] Submit invalid JSON in Document Fields or Options on the New/Edit form — confirm a clear validation error, not a broken save.
+  - [ ] Leave Query Text or Document ID blank, or enter a fractional Position: validation re-renders the form without replacing the stored pair. Correct and retry; verify Options, Document Fields, Notes and Information Need on the resulting detail page, including read-only JSON editors and Back/Edit links.
   - [ ] Cross-check the result of Part 10.6c ("Delete Query Doc Pairs Below Position") from this tab's list — confirm exactly the expected pairs were removed.
+
+### 11.10 Judging eligibility, rank depth and completion boundaries
+
+- [ ] **Steps:**
+  1. Prepare a disposable book with pairs at positions 1, 2 and 3 plus an unranked pair. Set **Rank Depth** to 2 and use separate test judges.
+  2. Judge both eligible pairs as judge A. Confirm A reaches personal completion even though other judges still have work; A must not receive either pair again through Start Judging.
+  3. As judges B and C, rate the same eligible pairs. Confirm Overview reports Fully Judged once each has three judgements and a fourth judge has no eligible work.
+  4. Clear Rank Depth. Confirm the deeper and unranked pairs become eligible and the coverage counts and completion message change after reload.
+- **Expected:** Single-pair selection excludes pairs already judged by that user and pairs with three total judgements. A configured depth excludes both deeper and unranked pairs; unlimited depth includes them. Personal completion differs from book completion. Selection favors pairs with fewer judgements before rank-weighted randomization; do not require a fixed order among equivalent candidates.
+- **Edge cases:**
+  - [ ] Use Judge Later / I Can't Tell instead of a numeric rating on separate pairs: those judgement rows still count toward selection's three-judgement limit, while numeric aggregation follows 10.12.
+  - [ ] Reset one judge's flagged judgement through Judgement Stats (11.7): the pair becomes eligible for that judge again if below the three-judgement limit.
+  - [ ] An empty book completes cleanly without a broken judging screen. Bulk mode has its own explicit cutoff override (11.8); do not assume it uses single-pair selection's three-judgement exclusion.

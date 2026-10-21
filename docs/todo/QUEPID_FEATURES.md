@@ -2,7 +2,7 @@
 
 > **Role:** Broad app-wide inventory (all surfaces, backend, infra). For the core case UI deep dive see [`QUEPID_COREUI_FEATURES.md`](./QUEPID_COREUI_FEATURES.md). For per-table schema, HTML routes, and business rules see [`complete_application_specification.md`](../complete_application_specification.md). For frontend cleanup after Angular removal see [`after-angular-removal.md`](./after-angular-removal.md).
 >
-> **Last reviewed:** August 2026 against branch `angular-phase-10` (`Rails 8.1.3.1` / `Ruby 4.0.6` / AngularJS removed). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
+> **Last reviewed:** October 2026 against branch `cleanup-new` (`Rails 8.1.4` / `Ruby 4.0.7` / AngularJS removed). Re-check `Gemfile`, `Gemfile.lock`, and `package.json` before citing exact versions.
 
 ---
 
@@ -63,19 +63,19 @@
 
 | Layer | Technology |
 |-------|-----------|
-| Backend Framework | Ruby on Rails 8.1.3.1 |
-| Language | Ruby 4.0.6 |
+| Backend Framework | Ruby on Rails 8.1.4 |
+| Language | Ruby 4.0.7 |
 | Database | MySQL 8.4.3 (utf8mb4) |
 | Frontend | Stimulus + Turbo, plain ES modules in `app/javascript/utils/` (AngularJS removed) |
 | CSS | Bootstrap 5.3 (`core.css` + `application.css`) |
 | Job Queue | Solid Queue 1.7.0 |
-| WebSockets | Solid Cable 4.0.2 + ActionCable |
+| WebSockets | Solid Cable 4.1.0 + ActionCable |
 | Asset Pipeline | Propshaft 1.3 + esbuild |
 | Auth | Devise 5.0.4 + OmniAuth |
-| JavaScript Engine | MiniRacer 0.21 (V8) for scoring/mapping |
+| JavaScript Engine | MiniRacer 0.22 (V8) for scoring/mapping |
 | Visualization | Vega-Lite (QGraph, frog report, analytics); D3 + CalHeatmap in admin/analytics bundles |
 | Analytics | Ahoy Matey 5.5.0 |
-| BI Dashboard | Blazer 3.5.1 |
+| BI Dashboard | Blazer 3.5.2 |
 | Node (build) | Node 24.x (`package.json` engines: `>=24 <25`) |
 
 ---
@@ -437,7 +437,7 @@ If >= 3 judgements:
 | SearchAPI | GET/POST | Auto-detect | Custom mapper code; `new Function(mapperCode).call(window)` executes mapper in global scope; JSON vs Solr format auto-detected |
 | Static | GET | SolrArgParser | For static result sets; silently remapped to Solr engine internally |
 
-**Mapper-based search engines:** presets built on SearchAPI, defined by `MapperBasedSearchEngine` ([`mapper_based_search_engine.rb`](../../app/models/mapper_based_search_engine.rb)) with mapper code in `db/mapper_based_search_engines/` (currently Vespa). `GET /api/mapper_based_search_engines` lists them and they appear in the wizard's engine dropdown. Each preset carries capability flags — `supports_pagination` (with the hits/offset parameter names), rated-docs lookup, `supports_basic_auth`, default `api_method` and `proxy_requests`.
+**Mapper-based search engines:** presets built on SearchAPI, defined by `MapperBasedSearchEngine` ([`mapper_based_search_engine.rb`](../../app/models/mapper_based_search_engine.rb)) with mapper code in `db/mapper_based_search_engines/` (currently Vespa and Qdrant). `GET /api/mapper_based_search_engines` lists them and they appear in the wizard's engine dropdown. Each preset carries capability flags — `supports_pagination` (with the hits/offset parameter names), rated-docs lookup, `supports_basic_auth`, default `api_method` and `proxy_requests`.
 
 ### Endpoint Configuration
 
@@ -655,11 +655,13 @@ Export includes CSV injection protection via `make_csv_safe()` method.
 
 | Feature | Description |
 |---------|-------------|
-| AI Judge Users | Special users with `llm_key` (encrypted at rest) and `system_prompt` |
+| AI Judge Users | `AiJudge` is an STI subclass of `User` with `llm_key` (encrypted at rest) and `system_prompt` |
+| LLM Providers | `LlmProvider` is a code registry (not a table): OpenAI, Azure OpenAI, Azure AI Foundry (plus serverless and Anthropic variants), Anthropic, Google Gemini, Ollama and TypeSafe Jev. A judge stores only the provider key in its options; each provider sets default URL, model, prompt text and whether images are supported |
+| Adapters | `LlmJudgeAdapters` (`OpenAi`, `Anthropic`, `Jev`) build the request and parse the reply with no I/O; judges with no provider fall back to the OpenAI adapter |
 | AI Judge CRUD | Dedicated controller for creating, editing, and deleting AI judges |
 | Prompt Editor | Edit system prompts with sample query-doc pair preview and live LLM testing |
-| LLM Service | Provider-agnostic OpenAI-compatible API (`POST /v1/chat/completions`); configurable URL, model, and timeout; auth header omitted when key is blank (enables keyless local providers like Ollama) |
-| Automated Judging | RunJudgeJudyJob processes query-doc pairs |
+| LLM Service | Chat-completions style calls through the provider's adapter; configurable URL, model, and timeout; auth header omitted when key is blank (enables keyless local providers like Ollama) |
+| Automated Judging | RunJudgeJudyJob processes query-doc pairs; `AutoRunJudgeJudyJob` is the auto-run variant, deduplicated per book/judge (one at a time, 30-minute window) |
 | Batch Mode | Judge a specified number of pairs or all pairs ("Unleash the Kraken!!" mode) |
 | Retry Logic | Exponential backoff via Faraday retry for rate limit (429) errors |
 | Image Support | Can include image URLs in judgment prompts (multi-modal) |
@@ -670,13 +672,14 @@ Export includes CSV injection protection via `make_csv_safe()` method.
 | Bulk Rating Override | "Eric Steered Us Wrong" feature: bulk-update all judge_later judgements to a specific rating |
 | Judge Options | Per-user JSON options for AI judge configuration |
 | Team Assignment | AI judges auto-assigned to team on creation |
+| Judge Activity | `BroadcastJudgeActivityJob` pushes per-judge activity rows and sparkline cells to book viewers over Turbo Streams |
 
 ### AI Judge Flow
 
 ```
 1. Select unrated query-doc pair (SelectionStrategy)
 2. Build prompt: system_prompt + document_fields + information_need
-3. Call OpenAI-compatible API (default GPT-4o; Ollama, Gemini, etc. via URL config)
+3. Call the judge's provider through its adapter (OpenAI-compatible, Anthropic or Jev; URL and model configurable)
 4. Parse rating from response
 5. Create/update Judgement record
 6. Broadcast progress via Turbo Stream
@@ -752,6 +755,7 @@ function docsMapper(data) {
 | Announcement Tracking | Track which users have viewed announcements |
 | Judgement Reassignment | Reassign user's judgments to anonymous |
 | MissionControl | Monitor Solid Queue jobs (mounted at `/admin/jobs`) |
+| Rails Pulse | Performance monitoring dashboard mounted at `/admin/rails_pulse` (credentials via `RAILS_PULSE_USERNAME`/`RAILS_PULSE_PASSWORD`, plus dashboard and deployment tokens); summary and cleanup jobs run on the recurring schedule |
 | Blazer | BI analytics with SQL queries (mounted at `/admin/blazer`) |
 | WebSocket Tester | Test WebSocket/ActionCable connectivity; triggers a background job that counts down and pushes updates via Turbo Streams; displays current ActionCable config |
 | Pagination | Pagy-based pagination for user lists |
@@ -782,6 +786,7 @@ Dedicated tracker classes in `app/lib/analytics/tracker/` for each domain:
 | Rating Tracker | Create, update, delete, bulk operations |
 | Scorer Tracker | Create, update, delete, share |
 | Snapshot Tracker | Create, delete |
+| Search Endpoint Tracker | Search endpoint lifecycle events |
 | Team Tracker | Create, update, delete, member add/remove |
 | Try Tracker | Create, update, delete |
 | User Tracker | Login, signup, password change, profile update |
@@ -816,8 +821,8 @@ AngularJS has been removed. There is no `angular` package, Angular build script 
 
 **Core case page (`/case/:id`)**:
 - Plain ES modules in `app/javascript/utils/` (query, scoring, doc cache, diff, export and search-engine runtimes) plus stores in `app/javascript/stores/` and API helpers in `app/javascript/api/`
-- Roughly 67 Stimulus controllers drive the UI
-- Bundled by esbuild into `core_vendor.js` and `core_case.js`
+- Roughly 83 Stimulus controllers (about 50 registered in `core_stimulus.js`) drive the UI
+- Bundled by esbuild into `core_case.js`
 - Bootstrap 5 CSS (`core.css` + `bootstrap5-compat.css`)
 
 **Other pages (home, admin, analytics, books, profiles, judgements, bulk judge, search endpoints, mapper wizard)**:
@@ -893,8 +898,7 @@ Doc lists detect two error conditions (undefined/missing ID field, duplicate IDs
 ### Build Pipeline
 
 ```
-esbuild → core_vendor.js (vendor libs, CodeMirror, Bootstrap)
-esbuild → core_case.js (core_stimulus.js: case-page controllers and utils)
+esbuild → core_case.js (core_stimulus.js: case-page controllers, utils, vendor libs, CodeMirror, Bootstrap)
 Node.js → application.css, core.css (concatenated CSS)
 ```
 
@@ -902,7 +906,6 @@ Node.js → application.css, core.css (concatenated CSS)
 ```
 web:         puma
 worker:      bin/jobs (Solid Queue)
-core_vendor: npm run build:core-vendor -- --watch=forever
 core_case:   npm run build:core-case -- --watch=forever
 css:         npm run build:css:watch
 ```
@@ -1007,6 +1010,9 @@ A dedicated full-page interface for rapid document judging, separate from the st
 | RunJudgeJudyJob | default | AI-powered automated judging |
 | UpdateCaseJob | default | Sync judgments to case ratings |
 | UpdateCaseRatingsJob | default | Sync ratings for modified query-doc pairs |
+| AutoRunJudgeJudyJob | default | Auto-run variant of RunJudgeJudyJob (one per book/judge) |
+| BroadcastJudgeActivityJob | default | Push judge activity rows to book viewers |
+| BroadcastLinkedCasesJob | default | Broadcast updates to cases linked to a book |
 | JudgementFromRatingJob | default | Create judgments from ratings |
 | TrackBookViewedJob | default | Update book view metadata |
 | EnqueueRunNightlyCasesJob | default | Schedule nightly case evaluations |
@@ -1020,6 +1026,7 @@ A dedicated full-page interface for rapid document judging, separate from the st
 |-----|----------|---------|
 | EnqueueRunNightlyCasesJob | Daily at 1:00 AM | Evaluates all cases flagged with `nightly: true` |
 | Blazer.send_failing_checks | Hourly (dev) / Daily 7 AM (prod) | Database health check notifications |
+| RailsPulse::SummaryJob / CleanupJob | Hourly at :05 / daily at 1:00 AM | Rails Pulse metrics summary and retention cleanup |
 
 ### Queue Configuration
 
@@ -1033,7 +1040,7 @@ A dedicated full-page interface for rapid document judging, separate from the st
 
 **Canonical endpoint list:** OpenAPI at `/api/docs` (auto-generated via `oas_rails`). Route source: `config/routes.rb` (`namespace :api`).
 
-**Client patterns:** [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions) for current client code.
+**Client patterns:** [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions) for current client code.
 
 **HTML (non-API) routes:** [`complete_application_specification.md` §20.5](../complete_application_specification.md#205-html-rails-routes-non-api).
 
@@ -1100,6 +1107,8 @@ Used for:
 | ASSUME_SSL | false | Trust SSL termination from reverse proxy |
 | EMAIL_MARKETING_MODE | false | Show GDPR-compliant marketing opt-in |
 | QUEPID_DEFAULT_SCORER | AP@10 | Default scorer assigned to new users |
+| REQUIRE_PROXY_FOR_ALL_SEARCH_ENDPOINTS | false | Require `proxy_requests` on every search endpoint (also forced by desktop mode); existing endpoints are only warned about |
+| QUEPID_DESKTOP_MODE | false | Desktop mode (`QUEPID_DESKTOP_USER_ID` / `_NAME` identify the single user) |
 | REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS | false | Require `proxy_requests` for endpoints with basic-auth credentials and hide those credentials from API responses |
 | OPENID_CONNECT_BASE_URL / _CLIENT_ID / _CLIENT_SECRET / _ISSUER / _BUTTON_TEXT | empty (button text: "Sign in with OpenID Connect") | Generic OpenID Connect login; the first four are all required |
 | OLLAMA_SERVICE_URL | `http://ollama:11434` (production), `http://ollama:31434` (other environments) | Ollama endpoint for local LLM features |
@@ -1142,8 +1151,8 @@ Used for:
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile.dev` | Development image (`ruby:4.0.6-trixie`) |
-| `Dockerfile.prod` | Production multi-stage build (`ruby:4.0.6-slim-trixie`) |
+| `Dockerfile.dev` | Development image (`ruby:4.0.7-trixie`) |
+| `Dockerfile.prod` | Production multi-stage build (`ruby:4.0.7-slim-trixie`) |
 | `docker-compose.yml` | Full dev stack (app, MySQL 8.4.3, Keycloak, Ollama, Nginx) |
 | `docker-compose.prod.yml` | Production variant |
 | `docker-compose.override.yml.example` | Local overrides |
@@ -1157,11 +1166,12 @@ Used for:
 | OasRails | `/api/docs` | OpenAPI/Swagger documentation UI |
 | MissionControl::Jobs | `/admin/jobs` | Solid Queue job dashboard (admin-only) |
 | Blazer | `/admin/blazer` | SQL analytics dashboard (admin-only) |
+| RailsPulse | `/admin/rails_pulse` | Performance monitoring dashboard (admin-only) |
 
 ### Production Build Features
 
 - Multi-stage Docker build (base → build → final)
-- Node.js 24.18.1 for asset compilation (`Dockerfile.prod` `NODE_VERSION`)
+- Node.js 24.21.0 for asset compilation (`Dockerfile.prod` `NODE_VERSION`)
 - jemalloc for memory optimization
 - Propshaft asset precompilation
 - Puma web server via Foreman
@@ -1216,29 +1226,28 @@ Used for:
 
 | Category | File Count |
 |----------|-----------|
-| Controller Tests | 60 |
-| Model Tests | 20 |
-| Integration Tests | 12 |
-| Service Tests | 14 |
-| Job Tests | 7 |
-| Helper Tests | 5 |
-| Library Tests | 3 |
-| Tool Tests | 2 |
-| System Tests | 1 |
-| **Total** | **136 files, ~18,749 lines** |
+| Controller Tests | 87 |
+| Model Tests | 33 |
+| Integration Tests | 17 |
+| Service Tests | 28 |
+| Job Tests | 12 |
+| Helper Tests | 7 |
+| Library Tests | 6 |
+| Tool Tests | 3 |
+| **Total** | **193 files** |
 
 ### Frontend Tests
 
 | Tool | Scope |
 |------|-------|
-| Vitest (`yarn test:unit`) | ~138 spec files under `test/javascript/` covering controllers, modules, utils and API helpers |
-| Playwright (`yarn test:e2e`) | 24 end-to-end specs with screenshot baselines and axe accessibility checks |
+| Vitest (`yarn test:unit`) | ~184 spec files under `test/javascript/` covering controllers, modules, utils and API helpers |
+| Playwright (`yarn test:e2e`) | 47 end-to-end specs with screenshot baselines and axe accessibility checks |
 | Stryker (`yarn test:mutation`) | Mutation testing on the Vitest suite |
 
 ### Test Infrastructure
 
-- **Fixtures**: 22 YAML fixture files
-- **WebMock**: Extensive HTTP mock responses (27KB)
+- **Fixtures**: 20 YAML fixture files
+- **WebMock**: Extensive HTTP mock responses
 - **SimpleCov**: Code coverage reporting
 - **Minitest Reporters**: Progress + JUnit XML output
 - **Bullet**: N+1 query detection in tests
@@ -1439,10 +1448,8 @@ If the case has a linked book (`bookName`), the modal footer shows a **"Refresh 
 
 | File | Role |
 |------|------|
-| `frog_report.html` | Button template (frog emoji + "Report" link) |
-| `frog_report_controller.js` | Opens modal via `$uibModal` |
-| `frog_report_modal_instance_controller.js` | Stats computation engine |
-| `_modal.html` | Modal template with Vega chart |
+| `frog_report_controller.js` | Stimulus controller: opens the modal via `openDynamicModal`, computes stats (`buildFrogReportStats`), renders the Vega chart |
+| `shared/_dynamic_modal_templates.html.erb` | `frog-report-modal-template` markup |
 | `froggy.css` | Frog pond modal styles (background image, chart) |
 
 ---
@@ -1492,11 +1499,11 @@ When refreshing case ratings from book judgments, the system averages all judgem
 
 ### Provider-Agnostic AI Judge
 
-The AI Judge system calls `POST /v1/chat/completions` against a **configurable URL** — any OpenAI-compatible API works. The authorization header is only sent when a key is present, enabling keyless local providers like Ollama. No provider enum or switch exists; the architecture is fully URL-driven.
+Each judge points at an `LlmProvider` registry entry (OpenAI, Azure variants, Anthropic, Gemini, Ollama, Jev) and a **configurable URL**. A per-provider adapter in `LlmJudgeAdapters` builds the request and reads the answer. The authorization header is only sent when a key is present, enabling keyless local providers like Ollama. Judges created before providers existed default to the OpenAI adapter.
 
-### AI Judge as Soft STI on User
+### AI Judge as STI on User
 
-AI judges are `User` records with a non-nil `llm_key`. There is no proper STI — `ai_judge?` checks `llm_key.present?`. Validations are conditional: email/password required for humans, name/llm_key/system_prompt required for AI judges. The code has an explicit TODO: "Let's get STI in and have actual AiJudge and User objects!"
+AI judges are `AiJudge` records (STI subclass of `User`, `users.type`). Validations differ by class: email/password are required for humans, name/llm_key/system_prompt for AI judges. `User#ai_judge?` is just `is_a?(AiJudge)`.
 
 ### `really_destroy` Pattern
 

@@ -104,7 +104,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   5. On a plain-HTTP origin where `isSecureContext` is false and `navigator.clipboard` is absent, click the preview's **Copy** button and paste to verify the exact preview text. Confirm the existing success status and two-second button restoration; reject the copy command and confirm the existing failure status.
 - **Expected:** Step 2/3 headings are visible from entry; their bodies start hidden for a new endpoint. Fetch displays the raw HTML/JSON in a scrollable, expandable, copyable preview with its length, and reveals Step 2's body. Generation reveals Step 3's body.
 - **Edge cases:**
-  - [ ] Leave the URL blank — expect "URL is required".
+  - [ ] Leave the URL blank — expect "Please enter a search URL" (the client check; the server's own "URL is required" is only reachable by a direct request).
   - [ ] Enter a non-http(s) URL — expect "Invalid URL format".
   - [ ] Point at an unreachable host — expect "Connection failed: ...".
   - [ ] Point at a very slow endpoint — expect a "Request timed out" message rather than hanging indefinitely.
@@ -134,7 +134,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
 - **Expected:** Test runs the code safely (sandboxed) against the previously fetched sample data and shows accurate results/errors; Refine incorporates your feedback into a revised version.
 - **Edge cases:**
   - [ ] Test with empty/broken code — expect "Code is required" or a "JavaScript error: ..." message, not a crash.
-  - [ ] Test before ever fetching HTML — expect "HTML content is required".
+  - [ ] Test before ever fetching HTML — expect "No HTML content."
   - [ ] Refine without an API key — expect "API key required".
   - [ ] If editing an **existing** Search API endpoint's mapper code, confirm both editors pre-populate correctly from its stored `mapper_code`.
 

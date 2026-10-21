@@ -176,9 +176,9 @@ Status rendering goes through the controller-owned `showStatusMessage` behavior 
 **File:** `app/controllers/core_controller.rb`
 
 **`set_case_or_bootstrap`:**
-- Explicit case: `current_user.cases_involved_with.where(id: params[:id]).first` — no exception if missing
+- Explicit case: `current_user.cases_involved_with.find_by(id: params[:id])`; a missing or inaccessible case renders the 404 page
 - Fallback: `cases_involved_with.not_archived.last`
-- If no case resolves either way, redirects to `case_new_path`
+- If no id was given and the user has no cases, redirects to `cases_path` with Legacy's "You don't have any Cases created in Quepid..." alert (GET never creates a case)
 - Try: `params[:try_number]` → that try, else `@case.tries.latest`
 
 **`populate_from_params`:**

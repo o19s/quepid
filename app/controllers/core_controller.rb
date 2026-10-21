@@ -2,6 +2,8 @@
 
 # This hosts the main case application that runs in the client.
 class CoreController < ApplicationController
+  NO_CASES_MESSAGE = "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started."
+
   layout 'application'
   before_action :set_case_or_bootstrap, except: :new
   before_action :populate_from_params, except: :new
@@ -39,7 +41,7 @@ class CoreController < ApplicationController
         return render(:case_not_found, status: :not_found)
       end
 
-      return redirect_to(case_new_path)
+      return redirect_to(cases_path, alert: NO_CASES_MESSAGE)
     end
 
     @try = if params[:try_number].present?

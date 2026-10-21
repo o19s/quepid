@@ -21,7 +21,7 @@ Owner candidates are filename matches, not verified owners.
 | [2](#row-2) | `templates/views/devQueryParams.html` | branch | 166 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.10, 4.11, 4.12 | closed |
 | [3](#row-3) | `javascripts/components/judgements/_modal.html` | branch | 112 | `_judgements_core_modal.html.erb`, `_judgement_book_templates.html.erb`, `judgements_core_controller.js` | 6.6 | closed |
 | [4](#row-4) | `javascripts/components/export_case/_modal.html` | branch | 105 | `_export_case_core_modal.html.erb`, `export_case_core_controller.js` | 6.1 | closed |
-| [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js` | 6.2 | open: 1 finding |
+| [5](#row-5) | `javascripts/components/import_ratings/_modal.html` | branch | 80 | `_import_ratings_core_modal.html.erb`, `import_ratings_core_controller.js` | 6.2 | closed |
 | [6](#row-6) | `templates/views/searchResults.html` | branch | 73 | `_query_list_templates.html.erb`, `search_results_controller.js`, `query_row_controller.js` | 4.15, 4.16, 4.20, 4.21, 4.22 | closed |
 | [7](#row-7) | `templates/views/targetedSearchModal.html` | branch | 73 | `missing_documents_controller.js`, `shared/_dynamic_modal_templates.html.erb` (`missing-documents-modal-template`) | 4.9 | closed |
 | [8](#row-8) | `templates/views/queries.html` | branch | 57 | `_queries.html.erb`, `queries_list_controller.js` | 4.19, 4.20 | closed |
@@ -39,10 +39,10 @@ Owner candidates are filename matches, not verified owners.
 | [20](#row-20) | `javascripts/components/move_query/_modal.html` | branch | 16 | `move_query_core_controller.js` | 4.4 | closed |
 | [21](#row-21) | `javascripts/components/browse_query/_modal.html` | branch (main-only) | 14 | `browse_query_controller.js` | 4.18 | closed |
 | [22](#row-22) | `javascripts/components/query_options/_modal.html` | branch | 13 | `query_options_core_controller.js` | 4.5 | closed |
-| [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | open: 1 finding |
+| [23](#row-23) | `javascripts/components/annotations/annotations.html` | branch | 12 | `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js` | 5.4 | closed |
 | [24](#row-24) | `javascripts/components/annotation/annotation.html` | branch | 11 | `_annotation.html.erb`, `annotations_controller.js` | 5.4 | closed |
 | [25](#row-25) | `templates/views/customHeaders.html` | branch | 10 | `_wizard_modal.html.erb`, `wizard_controller.js` | 3.2 | closed |
-| [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | open: 1 finding |
+| [26](#row-26) | `javascripts/components/annotation/_update.html` | branch | 8 | `_edit_annotation_modal.html.erb`, `annotations_controller.js` | 5.4 | closed |
 | [27](#row-27) | `templates/views/queryParamsHistory.html` | branch | 8 | `_tune_relevance.html.erb`, `tune_relevance_controller.js` | 4.13, 5.1 | closed |
 | [28](#row-28) | `javascripts/components/add_query/add_query.html` | branch | 6 | `add_query_controller.js`, `_queries.html.erb` | 4.2, 4.3 | closed |
 | [29](#row-29) | `javascripts/components/export_case/export_case.html` | branch | 6 | `_case_toolbar.html.erb` | 6.1 | closed |
@@ -120,7 +120,7 @@ Owner candidates are filename matches, not verified owners.
 | [101](#row-101) | `javascripts/components/clone_scorer/clone_scorer.html` | main | 1 | `scorers/new.html.erb` | 8.5 | closed |
 | [102](#row-102) | `javascripts/components/edit_scorer/edit_scorer.html` | main | 1 | `scorers/edit.html.erb` | 8.4 | closed |
 | [103](#row-103) | `javascripts/components/share_scorer/share_scorer.html` | main | 1 | `shared/_share_scorer_modal.html.erb` | 8.7 | closed |
-| [104](#row-104) | `javascripts/directives/autoGrow.js` | main | 0 | `_tune_relevance.html.erb` (knob inputs) | 4.11 | open: 1 finding |
+| [104](#row-104) | `javascripts/directives/autoGrow.js` | main | 0 | `_tune_relevance.html.erb` (knob inputs) | 4.11 | closed |
 | [105](#row-105) | `javascripts/directives/textPaste.js` | main | 0 | `add_query_controller.js` | 4.3 | closed |
 | [106](#row-106) | `templates/views/redirect.html` | main | 0 | (none) |  | closed |
 
@@ -2484,7 +2484,7 @@ Copy:
 - **Owner candidates:** `app/javascript/controllers/annotations_controller.js`
 - **Owner:** `_tune_relevance.html.erb` (annotations panel), `annotations_controller.js`
 - **Scenario:** 5.4
-- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) on 2026-10-17: Create (also accepts an empty message on both), list, reload persistence and the "Can't create … until searches have been run" flash. The intro copy was reworded and is kept ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Current adds an empty state ("No annotations yet."): [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
+- **Decisions:** Replayed on Legacy (:3001) and Current (:3000) on 2026-10-17: Create (also accepts an empty message on both), list, reload persistence and the "Can't create … until searches have been run" flash. The intro copy was reworded and is kept ([NOT-DOING](../todo/NOT-DOING.md#angular-parity-changes-kept-after-the-2026-10-17-review)). Current adds an empty state ("No annotations yet."); kept, and scenario 5.4 checks it (todo entry closed in `48fc5aef`).
 
 Actions:
 
@@ -2630,7 +2630,7 @@ Copy:
 - **Owner candidates:** `app/views/core/_annotation.html.erb`, `app/views/core/_edit_annotation_modal.html.erb`, `app/javascript/controllers/annotations_controller.js`
 - **Owner:** `_edit_annotation_modal.html.erb`, `annotations_controller.js`
 - **Scenario:** 5.4
-- **Decisions:** Edit modal replayed on both: prefilled message, Cancel closes without saving, Update saves, the row shows the edited text and it survives reload. Footer button order differs: [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision).
+- **Decisions:** Edit modal replayed on both: prefilled message, Cancel closes without saving, Update saves, the row shows the edited text and it survives reload. Footer order restored to Legacy's Update then Cancel in `48fc5aef`.
 
 Actions:
 
@@ -2646,8 +2646,8 @@ Copy:
 - [x] aria-label: "Close"
 - [x] "Edit Annotation"
 - [x] "New Message:"
-- [ ] "Update" — open: footer order, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
-- [ ] "Cancel" — open: footer order, [todo](../todo/todo.md#migration-followup-p3-i0-c1--annotation-list-display-changes-with-no-recorded-decision)
+- [x] "Update" — footer order restored in `48fc5aef`
+- [x] "Cancel" — footer order restored in `48fc5aef`
 
 <a id="row-27"></a>
 ### 27. `app/assets/templates/views/queryParamsHistory.html`
@@ -3727,7 +3727,7 @@ Copy:
 - [x] "Judgements"
 - [x] "Teams"
 - [x] "Owner"
-- [ ] "No cases to show!" — open: not found in Current's copy; empty-list text is not recorded
+- [ ] "No cases to show!" — open: no empty-list text when a filter matches nothing, [todo](../todo/todo.md#migration-followup-p2-i0-c2--case-list-lost-legacy-row-actions-and-details-inherited-from-main) item 3
 
 <a id="row-60"></a>
 ### 60. `app/assets/javascripts/components/case_listing/case_listing.html`

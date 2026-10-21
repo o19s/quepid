@@ -14,7 +14,7 @@
     <%# Stimulus only: analytics keeps its full-page boundary, so no Turbo. %>
     <%= javascript_import_module_tag 'controllers' %>
   </head>
-  <body class="d-flex flex-column h-100">
+  <body class="d-flex flex-column min-vh-100">
     <header>
       <%= render 'layouts/header', announcement: @announcement %>
       <% if @case.public? || @current_user %>

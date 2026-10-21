@@ -362,7 +362,7 @@ class CoreControllerTest < ActionController::TestCase
       assert_equal 'application/json', response.media_type
     end
 
-    test 'bootstraps a new case when no id is given and the user has no cases' do
+    test 'points a user with no cases at the Create a Case menu without creating one' do
       user = User.create!(name: 'No Cases', email: 'no_cases@example.com', password: 'password', agreed: true)
       login_user user
 
@@ -370,7 +370,8 @@ class CoreControllerTest < ActionController::TestCase
         get :index
       end
 
-      assert_redirected_to case_new_path
+      assert_redirected_to cases_path
+      assert_equal CoreController::NO_CASES_MESSAGE, flash[:alert]
     end
   end
 end

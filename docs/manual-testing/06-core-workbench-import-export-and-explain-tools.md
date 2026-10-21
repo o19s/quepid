@@ -153,7 +153,7 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
 
 - [ ] **Steps:**
   1. On the Cases list (`/cases`) or a Team's case list, check the **Archived** filter checkbox.
-  2. Click the (green) unarchive icon on the case's row, and confirm the "Unarchive {case name}?" dialog.
+  2. Click the (green) unarchive icon on the case's row, and confirm the "Confirm Unarchive {case name}?" dialog.
 - **Expected:** The chosen case is restored to active status and reappears in the default (non-archived) list. (There is no separate "Unarchive case" modal listing archived cases with an "Add Back" button — this is the same icon-button + confirm mechanism used to archive, in reverse.)
 
 ### 6.11 View a document's details (Detailed Document View)

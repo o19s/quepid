@@ -152,3 +152,27 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 - [ ] **Steps:** Open **Judge Overview** before and after contributing a judgement. Check personal progress, remaining available pairs, the book's rubric and your 30-day activity chart. Follow **Start Judging** and **Bulk Judging**.
 - **Expected:** Personal progress and remaining pairs respect Rank Depth and the book's selection strategy; total contributions and the activity chart include the whole book. Completed/empty books disable judging links and explain what remains for other judges. Reload updates personal metrics.
+
+### 10.11 Delete a book
+
+⚠️ Use a disposable book containing rated and unrated pairs, attached import/export files, an assigned AI judge, and a linked disposable case.
+
+- [ ] **Steps:**
+  1. Open **Settings**, click **Delete Book**, and cancel the confirmation. Reload: the book, files, pairs and judgements remain.
+  2. Repeat and confirm. Verify the redirect to Books with "Book is deleted"; the book is absent from both active and archived lists and cannot be reopened.
+  3. Open the previously linked case and the AI Judges list.
+- **Expected:** The book and its pairs/judgements are removed. Its attachments are purged; the linked case, its existing ratings and the AI judge survive. The case's book association is cleared. This is permanent deletion, distinct from Archive (10.4).
+- **Edge cases:** Repeat with an empty book and with a book shared to a disposable team; check from a teammate's session that the deleted book is gone there too.
+
+### 10.12 Judgement aggregation and implicit ratings
+
+- [ ] **Steps:**
+  1. Link a disposable book to a case containing the same query/document pair. Enable Book → Case sync, use a 0–3 scale, and enable **Supports Implicit Judgements**.
+  2. Have one judge rate the pair 3; refresh case ratings and confirm 3. Add a second judge's rating of 0; refresh and confirm 1.5.
+  3. Disable implicit judgements, save and refresh ratings again: confirm the case rating rounds to 2 while the two original judgements remain 3 and 0.
+  4. Re-enable implicit judgements and add a third rating of 2: refresh and confirm 0 (the minimum of the three highest ratings). Import a fourth identified judge's rating of 3: confirm 2 (top three are 3, 3, 2).
+- **Expected:** One or two rateable judgements are averaged; three or more use the minimum of the top three. Explicit case ratings round the result; implicit ratings retain the fraction. The book's individual judgements remain available in the audit view.
+- **Edge cases:**
+  - [ ] Add an Unrateable or Judge Later judgement without a rating; it must not contribute a numeric zero to aggregation.
+  - [ ] Refresh with **Sync Queries** off/on for a book-only query: off leaves it absent from the case; on creates it with information need, notes and options (6.6). Repeating refresh must not duplicate queries or ratings.
+  - [ ] For a pair with no rateable judgements, refresh must not manufacture a zero rating or clear a previously stored case rating.

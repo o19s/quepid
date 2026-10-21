@@ -174,6 +174,12 @@ Covered in depth in Part 5 (Tries / History). Quick smoke test here:
   - [ ] On the Scores page, use "Check All" then uncheck one — confirm "Check All" itself becomes unchecked (partial-selection state).
   - [ ] On the Ratings page, search by a doc id and separately by a rating value, confirm the filter matches on all three documented fields (query, doc id, rating).
 
+Additional standalone table checks:
+
+- [ ] On Ratings, search by query text, a document ID, `0`, and a fractional rating. A nonnumeric no-match term must not accidentally match every zero rating. Clear the filter and paginate; query text, author (including a missing/anonymous author), values and timestamps remain intact.
+- [ ] On Scores, filter by scorer and paginate before selecting rows. Check All selects only rendered rows. Cancel Delete and reload: no rows were removed. Confirm a deletion: only selected rows in this case disappear, the scorer filter remains, and unrelated scores/ratings/queries survive. On an empty result page, Check All stays unchecked and Delete disabled.
+- [ ] Force the Scores DELETE to fail; confirm the failure is visible and reload proves the rows remain. Repeat selection after Turbo Back/Forward to confirm the Delete button matches restored checkbox state (15.8).
+
 ### 4.14 Tune Relevance drawer — Annotations tab
 
 Covered in depth in Part 5.

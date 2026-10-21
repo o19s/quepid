@@ -107,6 +107,31 @@ The following covers every non-manual-testing file currently under `docs/`. The 
 | `docs/Quepid-Data-Storage-Briefing.pdf` | Architecture/reference artifact | No browser scenario; review when storage architecture changes. |
 | `docs/images/*` | Diagrams/screenshots/reference media | Visual references only; corresponding UI is covered by Parts 4–6, 11, and 13. |
 
+## Codebase coverage audit
+
+Source review on 2026-10-21 compared the numbered scripts with `config/routes.rb`,
+Rails controllers/views, Stimulus controllers, and the supporting models/services.
+The following maps the reviewed behavior families; it is a coverage inventory,
+not live verification or a claim that every payload/browser combination passes.
+New scenarios have null execution timestamps in `tracking.yml`.
+
+| Source area | Manual coverage |
+|---|---|
+| Sessions, Devise callbacks, profile/account and tokens | Part 1; direct user lookup/preferences in 18.8; deployment variations in 17.10. |
+| Home cards, recent metadata, consent and navigation | Parts 2 and 15; direct list/metadata variants in 18.1. |
+| Case lists, wizard, static CSV and provider presets | Part 3, 7.12–7.13; direct resource filters in 18.1. |
+| Core query/result/scoring controllers and standalone ratings/scores tables | Part 4, including expanded 4.13 table search, pagination, cancellation and failure checks; direct query/rating lifecycle in 18.3. |
+| Tries, snapshots, annotations and graphs | Part 5; API-only preview/clone/delete variants in 18.2. |
+| Case import/export, sharing, book integration and diagnostic tools | Part 6; data formats in 3.3–3.4/17.5; direct background/sync requests in 18.6. |
+| Endpoints, mappers, proxy, throttling and providers | Part 7, 17.3/17.9; direct configuration writes in 18.7. |
+| Scorers and team membership/sharing | Parts 8–9; API team deletion and scorer dependency replacement in 18.5/18.7. |
+| Books, attachments, imports/exports and rating aggregation | Part 10; added permanent deletion (10.11) and aggregation/implicit rounding (10.12); direct pair/judgement lifecycle in 18.4. |
+| Human judging, audit, statistics, bulk mode and selection strategy | Part 11; expanded pair detail/validation in 11.9 and explicit completion/rank eligibility in 11.10. |
+| AI judges, providers, prompt testing, jobs and live/polled activity | Part 12 and 17.6; background progress/authentication in 17.2. |
+| Analytics, public access and visibility | Part 13; added read/write boundary and signed-link checks in 13.4. |
+| Admin, engines, announcements and monitoring | Part 14; shared lifecycle/accessibility and asset boundaries in Parts 15–16. |
+| Jobs, Cable, external API clients, deployment and screenshot tools | 17.2/17.4–17.12 and Part 18. Operational database/build/release work remains outside browser coverage as described above. |
+
 ## Test scenarios
 
 ### 17.1 Image field specifications

@@ -42,6 +42,34 @@ match what the user is looking at. Refusing Create until a query scores in the
 current run would be more accurate. A case that has never scored a query is
 refused either way.
 
+### [MIGRATION-FOLLOWUP] P3 I0 C2 — Compare-snapshots columns are too narrow for result text
+
+Kept as Legacy on 2026-10-20. With three or more comparison columns at a 1200px
+window, each column is about 285px wide and the Matches text wraps one letter per
+line ("n/o/e/x/p/l/a/i/n"), and long titles and fields wrap to a few words per
+line. Replayed on Legacy (:3001, case 4) and Current (:3000): both give the same
+equal-width columns, so this is not a migration regression. Current also allows
+five snapshots where Legacy allowed three, so the squeeze reaches six columns
+(`.diff-column` in `qscore.css`, cells built in `search_results_controller.js`).
+Options: give the Matches chart a minimum width, hide it in comparison columns, or
+let the comparison scroll sideways past a minimum column width.
+
+### [MIGRATION-FOLLOWUP] P3 I0 C1 — Make the no-cases message archive-aware
+
+`CoreController#set_case_or_bootstrap` redirects to `/cases` with "You don't have
+any Cases created in Quepid…" whenever the user has no non-archived case. A user
+whose cases are all archived gets the same message, although they do have cases.
+Legacy behaved the same way (its client flashed the text when `caseNo` was 0), so
+this is parity. A better message would point at the Archived filter when
+`cases_involved_with.archived` is not empty.
+
+While there, drop the dead client copy of the text: the `caseNo === 0` branch in
+`core_bootstrap_controller.js` and its unit test cannot run, because the layout
+only attaches `core-bootstrap` when a case exists (`case_page` in
+`application.html.erb`; `core_controller_test.rb` asserts the body has no
+`data-core-bootstrap-case-no-value` for the 404 pages). The `kase&.id || 0` and
+`kase ? … : ''` fallbacks in `layout_body_attributes` are the same leftover.
+
 ## Frontend consolidation
 
 Moved from [todo.md](todo.md) on 2026-10-19. These change or restructure the

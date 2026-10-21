@@ -16,7 +16,7 @@ Each part below is a self-contained document covering one feature area. Work thr
 
 ## Tracking coverage and staleness
 
-`tracking.yml` in this directory records, per numbered scenario, when it was last actually verified, the result, and which source files it exercises. Run `bin/manual_test_status` (from the repo root, plain `ruby`) to see what's due for a rerun — never run, stale by time, or whose tracked files changed (committed or uncommitted) since the last run. See `CLAUDE.md`'s "Manual testing tracker" section for the full workflow. Passing every checkbox in one sitting is the exception, not the norm — update `tracking.yml` with exactly what you covered, not with what the part *would* cover if run exhaustively.
+`tracking.yml` in this directory records, per numbered scenario, when it was last actually verified, the result, and which source files it exercises. Run `bin/manual_test_status` (from the repo root, plain `ruby`) to see what's due for a rerun — never run, stale by time, or whose tracked files changed (committed or uncommitted) since the last run. See [DEVELOPER_GUIDE.md — Manual testing tracker](../../DEVELOPER_GUIDE.md#manual-testing-tracker) for the full workflow. Passing every checkbox in one sitting is the exception, not the norm — update `tracking.yml` with exactly what you covered, not with what the part *would* cover if run exhaustively.
 
 Use the checkboxes (`- [ ]`) to track your pass through each test case; check them off as you confirm expected behavior.
 
@@ -49,6 +49,7 @@ Keep `last_run` as the actual test time.
 | 15 | [Global Navigation & Notebooks](15-global-navigation-and-notebooks.md) | Sidebar, navbar quick-access dropdowns, avatar menu, API Docs, cookies page, the JupyterLite Notebooks integration |
 | 16 | [Cross-Cutting: BS5, Responsive & Accessibility](16-cross-cutting-bs5-responsive-and-accessibility.md) | Bootstrap 3→5 migration regression checks, narrow-viewport reflow, modal accessibility |
 | 17 | [Documentation coverage audit](17-documentation-coverage.md) | Ordered coverage review of the published User Manual and GitHub wiki, plus manual checks for the integration seams that were previously missing |
+| 18 | [API Workflows](18-api-workflows.md) | Direct API clients: resource filters, metadata, tries, queries/ratings, book pairs/judgements, team deletion, background work and scorer replacement |
 
 ## General testing notes
 
