@@ -297,7 +297,9 @@ class AiJudgesControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :success
       assert_select '[data-ai-judge-wizard-target=runPromptButton][disabled]', count: 0
-      assert_select '[data-ai-judge-wizard-target=needsScaleNotice][style*="display:none"]'
+      # Unlike the book case, the picker stays visible even once a scale is
+      # set, so the user can switch to a different scorer.
+      assert_select '[data-ai-judge-wizard-target=needsScaleNotice]:not([style*="display:none"]) select'
       assert_select '#judging-criteria', text: /#{Regexp.escape(scorer.name)}/
     end
 
