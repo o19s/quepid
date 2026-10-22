@@ -20,7 +20,7 @@ module Api
           test 'non-members can clone public sources without changing them' do
             login_user users(:doug)
             the_case.mark_public!
-            original = the_case.attributes
+            original = the_case.reload.attributes
             original_try_count = the_case.tries.count
             [ the_case.id, the_case.public_id ].each do |case_id|
               assert_difference 'Case.count', 1 do
