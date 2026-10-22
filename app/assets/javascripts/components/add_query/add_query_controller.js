@@ -45,7 +45,7 @@ angular.module('QuepidApp')
                 window.quepidDom.flash.show('success', 'Query added successfully.');
               }, function error(errorMsg) {
                 window.quepidDom.flash.show('error', 'Your new query had an error!');
-                window.quepidDom.flash.show('error', errorMsg, 'search-error');
+                window.quepidDom.flash.show('error', errorMsg, 'search-error', { html: true });
               }).then(function(){
                 $log.info('rescoring queries after adding query');
                 queriesSvc.updateScores();
@@ -70,7 +70,7 @@ angular.module('QuepidApp')
                 window.quepidDom.flash.show('success', 'Queries added successfully.');
               }, function (errorMsg) {
                 window.quepidDom.flash.show('error', 'One (or many) of your new queries had an error!');
-                window.quepidDom.flash.show('error', errorMsg, 'search-error');
+                window.quepidDom.flash.show('error', errorMsg, 'search-error', { html: true });
               });
             ctrl.loading = false;
           });
