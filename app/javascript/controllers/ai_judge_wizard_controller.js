@@ -93,10 +93,11 @@ export default class extends Controller {
     draftKey: String,
     presets: Object,
     stockPrompts: Array,
-    hasScale: Boolean
+    hasScale: Boolean,
+    book: Boolean
   }
 
-  connect() {
+  async connect() {
     this.documentFieldsEditor = null
     this.optionsEditor = null
     setTimeout(() => this.captureEditors(), 500)
@@ -109,8 +110,23 @@ export default class extends Controller {
     }
 
     if (this.existingValue) {
-      this.revealStep2()
+      await this.revealStep2()
     }
+
+    this.scrollToStep2IfRequested()
+  }
+
+  // The scale picker's reload lands back here with ?scorer_id= set - scroll
+  // down to Test & Refine instead of leaving the user at the top of a long
+  // page they've already filled out. Deliberately not a #fragment: the
+  // browser's own native fragment-scroll would fire against this same
+  // element and race our own (element position differs once revealStep2()
+  // reflows the page), consistently winning and overriding it.
+  scrollToStep2IfRequested() {
+    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
+    if (!this.hasStep2Target) return
+
+    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
   }
 
   // The scale picker (Test & Refine) navigates to this same page with a
@@ -192,10 +208,10 @@ export default class extends Controller {
     }
   }
 
-  revealStep2() {
+  async revealStep2() {
     if (this.hasStep2Target && this.step2Target.style.display !== "block") {
       this.step2Target.style.display = "block"
-      this.sampleQueryDocPair()
+      await this.sampleQueryDocPair()
     }
   }
 
@@ -315,12 +331,17 @@ export default class extends Controller {
 
   // A provider that needs a scale (currently: one sent the scale as its criteria,
   // like Jev) has nothing to judge against without one, so don't offer a run that
-  // can only fail.
+  // can only fail. With a book, the scale always comes from the book and there's
+  // no picker in the notice to keep showing once one is set; with a manually-picked
+  // scorer, keep the notice (and its dropdown) visible so it stays available to
+  // switch to a different scale.
   updateRunAvailability(preset) {
-    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
+    const needsScale = Boolean(preset?.needs_scale)
+    const missingScale = needsScale && !this.hasScaleValue
+    const showNotice = this.bookValue ? missingScale : needsScale
 
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
+    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
   }
 
   // Fields the provider fixes for us (e.g. a single endpoint and model) are shown

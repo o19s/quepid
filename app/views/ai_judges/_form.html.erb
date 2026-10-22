@@ -9,6 +9,7 @@
      data-ai-judge-wizard-existing-value="<%= ai_judge.persisted? %>"
      data-ai-judge-wizard-draft-key-value="<%= ai_judge.persisted? ? ai_judge.id : 'new' %>"
      data-ai-judge-wizard-has-scale-value="<%= scale.present? %>"
+     data-ai-judge-wizard-book-value="<%= @book.present? %>"
      data-ai-judge-wizard-presets-value="<%= LlmProvider.presets.to_json %>"
      data-ai-judge-wizard-stock-prompts-value="<%= LlmProvider.stock_system_prompts.to_json %>">
   <div class="card-header">
@@ -234,7 +235,7 @@
     <hr>
 
     <!-- Step 2: Test & Refine -->
-    <div class="mb-4">
+    <div class="mb-4" id="test-and-refine">
       <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
 
       <div data-ai-judge-wizard-target="step2" style="display: none;">
@@ -321,8 +322,13 @@
             <% end %>
 
             <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
-            <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless provider&.needs_scale? && scale.empty? %>>
-              This provider rates against a scale:
+            <%# With a book, the scale always comes from the book and there's no picker
+                below to keep showing - only worth a mention while nothing is set yet.
+                With a manually-picked scorer, keep this visible even once a scale is
+                set so the dropdown stays available to switch to a different one. %>
+            <% show_scale_notice = @book ? (provider&.needs_scale? && scale.empty?) : provider&.needs_scale? %>
+            <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless show_scale_notice %>>
+              <%= scale.present? ? 'Change the rating scale:' : 'This provider rates against a scale:' %>
               <% unless @book %>
                 <%# A plain GET select, navigated via onchange reading each option's own
                     data-url - NOT a <form>, since this whole partial already renders
