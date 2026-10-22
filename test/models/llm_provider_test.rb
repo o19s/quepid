@@ -16,7 +16,7 @@ class LlmProviderTest < ActiveSupport::TestCase
                                        'https://RESOURCE.services.ai.azure.com/anthropic', '',
                                        'claude-3-5-haiku-20241022' ],
     'anthropic'                   => [ 'Anthropic', 'https://api.anthropic.com', '',
-                                       'claude-sonnet-4-5-20250514' ],
+                                       'claude-sonnet-5-5' ],
     'google_gemini'               => [ 'Google Gemini',
                                        'https://generativelanguage.googleapis.com/v1beta/openai', '',
                                        'gemini-2.0-flash' ],

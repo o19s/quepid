@@ -224,11 +224,11 @@ class LlmProvider
       adapter:             'LlmJudgeAdapters::Anthropic',
       auth_style:          :x_api_key,
       default_service_url: 'https://api.anthropic.com',
-      default_model:       'claude-sonnet-4-5-20250514',
+      default_model:       'claude-sonnet-5-5',
       help_html:           <<~HTML.squish,
         <strong>Anthropic</strong> &mdash; Direct Anthropic API access.<br>
         <b>URL:</b> <code>https://api.anthropic.com</code><br>
-        <b>Model:</b> e.g. <code>claude-opus-4-6</code>, <code>claude-sonnet-4-5-20250514</code><br>
+        <b>Model:</b> e.g. <code>claude-opus-5-5</code>, <code>claude-sonnet-5-5</code><br>
         <b>Key:</b> Your Anthropic API key (sent as <code>x-api-key</code> header)<br>
         <b>API Version:</b> Leave blank
       HTML

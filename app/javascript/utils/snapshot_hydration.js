@@ -18,6 +18,11 @@ export function buildSnapshotLookupSettings({
   settingsForLookup.fieldSpec = createFieldSpec(mapFieldSpecToSolrFormat(settings.fieldSpec))
   settingsForLookup.searchEndpointId = null
   settingsForLookup.customHeaders = null
+  // The lookup targets Quepid's own snapshot search endpoint, so it must go
+  // straight from the browser with the session cookie. Proxying it (e.g. a
+  // Qdrant/Vespa case, or proxy-all-endpoints mode) sends a cookieless
+  // server-side request to Quepid itself, which fails and drops every doc.
+  settingsForLookup.proxyRequests = false
   settingsForLookup.searchUrl = `${rootUrl}/api/cases/${caseNo}/snapshots/${snapshotId}/search`
   return settingsForLookup
 }

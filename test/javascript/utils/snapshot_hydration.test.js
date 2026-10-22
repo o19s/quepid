@@ -18,6 +18,7 @@ describe("snapshot hydration", () => {
       apiMethod: "POST",
       searchEndpointId: 9,
       customHeaders: { Authorization: "secret" },
+      proxyRequests: true,
       searchUrl: "https://engine.example/search"
     }
 
@@ -37,6 +38,7 @@ describe("snapshot hydration", () => {
       fieldSpec: { raw: "id:id title:title" },
       searchEndpointId: null,
       customHeaders: null,
+      proxyRequests: false,
       searchUrl: "/api/cases/12/snapshots/44/search"
     })
     expect(settings.searchEngine).toBe("searchapi")

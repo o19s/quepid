@@ -110,7 +110,8 @@ export default class extends Controller {
     const payload = buildSnapshotPayload(
       name,
       recordDocumentFields,
-      getCoreCapabilities().queryCapabilities.getQueryArray()
+      getCoreCapabilities().queryCapabilities.getQueryArray(),
+      services.capability.settings.editable().createFieldSpec?.()
     )
     const snapshot = await postJson(this.snapshotsUrlValue, payload)
     await this.registerSnapshots([snapshot])

@@ -44,7 +44,6 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
       body = envelope[:body]
 
-      assert_in_delta(0.7, body[:temperature])
       assert_equal 'gpt-4o', body[:model]
       assert_equal({ type: 'json_object' }, body[:response_format])
       assert_equal 'Judge it.', body[:messages][0][:content]
@@ -52,6 +51,12 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
       assert_equal 'user', body[:messages][1][:role]
       assert_equal 'text', body[:messages][1][:content][0][:type]
       assert_equal 'image_url', body[:messages][1][:content][1][:type]
+    end
+
+    test 'sends no temperature, which reasoning models reject unless it is the default' do
+      body = openai.request_envelope(query_doc_pair, system_prompt: 'Judge it.')[:body]
+
+      assert_not body.key?(:temperature)
     end
 
     test 'carries the book scale into the system prompt' do
@@ -82,7 +87,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
 
   describe 'the Anthropic envelope' do
     let(:anthropic) do
-      LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-4-5-20250514' })
+      LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
     end
 
     test 'is a Messages API request with the system prompt lifted out of the messages' do
@@ -96,12 +101,30 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
 
     test 'reads a judgement out of markdown fenced JSON' do
-      body = { 'content' => [ { 'text' => "```json\n{\"judgment\": 2, \"explanation\": \"ok\"}\n```" } ] }
+      body = { 'content' => [ { 'type' => 'text', 'text' => "```json\n{\"judgment\": 2, \"explanation\": \"ok\"}\n```" } ] }
 
       anthropic.apply_response(judgement, body)
 
       assert_in_delta(2.0, judgement.rating)
       assert_equal 'ok', judgement.explanation
+    end
+
+    test 'reads the text block when a thinking block comes first' do
+      body = { 'content' => [
+        { 'type' => 'thinking', 'thinking' => '', 'signature' => 'sig' },
+        { 'type' => 'text', 'text' => '{"judgment": 3, "explanation": "close match"}' }
+      ] }
+
+      anthropic.apply_response(judgement, body)
+
+      assert_in_delta(3.0, judgement.rating)
+      assert_equal 'close match', judgement.explanation
+    end
+
+    test 'sends no temperature, which current Claude models reject' do
+      body = anthropic.request_envelope(query_doc_pair, system_prompt: 'Judge it.')[:body]
+
+      assert_not body.key?(:temperature)
     end
   end
 
@@ -170,7 +193,7 @@ class LlmJudgeAdaptersTest < ActiveSupport::TestCase
     end
 
     test 'Anthropic gets a case thumb as a URL image source' do
-      anthropic = LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-4-5-20250514' })
+      anthropic = LlmJudgeAdapters.for('a-key', { llm_provider: 'anthropic', llm_model: 'claude-sonnet-5-5' })
       pair = pair_with('title' => 'Han', 'thumb' => 'https://example.com/thumb.jpg')
 
       content = anthropic.request_envelope(pair, system_prompt: 'Judge it.')[:body][:messages][0][:content]

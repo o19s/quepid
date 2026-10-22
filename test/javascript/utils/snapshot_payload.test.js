@@ -35,7 +35,7 @@ describe("buildSnapshotPayload", () => {
     })
   })
 
-  it("records source fields and the title only for normal results", () => {
+  it("records source fields and the title for normal and rated-only results", () => {
     const payload = buildSnapshotPayload("with fields", true, [{
       queryId: 1,
       docs: [doc("normal", { category: "book" }, "title", "A book")],
@@ -43,7 +43,33 @@ describe("buildSnapshotPayload", () => {
     }])
 
     expect(payload.snapshot.docs[1][0].fields).toEqual({ category: "book", title: "A book" })
-    expect(payload.snapshot.docs[1][1].fields).toEqual({ category: "rated book" })
+    expect(payload.snapshot.docs[1][1].fields).toEqual({ category: "rated book", title: "Rated book" })
+  })
+
+  it("records thumb and image fields under their source field names", () => {
+    const withImages = (id) => ({
+      ...doc(id, { overview: "One ring to rule them all" }, "title", "The Lord of the Rings"),
+      thumb: "/poster.jpg",
+      image: "/backdrop.jpg",
+      hasThumb: () => true,
+      hasImage: () => true
+    })
+    const fieldSpec = { thumb: "poster_path", image: "backdrop_path" }
+    const payload = buildSnapshotPayload("with images", true, [{
+      queryId: 0,
+      docs: [withImages("123")],
+      ratedDocs: [withImages("456")]
+    }], fieldSpec)
+    const expectedFields = {
+      overview: "One ring to rule them all",
+      title: "The Lord of the Rings",
+      poster_path: "/poster.jpg",
+      backdrop_path: "/backdrop.jpg"
+    }
+
+    expect(payload.snapshot.docs[0][0].fields).toEqual(expectedFields)
+    expect(payload.snapshot.docs[0][1].rated_only).toBe(true)
+    expect(payload.snapshot.docs[0][1].fields).toEqual(expectedFields)
   })
   it("keeps numeric scores, including zero, and the all-rated flag", () => {
     const payload = buildSnapshotPayload("saved", false, [

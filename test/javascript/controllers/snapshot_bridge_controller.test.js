@@ -200,7 +200,7 @@ describe("SnapshotBridgeController", () => {
       snapshots: {
         capability: {
           settings: {
-            editable: () => ({}),
+            editable: () => ({ createFieldSpec: () => ({ thumb: "poster_path" }) }),
             supportsLookupById: () => true
           },
           navigation: {
@@ -213,6 +213,17 @@ describe("SnapshotBridgeController", () => {
         docCache: services.docCache
       }
     }
+    services.queries.queryArray.mockReturnValue([{
+      queryId: 1,
+      docs: [{
+        id: "doc",
+        title: "Doc",
+        titleField: "title",
+        thumb: "/poster.jpg",
+        hasThumb: () => true,
+        explain: () => ({ rawStr: () => "" })
+      }]
+    }])
     api.apiFetch.mockResolvedValue({
       async text() {
         return JSON.stringify(await this.json()) || ""
@@ -229,6 +240,8 @@ describe("SnapshotBridgeController", () => {
       headers: { "Content-Type": "application/json", Accept: "application/json" },
       body: expect.stringContaining('"name":"new snapshot"')
     }))
+    expect(JSON.parse(api.apiFetch.mock.calls[0][1].body).snapshot.docs[1][0].fields)
+      .toEqual({ title: "Doc", poster_path: "/poster.jpg" })
     expect(services.queries.queryArray).toHaveBeenCalledOnce()
   })
 
