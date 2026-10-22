@@ -772,6 +772,19 @@ None of these check the return value of `qdp.save` / `judgement.save`. If a row 
 
 ---
 
+### [PREEXISTING] P3 I0 C1 — Dead or redundant code found by Ruby mutation testing
+
+**Location:** `app/services/case_score_manager.rb`, `app/lib/analytics/tracker/`
+
+Mutant (`config/mutant.yml`) found code no test can reach through the public entry points. The unreachable `CaseScoreManager` branches (nil-score and both-empty guards in `added_query?`, the failed-save branch and explicit `touch` in `update`), the `DeferredPayload.stash!` `content_type` and the second `import_succeeded` guard in `CaseImporter#import` are already removed with identical behavior. Two items remain because each needs a check or a decision first:
+
+- **Unused arguments on `Analytics::Tracker` share/membership events** (`track_case_shared_event`, `track_book_shared_event`, `track_search_endpoint_shared_event`, `track_scorer_shared_event`, `track_member_removed_from_team_event`). They take `_user` and `_team`/`_member` but only read the record or team, so `TeamSharing` and `TeamMembership` pass values nothing uses. Drop the parameters or start recording them.
+- **`CaseScoreManager` `last_score.updated_at.blank?` guards** in `user_ratings_docs?` and `same_score?`. Rails always sets `updated_at`, but `case_scores.updated_at` is nullable, so confirm no legacy rows have `NULL` before removing.
+
+**Fix direction:** Remove each item in its own small change, keeping behavior identical, and delete any test that only exercised the dead path. Add further dead code found by later Mutant runs to this list instead of opening separate entries.
+
+---
+
 ## [PREEXISTING] P2 — Background jobs
 
 ### [PREEXISTING] P1 I2 C3 — Import/populate jobs leave state and idempotency to best effort

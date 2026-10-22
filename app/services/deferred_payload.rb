@@ -5,9 +5,8 @@
 module DeferredPayload
   def self.stash! payload, filename:, attachment: nil
     blob = ActiveStorage::Blob.create_and_upload!(
-      io:           StringIO.new(Zlib::Deflate.deflate(Marshal.dump(payload))),
-      filename:     filename,
-      content_type: 'application/zip'
+      io:       StringIO.new(Zlib::Deflate.deflate(Marshal.dump(payload))),
+      filename: filename
     )
     attachment&.attach(blob)
     blob

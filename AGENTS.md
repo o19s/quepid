@@ -9,6 +9,7 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
 - In Angular parity work, "fix" or "restore" an item means make it match Legacy (`8ceb99e9`). Do not substitute an alternative, even one you recommended, unless the user chooses it by name; if the instruction is ambiguous, ask. Record only user-chosen departures in [NOT-DOING.md](docs/todo/NOT-DOING.md).
 - Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
+- **Rules go in this repo, never only in agent memory.** When the user gives a standing rule, preference or workflow requirement, write it into this file (or the doc it links to) in the same turn, then tell the user where. A private memory entry alone does not count; it may be added as a second copy. Check the existing rules first so each rule is stated once.
 - Keep documentation concise: state each rule once, link to shared guidance and retain only necessary rationale and verification evidence.
 - Preserve existing and imported documentation wording and structure. Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.
 
@@ -110,11 +111,13 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - **Vitest PR policy:** see DEVELOPER_GUIDE.md's "Vitest" section.
 - **Property-based tests (fast-check):** when you add or materially change a pure `utils/` or `api/` function with a crisp invariant (round trip, aggregation, payload builder, ordering/concurrency), add or extend `test/javascript/utils/<module>_properties.test.js`. Follow `docs/js_tooling.md` — "Property-based tests". Before finishing one, temporarily break the code under test and confirm the property fails, then restore it. Pin any shrunk counterexample as a plain example test. Don't use them for controllers or DOM code, and don't loosen a failing property without understanding its counterexample.
 - **Cross-language contracts (Ruby ↔ JS):** share a fixture under `test/fixtures/files/` read by both Minitest and Vitest rather than adding a Ruby property-testing gem. If you change `CsvExport` or the CSV import/export utilities, update `csv_round_trip_cases.json` and run both suites.
+- **Mutation testing is always incremental:** keep `incremental: true` in `stryker.config.mjs` (cache `tmp/stryker-tmp/incremental.json`); don't delete it or pass `--force` unless asked, other than the single-file re-check in `docs/js_tooling.md`.
 
 ### Rails
 - Run Rails tests via `docker compose exec app rails test`.
 - Before a Rails suite or fixture-loading check, inspect running test processes in the server container. Do not run concurrent suites against the same test database; wait for the existing run or use a disposable database with an explicit `RAILS_ENV=test` and distinct `DB_NAME`, then remove only that database.
 - Scratch Ruby checks that load `test_helper` must explicitly set `RAILS_ENV=test` in the container command and verify it before loading fixtures; the server container inherits `RAILS_ENV=development`.
+- **Ruby mutation testing (Mutant, `config/mutant.yml`) is always incremental:** run `bundle exec mutant run --since origin/main` (compare against `origin/`, never local `main`), inside the existing server container with `RAILS_ENV=test`. Mutant 0.17 has no cross-run result cache, so after a test-only edit re-run just the subjects that had survivors (`--start-subject` / `--ignore-subject`) and don't repeat whole-subject runs. Use a full `mutant run 'Subject*'` only for a first baseline of unchanged code, and say so. Subjects are selected by `cover 'Subject*'` in the test class; `jobs: 1` because workers share the test database.
 
 ### CSS
 - Lint CSS via `docker compose exec app yarn lint:css` or `docker compose exec app rails test:stylelint` (config: `.stylelintrc.json`).

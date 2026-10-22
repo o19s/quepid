@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class RatingsImporterTest < ActiveSupport::TestCase
+  cover 'RatingsImporter*'
+
   let(:owned_case) { cases(:owned_case) }
   let(:options)    do
     {

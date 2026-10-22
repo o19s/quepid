@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class TeamMembershipTest < ActiveSupport::TestCase
+  cover 'TeamMembership*'
+
   include ActionMailer::TestHelper
 
   setup do
@@ -42,6 +44,14 @@ class TeamMembershipTest < ActiveSupport::TestCase
     assert_not @team.members.exists?(@member.id)
     assert_equal 2, @analytics_events.length
     assert(@analytics_events.all? { |name, _properties| name.include?('added') })
+  end
+
+  test 'add, add_and_save and remove return exactly true or false' do
+    assert_same true, @membership.add(@member)
+    assert_same false, @membership.add(@member)
+    assert_same true, @membership.add_and_save(users(:team_member_1))
+    assert_same true, @membership.remove(@member)
+    assert_same false, @membership.remove(@member)
   end
 
   test 'failed team validation does not emit an added event' do
