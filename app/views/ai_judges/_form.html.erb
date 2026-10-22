@@ -178,7 +178,7 @@
         </div>
       </div>
 
-      <div class="row mb-3">
+      <div class="row mb-3" id="escalation-field">
         <%= form.label :escalates_to_id, 'When unsure, wake On-Call Judge', class: 'col-sm-2 col-form-label' %>
         <div class="col-sm-4">
           <%= form.collection_select :escalates_to_id, escalation_targets, :id, :name,

@@ -106,7 +106,9 @@
               <%= b.label %>
               <% if b.object.escalates_to %>
                 <small class="text-muted ms-1" title="Pairs this judge can't rate are handed on, in every book it judges">
-                  <i class="bi bi-arrow-right" aria-hidden="true"></i> wakes <%= b.object.escalates_to.name %> when unsure
+                  <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                  <%= link_to "wakes #{b.object.escalates_to.name} when unsure",
+                        "#{edit_ai_judge_path(b.object, book_id: book.id)}#escalation-field" %>
                 </small>
               <% end %>
               <% if b.object.on_call? %>
