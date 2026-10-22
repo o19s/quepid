@@ -185,6 +185,28 @@ export async function stubEmptyBookCatalog(page: Page, caseId: number) {
   }));
 }
 
+/**
+ * Specs that need a team to share with create their own rather than depend on which teams the
+ * shared dev DB happens to hold, which silently skipped them when there were none. The current
+ * user becomes a member on creation. The caller supplies an authenticated page with a
+ * CSRF-producing navigation.
+ */
+export async function createTeamViaApi(page: Page, name: string): Promise<number> {
+  const response = await page.request.post('api/teams', {
+    headers: await apiHeaders(page),
+    data: { team: { name } },
+  });
+  expect(response.ok(), `Team "${name}" creation failed: ${response.status()}`).toBeTruthy();
+  const teamId = Number((await response.json()).id);
+  expect(teamId).toBeGreaterThan(0);
+  return teamId;
+}
+
+export async function deleteTeamViaApi(page: Page, teamId: number): Promise<void> {
+  const response = await page.request.delete(`api/teams/${teamId}`, { headers: await apiHeaders(page) });
+  expect(response.ok(), `Team ${teamId} cleanup failed: ${response.status()}`).toBeTruthy();
+}
+
 /** The caller supplies an authenticated page with a CSRF-producing navigation. */
 export async function deleteCaseViaApi(page: Page, caseId: number): Promise<void> {
   const response = await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });

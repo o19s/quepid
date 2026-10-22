@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { createCoreWorkspaceRuntime } from "utils/core_workspace_runtime"
 import { QueryCollectionStore } from "stores/query_collection_store"
 import { CaseScoreStore } from "stores/case_score_store"
@@ -107,4 +107,91 @@ describe("core workspace construction", () => {
     expect(tuneRelevance.capability.settings.editable()).toBeNull()
     expect(wizard.capability.settings.editable().selectedTry).toBeNull()
   })
+
+  describe("delegation to the runtimes it wires together", () => {
+    const jsonResponse = (data = {}) => ({
+      ok: true,
+      status: 200,
+      json: async () => data,
+      text: async () => JSON.stringify(data)
+    })
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    function stubBrowser() {
+      const assign = vi.fn()
+      vi.stubGlobal("window", { location: { assign } })
+      vi.stubGlobal("location", { href: "http://quepid.test/case/7/try/2", search: "", protocol: "http:" })
+      const request = vi.fn(() => Promise.resolve(jsonResponse()))
+      vi.stubGlobal("fetch", request)
+      return { assign, request }
+    }
+
+    function openCase(workspace) {
+      const { bootstrap } = workspace.caseRuntime
+      bootstrap.core.navigation.complete({ caseNo: 7, tryNo: 2 })
+      bootstrap.core.settings.setCaseTries([
+        { try_number: 1, search_engine: "solr", field_spec: "id,title" },
+        { try_number: 2, search_engine: "solr", field_spec: "id,body" }
+      ])
+      bootstrap.core.settings.setCurrentTry(2)
+      return bootstrap
+    }
+
+    it("sends tuning's try changes to the open case and navigates through the navigation runtime", async () => {
+      const { assign, request } = stubBrowser()
+      const { workspace } = buildWorkspace()
+      const { tuneRelevance } = workspace.caseRuntime
+      openCase(workspace)
+
+      tuneRelevance.capability.navigation.goToTry(5)
+      expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/5")
+
+      await tuneRelevance.capability.settings.deleteTry(2)
+      expect(request).toHaveBeenCalledWith("api/cases/7/tries/2", expect.objectContaining({ method: "DELETE" }))
+      expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/1")
+    })
+
+    it("saves wizard settings against the current case and try, then navigates to that try", async () => {
+      const { assign, request } = stubBrowser()
+      const { workspace } = buildWorkspace()
+      openCase(workspace)
+      const { settings } = workspace.caseRuntime.wizard.capability
+
+      await settings.update(settings.editable())
+
+      expect(request).toHaveBeenCalledWith("api/cases/7/tries/2", expect.objectContaining({ method: "PUT" }))
+      expect(assign).toHaveBeenLastCalledWith("http://quepid.test/case/7/try/2")
+    })
+
+    it("builds each try's field spec through the search library", () => {
+      stubBrowser()
+      const { workspace, splainerSearch } = buildWorkspace()
+      const bootstrap = openCase(workspace)
+
+      expect(bootstrap.core.settings.editable().selectedTry.createFieldSpec()).toEqual({ fields: "id,body" })
+      expect(splainerSearch.fieldSpecSvc.createFieldSpec).toHaveBeenLastCalledWith("id,body")
+    })
+
+    it("resolves cached documents through the search library, proxied through the endpoint when asked", async () => {
+      stubBrowser()
+      const { workspace, splainerSearch } = buildWorkspace()
+      const fetchDocs = vi.fn(() => Promise.resolve())
+      splainerSearch.docResolverSvc.createResolver.mockReturnValue({ fetchDocs, docs: {} })
+      const { docCache } = workspace
+
+      docCache.addIds(["a", "b"])
+      await docCache.update({ proxyRequests: true, searchEndpointId: 3 })
+
+      expect(splainerSearch.docResolverSvc.createResolver).toHaveBeenCalledWith(
+        ["a", "b"],
+        expect.objectContaining({ proxyUrl: expect.stringMatching(/\/proxy\/fetch\?search_endpoint_id=3&url=$/) }),
+        15
+      )
+      expect(fetchDocs).toHaveBeenCalledOnce()
+    })
+  })
+
 })

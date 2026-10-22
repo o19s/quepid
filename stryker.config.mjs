@@ -1,15 +1,21 @@
 // StrykerJS mutation testing config for the modern `app/javascript/` tree (Vitest).
 //
 // The default scope is `api/` and `utils/`, the directories with a strict "new/changed
-// logic needs a test in test/javascript/" policy (CLAUDE.md § Tests). `stores/` and
-// controllers have specs too; run them on demand with `--mutate` (docs/js_tooling.md).
+// logic needs a test in test/javascript/" policy (CLAUDE.md § Tests), plus `stores/` and
+// `modules/editor.js`, which have specs too. Controllers run on demand with `--mutate`
+// (docs/js_tooling.md).
 /** @type {import('@stryker-mutator/api/core').PartialStrykerOptions} */
 export default {
   packageManager: "yarn",
   testRunner: "vitest",
   reporters: ["html", "clear-text", "progress"],
   coverageAnalysis: "perTest",
-  mutate: ["app/javascript/api/**/*.js", "app/javascript/utils/**/*.js"],
+  mutate: [
+    "app/javascript/api/**/*.js",
+    "app/javascript/utils/**/*.js",
+    "app/javascript/stores/**/*.js",
+    "app/javascript/modules/editor.js"
+  ],
   // Stryker copies the project into a sandbox. Skip directories the tests never read:
   // `volumes/` holds the live MySQL socket (copy fails with ENOENT) and `.claude/skills`
   // is a directory symlink (copy fails with EISDIR); the rest are just slow to copy.

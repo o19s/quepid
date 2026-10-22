@@ -313,4 +313,45 @@ describe("QueryDocumentsStore", () => {
     expect(store.query(8).expanded).toBe(false)
   })
 
+  it("snapshots an explain only for documents that provide both explain and hot matches", () => {
+    const explain = () => ({ children: [], toStr: () => "", asJson: {}, rawStr: () => "" })
+    store.replaceQuery(1, {
+      docs: [
+        { id: "explain-only", explain },
+        { id: "hots-only", hotMatchesOutOf: () => [] },
+        { id: "neither" },
+        { id: "no-score", explain, hotMatchesOutOf: () => [] }
+      ]
+    })
+    const [explainOnly, hotsOnly, neither, noScore] = store.query(1).docs
+
+    expect(explainOnly.matchExplain).toBeNull()
+    expect(hotsOnly.matchExplain).toBeNull()
+    expect(neither.matchExplain).toBeNull()
+    expect(noScore.matchExplain).toMatchObject({ docId: "no-score", docScore: null })
+  })
+
+  it("defaults a case diff without a name, version or score", () => {
+    store.setCaseDiffs([{}])
+
+    expect(store.snapshot().caseDiffs).toEqual([
+      { name: "Snapshot", version: null, score: { score: "?", allRated: false } }
+    ])
+  })
+
+  it("creates an empty entry when state arrives for a query that has no documents yet", () => {
+    store.updateQueryState(5, { maxDocScore: 3 })
+
+    expect(store.query(5)).toMatchObject({ queryId: 5, docs: [], ratedDocs: [], maxDocScore: 3 })
+  })
+
+  it("reports no query for an unknown id, and a null current query when none is requested", () => {
+    store.replaceQuery(1, { docs: [] })
+
+    expect(store.query(99)).toBeNull()
+    expect(store.snapshot().query).toBeNull()
+    expect(store.snapshot(99).query).toBeNull()
+    expect(store.snapshot(1).query).toMatchObject({ queryId: 1 })
+  })
+
 })

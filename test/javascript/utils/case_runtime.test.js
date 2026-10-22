@@ -287,4 +287,75 @@ describe("case runtime", () => {
     expect(runtime.selected().nightly).toBe(true)
   })
 
+  it("ignores a Nightly save that finished after the selection changed or a newer save began", async () => {
+    const finish = []
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish.push(resolve) })))
+    const runtime = createCaseRuntime()
+    const stale = vi.fn()
+    document.addEventListener("quepid:case-header-stale", stale)
+    try {
+      const old = { caseNo: 7, nightly: false }
+      runtime.select(old)
+      const switched = runtime.updateNightly({ caseNo: 7, nightly: true })
+      runtime.select({ caseNo: 8, nightly: false })
+      finish[0](response())
+      await switched
+      expect(old.nightly).toBe(false)
+      expect(stale).not.toHaveBeenCalled()
+
+      const current = { caseNo: 8, nightly: false }
+      runtime.select(current)
+      const first = runtime.updateNightly({ caseNo: 8, nightly: true })
+      const second = runtime.updateNightly({ caseNo: 8, nightly: false })
+      finish[1](response())
+      await first
+      expect(stale).not.toHaveBeenCalled()
+      finish[2](response())
+      await second
+      expect(stale).toHaveBeenCalledOnce()
+      expect(runtime.selected().nightly).toBe(false)
+    } finally {
+      document.removeEventListener("quepid:case-header-stale", stale)
+    }
+  })
+
+  it("ignores a book-settings save superseded by a newer save for the same case", async () => {
+    const finish = []
+    vi.stubGlobal("fetch", vi.fn(() => new Promise(resolve => { finish.push(resolve) })))
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7, bookId: 1 })
+    const first = runtime.saveBookSettings(7, { book_id: 2 })
+    const second = runtime.saveBookSettings(7, { book_id: 3 })
+    finish[0](response({ book_name: "Two" }))
+    await first
+    expect(runtime.selected().bookId).toBe(1)
+    finish[1](response({ book_name: "Three" }))
+    await second
+    expect(runtime.selected()).toMatchObject({ bookId: 3, bookName: "Three" })
+  })
+
+  it("does not reuse a pending read once a save or a new selection has invalidated it", async () => {
+    const request = vi.fn(() => new Promise(() => {}))
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
+    runtime.select({ caseNo: 7 })
+    runtime.read(7)
+    runtime.saveBookSettings(7, { book_id: 2 })
+    runtime.read(7)
+    expect(request).toHaveBeenCalledTimes(3)
+    runtime.select({ caseNo: 7 })
+    runtime.read(7)
+    expect(request).toHaveBeenCalledTimes(4)
+  })
+
+  it("ignores a rename without a name and a delete when nothing is selected", async () => {
+    const request = vi.fn().mockResolvedValue(response())
+    vi.stubGlobal("fetch", request)
+    const runtime = createCaseRuntime()
+    await runtime.rename({ caseNo: 7 }, undefined)
+    expect(request).not.toHaveBeenCalled()
+    await expect(runtime.delete({ caseNo: 7 })).resolves.toBeUndefined()
+    expect(runtime.selected()).toBeNull()
+  })
+
 })

@@ -56,6 +56,46 @@ describe("snapshot import runtime", () => {
     expect(buildSnapshotImportGroups([row], 7)[7].snapshots.Weekly.created_at).toBeUndefined()
   })
 
+  it.each([
+    ["02/29/24 12:00", "2024-02-29T12:00:00"],
+    ["02/29/00 12:00", "2000-02-29T12:00:00"],
+    ["02/28/26 12:00", "2026-02-28T12:00:00"]
+  ])("applies the Gregorian leap-year rule to legacy timestamps: %s", (timestamp, expected) => {
+    const groups = buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+    expect(groups[7].snapshots.Weekly.created_at).toBe(expected)
+  })
+
+  it.each(["02/29/26 12:00", "02/29/2100 12:00", "2100-02-29", "04/31/26 12:00"])(
+    "rejects a day past the end of its month: %s",
+    (timestamp) => {
+      expect(() => buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7))
+        .toThrow(/invalid Snapshot Time/)
+    }
+  )
+
+  it.each([
+    "00/10/26 12:00", "13/10/26 12:00", "10/00/26 12:00", "10/32/26 12:00",
+    "10/07/26 24:00", "10/07/26 12:60", "2026-10-07T10:00+99:99"
+  ])("rejects an out-of-range part: %s", (timestamp) => {
+    expect(() => buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7))
+      .toThrow(/invalid Snapshot Time/)
+  })
+
+  it.each([
+    ["01/01/26 00:00", "2026-01-01T00:00:00"],
+    ["12/31/26 23:59", "2026-12-31T23:59:00"],
+    ["01/31/26 12:00", "2026-01-31T12:00:00"],
+    ["04/30/26 12:00", "2026-04-30T12:00:00"]
+  ])("accepts the boundary values of %s", (timestamp, expected) => {
+    expect(buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)[7]
+      .snapshots.Weekly.created_at).toBe(expected)
+  })
+
+  it.each(["2000-02-29", "2024-02-29"])("accepts a real leap day in ISO form: %s", (timestamp) => {
+    const groups = buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+    expect(groups[7].snapshots.Weekly.created_at).toBe(timestamp)
+  })
+
   it.each(["02/29/26 12:00", "13/01/26 12:00", "10/07/26 24:00", "not a date", ""])(
     "rejects invalid timestamps with the CSV row number: %s",
     (timestamp) => {

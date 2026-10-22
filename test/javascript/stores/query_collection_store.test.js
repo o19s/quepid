@@ -273,4 +273,50 @@ describe("QueryCollectionStore", () => {
     expect(changed).not.toHaveBeenCalled()
     expect(store.orderedQueryIds()).toEqual([1])
   })
+
+  it("treats only true and \"true\" as deleted, and reports a current-generation search failure", () => {
+    store.replace({
+      caseId: 7,
+      displayOrder: [1, 2, 3, 4],
+      queries: [
+        { queryId: 1, deleted: true },
+        { queryId: 2, deleted: "true" },
+        { queryId: 3, deleted: false },
+        { queryId: 4, deleted: "false" }
+      ]
+    })
+    expect(Object.keys(store.liveQueries()).sort()).toEqual(["3", "4"])
+
+    expect(store.failSearch(new Error("boom"))).toBe(true)
+    expect(store.searchStatus).toBe("error")
+  })
+
+  it("drops expansion state for queries a replace omits and keeps it for the rest", () => {
+    store.setExpanded(1, true)
+    store.setExpanded(2, true)
+    store.replace({ caseId: 7, displayOrder: [1], queries: [{ queryId: 1 }] })
+    store.upsert({ queryId: 2 }, { publish: false })
+
+    expect(store.query(1).expanded).toBe(true)
+    expect(store.query(2).expanded).toBe(false)
+  })
+
+  it("lists a re-upserted query once in the display order", () => {
+    store.upsert({ queryId: 1, queryText: "a" }, { publish: false })
+    store.upsert({ queryId: 1, queryText: "b" }, { publish: false })
+
+    expect(store.snapshot().displayOrder).toEqual([1])
+    expect(store.query(1).queryText).toBe("b")
+  })
+
+  it("ignores a query with a null id and removes a deleted query from the display order", () => {
+    store.upsert({ queryId: null }, { publish: false })
+    store.upsert({ queryId: 1 }, { publish: false })
+    store.upsert({ queryId: 2 }, { publish: false })
+
+    store.remove(1)
+
+    expect(store.snapshot().displayOrder).toEqual([2])
+  })
+
 })

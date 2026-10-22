@@ -296,4 +296,41 @@ describe("query runtime", () => {
     await runtime.refreshRatedDocs()
     expect(createRatedSearcher).toHaveBeenCalledTimes(2)
   })
+
+  it("links to the searcher's own link URL, falling back to its request URL, on success and on failure", async () => {
+    const cases = [
+      [{ linkUrl: "link", url: "url" }, "link"],
+      [{ url: "url" }, "url"]
+    ]
+    for (const [extra, expected] of cases) {
+      const ok = buildRuntime({
+        createSearcher: () => ({ search: () => Promise.resolve(), docs: [], numFound: 0, ...extra })
+      })
+      await ok.runtime.search()
+      expect(ok.query.linkUrl).toBe(expected)
+
+      const failed = buildRuntime({
+        createSearcher: () => ({ search: () => Promise.reject({ status: 500 }), ...extra }),
+        parseError: vi.fn(() => "failed")
+      })
+      await expect(failed.runtime.search()).rejects.toBe("failed")
+      expect(failed.query.linkUrl).toBe(expected)
+    }
+  })
+
+  it("returns nothing when paging a query that has no searcher, or whose pager is exhausted", () => {
+    const empty = buildRuntime()
+    expect(empty.runtime.paginate()).toBeUndefined()
+    expect(empty.runtime.ratedPaginate()).toBeUndefined()
+
+    const exhausted = buildRuntime({
+      query: { searcher: { pager: () => null }, ratedSearcher: { pager: () => null } }
+    })
+    expect(exhausted.runtime.paginate()).toBeUndefined()
+    expect(exhausted.query.searcher).toBeNull()
+    expect(exhausted.runtime.ratedPaginate()).toBeUndefined()
+    expect(exhausted.query.ratedSearcher).toBeNull()
+    expect(exhausted.publish).not.toHaveBeenCalled()
+  })
+
 })

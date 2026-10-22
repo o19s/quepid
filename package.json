@@ -72,6 +72,7 @@
     "test:unit:watch": "vitest",
     "test:mutation": "stryker run",
     "test:mutation:compat": "yarn test:mutation test/mutation/vitest_compat.config.mjs",
+    "test:mutation:nightly": "yarn test:mutation test/mutation/nightly.config.mjs",
     "test:e2e": "playwright test --config test/playwright/playwright.config.ts",
     "test:e2e:update-baselines": "playwright test --config test/playwright/playwright.config.ts --update-snapshots",
     "test:e2e:ui": "playwright test --config test/playwright/playwright.config.ts --ui",

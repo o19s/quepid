@@ -963,3 +963,30 @@ Until that exists, use `docker exec <actual-server-container>` or `docker compos
 **Future idea only:** record each skipped row (export format, case, snapshot, query, doc, reason) in a log or a small reviewable list, so people can see what an export left out. The export itself must keep succeeding; logging must never raise or block the download.
 
 Revisit if users report exports that look incomplete.
+
+### [PREEXISTING] P2 I1 C1 — Try API clone loses tuning variables
+
+Scenario 18.2 reproduced a clone with empty `curator_vars` from a source containing
+`boost=2`. `Api::V1::Clone::TriesController#create` calls
+`@try.add_curator_vars` on the source instead of the new try. The same call exists
+at Legacy `8ceb99e9` (source comparison only; no historical live replay).
+Copy variables onto the clone and verify source immutability and cloned args.
+
+### [PREEXISTING] P2 I1 C2 — Judging shortcut can submit while the explanation modal opens
+
+Scenario 15.8 reproduced one rating POST when A was pressed immediately after
+**I Can't Tell**, before the modal acquired `show`; the audit retained rating 0.
+Typing and settled-modal exclusions pass. Current `judgement_rating_controller.js`
+and Legacy `8ceb99e9`'s inline judging handler both guard only `.modal.show` before
+scheduling a delayed click (source comparison only; no historical live replay).
+Guard the opening transition and cancel/recheck pending shortcut timers when the
+modal opens; verify that cancelling the modal creates no judgement.
+
+### [MIGRATION-FOLLOWUP] P2 I1 C2 — Classify concurrent case-evaluation deadlock
+
+Scenario 18.6 queued two evaluations of the same disposable case: one finished,
+one failed with a MySQL deadlock. HTTP 200 acknowledged both jobs. Legacy
+`8ceb99e9` also permits two concurrent evaluation jobs, but source comparison does
+not establish the origin of this database failure. Reproduce against Current and
+the historical implementation in isolated fixtures before choosing a fix; retain
+job failure evidence rather than treating queue acknowledgement as completion.

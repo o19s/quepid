@@ -375,4 +375,22 @@ describe("targeted search adapter", () => {
     await expect(rated).resolves.toBe(true)
     expect(config.query.touchModifiedAt).toHaveBeenCalledOnce()
   })
+
+  it("builds the rated-only searcher when paging the rated list, and does nothing extra for other engines", async () => {
+    const createSearcherFromSettings = vi.fn()
+      .mockReturnValueOnce({ type: "solr", args: {}, explainOther: vi.fn(() => Promise.resolve()) })
+      .mockReturnValueOnce({ type: "solr", args: {}, explainOther: vi.fn(() => Promise.resolve()) })
+    const { adapter, config } = buildAdapter({ createSearcherFromSettings })
+    await adapter.resetToRated()
+    await adapter.paginate()
+    expect(createSearcherFromSettings).toHaveBeenLastCalledWith(config.settings, config.query, { filterToRated: true })
+
+    const other = { type: "other", args: {}, explainOther: vi.fn(), search: vi.fn() }
+    const unsupported = buildAdapter({ createSearcherFromSettings: vi.fn(() => other) })
+    await expect(unsupported.adapter.resetToRated()).resolves.toBe(unsupported.adapter)
+    expect(other.explainOther).not.toHaveBeenCalled()
+    expect(other.search).not.toHaveBeenCalled()
+    expect(unsupported.adapter.docs).toEqual([])
+  })
+
 })

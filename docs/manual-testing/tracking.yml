@@ -1447,15 +1447,20 @@ parts:
 
       "10.11":
         title: "Delete a book"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        screenshots:
+          cancel: "10.11/cancel"
+          deleted: "10.11/deleted"
+        last_run: 2026-10-21T13:50:08Z
+        result: pass
+        notes: "Covered live: Playwright MCP cancelled Delete Book then reloaded with files/assignments retained; confirmed shared rated/unrated book deletion, owner index absence and teammate access revoked. DB verification: book/pairs/judgements/blobs gone, linked case survives with book_id nil and AI judge survives. Captures: outstanding-20261021/book-delete-cancel.png and book-deleted.png. Empty-book API deletion exercised separately in 18.7; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/books_controller.rb", "app/models/book.rb", "app/models/query_doc_pair.rb", "app/views/books/edit.html.erb"]
       "10.12":
         title: "Judgement aggregation and implicit ratings"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        screenshots:
+          fractional: "10.12/fractional"
+        last_run: 2026-10-21T14:06:50Z
+        result: pass
+        notes: "Covered live via APIs/MCP: aggregate3 then1.5; UI disabled implicit and refresh rounded2; re-enabled implicit, third/fourth judged ratings yield0 then2; flagged contributions excluded. Ratings1.5 screenshot inspected. Missing-query sync off/on preserves intent/notes/options and repeats without duplicates; all-unrateable refresh retains prior0. Evidence aggregation-results.jsonl and edge-results.json. No Legacy replay; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/services/ratings_manager.rb", "app/services/judgement_sync.rb", "app/models/judgement.rb", "app/jobs/update_case_job.rb", "app/controllers/api/v1/books/refresh_controller.rb", "app/views/books/_form.html.erb"]
 
   "11":
@@ -1593,9 +1598,12 @@ parts:
 
       "11.10":
         title: "Judging eligibility, rank depth and completion boundaries"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        screenshots:
+          personal-complete: "11.10/personal-complete"
+          book-complete: "11.10/book-complete"
+        last_run: 2026-10-21T14:06:50Z
+        result: pass
+        notes: "Covered live via MCP: three isolated users rated depth-2 pairs, personal versus book completion and fourth-judge disablement; clearing depth includes deeper/unranked pairs, Later/Unrateable plus reset restores eligibility. API explicitly confirms a pair with three flagged judgements is excluded; selected remaining unranked pair985387063. Empty book Judge Overview renders no-pairs state and disabled judging. Captures personal/book completion; edge-results.json and selection-verification.json. No fixed rank order asserted; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/models/selection_strategy.rb", "app/models/book.rb", "app/controllers/judgements_controller.rb", "app/controllers/books_controller.rb", "app/views/books/judge_overview.html.erb", "app/views/books/_coverage_summary.html.erb"]
 
   "12":
@@ -1762,9 +1770,9 @@ parts:
         screenshots:
           returned-case: "13.1/returned-case"
           graph: "13.1/graph"
-        last_run: 2026-10-20T20:28:24Z
+        last_run: 2026-10-21T13:57:25Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 disposable static clone: tries graph canvas renders one Try31 node and controls; screenshot inspected; Return to Case works. Public anonymous200 and revoked404 exercised13.2. Not covered live: branching/multiple-root/outside-parent ancestry or diff-baseline replay."
+        notes: "Covered live via Playwright MCP on Current :3000: five-try fixture renders Branch A/B, separate root and external-parent node under synthetic ROOT; Vega data inspected, Return to Case boots try 5. DB ancestry preservation checked separately. Captures analytics-branches.png and analytics-returned-case.png. Anonymous/revocation checks completed under 13.2/13.4; no Legacy replay. Disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/views/layouts/analytics.html.erb", "app/views/analytics/tries_visualization/show.html.erb", "app/views/analytics/tries_visualization/vega_specification.json.erb", "app/javascript/controllers/tries_visualization_controller.js"]
       "13.2":
         title: "Case visibility (Public / Private toggle)"
@@ -1773,25 +1781,25 @@ parts:
           private: "13.2/private"
           anonymous: "13.2/anonymous"
           public: "13.2/public"
-        last_run: 2026-10-20T20:28:23Z
+        last_run: 2026-10-21T14:00:03Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 disposable cloned case: Make public produces Public clipboard button with signed public_id URL; clicked copy control; isolated anonymous browser URL200 and no visibility toggle; Make Private restores private and same anonymous URL404. Not covered live: clipboard-read permission check or diff-baseline replay."
+        notes: "Covered live via Playwright MCP: owner Make public/Private toggles, clipboard content exactly matches signed public path, isolated anonymous graph/spec/data 200 and no visibility action. Owner revoked while anonymous page open; reload, signed/numeric URLs, API and data/spec now 404; tampered signature 404. Captures public/anonymous/revoked. No Legacy replay; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/analytics/tries_visualization_controller.rb", "app/models/case.rb", "app/controllers/analytics/cases/visibilities_controller.rb", "app/views/layouts/analytics.html.erb", "app/javascript/controllers/clipboard_controller.js"]
       "13.3":
         title: "Duplicate scores diagnostic"
         screenshots:
           scores: "13.3/scores"
           diagnostic: "13.3/diagnostic"
-        last_run: 2026-10-20T20:28:36Z
+        last_run: 2026-10-21T14:01:20Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: disposable clone Scores\u2192Understand Score Duplication shows Count/Try ID/Day/Score headers and Count of1is okay caption; empty-score table renders, Back to Scores works, Make public present. Not covered live: genuine duplicate fixture or diff-baseline replay."
+        notes: "Covered live via Playwright MCP Current :3000: three deliberately duplicated score rows grouped as Count 3 for one try/day/value; column values and caption inspected in duplicate-scores.png. Back to Scores (5 rows) and Back to Case boot work; zero-score fixture gives empty tbody; Make public control present. Fixture scores were seeded deliberately, not evidence of spontaneous duplicate scoring. No Legacy replay; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/analytics/cases/duplicate_scores_controller.rb", "app/views/analytics/cases/duplicate_scores/show.html.erb", "app/views/layouts/analytics.html.erb", "test/controllers/analytics/cases/duplicate_scores_test.rb"]
 
       "13.4":
         title: "Public case read access and write restrictions"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T14:00:03Z
+        result: pass
+        notes: "Covered live: cookie-free anonymous/unrelated public reads 200; unrelated token rename/scorer/query/rating/snapshot-delete/evaluation all 404; unrelated session visibility PATCH 404. Signed-in unrelated clone succeeds into its own account, original unchanged. MCP public clipboard/anonymous graph, open-page revocation and signed/numeric/data/spec/tampered URLs all verified. Not covered: every mutation endpoint or live Legacy replay. Evidence api-results.jsonl and analytics captures; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/concerns/authentication/current_case_manager.rb", "app/controllers/concerns/authentication/current_user_manager.rb", "app/controllers/api/v1/cases_controller.rb", "app/controllers/api/v1/clone/cases_controller.rb", "app/controllers/api/v1/tries_controller.rb", "app/controllers/core_controller.rb", "app/controllers/analytics/", "app/views/layouts/analytics.html.erb"]
 
   "14":
@@ -2001,12 +2009,15 @@ parts:
       "15.8":
         title: "Turbo Drive navigation and lifecycle"
         screenshots:
+          opening-shortcut-audit: "15.8/opening-shortcut-audit"
+          settled-modal-shortcut: "15.8/settled-modal-shortcut"
+          editor-saved: "15.8/editor-saved"
           history: "15.8/history"
           created: "15.8/created"
           validation: "15.8/validation"
-        last_run: 2026-10-20T20:33:04Z
-        result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: New Team blank validation retained form then corrected create succeeds; Teams\u2192Books\u2192Scorers\u2192Back\u2192Forward returns correct page with0backdrops. Case/analytics document boundaries, scorer CodeMirror saves, AI tabs and judging shortcuts exercised elsewhere in this pass. Not covered live: HTTPS, unsaved-editor history retention/full lifecycle matrix or diff-baseline replay."
+        last_run: 2026-10-21T14:09:37Z
+        result: fail
+        notes: "Covered live via MCP: Teams422/303 same JS; CodeMirror settled history retains text/saves0.42; navigation, Archive cancel0writes, AI tabs reconnect with2editors, score selection/Delete consistent. Typing and settled-modal shortcut exclusions pass. Reproduced failure: click Cannot Tell then immediate A while modal class is modal fade (not yet show) submits one rating POST and navigates to Book; settled modal blocks A. Legacy8ceb99e9 inline handlers use same modal.show guard/delayed click (source only, no historical live replay). HTTPS blocked: nginx stopped. Screenshots drive-modal-shortcut.png and drive-opening-shortcut-audit.png show the settled guard and unintended saved rating. Disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/javascript/application.js", "app/javascript/core_stimulus.js", "app/javascript/controllers/page_cache_controller.js", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb", "app/javascript/controllers/consent_toast_controller.js", "app/javascript/controllers/auto_submit_controller.js", "app/javascript/controllers/score_selection_controller.js", "app/javascript/controllers/judgement_rating_controller.js", "app/javascript/controllers/ai_judge_form_controller.js", "app/javascript/controllers/kraken_controller.js", "app/javascript/modules/editor.js", "app/controllers/teams_controller.rb", "app/controllers/application_controller.rb", "app/responders/application_responder.rb", "app/views/layouts/application.html.erb", "app/views/layouts/analytics.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/judgements/_form.html.erb", "app/views/scores/index.html.erb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/_provider_options.html.erb", "app/views/ai_judges/_prompt_testing.html.erb", "test/playwright/turbo_drive.spec.ts", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/javascript/controllers/user_activity_controller.js", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb"]
 
       "15.9":
@@ -2194,9 +2205,9 @@ parts:
         title: "Deployment configuration smoke test"
         screenshots:
           root-smoke: "17.10/root-smoke"
-        last_run: 2026-10-20T20:47:05Z
+        last_run: 2026-10-21T14:10:45Z
         result: blocked
-        notes: "Covered live via Playwright MCP on Current rootHTTP :3000: login/core search(mapped Solr/ES/SearchAPI), Exportmodal and healthcheck200; real reset email link and background/Ollama/live counts exercised this pass. Blocker: no disposable HTTPS/non-root deployment, working OAuth/external mail/encrypted provider-secret setup available. Not covered live: scheme/context-path/secret provisioning/deployment failure matrix or Legacy/diff-baseline replay."
+        notes: "Covered live on Current root HTTP :3000: fixture sign-in, core bootstrap/search rows, analytics/modal/judging navigation, healthcheck200, bearer APIs and completed sync/background jobs. Encrypted dummy AI key stored/read through edit form; cipher key configured. Blockers verified: nginx stopped and host443 connection refused, no relative_url_root, letter_opener-only delivery with tools.dev.mycorp.com:3000 links, legal URLs unset; no isolated HTTPS/non-root deployment; Keycloak button returns OAuth failure before login. Smallest prerequisite: a disposable configured TLS/context-path deployment with test mail/provider credentials. No restart/config changes made; root smoke screenshot captured. Full deployment matrix incomplete."
         paths: ["config/application.rb", "config/environments/production.rb", "config/initializers/customize_quepid.rb", "config/initializers/email_provider.rb", "config/routes.rb", "app/mailers/", "app/views/layouts/", "app/views/pages/cookies.html.erb", "Dockerfile.dev", "Dockerfile.prod", "docker-compose.yml", "docker-compose.prod.yml", "nginx.conf", "docs/running_with_postgresql.md"]
       "17.11":
         title: "Screenshot viewer and screen history"
@@ -2228,49 +2239,49 @@ parts:
     scenarios:
       "18.1":
         title: "Resource lists, boolean filters and recent-case metadata"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:52:31Z
+        result: pass
+        notes: "Covered live: cookie-free API active/archived boolean variants, owned-book filter, small/large case-list optional fields, per-user metadata write/recent dropdown and team/case endpoint lists. Evidence: api-results.jsonl and additional-api-results.json. Not covered: browser list/ordering comparison and independent peer-metadata readback. Fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/api/v1/cases_controller.rb", "app/controllers/api/v1/books_controller.rb", "app/controllers/api/v1/search_endpoints_controller.rb", "app/controllers/api/v1/teams_controller.rb", "app/controllers/api/v1/scorers_controller.rb", "app/controllers/api/v1/case_metadata_controller.rb", "app/controllers/api/v1/cases/dropdown_controller.rb", "app/controllers/concerns/controller_configuration.rb", "app/views/api/v1/cases/", "app/services/latest_case_scores.rb", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.2":
         title: "Try API: preview, clone and deletion"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T14:09:37Z
+        result: fail
+        notes: "Covered live against Current :3000 with cookie-free bearer API: preview returns args without persistence; create/rename/clone/delete, numbering after deletion, missing-try404 and final-try400 pass. Failure: cloning source boost=2 produces empty curator_vars; source stays unchanged. PREEXISTING:8ceb99e9 clone controller also calls @try.add_curator_vars on source rather than @new_try, source evidence only. No historical live replay. Templated ES preview also passed without persistence; live OpenSearch not exercised; disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/api/v1/tries_controller.rb", "app/controllers/api/v1/clone/tries_controller.rb", "app/models/try.rb", "app/views/api/v1/tries/", "app/controllers/analytics/tries_visualization_controller.rb", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.3":
         title: "Query, options, notes, order and ratings API"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:46:26Z
+        result: pass
+        notes: "Covered live: query trim/upsert, notes/options/order, zero and repeated single ratings, bulk ratings, deduplicated bulk queries, delete-one/delete-all and foreign-parent404 (29 API requests). Not covered: browser order reflection; linked-book sync checked in18.6. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/queries_controller.rb", "app/controllers/api/v1/queries/", "app/controllers/api/v1/bulk_ratings_controller.rb", "app/controllers/api/v1/bulk/queries_controller.rb", "app/models/query.rb", "app/models/concerns/arrangement/", "app/views/api/v1/queries/", "app/services/judgement_sync.rb", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.4":
         title: "Book pairs and judgement API lifecycle"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:46:37Z
+        result: pass
+        notes: "Covered live: pair upsert/update, identified-judge upsert, two separate anonymous rows, three-judgement selection204, foreign-parent404, invalid-position400 and pair/judgement deletions (23 API requests). Not covered: original pair detail-page comparison or a separate child-row count immediately after pair deletion; import/export formats remain in Part10. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/query_doc_pairs_controller.rb", "app/controllers/api/v1/judgements_controller.rb", "app/models/query_doc_pair.rb", "app/models/judgement.rb", "app/models/book.rb", "app/views/api/v1/query_doc_pairs/", "app/views/api/v1/judgements/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.5":
         title: "Team API membership, sharing and deletion"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:50:11Z
+        result: pass
+        notes: "Covered live: team create/read/rename, member add by ID/mixed-case email with deduplication, repeated share/unshare/remove, team-only access revocation and team deletion preserving owned resources (33 API requests). Not covered: invitation delivery/disabled-signup deployment variation; no invitations sent. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/teams_controller.rb", "app/controllers/api/v1/team_members_controller.rb", "app/controllers/api/v1/team_cases_controller.rb", "app/controllers/api/v1/team_scorers_controller.rb", "app/controllers/api/v1/team_books_controller.rb", "app/models/team.rb", "app/services/team_membership.rb", "app/services/team_sharing.rb", "app/views/api/v1/teams/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.6":
         title: "Background evaluation and explicit book synchronization API"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:59:23Z
+        result: fail
+        notes: "Covered live: explicit/latest-try evaluation acknowledgements 200, invalid try 422; sync/async refresh and repeat populate (409 observed) exercised through cookie-free APIs. DB: populate completed, marker cleared and one pair retained; one evaluation completed and scores increased. Failure: concurrent same-case evaluations produced failed SolidQueue job 13411 with MySQL deadlock, while 13412 completed. Historical 8ceb99e9 also permits two concurrent evaluation jobs; source inspection alone does not establish origin of this deadlock. No live historical replay. Not covered: failed-search-engine matrix and exact unrelated-case snapshot. Disposable fixtures/tokens removed; cleanup verified."
         paths: ["app/controllers/api/v1/cases_controller.rb", "app/controllers/api/v1/books/populate_controller.rb", "app/controllers/api/v1/books/refresh_controller.rb", "app/jobs/run_case_evaluation_job.rb", "app/jobs/populate_book_job.rb", "app/jobs/update_case_job.rb", "app/services/ratings_manager.rb", "app/views/api/v1/books/refresh/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.7":
         title: "Configuration APIs and scorer replacement on deletion"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:54:40Z
+        result: pass
+        notes: "Covered live: endpoint create/read/update, unchanged HTML-masked credential submission, malformed-header/proxy-JSONP errors, archive/unarchive/delete; book flags/foreign-team404/delete; scorer edit authorization and dependency/force/default replacement (31 API requests). Existing configuration permits raw credentials in JSON. Not covered: live credential-backed connection, communal-only deployment and invalid replacement IDs. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/search_endpoints_controller.rb", "app/controllers/api/v1/books_controller.rb", "app/controllers/api/v1/scorers_controller.rb", "app/controllers/concerns/book_scorer_assignment.rb", "app/models/search_endpoint.rb", "app/models/scorer.rb", "app/models/book.rb", "app/views/api/v1/search_endpoints/", "app/views/api/v1/scorers/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
       "18.8":
         title: "User lookup and API profile preferences"
-        last_run: null
-        result: null
-        notes: "Added from source audit; not exercised live."
+        last_run: 2026-10-21T13:50:36Z
+        result: pass
+        notes: "Covered live: current user, mixed-case prefix lookup capped at8, omitted/no-match prefix, numeric/fully escaped email lookup, company/default preferences and default0 fallback, onboarding flag write, missing-user404 and absence of secret user fields (10 API requests). Not covered: automatic-tour browser launch, malformed updates and inaccessible-scorer validation. Evidence api-results.jsonl; fixtures/tokens removed and cleanup verified."
         paths: ["app/controllers/api/v1/users_controller.rb", "app/controllers/api/v1/current_user_controller.rb", "app/models/user.rb", "app/views/api/v1/users/", "app/views/api/v1/current_user/", "config/routes.rb", "app/controllers/api/api_controller.rb", "app/controllers/concerns/authentication/", "app/controllers/concerns/api_key_authenticatable.rb"]
