@@ -126,7 +126,7 @@ angular.module('QuepidApp')
                       var mainErrorMsg = 'Some queries failed to resolve!';
 
                       window.quepidDom.flash.show('error', mainErrorMsg);
-                      window.quepidDom.flash.show('error', errorMsg, 'search-error');
+                      window.quepidDom.flash.show('error', errorMsg, 'search-error', { html: true });
                     });
                 }
               });

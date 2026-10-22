@@ -79,6 +79,17 @@ pre {
   --bs-list-group-active-border-color: var(--q-brand-blue);
 }
 
+/* A `.btn-outline-secondary` (e.g. the Select Book modal's "View" button)
+ * keeps its own gray border/text regardless of the row above going active,
+ * leaving gray-on-blue that's hard to read. Rethread it to white so it
+ * matches the row's active text color. */
+.list-group-item.active .btn-outline-secondary {
+  --bs-btn-color: #fff;
+  --bs-btn-border-color: #fff;
+  --bs-btn-hover-color: var(--q-brand-blue);
+  --bs-btn-hover-bg: #fff;
+}
+
 /* BS3's `.list-group-item-success` (e.g. the Share Case modal's "Already
  * shared with" rows) was a vivid pale green (bg/text below, default gray
  * border). BS5's success-subtle tokens are far more desaturated/grayish

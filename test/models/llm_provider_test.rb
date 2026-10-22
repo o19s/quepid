@@ -84,6 +84,12 @@ class LlmProviderTest < ActiveSupport::TestCase
     assert_not LlmProvider.presets.dig('ollama', :supports_images)
   end
 
+  test 'Model Configuration explains image support either way' do
+    assert_includes LlmProvider.find('openai').to_preset[:help], 'Attached as an image URL'
+    assert_includes LlmProvider.find('ollama').to_preset[:help], "doesn't support images"
+    assert_includes LlmProvider.find('typesafe_jev').to_preset[:help], "doesn't support images"
+  end
+
   test 'presets serialize to JSON the form can inline' do
     json = LlmProvider.presets.to_json
     parsed = JSON.parse(json)
@@ -158,9 +164,15 @@ class LlmProviderTest < ActiveSupport::TestCase
     assert_equal :number, field[:type], 'a spinner, not a text box to type a float into'
     assert_equal [ 0, 1 ], [ field[:min], field[:max] ]
     assert_in_delta(0.1, field[:step])
-    assert_includes field[:hint], 'unrateable'
+    assert_equal 'Optional, 0 to 1.', field[:hint], 'the field caption stays short - the full explanation lives in Model Configuration'
     assert_empty LlmProvider.find('openai').option_fields
     assert_no_match(/JSON tab/, LlmProvider.find('typesafe_jev').help_html)
+  end
+
+  test "jev's confidence floor explanation lives in Model Configuration, not under the field" do
+    assert_includes LlmProvider.find('typesafe_jev').to_preset[:help], 'unrateable'
+    assert_not_includes LlmProvider.find('openai').to_preset[:help], 'Minimum confidence',
+                        'only a provider that offers the field should explain it'
   end
 
   test 'option keys name every option a provider declares, for a controller to permit' do

@@ -138,6 +138,56 @@ class BookTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'on_call_ai_judges' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+    let(:middle) { AiJudge.create!(name: 'Middle') }
+    let(:top) { AiJudge.create!(name: 'Top') }
+
+    it 'follows each assigned judge to the end of its chain, without the judges being assigned' do
+      middle.update!(escalates_to: top)
+      users(:judge_judy).update!(escalates_to: middle)
+      book.ai_judges << users(:judge_judy)
+
+      assert_equal [ middle, top ].sort_by(&:id), book.on_call_ai_judges.sort_by(&:id)
+    end
+
+    it 'is empty when no assigned judge wakes anybody' do
+      book.ai_judges << users(:judge_judy)
+
+      assert_empty book.on_call_ai_judges
+    end
+
+    it 'lists an on-call judge in the activity rows before it has judged anything' do
+      users(:judge_judy).update!(escalates_to: top)
+      book.ai_judges << users(:judge_judy)
+
+      row = book.judge_activity_rows.find { |r| r[:judge] == top }
+
+      assert_not_nil row
+      assert row[:on_call]
+      assert_equal 0, row[:count]
+    end
+  end
+
+  describe 'working_ai_judge' do
+    let(:book) { books(:book_of_star_wars_judgements) }
+    let(:top) { AiJudge.create!(name: 'Top') }
+
+    it 'finds an assigned judge and an on-call judge, from a param string or an id' do
+      users(:judge_judy).update!(escalates_to: top)
+      book.ai_judges << users(:judge_judy)
+
+      assert_equal users(:judge_judy), book.working_ai_judge(users(:judge_judy).id.to_s)
+      assert_equal top, book.working_ai_judge(top.id.to_s)
+      assert_equal top, book.working_ai_judge(top.id)
+    end
+
+    it 'is nil for a judge that neither works on the book nor is woken by one that does' do
+      assert_nil book.working_ai_judge(top.id)
+      assert_nil book.working_ai_judge(nil)
+    end
+  end
+
   describe 'judge_activity_row_for' do
     let(:book) { books(:james_bond_movies) }
 
@@ -162,6 +212,17 @@ class BookTest < ActiveSupport::TestCase
 
       assert_not_nil row
       assert_equal 0, row[:count]
+    end
+
+    it 'is present, and on call, for a judge an assigned judge wakes' do
+      star_wars_book = books(:book_of_star_wars_judgements)
+      on_call_judge = AiJudge.create!(name: 'On Call')
+      users(:judge_judy).update!(escalates_to: on_call_judge)
+      star_wars_book.ai_judges << users(:judge_judy)
+
+      assert star_wars_book.judge_activity_row_for(on_call_judge)[:on_call]
+      assert_equal star_wars_book.judge_activity_rows.find { |r| r[:judge] == users(:judge_judy) },
+                   star_wars_book.judge_activity_row_for(users(:judge_judy))
     end
   end
 

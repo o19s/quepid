@@ -140,9 +140,7 @@
       </query-diff-results>
     </div>
 
-    <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText">
-      {{query.errorText}}
-    </div>
+    <div ng-if="query.state() === 'error'" class="alert alert-danger" ng-bind-html="query.errorText"></div>
 
     <!-- Default search results -->
     <div ng-if="!queriesSvc.showOnlyRated" ng-show="displayed.results == displayed.resultsView.results">
