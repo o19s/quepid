@@ -321,12 +321,13 @@
               </div>
             <% end %>
 
-            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if provider&.needs_scale? && scale.empty? %>>Run Judgement</button>
+            <% missing_scale = provider&.needs_scale? && scale.empty? %>
+            <button type="button" class="btn btn-primary" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt" <%= 'disabled' if missing_scale %>>Run Judgement</button>
             <%# With a book, the scale always comes from the book and there's no picker
                 below to keep showing - only worth a mention while nothing is set yet.
                 With a manually-picked scorer, keep this visible even once a scale is
                 set so the dropdown stays available to switch to a different one. %>
-            <% show_scale_notice = @book ? (provider&.needs_scale? && scale.empty?) : provider&.needs_scale? %>
+            <% show_scale_notice = @book ? missing_scale : provider&.needs_scale? %>
             <div class="form-text" data-ai-judge-wizard-target="needsScaleNotice" <%= 'style=display:none;'.html_safe unless show_scale_notice %>>
               <%= scale.present? ? 'Change the rating scale:' : 'This provider rates against a scale:' %>
               <% unless @book %>

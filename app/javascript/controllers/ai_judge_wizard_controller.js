@@ -97,7 +97,7 @@ export default class extends Controller {
     book: Boolean
   }
 
-  async connect() {
+  connect() {
     this.documentFieldsEditor = null
     this.optionsEditor = null
     setTimeout(() => this.captureEditors(), 500)
@@ -110,7 +110,7 @@ export default class extends Controller {
     }
 
     if (this.existingValue) {
-      await this.revealStep2()
+      this.revealStep2()
     }
 
     this.scrollToStep2IfRequested()
@@ -208,10 +208,10 @@ export default class extends Controller {
     }
   }
 
-  async revealStep2() {
+  revealStep2() {
     if (this.hasStep2Target && this.step2Target.style.display !== "block") {
       this.step2Target.style.display = "block"
-      await this.sampleQueryDocPair()
+      this.sampleQueryDocPair()
     }
   }
 
