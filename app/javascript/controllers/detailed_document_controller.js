@@ -3,7 +3,7 @@ import { sanitizeDocumentHtml } from "utils/detailed_document_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
 
 export default class extends Controller {
-  static targets = ["docId", "fields", "rawFields", "viewButton", "tab", "queryContext", "queryText"]
+  static targets = ["docId", "fields", "rawFields", "viewButton", "viewLabel", "tab", "queryContext", "queryText"]
   static values = { linkUrl: String, engineLabels: Object }
 
   connect() {
@@ -66,7 +66,7 @@ export default class extends Controller {
 
     renderJsonExplorer(this.rawFieldsTarget, JSON.stringify(rawFields), { collapsed: false })
     const engineName = (searchEngine === "searchapi" && mapperBasedSearchEngineName) || this.engineLabelsValue?.[searchEngine] || "Search Engine"
-    this.viewButtonTarget.textContent = `View Document on ${engineName}`
+    this.viewLabelTarget.textContent = `View Document on ${engineName}`
     this.viewButtonTarget.toggleAttribute("disabled", !linkUrl)
   }
 

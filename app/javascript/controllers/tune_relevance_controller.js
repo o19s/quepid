@@ -154,6 +154,7 @@ export default class extends Controller {
       mode: queryParamsMode(this.settings.queryParams),
       height: 360,
       onChange: value => {
+        if (this.formattingQueryEditor) return
         this.settings.queryParams = value
         this.refreshQueryWarning(value)
         this.refreshCuratorVars()
@@ -170,7 +171,17 @@ export default class extends Controller {
     const editorShell = this.hasEditorShellTarget ? this.editorShellTarget : null
     if (editorShell) editorShell.hidden = isStatic
     const value = this.settings.queryParams || ""
-    if (this.editor && this.editor.getValue() !== value) this.editor.setValue(value)
+    const editorValue = /^[^=&\s]+=/.test(value.trimStart())
+      ? value.replace(/(?<![\r\n])&/g, "\n&")
+      : value
+    if (this.editor && this.editor.getValue() !== editorValue) {
+      this.formattingQueryEditor = true
+      try {
+        this.editor.setValue(editorValue)
+      } finally {
+        this.formattingQueryEditor = false
+      }
+    }
     this.refreshQueryWarning(value)
     if (this.hasQueryEditorTarget) this.queryEditorTarget.dataset.mode = queryParamsMode(value)
     this.editor?.setMode?.(queryParamsMode(value))

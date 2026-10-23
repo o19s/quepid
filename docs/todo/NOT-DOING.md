@@ -99,3 +99,7 @@ The same server-side handoff could preserve the full pending endpoint configurat
 ## Case footer and flashes
 
 By user choice, the case footer uses the same vertical padding as the homepage. Flash messages float over the footer at the bottom of the screen, with drawer controls above the visible messages. By user choice, Rails management/admin flashes also use the bottom overlay instead of occupying space above the main content; their timing and hover/focus behavior remain unchanged.
+
+## Tuning knob input
+
+By user choice, tuning knobs use text fields rather than numeric spinner inputs, allowing decimal values and text such as `true` without numeric input restrictions.

@@ -506,9 +506,9 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-20T18:02:39Z
+        last_run: 2026-10-23T17:18:12Z
         result: pass
-        notes: "Covered live on Current :3000: drawer opens with five tabs, template edit survives a tab switch, Rerun My Searches! creates a try and re-queries with the new value, dragging past either edge and narrowing the window clamp both panes, a static-endpoint case shows the no-query-settings message. Not covered: protocol-mismatch Reload button."
+        notes: "Parameter formatting MCP sample: case6/try31 URL query displays newline before ampersand and survives Tuning Knobs/Query tab switch; screenshot inspected.24 controller tests cover display-only formatting, encoded ampersands, existing newlines and valid/invalid JSON; ESLint passes. No rerun/save performed. Earlier partial styling sample2026-10-23 MCP Current :3000 case6/try31: Query Sandbox measured white background/black text/gutters display none; screenshot inspected. CSS build and Stylelint pass. Visual suite2pass/3missing static fixture failures/1Book baseline drift. Editor content not changed or saved; other editor surfaces untouched by scoped CSS. Earlier2026-10-20 coverage: drawer opens with five tabs, template edit survives a tab switch, Rerun My Searches! creates a try and re-queries with the new value, dragging past either edge and narrowing the window clamp both panes, a static-endpoint case shows the no-query-settings message. Not covered: protocol-mismatch Reload button."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/bootstrap5-compat.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -517,9 +517,9 @@ parts:
           knobs-edited: "4.11/knobs-edited"
           knobs-variable: "4.11/knobs-variable"
           knobs-empty: "4.11/knobs-empty"
-        last_run: 2026-10-20T18:02:39Z
+        last_run: 2026-10-23T17:20:24Z
         result: pass
-        notes: "Covered live on Current :3000: a ##titleBoost## placeholder creates a knob (default 10), changing it to 50 and rerunning sent bq=...^50 and created try 2; a template with no placeholders shows the explanatory empty state. Not covered: score change interpretation."
+        notes: "Free-text sample2026-10-23 MCP Current :3000 case1/try9: knob input type text accepts1.12 and true; true retained across Query/Knobs switch; screenshot inspected. Original0.9 restored without save/rerun.27 controller tests and ESLint pass. Earlier2026-10-20 coverage: a ##titleBoost## placeholder creates a knob (default 10), changing it to 50 and rerunning sent bq=...^50 and created try 2; a template with no placeholders shows the explanatory empty state. Not covered: score change interpretation."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/views/core/_tune_relevance.html.erb", "app/javascript/modules/editor.js", "app/javascript/utils/settings_runtime.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-additions.css"]
       "4.12":
         title: "Tune Relevance drawer — Settings tab"
@@ -880,9 +880,9 @@ parts:
           document-raw: "6.11/document-raw"
           document-fields: "6.11/document-fields"
           document-vespa: "6.11/document-vespa"
-        last_run: 2026-10-23T12:36:36Z
+        last_run: 2026-10-23T17:07:58Z
         result: pass
-        notes: "Partial capability check on Current :3000 case 5 matrix doc 603: user chose to keep Vespa direct-document lookup disabled for now. Tries API returns false; View Document on Vespa is disabled with no link. Inspected/refreshed document-vespa. Qdrant remains false by default; 56 Rails tests pass. Existing 38 JS capability tests and mutation-verified property cover gating/null URLs (not rerun for this flag-only change). No Vespa URL mapper or ID-search fallback added; earlier deployment prerequisite is no longer an open acceptance gate. Other document/tab coverage was verified in preceding batches; not repeated here."
+        notes: "External-link icon sample: MCP Current :3000 case6/try31 detailed document opened, View Document on Solr includes aria-hidden box-arrow-up-right icon; screenshot inspected.16 related JS tests and ESLint pass. External link not followed. Earlier coverage: Partial capability check on Current :3000 case 5 matrix doc 603: user chose to keep Vespa direct-document lookup disabled for now. Tries API returns false; View Document on Vespa is disabled with no link. Inspected/refreshed document-vespa. Qdrant remains false by default; 56 Rails tests pass. Existing 38 JS capability tests and mutation-verified property cover gating/null URLs (not rerun for this flag-only change). No Vespa URL mapper or ID-search fallback added; earlier deployment prerequisite is no longer an open acceptance gate. Other document/tab coverage was verified in preceding batches; not repeated here."
         paths: ["app/models/mapper_based_search_engine.rb", "app/views/api/v1/tries/_try.json.jbuilder", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/live_query_read_models.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/controllers/detailed_document_controller.test.js"]
       "6.9":
         title: "Frog Report"

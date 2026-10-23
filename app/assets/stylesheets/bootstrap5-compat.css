@@ -416,6 +416,16 @@ header .dropdown-toggle .bi {
   margin-bottom: 10px;
 }
 
+/* Match the staging sandbox's light editing surface inside the dark drawer. */
+#dev-settings .query-sandbox .cm-editor {
+  background-color: #fff;
+  color: #000;
+}
+
+#dev-settings .query-sandbox .cm-gutters {
+  display: none;
+}
+
 /* Checkbox settings ("Evaluate Nightly?" / "Escape Queries")
  * Drop BS5's float/negative-margin trick and just flow the checkbox 
  * inline before its label, so it lines up with the panel's normal 15px inset. */

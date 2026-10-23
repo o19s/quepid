@@ -123,7 +123,7 @@ function mount(settingsOverrides) {
   target("historyList", document.createElement("ul"))
   target("queryWarning", document.createElement("div"))
   target("curatorVars", document.createElement("div"))
-  target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="number" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
+  target("curatorVarTemplate", template('<div class="slider-wrap"><label class="mb-0"></label><input type="text" class="slider-val form-control form-control-sm" data-action="input->tune-relevance#updateCuratorVariable"></div>'))
   target("historyItemTemplate", template('<li class="try-history-item" data-action="click->tune-relevance#navigateToTry"><button type="button" class="btn btn-circle try-details" data-try-details data-action="click->tune-relevance#openTryDetails">...</button><span data-try-name></span> <span data-try-query></span>... <span data-try-endpoint></span></li>'))
   target("tlsWarning", document.createElement("div"))
   target("tlsProtocol", document.createElement("span"))
@@ -223,6 +223,30 @@ describe("TuneRelevanceController", () => {
   })
 
   describe("tabs", () => {
+    it.each([
+      ["q=star%26wars&defType=edismax&tie=1", "q=star%26wars\n&defType=edismax\n&tie=1"],
+      ["q=star\n&tie=1", "q=star\n&tie=1"],
+      ['{"query":{"query_string":{"query":"a&b"}}}', '{"query":{"query_string":{"query":"a&b"}}}'],
+      ['{"query":"a&b"', '{"query":"a&b"']
+    ])("formats URL parameters for display without changing saved input: %s", (value, displayed) => {
+      const { controller, settings } = mount()
+      settings.selectedTry.queryParams = value
+      const textarea = document.createElement("textarea")
+      controller.element.append(textarea)
+      controller.hasQueryEditorTarget = true
+      controller.queryEditorTarget = textarea
+      controller.mountEditor()
+      try {
+        controller.refreshQueryEditor()
+        expect(controller.editor.getValue()).toBe(displayed)
+        expect(settings.selectedTry.queryParams).toBe(value)
+        controller.refreshQueryEditor()
+        expect(controller.editor.getValue()).toBe(displayed)
+      } finally {
+        controller.editor.view.destroy()
+      }
+    })
+
     it("keeps CodeMirror edits in the selected try when extracting knobs and switching tabs", () => {
       const { controller, settings } = mount()
       const textarea = document.createElement("textarea")
@@ -239,7 +263,7 @@ describe("TuneRelevanceController", () => {
       controller.refreshQueryEditor()
 
       expect(settings.selectedTry.queryParams).toBe(edited)
-      expect(controller.editor.getValue()).toBe(edited)
+      expect(controller.editor.getValue()).toBe(edited.replaceAll("&", "\n&"))
       expect(settings.selectedTry.updateVars).toHaveBeenCalled()
       expect(controller.queryWarningTarget.textContent).toContain("defType")
       controller.editor.view.destroy()
@@ -247,18 +271,18 @@ describe("TuneRelevanceController", () => {
   })
 
   describe("curator variables", () => {
-    it("updates the original variable index when unused variables are filtered out", () => {
+    it.each(["8", "1.12", "true", "-0.5"])("retains knob text %s at its original variable index", (value) => {
       const variables = [{ name: "unused", value: "query", inQueryParams: false }, { name: "boost", value: "2", inQueryParams: true }]
       const { controller, settings } = mount({ selectedTry: makeTry({ curatorVars: variables }) })
       controller.refreshCuratorVars()
       const input = controller.curatorVarsTarget.querySelector("input")
       expect(input.dataset.tuneRelevanceIndexParam).toBe("1")
-      input.value = "8"
+      input.value = value
       controller.updateCuratorVariable({ currentTarget: input, params: { index: 1 } })
-      expect(settings.selectedTry.curatorVars[1].value).toBe("8")
+      expect(settings.selectedTry.curatorVars[1].value).toBe(value)
       expect(settings.selectedTry.curatorVars[0].value).toBe("query")
       controller.refreshCuratorVars()
-      expect(controller.curatorVarsTarget.querySelector("input").value).toBe("8")
+      expect(controller.curatorVarsTarget.querySelector("input").value).toBe(value)
     })
   })
 

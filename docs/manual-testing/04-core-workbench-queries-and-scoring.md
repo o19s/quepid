@@ -125,7 +125,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Click the wrench icon ("Tune Relevance") to open the east drawer.
-  2. On the **Query** tab, edit the raw query template in the CodeMirror editor (Solr parameters or JSON for ES/OS/Vectara/Algolia/SearchAPI). Switch to Tuning Knobs and back; confirm the edits remain.
+  2. On the **Query** tab, confirm the editor has a white background, dark text and no line-number gutter. URL-style parameters start on a new line before each `&`; existing line breaks are not duplicated, encoded `%26` stays intact, and JSON queries are unchanged. Then edit the raw query template in the CodeMirror editor (Solr parameters or JSON for ES/OS/Vectara/Algolia/SearchAPI). Switch to Tuning Knobs and back; confirm the edits remain.
   3. Click **Rerun My Searches!**.
 - **Expected:** All queries re-run against the edited template and rescore. Dragging the drawer beyond either edge keeps a usable main column and drawer; resizing reclamps its width, including below the workbench minimum width.
 - **Edge cases:**
@@ -136,7 +136,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 - [ ] **Steps:**
   1. Add a `##variableName##` placeholder to your query template (Query tab), then switch to **Tuning Knobs**.
-  2. Confirm a slider/numeric input auto-appears for the variable.
+  2. Confirm a text input auto-appears for the variable, with no numeric spinner. Enter decimal and text values such as `1.12` and `true`; switch tabs and confirm the value remains.
   3. Change its value, click **Rerun My Searches!**.
 - **Expected:** The query re-runs with the new value substituted in, and the score updates accordingly.
 - **Edge cases:**
