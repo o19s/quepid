@@ -211,7 +211,7 @@ export function createRatingControl(rating, scale) {
   const trigger = document.createElement("button")
   trigger.type = "button"
   trigger.className = "btn"
-  trigger.textContent = rating === "--" ? "Unrated " : `${rating} `
+  trigger.textContent = `${rating} `
   trigger.setAttribute("aria-label", rating === "--" ? "Rate document: Unrated" : `Change rating: ${rating}`)
   trigger.style.backgroundColor = ratingColor(rating, scale)
 

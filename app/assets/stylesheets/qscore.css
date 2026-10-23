@@ -169,8 +169,17 @@
   }
 }
 
+/* Read by screen readers alongside the badge's color/number, but not
+ * shown - sighted users already have the number: standard visually-hidden
+ * clip technique (same as Bootstrap's .visually-hidden). */
 .score-state {
-  display: block;
-  font-size: 11px;
-  line-height: 1.2;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

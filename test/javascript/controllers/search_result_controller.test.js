@@ -49,7 +49,7 @@ describe("SearchResultController", () => {
 
     expect(controller.contentTarget.querySelector(".subTitle").textContent).toContain("A result")
     const trigger = controller.contentTarget.querySelector(".single-rating button")
-    expect(trigger.textContent).toContain("Unrated")
+    expect(trigger.textContent).toContain("--")
     expect(trigger.getAttribute("aria-label")).toBe("Rate document: Unrated")
     expect(controller.contentTarget.querySelector(".result-rank").textContent).toContain("Rank: #2")
     expect(controller.contentTarget.querySelector("strong").textContent).toBe("A result")
