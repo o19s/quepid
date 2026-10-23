@@ -27,7 +27,7 @@ module Admin
       @announcement.author = current_user
 
       if @announcement.save
-        redirect_to edit_admin_announcement_path(@announcement), status: :see_other
+        redirect_to edit_admin_announcement_path(@announcement), notice: 'Announcement was successfully created.', status: :see_other
       else
         render 'new', status: :unprocessable_content
       end
@@ -37,7 +37,7 @@ module Admin
       @announcement = Announcement.find(params.expect(:id))
 
       if @announcement.update(announcement_params)
-        redirect_to edit_admin_announcement_path(@announcement), status: :see_other
+        redirect_to edit_admin_announcement_path(@announcement), notice: 'Announcement was successfully updated.', status: :see_other
       else
         render 'edit', status: :unprocessable_content
       end

@@ -58,7 +58,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   2. Toggle "Quepid Administrator?" on for a second test account, save; log in as that account and confirm admin access now works.
   3. Toggle it back off, confirm admin access is revoked.
   4. Set a plain-text password/confirmation for a user, save, confirm they can log in with it.
-- **Expected:** Admin flag and password changes take effect correctly.
+- **Expected:** Admin flag and password changes take effect correctly. A successful save shows one green footer notice "User was successfully updated."; invalid input shows validation errors without a saved notice.
 - **Edge cases:**
   - [ ] Toggle "Quepid Administrator?" off on the account you're **currently logged in as** — confirm the resulting behavior (should not silently break your own active session in a confusing way).
 
@@ -93,7 +93,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   5. Dismiss/see the banner, then reload — confirm it does **not** reappear for that same user (seen-once behavior).
   6. Back in Admin, confirm the "Views" column incremented.
   7. Publish a second announcement live at the same time as the first — confirm which one (if not both) actually shows to end users.
-- **Expected:** Only live (published) announcements show; each user sees a given announcement at most once; view counts track correctly.
+- **Expected:** Successful creates and updates show green notices "Announcement was successfully created." and "Announcement was successfully updated."; invalid input does not show a saved notice. Only live (published) announcements show; each user sees a given announcement at most once; view counts track correctly.
 - **Edge cases:**
   - [ ] Enter a `<script>` tag or other active HTML in the announcement text — since this renders as raw HTML (`html_safe`) to every user, confirm your organization's risk tolerance here is understood; this is a legitimate XSS-shaped surface if announcement authorship isn't fully trusted. Flag to the team if this feels like it needs tightening.
   - [ ] Enter very long announcement text — confirm the banner wraps sensibly rather than breaking page layout.
@@ -126,7 +126,7 @@ Use the `quepid+admin@o19s.com` seed account (Part 1) to test this part.
   2. Fill Email, Name, Company, a plain-text Password and confirmation, optionally tick Administrator, and save.
   3. Repeat, but supply a pre-encrypted password hash (the **Encrypted Password** field) instead of a plain password.
   4. Log in as each new user.
-- **Expected:** Redirects to the new user's Admin show page. The plain-password user logs in with that password; the pre-encrypted user logs in with the password the hash represents (the hash is stored as-is, not re-encrypted). The Administrator flag grants `/admin` access.
+- **Expected:** Redirects to the new user's Admin show page with the green notice "User was successfully created.". The plain-password user logs in with that password; the pre-encrypted user logs in with the password the hash represents (the hash is stored as-is, not re-encrypted). The Administrator flag grants `/admin` access.
 - **Edge cases:**
   - [ ] Duplicate email or blank email — form re-renders with validation errors, no user created.
   - [ ] Password/confirmation mismatch — validation error.

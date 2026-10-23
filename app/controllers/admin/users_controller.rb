@@ -58,7 +58,7 @@ module Admin
           # rubocop:enable Rails/SkipsModelValidations
         end
 
-        redirect_to admin_user_path(@user), status: :see_other
+        redirect_to admin_user_path(@user), notice: 'User was successfully created.', status: :see_other
       else
         render action: :new, status: :unprocessable_content
       end
@@ -84,7 +84,7 @@ module Admin
           end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 
-          format.html { redirect_to admin_user_path(@user), status: :see_other }
+          format.html { redirect_to admin_user_path(@user), notice: 'User was successfully updated.', status: :see_other }
           format.json { render :show, status: :ok, location: edit_admin_user_path(@user) }
         else
           format.html { render :edit, status: :unprocessable_content }

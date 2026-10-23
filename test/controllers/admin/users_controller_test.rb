@@ -81,6 +81,7 @@ module Admin
     test 'should update user' do
       patch :update, params: { id: user, user: { email: 'blah@blah.com' } }
 
+      assert_equal 'User was successfully updated.', flash[:notice]
       assert_redirected_to admin_user_path(assigns(:user))
 
       user.reload
@@ -143,6 +144,7 @@ module Admin
         end
 
         created = User.find_by(email: 'new_admin_made@example.com')
+        assert_equal 'User was successfully created.', flash[:notice]
         assert_redirected_to admin_user_path(created)
         assert_response :see_other
         assert_not created.administrator?
@@ -162,6 +164,7 @@ module Admin
         end
 
         assert_response :unprocessable_content
+        assert_nil flash[:notice]
         assert_template :new
       end
 
@@ -171,6 +174,7 @@ module Admin
         end
 
         assert_response :unprocessable_content
+        assert_nil flash[:notice]
       end
     end
 
@@ -197,6 +201,7 @@ module Admin
         patch :update, params: { id: target, user: { email: 'nope' } }
 
         assert_response :unprocessable_content
+        assert_nil flash[:notice]
         assert_template :edit
         assert_not_equal 'nope', target.reload.email
       end
@@ -205,6 +210,7 @@ module Admin
         patch :update, params: { id: target, user: { email: 'nope' } }, format: :json
 
         assert_response :unprocessable_content
+        assert_nil flash[:notice]
         assert response.parsed_body.key?('email')
       end
 
@@ -244,6 +250,7 @@ module Admin
         end
 
         assert_response :unprocessable_content
+        assert_nil flash[:notice]
         assert_equal [ 'base' ], response.parsed_body.keys
         assert_match(/annotations/, response.parsed_body['base'].join)
       end

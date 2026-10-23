@@ -30,6 +30,7 @@ module Admin
       }
 
       assert_response :unprocessable_content
+      assert_nil flash[:notice]
       assert_template :edit
       assert_includes assigns(:announcement).errors[:publish_date], 'must be on or before the expiration date'
 
@@ -44,6 +45,7 @@ module Admin
       }
 
       assert_response :see_other
+      assert_equal 'Announcement was successfully updated.', flash[:notice]
       assert_redirected_to edit_admin_announcement_path(announcement)
 
       announcement.reload
@@ -58,6 +60,7 @@ module Admin
       end
 
       assert_response :unprocessable_content
+      assert_nil flash[:notice]
       assert_template :new
       assert_includes assigns(:announcement).errors[:publish_date], 'must be on or before the expiration date'
     end
@@ -95,6 +98,7 @@ module Admin
       end
 
       created = Announcement.find_by(text: 'Maintenance tonight')
+      assert_equal 'Announcement was successfully created.', flash[:notice]
       assert_redirected_to edit_admin_announcement_path(created)
       assert_response :see_other
       assert_equal admin, created.author
@@ -108,6 +112,7 @@ module Admin
       end
 
       assert_response :unprocessable_content
+      assert_nil flash[:notice]
       assert_template :new
     end
 
@@ -117,6 +122,7 @@ module Admin
       patch :update, params: { id: announcement, announcement: { text: 'x' * 1025 } }
 
       assert_response :unprocessable_content
+      assert_nil flash[:notice]
       assert_template :edit
       assert_equal original, announcement.reload.text
     end

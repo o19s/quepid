@@ -39,7 +39,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   6. Optionally: **Custom Headers** (JSON), **Proxy requests** toggle, **Rate Limit**, **Basic Auth Credential** (`username:password`), **Options** (JSON), **Test Query**, **Mapper Code** (last two mainly relevant to Search API).
   7. Check any **Teams to Share this Endpoint With**.
   8. Submit.
-- **Expected:** Redirects to the endpoint's Show page on success.
+- **Expected:** Redirects to the endpoint's Show page on success with the green notice "Search Endpoint was successfully created.".
 - **Edge cases (validation — test at least once each):**
   - [ ] Leave Search Engine / Endpoint Url / API Method blank — each is required.
   - [ ] Enter a JSON **array** (not object) in Custom Headers or Options — expect "must be a JSON object..." error.
@@ -57,7 +57,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   1. Open an endpoint's Show page — confirm every field from creation displays correctly, including a **masked** Basic Auth Credential (`username:******`), Requests Per Minute ("0 means no throttling"), "Shared with Teams" (note: shows *all* teams sharing it, not just yours), "Used by Cases" (cases whose tries reference it), and Owner.
   2. Click **Edit**, change a field (e.g., Rate Limit), save.
   3. Edit again but leave the masked Basic Auth Credential field untouched, save.
-- **Expected:** The real password is preserved when the masked value is resubmitted unchanged (it should *not* get overwritten with the literal masked string).
+- **Expected:** Successful saves show one green footer notice "Search Endpoint was successfully updated."; validation failures do not show a saved notice. The real password is preserved when the masked value is resubmitted unchanged (it should *not* get overwritten with the literal masked string).
 - **Edge cases:**
   - [ ] If archived, confirm the Show page shows "You must unarchive this search endpoint to use it with new cases."
   - [ ] Update team-sharing as a user who only has access to some of the endpoint's teams — confirm teams you can't see are preserved, not silently wiped (best tested with two accounts).

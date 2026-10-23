@@ -53,7 +53,7 @@ class SearchEndpointsController < ApplicationController
     TeamSharing.new(current_user).assign_teams(@search_endpoint, search_endpoint_params[:team_ids])
     restore_cloned_credential
 
-    @search_endpoint.save
+    flash[:notice] = 'Search Endpoint was successfully created.' if @search_endpoint.save
     respond_with(@search_endpoint)
   end
 
@@ -66,7 +66,7 @@ class SearchEndpointsController < ApplicationController
       filtered_params = filtered_params.except(:basic_auth_credential)
     end
 
-    @search_endpoint.update(filtered_params)
+    flash[:notice] = 'Search Endpoint was successfully updated.' if @search_endpoint.update(filtered_params)
     respond_with(@search_endpoint)
   end
 

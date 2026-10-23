@@ -938,13 +938,14 @@ parts:
       "7.3":
         title: "View / Edit a Search Endpoint"
         screenshots:
+          save-notice: "7.3/save-notice"
           endpoint-masked-edit: "7.3/endpoint-masked-edit"
           endpoint-updated: "7.3/endpoint-updated"
           endpoint-edit: "7.3/endpoint-edit"
           endpoint-details: "7.3/endpoint-details"
-        last_run: 2026-10-20T18:40:34Z
+        last_run: 2026-10-23T16:45:48Z
         result: pass
-        notes: "Covered live on Current :3000: Show page fields including the masked credential (alice:******), Requests Per Minute and the empty team and case lists, editing and saving with the masked value untouched kept the real credential in the database. Not covered: archived banner, partial-team preservation."
+        notes: "Partial notice sample2026-10-23 MCP Current :3000: unchanged Static Endpoint6 edit saved, one green footer update notice; removed duplicate inline Show notice; screenshot inspected.5 focused endpoint tests pass for create/update/invalid writes, RuboCop passes. Deferred: live creation/validation/credential and team matrix. Earlier coverage: Covered live on Current :3000: Show page fields including the masked credential (alice:******), Requests Per Minute and the empty team and case lists, editing and saving with the masked value untouched kept the real credential in the database. Not covered: archived banner, partial-team preservation."
         paths: ["app/controllers/search_endpoints_controller.rb", "app/views/search_endpoints/show.html.erb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "7.4":
         title: "Clone a Search Endpoint"
@@ -1863,13 +1864,14 @@ parts:
       "14.6":
         title: "Edit a user"
         screenshots:
+          save-notice: "14.6/save-notice"
           demoted: "14.6/demoted"
           promoted: "14.6/promoted"
           edit: "14.6/edit"
-        last_run: 2026-10-15T05:24:43Z
+        last_run: 2026-10-23T16:45:48Z
         result: pass
-        notes: "Current refresh: disposable8873 admin checkbox grants fresh-session/admin200, demotion revokes to302/home alert; explicit password update supports fresh login. Disposable admin8874 self-demotion sends current session home with Administrator alert and direct/admin302. Both restored nonadmin; seed admin untouched. Three selected plus self-demotion supplemental inspected and registered."
-        paths: ["app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
+        notes: "Partial notice sample2026-10-23 MCP Current :3000: unchanged current-admin user3 edit saved, green footer notice, duplicate inline Show notice removed; screenshot inspected. Admin user/announcement suites54tests pass incl valid creates/updates and invalid no-notice. Deferred: live create/password/role matrix. Earlier coverage: Current refresh: disposable8873 admin checkbox grants fresh-session/admin200, demotion revokes to302/home alert; explicit password update supports fresh login. Disposable admin8874 self-demotion sends current session home with Administrator alert and direct/admin302. Both restored nonadmin; seed admin untouched. Three selected plus self-demotion supplemental inspected and registered."
+        paths: ["app/views/admin/users/show.html.erb", "app/controllers/admin/users_controller.rb", "app/views/admin/users/edit.html.erb", "app/models/concerns/text_search.rb", "app/services/csv_export.rb"]
       "14.7":
         title: "Assign judgements to anonymous user (admin-level)"
         screenshots:
@@ -1891,6 +1893,7 @@ parts:
       "14.9":
         title: "Announcements"
         screenshots:
+          save-notice: "14.9/save-notice"
           deleted: "14.9/deleted"
           overlap: "14.9/overlap"
           views: "14.9/views"
@@ -1898,9 +1901,9 @@ parts:
           banner: "14.9/banner"
           live: "14.9/live"
           new: "14.9/new"
-        last_run: 2026-10-20T20:29:34Z
+        last_run: 2026-10-23T16:45:48Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: created disposable bold/emoji announcement with today publish date; isolated non-admin sees rendered Btag banner, closes and reload excludes it; admin Views1; deleted announcement and index absence confirmed. Current uses publish/expiration dates (no Make Live/Turn Off on observed form). Not covered live: overlapping/long/malicious content or diff-baseline replay."
+        notes: "Partial notice sample2026-10-23 MCP Current :3000: temporary future-dated announcement created then unchanged update, green create/update notices captured/inspected; deleted and index absence confirmed.54 admin tests pass including validation/no saved notice. No live public-announcement delivery sampled. Visual suite2pass,3missing static fixture failures,1Book baseline drift. Earlier coverage: Covered live via Playwright MCP on Current :3000: created disposable bold/emoji announcement with today publish date; isolated non-admin sees rendered Btag banner, closes and reload excludes it; admin Views1; deleted announcement and index absence confirmed. Current uses publish/expiration dates (no Make Live/Turn Off on observed form). Not covered live: overlapping/long/malicious content or diff-baseline replay."
         paths: ["app/views/admin/announcements/_fields.html.erb", "app/controllers/admin/announcements_controller.rb", "app/models/announcement.rb", "app/views/admin/announcements/edit.html.erb", "app/views/admin/announcements/index.html.erb", "app/views/admin/announcements/new.html.erb", "app/models/concerns/text_search.rb", "app/views/layouts/_header.html.erb", "app/helpers/application_helper.rb"]
       "14.10":
         title: "Websocket Tester"

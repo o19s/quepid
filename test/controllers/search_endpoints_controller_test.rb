@@ -40,6 +40,16 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
       post search_endpoints_url, params: { search_endpoint: { name: '' } }
     end
     assert_response :unprocessable_content
+    assert_nil flash[:notice]
+  end
+
+  test 'invalid update does not show a saved notice' do
+    original_url = @search_endpoint.endpoint_url
+    patch search_endpoint_url(@search_endpoint), params: { search_endpoint: { endpoint_url: '' } }
+
+    assert_response :unprocessable_content
+    assert_nil flash[:notice]
+    assert_equal original_url, @search_endpoint.reload.endpoint_url
   end
 
   test 'create rejects a foreign team' do
@@ -118,6 +128,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
+    assert_equal 'Search Endpoint was successfully created.', flash[:notice]
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
     assert_not_equal @search_endpoint.id, SearchEndpoint.last.id
     assert_empty SearchEndpoint.last.teams
@@ -136,6 +147,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
            } }
     end
 
+    assert_equal 'Search Endpoint was successfully created.', flash[:notice]
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
     assert_includes SearchEndpoint.last.teams, team
   end
@@ -204,6 +216,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
         search_engine: @search_endpoint.search_engine, basic_auth_credential: ''
       },
     }
+    assert_equal 'Search Endpoint was successfully created.', flash[:notice]
     assert_redirected_to search_endpoint_url(SearchEndpoint.last)
     assert_equal '', SearchEndpoint.last.basic_auth_credential
   end
@@ -250,6 +263,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
             search_engine:  @search_endpoint.search_engine,
             team_ids:       [ team.id ],
           } }
+    assert_equal 'Search Endpoint was successfully updated.', flash[:notice]
     assert_redirected_to search_endpoint_url(@search_endpoint)
   end
 
