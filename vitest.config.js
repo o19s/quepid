@@ -89,6 +89,7 @@ export default defineConfig({
       { find: "utils/live_query_commands", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_commands.js") },
       { find: "utils/live_query_events", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_events.js") },
       { find: "utils/record_identity", replacement: path.resolve(repoRoot, "app/javascript/utils/record_identity.js") },
+      { find: "utils/lazy_detail", replacement: path.resolve(repoRoot, "app/javascript/utils/lazy_detail.js") },
       { find: "utils/live_query_lifecycle", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_lifecycle.js") },
       { find: "utils/live_query_read_models", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_read_models.js") },
       { find: "utils/live_query_collection", replacement: path.resolve(repoRoot, "app/javascript/utils/live_query_collection.js") },

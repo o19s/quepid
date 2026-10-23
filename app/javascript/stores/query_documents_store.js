@@ -1,4 +1,8 @@
 import { QueryCollectionStore, queryCollectionStore } from "stores/query_collection_store"
+import { lazyDetail } from "utils/lazy_detail"
+
+// Keys of snapshot() other than queryId, exposed lazily on `change` events. Keep in sync (tested).
+export const DOCUMENTS_SNAPSHOT_KEYS = ["showOnlyRated", "query", "queries", "caseDiffs", "caseSummary"]
 
 /**
  * Observable read model for the documents in each expanded query.
@@ -19,7 +23,7 @@ export class QueryDocumentsStore extends EventTarget {
       this._queries.forEach((_query, key) => {
         if (!this.collection.liveQuery(key)) this._queries.delete(key)
       })
-      this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(event.detail.queryId) }))
+      this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(event.detail.queryId) }))
     })
     this.collection.addEventListener("reset", () => this.reset())
   }
@@ -41,14 +45,14 @@ export class QueryDocumentsStore extends EventTarget {
       ratedDocs: ratedDocs.map(doc => snapshotDocument(doc, state)),
       diffs: snapshotDiffs(state.diffs, state)
     })
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(queryId) }))
   }
 
   updateQueryState(queryId, state = {}) {
     const key = String(queryId)
     const current = this._queries.get(key) || { queryId: Number(queryId), docs: [], ratedDocs: [] }
     this._queries.set(key, { ...current, ...state })
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot(queryId) }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(queryId) }))
   }
 
   setCaseDiffs(searchers = []) {
@@ -57,7 +61,7 @@ export class QueryDocumentsStore extends EventTarget {
       version: searcher.version ?? null,
       score: searcher.score || { score: "?", allRated: false }
     }))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   clearCaseDiffs() {
@@ -66,12 +70,12 @@ export class QueryDocumentsStore extends EventTarget {
 
   setCaseSummary(summary = {}) {
     this._caseSummary = { ...this._caseSummary, ...summary }
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   removeQuery(queryId) {
     this._queries.delete(String(queryId))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   request(command, detail = {}) {
@@ -113,6 +117,10 @@ export class QueryDocumentsStore extends EventTarget {
       expanded: query.expanded === true,
       showOnlyRated: this.collection.showOnlyRated
     }
+  }
+
+  changeDetail(queryId) {
+    return lazyDetail(DOCUMENTS_SNAPSHOT_KEYS, () => this.snapshot(queryId), { queryId: queryId == null ? null : Number(queryId) })
   }
 
   snapshot(queryId) {

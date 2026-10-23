@@ -1,4 +1,8 @@
 import { isSameId } from "utils/record_identity"
+import { lazyDetail } from "utils/lazy_detail"
+
+// Keys of snapshot(), exposed lazily on `change` events. Keep in sync (tested).
+export const COLLECTION_SNAPSHOT_KEYS = ["caseId", "status", "search", "showOnlyRated", "displayOrder", "queries"]
 
 /**
  * Observable read model for the case query collection.
@@ -35,7 +39,7 @@ export class QueryCollectionStore extends EventTarget {
     this._displayOrder = []
     this._liveQueries = new Map()
     this._expandedQueries = new Map()
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   replace({ caseId, displayOrder = [], queries = [] }) {
@@ -50,7 +54,7 @@ export class QueryCollectionStore extends EventTarget {
       if (!knownIds.has(key)) this._expandedQueries.delete(key)
     })
     this._status = "ready"
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   markError(error) {
@@ -63,7 +67,7 @@ export class QueryCollectionStore extends EventTarget {
     this._searchStatus = "searching"
     this._searchError = null
     this.dispatchEvent(new CustomEvent("search-started", { detail: this.snapshot() }))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
     return generation
   }
 
@@ -73,7 +77,7 @@ export class QueryCollectionStore extends EventTarget {
     this._searchStatus = "ready"
     this._searchError = null
     this.dispatchEvent(new CustomEvent("search-completed", { detail: this.snapshot() }))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
     return true
   }
 
@@ -83,7 +87,7 @@ export class QueryCollectionStore extends EventTarget {
     this._searchStatus = "error"
     this._searchError = error
     this.dispatchEvent(new CustomEvent("search-failed", { detail: { error, ...this.snapshot() } }))
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
     return true
   }
 
@@ -95,33 +99,37 @@ export class QueryCollectionStore extends EventTarget {
     this._liveQueries.set(key, query)
     if (!this._displayOrder.includes(Number(queryId))) this._displayOrder.push(Number(queryId))
     this._status = "ready"
-    if (publish) this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
+    if (publish) this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) }))
   }
 
   remove(queryId) {
     this._liveQueries.delete(String(queryId))
     this._expandedQueries.delete(String(queryId))
     this._displayOrder = this._displayOrder.filter(id => !isSameId(id, queryId))
-    this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) }))
   }
 
   setDisplayOrder(displayOrder = []) {
     this._displayOrder = displayOrder.map(Number)
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   setExpanded(queryId, expanded) {
     const key = String(queryId)
     const value = Boolean(expanded)
     this._expandedQueries.set(key, value)
-    this.dispatchEvent(new CustomEvent("change", { detail: { ...this.snapshot(), queryId: Number(queryId) } }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) }))
   }
 
   collapseAll() {
     this._expandedQueries.forEach((_expanded, queryId) => {
       this._expandedQueries.set(queryId, false)
     })
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
+  }
+
+  changeDetail(extra = {}) {
+    return lazyDetail(COLLECTION_SNAPSHOT_KEYS, () => this.snapshot(), extra)
   }
 
   get showOnlyRated() {
@@ -130,7 +138,7 @@ export class QueryCollectionStore extends EventTarget {
 
   setShowOnlyRated(value) {
     this._showOnlyRated = Boolean(value)
-    this.dispatchEvent(new CustomEvent("change", { detail: this.snapshot() }))
+    this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
   requestToggleShowOnlyRated() {

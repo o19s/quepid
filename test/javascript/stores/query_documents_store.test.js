@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { QueryDocumentsStore } from "stores/query_documents_store"
+import { DOCUMENTS_SNAPSHOT_KEYS, QueryDocumentsStore } from "stores/query_documents_store"
 
 describe("QueryDocumentsStore", () => {
   let store
@@ -7,6 +7,20 @@ describe("QueryDocumentsStore", () => {
   beforeEach(() => {
     store = new QueryDocumentsStore()
     for (const queryId of [1, 2, 4, 5, 8, 12]) store.collection.upsert({ queryId })
+  })
+
+  it("exposes every snapshot field on change events without building a snapshot per event", () => {
+    expect([...DOCUMENTS_SNAPSHOT_KEYS, "queryId"].toSorted()).toEqual(Object.keys(store.snapshot()).toSorted())
+
+    const snapshot = vi.spyOn(store, "snapshot")
+    const details = []
+    store.addEventListener("change", event => details.push(event.detail))
+    store.updateQueryState(12, { numFound: 3 })
+
+    expect(details[0].queryId).toBe(12)
+    expect(snapshot).not.toHaveBeenCalled()
+    expect(details[0].queries).toBeDefined()
+    expect(snapshot).toHaveBeenCalledTimes(1)
   })
 
   it("publishes plain snapshots for current and rated documents", () => {

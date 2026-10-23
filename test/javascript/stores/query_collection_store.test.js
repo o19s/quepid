@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { QueryCollectionStore } from "stores/query_collection_store"
+import { COLLECTION_SNAPSHOT_KEYS, QueryCollectionStore } from "stores/query_collection_store"
 
 describe("QueryCollectionStore", () => {
   let store
@@ -57,6 +57,21 @@ describe("QueryCollectionStore", () => {
 
     expect(store.orderedQueryIds()).toEqual([2])
     expect(store.query(1)).toBeNull()
+  })
+
+  it("exposes every snapshot field on change events without building a snapshot per event", () => {
+    expect(COLLECTION_SNAPSHOT_KEYS.toSorted()).toEqual(Object.keys(store.snapshot()).toSorted())
+
+    const snapshot = vi.spyOn(store, "snapshot")
+    store.upsert({ queryId: 1, queryText: "first" }, { publish: false })
+    const details = []
+    store.addEventListener("change", event => details.push(event.detail))
+    store.upsert({ queryId: 2, queryText: "second" })
+
+    expect(details[0].queryId).toBe(2)
+    expect(snapshot).not.toHaveBeenCalled()
+    expect(Object.keys(details[0].queries)).toEqual(["1", "2"])
+    expect(snapshot).toHaveBeenCalledTimes(1)
   })
 
   it("orders by display order, skips stale ids, and appends unordered queries in insertion order", () => {
