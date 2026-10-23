@@ -61,12 +61,10 @@ class CoreControllerTest < ActionController::TestCase
       assert_select '#coreNavbarContent'
       assert_select '#header turbo-frame#dropdown_cases[src=?][loading="lazy"]', dropdown_cases_core_path
       assert_select '#header turbo-frame#dropdown_books[src=?][loading="lazy"]', dropdown_books_core_path
-      assert_select '#header a[href=?] small', cases_path,
-                    text: "(#{users(:doug).cases_involved_with.not_archived.count} active)"
-      assert_select '#header a[href=?] small', books_path,
-                    text: "(#{users(:doug).books_involved_with.count} active)"
-      assert_select '#header button[data-action="click->wizard-launcher#newCase"][data-wizard-launcher-create-url-value=?]',
-                    case_new_path.delete_prefix('/')
+      assert_select '#header .header-recents-menu small', count: 0
+      assert_select '#header a[href=?][data-turbo="false"][target="_self"]', cases_path, text: 'View all cases'
+      assert_select '#header a[href=?][data-turbo="false"][target="_self"]', books_path, text: 'View all books'
+      assert_select '#header a[href=?][data-turbo="false"][target="_self"]', case_new_path, text: 'Create a case'
       assert_select '#header a[href=?]', new_book_path(scorer_id: kase.scorer_id, team_ids: [ teams(:valid).id ], origin_case_id: kase.id)
       assert_select '#header a[href=?]', teams_path
       assert_select '#header a[href=?]', scorers_path

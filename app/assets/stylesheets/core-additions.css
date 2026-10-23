@@ -77,14 +77,14 @@ body {
 	picker outside the header) stay on BS5 defaults.
 */
 
-header .dropdown-menu {
+header .dropdown-menu:not(.header-recents-menu) {
   margin: 0;
   padding: 1px 0 0 0;
   border-radius: 0;
   z-index: 999;
 }
 
-header .dropdown-menu > li {
+header .dropdown-menu:not(.header-recents-menu) > li {
   min-width: 250px;
   padding: 10px;
   border-bottom: 1px solid #eee;

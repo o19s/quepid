@@ -45,3 +45,52 @@
   color: #FFF;
   font-size: 14px;
 }
+
+/* Recent Cases/Books share the homepage presentation across both bundles.
+ * Pixel sizes keep core's smaller root font from shrinking the same menu. */
+.navbar-secondary .header-recents-menu {
+  --bs-dropdown-font-size: 16px;
+  --bs-dropdown-border-radius: 6px;
+  --bs-dropdown-divider-margin-y: 8px;
+  --bs-dropdown-divider-bg: rgba(0, 0, 0, 0.175);
+
+  left: auto;
+  width: 250px;
+  padding: 8px;
+  line-height: 24px;
+}
+
+.header-recents-menu .dropdown-divider {
+  border-color: var(--bs-dropdown-divider-bg);
+}
+
+.header-recents-menu turbo-frame a {
+  color: #0d6efd;
+  text-decoration: underline;
+}
+
+.header-recents-menu turbo-frame a:hover {
+  color: #0a58ca;
+}
+
+.header-recents-menu .actions .d-grid {
+  gap: 8px !important;
+}
+
+.header-recents-menu .btn {
+  --bs-btn-font-size: 16px;
+  --bs-btn-padding-x: 12px;
+  --bs-btn-padding-y: 6px;
+  --bs-btn-border-radius: 6px;
+
+  line-height: 24px;
+}
+
+.navbar-secondary .header-recents-menu .btn-success {
+  --bs-btn-bg: #198754;
+  --bs-btn-border-color: #198754;
+  --bs-btn-hover-bg: #157347;
+  --bs-btn-hover-border-color: #146c43;
+  --bs-btn-active-bg: #146c43;
+  --bs-btn-active-border-color: #13653f;
+}

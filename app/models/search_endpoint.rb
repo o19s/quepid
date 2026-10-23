@@ -75,7 +75,7 @@ class SearchEndpoint < ApplicationRecord
   TEAM_SHARING_MESSAGE = 'Static File endpoints cannot be shared with teams. Share the case instead.'
 
   def team_shareable?
-    'static' != search_engine
+    'static' != search_engine && (!persisted? || 'static' != search_engine_in_database)
   end
 
   def fullname

@@ -20,9 +20,9 @@ This part covers the chrome that surrounds every logged-in page — the left ico
   1. Click **Relevancy Cases** in the top navbar. Confirm a dropdown opens showing "RECENT CASES" (lazy-loaded), with **View all cases** and **Create a case** buttons at the bottom.
   2. Click **Books** in the top navbar. Confirm the equivalent "RECENT BOOKS" dropdown with **View all books** / **Create a book**.
   3. Click **Teams** and **Scorers** navbar links — confirm they navigate directly (no dropdown, just a link).
-- [ ] Repeat on a case page: **View all** actions include active counts; **Create a case** opens the new-case wizard. **Create a book** navigates with that case's `origin_case_id`, `scorer_id` and `team_ids[]`. On management pages, creation remains ordinary links without case-derived book parameters.
+- [ ] Repeat on a case page: **View all** actions omit active counts; **Create a case** opens the new-case wizard. **Create a book** navigates with that case's `origin_case_id`, `scorer_id` and `team_ids[]`. On management pages, creation remains ordinary links without case-derived book parameters.
 - [ ] At 768px, expand **Toggle navigation** and repeat the dropdown checks on both surfaces; the case name, try and score remain in the workspace header.
-- **Expected:** Both dropdown lists load their recent items correctly (they're lazy turbo-frames, so allow a moment on slower connections) and the action buttons work.
+- **Expected:** Cases and Books dropdowns share the homepage presentation on both surfaces: rounded250px menu, blue underlined recent links, matching spacing and green create buttons. Both dropdown lists load their recent items correctly (they're lazy turbo-frames, so allow a moment on slower connections) and the action buttons work.
 - **Edge cases:**
   - [ ] As a brand-new user with zero cases/books, confirm the dropdowns show a sensible empty state instead of an empty blank area.
   - [ ] Open a dropdown, then immediately click elsewhere — confirm it closes without lingering rendering artifacts.

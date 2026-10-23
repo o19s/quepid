@@ -86,6 +86,17 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_equal original_engine, @search_endpoint.search_engine
   end
 
+  test 'a static endpoint cannot bypass sharing restrictions with an invalid engine change' do
+    @search_endpoint.teams.clear
+    @search_endpoint.update_column(:search_engine, 'static')
+    patch search_endpoint_url(@search_endpoint), params: { search_endpoint: {
+      search_engine: nil, team_ids: [ team.id ]
+    } }
+    assert_response :unprocessable_content
+    assert_empty @search_endpoint.reload.teams
+    assert_equal 'static', @search_endpoint.search_engine
+  end
+
   test 'editing a static endpoint without team fields preserves existing teams' do
     @search_endpoint.update_column(:search_engine, 'static')
     original_teams = @search_endpoint.team_ids

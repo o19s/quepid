@@ -103,3 +103,11 @@ By user choice, the case footer uses the same vertical padding as the homepage. 
 ## Tuning knob input
 
 By user choice, tuning knobs use text fields rather than numeric spinner inputs, allowing decimal values and text such as `true` without numeric input restrictions.
+
+## Static File endpoint sharing
+
+By user choice, Static File endpoints cannot acquire new team memberships, including through endpoint forms or automatic endpoint sharing when a case is shared. Share the source case to grant snapshot access instead. Existing endpoint memberships remain intact and can be removed through Unshare. The wizard excludes static endpoints from reuse choices without the old sharability warning.
+
+## Recent Cases and Books dropdown presentation
+
+By user choice, the case navbar uses the homepage dropdown presentation. One shared implementation omits active counts and retains surface-specific navigation, new-case wizard behavior and case-derived Create Book parameters.

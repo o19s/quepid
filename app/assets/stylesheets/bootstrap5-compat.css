@@ -234,8 +234,8 @@ label {
  * (window.bootstrap from bootstrap_globals.js). Font size inherits BS5's 1rem;
  * other vars restate BS5 defaults at 16px root for explicitness.
  *
- * Header dropdowns get their distinct look from `header .dropdown-menu`
- * scoped overrides in core-additions.css. */
+ * Account dropdowns keep their core skin; recent Cases/Books use the shared
+ * navbar-brand.css presentation. */
 .dropdown-menu {
   --bs-dropdown-min-width: 160px;
   --bs-dropdown-padding-y: var(--q-space-sm);
@@ -245,15 +245,15 @@ label {
   --bs-dropdown-divider-margin-y: var(--q-space-sm);
 }
 
-/* Header and annotation menus carry their own chevron glyph — suppress
+/* Header account and annotation menus carry their own chevron glyph — suppress
  * BS5's `::after` triangle so it doesn't double up. */
-header.navbar-secondary .dropdown-toggle::after,
+header.navbar-secondary .dropdown-toggle:not(.header-recents-toggle)::after,
 .annotation .dropdown-toggle::after {
   display: none;
 }
 
 /* Gap between the stacked header dropdown buttons, as BS3's .btn-block had. */
-.dropdown-menu .actions .btn + .btn {
+.dropdown-menu:not(.header-recents-menu) .actions .btn + .btn {
   margin-top: 10px;
 }
 
@@ -326,7 +326,7 @@ header.navbar-secondary .navbar-nav .nav-link {
 }
 
 /* Hover emphasis — only this header's nav-links get it. */
-.navbar-secondary .navbar-nav .nav-link:hover {
+.navbar-secondary .navbar-nav .nav-link:not(.header-recents-toggle):hover {
   background: rgba(0,0,0,0.25);
 }
 
@@ -336,8 +336,8 @@ header .nav-link {
 }
 
 /* Secondary nav — open toggle uses .show / aria-expanded="true". */
-.navbar-secondary .navbar-nav .dropdown-toggle.show,
-.navbar-secondary .navbar-nav .dropdown-toggle[aria-expanded="true"] {
+.navbar-secondary .navbar-nav .dropdown-toggle:not(.header-recents-toggle).show,
+.navbar-secondary .navbar-nav .dropdown-toggle:not(.header-recents-toggle)[aria-expanded="true"] {
   background: #258;
 }
 

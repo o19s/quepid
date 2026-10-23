@@ -15,9 +15,8 @@ class DropdownController < ApplicationController
   #    document rather than only updating the frame.
   #
   # Skipping either one leaves the URL changing while the page silently keeps showing the old
-  # case. `class: "dropdown-item"` matches the core navbar's markup; without it the items render
-  # as plain underlined text instead of full-row, padded/hoverable Bootstrap menu items.
-  CORE_LINK_OPTIONS = { class: 'dropdown-item', data: { turbo: false }, target: '_self' }.freeze
+  # case. Both surfaces share the same underlined recent-link presentation.
+  CORE_LINK_OPTIONS = { data: { turbo: false }, target: '_self' }.freeze
 
   def cases
     render_cases RAILS_PAGE_LINK_OPTIONS

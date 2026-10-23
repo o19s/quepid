@@ -1,22 +1,18 @@
-<%# Core frames use hard-navigation links; only core includes active counts,
-    the wizard launcher, and case-derived book parameters. %>
 <ul class="navbar-nav me-auto">
   <% %i[cases books].each do |section| %>
     <% cases_menu = section == :cases %>
     <% toggle_id = cases_menu ? 'dropdownCases' : 'dropdownBooks' %>
     <li class="nav-item dropdown">
-      <%= tag.a href: '#', id: toggle_id, role: 'button', class: 'nav-link dropdown-toggle',
+      <%= tag.a href: '#', id: toggle_id, role: 'button', class: 'nav-link dropdown-toggle header-recents-toggle',
                 data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' } do %>
         <span class="nav-label"><%= cases_menu ? 'Relevancy Cases' : 'Books' %></span>
-        <% if case_page %><i class="bi bi-chevron-down"></i><% end %>
       <% end %>
 
-      <%= tag.ul class: class_names('dropdown-menu', 'p-2': !case_page),
-                 style: ('left: auto; width:250px;' unless case_page),
+      <%= tag.ul class: 'dropdown-menu header-recents-menu',
                  aria: { labelledby: toggle_id } do %>
         <li class="text-muted">
           <% recent_label = "RECENT #{section.to_s.upcase}" %>
-          <%= case_page ? tag.strong(recent_label) : recent_label %>
+          <%= recent_label %>
         </li>
         <li><hr class="dropdown-divider"></li>
 
@@ -28,13 +24,14 @@
         <turbo-frame id="dropdown_<%= section %>" src="<%= dropdown_url %>" loading="lazy">
         </turbo-frame>
 
-        <li class="actions">
-          <% if case_page %>
-            <%= render 'layouts/header_core_actions', cases_menu: cases_menu, section: section, kase: kase %>
-          <% else %>
-            <%= render 'layouts/header_management_actions', cases_menu: cases_menu %>
-          <% end %>
-        </li>
+        <li class="actions"><div class="d-grid gap-2">
+          <% navigation_options = case_page ? { data: { turbo: false }, target: '_self' } : {} %>
+          <% new_book_params = kase.present? ? { scorer_id: kase.scorer_id, team_ids: kase.teams.map(&:id), origin_case_id: kase.id } : {} %>
+          <%= link_to "View all #{section}", cases_menu ? cases_path : books_path,
+                      **navigation_options, class: 'btn btn-outline-secondary' %>
+          <%= link_to "Create a #{cases_menu ? 'case' : 'book'}", cases_menu ? case_new_path : new_book_path(new_book_params),
+                      **navigation_options, class: 'btn btn-success' %>
+        </div></li>
       <% end %>
     </li>
   <% end %>

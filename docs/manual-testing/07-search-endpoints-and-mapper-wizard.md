@@ -59,6 +59,7 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   3. Edit again but leave the masked Basic Auth Credential field untouched, save.
 - **Expected:** Successful saves show one green footer notice "Search Endpoint was successfully updated."; validation failures do not show a saved notice. The real password is preserved when the masked value is resubmitted unchanged (it should *not* get overwritten with the literal masked string).
 - **Edge cases:**
+  - [ ] A Static File endpoint shows a note explaining that its results belong to a case snapshot, sharing the case grants access, and another case needs its own import. Ordinary endpoints do not show this note.
   - [ ] If archived, confirm the Show page shows "You must unarchive this search endpoint to use it with new cases."
   - [ ] Update team-sharing as a user who only has access to some of the endpoint's teams — confirm teams you can't see are preserved, not silently wiped (best tested with two accounts).
 
@@ -85,6 +86,8 @@ Repeat for each: **Solr**, **Elasticsearch**, **OpenSearch**, **Vectara**, **Alg
   - [ ] Try archiving via a team page for an endpoint **not** associated with that team — expect "...is not associated with this team."
 
 ### 7.6 Share / unshare a Search Endpoint
+
+Static File endpoints cannot be shared with teams. Share their case instead; sharing a static case must not separately add its endpoint to the team. Existing endpoint memberships remain removable through Unshare. An unshared static endpoint has no Share button, and its edit form has no team picker. Crafted share requests and attempts to add teams through create/update forms are rejected without changing memberships.
 
 - [ ] **Steps:**
   1. Click the Share icon on an endpoint's row.

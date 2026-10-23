@@ -29,7 +29,7 @@ for (const width of [1280, 768]) {
     await expect(page.locator('#header #dropdown_cases')).toHaveAttribute('src', /dropdown\/cases_core$/);
     await expect(page.locator('#header #dropdown_books')).toHaveAttribute('src', /dropdown\/books_core$/);
     const cases = await openMenu(page, '#header', 'Relevancy Cases');
-    await expect(cases.locator('small')).toContainText('active');
+    await expect(cases.locator('small')).toHaveCount(0);
     await expect(cases.locator('turbo-frame a').first()).toHaveAttribute('data-turbo', 'false');
     await expect(cases.locator('turbo-frame a').first()).toHaveAttribute('target', '_self');
     await page.keyboard.press('Escape');
@@ -94,7 +94,7 @@ test('case header launches the new-case wizard and keeps its footer in the pane'
     const match = url.pathname.match(/\/case\/(\d+)\/try\//);
     if (match && url.searchParams.get('showWizard') === 'true') createdCases.add(Number(match[1]));
   });
-  await cases.locator('button[data-controller="wizard-launcher"]').click();
+  await cases.getByRole('link', { name: 'Create a case' }).click();
   await expect(page).toHaveURL(/\/case\/\d+\/try\/1\?showWizard=true$/);
   await expect(page.getByRole('dialog', { name: 'Create a Quepid case' })).toBeVisible();
 });
