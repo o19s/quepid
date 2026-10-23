@@ -2,6 +2,10 @@
 
 Deliberate decisions to leave something as it is, with the reasoning, so they are not re-raised as defects. Delete an entry if the reasoning stops holding, or move it back to [todo.md](todo.md) when it is prioritized.
 
+## Missing Documents summary separator whitespace
+
+By user choice, the searched-results summary removes whitespace around `&` separators in the italic query text. Preserve spaces within values such as `star wars` and leave submitted query parameters unchanged. This intentionally departs from Legacy's verbatim query display.
+
 ## Admin user JSON export includes the password digest
 
 **Location:** `app/views/admin/users/index.json.jbuilder`, `app/controllers/admin/users_controller.rb` (`password_encrypted`)
