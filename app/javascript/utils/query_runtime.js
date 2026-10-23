@@ -209,6 +209,17 @@ export function createQueryRuntime({
   return runtime
 }
 
+const RESET_STATE_KEYS = [
+  "docs",
+  "lastQuery",
+  "parseError",
+  "defaultList",
+  "ratedDocsLookupUnsupported",
+  "totalRatings",
+  "numFound",
+  "searcher"
+]
+
 export function createTargetedSearchAdapter({
   query,
   queryId,
@@ -337,6 +348,14 @@ export function createTargetedSearchAdapter({
   }
 
   adapter.resetToRated = () => {
+    const previous = Object.fromEntries(RESET_STATE_KEYS.map((key) => [key, adapter[key]]))
+    return loadRatedDocs().catch((error) => {
+      Object.assign(adapter, previous)
+      throw error
+    })
+  }
+
+  const loadRatedDocs = () => {
     adapter.docs = []
     adapter.lastQuery = ""
     adapter.parseError = false

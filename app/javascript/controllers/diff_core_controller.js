@@ -2,6 +2,7 @@ import CoreModalControllerBase from "controllers/core_modal_controller_base"
 import { formatShortDate } from "utils/date_format"
 import { getJson } from "api/json"
 import { isSameId } from "utils/record_identity"
+import coreFlash from "utils/core_flash"
 
 /**
  * Core snapshot comparison picker.
@@ -117,12 +118,16 @@ export default class extends CoreModalControllerBase {
       () => this.snapshotBridgeOutlet.apply({ selections, snapshotsUrl: this.snapshotsUrlValue }),
       "Could not fetch one or more snapshots!"
     )
-    if (applied) this.closeModal()
+    if (!applied) return
+    this.closeModal()
+    coreFlash.show("success", `Snapshot${selections.length === 1 ? "" : "s"} loaded successfully for comparison.`)
   }
 
   async clear() {
     const cleared = await this.callBridge(() => this.snapshotBridgeOutlet.clear(), "Could not fetch one or more snapshots!")
-    if (cleared) this.closeModal()
+    if (!cleared) return
+    this.closeModal()
+    coreFlash.show("success", "Comparison view has been cleared.")
   }
 
   async deleteSelected(index) {
@@ -155,6 +160,7 @@ export default class extends CoreModalControllerBase {
     if (this.selectionValues.length === 0) this.selectionValues = [""]
     this.deleteId = null
     this.renderSelections()
+    coreFlash.show("success", "Snapshot deleted successfully.")
   }
 
   validSelections() {
@@ -232,6 +238,7 @@ export default class extends CoreModalControllerBase {
   }
 
   async callBridge(request, errorMessage) {
+    this.clearAlert()
     this.setBusy(true)
     try {
       await request()

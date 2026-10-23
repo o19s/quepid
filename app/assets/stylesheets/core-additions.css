@@ -616,12 +616,14 @@ footer {
 }
 
 /* Case workspace flashes overlay the bottom of the viewport. Ordinary
- * Rails page flashes remain in the page flow below the navbar. */
+ * Rails page flashes remain in the page flow below the navbar.
+ * Sits just above the modal backdrop (1050) and below the modal (1055), so a
+ * flash raised while a dialog is open (e.g. deleting a snapshot) isn't dimmed. */
 #flash-messages {
   position: fixed;
   bottom: 0;
   width: 100%;
-  z-index: 100;
+  z-index: 1051;
   pointer-events: none;
 }
 

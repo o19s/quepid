@@ -55,6 +55,25 @@ describe("SearchResultController", () => {
     expect(controller.contentTarget.querySelector("strong").textContent).toBe("A result")
   })
 
+  it("keeps keyboard focus on the rating trigger when a rating change re-renders the row", () => {
+    const controller = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+    controller.contentTarget.querySelector(".single-rating button").focus()
+
+    controller.element.__searchResultDocument = snapshotFor({ rating: 2 })
+    controller.render()
+
+    expect(document.activeElement.getAttribute("aria-label")).toBe("Change rating: 2")
+  })
+
+  it("does not pull focus into a re-rendered row that did not have it", () => {
+    const controller = buildController(snapshotFor(), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+    controller.render()
+
+    expect(document.activeElement).toBe(document.body)
+  })
+
   it("routes title clicks through a declared action that requests the rendered document", () => {
     const controller = buildController(snapshotFor({ id: 42 }), { depthOfRating: 0, ratingScale: {} })
     controller.render()

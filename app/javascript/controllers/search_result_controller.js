@@ -27,7 +27,10 @@ export default class extends Controller {
     if (!this.hasContentTarget || !this.documentSnapshot) return
     this.renderedDocument = this.documentSnapshot
     this.renderedVersion = this.versionValue
+    // A rating change rebuilds the trigger; keep keyboard focus on it.
+    const ratingFocused = this.contentTarget.querySelector(".single-rating")?.contains(document.activeElement)
     this.contentTarget.replaceChildren(this.renderResult(this.documentSnapshot, this.querySnapshot))
+    if (ratingFocused) this.contentTarget.querySelector(".single-rating button")?.focus()
   }
 
   get documentSnapshot() {
@@ -202,7 +205,7 @@ export default class extends Controller {
   }
 }
 
-export function createRatingControl(rating, scale) {
+export function createRatingControl(rating, scale, { scoreAll = false } = {}) {
   const container = document.createElement("div")
   container.className = "single-rating"
   container.dataset.controller = "rating-popover"
@@ -212,7 +215,7 @@ export function createRatingControl(rating, scale) {
   trigger.type = "button"
   trigger.className = "btn"
   trigger.textContent = rating === "--" ? "Unrated " : `${rating} `
-  trigger.setAttribute("aria-label", rating === "--" ? "Rate document: Unrated" : `Change rating: ${rating}`)
+  trigger.setAttribute("aria-label", ratingLabel(rating, scoreAll))
   trigger.style.backgroundColor = ratingColor(rating, scale)
 
   const icon = document.createElement("i")
@@ -221,6 +224,11 @@ export function createRatingControl(rating, scale) {
   trigger.appendChild(icon)
   container.appendChild(trigger)
   return container
+}
+
+function ratingLabel(rating, scoreAll) {
+  if (scoreAll) return `Score all documents: ${rating === "--" ? "Unrated" : rating}`
+  return rating === "--" ? "Rate document: Unrated" : `Change rating: ${rating}`
 }
 
 function ratingColor(rating, scale) {
