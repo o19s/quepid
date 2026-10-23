@@ -19,6 +19,7 @@ describe("mapper search runtime", () => {
         proxy_requests: true,
         supports_basic_auth: true,
         supports_pagination: true,
+        supports_direct_document_lookup: true,
         pagination_hits_param: "hits",
         pagination_offset_param: "offset",
         search_url: "https://search.example.test",
@@ -47,6 +48,7 @@ describe("mapper search runtime", () => {
       searchEngine: "custom",
       apiMethod: "POST",
       supportsBasicAuth: true,
+      supportsDirectDocumentLookup: true,
       paginationHitsParam: "hits",
       queryParams: { query: "q" },
       mapperCode: "return data"

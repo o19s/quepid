@@ -29,6 +29,8 @@ function createTry(data, { caseNo, createFieldSpec }) {
       source.mapper_based_search_engine_pagination_offset_param,
     mapperBasedSearchEngineSupportsRatedDocsLookup:
       source.mapper_based_search_engine_supports_rated_docs_lookup,
+    mapperBasedSearchEngineSupportsDirectDocumentLookup:
+      source.mapper_based_search_engine_supports_direct_document_lookup,
     searchEndpointId: source.search_endpoint_id,
     endpointName: source.endpoint_name,
     searchUrl: source.search_url,

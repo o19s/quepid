@@ -10,6 +10,7 @@ function mapEngine(data) {
     proxyRequests: data.proxy_requests,
     supportsBasicAuth: data.supports_basic_auth,
     supportsPagination: data.supports_pagination,
+    supportsDirectDocumentLookup: data.supports_direct_document_lookup,
     paginationHitsParam: data.pagination_hits_param,
     paginationOffsetParam: data.pagination_offset_param,
     searchUrl: data.search_url,

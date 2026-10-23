@@ -140,15 +140,21 @@
 </template>
 
 <template id="detailed-document-modal-template">
-  <div style="margin: 20px" data-controller="detailed-document">
-    <h3 id="detailed-document-modal-title">Detailed Document View of doc: <span data-detailed-document-target="docId"></span></h3>
-    <h4 data-detailed-document-target="title"></h4>
-    <div data-detailed-document-target="fields"></div>
-    <div data-detailed-document-target="allFields" class="detailed-doc-all-fields" style="margin-bottom: 10px; display: none">
-      <pre data-detailed-document-target="rawFields"></pre>
+  <div style="margin: 20px" data-controller="detailed-document" data-detailed-document-engine-labels-value="<%= SearchEngine::LABELS.to_json %>">
+    <h3 id="detailed-document-modal-title">Detailed Document View of doc: <span data-detailed-document-target="docId"></span><span data-detailed-document-target="queryContext" hidden> for query <em data-detailed-document-target="queryText"></em></span></h3>
+    <ul class="nav nav-tabs" role="tablist" aria-label="Document views">
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link active" id="detailed-document-tab-formatted" data-detailed-document-target="tab" data-bs-toggle="tab" data-bs-target="#detailed-document-pane-formatted" role="tab" aria-controls="detailed-document-pane-formatted" aria-selected="true">Formatted</button></li>
+      <li class="nav-item" role="presentation"><button type="button" class="nav-link" id="detailed-document-tab-json" data-detailed-document-target="tab" data-bs-toggle="tab" data-bs-target="#detailed-document-pane-json" role="tab" aria-controls="detailed-document-pane-json" aria-selected="false">All Fields (JSON)</button></li>
+    </ul>
+    <div class="tab-content py-3">
+      <div class="tab-pane active" id="detailed-document-pane-formatted" role="tabpanel" aria-labelledby="detailed-document-tab-formatted" tabindex="0">
+        <div data-detailed-document-target="fields"></div>
+      </div>
+      <div class="tab-pane detailed-doc-all-fields" id="detailed-document-pane-json" role="tabpanel" aria-labelledby="detailed-document-tab-json" tabindex="0">
+        <div data-detailed-document-target="rawFields"></div>
+      </div>
     </div>
-    <button class="btn btn-primary detailed-doc-view" data-detailed-document-target="viewButton" data-action="detailed-document#view">View Document</button>
-    <button type="button" class="btn btn-outline-secondary" data-detailed-document-target="toggle" data-action="detailed-document#toggleFields">View All Fields</button>
+    <button class="btn btn-primary detailed-doc-view" data-detailed-document-target="viewButton" data-action="detailed-document#view">View Document on Search Engine</button>
     <button type="button" class="btn btn-outline-secondary float-end" data-bs-dismiss="modal">Close</button>
   </div>
 </template>

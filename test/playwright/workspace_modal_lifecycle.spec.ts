@@ -13,9 +13,9 @@ test.describe('Workspace modal lifecycle', () => {
       await expect(modal).toContainText('Detailed Document View of doc:');
       await expect(modal).toHaveAccessibleName(/^Detailed Document View of doc: \S/);
       await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
-      await modal.getByRole('button', { name: 'View All Fields', exact: true }).click();
+      await modal.getByRole('tab', { name: 'All Fields (JSON)', exact: true }).click();
       await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
-      await modal.getByRole('button', { name: 'Hide All Fields', exact: true }).click();
+      await modal.getByRole('tab', { name: 'Formatted', exact: true }).click();
       await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
       if (dismissal === 'close') await modal.getByRole('button', { name: 'Close', exact: true }).click();
       if (dismissal === 'escape') await page.keyboard.press('Escape');

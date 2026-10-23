@@ -3,15 +3,15 @@ import { sanitizeDocumentHtml } from "utils/detailed_document_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
 
 export default class extends Controller {
-  static targets = ["docId", "title", "fields", "rawFields", "viewButton", "allFields", "toggle"]
-  static values = { linkUrl: String }
+  static targets = ["docId", "fields", "rawFields", "viewButton", "tab", "queryContext", "queryText"]
+  static values = { linkUrl: String, engineLabels: Object }
 
   connect() {
     const data = this.element.detailedDocumentData
     if (data) this.render(data)
   }
 
-  render({ doc, linkUrl = null }) {
+  render({ doc, linkUrl = null, queryText = "", searchEngine = null, mapperBasedSearchEngineName = null }) {
     this.linkUrlValue = linkUrl || ""
     const subs = doc.subs || {}
     const translations = doc.translations || {}
@@ -40,12 +40,13 @@ export default class extends Controller {
     }
 
     const subRows = Object.entries(subs).map(([name, value], index) => {
-      const isObjectOrArray = value !== null && typeof value === "object"
-      return { name, value, rawValue: isObjectOrArray ? value : null, index }
+      const isObject = value !== null && typeof value === "object" && !Array.isArray(value)
+      return { name, value: Array.isArray(value) ? value.join(",") : value, rawValue: isObject ? value : null, index }
     })
 
     this.docIdTarget.textContent = doc.id
-    this.titleTarget.textContent = doc.title || ""
+    this.queryTextTarget.textContent = queryText
+    this.queryContextTarget.hidden = !queryText
     const fields = this.fieldsTarget
     fields.replaceChildren()
     subRows.forEach((row) => {
@@ -63,18 +64,17 @@ export default class extends Controller {
     if (hasThumb) fields.appendChild(fieldRow("Thumb", doc.thumb).row)
     if (hasImage) fields.appendChild(fieldRow("Image", doc.image).row)
 
-    this.rawFieldsTarget.textContent = JSON.stringify(rawFields, null, 2)
+    renderJsonExplorer(this.rawFieldsTarget, JSON.stringify(rawFields), { collapsed: false })
+    const engineName = (searchEngine === "searchapi" && mapperBasedSearchEngineName) || this.engineLabelsValue?.[searchEngine] || "Search Engine"
+    this.viewButtonTarget.textContent = `View Document on ${engineName}`
     this.viewButtonTarget.toggleAttribute("disabled", !linkUrl)
+  }
+
+  disconnect() {
+    this.tabTargets.forEach(element => window.bootstrap?.Tab?.getInstance(element)?.dispose())
   }
 
   view() {
     if (this.linkUrlValue) window.open(this.linkUrlValue, "_blank", "noopener,noreferrer")
-  }
-
-  toggleFields(event) {
-    event.preventDefault()
-    const showing = this.allFieldsTarget.style.display !== "none"
-    this.allFieldsTarget.style.display = showing ? "none" : ""
-    this.toggleTarget.textContent = showing ? "View All Fields" : "Hide All Fields"
   }
 }

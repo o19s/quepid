@@ -3,26 +3,25 @@ import DetailedDocumentController from "controllers/detailed_document_controller
 import { buildControllerFixture } from "../support/controller_fixture"
 
 function owner(linkUrl = "") {
-  const allFields = document.createElement("div")
-  allFields.style.display = "none"
-  const toggle = document.createElement("a")
-  toggle.textContent = "View All Fields"
   return buildControllerFixture(DetailedDocumentController, {
-    targets: { allFields, toggle }, values: { linkUrl }
+    values: { linkUrl }
   })
 }
 
 describe("DetailedDocumentController", () => {
-  it("toggles all fields and restores the original label", () => {
-    const controller = owner()
-    const event = { preventDefault: vi.fn() }
-    controller.toggleFields(event)
-    expect(controller.allFieldsTarget.style.display).toBe("")
-    expect(controller.toggleTarget.textContent).toBe("Hide All Fields")
-    controller.toggleFields(event)
-    expect(controller.allFieldsTarget.style.display).toBe("none")
-    expect(controller.toggleTarget.textContent).toBe("View All Fields")
-    expect(event.preventDefault).toHaveBeenCalledTimes(2)
+  it("disposes Bootstrap tab instances when the modal disconnects", () => {
+    const tabs = [document.createElement("button"), document.createElement("button")]
+    const dispose = vi.fn()
+    const getInstance = vi.fn(() => ({ dispose }))
+    vi.stubGlobal("bootstrap", { Tab: { getInstance } })
+    try {
+      const controller = buildControllerFixture(DetailedDocumentController, { targets: { tab: tabs } })
+      controller.disconnect()
+      expect(getInstance.mock.calls.map(([element]) => element)).toEqual(tabs)
+      expect(dispose).toHaveBeenCalledTimes(2)
+    } finally {
+      vi.unstubAllGlobals()
+    }
   })
 
   it("opens the supplied link safely and does nothing without a link", () => {

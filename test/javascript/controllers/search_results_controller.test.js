@@ -170,7 +170,10 @@ describe("SearchResultsController", () => {
 
     expect(openDetailedDocumentModal).toHaveBeenCalledWith({
       doc: snapshotDocument,
-      linkUrl: snapshotDocument.linkUrl
+      linkUrl: snapshotDocument.linkUrl,
+      queryText: snapshot.queryText,
+      searchEngine: snapshot.searchEngine,
+      mapperBasedSearchEngineName: snapshot.mapperBasedSearchEngineName
     })
   })
 

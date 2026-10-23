@@ -64,6 +64,18 @@ module Api
           assert_response :not_found
         end
 
+        test 'includes the direct document lookup capability from the engine definition' do
+          endpoint = case_with_one_try.tries.first.search_endpoint
+          endpoint.update!(mapper_based_search_engine_id: 'vespa')
+          get :index, params: { case_id: case_with_one_try.id }
+          assert_response :ok
+          assert_not response.parsed_body['tries'].first['mapper_based_search_engine_supports_direct_document_lookup']
+
+          endpoint.update!(mapper_based_search_engine_id: 'qdrant')
+          get :index, params: { case_id: case_with_one_try.id }
+          assert_not response.parsed_body['tries'].first['mapper_based_search_engine_supports_direct_document_lookup']
+        end
+
         test 'returns all tries for a case' do
           get :index, params: { case_id: case_with_one_try.id }
 

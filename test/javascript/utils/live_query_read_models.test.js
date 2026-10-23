@@ -88,6 +88,24 @@ describe("createDocList", () => {
 describe("documentUrlFor", () => {
   const doc = (url) => ({ _url: () => url })
 
+  it.each([undefined, false])("disables mapper document links unless explicitly supported: %s", supported => {
+    expect(documentUrlFor(doc("http://a.aa"), {
+      settings: { searchEngine: "searchapi", mapperBasedSearchEngineSupportsDirectDocumentLookup: supported }
+    })).toBeNull()
+  })
+
+  it("allows opted-in mapper links", () => {
+    expect(documentUrlFor(doc("https://search.test/doc/1"), {
+      settings: { searchEngine: "searchapi", mapperBasedSearchEngineSupportsDirectDocumentLookup: true }
+    })).toBe("https://search.test/doc/1")
+  })
+
+  it.each([null, undefined, "", " "])("does not proxy a missing document URL: %s", value => {
+    const proxyUrlFor = vi.fn(() => "/proxy?url=")
+    expect(documentUrlFor(doc(value), { settings: { proxyRequests: true }, proxyUrlFor })).toBeNull()
+    expect(proxyUrlFor).not.toHaveBeenCalled()
+  })
+
   it("returns null for docs without a url function", () => {
     expect(documentUrlFor(null)).toBeNull()
     expect(documentUrlFor({})).toBeNull()

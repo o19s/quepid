@@ -24,6 +24,7 @@ module Api
 
           assert vespa
           assert_equal 'Vespa', vespa['name']
+          assert_not vespa['supports_direct_document_lookup']
           assert_equal 'searchapi', vespa['search_engine']
           assert_equal 'AUTO', vespa['api_method']
           assert_predicate vespa['mapper_code'], :present?
@@ -39,6 +40,7 @@ module Api
 
           assert qdrant
           assert_equal 'Qdrant', qdrant['name']
+          assert_not qdrant['supports_direct_document_lookup']
           assert_equal 'searchapi', qdrant['search_engine']
           assert_equal 'POST', qdrant['api_method']
           assert_predicate qdrant['mapper_code'], :present?

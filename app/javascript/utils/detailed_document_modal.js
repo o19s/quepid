@@ -58,7 +58,13 @@ export function sanitizeDocumentHtml(value) {
  * needs the plain fields below, so keeping that boundary here prevents either
  * caller from recreating the modal or its escaping rules.
  */
-export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
+export function openDetailedDocumentModal({
+  doc,
+  linkUrl = null,
+  queryText = "",
+  searchEngine = null,
+  mapperBasedSearchEngineName = null
+} = {}) {
   if (!doc) return null
 
   const modal = openDynamicModal({
@@ -70,7 +76,10 @@ export function openDetailedDocumentModal({ doc, linkUrl = null } = {}) {
   // Populate before Stimulus connects; the content controller owns rendering.
   modal.element.querySelector("[data-controller='detailed-document']").detailedDocumentData = {
     doc,
-    linkUrl
+    linkUrl,
+    queryText,
+    searchEngine,
+    mapperBasedSearchEngineName
   }
   return modal
 }

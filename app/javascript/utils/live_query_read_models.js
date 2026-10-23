@@ -57,6 +57,11 @@ export function createDocList({ docs, fieldSpec, ratingsStore, explain, createNo
  */
 export function documentUrlFor(doc, { settings = {}, proxyUrlFor } = {}) {
   if (!doc || !isFunction(doc._url)) return null
+  if (
+    settings.searchEngine === "searchapi" &&
+    settings.mapperBasedSearchEngineSupportsDirectDocumentLookup !== true
+  )
+    return null
 
   let linkUrl
   try {
@@ -64,6 +69,7 @@ export function documentUrlFor(doc, { settings = {}, proxyUrlFor } = {}) {
   } catch {
     return null
   }
+  if (typeof linkUrl !== "string" || !linkUrl.trim()) return null
   if (settings.basicAuthCredential) {
     linkUrl = linkUrl.replace("://", "://" + settings.basicAuthCredential + "@")
   }

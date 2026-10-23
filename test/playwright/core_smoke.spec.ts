@@ -141,9 +141,10 @@ test.describe('core layout golden paths', () => {
     await expect(modal).toBeVisible();
     await expect(modal.locator('.detailed-doc-all-fields')).toBeHidden();
 
-    await modal.getByRole('button', { name: 'View All Fields' }).click();
+    await modal.getByRole('tab', { name: 'All Fields (JSON)' }).click();
     await expect(modal.locator('.detailed-doc-all-fields')).toBeVisible();
-    await expect(modal.getByRole('button', { name: 'Hide All Fields' })).toBeVisible();
+    await expect(modal.getByRole('tab', { name: 'All Fields (JSON)' })).toHaveAttribute('aria-selected', 'true');
+    await expect(modal.locator('#detailed-document-pane-formatted')).toBeHidden();
 
     await modal.getByRole('button', { name: 'Close' }).click();
     await expect(modal).toBeHidden();

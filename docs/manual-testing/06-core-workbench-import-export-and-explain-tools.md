@@ -160,8 +160,8 @@ Core toolbar opens the Stimulus **judgements-core** modal (`#judgementsModal`). 
 
 - [ ] **Steps:**
   1. Expand a query, click a result's title.
-  2. In "Detailed Document View of doc: {doc id}", review the listed sub-fields, translations, and embeds.
-  3. Click **View All Fields** to reveal the full raw document as formatted JSON, then **Hide All Fields** to collapse it again.
-  4. Click **View Document** (opens the document at the search engine in a new tab) if the doc has a resolvable URL, otherwise confirm the button is disabled.
-  5. Repeat open/close with Close, Escape and a backdrop click. Reopening starts with raw fields hidden; dismissal leaves no orphaned backdrop or body scroll lock.
-- **Expected:** Fields shown match the document's actual data; an object/array-valued sub-field renders as an expandable JSON tree, not raw text.
+  2. Confirm the heading reads "Detailed Document View of doc: {doc id} for query {query text}", with the query italicized and no separate title line. Review the listed sub-fields, translations, and embeds.
+  3. Confirm **Formatted** is selected initially. Switch to **All Fields (JSON)** to replace the formatted fields with the full raw document in the JSON explorer. Collapse/expand an object or array; switch back to Formatted and return to JSON to confirm its expansion state is retained. Use Left/Right arrow keys on the tabs. **View Document on {engine name}** and **Close** remain below either panel.
+  4. Confirm the button names the engine (for example **View Document on Solr** or **View Document on Elasticsearch**), using the configured mapper engine name for Search API cases (for example **View Document on Vespa**), and falling back to **View Document on Search Engine** when unknown. Click it to open the document in a new tab if the doc has a resolvable URL; otherwise confirm it is disabled. Mapper-based engines must explicitly enable `supports_direct_document_lookup`; the capability alone does not enable a button without a valid document URL. Vespa and Qdrant currently leave this capability disabled.
+  5. Repeat open/close with Close, Escape and a backdrop click. Reopening starts on Formatted with the JSON panel hidden; dismissal leaves no orphaned backdrop or body scroll lock.
+- **Expected:** Fields shown match the document's actual data; scalar and array-valued sub-fields render as readable strings (array values comma-separated, like the staging overview/cast display); nested objects retain their expandable tree. All Fields (JSON) uses the JSON explorer for the full raw document.

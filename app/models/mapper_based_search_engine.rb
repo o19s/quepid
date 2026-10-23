@@ -43,6 +43,8 @@ class MapperBasedSearchEngine
   # fieldSpec.id - as idField) - the actual ID-filter query syntax is the mapper's job, same
   # as numberOfResultsMapper/docsMapper above.
   attribute :supports_rated_docs_lookup, :boolean, default: false
+  # Whether the mapper can provide a direct document URL for View Document.
+  attribute :supports_direct_document_lookup, :boolean, default: false
   attribute :search_url,          :string, default: ''
   attribute :url_format,          :string
   attribute :query_params,        :string
@@ -62,19 +64,19 @@ class MapperBasedSearchEngine
 
   DEFINITIONS = [
     {
-      id:                         'vespa',
-      name:                       'Vespa',
-      logo:                       'vespa',
-      api_method:                 'AUTO',
-      proxy_requests:             true,
-      supports_basic_auth:        false,
+      id:                              'vespa',
+      name:                            'Vespa',
+      logo:                            'vespa',
+      api_method:                      'AUTO',
+      proxy_requests:                  true,
+      supports_basic_auth:             false,
       # Vespa's query API takes hits/offset as plain top-level params alongside yql, so
       # the query runtime's paginate() can widen the request by bumping offset on each click.
-      supports_pagination:        true,
-      pagination_hits_param:      'hits',
-      pagination_offset_param:    'offset',
-      search_url:                 'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
-      url_format:                 'https://<app>.<tenant>.z.vespa-app.cloud/search/',
+      supports_pagination:             true,
+      pagination_hits_param:           'hits',
+      pagination_offset_param:         'offset',
+      search_url:                      'https://a119b8dc.eb5f2dd2.z.vespa-app.cloud/search/',
+      url_format:                      'https://<app>.<tenant>.z.vespa-app.cloud/search/',
       # hits/offset are deliberately not baked in here — they'd show up in the editable
       # Query Sandbox as if they were part of the query. query_service.js's
       # createSearcherFromSettings() passes pagination_hits_param/pagination_offset_param
@@ -91,8 +93,8 @@ class MapperBasedSearchEngine
       # query_params starts with '{', so this has to be real JSON for that path - or, since
       # bare_query_param above is set, plain YQL text typed directly into the Query Sandbox
       # works too.
-      query_params:               '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
-      bare_query_param:           'yql',
+      query_params:                    '{"yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"", "ranking.profile": "bm25"}',
+      bare_query_param:                'yql',
       # Vespa's own document id (e.g. "id:movies:movies::603") isn't a queryable field in
       # this schema ("where id = ..." 400s with "Field 'id' does not exist" - confirmed
       # against the live endpoint), so id_field points at movie_id instead: the schema's own
@@ -102,17 +104,18 @@ class MapperBasedSearchEngine
       # id automatically - query_service.js passes that same id_field (as fieldSpec.id) into
       # ratedDocsQueryParamsMapper (mapper_file below), so it filters on whatever field a
       # given case's field_spec actually names, not a value hardcoded in the mapper.
-      supports_rated_docs_lookup: true,
+      supports_rated_docs_lookup:      true,
+      supports_direct_document_lookup: false,
       # Read-only Vespa Cloud data-plane token for the o19s demo tenant; scoped to query
       # access only, so exposure is bounded to someone running extra queries against the
       # demo index, not writing/deleting data.
-      custom_headers:             { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
-      header_type:                'Custom',
-      id_field:                   'movie_id',
-      title_field:                'title',
-      test_query:                 '{"yql": "select * from sources * where true"}',
-      additional_fields:          [ 'overview', 'cast', 'thumb:poster_path' ],
-      mapper_file:                'db/mapper_based_search_engines/vespa.js',
+      custom_headers:                  { Authorization: 'Bearer vespa_cloud_TR8wpJb6M2x0TltmxqTdupqA20rcAI5tAEfqHWbvsx5' }.to_json,
+      header_type:                     'Custom',
+      id_field:                        'movie_id',
+      title_field:                     'title',
+      test_query:                      '{"yql": "select * from sources * where true"}',
+      additional_fields:               [ 'overview', 'cast', 'thumb:poster_path' ],
+      mapper_file:                     'db/mapper_based_search_engines/vespa.js',
     },
     {
       id:                         'qdrant',

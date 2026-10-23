@@ -2,6 +2,14 @@
 
 Deliberate decisions to leave something as it is, with the reasoning, so they are not re-raised as defects. Delete an entry if the reasoning stops holding, or move it back to [todo.md](todo.md) when it is prioritized.
 
+## Vespa direct document lookup
+
+By user choice, retain the shared `supports_direct_document_lookup` capability but leave Vespa disabled for now, alongside Qdrant. Do not implement a Vespa document URL mapper or an ID-filtered search fallback as part of this change.
+
+## Detailed document raw JSON
+
+By user choice, the detailed document modal uses Formatted and All Fields (JSON) tabs, defaulting to Formatted on each open. Its heading includes the actual query in italics instead of a separate document-title line; the external-document button names the configured engine when known. The JSON tab uses the same syntax-colored, expandable explorer as query document fields, replacing the plain preformatted raw JSON display and append-below toggle. Main-detail array fields render as comma-separated strings to match the user-provided staging overview/cast example; nested objects retain their existing explorer.
+
 ## Shared modal buttons
 
 By user choice, core and management confirmation dialogs use Confirm then Cancel, and shared modal shells use outlined dismiss buttons. Preserve action-specific labels, confirmation colors and behavior. This shared presentation replaces surface-specific button order and Cancel styling.

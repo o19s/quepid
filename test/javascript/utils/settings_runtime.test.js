@@ -26,6 +26,13 @@ const tryData = (tryNumber = 1) => ({
 })
 
 describe("settings runtime", () => {
+  it("carries direct-document capability from the selected try", () => {
+    const runtime = createSettingsRuntime()
+    runtime.setCaseTries([{ ...tryData(), search_engine: "searchapi", mapper_based_search_engine_supports_direct_document_lookup: true }])
+    runtime.setCurrentTry(1)
+    expect(runtime.applicable().mapperBasedSearchEngineSupportsDirectDocumentLookup).toBe(true)
+  })
+
   it("allows the wizard to finish its writes before navigation", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(response()))
     const navigate = vi.fn()

@@ -371,6 +371,6 @@ export default class extends Controller {
       ...diffDocuments
     ].find(item => isSameId(item.id, docId))
     if (!snapshotDoc) return
-    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl })
+    openDetailedDocumentModal({ doc: snapshotDoc, linkUrl: snapshotDoc.linkUrl, queryText: snapshot.queryText, searchEngine: snapshot.searchEngine, mapperBasedSearchEngineName: snapshot.mapperBasedSearchEngineName })
   }
 }

@@ -29,7 +29,11 @@ function openDetailedDocumentModal(options) {
   const result = openModal(options)
   const element = result.element.querySelector("[data-controller='detailed-document']")
   const targets = controllerTargets(element, DetailedDocumentController, "detailed-document")
-  const controller = buildControllerFixture(DetailedDocumentController, { element, targets })
+  const controller = buildControllerFixture(DetailedDocumentController, {
+    element,
+    targets,
+    values: { engineLabels: { solr: "Solr", es: "Elasticsearch", os: "OpenSearch", searchapi: "Search API" } }
+  })
   controller.connect()
   return result
 }
@@ -63,9 +67,10 @@ describe("detailed document modal", () => {
 
     expect(openDynamicModal.mock.calls[0][0].templateId).toBe("detailed-document-modal-template")
     expect(openDynamicModal.mock.calls[0][0].ariaLabelledBy).toBe("detailed-document-modal-title")
-    expect(modal.element.querySelector("[data-detailed-document-target='title']").textContent).toBe("<unsafe>")
-    expect(modal.element.querySelector("[data-detailed-document-target='rawFields']").textContent).toContain(
-      "<raw>"
+    expect(renderJsonExplorer).toHaveBeenCalledWith(
+      modal.element.querySelector("[data-detailed-document-target='rawFields']"),
+      JSON.stringify({ description: { nested: true }, unsafe: "<raw>" }),
+      { collapsed: false }
     )
     expect(renderJsonExplorer).toHaveBeenCalledWith(
       expect.any(Element),
@@ -141,8 +146,56 @@ describe("detailed document modal", () => {
     expect(field.querySelector("script")).toBeNull()
   })
 
+  it("renders overview and cast arrays as readable strings while retaining the raw JSON explorer", () => {
+    const rawFields = { overview: ["A story"], cast: ["Haley Lu Richardson", "Cole Sprouse"] }
+    openDetailedDocumentModal({ doc: { id: "527641", title: "Five Feet Apart", subs: rawFields, rawFields } })
+
+    const values = [...modal.element.querySelectorAll("[data-detailed-document-target='fields'] .col-md-8")]
+    expect(values.map(field => field.textContent)).toEqual(["A story", "Haley Lu Richardson,Cole Sprouse"])
+    expect(values.some(field => field.hasAttribute("data-detailed-doc-sub-json-index"))).toBe(false)
+    expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
+    expect(renderJsonExplorer).toHaveBeenCalledWith(
+      modal.element.querySelector("[data-detailed-document-target='rawFields']"),
+      JSON.stringify(rawFields),
+      { collapsed: false }
+    )
+  })
+
+  it("includes the actual query in italics without interpreting its markup", () => {
+    openDetailedDocumentModal({
+      doc: { id: "11", title: "Document title", rawFields: {} },
+      queryText: "<img src=x onerror=alert(1)>"
+    })
+    const heading = modal.element.querySelector("#detailed-document-modal-title")
+    expect(heading.textContent).toBe("Detailed Document View of doc: 11 for query <img src=x onerror=alert(1)>")
+    expect(heading.querySelector("em").textContent).toBe("<img src=x onerror=alert(1)>")
+    expect(heading.querySelector("img")).toBeNull()
+    expect(heading.querySelector("[data-detailed-document-target='queryContext']").hidden).toBe(false)
+  })
+
+  it.each([["solr", "Solr"], ["es", "Elasticsearch"], ["os", "OpenSearch"], [null, "Search Engine"], ["unknown", "Search Engine"]])("labels the document link for engine %s", (searchEngine, label) => {
+    openDetailedDocumentModal({
+      doc: { id: "doc-1", title: "Title", rawFields: {} },
+      linkUrl: "https://example.test/doc-1",
+      searchEngine
+    })
+    const button = modal.element.querySelector(".detailed-doc-view")
+    expect(button.textContent).toBe(`View Document on ${label}`)
+    expect(button.disabled).toBe(false)
+  })
+
+  it("uses the configured name for a mapper-based search engine", () => {
+    openDetailedDocumentModal({
+      doc: { id: "doc-1", rawFields: {} },
+      searchEngine: "searchapi",
+      mapperBasedSearchEngineName: "Vespa"
+    })
+    expect(modal.element.querySelector(".detailed-doc-view").textContent).toBe("View Document on Vespa")
+  })
+
   it("disables View Document when there is no link", () => {
     openDetailedDocumentModal({ doc: { id: "doc-1", title: "Title", rawFields: {} } })
     expect(modal.element.querySelector(".detailed-doc-view").disabled).toBe(true)
+    expect(modal.element.querySelector("[data-detailed-document-target='queryContext']").hidden).toBe(true)
   })
 })

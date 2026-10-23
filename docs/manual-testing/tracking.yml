@@ -879,10 +879,11 @@ parts:
           document-hidden: "6.11/document-hidden"
           document-raw: "6.11/document-raw"
           document-fields: "6.11/document-fields"
-        last_run: 2026-10-20T18:34:23Z
+          document-vespa: "6.11/document-vespa"
+        last_run: 2026-10-23T12:36:36Z
         result: pass
-        notes: "Covered live on Current :3000: detailed view for a document, View All Fields shows and Hide All Fields hides the raw document, View Document opens the engine URL in a new tab, Close, Escape and a backdrop click each leave no backdrop or scroll lock, and reopening starts with raw fields hidden. Not covered: embeds and translations."
-        paths: ["app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts"]
+        notes: "Partial capability check on Current :3000 case 5 matrix doc 603: user chose to keep Vespa direct-document lookup disabled for now. Tries API returns false; View Document on Vespa is disabled with no link. Inspected/refreshed document-vespa. Qdrant remains false by default; 56 Rails tests pass. Existing 38 JS capability tests and mutation-verified property cover gating/null URLs (not rerun for this flag-only change). No Vespa URL mapper or ID-search fallback added; earlier deployment prerequisite is no longer an open acceptance gate. Other document/tab coverage was verified in preceding batches; not repeated here."
+        paths: ["app/models/mapper_based_search_engine.rb", "app/views/api/v1/tries/_try.json.jbuilder", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/live_query_read_models.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/search_results_controller.js", "app/javascript/utils/detailed_document_modal.js", "app/javascript/controllers/detailed_document_controller.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/utils/json_explorer.js", "app/views/shared/_dynamic_modal_templates.html.erb", "test/playwright/core_smoke.spec.ts", "app/javascript/utils/store_subscription.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/controllers/detailed_document_controller.test.js"]
       "6.9":
         title: "Frog Report"
         screenshots:
