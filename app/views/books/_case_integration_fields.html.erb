@@ -4,7 +4,7 @@
   <div class="card-body">
     <div class="alert alert-info mb-3" role="alert">
       <i class="bi bi-info-circle"></i>
-      <strong>About Book-Case Synchronization:</strong> Books and Cases sync data both ways.
+      Books and Cases sync data both ways.
       Query/doc pairs from your Case send to the Book for judging, and Book ratings flow back into your Case.
       Any ratings made directly in the Case view also sync to the Book.
       <a href="https://quepid-docs.dev.o19s.com/2/quepid/64/thinking-about-cases-and-books-of-judgements" target="_out">
@@ -22,37 +22,39 @@
       </div>
       <%= form.hidden_field :origin_case_id, :value => origin_case.id %>
       <div class="form-text">Creates the connection needed for automatic data syncing below.</div>
-    </div>
 
-    <div class="mb-4">
-      <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
-      <div class="form-check form-switch">
-        <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
-        <%= form.hidden_field :auto_populate_book_pairs, value: '0', id: nil,
-              data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-        <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: auto_populate_book_pairs.nil? ? book.new_record? : auto_populate_book_pairs,
-              data: { case_book_synchronization_target: 'synchronizationOption' } %>
-      </div>
-      <div class="form-text">
-        <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
-        <br>
-        <strong>Off:</strong> Manually trigger updates to the Book when needed.
-      </div>
-    </div>
+      <div class="ms-4 ps-3">
+        <div class="mb-4 mt-4">
+          <h6 class="fw-bold">Case <i class="bi bi-arrow-right"></i> Book: Query/Doc Pairs</h6>
+          <div class="form-check form-switch">
+            <%= form.label :auto_populate_book_pairs, class:'form-check-label' %>
+            <%= form.hidden_field :auto_populate_book_pairs, value: '0', id: nil,
+                  data: { case_book_synchronization_target: 'synchronizationFallback' } %>
+            <%= form.check_box :auto_populate_book_pairs, class:'form-check-input', include_hidden: false, checked: auto_populate_book_pairs.nil? ? book.new_record? : auto_populate_book_pairs,
+                  data: { case_book_synchronization_target: 'synchronizationOption' } %>
+          </div>
+          <div class="form-text">
+            <strong>On:</strong> New query/doc pairs automatically added to Book when Case runs.
+            <br>
+            <strong>Off:</strong> Manually trigger updates to the Book when needed.
+          </div>
+        </div>
 
-    <div class="mb-3">
-      <h6 class="fw-bold">Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings</h6>
-      <div class="form-check form-switch">
-        <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
-        <%= form.hidden_field :auto_populate_case_judgements, value: '0', id: nil,
-              data: { case_book_synchronization_target: 'synchronizationFallback' } %>
-        <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: auto_populate_case_judgements.nil? ? true : auto_populate_case_judgements,
-              data: { case_book_synchronization_target: 'synchronizationOption' } %>
-      </div>
-      <div class="form-text">
-        <strong>On:</strong> Case ratings update immediately as judgements are made.
-        <br>
-        <strong>Off:</strong> Manually import judgements when ready to test.
+        <div class="mb-3">
+          <h6 class="fw-bold">Case <i class="bi bi-arrow-left"></i> Book: Judgement Ratings</h6>
+          <div class="form-check form-switch">
+            <%= form.label :auto_populate_case_judgements, "Update case ratings from book judgements automatically", class:'form-check-label' %>
+            <%= form.hidden_field :auto_populate_case_judgements, value: '0', id: nil,
+                  data: { case_book_synchronization_target: 'synchronizationFallback' } %>
+            <%= form.check_box :auto_populate_case_judgements, class:'form-check-input', include_hidden: false, checked: auto_populate_case_judgements.nil? ? true : auto_populate_case_judgements,
+                  data: { case_book_synchronization_target: 'synchronizationOption' } %>
+          </div>
+          <div class="form-text">
+            <strong>On:</strong> Case ratings update immediately as judgements are made.
+            <br>
+            <strong>Off:</strong> Manually import judgements when ready to test.
+          </div>
+        </div>
       </div>
     </div>
   </div>

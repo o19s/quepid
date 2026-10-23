@@ -282,7 +282,7 @@ class BooksController < ApplicationController
     @book.export_file.purge if '1' == book_params[:delete_export_file]
     @book.import_file.purge if '1' == book_params[:delete_import_file]
 
-    @book.save
+    flash[:notice] = 'Book was successfully updated.' if @book.save
 
     @ai_judges = accessible_ai_judges
     @other_books = current_user.books_involved_with.where.not(id: @book.id)

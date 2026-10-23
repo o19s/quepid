@@ -22,13 +22,15 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
 
 ### 10.2 Create a new book
 
+- [ ] The AI Judges section explains eligibility independently of the book's selected teams, Auto-run, and on-call escalation. Auto-run on new pairs uses a switch. Show rank precedes Rank Depth; Rank Depth uses a compact150px input and explains the Bulk Judging default and coverage effect. A new book with no available judges shows the create-first/Settings guidance; available judges remain selectable during creation.
+
 - [ ] **Steps:**
   1. Click **New Book**. Leave Name blank and submit: the browser's required-field check blocks it. Bypass browser validation and submit again — confirm a validation error re-renders the form. This is an intentional change. Both the historical baseline (`8ceb99e9`) and pre-branch `main` mark the Name field `required` in the browser, but `Book` had no presence validation, so a submission that bypassed the browser check saved a book with a blank name. `0439ee00` added `validates :name, presence: true` and a model test, so the server now rejects it too.
   2. Fill Name, check at least one team to share with, pick a **Rating Scale** (scorer), review/edit the auto-populated **Scoring Guidelines**, save.
 - **Expected:** Redirects to the new book's Overview with "Book was successfully created."
 - **Edge cases:**
   - [ ] Create a book while belonging to zero teams — confirm the team picker offers "Create a team" and the book can still be saved privately.
-  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles appear. Uncheck Link the Case: both sync switches disable; recheck it: their choices remain. Save checked and unchecked variants, verifying that unchecked creation preserves the case's existing book/settings. Set different sync choices, uncheck Link the Case and submit without a scale (bypass browser validation to reach the server). Confirm case context and choices survive validation; recheck linking and verify the original choices before correcting the scale and retrying.
+  - [ ] Create a book from within a Case's "Judgements" flow (Part 6.6, passes `origin_case_id`) — confirm the "Case Integration" toggles appear, with the two sync directions indented beneath Enable Synchronization and a concise information banner, matching staging. Uncheck Link the Case: both sync switches disable; recheck it: their choices remain. Save checked and unchecked variants, verifying that unchecked creation preserves the case's existing book/settings. Set different sync choices, uncheck Link the Case and submit without a scale (bypass browser validation to reach the server). Confirm case context and choices survive validation; recheck linking and verify the original choices before correcting the scale and retrying.
   - [ ] Save without checking any team — confirm the book still saves (now effectively private to you) without erroring.
 
 ### 10.3 Edit book settings
@@ -37,7 +39,7 @@ A **Book** is Quepid's offline relevance-judgement workflow: a set of query/docu
   1. Open an existing book's **Settings** tab.
   2. Change Name, add/remove Teams, add/remove **AI Judges Assigned to this Book** checkboxes (see Part 12 for creating an AI Judge first), set per-judge **Auto-run on new pairs** and **Rank Depth**, toggle **Show Rank of Documents when Judging**, toggle **Supports Implicit Judgements**, change **Rating Scale** and **Scoring Guidelines**.
   3. Save, reload, confirm everything persisted.
-- **Expected:** All settings persist correctly.
+- **Expected:** All settings persist correctly. A successful update shows the green notice "Book was successfully updated."; an invalid update does not show a success notice.
 - **Edge cases:**
   - [ ] With an import or export file already attached, check "Delete Import File" / "Delete Export File" and save — confirm the file is purged and the checkbox becomes disabled afterward.
   - [ ] As a member of only one of the book's several sharing teams, edit and save the book — confirm hidden teams and AI judges are preserved. AI judge checkboxes list judges you own or that are shared with your teams; hidden assignments and their auto-run flags must survive; saving the unchanged visible selection must succeed (best tested with two accounts).

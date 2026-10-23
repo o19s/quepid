@@ -1276,6 +1276,8 @@ parts:
           origin-case-scale: "10.2/origin-case-scale"
           origin-case-unlinked: "10.2/origin-case-unlinked"
           origin-case-form: "10.2/origin-case-form"
+          ai-judge-assignment: "10.2/ai-judge-assignment"
+          rank-depth: "10.2/rank-depth"
           private-book: "10.2/private-book"
           created-book: "10.2/created-book"
           configured-book: "10.2/configured-book"
@@ -1284,10 +1286,10 @@ parts:
           book-created: "10.2/book-created"
           book-create-ready: "10.2/book-create-ready"
           book-create-form: "10.2/book-create-form"
-        last_run: 2026-10-20T20:15:45Z
+        last_run: 2026-10-23T16:31:38Z
         result: fail
-        notes: "Covered live via Playwright MCP on Current :3000: blank Name browser-required blocks save; created disposable Due MCP Book 20261020 shared with disposable team, graded scale and explicit guidelines; redirect Overview. Not covered live: bypassed validation, case-origin integration variants or diff-baseline replay. Unresolved earlier failure evidence: 2026-10-15 broader historical blank-name status remains pending classification: Base/Legacy accepted browser-validation-bypassed blank names while Current intentionally rejects. Current creation sample does not close that historical status."
-        paths: ["app/javascript/controllers/case_book_synchronization_controller.js", "app/views/shared/_team_picker.html.erb", "app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/views/books/_case_integration_fields.html.erb", "app/views/books/_ai_judge_assignment_fields.html.erb", "app/views/books/_scoring_guideline_fields.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
+        notes: "Rank/switch MCP sample: local1280x1000 Show rank precedes Rank Depth; input measured150px/min1 and staging help matches. Auto-run now Bootstrap switch32px; checked then unchecked and name/value retained, screenshots inspected. AI Judge MCP sample: staging account has0judges (index confirmed), local3; copied eligibility/Auto-run explanations and new-book empty guidance. Local judge+auto-run selections serialize ids correctly, then reset without submit; screenshot inspected. Empty guidance observed on staging only.30 targeted Book tests pass after judge copy change; visual suite2pass/3missing static fixture failures/1Book baseline mismatch including changed help.193 Book controller tests/2 sync tests passed after integration change. Partial panel sample2026-10-23: live staging books/new scorer525/case9940 compared with local scorer5/case6 at1280x1000. Removed extra banner heading and nested sync directions beneath linking switch. Local toggle off disables children; reenable preserves mixed choices; FormData retains0/1 fallbacks. Screenshots inspected. No Book created or Case modified in this sample; save/validation deferred to existing tests. Earlier2026-10-20 coverage: blank Name browser-required blocks save; created disposable Due MCP Book 20261020 shared with disposable team, graded scale and explicit guidelines; redirect Overview. Not covered live: bypassed validation, case-origin integration variants or diff-baseline replay. Unresolved earlier failure evidence: 2026-10-15 broader historical blank-name status remains pending classification: Base/Legacy accepted browser-validation-bypassed blank names while Current intentionally rejects. Current creation sample does not close that historical status."
+        paths: ["app/javascript/controllers/case_book_synchronization_controller.js", "app/views/shared/_team_picker.html.erb", "app/controllers/books_controller.rb", "app/models/book.rb", "app/helpers/books_helper.rb", "app/views/books/new.html.erb", "app/views/books/_form.html.erb", "app/views/books/_ai_judge_assignment_fields.html.erb", "app/views/books/_case_integration_fields.html.erb", "app/views/books/_case_integration_fields.html.erb", "app/views/books/_ai_judge_assignment_fields.html.erb", "app/views/books/_scoring_guideline_fields.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/controllers/concerns/book_scorer_assignment.rb"]
       "10.3":
         title: "Edit book settings"
         screenshots:
@@ -1297,9 +1299,9 @@ parts:
           settings-saved: "10.3/settings-saved"
           settings-configured: "10.3/settings-configured"
           book-settings: "10.3/book-settings"
-        last_run: 2026-10-20T20:16:03Z
+        last_run: 2026-10-23T16:36:17Z
         result: fail
-        notes: "Covered live via Playwright MCP on Current :3000: disposable book rename, Show rank, implicit judgements, Rank Depth10 saved and reopened Settings confirms all. Existing team/graded rubric retained. Not covered live: file purges/hidden memberships/foreign ids/blank-name server validation, AI assignments covered separately, or diff-baseline replay. Unresolved earlier failure evidence: 2026-10-15 Current blank-name serverPOST422 retained remap and storedname but lost management tabs and scale selection (no Settings link/scorer prompt). Happy-path settings replay did not fix or retest this validation-display failure."
+        notes: "Update-notice MCP sample2026-10-23: unchanged Book2 Settings submitted, redirects Overview with green Book was successfully updated notice; screenshot inspected.2 focused controller tests pass for valid notice/invalid no notice; RuboCop passes. Earlier2026-10-20 coverage: disposable book rename, Show rank, implicit judgements, Rank Depth10 saved and reopened Settings confirms all. Existing team/graded rubric retained. Not covered live: file purges/hidden memberships/foreign ids/blank-name server validation, AI assignments covered separately, or diff-baseline replay. Unresolved earlier failure evidence: 2026-10-15 Current blank-name serverPOST422 retained remap and storedname but lost management tabs and scale selection (no Settings link/scorer prompt). Happy-path settings replay did not fix or retest this validation-display failure."
         paths: ["app/controllers/books_controller.rb", "app/views/books/edit.html.erb", "app/views/books/_form.html.erb", "app/views/books/_case_integration_fields.html.erb", "app/views/books/_ai_judge_assignment_fields.html.erb", "app/views/books/_scoring_guideline_fields.html.erb", "app/javascript/controllers/scoring_guidelines_controller.js", "app/models/concerns/text_search.rb", "app/helpers/books_helper.rb", "app/controllers/concerns/book_scorer_assignment.rb", "app/models/books_ai_judge.rb", "app/models/book.rb"]
       "10.4":
         title: "Book Overview / Show page"

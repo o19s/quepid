@@ -50,6 +50,15 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  test 'successful settings update redirects with a notice' do
+    login_user_for_integration_test user
+
+    patch book_path(james_bond_movies), params: { book: { name: james_bond_movies.name } }
+
+    assert_redirected_to book_path(james_bond_movies)
+    assert_equal 'Book was successfully updated.', flash[:notice]
+  end
+
   test 'invalid settings update renders populated edit data and preserves persisted settings' do
     login_user_for_integration_test user
     james_bond_movies.update!(owner: user)
@@ -68,6 +77,7 @@ class BooksControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unprocessable_content
     assert_select '#error_explanation', /Name can't be blank/
+    assert_nil flash[:notice]
     assert_select 'input[name="book[name]"][value=""]'
     assert_select 'form[action=?]', book_path(james_bond_movies)
     assert_equal original_name, james_bond_movies.reload.name
