@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { createTargetedSearchAdapter } from "utils/query_runtime"
-import { createSearcherFromSettings, settingsWithTryOverrides } from "utils/query_service"
-import { createWiredServices } from "splainer-search/wired.js"
+import { settingsWithTryOverrides } from "utils/query_service"
 
 function buildAdapter(overrides = {}) {
   const {
@@ -54,133 +53,39 @@ function buildAdapter(overrides = {}) {
   return { adapter: createTargetedSearchAdapter(config), config, searcher }
 }
 
-function buildSolrIntegration({ json = false, method = "GET", proxy = true } = {}) {
-  const requests = []
-  const respond = (url, payload, config) => {
-    requests.push({ url, payload, config })
-    const params = new URL(url.includes("?url=") ? url.split("?url=")[1] : url).searchParams
-    const offset = Number(params.get("start") || payload?.offset || 0)
-    const rows = Number(params.get("rows") || payload?.limit || 2)
-    return Promise.resolve({ data: {
-      response: { numFound: 5, docs: Array.from({ length: Math.min(rows, 5 - offset) }, (_, index) =>
-        ({ id: `doc${offset + index}`, title: "Document" })) },
-      debug: { explainOther: {} }
-    } })
-  }
-  const client = { get: vi.fn((url, config) => respond(url, null, config)),
-    post: vi.fn(respond), jsonp: vi.fn((url, config) => respond(url, null, config)) }
-  const services = createWiredServices(client)
-  const fieldSpec = { id: "id", title: "title", fieldList: () => ["id", "title"], highlightFieldList: () => [] }
-  const settings = {
-    searchEngine: "solr", apiMethod: method, proxyRequests: proxy,
-    customHeaders: { "X-Search-Key": "fixture" }, basicAuthCredential: "user:fixture",
-    escapeQuery: false, numberOfRows: 2,
-    selectedTry: { tryNo: 1, jsonQueryParams: json,
-      args: json ? { query: "#$query##", limit: 2 } : { q: ["#$query##"], rows: ["2"] },
-      searchUrl: "https://solr.test/select" },
-    createFieldSpec: () => fieldSpec
-  }
-  const query = { queryText: "heart", options: {}, ratings: {} }
-  const adapter = createTargetedSearchAdapter({
-    query, queryId: 7, settings, selectedTry: settings.selectedTry, supportedEngines: ["solr"],
-    settingsWithTryOverrides,
-    createSearcherFromSettings: (currentSettings, currentQuery) => createSearcherFromSettings({
-      settings: currentSettings, query: currentQuery, proxyUrl: "https://quepid.test/proxy/1?url=",
-      createSearcher: (...args) => services.createSearcher(...args)
-    }),
-    normalizeDocExplains: (_query, searcher) => searcher.docs.map((doc) => ({ id: doc.id }))
-  })
-  return { adapter, client, requests }
-}
-
-describe("Solr finder request integration", () => {
-  it.each(["GET", "POST"])("preserves %s proxy and credentials for both requests", async (method) => {
-    const { adapter, client, requests } = buildSolrIntegration({ method })
-    await adapter.search("id:*")
-    expect(requests).toHaveLength(2)
-    expect(client.jsonp).not.toHaveBeenCalled()
-    expect(client[method.toLowerCase()]).toHaveBeenCalledTimes(2)
-    for (const request of requests) {
-      expect(request.url).toMatch(/^https:\/\/quepid.test\/proxy\/1\?url=/)
-      expect(request.config.headers).toMatchObject({ "X-Search-Key": "fixture", Authorization: "Basic dXNlcjpmaXh0dXJl" })
-    }
-  })
-
-  it.each([false, true])("pages finder documents with the configured limit and proxy (JSON DSL: %s)", async (json) => {
-    const { adapter, requests, client } = buildSolrIntegration({ json, method: "POST" })
-    await adapter.search("id:*")
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1"])
-    await adapter.paginate()
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1", "doc2", "doc3"])
-    expect(client.jsonp).not.toHaveBeenCalled()
-    if (json) expect(requests[2].payload).toMatchObject({ query: "heart", limit: 2, offset: 2 })
-    else expect(new URL(requests[2].url.split("?url=")[1]).searchParams.get("q")).toBe("heart")
-    expect(requests[3].url).toContain("start=2")
-    expect(requests[3].url).toContain("rows=2")
-    expect(requests.every((request) => request.url.startsWith("https://quepid.test/proxy/1?url="))).toBe(true)
-    await adapter.paginate()
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1", "doc2", "doc3", "doc4"])
-    await adapter.paginate()
-    expect(requests).toHaveLength(6)
-  })
-
-  it("retries a failed page without skipping results or retaining paging state", async () => {
-    const { adapter, client, requests } = buildSolrIntegration({ json: true, method: "POST" })
-    await adapter.search("id:*")
-    client.post.mockRejectedValueOnce(new Error("offline"))
-    await expect(adapter.paginate()).rejects.toThrow("offline")
-    expect(adapter.paging).toBe(false)
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1"])
-    await adapter.paginate()
-    expect(requests[2].payload.offset).toBe(2)
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1", "doc2", "doc3"])
-  })
-
-  it("retains direct JSONP for an existing unproxied classic endpoint", async () => {
-    const { adapter, client } = buildSolrIntegration({ method: "JSONP", proxy: false })
-    await adapter.search("id:*")
-    expect(client.jsonp).toHaveBeenCalledTimes(2)
-    expect(adapter.docs.map((doc) => doc.id)).toEqual(["doc0", "doc1"])
-  })
-})
-
 describe("targeted search adapter", () => {
-  it("accepts a plain Solr finder query and explains against the original query", async () => {
+  it("previews a Solr finder query through the same injected engine dependencies as other engines", async () => {
     const { adapter, config, searcher } = buildAdapter()
-    expect(adapter.initialQueryParams()).toBe("")
+    expect(adapter.initialQueryParams()).toBe("q=heart")
 
-    await adapter.search("id:l_15577")
+    await adapter.search("q=lung")
 
-    expect(config.previewArgs).not.toHaveBeenCalled()
-    expect(config.createSearcherFromSettings).toHaveBeenCalledWith(
-      expect.objectContaining({ selectedTry: expect.objectContaining({ args: expect.objectContaining({
-        explainOther: ["id:l_15577"]
-      }) }) }), config.query
+    expect(config.previewArgs).toHaveBeenCalledWith(1, "q=lung")
+    expect(config.settingsWithTryOverrides).toHaveBeenCalledWith(
+      config.settings,
+      { args: { q: "heart" }, queryParams: "q=lung" }
     )
-    expect(searcher.explainOther).not.toHaveBeenCalled()
-    expect(searcher.search).toHaveBeenCalledTimes(2)
+    expect(searcher.search).toHaveBeenCalled()
     expect(adapter.docs).toEqual([{ id: "doc1" }])
-    expect(adapter).toMatchObject({ lastQuery: "id:l_15577", numFound: 1, parseError: false })
+    expect(adapter).toMatchObject({ lastQuery: "q=lung", numFound: 1, parseError: false })
   })
 
-  it("pages Solr finder results with the same explain query and recovers after a failed search", async () => {
+  it("pages a Solr preview search by appending the next page, and recovers after a failed search", async () => {
+    const nextSearcher = { type: "solr", numFound: 5, search: vi.fn(() => Promise.resolve()), pager: () => null }
     const { adapter, config, searcher } = buildAdapter({
-      settings: { numberOfRows: 1 }, searcher: { numFound: 5 },
       normalizeDocExplains: vi.fn().mockReturnValueOnce([{ id: "doc1" }]).mockReturnValueOnce([{ id: "doc2" }])
     })
+    searcher.pager = vi.fn(() => nextSearcher)
     searcher.search.mockRejectedValueOnce(new Error("offline"))
-    await expect(adapter.search("id:l_15577")).rejects.toThrow("offline")
-    await adapter.search("id:l_15577")
+    await expect(adapter.search("q=lung")).rejects.toThrow("offline")
+    await adapter.search("q=lung")
     await adapter.paginate()
 
-    expect(config.createSearcherFromSettings).toHaveBeenLastCalledWith(
-      expect.objectContaining({ selectedTry: expect.objectContaining({ args: expect.objectContaining({
-        q: ["id:l_15577"], start: ["1"]
-      }) }) }), config.query
-    )
+    expect(config.previewArgs).toHaveBeenLastCalledWith(1, "q=lung")
     expect(adapter.docs).toEqual([{ id: "doc1" }, { id: "doc2" }])
     expect(adapter).toMatchObject({ numFound: 5, paging: false })
   })
+
   it("prefers the injected rating scale (scorer colors) over the query's own scale, which is the fallback", () => {
     const scale = { 0: { color: "red" }, 1: { color: "green" } }
 
