@@ -196,8 +196,8 @@ class ApplicationHelperTest < ActionView::TestCase
 
       rendered = output_buffer.to_s
       assert_includes rendered, 'Saved successfully.'
-      assert_includes rendered, 'alert-info'
-      assert_includes rendered, 'alert-dismissible'
+      assert_includes rendered, 'alert-success'
+      assert_includes rendered, 'btn-close float-start'
     end
 
     test 'maps each flash type to its bootstrap alert class' do

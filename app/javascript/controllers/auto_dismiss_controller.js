@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 // Rails notices restart their delay after the reader leaves the alert.
 export default class extends Controller {
-  static values = { delay: { type: Number, default: 5000 } }
+  static values = { delay: { type: Number, default: 3000 } }
 
   connect() {
     this.schedule()

@@ -2042,10 +2042,11 @@ parts:
         screenshots:
           error: "15.10/error"
           notice: "15.10/notice"
-        last_run: 2026-10-23T15:07:10Z
-        result: fail
-        notes: "Core timing sample2026-10-23 on Current :3000 case10 via MCP: synthetic main success visible2.5s, hidden3.3s; screenshot inspected;12 flash unit tests pass including persistent search-error. Rails/admin behavior unchanged. Earlier Rails verification2026-10-20: unchanged-profile success visible3s/dismissed5.4s; hover keeps notice5.5s then fresh5.5s after leaving dismisses; wrong-password error remains5.5s. Script mismatch: Rails flash renders in header flow at y56,h58, not bottom overlay. Live Legacy8ceb99e9 same profile wrong-password error also y56,h58; inspected pair proves pre-existing placement, not migration regression. Not covered live: focus/disconnect/admin/core timing matrix or diff-baseline replay; no behavior changed to satisfy unsupported expectation."
-        paths: ["app/helpers/application_helper.rb", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/bootstrap5-add.css", "app/javascript/controllers/flash_controller.js", "app/views/core/index.html.erb", "app/assets/stylesheets/core-additions.css"]
+          core-notice: "15.10/core-notice"
+        last_run: 2026-10-23T15:18:23Z
+        result: pass_with_fixes
+        notes: "Rails timer MCP sample: real profile notice visible2.2s/removed3.3s; screenshot inspected;5 timer tests and ESLint pass. Both success/notice now use3s, retaining hover/focus pause. Earlier shared-style MCP sample: real profile notice and synthetic core success at1200x900 both rgb223/240/216 background,14px font,51px height and matching padding; screenshots inspected.27 helper tests and CSS lint pass. Earlier same-session coverage: real unchanged-profile save at1200x900 puts notice at y842/h58, main bounds identical before/after close; automatic dismissal observed. Wrong-password error stays beyond5.5s at600x900 and overlays bottom footer; screenshots inspected. CSS lint and5 lifecycle tests pass. Core three-second timing verified earlier this session; Rails notices now use3s/hover-focus pause. Visual suite2 pass,3 unavailable static fixture failures,1 unrelated Book form baseline mismatch. Deferred: actual AI Judge save/admin flash, stacked Rails alerts, modal layering, full hover/focus/Turbo Back matrix and diff-baseline replay."
+        paths: ["app/helpers/application_helper.rb", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/bootstrap5-add.css", "app/assets/stylesheets/base.css", "app/javascript/controllers/flash_controller.js", "app/views/core/index.html.erb", "app/assets/stylesheets/core-additions.css"]
       "15.11":
         title: "Global avatar presentation"
         screenshots:

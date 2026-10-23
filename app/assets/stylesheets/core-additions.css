@@ -615,21 +615,6 @@ footer {
   margin: 20px 0;
 }
 
-/* Case workspace flashes float over the footer at the viewport bottom. Ordinary
- * Rails page flashes remain in the page flow below the navbar. */
-#flash-messages {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  z-index: 100;
-  pointer-events: none;
-}
-
-#flash-messages .alert {
-  pointer-events: auto;
-  margin-bottom: 0;
-}
-
 /*
 	Flash — Stimulus `flash` controller (app/javascript/controllers/flash_controller.js)
 	toggles "show alert" on class="flash fade" (markup in views/core/index.html.erb).
@@ -637,20 +622,12 @@ footer {
 */
 
 .flash {
-  border-radius:  0;
-  display:        none;
-  margin:         0;
-  width:          100%;
-  padding-right:  80px;
+  display: none;
 }
+
 .flash.show {
   display: block;
   opacity: 1;
-}
-
-.flash > span {
-  display:      block;
-  margin-left:  20px;
 }
 
 #annotations {

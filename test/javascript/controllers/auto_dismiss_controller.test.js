@@ -12,7 +12,7 @@ describe("Rails flash lifecycle", () => {
     document.body.append(element)
     controller = buildControllerFixture(AutoDismissController, {
       element,
-      values: { delay: 5000 }
+      values: { delay: AutoDismissController.values.delay.default }
     })
   })
 
@@ -24,11 +24,11 @@ describe("Rails flash lifecycle", () => {
     vi.restoreAllMocks()
   })
 
-  it("dismisses at five seconds through Bootstrap", () => {
+  it("dismisses at three seconds through Bootstrap", () => {
     const close = vi.fn()
     window.bootstrap = { Alert: { getOrCreateInstance: vi.fn(() => ({ close })) } }
     controller.connect()
-    vi.advanceTimersByTime(4999)
+    vi.advanceTimersByTime(2999)
     expect(close).not.toHaveBeenCalled()
     vi.advanceTimersByTime(1)
     expect(close).toHaveBeenCalledOnce()
@@ -37,7 +37,7 @@ describe("Rails flash lifecycle", () => {
   it("pauses while hovered and restarts a full delay after leaving", () => {
     const matches = vi.spyOn(controller.element, "matches")
     controller.connect()
-    vi.advanceTimersByTime(3000)
+    vi.advanceTimersByTime(1500)
     matches.mockReturnValue(true)
     controller.pause()
     controller.schedule()
@@ -45,7 +45,7 @@ describe("Rails flash lifecycle", () => {
     expect(controller.element.isConnected).toBe(true)
     matches.mockReturnValue(false)
     controller.schedule()
-    vi.advanceTimersByTime(4999)
+    vi.advanceTimersByTime(2999)
     expect(controller.element.isConnected).toBe(true)
     vi.advanceTimersByTime(1)
     expect(controller.element.isConnected).toBe(false)
@@ -60,20 +60,20 @@ describe("Rails flash lifecycle", () => {
     expect(controller.element.isConnected).toBe(true)
     controller.element.querySelector("button").blur()
     controller.schedule()
-    vi.advanceTimersByTime(5000)
+    vi.advanceTimersByTime(3000)
     expect(controller.element.isConnected).toBe(false)
   })
 
   it("clears disconnected timers and schedules only once on reconnection", () => {
     controller.connect()
-    vi.advanceTimersByTime(3000)
+    vi.advanceTimersByTime(1500)
     controller.disconnect()
     vi.advanceTimersByTime(6000)
     expect(controller.element.isConnected).toBe(true)
     controller.connect()
     controller.schedule()
     expect(vi.getTimerCount()).toBe(1)
-    vi.advanceTimersByTime(5000)
+    vi.advanceTimersByTime(3000)
     expect(controller.element.isConnected).toBe(false)
   })
 
@@ -82,7 +82,7 @@ describe("Rails flash lifecycle", () => {
     window.bootstrap = { Alert: { getOrCreateInstance } }
     controller.connect()
     controller.element.remove()
-    vi.advanceTimersByTime(5000)
+    vi.advanceTimersByTime(3000)
     expect(getOrCreateInstance).not.toHaveBeenCalled()
   })
 })

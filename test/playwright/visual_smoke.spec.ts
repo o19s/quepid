@@ -24,7 +24,7 @@ async function core(page: Page, wizard = false) {
   await expect(page.locator('.results-list-element li').first()).toBeVisible();
   // Unlike the older helper, never swallow a readiness timeout.
   await expect(page.locator('.search-feedback:visible')).toHaveCount(0, { timeout: 20_000 });
-  // The "All queries finished" flash auto-hides after 5s, so captures racing it are
+  // The "All queries finished" flash auto-hides after 3s, so captures racing it are
   // flaky. Let it appear and clear so every shot starts from the same settled state.
   await page.locator('.flash.show').first().waitFor({ state: 'visible', timeout: 3_000 }).catch(() => {});
   await expect(page.locator('.flash.show')).toHaveCount(0, { timeout: 10_000 });

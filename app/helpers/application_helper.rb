@@ -121,7 +121,7 @@ module ApplicationHelper
       success: 'alert-success',
       error:   'alert-danger',
       alert:   'alert-warning',
-      notice:  'alert-info',
+      notice:  'alert-success',
     }[flash_type.to_sym] || flash_type.to_s
   end
 
@@ -186,21 +186,21 @@ module ApplicationHelper
         content_tag(
           :div,
           message,
-          class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
+          class: "alert #{bootstrap_class_for(msg_type)} fade show",
           role:  'alert',
           data:  flash_message_data(msg_type)
         ) do
           concat(
             content_tag(
               :button,
-              class:        'btn-close',
+              class:        'btn-close float-start',
               type:         'button',
               'aria-label': 'Close',
               data:         { 'bs-dismiss': 'alert' }
             ) do
             end
           )
-          concat message
+          concat content_tag(:span, message)
         end
       )
     end
