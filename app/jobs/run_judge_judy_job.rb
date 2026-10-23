@@ -91,7 +91,10 @@ class RunJudgeJudyJob < ApplicationJob
     loop do
       break if number_of_pairs && counter >= number_of_pairs
 
-      break if cancellable && cancellation_requested?
+      if cancellable && cancellation_requested?
+        cancelled = true
+        break
+      end
 
       query_doc_pair, source = next_pair_to_judge(book, judge, escalating_from_judge)
       break if query_doc_pair.nil?

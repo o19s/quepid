@@ -258,6 +258,30 @@ class RunJudgeJudyJobTest < ActiveJob::TestCase
       assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
     end
 
+    test 'cancellation with pending escalations does not wake the on-call judge' do
+      on_call = AiJudge.create!(name: 'On Call', llm_key: OPENAI_VALID_KEY, system_prompt: judge_judy.system_prompt)
+      judge_judy.update!(escalates_to: on_call)
+      source = Judgement.create!(query_doc_pair: book.query_doc_pairs.first, user: judge_judy,
+                                 unrateable: true, explanation: 'Unsure')
+      assert Judgement.awaiting_escalation(book, from: judge_judy, to: on_call).exists?(source.id)
+
+      job = RunJudgeJudyJob.new(book, judge_judy, nil)
+      SolidQueue::Job.create!(
+        active_job_id: job.job_id,
+        class_name:    'RunJudgeJudyJob',
+        queue_name:    'default',
+        arguments:     job.serialize
+      )
+      RunJudgeJudyJob.cancel(book, judge_judy)
+
+      assert_no_enqueued_jobs only: RunJudgeJudyJob do
+        assert_no_difference 'Judgement.count' do
+          job.perform(book, judge_judy, nil)
+        end
+      end
+      assert_not_requested :post, 'https://api.openai.com/v1/chat/completions'
+    end
+
     test 'runs to completion when never tracked by SolidQueue (e.g. inline/test adapter)' do
       job = RunJudgeJudyJob.new
       job.job_id = SecureRandom.uuid
