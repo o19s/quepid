@@ -10,7 +10,7 @@ class AccountsController < ApplicationController
       error = true
     elsif @user.update password: params[:password], password_confirmation: params[:password_confirmation]
       Analytics::Tracker.track_user_updated_password_event @user
-      flash[:success] = 'Account updated successfully.'
+      flash[:notice] = 'Account updated successfully.'
     else
       flash.now[:error] = 'Oooops! Something happened, please double check your values and try again.'
       error = true

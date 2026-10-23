@@ -150,7 +150,7 @@ describe("CoreBootstrapController", () => {
     expect(failed).not.toHaveBeenCalled()
     expect(flash.hide).toHaveBeenCalledWith("search-error")
     expect(core().case.trackLastViewedAt).toHaveBeenCalledWith(2)
-    expect(flash.show).toHaveBeenCalledWith("success", "All queries finished successfully!")
+    expect(flash.show).toHaveBeenCalledWith("notice", "All queries finished successfully!")
   })
 
   it("rejects mismatched page data before selecting a case or starting searches", async () => {

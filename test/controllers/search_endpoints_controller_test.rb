@@ -225,7 +225,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     get search_endpoint_url(id: 0)
 
     assert_redirected_to search_endpoints_url
-    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:notice]
+    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:alert]
   end
 
   test 'an inaccessible endpoint retains the permission redirect' do
@@ -237,7 +237,7 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     get search_endpoint_url(endpoint)
 
     assert_redirected_to search_endpoints_url
-    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:notice]
+    assert_equal "Search Endpoint you are looking for either doesn't exist or you don't have permissions.", flash[:alert]
   end
 
   test 'should update search_endpoint' do

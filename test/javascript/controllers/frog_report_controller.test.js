@@ -163,7 +163,7 @@ describe("FrogReportController", () => {
 
     expect(fetch).toHaveBeenCalledWith("books/3/cases/9/refresh?background=false", expect.objectContaining({ method: "PUT" }))
     expect(refreshQueries).toHaveBeenCalledWith(9)
-    expect(flash.show).toHaveBeenCalledWith("success", "Ratings have been refreshed.")
+    expect(flash.show).toHaveBeenCalledWith("notice", "Ratings have been refreshed.")
     expect(controller.refreshButtonTarget.disabled).toBe(false)
     expect(controller.refreshIconTarget.classList.contains("spintime")).toBe(false)
   })

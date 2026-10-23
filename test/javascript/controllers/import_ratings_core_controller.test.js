@@ -334,7 +334,7 @@ describe("ImportRatingsCoreController", () => {
         }
       }
     ])
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Successfully imported ratings from CSV.")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Successfully imported ratings from CSV.")
   })
 
   it.each([
@@ -349,7 +349,7 @@ describe("ImportRatingsCoreController", () => {
 
     expect(postedRequests()[0].url).toBe(`/api/import/ratings?file_format=${type}`)
     expect(postedRequests()[0].body).toEqual({ [field]: content, case_id: 6, clear_queries: false })
-    expect(coreFlash.show).toHaveBeenCalledWith("success", message)
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", message)
   })
 
   it("posts information needs with the create-missing-queries choice", async () => {
@@ -367,7 +367,7 @@ describe("ImportRatingsCoreController", () => {
         body: { csv_text: content, case_id: 6, create_queries: true }
       }
     ])
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Successfully imported information needs from CSV.")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Successfully imported information needs from CSV.")
   })
 
   it("posts each snapshot separately, grouping docs by query in file order", async () => {
@@ -410,7 +410,7 @@ describe("ImportRatingsCoreController", () => {
       ]
     })
     expect(requests[1].body.snapshots[0]).toMatchObject({ name: "Tuned", queries: { "shoes, red": {} } })
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Snapshots imported successfully!")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Snapshots imported successfully!")
   })
 
   it("groups snapshot rows and carries additional document fields", async () => {

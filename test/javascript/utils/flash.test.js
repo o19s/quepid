@@ -18,11 +18,11 @@ describe("flash", () => {
   })
 
   it("dispatches flash:show with the type, message, and default target", () => {
-    showFlash("success", "All queries finished successfully!")
+    showFlash("notice", "All queries finished successfully!")
 
     expect(showListener).toHaveBeenCalledTimes(1)
     expect(showListener.mock.calls[0][0].detail).toEqual({
-      type: "success",
+      type: "notice",
       message: "All queries finished successfully!",
       target: "main",
       html: false

@@ -414,7 +414,7 @@ describe("JudgementsCoreController", () => {
         caseId: 42, bookId: 2, bookName: "Catalog", autoPopulateBookPairs: true, autoPopulateCaseJudgements: true
       })
       expect(controller.hasUnsavedChanges()).toBe(false)
-      expect(coreFlash.show).toHaveBeenCalledWith("success", "Settings saved.")
+      expect(coreFlash.show).toHaveBeenCalledWith("notice", "Settings saved.")
       document.removeEventListener("quepid:case-book-updated", saved)
     })
 
@@ -438,7 +438,7 @@ describe("JudgementsCoreController", () => {
       await controller.save({ preventDefault() {} })
 
       expect(apiFetch.mock.calls[1][0]).toBe("/api/books/5/cases/42/refresh?create_missing_queries=false&process_in_background=false")
-      expect(coreFlash.show).toHaveBeenCalledWith("success", "Settings saved. Ratings have been refreshed.")
+      expect(coreFlash.show).toHaveBeenCalledWith("notice", "Settings saved. Ratings have been refreshed.")
       expect(reload).toHaveBeenCalledOnce()
       document.removeEventListener("judgements:queries-need-reload", reload)
     })
@@ -466,7 +466,7 @@ describe("JudgementsCoreController", () => {
       await linkedController()[action]({ preventDefault() {} })
 
       expect(apiFetch.mock.calls[0][0]).toBe(`/api/books/2/cases/42/refresh?create_missing_queries=${createMissing}&process_in_background=false`)
-      expect(coreFlash.show).toHaveBeenCalledWith("success", message)
+      expect(coreFlash.show).toHaveBeenCalledWith("notice", message)
       expect(reload.mock.calls[0][0].detail).toEqual({ caseId: 42 })
       document.removeEventListener("judgements:queries-need-reload", reload)
     })
@@ -485,7 +485,7 @@ describe("JudgementsCoreController", () => {
 
         const background = "Missing queries are being synced from book in the background."
         expect(apiFetch.mock.calls[0][0]).toContain("process_in_background=true")
-        expect(coreFlash.show).toHaveBeenCalledWith("success", background)
+        expect(coreFlash.show).toHaveBeenCalledWith("notice", background)
         expect(reload).not.toHaveBeenCalled()
         vi.advanceTimersByTime(500)
         expect(window.location.href).toBe(`https://quepid.test/?notice=${encodeURIComponent(background)}`)

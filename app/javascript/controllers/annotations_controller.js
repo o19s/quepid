@@ -47,7 +47,7 @@ export default class extends Controller {
       await this.stream(this.urlValue, "POST", { annotation: { message }, score })
       this.messageTarget.value = ""
       this.notifyScoreConsumers()
-      coreFlash.show("success", "New Annotation created successfully!")
+      coreFlash.show("notice", "New Annotation created successfully!")
     } catch {
       coreFlash.show("error", "Unable to create Annotation.")
     } finally {
@@ -90,7 +90,7 @@ export default class extends Controller {
       await this.stream(this.annotationUrl(annotationId), "PUT", { annotation: { message: editMessage.value } })
       this.editModalInstance?.hide()
       this.notifyScoreConsumers()
-      coreFlash.show("success", "Annotation updated successfully!")
+      coreFlash.show("notice", "Annotation updated successfully!")
     } catch {
       coreFlash.show("error", "Unable to update Annotation.")
     } finally {
@@ -107,7 +107,7 @@ export default class extends Controller {
     try {
       await this.stream(this.annotationUrl(annotationId), "DELETE")
       this.notifyScoreConsumers()
-      coreFlash.show("success", "Annotation deleted successfully!")
+      coreFlash.show("notice", "Annotation deleted successfully!")
     } catch {
       coreFlash.show("error", "Unable to delete Annotation.")
     }

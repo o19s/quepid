@@ -129,7 +129,7 @@ describe("MoveQueryCoreController", () => {
     const detail = { caseId: 4, queryId: 12, targetCaseId: 8 }
     expect(controller.queryCommandBridgeOutlet.queryRemoved).toHaveBeenCalledWith(detail)
     expect(controller.dispatch).toHaveBeenCalledWith("completed", { detail })
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Query moved successfully!")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Query moved successfully!")
     expect(coreFlash.show).not.toHaveBeenCalledWith("error", expect.anything())
     expect(hideBsModal).toHaveBeenCalledOnce()
   })

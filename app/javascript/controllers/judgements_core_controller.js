@@ -153,7 +153,7 @@ export default class extends CoreModalControllerBase {
         return
       }
 
-      coreFlash.show("success", "Settings saved.")
+      coreFlash.show("notice", "Settings saved.")
       this.hide()
       this.setBusy(false)
     } catch (error) {
@@ -177,7 +177,7 @@ export default class extends CoreModalControllerBase {
       await populateBook({ bookId, caseId: Number(caseId), queries })
       if (!isSameId(this.currentCaseId, caseId)) return
       this.setProgress(false)
-      coreFlash.show("success", "Updating Book with Query Doc Pairs.")
+      coreFlash.show("notice", "Updating Book with Query Doc Pairs.")
       this.hide()
       this.setBusy(false)
     } catch (error) {
@@ -409,7 +409,7 @@ export default class extends CoreModalControllerBase {
     this.setProgress(false)
 
     const message = processInBackground ? backgroundMessage : successMessage
-    if (message) coreFlash.show("success", message)
+    if (message) coreFlash.show("notice", message)
 
     if (closeWithReload && !processInBackground) {
       document.dispatchEvent(

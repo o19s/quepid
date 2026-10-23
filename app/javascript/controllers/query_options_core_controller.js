@@ -68,7 +68,7 @@ export default class extends CoreModalControllerBase {
         detail: { queryId, options }
       }))
       if (generation !== this.openGeneration) return
-      coreFlash.show("success", "Query options saved successfully.")
+      coreFlash.show("notice", "Query options saved successfully.")
       this.hide()
     } catch (error) {
       console.error("query-options-core: save failed", error)

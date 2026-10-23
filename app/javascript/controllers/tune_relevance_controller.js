@@ -406,7 +406,7 @@ export default class extends Controller {
     this.runEvaluationTarget.disabled = true
     this.runEvaluationTarget.textContent = "Queuing evaluation job..."
     this.capability.case.runEvaluation(this.capability.navigation.currentCaseNo(), this.settings.tryNo).then(() => {
-      coreFlash.show("success", "Evaluation queued successfully.")
+      coreFlash.show("notice", "Evaluation queued successfully.")
       window.location.assign(this.capability.navigation.rootUrl())
     }).catch(() => {
       coreFlash.show("error", "Unable to queue evaluation.")
@@ -455,7 +455,7 @@ export default class extends Controller {
   duplicateTry() {
     if (!this.activeTry) return
     this.capability.settings.duplicateTry(this.activeTry.tryNo)?.then(newTry => {
-      coreFlash.show("success", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
+      coreFlash.show("notice", `Try ${this.activeTry.name} duplicated successfully as ${newTry.name}.`)
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
     }).catch(() => this.showError("Unable to duplicate try."))
@@ -485,7 +485,7 @@ export default class extends Controller {
     if (numberOfTries <= 1) return
     if (!window.confirm(`Are you sure you want to delete ${this.activeTry.name}? This cannot be undone.`)) return
     this.capability.settings.deleteTry(this.activeTry.tryNo).then(() => {
-      coreFlash.show("success", "Successfully deleted try!")
+      coreFlash.show("notice", "Successfully deleted try!")
       this.reloadSettings()
       window.bootstrap?.Modal.getOrCreateInstance(this.tryModalTarget)?.hide()
     }).catch(() => this.showError("Unable to delete try."))

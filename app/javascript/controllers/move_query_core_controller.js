@@ -90,7 +90,7 @@ export default class extends CoreModalControllerBase {
 
     this.queryCommandBridgeOutlet.queryRemoved(detail)
     this.dispatch("completed", { detail })
-    coreFlash.show("success", "Query moved successfully!")
+    coreFlash.show("notice", "Query moved successfully!")
     if (generation === this.openGeneration) this.hide()
   }
 

@@ -73,7 +73,7 @@ describe("QueryOptionsCoreController", () => {
     expect(saved).toHaveBeenCalledWith(expect.objectContaining({
       detail: { queryId: "2", options: { boost: 2 } }
     }))
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Query options saved successfully.")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Query options saved successfully.")
     expect(getOrCreateBsModal).toHaveBeenCalledWith(instance.element)
     document.removeEventListener("query-options:saved", saved)
   })

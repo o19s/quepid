@@ -115,7 +115,7 @@ export default class extends Controller {
     )
     const snapshot = await postJson(this.snapshotsUrlValue, payload)
     await this.registerSnapshots([snapshot])
-    coreFlash.show("success", "Snapshot created successfully.")
+    coreFlash.show("notice", "Snapshot created successfully.")
   }
 
   currentSelections() {

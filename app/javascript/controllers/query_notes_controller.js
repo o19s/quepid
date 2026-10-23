@@ -46,7 +46,7 @@ export default class extends Controller {
 
       this.loadedValues = { notes, informationNeed }
       this.publishToQueryCollection(notes, informationNeed)
-      coreFlash.show("success", "Success! Your query details have been saved.")
+      coreFlash.show("notice", "Success! Your query details have been saved.")
       this.element.dispatchEvent(new CustomEvent("query-notes:close", { bubbles: true }))
     } catch {
       coreFlash.show("error", "Ooooops! Could not save your query details. Please try again.")

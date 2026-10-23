@@ -44,7 +44,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
 
     expect(controller.messageTarget.textContent).toBe("Saved!")
     expect(controller.element.classList.contains("show")).toBe(true)
@@ -56,7 +56,7 @@ describe("FlashController", () => {
     const controller = buildController({ channel: "search-error" })
     disconnect = connect(controller)
 
-    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })
@@ -75,7 +75,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
     expect(controller.element.classList.contains("show")).toBe(true)
 
     vi.advanceTimersByTime(2999)
@@ -83,6 +83,20 @@ describe("FlashController", () => {
     vi.advanceTimersByTime(1)
 
     expect(controller.element.classList.contains("show")).toBe(false)
+  })
+
+  it.each([
+    ["notice", "alert-success"],
+    ["alert", "alert-warning"],
+    ["error", "alert-danger"],
+    ["info", "alert-info"]
+  ])("renders %s with its matching Bootstrap class", (type, className) => {
+    const controller = buildController()
+    disconnect = connect(controller)
+
+    show(controller, { type, message: "Message" })
+
+    expect(controller.element.classList.contains(className)).toBe(true)
   })
 
   it("never auto-hides when duration is -1", () => {
@@ -146,7 +160,7 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
     hide(controller, { target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
@@ -156,8 +170,8 @@ describe("FlashController", () => {
     const controller = buildController()
     disconnect = connect(controller)
 
-    show(controller, { type: "success", message: "Saved!", target: "main" })
-    show(controller, { type: "success", message: "", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "", target: "main" })
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })
@@ -177,7 +191,7 @@ describe("FlashController", () => {
   it("cancels a pending auto-hide on disconnect", () => {
     const controller = buildController({ duration: 5000 })
     const teardown = connect(controller)
-    show(controller, { type: "success", message: "Saved!", target: "main" })
+    show(controller, { type: "notice", message: "Saved!", target: "main" })
     const hideSpy = vi.spyOn(controller, "hide")
 
     teardown()

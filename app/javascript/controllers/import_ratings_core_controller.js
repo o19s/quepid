@@ -102,7 +102,7 @@ export default class extends CoreModalControllerBase {
       else await this.importSimple()
 
       this.dispatchReload()
-      this.flash("success", this.successMessage())
+      this.flash("notice", this.successMessage())
       this.hide()
     } catch (error) {
       const message = this.errorMessage(error)

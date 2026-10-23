@@ -193,7 +193,7 @@ export default class extends Controller {
         await refreshQueries(state.caseNo)
       }
       if (!lifecycle || lifecycle !== this.lifecycle) return
-      coreFlash.show("success", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
+      coreFlash.show("notice", background ? "Ratings are being refreshed in the background." : "Ratings have been refreshed.")
       if (background) window.location.assign(getQuepidRootUrl())
     } catch (error) {
       if (!lifecycle || lifecycle !== this.lifecycle) return

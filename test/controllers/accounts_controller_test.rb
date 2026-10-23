@@ -36,7 +36,7 @@ class AccountsControllerTest < ActionController::TestCase
         patch :update, params: data
 
         assert_redirected_to profile_path
-        assert_equal 'Account updated successfully.', flash[:success]
+        assert_equal 'Account updated successfully.', flash[:notice]
       end
 
       test 'requires all fields to be filled' do

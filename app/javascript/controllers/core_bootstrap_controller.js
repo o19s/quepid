@@ -93,7 +93,7 @@ export default class extends Controller {
       this.ready({ caseNo, tryNo })
 
       runtime.queryCommands.searchAll().then(
-        () => coreFlash.show("success", "All queries finished successfully!"),
+        () => coreFlash.show("notice", "All queries finished successfully!"),
         error => {
           coreFlash.show("error", "Some queries failed to resolve!")
           coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")

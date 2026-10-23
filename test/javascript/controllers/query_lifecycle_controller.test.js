@@ -55,7 +55,7 @@ describe("query_lifecycle_controller", () => {
     expect(prepareQueries).toHaveBeenCalledWith(["star wars", "dune"])
     expect(persistQueries).toHaveBeenCalledWith(undefined, ["star wars", "dune"])
     expect(commitQueries).toHaveBeenCalledWith({ query: {} }, { status: 201, data: {} })
-    expect(coreFlash.show).toHaveBeenCalledWith("success", "Queries added successfully.")
+    expect(coreFlash.show).toHaveBeenCalledWith("notice", "Queries added successfully.")
     expect(complete).toHaveBeenCalledOnce()
     expect(complete.mock.calls[0][0].detail).toEqual({ success: true })
   })

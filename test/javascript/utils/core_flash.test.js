@@ -18,9 +18,9 @@ describe("coreFlash", () => {
 
   it("delivers controller messages to the main target by default", () => {
     const listener = listen("flash:show")
-    coreFlash.show("success", "Saved")
+    coreFlash.show("notice", "Saved")
     expect(listener.mock.calls[0][0].detail).toEqual({
-      type: "success",
+      type: "notice",
       message: "Saved",
       target: "main",
       html: false

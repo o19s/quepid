@@ -43,7 +43,7 @@ test('case footer matches homepage spacing and flashes overlap it when the drawe
   await showFlash(page, 'search-error', 'error', 'Search failed. Please try again.');
   await expect(page.locator('#flash-messages .alert-danger')).toBeVisible();
   await expectFlashOverFooter(page);
-  await showFlash(page, 'main', 'success', 'Saved successfully.');
+  await showFlash(page, 'main', 'notice', 'Saved successfully.');
   await expect(page.locator('#flash-messages .show')).toHaveCount(2);
   await expectFlashOverFooter(page);
 

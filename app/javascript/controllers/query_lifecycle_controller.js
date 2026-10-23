@@ -50,7 +50,7 @@ export default class extends Controller {
           coreFlash.show("error", flashErrorMessage(result.searchError, String(result.searchError)), "search-error")
         }
       } else {
-        coreFlash.show("success", queryTexts.length === 1
+        coreFlash.show("notice", queryTexts.length === 1
           ? "Query added successfully."
           : "Queries added successfully.")
       }

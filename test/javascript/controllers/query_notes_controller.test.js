@@ -71,7 +71,7 @@ describe("QueryNotesController", () => {
 
     expect(fetch).toHaveBeenCalledWith(controller.urlValue, expect.objectContaining({ method: "PUT" }))
     expect(close).toHaveBeenCalled()
-    expect(flash.show).toHaveBeenCalledWith("success", expect.stringContaining("saved"))
+    expect(flash.show).toHaveBeenCalledWith("notice", expect.stringContaining("saved"))
 
   })
 

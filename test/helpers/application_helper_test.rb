@@ -201,7 +201,7 @@ class ApplicationHelperTest < ActionView::TestCase
     end
 
     test 'maps each flash type to its bootstrap alert class' do
-      flash[:success] = 'Success message'
+      flash[:notice] = 'Notice message'
       flash[:error] = 'Error message'
       flash[:alert] = 'Alert message'
       self.output_buffer = ActionView::OutputBuffer.new
@@ -224,18 +224,18 @@ class ApplicationHelperTest < ActionView::TestCase
       assert_equal '', output_buffer.to_s.strip
     end
 
-    test 'only success and notice dismiss automatically and all flashes are one-time' do
-      [ :success, :notice, :error, :alert, :warning ].each { |type| flash[type] = "#{type} message" }
+    test 'only notices dismiss automatically and all flashes are one-time' do
+      [ :notice, :error, :alert, :warning ].each { |type| flash[type] = "#{type} message" }
       self.output_buffer = ActionView::OutputBuffer.new
 
       flash_messages
 
       alerts = Nokogiri::HTML.fragment(output_buffer.to_s).css('[role="alert"]')
-      assert_equal 5, alerts.size
+      assert_equal 4, alerts.size
       alerts.each do |alert|
         assert_equal 'true', alert['data-turbo-temporary']
         assert_equal 'Close', alert.at_css('button')['aria-label']
-        if %w[success notice].any? { |type| alert.text == "#{type} message" }
+        if %w[notice].any? { |type| alert.text == "#{type} message" }
           assert_equal 'auto-dismiss', alert['data-controller']
           assert_includes alert['data-action'], 'focusout->auto-dismiss#schedule'
         else

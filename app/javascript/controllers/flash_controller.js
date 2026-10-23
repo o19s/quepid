@@ -50,9 +50,9 @@ export default class extends Controller {
     }
     this.element.classList.remove("alert-success", "alert-danger", "alert-warning", "alert-info")
     const alertClass = {
-      success: "alert-success",
+      notice: "alert-success",
       error: "alert-danger",
-      warn: "alert-warning",
+      alert: "alert-warning",
       info: "alert-info"
     }[type]
     if (alertClass) this.element.classList.add(alertClass)

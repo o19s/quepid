@@ -118,10 +118,9 @@ module ApplicationHelper
 
   def bootstrap_class_for flash_type
     {
-      success: 'alert-success',
-      error:   'alert-danger',
-      alert:   'alert-warning',
-      notice:  'alert-success',
+      error:  'alert-danger',
+      alert:  'alert-warning',
+      notice: 'alert-success',
     }[flash_type.to_sym] || flash_type.to_s
   end
 
@@ -218,7 +217,7 @@ module ApplicationHelper
 
   def flash_message_data msg_type
     data = { turbo_temporary: true }
-    if %w[success notice].include?(msg_type.to_s)
+    if %w[notice].include?(msg_type.to_s)
       data[:controller] = 'auto-dismiss'
       data[:action] = 'mouseenter->auto-dismiss#pause mouseleave->auto-dismiss#schedule ' \
                       'focusin->auto-dismiss#pause focusout->auto-dismiss#schedule'
