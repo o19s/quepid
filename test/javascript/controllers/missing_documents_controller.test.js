@@ -182,6 +182,28 @@ describe("MissingDocumentsController", () => {
     expect(controller.resetButtonTarget.disabled).toBe(true)
   })
 
+  it.each([1, 267])("includes the submitted query in italics in the summary for %s matches", (numFound) => {
+    const lastQuery = "q=star wars &defType=edismax &qf=text_all &pf=title &tie=1.0 &bf=vote_average"
+    const displayedQuery = "q=star wars&defType=edismax&qf=text_all&pf=title&tie=1.0&bf=vote_average"
+    const controller = buildController(adapter({
+      docs: [{ id: "doc-1" }],
+      numFound,
+      lastQuery
+    }))
+    controller.queryParamsTarget.value = "unsent edits"
+    controller.render()
+
+    const summary = controller.resultsTarget.querySelector("p")
+    expect(summary.querySelector("em").textContent).toBe(displayedQuery)
+    expect(controller.adapter.lastQuery).toBe(lastQuery)
+    expect(summary.textContent).toBe(`Your query ${displayedQuery} returned ${numFound === 1 ? "one matching document." : "267 matching documents."}`)
+
+    controller.adapter.lastQuery = "<img src=x onerror=alert(1)>"
+    controller.render()
+    expect(controller.resultsTarget.querySelector("p img")).toBeNull()
+    expect(controller.resultsTarget.querySelector("p em").textContent).toBe(controller.adapter.lastQuery)
+  })
+
   it("renders documents with the shared search-result controller", () => {
     const controller = buildController(adapter({
       docs: [{ id: "doc-1", title: "A document", subSnippets: () => ({}) }],

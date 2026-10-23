@@ -49,7 +49,7 @@ Before testing individual features, get oriented:
 
 - [ ] **Steps:**
   1. Expand a query row, click **Move Query**.
-  2. In the "Move Query to Another Case" modal, click a target case from the list.
+  2. In the "Move Query to Another Case" modal, confirm Cancel uses the same hover highlight as other core modal Close buttons, then click a target case from the list.
   3. Confirm the footer button updates to "Move to {case name}", click it.
 - **Expected:** The query (with its ratings/history) is transferred to the target case and removed from the current one.
 - **Edge cases:**
@@ -79,7 +79,7 @@ Before testing individual features, get oriented:
   3. Click a rating-scale value.
   4. Reload the page and confirm it persisted.
   5. Reopen the popover and click **RESET**.
-- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the visible **Unrated** state. Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
+- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the unrated `--` badge (screen readers announce "Rate document: Unrated"). Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
 - **Edge cases:**
   - [ ] Rate a document that can't be uniquely identified (missing/duplicate doc id) — confirm the "This document can't be uniquely identified..." banner appears instead of a rating control.
   - [ ] Rate documents until you reach the scorer's "depth of rating" cutoff — confirm the "Results above are counted in scoring" note appears at the right rank.
@@ -116,7 +116,7 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
      Open its rating popover with the keyboard and Tab to the rating choices and RESET; confirm focus stays inside the finder. Select a rating with Enter and confirm focus returns to that document's rebuilt rating button after saving. With the popover open, Escape dismisses the finder and removes the tip; check focus restoration to the launcher separately.
   4. Click **Reset to All Rated Docs**.
 - [ ] With a proxied/authenticated Solr endpoint, verify both finder requests retain proxying and credentials. Repeat with JSON query parameters and a small result limit: Next appends distinct documents at the configured page size; a failed page can be retried without skipping results.
-- **Expected:** Search returns matching documents with a count message (or a "no results" message); ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."
+- **Expected:** Search returns matching documents with "Your query [submitted query] returned [count] matching documents." ("one matching document." for one result), with the submitted query in italics and whitespace around `&` separators removed only in the summary (preserve spaces within values), or a "no results" message; ratings set here affect the query's score, matching the persistent on-screen warning "Changing ratings will affect the query score."
 - **Edge cases:**
   - [ ] Reject a search, reset, or next-page request — expect a contextual "Unable to … Please try again." message, a hidden spinner, and usable controls. Retry successfully and confirm the error clears. A failed reset keeps the edited query parameters.
   - [ ] Dismiss while a request is pending — completion must not render into the detached modal. Reopening creates a usable finder.
@@ -194,7 +194,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   3. Click **Delete Query**.
   4. Confirm the shared **Confirm** modal opens reading "Are you absolutely sure you want to delete?" with a red **Confirm** button — click **Confirm**.
   5. Confirm the query is removed from the list and the case rescopes/rescoes without it.
-  6. Repeat but click **Cancel** (or press Escape) on the confirm modal instead; confirm keyboard focus returns to **Delete Query**.
+  6. Repeat but click **Cancel** (or press Escape) on the confirm modal instead; confirm keyboard focus returns to **Delete Query**. Confirm appears to the left of Cancel. Cancel uses the same outline, hover highlight and keyboard focus styling as other core modal **Close** buttons.
 - **Expected:** Copy always copies the raw query text. Delete Query removes only that single query (and, per the case model, its ratings/history) — this is a *different, narrower* action than the case-wide "Delete All Queries" option covered in Part 6.4. Cancelling the confirm dialog leaves the query untouched.
 - **Edge cases:**
   - [ ] Delete a query that has ratings/annotations tied to it and confirm the case score recalculates correctly afterward.

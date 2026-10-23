@@ -922,6 +922,9 @@ action URL or proxy configuration.
 - Put `data-turbo-confirm` on the **form** for a destructive submission. With
   `button_to`, use `form: { data: { turbo_confirm: "…" } }`. Forms that explicitly
   opt out of Turbo use the `form-confirm` Stimulus controller instead.
+- Shared confirmation dialogs place Confirm before Cancel. Modal dismiss buttons
+  use `btn-outline-secondary`, with the same hover and focus treatment on core
+  and management pages; keep action-specific labels and confirmation colors.
 - Use `requestSubmit()` for automatic submissions so validation and Turbo receive
   the submit event. Initialize widgets in Stimulus `connect()` and release
   listeners, timers, and widgets in `disconnect()`.

@@ -9,7 +9,12 @@ beforeEach(() => {
   coreFlash.hide = vi.fn()
 })
 
-function controllerFor() {
+let testStores
+vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {} }))
+
+function controllerFor({ queryId } = {}) {
+  const row = document.createElement("div")
+  if (queryId != null) row.dataset.queryId = String(queryId)
   const element = document.createElement("div")
   element.innerHTML = `
     <form>
@@ -17,6 +22,7 @@ function controllerFor() {
       <textarea data-query-notes-target="notes"></textarea>
     </form>
   `
+  row.appendChild(element)
   const controller = buildControllerFixture(QueryNotesController, {
     element,
     targets: {
@@ -34,6 +40,7 @@ describe("QueryNotesController", () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     document.body.innerHTML = ""
+    testStores = undefined
   })
 
   it("loads notes without overwriting edits made while the request is pending", async () => {
@@ -66,6 +73,32 @@ describe("QueryNotesController", () => {
     expect(close).toHaveBeenCalled()
     expect(flash.show).toHaveBeenCalledWith("success", expect.stringContaining("saved"))
 
+  })
+
+  it("publishes the saved values onto the live query so the row's tooltip updates without a refresh", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    const liveQuery = { queryId: 2, notes: "old notes", informationNeed: "old need" }
+    const upsert = vi.fn()
+    testStores = { queries: { liveQuery: vi.fn(() => liveQuery), upsert } }
+    const { controller } = controllerFor({ queryId: 2 })
+    controller.notesTarget.value = "new notes"
+    controller.informationNeedTarget.value = "new need"
+
+    await controller.save({ preventDefault: vi.fn() })
+
+    expect(testStores.queries.liveQuery).toHaveBeenCalledWith("2")
+    expect(liveQuery.notes).toBe("new notes")
+    expect(liveQuery.informationNeed).toBe("new need")
+    expect(upsert).toHaveBeenCalledWith(liveQuery)
+  })
+
+  it("does not throw when there is no live query to update (e.g. the row was removed)", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => Promise.resolve(new Response("{}", { status: 200 }))))
+    testStores = { queries: { liveQuery: vi.fn(() => null), upsert: vi.fn() } }
+    const { controller } = controllerFor({ queryId: 999 })
+
+    await expect(controller.save({ preventDefault: vi.fn() })).resolves.not.toThrow()
+    expect(testStores.queries.upsert).not.toHaveBeenCalled()
   })
 
   it("sends both fields and keeps the panel open with an error when saving fails", async () => {

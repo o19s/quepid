@@ -7,7 +7,7 @@ import { fromTextArea } from "modules/editor"
 import { withStatusMessages } from "controllers/status_message_behavior"
 
 export default class extends withStatusMessages(Controller) {
-  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported", "solrHelp", "previewHelp"]
+  static targets = ["queryParams", "searchButton", "resetButton", "status", "results", "next", "spinner", "engineName", "supported", "unsupported"]
   static values = { queryId: Number, modalRoot: Boolean, engineLabels: Object }
 
   open(event) {
@@ -52,9 +52,6 @@ export default class extends withStatusMessages(Controller) {
   renderShell() {
     const supported = this.adapter.usesQueryParamsEditor
     const jsonEditor = supported && isEsLikeEngine(this.adapter.settings?.searchEngine)
-    const solr = this.adapter.settings?.searchEngine === "solr"
-    if (this.hasSolrHelpTarget) this.solrHelpTarget.classList.toggle("d-none", !solr)
-    if (this.hasPreviewHelpTarget) this.previewHelpTarget.classList.toggle("d-none", solr)
     this.supportedTarget.classList.toggle("d-none", !supported)
     this.unsupportedTarget.classList.toggle("d-none", supported)
     this.engineNameTarget.textContent = this.engineLabel
@@ -199,7 +196,10 @@ export default class extends withStatusMessages(Controller) {
       const lead = count === 0 ? "There are no ratings created yet" : count === 1 ? "There is one rating" : `There are ${count} ratings`
       summary.append(`${lead} for your original query `, Object.assign(document.createElement("em"), { textContent: this.adapter.queryText }), ".")
     } else {
-      summary.textContent = `${this.adapter.numFound} matching document${this.adapter.numFound === 1 ? "" : "s"}.`
+      const query = document.createElement("em")
+      query.textContent = this.adapter.lastQuery?.replace(/\s*&\s*/g, "&")
+      const count = this.adapter.numFound === 1 ? "one matching document." : `${this.adapter.numFound} matching documents.`
+      summary.append("Your query ", query, ` returned ${count}`)
     }
     this.resultsTarget.appendChild(summary)
 

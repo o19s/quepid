@@ -142,7 +142,8 @@ test('Scores and ratings convey their state without color', async ({ page }) => 
   await expect(page.locator('[data-controller="qscore-query"] .score-state').first()).toContainText('of ');
   await expandFirstQuery(page);
   const badge = page.locator('search-result .single-rating button').first();
-  await expect(badge).toContainText('Unrated');
+  await expect(badge).toContainText('--');
+  await expect(badge).toHaveAttribute('aria-label', 'Rate document: Unrated');
   await badge.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.popover .ratingNum').first()).toBeVisible();
@@ -162,7 +163,8 @@ test('Scores and ratings convey their state without color', async ({ page }) => 
   } finally {
     await badge.click();
     await page.locator('.popover .reset').click();
-    await expect(badge).toContainText('Unrated');
+    await expect(badge).toContainText('--');
+    await expect(badge).toHaveAttribute('aria-label', 'Rate document: Unrated');
   }
 });
 

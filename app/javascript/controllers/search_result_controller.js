@@ -179,7 +179,7 @@ export default class extends Controller {
     const rawValue = this.resolveFieldValue(doc.rawFields, name)
     const text = String(rawValue ?? "")
     const content = item.lastElementChild
-    if (typeof rawValue === "object") {
+    if (rawValue && typeof rawValue === "object" && !Array.isArray(rawValue)) {
       content.replaceChildren()
       content.dataset.controller = "json-explorer"
       content.dataset.jsonExplorerJsonValue = JSON.stringify(rawValue)
@@ -214,7 +214,7 @@ export function createRatingControl(rating, scale, { scoreAll = false } = {}) {
   const trigger = document.createElement("button")
   trigger.type = "button"
   trigger.className = "btn"
-  trigger.textContent = rating === "--" ? "Unrated " : `${rating} `
+  trigger.textContent = `${rating} `
   trigger.setAttribute("aria-label", ratingLabel(rating, scoreAll))
   trigger.style.backgroundColor = ratingColor(rating, scale)
 

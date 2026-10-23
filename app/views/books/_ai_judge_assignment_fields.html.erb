@@ -6,6 +6,18 @@
     <div>
       <%= b.check_box %>
       <%= b.label %>
+      <% if b.object.escalates_to %>
+        <small class="text-muted ms-1" title="Pairs this judge can't rate are handed on, in every book it judges">
+          <i class="bi bi-arrow-right" aria-hidden="true"></i>
+          <%= link_to "wakes #{b.object.escalates_to.name} when unsure",
+                "#{edit_ai_judge_path(b.object, book_id: book.id)}#escalation-field" %>
+        </small>
+      <% end %>
+      <% if b.object.on_call? %>
+        <span class="badge text-bg-info ms-1" title="Woken by <%= b.object.escalated_from_names %>; no need to assign it here">
+          <i class="bi bi-moon-stars" aria-hidden="true"></i> On call
+        </span>
+      <% end %>
       <div class="form-check ms-4">
         <%= check_box_tag 'book[auto_run_ai_judge_ids][]', b.value,
               book.books_ai_judges.any? { |assignment| assignment.user_id == b.value && assignment.auto_run? },
@@ -17,5 +29,6 @@
   <%= hidden_field_tag 'book[auto_run_ai_judge_ids][]', '' %>
   <div class="form-text">
     Choose AI judges you own or that are shared with one of your teams.
+    <br/><i class="bi bi-arrow-right"></i> <strong>Wakes … when unsure:</strong> pairs this judge can't rate are handed to that judge once its run ends. The woken judge is <strong>on call</strong> and doesn't need to be assigned here; set who wakes whom on the AI judge's own page.
   </div>
 </div>

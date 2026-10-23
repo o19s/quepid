@@ -2,6 +2,18 @@
 
 Deliberate decisions to leave something as it is, with the reasoning, so they are not re-raised as defects. Delete an entry if the reasoning stops holding, or move it back to [todo.md](todo.md) when it is prioritized.
 
+## Unrated rating trigger shows `--`
+
+By user choice, an unrated document's rating trigger shows `--` rather than the word "Unrated". Its accessible name stays "Rate document: Unrated" (or "Score all documents: Unrated" for Score All), so screen readers still get the state. This replaces the visible "Unrated" label added for color-independence in `7c304651`; the separate **Unrated** score-state text on query and case scores is unchanged.
+
+## Shared modal buttons
+
+By user choice, core and management confirmation dialogs use Confirm then Cancel, and shared modal shells use outlined dismiss buttons. Preserve action-specific labels, confirmation colors and behavior. This shared presentation replaces surface-specific button order and Cancel styling.
+
+## Missing Documents summary separator whitespace
+
+By user choice, the searched-results summary removes whitespace around `&` separators in the italic query text. Preserve spaces within values such as `star wars` and leave submitted query parameters unchanged. This intentionally departs from Legacy's verbatim query display.
+
 ## Admin user JSON export includes the password digest
 
 **Location:** `app/views/admin/users/index.json.jbuilder`, `app/controllers/admin/users_controller.rb` (`password_encrypted`)

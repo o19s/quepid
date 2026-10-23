@@ -162,24 +162,15 @@ class BooksController < ApplicationController
       .distinct.pluck(:user_id)
 
     assigned_ai_judges = @book.ai_judges.pluck(:user_id)
-    @refinable_ai_judge_ids = accessible_ai_judges.pluck(:id)
+    @refinable_ai_judge_ids = AiJudge.for_user(current_user).pluck(:id)
 
-    stats_judges_ids = (unique_judge_ids + assigned_ai_judges).uniq
+    # On-call judges are listed before they have judged anything, so the
+    # book shows who its judges will wake.
+    @on_call_judge_ids = @book.on_call_ai_judges.map(&:id)
+    stats_judges_ids = (unique_judge_ids + assigned_ai_judges + @on_call_judge_ids).uniq
+    @wakes = AiJudge.escalation_target_names(stats_judges_ids)
 
-    stats_judges = []
-    stats_judges_ids.each do |judge_id|
-      begin
-        judge = User.find(judge_id) unless judge_id.nil?
-      rescue ActiveRecord::RecordNotFound
-        judge = nil
-      end
-      stats_judges << judge
-    end
-
-    stats_judges = compact_keep_one_nil(stats_judges)
-    stats_judges = stats_judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
-
-    stats_judges.each do |judge|
+    judges_sorted_by_name(stats_judges_ids).each do |judge|
       @leaderboard_data << { judge:      judge.nil? ? 'anonymous' : judge.fullname,
                              judgements: @book.judgements.where(user: judge).count }
       @stats_data << {
@@ -338,10 +329,18 @@ class BooksController < ApplicationController
   end
 
   def run_judge_judy
-    ai_judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
 
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
+      return
+    end
+
+    # An on-call judge sleeps until another judge escalates to it; it is
+    # woken by the end of that judge's run, never started by hand.
+    if ai_judge.on_call?
+      waking = ai_judge.escalated_from_names
+      redirect_to book_path(@book), alert: "AI Judge #{ai_judge.name} is on call: it only judges pairs #{waking} escalates to it.", status: :see_other
       return
     end
 
@@ -354,7 +353,7 @@ class BooksController < ApplicationController
   end
 
   def cancel_judge_judy
-    ai_judge = @book.ai_judges.find_by(id: params[:ai_judge_id])
+    ai_judge = @book.working_ai_judge(params[:ai_judge_id])
     unless ai_judge
       redirect_to book_path(@book), alert: 'AI Judge not found.', status: :see_other
       return
@@ -507,11 +506,11 @@ class BooksController < ApplicationController
   end
 
   def accessible_ai_judges
-    AiJudge.for_user(current_user)
+    AiJudge.for_user(current_user).preload(:escalates_to, :escalated_from)
   end
 
   def assign_book_memberships
-    available_judges = accessible_ai_judges
+    available_judges = AiJudge.for_user(current_user)
     judges = available_judges.find(Array(book_params[:ai_judge_ids]).compact_blank.uniq)
     hidden_judges = @book.ai_judges.where.not(id: available_judges.select(:id)).to_a
     TeamSharing.new(current_user).assign_teams(@book, book_params[:team_ids])
@@ -544,6 +543,23 @@ class BooksController < ApplicationController
 
   def find_user
     @user = User.find(params.expect(:user_id))
+  end
+
+  # The judges behind these ids, sorted by name; ids that no longer resolve
+  # to a user collapse into a single nil (anonymous) entry.
+  def judges_sorted_by_name judge_ids
+    judges = []
+    judge_ids.each do |judge_id|
+      begin
+        judge = User.find(judge_id) unless judge_id.nil?
+      rescue ActiveRecord::RecordNotFound
+        judge = nil
+      end
+      judges << judge
+    end
+
+    judges = compact_keep_one_nil(judges)
+    judges.sort_by { |judge| judge.nil? ? '' : judge.fullname }
   end
 
   def compact_keep_one_nil array

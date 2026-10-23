@@ -25,6 +25,7 @@
       This judgement was made by <%= judgement.user.fullname %>!
     </div>
   <% end %>
+  <%= render 'judgements/escalation_notice', judgement: judgement %>
   <%= tag.div class: class_names('card', 'mb-3': image_url) do %>
     <div class="row g-0">
       <% if image_url %>

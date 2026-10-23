@@ -51,7 +51,8 @@ Quepid's automated suite specifically tests a **768×900** viewport in addition 
 - [ ] **Steps:**
   1. Open the **Explain Query** modal (Part 6.7) — or any other modal you're testing that day.
   2. If you have access to an accessibility scanner (e.g., the axe DevTools browser extension, or Chrome Lighthouse's Accessibility audit), run it scoped to just the open modal.
-  3. Separately, without any tooling: tab through the modal's controls using only the keyboard — confirm focus is trapped inside the modal (doesn't escape to background content), every interactive element is reachable, and pressing **Escape** closes the modal.
+  3. Check a core confirmation, a Rails destructive confirmation and a shared form modal: the action precedes Cancel, and Cancel uses the outlined hover/focus treatment described in [Turbo navigation](../../DEVELOPER_GUIDE.md#turbo-navigation). Cancel or Escape dismisses without submitting.
+  4. Separately, without any tooling: tab through the modal's controls using only the keyboard — confirm focus is trapped inside the modal (doesn't escape to background content), every interactive element is reachable, and pressing **Escape** closes the modal.
 - **Expected:** No critical/serious structural or ARIA violations reported (ignore pure color-contrast complaints against the current theme — that's a known, separate concern, not part of this check). Keyboard focus behaves correctly.
 - **Edge cases:**
   - [ ] Repeat for Export, Compare Snapshots and Judgements: scan `select-name` and `heading-order` at every severity. Export's API picker is named **API snapshot**; each Compare picker is associated with its numbered Snapshot label, including added rows. Modal titles are level 2 and section headings level 3. Also sample Import when changing its markup.

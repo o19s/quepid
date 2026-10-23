@@ -55,6 +55,45 @@ class JudgementsControllerTest < ActionDispatch::IntegrationTest
       assert_response :success
     end
 
+    describe 'an escalated pair' do
+      let(:pair) { query_doc_pairs(:jbm_qdp1) }
+      let(:cheap) { AiJudge.create!(name: 'Cheap Judge') }
+      let(:expensive) { AiJudge.create!(name: 'Expensive Judge') }
+      let(:source) do
+        pair.judgements.create!(user: cheap, unrateable: true,
+                                explanation: "Jev rated 1. [confidence 0.64 is below this judge's minimum " \
+                                             'confidence of 0.8, so it was marked unrateable]')
+      end
+      let(:escalated) { pair.judgements.create!(user: expensive, rating: 1, escalated_from_judgement: source) }
+
+      before { escalated }
+
+      test 'the unrateable judgement says it was handed on, to whom, and links there' do
+        get edit_book_query_doc_pair_judgement_url(jbm_book, pair, source)
+
+        assert_response :success
+        assert_select '#escalation-notice', text: /because its confidence \(0.64\) was below its minimum confidence of 0.8/
+        assert_select '#escalation-notice', text: /handed on\s+to Expensive Judge, which\s+rated it 1/
+        assert_select '#escalation-notice a[href=?]', edit_book_query_doc_pair_judgement_path(jbm_book, pair, escalated)
+      end
+
+      test 'the escalated judgement says where it came from, and links back' do
+        get edit_book_query_doc_pair_judgement_url(jbm_book, pair, escalated)
+
+        assert_response :success
+        assert_select '#escalated-from-notice',
+                      text: /Cheap Judge's answer was unrateable: its confidence \(0.64\) was below its minimum confidence of 0.8/
+        assert_select '#escalated-from-notice a[href=?]', edit_book_query_doc_pair_judgement_path(jbm_book, pair, source)
+      end
+
+      test 'a judgement nobody escalated shows no notice' do
+        get edit_book_judgement_url(jbm_book, existing_judgement)
+
+        assert_select '#escalation-notice', count: 0
+        assert_select '#escalated-from-notice', count: 0
+      end
+    end
+
     test 'should update judgement' do
       patch book_judgement_url(jbm_book, existing_judgement), params: { judgement: { rating: 3 } }
 

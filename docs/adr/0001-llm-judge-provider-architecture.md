@@ -369,8 +369,8 @@ sample, not an opinion). Absent that, batch stays deferred.
 
 ## Current implementation status
 
-The foundation and Jev are implemented. Batch and escalation remain proposals;
-importing these documents does not schedule them. Earlier sections retain the
+The foundation, Jev and escalation are implemented. Batch remains a proposal;
+importing these documents does not schedule it. Earlier sections retain the
 upstream design history, including superseded extraction names and steps.
 
 - The registry is the single `LlmProvider` class in `app/models/llm_provider.rb`;
@@ -383,8 +383,8 @@ upstream design history, including superseded extraction names and steps.
   limit per book/judge, durable cancellation and automatic continuations. Future escalation must
   preserve those contracts; the risk register's original unlocked-job premise
   does not apply.
-- Current manual scenarios are 12.9 for Jev, 12.6 for images and 12.7 for ownership.
-  Allocate a new scenario number if escalation is implemented.
+- Current manual scenarios are 12.10 for Jev, 12.6 for images, 12.7 for escalation
+  and 12.8 for ownership.
 
 Remaining upstream work and verification limits are in the
 [upstream integration plan](../todo/todo.md#migration-followup-upstream-integration-plan)

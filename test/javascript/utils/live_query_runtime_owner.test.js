@@ -412,8 +412,8 @@ describe("createLiveQueryRuntimeOwner", () => {
       const adapter = buildOwner({ store: stores, editable: editable() }).targetedSearch(7)
 
       expect(adapter).toMatchObject({ queryId: 7, queryText: "star wars", usesQueryParamsEditor: true, ratingScale: { 1: "own" } })
-      // Historical Solr docFinder starts with a blank Lucene query.
-      expect(adapter.initialQueryParams()).toBe("")
+      // Pre-filled from the try's own query params, just like the Query Sandbox.
+      expect(adapter.initialQueryParams()).toBe("q=star wars")
       const preview = buildOwner({ store: stores, editable: editable({ searchEngine: "es" }) }).targetedSearch(7)
       expect(preview.initialQueryParams()).toBe("q=star wars")
 

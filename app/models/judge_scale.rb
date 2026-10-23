@@ -25,6 +25,14 @@ class JudgeScale
     new(book&.scale, book&.scale_with_labels, guidelines: book&.scoring_guidelines)
   end
 
+  # Testing a judge's prompt doesn't require a real book - a scorer carries
+  # the same scale/labels a book would've copied from one, just without
+  # scoring_guidelines (a book-only field). Used when the AI Judge form's
+  # "Test & Refine" step has a scorer_id but no book_id.
+  def self.for_scorer scorer
+    new(scorer&.scale, scorer&.scale_with_labels)
+  end
+
   # @param guidelines [String, nil] free-text advice on applying the scale
   #   (Book#scoring_guidelines), for a judge that can be told it.
   def initialize values, labels = nil, guidelines: nil
