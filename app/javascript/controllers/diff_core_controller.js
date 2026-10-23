@@ -120,14 +120,14 @@ export default class extends CoreModalControllerBase {
     )
     if (!applied) return
     this.closeModal()
-    coreFlash.show("success", `Snapshot${selections.length === 1 ? "" : "s"} loaded successfully for comparison.`)
+    coreFlash.show("notice", `Snapshot${selections.length === 1 ? "" : "s"} loaded successfully for comparison.`)
   }
 
   async clear() {
     const cleared = await this.callBridge(() => this.snapshotBridgeOutlet.clear(), "Could not fetch one or more snapshots!")
     if (!cleared) return
     this.closeModal()
-    coreFlash.show("success", "Comparison view has been cleared.")
+    coreFlash.show("notice", "Comparison view has been cleared.")
   }
 
   async deleteSelected(index) {
@@ -160,7 +160,7 @@ export default class extends CoreModalControllerBase {
     if (this.selectionValues.length === 0) this.selectionValues = [""]
     this.deleteId = null
     this.renderSelections()
-    coreFlash.show("success", "Snapshot deleted successfully.")
+    coreFlash.show("notice", "Snapshot deleted successfully.")
   }
 
   validSelections() {

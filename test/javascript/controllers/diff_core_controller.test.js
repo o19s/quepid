@@ -316,7 +316,7 @@ describe("DiffCoreController", () => {
 
     await act(controller)
 
-    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("success", message)
+    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("notice", message)
   })
 
   it("clears a failed delete's alert when the retry succeeds", async () => {
@@ -333,7 +333,7 @@ describe("DiffCoreController", () => {
     await controller.confirmDelete({ preventDefault: vi.fn() })
 
     expect(showStatusMessage.mock.lastCall[1]).toEqual({ message: "", className: "alert d-none" })
-    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("success", "Snapshot deleted successfully.")
+    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("notice", "Snapshot deleted successfully.")
   })
 
   it("keeps the buttons disabled while the bridge is working", async () => {
