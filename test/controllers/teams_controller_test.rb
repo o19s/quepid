@@ -541,6 +541,16 @@ class TeamsControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe 'share_search_endpoint' do
+    it 'rejects sharing a static endpoint with a clear alert' do
+      endpoint = search_endpoints(:one)
+      endpoint.update_column(:search_engine, 'static')
+      original_teams = endpoint.team_ids
+      post share_search_endpoint_teams_path, params: { team_id: @team.id, search_endpoint_id: endpoint.id }
+      assert_redirected_to teams_path
+      assert_equal SearchEndpoint::TEAM_SHARING_MESSAGE, flash[:alert]
+      assert_equal original_teams.sort, endpoint.reload.team_ids.sort
+    end
+
     it 'shares a search endpoint the user has access to with one of their teams' do
       search_endpoint = search_endpoints(:one)
       assert_not @team.search_endpoints.exists?(search_endpoint.id)

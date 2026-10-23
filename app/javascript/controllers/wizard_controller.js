@@ -592,7 +592,6 @@ export default class extends Controller {
       "can-ping": !tls,
       "selected-searchapi": Boolean(settings.searchEndpointId) && engine === "searchapi",
       "test-query-required": this.testQueryRequired(),
-      "static-endpoints": this.searchEndpoints.some((endpoint) => endpoint.searchEngine === "static"),
       "url-format": Boolean(settings.urlFormat) && !settings.searchEndpointId,
       "basic-auth": settings.supportsBasicAuth !== false,
       "query-pattern-empty": !pattern,

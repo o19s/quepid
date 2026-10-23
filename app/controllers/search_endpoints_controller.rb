@@ -55,9 +55,13 @@ class SearchEndpointsController < ApplicationController
 
     flash[:notice] = 'Search Endpoint was successfully created.' if @search_endpoint.save
     respond_with(@search_endpoint)
+  rescue TeamSharing::NotShareable => e
+    @search_endpoint.errors.add(:teams, e.message)
+    render :new, status: :unprocessable_content
   end
 
   def update
+    @search_endpoint.search_engine = search_endpoint_params[:search_engine] if search_endpoint_params.key?(:search_engine)
     TeamSharing.new(current_user).assign_teams(@search_endpoint, search_endpoint_params[:team_ids])
 
     filtered_params = search_endpoint_params.except(:team_ids)
@@ -68,6 +72,9 @@ class SearchEndpointsController < ApplicationController
 
     flash[:notice] = 'Search Endpoint was successfully updated.' if @search_endpoint.update(filtered_params)
     respond_with(@search_endpoint)
+  rescue TeamSharing::NotShareable => e
+    @search_endpoint.errors.add(:teams, e.message)
+    render :edit, status: :unprocessable_content
   end
 
   def destroy

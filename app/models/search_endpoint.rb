@@ -72,6 +72,12 @@ class SearchEndpoint < ApplicationRecord
   validate :validate_proxy_required_for_all_endpoints
   validate :validate_mapper_code_immutable_for_preset
 
+  TEAM_SHARING_MESSAGE = 'Static File endpoints cannot be shared with teams. Share the case instead.'
+
+  def team_shareable?
+    'static' != search_engine
+  end
+
   def fullname
     label = mapper_based_search_engine&.name || SearchEngine.label(search_engine)
     name.presence || middle_truncate([ label, endpoint_url ].compact_blank.join(' '))

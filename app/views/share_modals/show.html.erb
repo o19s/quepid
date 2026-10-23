@@ -6,6 +6,9 @@
 <% noun = @record_type.humanize(capitalize: false) %>
 <%= turbo_frame_tag "#{prefix}-frame" do %>
   <% if @record %>
+    <% if @record.is_a?(SearchEndpoint) && !@record.team_shareable? %>
+      <p class="alert alert-info"><%= SearchEndpoint::TEAM_SHARING_MESSAGE %></p>
+    <% end %>
     <%= form_with url: @share_path, method: :post, local: true, html: { id: "#{prefix}-form", class: 'mb-3' } do %>
       <%= hidden_field_tag record_param, @record.id, id: "#{prefix}-id" %>
 

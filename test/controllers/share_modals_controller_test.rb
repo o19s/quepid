@@ -10,6 +10,16 @@ class ShareModalsControllerTest < ActionController::TestCase
     login_user doug
   end
 
+  test 'static endpoint sharing is disabled while existing teams can be unshared' do
+    endpoint = search_endpoints(:one)
+    endpoint.update_column(:search_engine, 'static')
+    get :show, params: { record_type: 'search_endpoint', id: endpoint.id }
+    assert_response :success
+    assert_select '#share-search-endpoint-team[disabled]'
+    assert_select '#unshare-search-endpoint-form'
+    assert_includes response.body, SearchEndpoint::TEAM_SHARING_MESSAGE
+  end
+
   def option_texts
     css_select('#share-case-team option').map(&:text)
   end

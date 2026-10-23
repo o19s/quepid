@@ -29,6 +29,7 @@ class ShareModalsController < ApplicationController
     @all_teams = current_user.teams.select(:id, :name).order(:name).to_a
     shared_ids = @shared_teams.map(&:id)
     @shareable_teams = @all_teams.reject { |team| shared_ids.include?(team.id) }
+    @shareable_teams = [] if @record.is_a?(SearchEndpoint) && !@record.team_shareable?
     render layout: false
   end
 

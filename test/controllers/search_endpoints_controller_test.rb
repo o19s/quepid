@@ -52,6 +52,51 @@ class SearchEndpointsControllerTest < ActionDispatch::IntegrationTest
     assert_equal original_url, @search_endpoint.reload.endpoint_url
   end
 
+  test 'static endpoint details explain case-bound data and sharing' do
+    @search_endpoint.update_column(:search_engine, 'static')
+    get search_endpoint_url(@search_endpoint)
+    assert_response :success
+    assert_select '[role=note]', text: /Static File endpoints belong to a case/
+    assert_select '[role=note]', text: /Share the case with your team instead/
+    @search_endpoint.update_column(:search_engine, 'solr')
+    get search_endpoint_url(@search_endpoint)
+    assert_select '[role=note]', count: 0
+  end
+
+  test 'creating a static endpoint with teams is rejected' do
+    assert_no_difference 'SearchEndpoint.count' do
+      post search_endpoints_url, params: { search_endpoint: {
+        name: 'Static', search_engine: 'static', endpoint_url: 'http://example.test/snapshot',
+        api_method: 'GET', team_ids: [ team.id ]
+      } }
+    end
+    assert_response :unprocessable_content
+    assert_includes response.body, SearchEndpoint::TEAM_SHARING_MESSAGE
+    assert_nil flash[:notice]
+  end
+
+  test 'changing an endpoint to static cannot add a team' do
+    @search_endpoint.teams.clear
+    original_engine = @search_endpoint.search_engine
+    patch search_endpoint_url(@search_endpoint), params: { search_endpoint: {
+      search_engine: 'static', team_ids: [ team.id ]
+    } }
+    assert_response :unprocessable_content
+    assert_empty @search_endpoint.reload.teams
+    assert_equal original_engine, @search_endpoint.search_engine
+  end
+
+  test 'editing a static endpoint without team fields preserves existing teams' do
+    @search_endpoint.update_column(:search_engine, 'static')
+    original_teams = @search_endpoint.team_ids
+    patch search_endpoint_url(@search_endpoint), params: { search_endpoint: { name: 'Renamed static endpoint' } }
+    assert_response :see_other
+    assert_equal original_teams.sort, @search_endpoint.reload.team_ids.sort
+    get edit_search_endpoint_url(@search_endpoint)
+    assert_select 'input[name="search_endpoint[team_ids][]"]', count: 0
+    assert_includes response.body, SearchEndpoint::TEAM_SHARING_MESSAGE
+  end
+
   test 'create rejects a foreign team' do
     foreign = Team.create!(name: 'Foreign team')
     assert_no_difference 'SearchEndpoint.count' do

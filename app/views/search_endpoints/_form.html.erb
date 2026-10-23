@@ -104,9 +104,13 @@
       </div>
 
       <div class="mb-3">
-        <%= render "shared/team_picker", form: form, label: "Teams to Share this Endpoint With",
-              selected_ids: params.dig(:search_endpoint, :team_ids),
-              help_text: "Leave unchecked to keep this endpoint private. Team members can use shared endpoints." %>
+        <% if search_endpoint.team_shareable? %>
+          <%= render "shared/team_picker", form: form, label: "Teams to Share this Endpoint With",
+                selected_ids: params.dig(:search_endpoint, :team_ids),
+                help_text: "Leave unchecked to keep this endpoint private. Team members can use shared endpoints." %>
+        <% else %>
+          <p class="form-text"><%= SearchEndpoint::TEAM_SHARING_MESSAGE %></p>
+        <% end %>
       </div>
 
 

@@ -142,6 +142,8 @@ module ApplicationHelper
   # for a "case", "book", "scorer" or "search_endpoint". The modal's controller reads
   # the name and url values off the clicked button; specs find rows by the id value.
   def share_modal_button record_type, record, name:, url: share_modal_path(record_type, record), button_class: nil
+    return if record.is_a?(SearchEndpoint) && !record.team_shareable? && record.teams.empty?
+
     prefix = "share_#{record_type}"
     data = { bs_toggle: 'modal', bs_target: "##{prefix.camelize(:lower)}Modal",
              "#{prefix}_id_value": record.id, "#{prefix}_name_value": name, "#{prefix}_url_value": url }

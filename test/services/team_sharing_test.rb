@@ -44,6 +44,38 @@ class TeamSharingTest < ActiveSupport::TestCase
     assert team.search_endpoints.exists?(kase.tries.latest.search_endpoint.id)
   end
 
+  test 'static endpoints reject new sharing but can be unshared' do
+    user = users(:random)
+    endpoint = search_endpoints(:one)
+    endpoint.update_column(:search_engine, 'static')
+    team = teams(:case_finder_owned_team)
+    service = TeamSharing.new(user, team)
+
+    assert_raises(TeamSharing::NotShareable) { service.share(endpoint) }
+    assert_not team.search_endpoints.exists?(endpoint.id)
+    assert_raises(TeamSharing::NotShareable) { TeamSharing.new(user).assign_teams(endpoint, [ team.id ]) }
+    assert_not team.search_endpoints.exists?(endpoint.id)
+
+    team.search_endpoints << endpoint # Existing legacy membership remains removable.
+    TeamSharing.new(user).assign_teams(endpoint, nil)
+    assert team.search_endpoints.exists?(endpoint.id)
+    assert service.unshare(endpoint)
+    assert_not team.search_endpoints.exists?(endpoint.id)
+  end
+
+  test 'sharing a static case shares the case without separately sharing its endpoint' do
+    team = teams(:case_finder_shared_team)
+    kase = cases(:case_with_two_tries)
+    endpoint = kase.tries.latest.search_endpoint
+    endpoint.update_column(:search_engine, 'static')
+    assert_not team.search_endpoints.exists?(endpoint.id)
+
+    assert TeamSharing.new(users(:joey), team).share(kase)
+
+    assert team.cases.exists?(kase.id)
+    assert_not team.search_endpoints.exists?(endpoint.id)
+  end
+
   test 'inaccessible teams and records cannot be shared' do
     assert_raises(ActiveRecord::RecordNotFound) { TeamSharing.new(users(:joey), teams(:valid)) }
     service = TeamSharing.new(users(:joey), teams(:case_finder_shared_team))

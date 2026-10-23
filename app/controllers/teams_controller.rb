@@ -376,6 +376,9 @@ class TeamsController < ApplicationController
       flash[:alert] = "#{name} is already shared with #{team.name}."
     end
     redirect_back_or_to(teams_path, status: :see_other)
+  rescue TeamSharing::NotShareable => e
+    flash[:alert] = e.message
+    redirect_back_or_to(teams_path, status: :see_other)
   rescue TeamSharing::AccessDenied
     sharing_access_denied(record)
   end
