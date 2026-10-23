@@ -115,3 +115,11 @@ By user choice, the case navbar uses the homepage dropdown presentation. One sha
 ### New case name
 
 By user choice, the setup wizard leaves a new case name blank instead of defaulting to “Movies Search”; a name is still required to continue.
+
+### Search endpoint pickers
+
+By user choice, the wizard and Tune Relevance share an icon-rendering Tom Select picker using option data attributes. The drawer uses one searchable control instead of a select plus custom typeahead; each surface retains its existing endpoint eligibility and persistence behavior.
+
+### Field option creation
+
+By user choice, Tom Select field controls do not create arbitrary new options. Existing saved custom fields and discovered modifier-prefixed candidates remain selectable.

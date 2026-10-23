@@ -62,3 +62,29 @@ export function curatorVariableEntries(variables) {
     .map((item, index) => ({ item, index }))
     .filter(({ item }) => item.inQueryParams)
 }
+
+// JSON field definitions are indivisible, including commas and spaces inside strings/options.
+export function fieldSpecTokens(value = "") {
+  const fields = []
+  let token = ""
+  let depth = 0
+  let quoted = false
+  let escaped = false
+  for (const char of value) {
+    if (!quoted && depth === 0 && /[,\s+]/.test(char)) {
+      if (token) fields.push(token)
+      token = ""
+      continue
+    }
+    token += char
+    if (quoted) {
+      if (escaped) escaped = false
+      else if (char === "\\") escaped = true
+      else if (char === '"') quoted = false
+    } else if (depth > 0 && char === '"') quoted = true
+    else if (char === "{" && (depth > 0 || token.length === 1)) depth += 1
+    else if (char === "}" && depth > 0) depth -= 1
+  }
+  if (token) fields.push(token)
+  return fields
+}

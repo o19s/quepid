@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   curatorVariableEntries,
+  fieldSpecTokens,
   formatJson,
   historyTitle,
   queryParamsMode,
@@ -54,4 +55,14 @@ describe("tune relevance utilities", () => {
     const variables = [{ name: "unused", inQueryParams: false }, { name: "boost", inQueryParams: true }]
     expect(curatorVariableEntries(variables)).toEqual([{ item: variables[1], index: 1 }])
   })
+})
+
+it("keeps repeated JSON field types together instead of splitting/deduplicating their fragments", () => {
+  const fields = ['{"type":"thumb","name":"poster_path"}', '{"type":"thumb","name":"backdrop_path"}']
+  expect(fieldSpecTokens(`id:id ${fields.join(" ")}`)).toEqual(["id:id", ...fields])
+})
+
+it("preserves the shrunk nested-options counterexample", () => {
+  const definition = '{"type":"thumb","name":"poster_path","options":{}}'
+  expect(fieldSpecTokens(definition)).toEqual([definition])
 })

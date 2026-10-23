@@ -556,7 +556,8 @@ header .dropdown-toggle .bi {
   border-left-color: rgb(255 255 255 / 35%);
 }
 
-[data-controller~="tune-relevance"] .ts-wrapper.form-control {
+[data-controller~="tune-relevance"] .ts-wrapper.form-control,
+[data-controller~="tune-relevance"] .ts-wrapper.form-select {
   background: #fff;
   color: #212529;
 }
@@ -582,4 +583,19 @@ header .dropdown-toggle .bi {
 [data-controller~="tune-relevance"] .ts-dropdown .active {
   background: #e9ecef;
   color: #212529;
+}
+
+/* The endpoint picker sits at the bottom of the scrolling settings drawer. */
+#dev-settings .search-endpoint-select .ts-dropdown {
+  top: auto !important;
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
+#dev-settings .search-endpoint-select .ts-control {
+  color: #212529;
+}
+
+.wizard-endpoint-accordion:has(.search-endpoint-select.dropdown-active) {
+  overflow: visible;
 }

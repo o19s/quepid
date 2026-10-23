@@ -1,3 +1,4 @@
+import { createSearchEndpointSelect, updateSearchEndpointSelect } from "modules/search_endpoint_select"
 import TomSelect from "tom-select"
 import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
@@ -68,6 +69,8 @@ export default class extends Controller {
   }
 
   disconnect() {
+    this.endpointTomSelect?.destroy()
+    this.endpointTomSelect = null
     this.connected = false
     this.fieldSelects?.forEach((select) => select.destroy())
     this.fieldSelects = null
@@ -564,17 +567,15 @@ export default class extends Controller {
     }
     if (!this.hasEndpointSelectTarget) return
     const endpoints = this.searchEndpoints.filter((endpoint) => endpoint.searchEngine !== "static")
-    // A blank first option, so choosing the first real endpoint still fires `change`.
-    const placeholder = document.createElement("option")
-    placeholder.value = ""
-    placeholder.textContent = endpoints.length ? "Select a search endpoint…" : "You do not have any Search Endpoints created yet."
-    this.endpointSelectTarget.replaceChildren(placeholder, ...endpoints.map((endpoint) => {
-      const option = document.createElement("option")
-      option.value = endpoint.id
-      option.textContent = endpoint.name
-      return option
-    }))
-    this.endpointSelectTarget.disabled = endpoints.length === 0
+    if (!this.endpointTomSelect) {
+      this.endpointTomSelect = createSearchEndpointSelect(this.endpointSelectTarget, "Select a search endpoint…")
+    }
+    updateSearchEndpointSelect(this.endpointTomSelect, endpoints, this.settings?.searchEndpointId)
+    if (endpoints.length) this.endpointTomSelect.enable()
+    else this.endpointTomSelect.disable()
+    this.endpointTomSelect.settings.placeholder = endpoints.length ? "Select a search endpoint…" : "You do not have any Search Endpoints created yet."
+    this.endpointTomSelect.inputState()
+
   }
 
   // The named conditions that `data-wizard-when` lists in the ERB; an element is shown
@@ -695,16 +696,11 @@ export default class extends Controller {
         return new TomSelect(input, {
           maxItems: 1,
           refreshThrottle: 0,
-          create: true,
-          createOnBlur: true,
+          create: false,
+          createOnBlur: false,
           persist: false,
           selectOnTab: true,
           onChange: (value) => {
-            this.settings[field] = value
-            this.fieldsEdited = true
-          },
-          onType: (value) => {
-            if (!value) return
             this.settings[field] = value
             this.fieldsEdited = true
           }
@@ -737,8 +733,8 @@ export default class extends Controller {
         hideSelected: true,
         maxItems: null,
         refreshThrottle: 0,
-        create: true,
-        createOnBlur: true,
+        create: false,
+        createOnBlur: false,
         persist: false,
         selectOnTab: true,
         splitOn: /[,\s]+/,
@@ -818,7 +814,8 @@ export default class extends Controller {
       if (this.hasCustomHeadersTarget) this.customHeadersTarget.readOnly = headerType === "None"
     }
     if (this.hasProxyRequestsTarget) this.proxyRequestsTarget.checked = this.settings?.proxyRequests === true
-    if (this.hasEndpointSelectTarget) this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
+    if (this.endpointTomSelect) this.endpointTomSelect.setValue(String(this.settings?.searchEndpointId ?? ""), true)
+    else if (this.hasEndpointSelectTarget) this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
     const preset = this.settings?.searchEnginePreset || this.settings?.searchEngine || "solr"
     this.engineOptionTargets.forEach((option) => { option.checked = option.value === preset })
     if (this.hasTitleFieldTarget && !this.fieldSelects) this.titleFieldTarget.value = this.settings?.titleField || ""

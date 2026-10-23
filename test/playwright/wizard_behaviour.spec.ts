@@ -109,6 +109,13 @@ test.describe('Case creation wizard behaviour', () => {
     await expect(modal(page).getByRole('heading', { name: /How Should We Display/i })).toBeVisible({ timeout: 20_000 });
   }
 
+  async function chooseEndpoint(page: Page, name: string) {
+    const wrapper = page.locator('#wizardEndpoint + .ts-wrapper');
+    await wrapper.locator('.ts-control').click();
+    await wrapper.locator('input').fill(name);
+    await wrapper.locator('.option').filter({ hasText: name }).click();
+  }
+
   async function chooseTitleAndId(page: Page) {
     for (const [id, value] of [['wizardTitleField', 'title'], ['wizardIdField', 'id']]) {
       await page.locator(`#${id} + .ts-wrapper .ts-control`).click();
@@ -227,7 +234,7 @@ test.describe('Case creation wizard behaviour', () => {
 
   async function chooseExistingSearchApi(page: Page, endpoint: { name: string }) {
     await openExisting(page);
-    await page.locator('#wizardEndpoint').selectOption({ label: endpoint.name });
+    await chooseEndpoint(page, endpoint.name);
   }
 
   test('stops on a mapper that fails on the API response, without offering Skip Validation', async ({ page }) => {
@@ -284,7 +291,7 @@ test.describe('Case creation wizard behaviour', () => {
     await expect(wizard(page).locator("button[data-wizard-target~='pingButton']").filter({ visible: true })).toBeVisible();
 
     await openExisting(page);
-    await page.locator('#wizardEndpoint').selectOption({ label: existing.name });
+    await chooseEndpoint(page, existing.name);
     await expect(when(page, 'mapper-required')).toBeHidden();
     await expect(wizard(page).locator('[data-wizard-target~="endpointContinue"]')).toBeVisible();
   });
@@ -321,7 +328,7 @@ test.describe('Case creation wizard behaviour', () => {
     const untested = await createEndpoint(page, { search_engine: 'searchapi', mapper_code: 'var nothing = 1', test_query: '' });
     await toEndpointStep(page);
     await openExisting(page);
-    await page.locator('#wizardEndpoint').selectOption({ label: untested.name });
+    await chooseEndpoint(page, untested.name);
     const proceed = wizard(page).locator('[data-wizard-target~="endpointContinue"]');
     await expect(when(page, 'test-query-required')).toBeVisible();
     await expect(proceed).toBeDisabled();
@@ -349,7 +356,7 @@ test.describe('Case creation wizard behaviour', () => {
 
     // An existing endpoint's headers stay in the settings when you go on to create a new endpoint from it.
     await openExisting(page);
-    await page.locator('#wizardEndpoint').selectOption({ label: keyed.name });
+    await chooseEndpoint(page, keyed.name);
     await openPanel(page, 'Create a new Search Endpoint');
     await openSection(page, 'Advanced');
     await expect(page.locator('#wizardHeaderType')).toHaveValue('Custom');
@@ -492,16 +499,16 @@ test.describe('Case creation wizard behaviour', () => {
     await expect(create).not.toHaveAttribute('open');
     await expect(use).not.toHaveAttribute('open');
     await expect(field(page, 'searchUrl')).toBeHidden();
-    await expect(page.locator('#wizardEndpoint')).toBeHidden();
+    await expect(page.locator('#wizardEndpoint + .ts-wrapper')).toBeHidden();
     await expect(wizard(page).locator('[data-wizard-target~="endpointContinue"]')).toBeHidden();
 
     await use.locator('> summary').click();
-    await expect(page.locator('#wizardEndpoint')).toBeVisible();
+    await expect(page.locator('#wizardEndpoint + .ts-wrapper')).toBeVisible();
     const proceed = wizard(page).locator('[data-wizard-target~="endpointContinue"]');
     const usePing = use.getByRole('button', { name: 'ping it' });
     await expect(proceed).toBeDisabled();
     await expect(usePing).toBeDisabled();
-    await page.locator('#wizardEndpoint').selectOption({ label: existing.name });
+    await chooseEndpoint(page, existing.name);
     await expect(proceed).toBeEnabled();
     await expect(usePing).toBeEnabled();
 
@@ -559,8 +566,8 @@ test.describe('Case creation wizard behaviour', () => {
     await expect(wrapper.locator('.item')).toHaveText(['cast×', 'thumb:poster_path×']);
     await input.fill('custom_field');
     await page.keyboard.press('Tab');
-    await expect(fields).toHaveValue('cast,thumb:poster_path,custom_field');
-    await expect(wrapper.locator('.item')).toHaveCount(3);
+    await expect(fields).toHaveValue('cast,thumb:poster_path');
+    await expect(wrapper.locator('.item')).toHaveCount(2);
   });
 
   test('keeps Finish disabled while queries and onboarding save, then closes the wizard', async ({ page }) => {

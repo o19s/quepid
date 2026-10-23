@@ -294,15 +294,33 @@ describe("TuneRelevanceController", () => {
       expect(select.items).toEqual(["id:movie_id", "title:title", "overview", "thumb:poster_path"])
       expect(controller.displayedFieldsValue()).toBe(settings.fieldSpec)
       select.removeItem("overview")
-      select.createItem("cast")
+      select.addOption({ value: "cast", text: "cast" })
+      select.addItem("cast")
       select.setTextboxValue("image:backdrop_path")
-      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast, image:backdrop_path")
+      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast")
       settings.fieldSpec = "id:id title:name"
       controller.refreshSettings()
       expect(select.items).toEqual(["id:id", "title:name"])
       controller.disconnect()
       expect(controller.fieldSpecTarget.tomselect).toBeUndefined()
     })
+  })
+
+  it("keeps repeated JSON definitions intact through selection, removal, and serialization", () => {
+    const first = '{"type":"thumb","name":"poster_path"}'
+    const second = '{"type":"thumb","name":"backdrop_path","label":"Backdrop Image"}'
+    const fieldSpec = `id:id ${first} ${second} overview`
+    const { controller, settings } = mount({ fieldSpec })
+    controller.refreshSettings()
+    expect(controller.displayedFieldsSelect.items).toEqual(["id:id", first, second, "overview"])
+    expect(controller.displayedFieldsValue()).toBe(fieldSpec)
+    const item = [...controller.displayedFieldsSelect.control.children].find((element) => element.dataset.value === first)
+    controller.displayedFieldsSelect.removeItem(item)
+    expect(controller.displayedFieldsValue()).toBe(`id:id, ${second}, overview`)
+    settings.fieldSpec = controller.displayedFieldsValue()
+    controller.refreshSettings()
+    expect(controller.displayedFieldsSelect.items).toEqual(["id:id", second, "overview"])
+    controller.disconnect()
   })
 
   describe("displayed field discovery", () => {

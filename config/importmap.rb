@@ -55,3 +55,5 @@ pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.20.3
 pin '@codemirror/commands', to: '@codemirror--commands.js' # @6.11.1
 pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.4
 pin 'party-js' # @2.2.0
+
+pin 'modules/search_endpoint_select', to: 'modules/search_endpoint_select.js'

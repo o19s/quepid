@@ -1,34 +1,14 @@
+import { createSearchEndpointSelect, updateSearchEndpointSelect } from "modules/search_endpoint_select"
 import TomSelect from "tom-select"
 import { endpointSettings } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
-import { curatorVariableEntries, formatJson, historyTitle, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
+import { curatorVariableEntries, fieldSpecTokens, formatJson, historyTitle, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
 import { normalizeSearchEngine, searchEngineLabel } from "utils/search_engines"
 import { parseCustomHeaders, searchApiValidationArgs } from "utils/wizard_contracts"
 import { isSameId } from "utils/record_identity"
-
-// Wraps each case-insensitive occurrence of `query` in <strong>, as the typeahead rows did.
-function appendHighlighted(parent, text, query) {
-  if (!query) {
-    parent.textContent = text
-    return
-  }
-  const lower = text.toLowerCase()
-  const needle = query.toLowerCase()
-  let from = 0
-  let at = lower.indexOf(needle, from)
-  while (at !== -1) {
-    parent.append(text.slice(from, at))
-    const strong = document.createElement("strong")
-    strong.textContent = text.slice(at, at + needle.length)
-    parent.append(strong)
-    from = at + needle.length
-    at = lower.indexOf(needle, from)
-  }
-  parent.append(text.slice(from))
-}
 
 const EDITABLE_TABS = new Set(["developer", "curator", "engineSettings"])
 
@@ -41,7 +21,7 @@ function setLinkHref(link, url) {
 export default class extends Controller {
   static targets = [
     "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "knobsIntro", "curatorVars", "curatorVarTemplate", "fieldSpec", "fieldDiscoveryStatus", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
-    "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointSuggestionTemplate", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol", "tlsExplanation", "tlsExplanationProtocol", "tlsEditLink",
+    "endpointSelect", "endpointEmpty", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol", "tlsExplanation", "tlsExplanationProtocol", "tlsEditLink",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
 
@@ -67,33 +47,14 @@ export default class extends Controller {
     icon?.classList.toggle("bi-dash-circle-fill", !collapsed)
   }
 
-  filterEndpoints(event) {
-    this.renderEndpointSuggestions(event.currentTarget.value)
-  }
-
-  // Focusing lists every endpoint, even when the box already holds the selected endpoint's name.
-  showEndpointSuggestions() {
-    this.renderEndpointSuggestions("")
-  }
-
-  closeEndpointSuggestions(event) {
-    const next = event.relatedTarget
-    if (next && (this.endpointSuggestionsTarget.contains(next) || this.endpointSearchTarget === next)) return
-    this.endpointSuggestionsTarget.replaceChildren()
-    if (this.hasEndpointNoResultsTarget) this.endpointNoResultsTarget.hidden = true
-  }
-
-  // Keep focus in the search box while a suggestion is clicked, so focusout does not remove it first.
-  keepEndpointSearchFocus(event) {
-    event.preventDefault()
-  }
-
   submitRename(event) {
     event.preventDefault()
     this.renameTry()
   }
 
   disconnect() {
+    this.endpointTomSelect?.destroy()
+    this.endpointTomSelect = null
     if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
     this.editor?.destroy()
     this.editor = null
@@ -233,20 +194,21 @@ export default class extends Controller {
     if (this.hasEscapeQueryTarget) this.escapeQueryTarget.checked = Boolean(this.settings.escapeQuery)
     if (this.hasEscapeSettingTarget) this.escapeSettingTarget.hidden = !this.capability.settings.supportsEscapeQuery(this.settings.searchEngine)
     if (this.hasNightlyTarget) this.nightlyTarget.checked = Boolean(this.capability.case.selected()?.nightly)
+    if (this.endpointTomSelect) this.endpointTomSelect.setValue(String(this.settings.searchEndpointId ?? ""), true)
     this.refreshEndpointDetails()
   }
 
   refreshDisplayedFields() {
     this.displayedFieldsSource = this.settings.fieldSpec || ""
-    const fields = this.displayedFieldsSource.split(/[,\s]+/).filter(Boolean)
+    const fields = fieldSpecTokens(this.displayedFieldsSource)
     if (!this.displayedFieldsSelect) {
       this.fieldSpecTarget.value = ""
       this.displayedFieldsSelect = new TomSelect(this.fieldSpecTarget, {
         plugins: ["remove_button"],
         maxItems: null,
         hideSelected: true,
-        create: true,
-        createOnBlur: true,
+        create: false,
+        createOnBlur: false,
         persist: false,
         selectOnTab: true,
         refreshThrottle: 0,
@@ -260,7 +222,7 @@ export default class extends Controller {
     }
     const select = this.displayedFieldsSelect
     const knownFields = [this.displayedFieldsSource, ...this.capability.settings.tries().map((item) => item.fieldSpec || "")]
-      .flatMap((value) => value.split(/[,\s]+/)).filter(Boolean)
+      .flatMap(fieldSpecTokens)
     select.clear(true)
     select.clearOptions()
     select.addOptions([...new Set(knownFields)].map((value) => ({ value, text: value })))
@@ -316,56 +278,22 @@ export default class extends Controller {
     } catch {
       if (!this.displayedFieldsSelect || this.displayedFieldsEndpointKey() !== key || this.displayedFieldsLookupKey !== key) return
       this.displayedFieldsLookupKey = null
-      this.fieldDiscoveryStatus("Could not load field suggestions. You can still enter fields manually.")
+      this.fieldDiscoveryStatus("Could not load field suggestions. Your selected fields are unchanged.")
     }
   }
 
   displayedFieldsValue() {
     if (!this.displayedFieldsSelect) return this.fieldSpecTarget.value
     const select = this.displayedFieldsSelect
-    if (select.control_input.value.trim()) select.createItem(select.control_input.value.trim())
-    const original = (this.displayedFieldsSource || "").split(/[,\s]+/).filter(Boolean)
+    const original = fieldSpecTokens(this.displayedFieldsSource || "")
     return JSON.stringify(select.items) === JSON.stringify(original) ? this.displayedFieldsSource : select.items.join(", ")
   }
 
   populateEndpoints() {
     if (!this.hasEndpointSelectTarget) return
-    this.endpointSelectTarget.replaceChildren(new Option("Select endpoint", ""))
-    // As in the Angular drawer, the select and search box stay visible beside the empty-state note.
     if (this.hasEndpointEmptyTarget) this.endpointEmptyTarget.hidden = this.searchEndpoints.length > 0
-    this.searchEndpoints.forEach(endpoint => {
-      const option = new Option(endpoint.name, endpoint.id)
-      option.selected = isSameId(endpoint.id, this.settings.searchEndpointId)
-      this.endpointSelectTarget.add(option)
-    })
-    const selected = this.searchEndpoints.find(item => isSameId(item.id, this.settings.searchEndpointId))
-    if (this.hasEndpointSearchTarget) this.endpointSearchTarget.value = selected?.name || ""
-    if (this.hasEndpointSuggestionsTarget) this.endpointSuggestionsTarget.replaceChildren()
-  }
-
-  renderEndpointSuggestions(query) {
-    if (!this.hasEndpointSuggestionsTarget) return
-    const normalized = query.trim().toLowerCase()
-    const matches = normalized ? this.searchEndpoints.filter(endpoint => endpoint.name.toLowerCase().includes(normalized)) : this.searchEndpoints
-    this.endpointSuggestionsTarget.replaceChildren(...matches.map(endpoint => {
-      const button = this.endpointSuggestionTemplateTarget.content.firstElementChild.cloneNode(true)
-      const icon = button.querySelector("img")
-      icon.src = `images/${endpoint.mapperBasedSearchEngineId || endpoint.searchEngine}-icon.png`
-      appendHighlighted(button.querySelector("[data-slot='label']"), endpoint.name, query.trim())
-      button.dataset.tuneRelevanceEndpointIdParam = String(endpoint.id)
-      return button
-    }))
-    if (this.hasEndpointNoResultsTarget) this.endpointNoResultsTarget.hidden = !normalized || matches.length > 0
-  }
-
-  selectEndpointSuggestion(event) {
-    const endpoint = this.searchEndpoints.find(item => isSameId(item.id, event.params.endpointId))
-    if (endpoint) this.selectEndpoint(endpoint)
-  }
-
-  selectEndpoint(endpoint) {
-    this.endpointSelectTarget.value = endpoint.id
-    this.updateEndpoint({ target: this.endpointSelectTarget })
+    this.endpointTomSelect ||= createSearchEndpointSelect(this.endpointSelectTarget, "Select a search endpoint…")
+    updateSearchEndpointSelect(this.endpointTomSelect, this.searchEndpoints, this.settings.searchEndpointId)
   }
 
   refreshEndpointDetails() {

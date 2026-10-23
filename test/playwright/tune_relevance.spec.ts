@@ -35,29 +35,19 @@ test('engine settings sections, endpoint suggestions and background evaluation',
   await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
   await page.locator('.dev-header[data-tune-relevance-section-param="nightly"]').click();
 
-  // Focusing the empty box lists every endpoint with its engine icon, as the Angular typeahead did;
-  // typing highlights the match.
-  const endpointSearch = page.locator('[data-tune-relevance-target="endpointSearch"]');
-  const suggestions = page.locator('[data-tune-relevance-target="endpointSuggestions"] button');
-  await endpointSearch.focus();
+  const wrapper = page.locator('[data-tune-relevance-target="endpointSelect"] + .ts-wrapper');
+  const endpointSearch = wrapper.locator('input');
+  const suggestions = wrapper.locator('.option');
+  await wrapper.locator('.ts-control').click();
   await expect(suggestions).toHaveCount(1);
   await expect(suggestions.locator('img')).toHaveAttribute('src', 'images/solr-icon.png');
   await endpointSearch.fill('routing');
-  await expect(suggestions.locator('strong')).toHaveText('Routing');
-  await page.locator('[data-tune-relevance-target="engineSettingsTitle"], body').first().click({ position: { x: 1, y: 1 } });
-  await expect(suggestions).toHaveCount(0);
-
-  // Keyboard: Tab into a suggestion keeps the list; Tab out of it closes the list.
-  await endpointSearch.focus();
-  await expect(suggestions).toHaveCount(1);
-  await page.keyboard.press('Tab');
-  await expect(suggestions).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(suggestions).toHaveCount(0);
-
-  // Choosing a suggestion only changes the unsaved settings, so nothing persists.
+  await expect(suggestions).toContainText('Routing test endpoint');
+  await page.keyboard.press('Escape');
+  await expect(wrapper.locator('.ts-dropdown')).toBeHidden();
+  await wrapper.locator('.ts-control').click();
   await endpointSearch.fill('Routing test');
-  await page.locator('[data-tune-relevance-target="endpointSuggestions"] button').click();
+  await suggestions.click();
   await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toHaveValue('987654');
   await expect(page.locator('[data-tune-relevance-target="endpointName"]')).toHaveText('Routing test endpoint');
 
@@ -351,7 +341,7 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
 
   test('Rerun saves a new try with the form values, which survive a reload', async ({ page }) => {
     const endpoint = await createEndpoint(page);
-    const tryNo = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##titleBoost##' });
+    const tryNo = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##titleBoost##', field_spec: 'id:id title:title overview cast' });
     await gotoTry(page, tryNo, 'curator');
     await expect(page.locator('[data-tune-relevance-target="curatorVars"] .slider-wrap')).toHaveCount(1);
     await page.locator('[data-tune-relevance-target="curatorVars"] input').fill('7');
@@ -379,6 +369,30 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(page.locator('#escape-queries-checkbox')).not.toBeChecked();
     await tab(page, 'curator').click();
     await expect(page.locator('[data-tune-relevance-target="curatorVars"] input')).toHaveValue('7');
+  });
+
+  test('JSON field definitions remain whole and persist after editing another field', async ({ page }) => {
+    const first = '{"type":"thumb","name":"poster_path"}';
+    const second = '{"type":"thumb","name":"backdrop_path"}';
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id, { field_spec: `id:id title:title ${first} ${second} overview` });
+    await gotoTry(page, tryNo, 'engineSettings');
+    const items = page.locator('[data-tune-relevance-target="fieldSpec"] + .ts-wrapper .item');
+    await expect(items).toHaveCount(5);
+    await expect(items.nth(2)).toContainText(first);
+    await expect(items.nth(3)).toContainText(second);
+    await items.filter({ hasText: /^overview/ }).locator('.remove').click();
+    await page.locator('#query-sandbox-action').click();
+    await expect(page).toHaveURL(new RegExp(`/case/${caseId}/try/${tryNo + 1}\\b`));
+    await page.reload();
+    await openDrawer(page, 'engineSettings');
+    await expect(items).toHaveCount(4);
+    await expect(items.nth(2)).toContainText(first);
+    await expect(items.nth(3)).toContainText(second);
+    const response = await page.request.get(`api/cases/${caseId}/tries/${tryNo + 1}`);
+    expect(response.ok()).toBeTruthy();
+    const saved = await response.json();
+    expect(saved.field_spec).toBe(`id:id, title:title, ${first}, ${second}`);
   });
 
   test('Rerun rejects an out-of-range result count, and reports a failed save so the user can retry', async ({ page }) => {
@@ -503,7 +517,10 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(page.locator('#query-sandbox-action')).toBeVisible();
 
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
-    await page.locator('[data-tune-relevance-target="endpointSelect"]').selectOption({ label: 'Other protocol' });
+    const endpointWrapper = page.locator('[data-tune-relevance-target="endpointSelect"] + .ts-wrapper');
+    await endpointWrapper.locator('.ts-control').click();
+    await endpointWrapper.locator('input').fill('Other protocol');
+    await endpointWrapper.locator('.option').filter({ hasText: 'Other protocol' }).click();
     const warning = page.locator('[data-tune-relevance-target="tlsWarning"]');
     await expect(warning).toBeVisible();
     await expect(page.locator('[data-tune-relevance-target="tlsProtocol"]')).toHaveText('https');
@@ -527,12 +544,11 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await stub([]);
     await gotoTry(page, tryNo, 'engineSettings');
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
-    // The Angular drawer's copy, with the select and search box still shown.
+    // One searchable selector stays available even with no shared endpoints.
     await expect(page.locator('[data-section-body="search"]')).toContainText('Pick Shared Endpoints:');
     await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toHaveText(
       'You do not have any search endpoints shared with this case. Share the case with a team first.');
-    await expect(page.locator('[data-tune-relevance-target="endpointSelect"]')).toBeVisible();
-    await expect(page.locator('[data-tune-relevance-target="endpointSearch"]')).toBeVisible();
+    await expect(page.locator('[data-tune-relevance-target="endpointSelect"] + .ts-wrapper')).toBeVisible();
 
     await page.unrouteAll({ behavior: 'ignoreErrors' });
     await stub(Array.from({ length: 12 }, (_, i) => ({ search_endpoint_id: 900000 + i, name: `Prod ${i}`, search_engine: 'solr' })));
@@ -540,16 +556,15 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await openDrawer(page, 'engineSettings');
     await page.locator('.dev-header[data-tune-relevance-section-param="search"]').click();
     await expect(page.locator('[data-tune-relevance-target="endpointEmpty"]')).toBeHidden();
-    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('prod');
-    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(12);
-    // With a name already in the box (as after choosing an endpoint), focusing still lists them all.
-    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('Prod 3');
-    await page.locator('[data-tune-relevance-target="endpointSearch"]').blur();
-    await page.locator('[data-tune-relevance-target="endpointSearch"]').focus();
-    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(12);
-    await page.locator('[data-tune-relevance-target="endpointSearch"]').fill('zzz');
-    await expect(page.locator('[data-tune-relevance-target="endpointSuggestions"] button')).toHaveCount(0);
-    await expect(page.locator('[data-tune-relevance-target="endpointNoResults"]')).toHaveText('No search endpoints found. Check your spelling!');
+    const wrapper = page.locator('[data-tune-relevance-target="endpointSelect"] + .ts-wrapper');
+    await wrapper.locator('.ts-control').click();
+    await wrapper.locator('input').fill('prod');
+    await expect(wrapper.locator('.option')).toHaveCount(12);
+    await wrapper.locator('input').fill('Prod 3');
+    await expect(wrapper.locator('.option')).toHaveText(['Prod 3']);
+    await wrapper.locator('input').fill('zzz');
+    await expect(wrapper.locator('.option')).toHaveCount(0);
+    await expect(wrapper.locator('.no-results')).toBeVisible();
   });
 
   test('settings sections keep the Angular order, with help on Evaluate Nightly and Escape Queries', async ({ page }) => {

@@ -20,6 +20,7 @@ export default defineConfig({
   },
   resolve: {
     alias: [
+      { find: "modules/search_endpoint_select", replacement: path.resolve(repoRoot, "app/javascript/modules/search_endpoint_select.js") },
       { find: "utils/core_events", replacement: path.resolve(repoRoot, "app/javascript/utils/core_events.js") },
       { find: "@hotwired/stimulus", replacement: path.resolve(repoRoot, "test/javascript/support/stimulus_stub.js") },
       { find: "api/fetch", replacement: path.resolve(repoRoot, "app/javascript/api/fetch.js") },
