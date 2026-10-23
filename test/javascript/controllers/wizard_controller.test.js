@@ -200,7 +200,7 @@ describe("WizardController", () => {
       expect(controller.loaded).toBe(true)
       expect(controller.stepTargets[0].hidden).toBe(false)
       expect(controller.stepTargets[1].hidden).toBe(true)
-      expect(controller.settings.caseName).toBe("Movies Search")
+      expect(controller.settings.caseName).toBe("")
     })
 
     it("skips the welcome step for users who already completed the wizard", async () => {

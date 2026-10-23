@@ -111,3 +111,7 @@ By user choice, Static File endpoints cannot acquire new team memberships, inclu
 ## Recent Cases and Books dropdown presentation
 
 By user choice, the case navbar uses the homepage dropdown presentation. One shared implementation omits active counts and retains surface-specific navigation, new-case wizard behavior and case-derived Create Book parameters.
+
+### New case name
+
+By user choice, the setup wizard leaves a new case name blank instead of defaulting to “Movies Search”; a name is still required to continue.

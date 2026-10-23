@@ -89,7 +89,7 @@ export default class extends Controller {
     this.forceProxyIfRequired()
     this.settings.searchEnginePreset = this.settings.searchEngine || "solr"
     this.settings.newQueries = []
-    this.settings.caseName = this.settings.caseName || "Movies Search"
+    this.settings.caseName = this.settings.caseName || ""
 
     try {
       await endpoints.list()
