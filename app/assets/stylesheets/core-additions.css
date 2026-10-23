@@ -615,7 +615,7 @@ footer {
   margin: 20px 0;
 }
 
-/* Case workspace flashes overlay the bottom of the viewport. Ordinary
+/* Case workspace flashes float over the footer at the viewport bottom. Ordinary
  * Rails page flashes remain in the page flow below the navbar. */
 #flash-messages {
   position: fixed;

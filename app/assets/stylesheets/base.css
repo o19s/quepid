@@ -11,3 +11,9 @@ body {
 footer {
   font-size: 14px;
 }
+
+/* Match footer spacing across the bundles' different root font sizes. */
+footer.py-2 {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}

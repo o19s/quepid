@@ -116,7 +116,7 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 - [ ] Rails/admin flashes overlay the viewport bottom without shifting page content. Announcements remain in the header flow. Modal controls remain above the flash layer.
 - [ ] Success/notice remains at three seconds and dismisses after five. Hover or focus the close button for longer than five seconds; leave both hover and focus and confirm a fresh five-second delay. Errors/warnings remain until manually closed or navigation.
 - [ ] Navigate through Turbo and Back; one-time messages do not repeat. Disconnect and reconnect an alert and confirm only one dismissal timer runs.
-- [ ] On core, trigger a main-channel success and a search-error message. Preserve the separate contract: main messages use their existing timer without hover/focus pause; search-error stays until dismissed. Check both layers after resizing and with Tune Relevance open.
+- [ ] On core, trigger a main-channel success and a search-error message. Preserve the separate contract: main messages dismiss after three seconds without hover/focus pause; search-error stays until dismissed. Check both layers after resizing and with Tune Relevance open.
 
 ### 15.11 Global avatar presentation
 

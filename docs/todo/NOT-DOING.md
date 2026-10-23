@@ -91,3 +91,7 @@ The same server-side handoff could preserve the full pending endpoint configurat
 `api_basic_auth_credential` is returned in full unless `REQUIRE_PROXY_WITH_BASIC_AUTH_CREDENTIALS` is enabled (default false), so shared endpoint members receive stored credentials in endpoint and try responses.
 
 **Fix direction if revisited:** Never serialize credentials or custom secret headers; return a presence-only value and proxy server-side. Make this unconditional rather than flag-dependent.
+
+## Case footer and flashes
+
+By user choice, the case footer uses the same vertical padding as the homepage. Flash messages float over the footer at the bottom of the screen, with drawer controls above the visible messages.

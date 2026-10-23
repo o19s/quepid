@@ -24,6 +24,7 @@ export default class extends Controller {
     const flashes = document.getElementById("flash-messages")
     if (flashes) {
       this.flashObserver = new ResizeObserver(() => {
+        // Keep drawer actions above messages floating at the viewport bottom.
         this.element.style.setProperty("--core-flash-height", `${flashes.offsetHeight}px`)
       })
       this.flashObserver.observe(flashes)

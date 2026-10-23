@@ -2,7 +2,7 @@ import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import FlashController from "controllers/flash_controller"
 
-function buildController({ channel = "main", duration = 5000 } = {}) {
+function buildController({ channel = "main", duration = FlashController.values.duration.default } = {}) {
   const controller = buildControllerFixture(FlashController, {
     element: document.createElement("div"),
     targets: {
@@ -71,14 +71,16 @@ describe("FlashController", () => {
     expect(controller.element.classList.contains("alert-success")).toBe(false)
   })
 
-  it("auto-hides after its duration", () => {
-    const controller = buildController({ duration: 5000 })
+  it("auto-hides after the default three seconds", () => {
+    const controller = buildController()
     disconnect = connect(controller)
 
     show(controller, { type: "success", message: "Saved!", target: "main" })
     expect(controller.element.classList.contains("show")).toBe(true)
 
-    vi.advanceTimersByTime(5000)
+    vi.advanceTimersByTime(2999)
+    expect(controller.element.classList.contains("show")).toBe(true)
+    vi.advanceTimersByTime(1)
 
     expect(controller.element.classList.contains("show")).toBe(false)
   })

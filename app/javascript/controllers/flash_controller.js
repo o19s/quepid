@@ -13,7 +13,7 @@ export default class extends Controller {
   static targets = ["message"]
   static values = {
     channel: { type: String, default: "main" },
-    duration: { type: Number, default: 5000 }
+    duration: { type: Number, default: 3000 }
   }
 
   disconnect() {

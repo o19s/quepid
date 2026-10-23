@@ -2042,9 +2042,9 @@ parts:
         screenshots:
           error: "15.10/error"
           notice: "15.10/notice"
-        last_run: 2026-10-20T20:34:09Z
+        last_run: 2026-10-23T15:07:10Z
         result: fail
-        notes: "Covered live via Playwright MCP on Current :3000: unchanged-profile success visible3s/dismissed5.4s; hover keeps notice5.5s then fresh5.5s after leaving dismisses; wrong-password error remains5.5s. Script mismatch: Rails flash renders in header flow at y56,h58, not bottom overlay. Live Legacy8ceb99e9 same profile wrong-password error also y56,h58; inspected pair proves pre-existing placement, not migration regression. Not covered live: focus/disconnect/admin/core timing matrix or diff-baseline replay; no behavior changed to satisfy unsupported expectation."
+        notes: "Core timing sample2026-10-23 on Current :3000 case10 via MCP: synthetic main success visible2.5s, hidden3.3s; screenshot inspected;12 flash unit tests pass including persistent search-error. Rails/admin behavior unchanged. Earlier Rails verification2026-10-20: unchanged-profile success visible3s/dismissed5.4s; hover keeps notice5.5s then fresh5.5s after leaving dismisses; wrong-password error remains5.5s. Script mismatch: Rails flash renders in header flow at y56,h58, not bottom overlay. Live Legacy8ceb99e9 same profile wrong-password error also y56,h58; inspected pair proves pre-existing placement, not migration regression. Not covered live: focus/disconnect/admin/core timing matrix or diff-baseline replay; no behavior changed to satisfy unsupported expectation."
         paths: ["app/helpers/application_helper.rb", "app/javascript/controllers/auto_dismiss_controller.js", "app/views/layouts/_header.html.erb", "app/assets/stylesheets/bootstrap5-add.css", "app/javascript/controllers/flash_controller.js", "app/views/core/index.html.erb", "app/assets/stylesheets/core-additions.css"]
       "15.11":
         title: "Global avatar presentation"
@@ -2122,10 +2122,11 @@ parts:
           narrow-footer: "16.6/narrow-footer"
           drawer-footer: "16.6/drawer-footer"
           footer: "16.6/footer"
-        last_run: 2026-10-20T20:37:52Z
+          flash-footer: "16.6/flash-footer"
+        last_run: 2026-10-23T14:59:11Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 static20query clone: pane scrolled bottom, one footer bottom900 desktop1280/drawer830/narrow600(inherited750pxmain), pagination visible; drawer footer wraps122px vsdesktop101px; narrow screenshot inspected, horizontal scroll brings API link into hit-tested view. Not covered live: empty-case/configured-policies or Legacy/diff-baseline replay; inherited minimum-width clipping not newly classified."
-        paths: ["app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_footer.html.erb", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/core-additions.css"]
+        notes: "Partial MCP coverage on Current :3000 case10 at1200x900: synthetic error flash overlays footer at viewport bottom900; screenshot inspected. Pane unit tests15 and native footer E2E pass, including homepage spacing, stacked flashes, drawer resize and dismiss. Prior same-session narrow/footer wrapping coverage predates final overlay change. Visual suite still2 pass,3 unavailable fixture failures,1 unrelated Book baseline mismatch. Deferred: final narrow replay, long-list pagination, empty case, policies, real search-error trigger and Legacy/diff-baseline replay."
+        paths: ["app/views/core/index.html.erb", "app/views/layouts/application.html.erb", "app/views/layouts/_case_head.html.erb", "app/views/layouts/_case_workspace.html.erb", "app/views/layouts/_footer.html.erb", "app/assets/stylesheets/base.css", "app/assets/stylesheets/panes.css", "app/javascript/controllers/pane_controller.js", "app/assets/stylesheets/core-additions.css"]
 
   "17":
     file: 17-documentation-coverage.md

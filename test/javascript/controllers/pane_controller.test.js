@@ -32,7 +32,7 @@ function pointerDownOn(slider, button = 0) {
 describe("PaneController", () => {
   afterEach(() => vi.unstubAllGlobals())
 
-  it("reserves the current banner height and releases its observer on disconnect", () => {
+  it("keeps drawer actions above stacked flashes and releases the offset on disconnect", () => {
     const flashes = document.createElement("div")
     flashes.id = "flash-messages"
     document.body.append(flashes)
@@ -60,6 +60,7 @@ describe("PaneController", () => {
     controller.disconnect()
     expect(disconnect).toHaveBeenCalledOnce()
     expect(element.style.getPropertyValue("--core-flash-height")).toBe("")
+    expect(flashes.style.bottom).toBe("")
   })
 
   beforeEach(() => {
