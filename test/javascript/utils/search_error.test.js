@@ -14,7 +14,7 @@ describe("search error utilities", () => {
 
     expect(error).toBeInstanceOf(SearchError)
     expect(error.parts.filter((part) => part.href)).toEqual([
-      { text: "Solr instance directly", href: "http://example.com" },
+      { text: "Solr instance directly", href: "http://example.com", externalIcon: true },
       {
         text: "on the troubleshooting Solr wiki page",
         href: "https://github.com/o19s/quepid/wiki/Troubleshooting-Solr-and-Quepid#compatibility-with-nosniff"

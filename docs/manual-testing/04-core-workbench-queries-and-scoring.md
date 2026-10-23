@@ -163,6 +163,8 @@ Core toolbar opens the Stimulus **pick-scorer-core** modal (`#pickScorerModal`);
 
 ### 4.13 Tune Relevance drawer — History tab
 
+- [ ] In Try Details, Browse Search Endpoint displays the external-link arrow icon.
+
 Covered in depth in Part 5 (Tries / History). Quick smoke test here:
 
 - [ ] **Steps:**

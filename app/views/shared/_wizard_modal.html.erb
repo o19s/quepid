@@ -250,7 +250,7 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             <ul class="mb-0" data-wizard-when="searchapi" hidden>
               <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to your Search API instead of your browser.</li>
               <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on your Search API if your team prefers direct browser access.</li>
-              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
               <li>Do you need an API Key? If so, set one up in <strong>Custom Headers</strong> above.</li>
               <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
               <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting <span data-wizard-target="engineName"></span> and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
@@ -258,7 +258,7 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             <ul class="mb-0" data-wizard-when="es" hidden>
               <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to Elasticsearch instead of your browser. No cluster changes required.</li>
               <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on Elasticsearch to allow Quepid's domain if your team prefers direct browser access.</li>
-              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
               <li>Does your Elasticsearch accept HTTP POST requests?</li>
               <li>Do you need an API Key? If so, set one up in <strong>Custom Headers</strong> above.</li>
               <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
@@ -267,14 +267,14 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
             <ul class="mb-0" data-wizard-when="os" hidden>
               <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to OpenSearch instead of your browser. No cluster changes required.</li>
               <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on OpenSearch to allow Quepid's domain if your team prefers direct browser access.</li>
-              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly</a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
               <li>Does your OpenSearch accept HTTP POST requests?</li>
               <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
               <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
             </ul>
             <ul class="mb-0" data-wizard-when="solr" hidden>
               <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required.</li>
-              <li>Do you see any errors when you visit your <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">Solr URL directly?</a> If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Do you see any errors when you visit your <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">Solr URL directly?<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors.</li> <%# herb:disable html-anchor-require-href %>
               <li>
                 You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
                 You can do this via the below curl command:

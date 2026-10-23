@@ -116,7 +116,7 @@ Quepid ships a bundled JupyterLite environment (pre-built notebooks from the `qu
 - [ ] Rails/admin flashes overlay the viewport bottom and footer without shifting page content, including when dismissed. Success/notice uses the same pale green, spacing and left-hand close button as core flashes. Announcements remain in the header flow. Modal controls remain above the flash layer.
 - [ ] Success/notice remains just before three seconds and dismisses after three. Hover or focus the close button for longer than three seconds; leave both hover and focus and confirm a fresh three-second delay. Errors/warnings remain until manually closed or navigation.
 - [ ] Navigate through Turbo and Back; one-time messages do not repeat. Disconnect and reconnect an alert and confirm only one dismissal timer runs.
-- [ ] Visit an unavailable Search Endpoint and, as a non-admin, an admin URL. Both access messages use a yellow `alert` warning and remain until dismissed. Core warning events also use `alert`; errors remain red.
+- [ ] Visit an unavailable Search Endpoint and, as a non-admin, an admin URL. Both access messages use a yellow `alert` warning and remain until dismissed. Core warning events also use `alert`; errors remain red. The Solr error flash's Solr instance directly link includes an external-link arrow; its wiki link is unchanged.
 - [ ] On core, trigger a main-channel `notice` and a search-error message. Preserve the separate contract: main messages dismiss after three seconds without hover/focus pause; search-error stays until dismissed. Check both layers after resizing and with Tune Relevance open.
 
 ### 15.11 Global avatar presentation

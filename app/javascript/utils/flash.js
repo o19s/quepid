@@ -7,7 +7,7 @@ import { CORE_EVENTS } from "utils/core_events"
 
 /**
  * @param {"notice" | "error" | "alert" | "info"} type
- * @param {string | { parts: Array<{ text: string, href?: string }> }} message A plain-text
+ * @param {string | { parts: Array<{ text: string, href?: string, externalIcon?: boolean }> }} message A plain-text
  *   string, or an object with `{ text, href? }` parts (e.g. a `SearchError`) whose links
  *   render as safe http(s) anchors and whose text is never parsed as markup.
  * @param {"main" | "search-error"} [target]

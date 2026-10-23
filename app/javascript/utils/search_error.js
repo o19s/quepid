@@ -70,7 +70,7 @@ export function formatCode(code) {
 }
 
 /**
- * A translated search failure. `parts` is a list of `{ text, href? }` segments
+ * A translated search failure. `parts` is a list of `{ text, href?, externalIcon? }` segments
  * so the troubleshooting links stay clickable without treating server/user
  * text as markup; `message` is the same content as plain text.
  */
@@ -94,7 +94,7 @@ export function parseResponseObject(response, inspectUrl, searchEngine) {
   if (searchEngine === "solr") {
     return new SearchError([
       { text: "One or more of your Solr queries failed to return results, please access " },
-      { text: "Solr instance directly", href: inspectUrl },
+      { text: "Solr instance directly", href: inspectUrl, externalIcon: true },
       {
         text: " to confirm Solr is accessible and to inspect the error.   If Solr responds, check if you have an ad blocker blocking your queries.  With Solr 8.4.1 and later you need to allow Quepid access to Solr.  Learn more "
       },

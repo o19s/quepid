@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { escapeHtml, sanitizeHtml, sanitizeSnippetHtml } from "utils/html"
+import { escapeHtml, renderTextWithLinks, sanitizeHtml, sanitizeSnippetHtml } from "utils/html"
 
 describe("html escaping", () => {
   it("escapes &, <, >, and both quote types", () => {
@@ -68,5 +68,21 @@ describe("sanitizeSnippetHtml allowlist", () => {
     expect(sanitizeSnippetHtml("a<br>b")).toBe("a<br>b")
     expect(sanitizeSnippetHtml("<u>x</u><script>1</script>")).toBe("x1")
     expect(sanitizeSnippetHtml('<b onclick="x()">y</b>')).toBe("<b>y</b>")
+  })
+})
+
+describe("structured external link icons", () => {
+  it.each([
+    ["https://engine.test/select", true, 1],
+    ["https://engine.test/select", false, 0],
+    ["javascript:alert(1)", true, 0],
+    ["", true, 0]
+  ])("renders opted-in safe icons for %s (%s)", (href, externalIcon, count) => {
+    const container = document.createElement("div")
+    container.append(renderTextWithLinks([{ text: "Solr <instance>", href, externalIcon }]))
+    expect(container.textContent).toBe("Solr <instance>")
+    expect(container.querySelectorAll("i.bi-box-arrow-up-right")).toHaveLength(count)
+    expect(container.querySelector("instance")).toBeNull()
+    if (count) expect(container.querySelector("i").getAttribute("aria-hidden")).toBe("true")
   })
 })
