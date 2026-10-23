@@ -118,6 +118,29 @@ describe("SearchResultController", () => {
     expect(content.textContent).toContain("overview: plain text")
   })
 
+  it("shows an array field as its already-comma-joined snippet text, not raw JSON", () => {
+    const controller = buildController(snapshotFor({
+      snippets: { cast: "Mark Hamill,Harrison Ford,Carrie Fisher" },
+      rawFields: { cast: [ "Mark Hamill", "Harrison Ford", "Carrie Fisher" ] }
+    }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+
+    expect(controller.contentTarget.textContent).toContain("cast: Mark Hamill,Harrison Ford,Carrie Fisher")
+    expect(controller.contentTarget.querySelector("[data-controller='json-explorer']")).toBeNull()
+  })
+
+  it("renders a genuine nested object field through the JSON explorer", () => {
+    const controller = buildController(snapshotFor({
+      snippets: { options: "[object Object]" },
+      rawFields: { options: { judge_options: { llm_provider: "openai" } } }
+    }), { depthOfRating: 0, ratingScale: {} })
+    controller.render()
+
+    const explorer = controller.contentTarget.querySelector("[data-controller='json-explorer']")
+    expect(explorer).not.toBeNull()
+    expect(explorer.dataset.jsonExplorerJsonValue).toBe(JSON.stringify({ judge_options: { llm_provider: "openai" } }))
+  })
+
   it("preserves falsy field values", () => {
     const controller = buildController(snapshotFor({
       snippets: { zero: "0", falseValue: "false" },
