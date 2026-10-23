@@ -59,6 +59,16 @@ describe("QueryCollectionStore", () => {
     expect(store.query(1)).toBeNull()
   })
 
+  it("orders by display order, skips stale ids, and appends unordered queries in insertion order", () => {
+    store.replace({
+      caseId: 7,
+      displayOrder: [9, 3, 1],
+      queries: [1, 2, 3, 4].map(queryId => ({ queryId, queryText: `q${queryId}` }))
+    })
+
+    expect(store.orderedQueryIds()).toEqual([3, 1, 2, 4])
+  })
+
   it("filters deleted rows and builds fresh projections from the live input", () => {
     const query = { queryId: 1, queryText: "live" }
     store.replace({

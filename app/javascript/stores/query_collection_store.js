@@ -188,8 +188,9 @@ export class QueryCollectionStore extends EventTarget {
   orderedQueryIds() {
     const knownIds = new Set(this._liveQueries.keys())
     const ordered = this._displayOrder.filter(id => knownIds.has(String(id)))
+    const orderedIds = new Set(ordered.map(String))
     const missing = [...this._liveQueries.keys()]
-      .filter(id => !ordered.some(orderedId => String(orderedId) === id))
+      .filter(id => !orderedIds.has(id))
       .map(Number)
     return [...ordered, ...missing]
   }
