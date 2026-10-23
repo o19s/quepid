@@ -13,6 +13,16 @@
   </div>
 <% end %>
 
+<% unless @search_endpoint.team_shareable? %>
+  <div class="alert alert-info" role="note">
+    <strong>Static File endpoints belong to a case.</strong>
+    Their imported search results are stored in a snapshot of that case.
+    Sharing the endpoint would not give teammates access to the case or its snapshot,
+    so Static File endpoints cannot be shared separately. Share the case with your team instead.
+    To use the same data in another case, import the file into that case again.
+  </div>
+<% end %>
+
 <div class="card">
   <div class="card-body">
     <%= render @search_endpoint %>
