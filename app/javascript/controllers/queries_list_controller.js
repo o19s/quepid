@@ -72,7 +72,7 @@ export default class extends Controller {
   }
 
   changePage(event) {
-    this.currentPage += event.params.direction === "next" ? 1 : -1
+    this.currentPage = event.params.page || Math.max(1, this.currentPage + (event.params.direction === "next" ? 1 : -1))
     this.render()
   }
 
@@ -536,6 +536,22 @@ export default class extends Controller {
       `Page ${this.currentPage} of ${pageCount} (${totalCount} queries)`
     nav.querySelector('[data-slot="previous"]').disabled = this.currentPage === 1
     nav.querySelector('[data-slot="next"]').disabled = this.currentPage === pageCount
+    nav.querySelector('[data-slot="previousItem"]').classList.toggle("disabled", this.currentPage === 1)
+    nav.querySelector('[data-slot="nextItem"]').classList.toggle("disabled", this.currentPage === pageCount)
+    const pageItem = nav.querySelector('[data-slot="pageItem"]')
+    for (let page = 1; page <= pageCount; page++) {
+      const item = pageItem.cloneNode(true)
+      const button = item.querySelector('[data-slot="page"]')
+      button.textContent = page
+      button.setAttribute("aria-label", `Page ${page}`)
+      button.setAttribute("data-queries-list-page-param", page)
+      if (page === this.currentPage) {
+        item.classList.add("active")
+        button.setAttribute("aria-current", "page")
+      }
+      pageItem.before(item)
+    }
+    pageItem.remove()
     this.paginationTarget.appendChild(nav)
   }
 

@@ -162,6 +162,22 @@ describe("queries_list_controller", () => {
     expect(controller.paginationTarget.textContent).toContain("Page 2 of 3 (5 queries)")
     expect(controller.paginationTarget.querySelector('[data-slot="previous"]').disabled).toBe(false)
     expect(controller.paginationTarget.querySelector('[data-slot="next"]').disabled).toBe(false)
+    expect(controller.paginationTarget.querySelectorAll('[data-slot="page"]')).toHaveLength(3)
+    expect(controller.paginationTarget.querySelector('[aria-current="page"]').textContent).toBe("2")
+    controller.render = vi.fn()
+    controller.changePage({ params: { page: 3 } })
+    expect(controller.currentPage).toBe(3)
+    expect(controller.render).toHaveBeenCalledOnce()
+    controller.renderPagination(3, 5)
+    expect(controller.paginationTarget.querySelector('[data-slot="next"]').disabled).toBe(true)
+    expect(controller.paginationTarget.querySelector('[data-slot="nextItem"]').classList.contains("disabled")).toBe(true)
+    controller.changePage({ params: { direction: "previous" } })
+    expect(controller.currentPage).toBe(2)
+    controller.currentPage = 1
+    controller.renderPagination(3, 5)
+    expect(controller.paginationTarget.querySelector('[data-slot="previous"]').disabled).toBe(true)
+    controller.renderPagination(1, 1)
+    expect(controller.paginationTarget.childElementCount).toBe(0)
   })
 
   describe("keyed row reconciliation", () => {

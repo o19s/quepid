@@ -97,11 +97,18 @@
 
 <template data-queries-list-target="paginationTemplate">
   <nav aria-label="Query pages">
-    <div class="d-flex align-items-center gap-2">
-      <button type="button" class="btn btn-outline-secondary btn-sm" data-slot="previous" data-action="click->queries-list#changePage" data-queries-list-direction-param="previous">Previous</button>
-      <span data-slot="summary"></span>
-      <button type="button" class="btn btn-outline-secondary btn-sm" data-slot="next" data-action="click->queries-list#changePage" data-queries-list-direction-param="next">Next</button>
-    </div>
+    <span class="visually-hidden" data-slot="summary" aria-live="polite"></span>
+    <ul class="pagination">
+      <li class="page-item" data-slot="previousItem">
+        <button type="button" class="page-link" aria-label="Previous page" data-slot="previous" data-action="click->queries-list#changePage" data-queries-list-direction-param="previous"><span aria-hidden="true">‹</span></button>
+      </li>
+      <li class="page-item" data-slot="pageItem">
+        <button type="button" class="page-link" data-slot="page" data-action="click->queries-list#changePage"></button>
+      </li>
+      <li class="page-item" data-slot="nextItem">
+        <button type="button" class="page-link" aria-label="Next page" data-slot="next" data-action="click->queries-list#changePage" data-queries-list-direction-param="next"><span aria-hidden="true">›</span></button>
+      </li>
+    </ul>
   </nav>
 </template>
 
