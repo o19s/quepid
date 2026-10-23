@@ -41,7 +41,7 @@ Use disposable resources and test accounts for writes, particularly deletion and
   5. PUT the query's `/bulk/ratings` with `doc_ids` and a top-level numeric `rating`; verify only those documents changed. Clear them through DELETE and the legacy POST `/bulk/ratings/delete` alias.
   6. POST `/api/bulk/cases/:case_id/queries` with `{"queries":["manual one","manual two","manual one"]}`. Repeat: confirm existing exact query texts are reused, with one row per distinct text and a consistent returned order. This bulk operation does not share single-create trimming/model validation; inspect blank/whitespace input separately rather than assuming parity.
   7. Delete one query and verify its ratings disappear and the remaining query order is intact. On a separate disposable case, DELETE `/api/bulk/cases/:case_id/queries/delete`: confirm 204, all its queries/ratings removed and the case itself retained.
-- **Expected:** Document IDs remain intact, including punctuation and leading zeros; a zero rating is retained. Notes/options persist independently. Repeated single-rating deletion is a no-op, not a 500. Linked-book write behavior is checked in 6.6/12.8.
+- **Expected:** Document IDs remain intact, including punctuation and leading zeros; a zero rating is retained. Notes/options persist independently. Repeated single-rating deletion is a no-op, not a 500. Linked-book write behavior is checked in 6.6/12.9.
 - **Edge cases:** Missing query, blank query text, a query ID from another case and an absent rating. Record validation responses and check saved state after rejected payloads; bulk rating writes must be inspected row by row rather than assumed transactional.
 
 ### 18.4 Book pairs and judgement API lifecycle

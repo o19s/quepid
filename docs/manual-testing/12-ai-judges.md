@@ -92,7 +92,32 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   - [ ] With images enabled, provide only `thumb`, or a relative `image` plus absolute `thumb`; confirm the absolute thumbnail is used. If both are absolute, prefer `image`.
   - [ ] With images disabled, confirm neither URL is sent as image content.
 
-### 12.7 Judge ownership and document access
+### 12.7 Escalate from one AI judge to an on-call judge
+
+A judge can name a second judge to wake when it can't give a usable rating ("escalation", `docs/todo/escalating_judges.md`). The link lives on the judge, not on a book, and the judge it points at is **on call**: it doesn't have to be assigned to the book, it can't be started by hand, and it judges only the pairs handed to it. When the first judge's run ends, the on-call judge judges those pairs as a run of its own.
+
+- [ ] **Steps:**
+  1. Open **AI Judges**, edit a TypeSafe Jev judge, set **When unsure, wake** to an OpenAI judge, and set **Minimum confidence** to `1.0` (every answer falls below it, so every pair escalates). Save.
+  2. Back on **AI Judges**, read the **Escalation** column, then open the OpenAI judge.
+  3. Assign **only** the Jev judge to a book whose scale matches the OpenAI judge's prompt (the stock OpenAI prompt grades 0–3). Open the book's **Settings**, then the book overview, then **Judgement Stats**.
+  4. Run the Jev judge on a handful of pairs (the ▶ button in Judge Activity opens **Judge Documents**; run 10).
+  5. When it finishes, watch the OpenAI judge start judging on its own. When it finishes, open one of Jev's judgements from the run, follow the link, and open the OpenAI judgement.
+  6. Try to start the OpenAI judge directly (it has no button; a crafted `PATCH .../run_judge_judy/<id>` should be refused).
+  7. Set Jev's **Minimum confidence** back to blank and run Jev again.
+- **Expected:**
+  - The list shows "→ wakes {OpenAI judge}" on Jev and an **On call** badge on the OpenAI judge, whose edit page says "On call for {Jev}: this judge only rates pairs escalated to it."
+  - The book's settings, Judge Activity and Judgement Stats show "wakes {OpenAI judge} when unsure" under Jev, and the OpenAI judge with **On call** and no ▶, even though it isn't assigned.
+  - After step 5, every pair Jev judged has two judgements: Jev's unrateable one and the OpenAI judge's. Jev's judgement page says **Unrateable:** "Jev gave no usable rating, because its confidence (…) was below its minimum confidence of 1.0", and that the pair was **handed on**, with what the OpenAI judge did and a link. The OpenAI judgement says **Escalated:** with Jev's reason and a link back, and its explanation starts "Escalated from Jev, whose answer was unrateable: …".
+  - Step 6 is refused with "AI Judge {name} is on call: it only judges pairs {Jev} escalates to it."
+  - After step 7, nothing escalates: no new OpenAI judgements.
+- **Edge cases:**
+  - [ ] Try to close a loop (A wakes B, then set B to wake A): the save is refused with "would wake a judge that already escalates back to this one".
+  - [ ] Delete the on-call judge (one with no judgements): the main judge's **When unsure, wake** goes back to Nobody. A judge that has judgements can't be deleted, and the AI Judges page says why.
+  - [ ] As a user who can't see the woken judge, edit and save the main judge: the link is kept.
+  - [ ] Book with a 0–1 scale and the stock 0–3 OpenAI prompt: the OpenAI judge's off-scale answers are marked unrateable, and its judgement page gives *its own* reason ("its rating wasn't one of the book's scale values"), not Jev's.
+  - [ ] Cancel the on-call judge's run from Judge Activity mid-way: it stops; running Jev again later picks up the pairs it didn't reach.
+
+### 12.8 Judge ownership and document access
 
 - [ ] **Steps:**
   1. Create a private judge as user A. As unrelated user B, verify it is absent from index/book choices and direct show/edit/update/delete requests fail.
@@ -100,7 +125,7 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   3. Give A a private book with a distinctive document. As B, request a wizard sample without book context and with A's inaccessible book ID.
 - **Expected:** Samples never expose A's private documents; judge sharing does not grant access to its owner's books. Confirm owned and team-shared access without requiring book and judge team overlap.
 
-### 12.8 Automatic judging, cancellation and live synchronization
+### 12.9 Automatic judging, cancellation and live synchronization
 
 - [ ] **Steps:**
   1. Assign a judge, enable **Auto-run on new pairs**, set Rank Depth to 2, save and reload Settings.
@@ -115,7 +140,7 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
   - [ ] Search a linked case with 101+ queries and automatic book population enabled. Confirm all new pairs are submitted together and appear after the queued job completes. While the book is busy, search again with new pairs: confirm a visible auto-sync error. While the error banner remains visible, open Tune Relevance and confirm Rerun stays visible and clickable, including with a wrapped banner at a narrow viewport. After the job finishes, use Rerun without dismissing the error or manually reloading; confirm one settings request per click and that the rejected pairs are submitted and persisted.
   - [ ] Add one query while automatic book population is enabled and the book is busy. Confirm successful search results refresh the new query's score badge and case score despite the visible auto-sync error. Repeat with the book available; confirm refreshed scores and successful submission. A search-engine failure must still show its error without submitting pairs.
 
-### 12.9 TypeSafe Jev and provider acceptance rules
+### 12.10 TypeSafe Jev and provider acceptance rules
 
 - [ ] **Steps:**
   1. Select TypeSafe Jev in Create/Edit AI Judge. Confirm Judging instructions, the Minimum confidence number field (0–1), fixed URL/model/version and disabled images.
@@ -126,7 +151,7 @@ Successful edits display **AI Judge was successfully updated.**, retaining the e
 - **Expected:** Provider selection controls the request dialect. Chat providers keep their existing routing/authentication and image behavior. Jev takes structured text and book criteria; preview remains unsaved, while judging jobs persist accepted or Unrateable judgements.
 - **Coverage note:** Local fixture providers can verify the transport and failure matrix without external keys; distinguish this from a live TypeSafe service run.
 
-### 12.10 Clone a team AI Judge
+### 12.11 Clone a team AI Judge
 
 - [ ] **Steps:**
   1. Open `/teams/:team_id/ai_judges/:id/clone` for a judge shared with your team (the route is supported; no Clone button is provided).

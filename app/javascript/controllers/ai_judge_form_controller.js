@@ -4,7 +4,7 @@ const normalizePrompt = text => (text || "").replace(/\r\n?/g, "\n").trim()
 
 export default class extends Controller {
   static targets = ["structured", "json", "jsonTab", "provider", "preset", "help", "url", "version", "model", "images", "imagesHidden", "imagesNotice", "imagesNoticeProvider", "providerOptionField", "systemPrompt", "systemPromptLabel", "systemPromptHint", "systemPromptWarning", "defaultPromptProvider", "criteriaTable", "criteriaProse", "runPromptButton", "needsScaleNotice"]
-  static values = { presets: Object, stockPrompts: Array, hasScale: Boolean, optionDefaults: Object }
+  static values = { presets: Object, stockPrompts: Array, hasScale: Boolean, optionDefaults: Object, book: Boolean }
 
   connect() {
     this.syncTab()
@@ -94,10 +94,19 @@ export default class extends Controller {
     this.updateRunAvailability(preset)
   }
 
+  // A provider that needs a scale (currently: one sent the scale as its criteria,
+  // like Jev) has nothing to judge against without one, so don't offer a run that
+  // can only fail. With a book, the scale always comes from the book and there's
+  // no picker in the notice to keep showing once one is set; with a manually-picked
+  // scorer, keep the notice (and its dropdown) visible so it stays available to
+  // switch to a different scale.
   updateRunAvailability(preset) {
-    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
+    const needsScale = Boolean(preset?.needs_scale)
+    const missingScale = needsScale && !this.hasScaleValue
+    const showNotice = this.bookValue ? missingScale : needsScale
+
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
+    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
   }
 
   syncImages() {

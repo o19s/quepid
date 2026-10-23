@@ -154,11 +154,11 @@ class SampleData < Thor
     print_user_info user_params
 
     ######################################
-    # OSC AI Judge (Ollama)
+    # Qwen on Ollama Judge
     ######################################
 
     user_specifics = {
-      name:          'OSC AI Judge',
+      name:          'Qwen on Ollama Judge',
       system_prompt: LlmProvider::CHAT_SYSTEM_PROMPT,
     }
     user_params = user_specifics # user_defaults.merge(user_specifics)

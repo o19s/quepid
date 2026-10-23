@@ -11,6 +11,11 @@ class RunJudgeJudyJob < ApplicationJob
                      duration:    30.minutes,
                      on_conflict: :discard
 
+  # How much of the unsure judge's explanation an escalated judgement quotes.
+  # Kept short so the quote doesn't bury the on-call judge's own reasoning,
+  # and so a chain (A -> B -> C) doesn't re-quote every earlier note in full.
+  ESCALATION_NOTE_REASON_LENGTH = 240
+
   # Finds the in-flight (not finished) SolidQueue rows for this job class
   # matching the given book + judge. This is the one place that reaches into
   # SolidQueue's serialized arguments to answer "is this book+judge combo
@@ -66,18 +71,19 @@ class RunJudgeJudyJob < ApplicationJob
   # @param book [Book] The book containing query-doc pairs to judge
   # @param judge [User] The AI judge user performing the ratings
   # @param number_of_pairs [Integer, nil] Number of pairs to judge, nil for all pairs
+  # @param escalating_from_judge [AiJudge, nil] Set for an on-call judge's pass: instead of
+  #   choosing pairs, judge the pairs where this judge's answer was unrateable and
+  #   nobody has escalated it yet (docs/todo/escalating_judges.md). Each judgement
+  #   made links back to the one it answers.
   #
   # @example Judge 10 pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, 10)
   #
   # @example Judge all pairs
   #   RunJudgeJudyJob.perform_later(book, ai_judge, nil)
-  def perform book, judge, number_of_pairs
-    judge_pairs(book, judge, number_of_pairs)
-  end
-
-  def judge_pairs book, judge, number_of_pairs
+  def perform book, judge, number_of_pairs, escalating_from_judge: nil
     counter = 0
+    cancelled = false
     total_pairs = book.query_doc_pairs_within_rank_depth.count
     cancellable = provider_job_id.present? || SolidQueue::Job.exists?(active_job_id: job_id)
     llm_service = LlmService.new judge.llm_key, judge.judge_options
@@ -87,17 +93,18 @@ class RunJudgeJudyJob < ApplicationJob
 
       break if cancellable && cancellation_requested?
 
-      query_doc_pair = SelectionStrategy.random_query_doc_based_on_strategy(book, judge)
+      query_doc_pair, source = next_pair_to_judge(book, judge, escalating_from_judge)
       break if query_doc_pair.nil?
 
-      judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge)
-
-      llm_service.perform_safe_judgement(judgement, scale: scale)
-
-      JudgementFinalizer.call(judgement, scale: scale)
-
+      judgement = judge_pair(llm_service, scale, query_doc_pair, judge, source)
       judgement.save!
       counter += 1
+      # Sync this one pair's case ratings immediately, same as every human
+      # judging path (JudgementsController, BulkJudgeController) - cheaper
+      # than a full-book UpdateCaseJob resync at the end, and keeps case
+      # ratings current even if a long "judge all" run gets cancelled partway.
+      UpdateCaseRatingsJob.perform_later(query_doc_pair)
+      BroadcastJudgeActivityJob.perform_later(book, judge)
       broadcast_judging_detail(book, judge, counter, total_pairs, judgement)
 
       if number_of_pairs.nil?
@@ -108,6 +115,7 @@ class RunJudgeJudyJob < ApplicationJob
     end
     broadcast_complete(book, judge)
     BroadcastJudgeActivityJob.perform_later(book, judge)
+    wake_on_call_judge(book, judge) unless cancelled
   end
 
   private
@@ -115,6 +123,49 @@ class RunJudgeJudyJob < ApplicationJob
   def cancellation_requested?
     arguments = SolidQueue::Job.where(active_job_id: job_id).pick(:arguments)
     arguments.nil? || arguments['quepid_cancelled']
+  end
+
+  # The pair to judge next, and -- on an on-call judge's pass -- the
+  # unrateable judgement it answers. nil when there is nothing left.
+  def next_pair_to_judge book, judge, escalating_from_judge
+    return [ SelectionStrategy.random_query_doc_based_on_strategy(book, judge), nil ] unless escalating_from_judge
+
+    # Scoped to every judge that escalates to `judge` (judge.escalated_from),
+    # not just escalating_from_judge - the limits_concurrency lock below is
+    # keyed on (book, judge) alone, so if two source judges wake the same
+    # on-call judge around the same time, only one enqueue wins and the
+    # other is discarded. Since this query re-runs every loop iteration
+    # rather than being computed once, the winning run still picks up the
+    # other source's awaiting escalations instead of silently dropping them.
+    source = Judgement.awaiting_escalation(book, from: judge.escalated_from, to: judge).order(:id).first
+    [ source&.query_doc_pair, source ]
+  end
+
+  def judge_pair llm_service, scale, query_doc_pair, judge, source
+    judgement = Judgement.new(query_doc_pair: query_doc_pair, user: judge, escalated_from_judgement: source)
+    llm_service.perform_safe_judgement(judgement, scale: scale)
+    JudgementFinalizer.call(judgement, scale: scale)
+    judgement.explanation = "#{escalation_note(source)}#{judgement.explanation}" if source
+    judgement
+  end
+
+  # The second pass: once this judge's run is done, its on-call judge (if any)
+  # judges the pairs it couldn't, as a run of its own -- its own progress,
+  # its own cancel, and its own (book, judge) lock. That lock discards the
+  # enqueue if the on-call judge is already running on this book; whatever it
+  # misses is still waiting, and the next run that ends here picks it up.
+  # The on-call judge's own run ends here too, so chains (A -> B -> C) follow.
+  def wake_on_call_judge book, judge
+    on_call = judge.try(:escalates_to)
+    return if on_call.nil?
+    return unless Judgement.awaiting_escalation(book, from: judge, to: on_call).exists?
+
+    RunJudgeJudyJob.perform_later(book, on_call, nil, escalating_from_judge: judge)
+  end
+
+  def escalation_note source
+    why = source.explanation.presence&.squish&.truncate(ESCALATION_NOTE_REASON_LENGTH) || 'it gave no rating'
+    "Escalated from #{source.user.name}, whose answer was unrateable: #{why}\n\n"
   end
 
   def broadcast_judging_detail book, judge, counter, total_pairs, judgement

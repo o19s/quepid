@@ -42,10 +42,10 @@
         <% image_setting = ai_judge.judge_options[:llm_include_images] %>
         <% include_images = image_setting.nil? || image_setting == '' || ActiveModel::Type::Boolean.new.cast(image_setting) %>
         <%= hidden_field_tag 'user[judge_options][llm_include_images]', images_supported ? 'false' : include_images.to_s, data: { ai_judge_form_target: 'structured imagesHidden' } %>
-        <div class="form-check">
+        <div class="form-check form-switch">
           <%= check_box_tag 'user[judge_options][llm_include_images]', 'true', include_images && images_supported,
                 id: 'judge_options_llm_include_images', class: 'form-check-input',
-                disabled: !images_supported,
+                role: 'switch', disabled: !images_supported,
                 data: { ai_judge_form_target: 'structured images', wanted: include_images.to_s, unsupported: (!images_supported).to_s } %>
           <%= label_tag 'judge_options_llm_include_images', 'Judge with images', class: 'form-check-label' %>
         </div>

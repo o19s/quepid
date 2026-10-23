@@ -6,11 +6,13 @@ import { serverMessage } from "utils/error_message"
 // Testing uses the active form values; only the Rails Save submission persists.
 export default class extends withStatusMessages(Controller) {
   static targets = ["name", "step2", "queryText", "docId", "informationNeed", "documentFields", "options", "notes", "position", "status", "ratingInfo", "loadingSpinner", "runPromptButton", "rating", "explanation", "unrateable"]
-  static values = { sampleUrl: String, testUrl: String, existing: Boolean }
+  static values = { sampleUrl: String, testUrl: String, existing: Boolean, draftKey: String }
 
   connect() {
     this.abortController = new AbortController()
+    this.restoreDraft()
     if (this.existingValue) this.revealStep2()
+    this.scrollToStep2IfRequested()
   }
 
   disconnect() {
@@ -27,6 +29,85 @@ export default class extends withStatusMessages(Controller) {
     if (this.step2Target.style.display === "block") return
     this.step2Target.style.display = "block"
     this.sampleQueryDocPair()
+  }
+
+  // The scale picker's reload lands back here with ?scorer_id= set - scroll
+  // down to Test & Refine instead of leaving the user at the top of a long
+  // page they've already filled out. Deliberately not a #fragment: the
+  // browser's own native fragment-scroll would fire against this same
+  // element and race our own (element position differs once revealStep2()
+  // reflows the page), consistently winning and overriding it.
+  scrollToStep2IfRequested() {
+    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
+    if (!this.hasStep2Target) return
+
+    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
+  }
+
+  // The scale picker (Test & Refine) navigates to this same page with a
+  // different ?scorer_id= - a real GET, not a fetch, since the criteria
+  // shown and the scale handed to test_prompt both come from server-rendered
+  // state keyed off that param. Snapshot everything typed into the not-yet-
+  // saved form first so that reload doesn't throw it all away.
+  navigateToScale(event) {
+    const url = event.target.options[event.target.selectedIndex]?.dataset.url
+    if (!url) return
+
+    this.saveDraft()
+    window.location.href = url
+  }
+
+  get draftStorageKey() {
+    return `ai_judge_wizard_draft:${this.draftKeyValue}`
+  }
+
+  // Every input/select/textarea's own current value, keyed by name (and by
+  // value too for checkboxes/radios, since several share a name) - deliberately
+  // not FormData, which omits an unchecked checkbox entirely and would leave
+  // restoreDraft with no way to tell "unchecked" apart from "never asked".
+  saveDraft() {
+    const form = this.element.closest("form")
+    if (!form) return
+
+    const snapshot = []
+    form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
+      if ("checkbox" === field.type || "radio" === field.type) {
+        snapshot.push({ name: field.name, value: field.value, type: field.type, checked: field.checked })
+      } else {
+        snapshot.push({ name: field.name, value: field.value, type: field.type })
+      }
+    })
+
+    sessionStorage.setItem(this.draftStorageKey, JSON.stringify(snapshot))
+  }
+
+  restoreDraft() {
+    const raw = sessionStorage.getItem(this.draftStorageKey)
+    if (!raw) return
+
+    sessionStorage.removeItem(this.draftStorageKey)
+    const form = this.element.closest("form")
+    if (!form) return
+
+    JSON.parse(raw).forEach(({ name, value, type, checked }) => {
+      if ("checkbox" === type || "radio" === type) {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`)
+        if (field) field.checked = checked
+      } else {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
+        if (field) field.value = value
+      }
+    })
+
+    // A restored name should reveal step 2 just like typing it would've.
+    this.checkReveal()
+
+    // ai-judge-form already ran its own initial provider-panel sync against
+    // the pre-restore field values (it connects before this controller
+    // does, per data-controller's token order) - redo it now that a
+    // restored draft may have changed the provider or other inputs it
+    // reads, so its panels/help/criteria aren't left showing the wrong one.
+    this.application?.getControllerForElementAndIdentifier?.(this.element, "ai-judge-form")?.updateProviderPanels()
   }
 
   async sampleQueryDocPair(event) {

@@ -1,6 +1,6 @@
-<%# locals: (book:, scale:, provider:) %>
+<%# locals: (ai_judge:, book:, scorer:, scorer_id:, scale:, provider:) %>
 <!-- Step 2: Test & Refine -->
-<div class="mb-4">
+<div class="mb-4" id="test-and-refine">
   <h4><span class="badge bg-primary">2</span> Test &amp; Refine</h4>
 
   <div data-ai-judge-wizard-target="step2" style="display: none;">
@@ -50,10 +50,14 @@
       </div>
       <div class="col-md-6">
         <h6>Rating Information</h6>
-        <% unless scale.empty? %>
+        <%# The other half of what gets sent: for a typed model the scale IS the
+            question's criteria, so show them here rather than making people guess. %>
+        <% scale_source = book || scorer %>
+        <% if scale_source && scale.present? %>
+          <% scale_source_link = book ? link_to(scale_source.name, book_path(book)) : link_to(scale_source.name, edit_scorer_path(scorer)) %>
           <div class="mb-3">
             <div data-ai-judge-form-target="criteriaTable" style="display:<%= provider&.scale_as_criteria? ? 'block' : 'none' %>">
-              <h6>Criteria sent with the question — from <%= link_to book.name, book_path(book) %>'s scale</h6>
+              <h6>Criteria sent with the question — from <%= scale_source_link %>'s scale</h6>
               <table class="table table-sm table-borderless small w-auto"><tbody>
                 <% scale.values.zip(scale.criteria).each_with_index do |(value, criterion), level| %>
                   <tr><td>level <%= level %> → rating <strong><%= value %></strong></td><td><%= criterion %></td></tr>
@@ -61,15 +65,41 @@
               </tbody></table>
             </div>
             <div data-ai-judge-form-target="criteriaProse" style="display:<%= provider&.scale_as_criteria? ? 'none' : 'block' %>">
-              <h6>Rating scale added to the prompt — from <%= link_to book.name, book_path(book) %>'s scale</h6>
+              <h6>Rating scale added to the prompt — from <%= scale_source_link %>'s scale</h6>
               <p class="small"><%= scale.describe %></p>
             </div>
           </div>
         <% end %>
-        <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= provider&.needs_scale? && scale.empty? ? 'block' : 'none' %>">
-          This provider rates against a book's scale. Open this judge from a book with a scale on its Judgement Stats page (Refine Prompt).
+        <% missing_scale = provider&.needs_scale? && scale.empty? %>
+        <%# With a book, the scale always comes from the book and there's no picker
+            below to keep showing - only worth a mention while nothing is set yet.
+            With a manually-picked scorer, keep this visible even once a scale is
+            set so the dropdown stays available to switch to a different one. %>
+        <% show_scale_notice = book ? missing_scale : provider&.needs_scale? %>
+        <div class="form-text" data-ai-judge-form-target="needsScaleNotice" style="display:<%= show_scale_notice ? 'block' : 'none' %>">
+          <%= scale.present? ? 'Change the rating scale:' : 'This provider rates against a scale:' %>
+          <% if !book && scale.empty? %>
+            Pick one below to test with, or open this judge from a book's Judgement Stats page (Refine Prompt) to use its scale.
+          <% end %>
+          <% unless book %>
+            <%# A plain GET select, navigated via onchange reading each option's own
+                data-url - NOT a <form>, since this whole partial already renders
+                inside the page's outer judge-save form_with and nested <form>s are
+                invalid HTML (the browser discards the inner one, so a would-be
+                form.submit() here actually POSTs the OUTER save form instead -
+                silently creating/saving a judge just from picking a scale). %>
+            <% picker_path = ai_judge.persisted? ? edit_ai_judge_path(ai_judge) : new_ai_judge_path %>
+            <div class="mt-2" style="max-width: 320px;">
+              <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
+                <option value="">Select a rating scale...</option>
+                <% scorer_options_for_select(current_user).each do |label, id| %>
+                  <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if scorer_id.to_s == id.to_s %>><%= label %></option>
+                <% end %>
+              </select>
+            </div>
+          <% end %>
         </div>
-        <button type="button" class="btn btn-primary" <% if provider&.needs_scale? && scale.empty? %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
+        <button type="button" class="btn btn-primary" <% if missing_scale %>disabled<% end %> data-ai-judge-form-target="runPromptButton" data-ai-judge-wizard-target="runPromptButton" data-action="click->ai-judge-wizard#runPrompt">Run Prompt</button>
 
         <div data-ai-judge-wizard-target="loadingSpinner" style="display: none;" class="text-center my-4">
           <div class="spinner-border text-primary" role="status">
