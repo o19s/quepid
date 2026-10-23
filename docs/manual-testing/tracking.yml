@@ -416,7 +416,7 @@ parts:
           query-reloaded: "4.2/query-reloaded"
           query-added: "4.2/query-added"
           add-query-ready: "4.2/add-query-ready"
-        last_run: 2026-10-17T13:43:42Z
+        last_run: 2026-10-23T10:28:33Z
         result: pass
         notes: "Legacy vs Current replay: Add query disabled for blank/whitespace, Enter submits, box clears, duplicate text adds nothing and flashes \"Query added successfully.\". Not covered: static-engine \"Adding queries is not supported\"."
         paths: ["app/views/core/_queries.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_model.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/controllers/add_query_controller.js", "app/javascript/controllers/query_lifecycle_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/query_state.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "app/models/query.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/query_lifecycle_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/javascript/utils/query_state.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/assets/stylesheets/animation.css", "app/assets/stylesheets/navbar-brand.css"]
@@ -436,9 +436,9 @@ parts:
           query-moved: "4.4/query-moved"
           move-query-selected: "4.4/move-query-selected"
           move-query-form: "4.4/move-query-form"
-        last_run: 2026-10-17T13:59:39Z
+        last_run: 2026-10-23T11:04:16Z
         result: pass
-        notes: "Legacy vs Current replay with a disposable target case: the picker lists cases, choosing one shows \"Move to <name>\", Move puts the query on the target and flashes \"Query moved successfully!\". Not covered: empty list, load failure."
+        notes: "Partial styling check on Current :3000 case 10/try 1: opened Move Query, loaded destination cases, inspected before/after hover and idle screenshots. Cancel now uses btn-outline-secondary, with settled hover background rgb(108,117,125) and white text matching core Close buttons. Clicking Cancel dismisses and leaves star wars in its original case. Refreshed Current move-query-form. Deferred: selecting/submitting a move, persistence, failures and empty state. Native visual-suite blockers from the prior button batch remain: missing static fixture and unrelated Book form baseline drift; suite not repeated for this template-only class change."
         paths: ["app/controllers/query_doc_pairs_controller.rb", "app/models/query.rb", "app/views/shared/_move_query_core_modal.html.erb", "app/javascript/controllers/move_query_core_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_lifecycle.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/stores/query_collection_store.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "test/javascript/controllers/move_query_core_controller.test.js", "test/javascript/utils/query_lifecycle.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/bs_modal.js", "app/models/concerns/text_search.rb", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/controllers/status_message_behavior.js"]
       "4.5":
         title: "Set per-query options (Query Options)"
@@ -569,9 +569,9 @@ parts:
           delete-cancelled: "4.15/delete-cancelled"
           query-copied: "4.15/query-copied"
           query-actions: "4.15/query-actions"
-        last_run: 2026-10-17T13:43:42Z
+        last_run: 2026-10-23T11:20:22Z
         result: pass
-        notes: "Legacy vs Current replay: Copy query puts the raw query text on the clipboard; Delete Query asks \"Are you absolutely sure you want to delete?\" (native confirm on Legacy, shared Confirm modal on Current) and removes only that query. Not covered: Cancel/Escape focus return, deletion with ratings."
+        notes: "Latest shared-template recheck: Delete Query still renders Confirm then outlined Cancel and cancels without deleting. Partial styling verification on Current :3000 case 10/try 1: latest recheck confirms Confirm is left of Cancel in both DOM and screen order; inspected refreshed screenshot and cancelled without removing star wars. Earlier hover/focus coverage: inspected before/after Cancel screenshots and keyboard-focus capture; Cancel now uses btn-outline-secondary. Its settled hover background/border rgb(108,117,125) and white text match the Missing Documents Close button. Clicking Cancel dismisses without deleting either existing query. Current delete-confirm refreshed; hover/focus and intermediate Confirm-focus images retained in Archive. Focus after Cancel landed on body, so launcher focus return remains unresolved; no focus behavior was changed. Deferred: copy, actual deletion/persistence and Escape. Native visual run: setup/admin pass; three core tests blocked by missing static fixture (default case 219), Rails book form differs due to existing on-call-judge help text. No baselines updated."
         paths: ["app/javascript/controllers/query_command_bridge_controller.js", "app/models/query.rb", "app/views/core/_query_list_templates.html.erb", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/controllers/query_delete_controller.js", "app/javascript/utils/confirm_dialog.js", "app/javascript/controllers/confirm_dialog_controller.js", "app/views/shared/_confirm_modal.html.erb", "app/javascript/controllers/search_results_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/stores/query_collection_store.js", "app/javascript/stores/query_documents_store.js", "app/javascript/utils/clipboard.js", "config/importmap.rb", "test/javascript/controllers/queries_list_controller.test.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "app/javascript/utils/query_runtime.js"]
       "4.16":
         title: "Query Notes & Information Need"
@@ -2094,13 +2094,16 @@ parts:
       "16.4":
         title: "Modal accessibility spot-check"
         screenshots:
+          shared-confirm-delete: "16.4/shared-confirm-delete"
+          shared-confirm-archive: "16.4/shared-confirm-archive"
+          shared-shell-share: "16.4/shared-shell-share"
           keyboard-modal: "16.4/keyboard-modal"
           nested-escape: "16.4/nested-escape"
           nested-backdrop: "16.4/nested-backdrop"
-        last_run: 2026-10-20T20:37:05Z
+        last_run: 2026-10-23T11:20:22Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: Export dialog labelled, snapshot selects have associated labels/API snapshot aria-label; after opening transition16Tabs remain trapped; settled Escape closes/backdrop0/body unlocked/focus Export restored. Escape during opening also fully clears after combined transitions(~1.5s). Not covered live: axe scanner/other modals/nested Matches/keyboard:false matrix or diff-baseline/Legacy comparison."
-        paths: ["app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts", "app/views/shared/_export_case_core_modal.html.erb", "app/views/core/_diff_modal.html.erb", "app/views/core/_snapshot_selection_template.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/status_message_behavior.js"]
+        notes: "Partial shared-button check on Current :3000: inspected screenshots of core case 10 Delete Query, Rails book 1 Delete Book and Archive confirmations, and Books Share modal. Confirm precedes Cancel in DOM and visual order; Cancel hover is rgb(108,117,125) with white text on both surfaces. Cancel dismissed delete/share; Escape dismissed Archive, book retained. No confirmation accepted and no fixtures created. Existing 14 confirm-dialog unit tests pass, including primary styling and accept/decline behavior. Deferred: other callers, keyboard focus cycle, primary-style browser example and mutation paths. Native visual suite: 2 pass, 4 fail (three missing static-case fixture checks; existing Book form help-text mismatch); no baselines updated. Historical parity not claimed for this user-chosen shared presentation."
+        paths: ["app/views/shared/_confirm_modal.html.erb", "app/views/shared/_modal_shell.html.erb", "app/javascript/controllers/confirm_dialog_controller.js", "app/javascript/utils/confirm_dialog.js", "app/javascript/application.js", "app/javascript/utils/bs_modal.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/controllers/query_explain_controller.js", "test/playwright/modal_a11y.spec.ts", "app/views/shared/_export_case_core_modal.html.erb", "app/views/core/_diff_modal.html.erb", "app/views/core/_snapshot_selection_template.html.erb", "app/views/shared/_judgements_core_modal.html.erb", "app/javascript/controllers/diff_core_controller.js", "app/javascript/controllers/status_message_behavior.js"]
       "16.5":
         title: "General visual sanity sweep after any CSS/JS change"
         screenshots:

@@ -12,7 +12,7 @@
       title        - modal title text
       body         - captured .modal-body content
       footer       - captured .modal-footer content, rendered before the dismiss button (default: none)
-      cancel_class - Bootstrap button class for the automatic Cancel button (default: "btn-secondary")
+      cancel_class - Bootstrap button class for the automatic Cancel button (default: "btn-outline-secondary")
       dialog_class - extra classes for .modal-dialog, e.g. "modal-lg" (default: none)
       modal_class  - extra classes for the outer .modal (alongside "modal fade")
       data         - data attributes for the outer .modal div, e.g. { controller: "share-book" }
@@ -27,7 +27,7 @@
 <% modal_class ||= "" %>
 <% data ||= {} %>
 <% title_data ||= {} %>
-<% cancel_class ||= "btn-secondary" %>
+<% cancel_class ||= "btn-outline-secondary" %>
 <% title_tag ||= :h5 %>
 <% title_class ||= "" %>
 <% close_class ||= "btn-close" %>

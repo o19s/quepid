@@ -49,7 +49,7 @@ Before testing individual features, get oriented:
 
 - [ ] **Steps:**
   1. Expand a query row, click **Move Query**.
-  2. In the "Move Query to Another Case" modal, click a target case from the list.
+  2. In the "Move Query to Another Case" modal, confirm Cancel uses the same hover highlight as other core modal Close buttons, then click a target case from the list.
   3. Confirm the footer button updates to "Move to {case name}", click it.
 - **Expected:** The query (with its ratings/history) is transferred to the target case and removed from the current one.
 - **Edge cases:**
@@ -194,7 +194,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
   3. Click **Delete Query**.
   4. Confirm the shared **Confirm** modal opens reading "Are you absolutely sure you want to delete?" with a red **Confirm** button — click **Confirm**.
   5. Confirm the query is removed from the list and the case rescopes/rescoes without it.
-  6. Repeat but click **Cancel** (or press Escape) on the confirm modal instead; confirm keyboard focus returns to **Delete Query**.
+  6. Repeat but click **Cancel** (or press Escape) on the confirm modal instead; confirm keyboard focus returns to **Delete Query**. Confirm appears to the left of Cancel. Cancel uses the same outline, hover highlight and keyboard focus styling as other core modal **Close** buttons.
 - **Expected:** Copy always copies the raw query text. Delete Query removes only that single query (and, per the case model, its ratings/history) — this is a *different, narrower* action than the case-wide "Delete All Queries" option covered in Part 6.4. Cancelling the confirm dialog leaves the query untouched.
 - **Edge cases:**
   - [ ] Delete a query that has ratings/annotations tied to it and confirm the case score recalculates correctly afterward.

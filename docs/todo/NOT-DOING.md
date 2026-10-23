@@ -2,6 +2,10 @@
 
 Deliberate decisions to leave something as it is, with the reasoning, so they are not re-raised as defects. Delete an entry if the reasoning stops holding, or move it back to [todo.md](todo.md) when it is prioritized.
 
+## Shared modal buttons
+
+By user choice, core and management confirmation dialogs use Confirm then Cancel, and shared modal shells use outlined dismiss buttons. Preserve action-specific labels, confirmation colors and behavior. This shared presentation replaces surface-specific button order and Cancel styling.
+
 ## Missing Documents summary separator whitespace
 
 By user choice, the searched-results summary removes whitespace around `&` separators in the italic query text. Preserve spaces within values such as `star wars` and leave submitted query parameters unchanged. This intentionally departs from Legacy's verbatim query display.
