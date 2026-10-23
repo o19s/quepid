@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class JavascriptScorerTest < ActiveSupport::TestCase
+  cover 'JavascriptScorer*'
+
   let(:score_data) do
     {
       all_rated:  true,

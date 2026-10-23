@@ -181,6 +181,18 @@ describe("targeted search adapter", () => {
     }
   })
 
+  it("keeps the previous list when the rated-document lookup fails so reset can be retried", async () => {
+    const failure = new Error("aborted")
+    const { adapter, searcher } = buildAdapter({ searcher: { explainOther: vi.fn(() => Promise.reject(failure)) } })
+    const before = { docs: [{ id: "doc9" }], lastQuery: "q=id:doc9", numFound: 1, totalRatings: 4, ratedDocsLookupUnsupported: false, searcher: null }
+    Object.assign(adapter, before, { defaultList: false })
+
+    await expect(adapter.resetToRated()).rejects.toBe(failure)
+
+    expect(searcher.explainOther).toHaveBeenCalled()
+    expect(adapter).toMatchObject({ ...before, defaultList: false, parseError: false })
+  })
+
   it("shows rated counts without searching when the engine can't look up rated docs", async () => {
     const unsupported = buildAdapter({ query: { ratings: { doc1: 1 } }, supportsRatedDocsLookup: vi.fn(() => false) })
     await unsupported.adapter.resetToRated()

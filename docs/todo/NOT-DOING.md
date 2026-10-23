@@ -10,6 +10,10 @@ By user choice, retain the shared `supports_direct_document_lookup` capability b
 
 By user choice, the detailed document modal uses Formatted and All Fields (JSON) tabs, defaulting to Formatted on each open. Its heading includes the actual query in italics instead of a separate document-title line; the external-document button names the configured engine when known. The JSON tab uses the same syntax-colored, expandable explorer as query document fields, replacing the plain preformatted raw JSON display and append-below toggle. Main-detail array fields render as comma-separated strings to match the user-provided staging overview/cast example; nested objects retain their existing explorer.
 
+## Unrated rating trigger shows `--`
+
+By user choice, an unrated document's rating trigger shows `--` rather than the word "Unrated". Its accessible name stays "Rate document: Unrated" (or "Score all documents: Unrated" for Score All), so screen readers still get the state. This replaces the visible "Unrated" label added for color-independence in `7c304651`; the separate **Unrated** score-state text on query and case scores is unchanged.
+
 ## Shared modal buttons
 
 By user choice, core and management confirmation dialogs use Confirm then Cancel, and shared modal shells use outlined dismiss buttons. Preserve action-specific labels, confirmation colors and behavior. This shared presentation replaces surface-specific button order and Cancel styling.

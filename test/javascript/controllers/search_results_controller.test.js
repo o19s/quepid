@@ -215,6 +215,19 @@ describe("SearchResultsController", () => {
     expect(controller.scoreAllTarget.querySelector(".btn").textContent).toContain("3")
   })
 
+  it("names Score All for the whole query and keeps focus on it after it is rebuilt", () => {
+    const { controller, snapshot } = controllerFor()
+    document.body.appendChild(controller.element)
+    controller.render()
+    controller.scoreAllTarget.querySelector("button").focus()
+    expect(document.activeElement.getAttribute("aria-label")).toBe("Score all documents: 2")
+
+    snapshot.queryRating = undefined
+    controller.render()
+
+    expect(document.activeElement.getAttribute("aria-label")).toBe("Score all documents: Unrated")
+  })
+
   describe("keyed result rows", () => {
     const results = controller => [...controller.resultsTarget.children]
 

@@ -3,6 +3,9 @@
 require 'test_helper'
 
 class JudgementSyncTest < ActiveSupport::TestCase
+  cover 'JudgementSync*'
+  cover 'RatingsImporter*'
+
   setup do
     @pair = books(:james_bond_movies).query_doc_pairs.create!(query_text: 'sync verification', doc_id: 'sync-doc')
   end
@@ -77,5 +80,99 @@ class JudgementSyncTest < ActiveSupport::TestCase
     assert_no_enqueued_jobs only: JudgementFromRatingJob do
       perform_enqueued_jobs only: UpdateCaseRatingsJob
     end
+  end
+
+  # Exact-argument checks: assert_enqueued_with passes when any enqueued job matches, which
+  # lets a mutant that skips batching (or mangles the arguments) survive.
+  test 'changed outside a batch enqueues one sync job for exactly that pair' do
+    JudgementSync.changed(@pair.id)
+
+    assert_equal [ [ [ @pair.id ] ] ], enqueued_args(UpdateCaseRatingsJob)
+  end
+
+  test 'changed inside a batch defers one sync job with the unique pair ids' do
+    other_pair = @pair.book.query_doc_pairs.create!(query_text: 'sync verification', doc_id: 'other-doc')
+
+    JudgementSync.batch do
+      JudgementSync.changed(@pair.id)
+      JudgementSync.changed(other_pair.id)
+      JudgementSync.changed(@pair.id)
+      assert_empty enqueued_args(UpdateCaseRatingsJob)
+    end
+
+    assert_equal [ [ [ @pair.id, other_pair.id ] ] ], enqueued_args(UpdateCaseRatingsJob)
+  end
+
+  test 'an empty batch enqueues nothing and clears its state' do
+    result = JudgementSync.batch { :block_value }
+
+    assert_equal :block_value, result
+    assert_empty enqueued_args(UpdateCaseRatingsJob)
+    assert_empty enqueued_args(BroadcastJudgeActivityJob)
+    assert_nil ActiveSupport::IsolatedExecutionState[JudgementSync::KEY]
+    assert_nil ActiveSupport::IsolatedExecutionState[JudgementSync::ACTIVITY_KEY]
+  end
+
+  test 'a nested batch joins the outer batch and returns its block value' do
+    inner_result = nil
+    JudgementSync.batch do
+      JudgementSync.changed(@pair.id)
+      inner_result = JudgementSync.batch do
+        JudgementSync.changed(@pair.id + 1)
+        :inner_value
+      end
+      assert_equal :inner_value, inner_result
+      assert_empty enqueued_args(UpdateCaseRatingsJob)
+      assert_not_nil ActiveSupport::IsolatedExecutionState[JudgementSync::KEY]
+      JudgementSync.changed(@pair.id + 2)
+    end
+
+    assert_equal [ [ [ @pair.id, @pair.id + 1, @pair.id + 2 ] ] ], enqueued_args(UpdateCaseRatingsJob)
+    assert_nil ActiveSupport::IsolatedExecutionState[JudgementSync::KEY]
+  end
+
+  test 'activity outside a batch broadcasts that book and judge immediately' do
+    JudgementSync.activity(@pair.book, users(:doug))
+
+    assert_equal [ [ @pair.book, users(:doug) ] ], enqueued_args(BroadcastJudgeActivityJob)
+  end
+
+  test 'a batch broadcasts one activity per distinct book and judge with those arguments' do
+    other_book = books(:book_of_comedy_films)
+    doug = users(:doug)
+    random = users(:random)
+
+    JudgementSync.batch do
+      JudgementSync.activity(@pair.book, doug)
+      JudgementSync.activity(@pair.book, doug)
+      JudgementSync.activity(@pair.book, random)
+      JudgementSync.activity(other_book, doug)
+      assert_empty enqueued_args(BroadcastJudgeActivityJob)
+    end
+
+    assert_equal [ [ @pair.book, doug ], [ @pair.book, random ], [ other_book, doug ] ],
+                 enqueued_args(BroadcastJudgeActivityJob)
+  end
+
+  test 'from_ratings enqueues the user and the unique non-nil rating ids' do
+    ratings = [ Struct.new(:id).new(3), Struct.new(:id).new(nil), Struct.new(:id).new(3), Struct.new(:id).new(5) ]
+    JudgementSync.from_ratings(users(:doug), ratings)
+
+    assert_equal [ [ users(:doug), [ 3, 5 ] ] ], enqueued_args(JudgementFromRatingJob)
+  end
+
+  test 'from_ratings enqueues nothing without a user or without saved ratings' do
+    JudgementSync.from_ratings(nil, [ Struct.new(:id).new(1) ])
+    JudgementSync.from_ratings(users(:doug), [])
+    JudgementSync.from_ratings(users(:doug), [ Struct.new(:id).new(nil) ])
+
+    assert_empty enqueued_args(JudgementFromRatingJob)
+  end
+
+  private
+
+  def enqueued_args job_class
+    queue_adapter.enqueued_jobs.select { |job| job['job_class'] == job_class.name }
+      .map { |job| ActiveJob::Arguments.deserialize(job['arguments']) }
   end
 end

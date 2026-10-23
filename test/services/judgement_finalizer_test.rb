@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class JudgementFinalizerTest < ActiveSupport::TestCase
+  cover 'JudgementFinalizer*'
+
   let(:book) { books(:james_bond_movies) } # scale 0,1
   let(:judge) { users(:judge_judy) }
   let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
@@ -28,6 +30,23 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
 
     assert_predicate judgement, :unrateable
     assert_nil judgement.rating
+  end
+
+  test 'a missing rating is not annotated as out of scale' do
+    judgement = judgement_with(nil)
+
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
+
+    assert_equal 'Because.', judgement.explanation
+  end
+
+  test 'a missing rating is unrateable even when there is no scale' do
+    judgement = judgement_with(nil)
+
+    JudgementFinalizer.call(judgement)
+
+    assert_predicate judgement, :unrateable
+    assert_equal 'Because.', judgement.explanation
   end
 
   test 'a rating outside this book\'s scale is unrateable, with the raw value kept for review' do

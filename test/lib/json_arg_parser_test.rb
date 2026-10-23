@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class JsonArgParserTest < ActiveSupport::TestCase
+  cover 'JsonArgParser*'
+
   test 'parses nil value' do
     params = nil
     result = JsonArgParser.parse(params)
@@ -55,5 +57,39 @@ class JsonArgParserTest < ActiveSupport::TestCase
     result  = JsonArgParser.parse(params, vars)
 
     assert_equal '42', result['foo']
+  end
+
+  test 'strips escaped newline and carriage return sequences' do
+    params = '{ "foo": "a\nb\rc" }'
+    result = JsonArgParser.parse(params)
+
+    assert_equal 'abc', result['foo']
+  end
+
+  test 'strips every escaped newline and carriage return sequence' do
+    params = '{ "foo": "a\n\nb\r\rc\nd\re" }'
+    result = JsonArgParser.parse(params)
+
+    assert_equal 'abcde', result['foo']
+  end
+
+  test 'preserves every % when curator vars are interpolated' do
+    params = '{ "foo": "##var1##", "bar": "50% off, 100% sure" }'
+    result = JsonArgParser.parse(params, { var1: 1 })
+
+    assert_equal '1', result['foo']
+    assert_equal '50% off, 100% sure', result['bar']
+  end
+
+  test 'leaves a literal %% alone when no curator var matches' do
+    params = '{ "bar": "100%%" }'
+    result = JsonArgParser.parse(params, { var1: 1 })
+
+    assert_equal '100%%', result['bar']
+  end
+
+  test 'returns nil for invalid JSON' do
+    assert_nil JsonArgParser.parse('{ "foo": ')
+    assert_nil JsonArgParser.parse('not json', { var1: 1 })
   end
 end

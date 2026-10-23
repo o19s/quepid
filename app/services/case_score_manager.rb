@@ -36,16 +36,8 @@ class CaseScoreManager
     end
 
     @score = @the_case.scores.build score_data.except(:try_number)
-    saved = @score.save
-    if saved
-      # for some reason the scorer isn't doing the :touch on the parent case
-      @the_case.touch
-      return @score
-    end
-    # rubocop:enable Rails/SkipsModelValidations
-
-    @errors = @score.errors
-    raise ActiveRecord::RecordInvalid, @score
+    @score.save!
+    @score
   end
 
   private
@@ -108,9 +100,6 @@ class CaseScoreManager
   end
 
   def added_query? last_score, score_data
-    return true  if last_score.nil? && !score_data.empty?
-    return false if last_score.nil? && score_data.empty?
-    return false if queries_empty?(last_score.queries) && queries_empty?(score_data[:queries])
     return false if queries_empty?(last_score.queries)
     return true if queries_empty?(score_data[:queries])
 

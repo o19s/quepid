@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class RatingsImporterTest < ActiveSupport::TestCase
+  cover 'RatingsManager*'
+
   let(:user)                  { users(:random_1) }
   let(:case_with_ratings)     { cases(:random_case) }
   let(:case_without_ratings)  { cases(:random_case_1) }

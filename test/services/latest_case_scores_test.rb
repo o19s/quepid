@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class LatestCaseScoresTest < ActiveSupport::TestCase
+  cover 'LatestCaseScores*'
+
   test 'long histories load only the latest score with timestamp and id tie breakers' do
     first = users(:doug).cases.create!(case_name: 'Long score history')
     second = users(:doug).cases.create!(case_name: 'Other score history')

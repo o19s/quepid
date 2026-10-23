@@ -79,7 +79,7 @@ Before testing individual features, get oriented:
   3. Click a rating-scale value.
   4. Reload the page and confirm it persisted.
   5. Reopen the popover and click **RESET**.
-- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the visible **Unrated** state. Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
+- **Expected:** Rating saves immediately, updates the badge color/value, and rolls into the query and case score. RESET clears the rating back to the unrated `--` badge (screen readers announce "Rate document: Unrated"). Rating triggers, scale values and RESET are buttons usable with Enter/Space; numeric values (and enabled scale labels) identify ratings without color.
 - **Edge cases:**
   - [ ] Rate a document that can't be uniquely identified (missing/duplicate doc id) — confirm the "This document can't be uniquely identified..." banner appears instead of a rating control.
   - [ ] Rate documents until you reach the scorer's "depth of rating" cutoff — confirm the "Results above are counted in scoring" note appears at the right rank.

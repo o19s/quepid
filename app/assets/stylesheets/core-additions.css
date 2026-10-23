@@ -615,6 +615,12 @@ footer {
   margin: 20px 0;
 }
 
+/* Keep case flashes above the modal backdrop (1050) and below dialogs (1055).
+ * The shared overlay presentation lives in base.css. */
+#flash-messages {
+  z-index: 1051;
+}
+
 /*
 	Flash — Stimulus `flash` controller (app/javascript/controllers/flash_controller.js)
 	toggles "show alert" on class="flash fade" (markup in views/core/index.html.erb).

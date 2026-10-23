@@ -347,7 +347,9 @@ export default class extends Controller {
     const version = JSON.stringify([rating, snapshot.ratingScale || {}])
     if (slot.dataset.version === version) return
     slot.dataset.version = version
-    slot.replaceChildren(createRatingControl(rating, snapshot.ratingScale || {}))
+    const ratingFocused = slot.contains(document.activeElement)
+    slot.replaceChildren(createRatingControl(rating, snapshot.ratingScale || {}, { scoreAll: true }))
+    if (ratingFocused) slot.querySelector("button")?.focus()
   }
 
   handleQueryToggle(event) {

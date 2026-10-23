@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class V8MapperExecutorTest < ActiveSupport::TestCase
+  cover 'V8MapperExecutor*'
+
   let(:v8_executor) do
     V8MapperExecutor.new(Rails.root.join('lib/mapper_code_logic.js'))
   end

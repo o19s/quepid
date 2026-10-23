@@ -3,10 +3,12 @@ import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import DiffCoreController from "controllers/diff_core_controller"
 import CoreModalControllerBase from "controllers/core_modal_controller_base"
+import coreFlash from "utils/core_flash"
 
 const { apiFetch } = vi.hoisted(() => ({ apiFetch: vi.fn() }))
 
 vi.mock("api/fetch", () => ({ apiFetch }))
+vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 
 let showStatusMessage
 
@@ -300,6 +302,38 @@ describe("DiffCoreController", () => {
     expect(controller.snapshots.map(snapshot => snapshot.id)).toEqual([2, 3])
     expect(controller.closeModal).not.toHaveBeenCalled()
     expect(controller.updateButtonTarget.disabled).toBe(false)
+  })
+
+  it.each([
+    ["one applied snapshot", (c) => c.update(), "Snapshot loaded successfully for comparison."],
+    ["two applied snapshots", (c) => { c.selectionValues = ["2", "3"]; return c.update() }, "Snapshots loaded successfully for comparison."],
+    ["a cleared comparison", (c) => c.clear(), "Comparison view has been cleared."],
+    ["an empty selection", (c) => { c.selectionValues = [""]; return c.update() }, "Comparison view has been cleared."],
+    ["a deleted snapshot", (c) => { c.deleteId = "2"; return c.confirmDelete({ preventDefault: vi.fn() }) }, "Snapshot deleted successfully."]
+  ])("flashes success for %s, as the Angular picker did", async (_label, act, message) => {
+    const controller = buildController()
+    controller.closeModal = vi.fn()
+
+    await act(controller)
+
+    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("success", message)
+  })
+
+  it("clears a failed delete's alert when the retry succeeds", async () => {
+    const bridge = buildBridge()
+    bridge.delete.mockRejectedValueOnce(new Error("bridge failed"))
+    const controller = buildController(bridge)
+    vi.spyOn(console, "error").mockImplementation(() => {})
+
+    controller.deleteId = "2"
+    await controller.confirmDelete({ preventDefault: vi.fn() })
+    expect(alertMessages()).toEqual(["Could not delete snapshot."])
+    expect(coreFlash.show).not.toHaveBeenCalled()
+
+    await controller.confirmDelete({ preventDefault: vi.fn() })
+
+    expect(showStatusMessage.mock.lastCall[1]).toEqual({ message: "", className: "alert d-none" })
+    expect(coreFlash.show).toHaveBeenCalledExactlyOnceWith("success", "Snapshot deleted successfully.")
   })
 
   it("keeps the buttons disabled while the bridge is working", async () => {

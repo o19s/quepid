@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class BookCombinerTest < ActiveSupport::TestCase
+  cover 'BookCombiner*'
+
   setup do
     @user = users(:random)
     @target = Book.create!(name: 'Target', scale: [ 0, 1 ], support_implicit_judgements: true)

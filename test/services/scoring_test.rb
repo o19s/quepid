@@ -4,6 +4,8 @@ require 'test_helper'
 require 'javascript_scorer'
 
 class ScoringTest < ActiveSupport::TestCase
+  cover 'JavascriptScorer*'
+
   describe 'Samples' do
     let(:asnapshot) { snapshots(:a_snapshot) }
 

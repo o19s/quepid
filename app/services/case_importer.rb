@@ -36,11 +36,10 @@ class CaseImporter
       attach_search_endpoint
       update_first_try
 
+      raise ActiveRecord::Rollback unless @case.save
+
+      arrange_imported_queries
       import_succeeded = @case.save
-      if import_succeeded
-        arrange_imported_queries
-        import_succeeded = @case.save
-      end
       raise ActiveRecord::Rollback unless import_succeeded
     end
 
