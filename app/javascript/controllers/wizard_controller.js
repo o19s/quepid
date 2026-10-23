@@ -1,3 +1,4 @@
+import TomSelect from "tom-select"
 import { endpointSettings, formatEndpointHeaders } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { getOrCreateBsModal } from "utils/bs_modal"
@@ -37,7 +38,7 @@ export default class extends Controller {
     "mapperEngines", "queryPattern",
     "tlsWarning", "tlsProtocol", "endpointContinue", "loading", "pingButton", "urlFormat",
     "selectedEndpointUrl", "selectedEndpointMethod", "mapperMessage", "engineName", "endpointLink",
-    "wikiLink", "curlAuth", "solrConfigUrl", "fieldSuggestions", "searchFieldList", "idFieldList",
+    "wikiLink", "curlAuth", "solrConfigUrl",
     "engineOption", "engineTileTemplate", "headerType",
     "staticAlert", "staticContent", "staticImportButton", "staticStatus",
     "createPanel", "existingPanel"
@@ -68,6 +69,10 @@ export default class extends Controller {
 
   disconnect() {
     this.connected = false
+    this.fieldSelects?.forEach((select) => select.destroy())
+    this.fieldSelects = null
+    this.additionalFieldSelect?.destroy()
+    this.additionalFieldSelect = null
   }
 
   async loadWizard() {
@@ -608,8 +613,7 @@ export default class extends Controller {
       chrome: /Chrome/.test(window.navigator.userAgent),
       wiki: Boolean(this.troubleshootingWikiUrl()),
       idle: !this.validating,
-      validating: Boolean(this.validating),
-      "field-suggestions": this.fieldSuggestions().length > 0
+      validating: Boolean(this.validating)
     }
   }
 
@@ -685,23 +689,75 @@ export default class extends Controller {
   }
 
   renderFieldChoices() {
-    const key = JSON.stringify([this.searchFields, this.idFields])
-    if (key !== this.renderedFieldsKey) {
-      this.renderedFieldsKey = key
-      const options = (fields) => fields.map((field) => Object.assign(document.createElement("option"), { value: field }))
-      if (this.hasSearchFieldListTarget) this.searchFieldListTarget.replaceChildren(...options(this.searchFields))
-      if (this.hasIdFieldListTarget) this.idFieldListTarget.replaceChildren(...options(this.idFields.length ? this.idFields : this.searchFields))
+    if (this.loaded && this.stepIndex === 3 && this.hasTitleFieldTarget && this.hasIdFieldTarget && !this.fieldSelects) {
+      this.fieldSelects = ["titleField", "idField"].map((field) => {
+        const input = this[`${field}Target`]
+        return new TomSelect(input, {
+          maxItems: 1,
+          refreshThrottle: 0,
+          create: true,
+          createOnBlur: true,
+          persist: false,
+          selectOnTab: true,
+          onChange: (value) => {
+            this.settings[field] = value
+            this.fieldsEdited = true
+          },
+          onType: (value) => {
+            if (!value) return
+            this.settings[field] = value
+            this.fieldsEdited = true
+          }
+        })
+      })
     }
-    if (!this.hasFieldSuggestionsTarget) return
-    this.fieldSuggestionsTarget.replaceChildren(...this.fieldSuggestions().map((field) => {
-      const button = document.createElement("button")
-      button.type = "button"
-      button.className = "btn btn-sm btn-outline-secondary"
-      button.textContent = field
-      button.dataset.action = "wizard#addDisplayField"
-      button.dataset.wizardFieldParam = field
-      return button
-    }))
+    this.fieldSelects?.forEach((select, index) => {
+      const fields = index === 0 || !this.idFields.length ? this.searchFields : this.idFields
+      const key = JSON.stringify(fields)
+      if (select.wizardFieldsKey !== key) {
+        select.wizardFieldsKey = key
+        select.clearOptions()
+        select.addOptions(fields.map((value) => ({ value, text: value })))
+      }
+      const value = this.settings[index === 0 ? "titleField" : "idField"] || ""
+      if (select.getValue() !== value && !select.isFocused) {
+        if (value) select.addOption({ value, text: value })
+        select.setValue(value, true)
+      }
+    })
+    this.renderAdditionalFieldChoices()
+  }
+
+  renderAdditionalFieldChoices() {
+    if (!this.hasAdditionalFieldsTarget || !this.loaded || this.stepIndex !== 3) return
+    if (!this.additionalFieldSelect) {
+      this.additionalFieldsTarget.value = ""
+      this.additionalFieldSelect = new TomSelect(this.additionalFieldsTarget, {
+        plugins: ["remove_button"],
+        hideSelected: true,
+        maxItems: null,
+        refreshThrottle: 0,
+        create: true,
+        createOnBlur: true,
+        persist: false,
+        selectOnTab: true,
+        splitOn: /[,\s]+/,
+        onChange: (value) => {
+          this.settings.additionalFields = value ? value.split(",") : []
+          this.fieldsEdited = true
+        },
+        onType: (value) => {
+          this.fieldQuery = value
+          this.renderAdditionalFieldChoices()
+          this.additionalFieldSelect.refreshOptions(false)
+        }
+      })
+    }
+    const select = this.additionalFieldSelect
+    const values = (this.settings.additionalFields || []).map((field) => field.text ?? field)
+    select.clearOptions()
+    select.addOptions([...new Set([...this.fieldSuggestions(), ...values])].map((value) => ({ value, text: value })))
+    if (JSON.stringify(select.items) !== JSON.stringify(values)) select.setValue(values, true)
   }
 
   renderTls() {
@@ -765,10 +821,10 @@ export default class extends Controller {
     if (this.hasEndpointSelectTarget) this.endpointSelectTarget.value = String(this.settings?.searchEndpointId ?? "")
     const preset = this.settings?.searchEnginePreset || this.settings?.searchEngine || "solr"
     this.engineOptionTargets.forEach((option) => { option.checked = option.value === preset })
-    if (this.hasTitleFieldTarget) this.titleFieldTarget.value = this.settings?.titleField || ""
-    if (this.hasIdFieldTarget) this.idFieldTarget.value = this.settings?.idField || ""
+    if (this.hasTitleFieldTarget && !this.fieldSelects) this.titleFieldTarget.value = this.settings?.titleField || ""
+    if (this.hasIdFieldTarget && !this.fieldSelects) this.idFieldTarget.value = this.settings?.idField || ""
     // Leave the field list alone while it is being typed in, so a trailing separator survives.
-    if (this.hasAdditionalFieldsTarget && document.activeElement !== this.additionalFieldsTarget) {
+    if (this.hasAdditionalFieldsTarget && !this.additionalFieldSelect && document.activeElement !== this.additionalFieldsTarget) {
       this.additionalFieldsTarget.value = (this.settings?.additionalFields || []).map((field) => field.text ?? field).join(", ")
     }
     if (this.hasQueryPatternTarget) this.queryPatternTargets.forEach((target) => { target.value = this.settings?.queryParams || "" })

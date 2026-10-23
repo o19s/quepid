@@ -87,6 +87,7 @@ function buildApplicationCSS() {
 function buildCoreCSS() {
   writeBundle('core', 'Core CSS Bundle (Bootstrap 5 for the core case UI)', [
     ...BOOTSTRAP_BASE,
+    'node_modules/tom-select/dist/css/tom-select.bootstrap5.css',
     // Quepid layout, then the BS5 overrides (px sizing, popovers, header nav,
     // modals, sub-results toolbar, ...).
     `${STYLES}/core-additions.css`,

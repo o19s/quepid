@@ -319,6 +319,36 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(page.locator('[data-tune-relevance-target="staticKnobsMessage"]')).toBeVisible();
   });
 
+  test('Displayed Fields discovers candidates using the wizard smoke-test query', async ({ page }) => {
+    const endpoint = await createEndpoint(page);
+    const tryNo = await createTry(page, endpoint.id);
+    const requests: URL[] = [];
+    await page.route('http://tune.invalid/**', route => {
+      requests.push(new URL(route.request().url()));
+      return route.fulfill({
+        headers: {
+          'access-control-allow-origin': new URL(page.url()).origin,
+          'access-control-allow-credentials': 'true',
+          'access-control-allow-headers': '*'
+        },
+        json: { response: { numFound: 1, start: 0, docs: [{ id: '1', title: 'A', title_bidirect: 'B', poster_path: '/poster.jpg' }] } }
+      });
+    });
+    await gotoTry(page, tryNo, 'engineSettings');
+    const fields = page.locator('[data-tune-relevance-target="fieldSpec"]');
+    const wrapper = page.locator('[data-tune-relevance-target="fieldSpec"] + .ts-wrapper');
+    await wrapper.locator('.ts-control').click();
+    const input = wrapper.locator('input');
+    await input.fill('tit');
+    await expect(wrapper.locator('.option')).toHaveText(['title', 'title_bidirect']);
+    expect(requests.some(url => url.searchParams.get('q') === '*:*' && url.searchParams.get('fl') === '*')).toBeTruthy();
+    await expect(fields).toHaveValue('id:id,title:title');
+    await input.fill('thumb:pos');
+    await expect(wrapper.locator('.option')).toHaveText(['thumb:poster_path']);
+    await wrapper.locator('.option').click();
+    await expect(fields).toHaveValue('id:id,title:title,thumb:poster_path');
+  });
+
   test('Rerun saves a new try with the form values, which survive a reload', async ({ page }) => {
     const endpoint = await createEndpoint(page);
     const tryNo = await createTry(page, endpoint.id, { query_params: 'q=#$query##&qf=title^##titleBoost##' });
@@ -326,7 +356,15 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
     await expect(page.locator('[data-tune-relevance-target="curatorVars"] .slider-wrap')).toHaveCount(1);
     await page.locator('[data-tune-relevance-target="curatorVars"] input').fill('7');
     await tab(page, 'engineSettings').click();
-    await page.locator('[data-tune-relevance-target="fieldSpec"]').fill('id:id title:title overview');
+    const fields = page.locator('[data-tune-relevance-target="fieldSpec"] + .ts-wrapper');
+    await fields.locator('.ts-control').click();
+    const input = fields.locator('input');
+    await input.press('ControlOrMeta+a');
+    await input.press('Backspace');
+    for (const value of ['id:id', 'title:title', 'overview']) {
+      await input.fill(value);
+      await input.press('Enter');
+    }
     await page.locator('[data-tune-relevance-target="numberOfRows"]').fill('25');
     await page.locator('.dev-header[data-tune-relevance-section-param="escape"]').click();
     await page.locator('#escape-queries-checkbox').uncheck();
@@ -335,7 +373,7 @@ test.describe('drawer on a disposable case with its own endpoint', () => {
 
     await page.reload();
     await openDrawer(page, 'engineSettings');
-    await expect(page.locator('[data-tune-relevance-target="fieldSpec"]')).toHaveValue('id:id title:title overview');
+    await expect(page.locator('[data-tune-relevance-target="fieldSpec"]')).toHaveValue('id:id,title:title,overview');
     await expect(page.locator('[data-tune-relevance-target="numberOfRows"]')).toHaveValue('25');
     await page.locator('.dev-header[data-tune-relevance-section-param="escape"]').click();
     await expect(page.locator('#escape-queries-checkbox')).not.toBeChecked();

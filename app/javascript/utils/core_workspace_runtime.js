@@ -213,6 +213,7 @@ function createTuneRelevanceCapabilities(
   return {
     settings: {
       editable: () => settingsRuntime.draft(),
+      proxyUrlFor: (id) => navigationRuntime.getQuepidProxyUrl(id),
       supportsEscapeQuery: (engine) => settingsCatalog.supportsEscapeQuery(engine),
       troubleshootingWikiUrl: (...args) => settingsCatalog.troubleshootingWikiUrl(...args),
       save: (value) => settingsRuntime.save(value),
@@ -228,6 +229,8 @@ function createTuneRelevanceCapabilities(
       usesJsonQueryParams: (engine) => searchEndpointRuntime.usesJsonQueryParams(engine)
     },
     search: {
+      createValidator: (value) => splainerSearch.searchSvc.createValidator(value),
+      evaluateMapper: (code) => evaluateMapperFunctions(code || ""),
       isTemplateCall: (value) => esUrlSvc?.isTemplateCall(value)
     },
     case: {

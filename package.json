@@ -27,7 +27,8 @@
     "local-time": "^3.0.0",
     "shepherd.js": "^15.3.0",
     "sortablejs": "^1.15.6",
-    "splainer-search": "3.3.0"
+    "splainer-search": "3.3.0",
+    "tom-select": "^2.6.2"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",

@@ -305,14 +305,14 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
         <section data-wizard-target="step" hidden>
           <h2>How Should We Display Your Results?</h2>
           <label class="form-label" for="wizardTitleField">Title Field</label>
-          <input id="wizardTitleField" class="form-control" list="wizardSearchFields" autocomplete="off"
+          <input id="wizardTitleField" class="form-control" autocomplete="off"
                  placeholder="Begin typing to show suggestions"
                  data-wizard-target="titleField"
                  data-wizard-field="titleField"
                  data-action="input->wizard#updateSetting">
           <p class="form-text">What field should we treat as the 'title' when displaying results?</p>
           <label class="form-label mt-3" for="wizardIdField">ID Field</label>
-          <input id="wizardIdField" class="form-control" list="wizardIdFields" autocomplete="off"
+          <input id="wizardIdField" class="form-control" autocomplete="off"
                  placeholder="Begin typing to show suggestions"
                  data-wizard-target="idField"
                  data-wizard-field="idField"
@@ -320,16 +320,8 @@ star wars,1921,3, Star Wars: Return of the Jedi</pre>
           <p class="form-text">What field is the unique identifier for your search results?</p>
           <label class="form-label mt-3" for="wizardAdditionalFields">Additional Display Fields</label>
           <input id="wizardAdditionalFields" class="form-control" placeholder="Add a field"
-                 data-wizard-target="additionalFields"
-                 data-wizard-field="additionalFields"
-                 data-action="input->wizard#updateSetting">
-          <p class="form-text">Would any extra fields be handy to display? Separate fields with commas or spaces.</p>
-          <div data-wizard-when="field-suggestions" hidden>
-            <span class="form-text">Add a field:</span>
-            <div class="d-flex flex-wrap gap-1 mt-1" data-wizard-target="fieldSuggestions"></div>
-          </div>
-          <datalist id="wizardSearchFields" data-wizard-target="searchFieldList"></datalist>
-          <datalist id="wizardIdFields" data-wizard-target="idFieldList"></datalist>
+                 data-wizard-target="additionalFields">
+          <p class="form-text">Would any extra fields be handy to display?</p>
           <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
         </section>
         <section data-wizard-target="step" hidden>

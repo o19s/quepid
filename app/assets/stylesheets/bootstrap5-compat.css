@@ -543,3 +543,43 @@ header .dropdown-toggle .bi {
 .btn-group {
 	z-index: 10;
 }
+
+/* Selected display fields stay inside the wizard's editable multi-select. */
+.wizard-modal-window .ts-wrapper.multi .ts-control > .item,
+[data-controller~="tune-relevance"] .ts-wrapper.multi .ts-control > .item {
+  background: var(--q-brand-blue);
+  color: #fff;
+}
+
+.wizard-modal-window .ts-wrapper.multi .item .remove,
+[data-controller~="tune-relevance"] .ts-wrapper.multi .item .remove {
+  border-left-color: rgb(255 255 255 / 35%);
+}
+
+[data-controller~="tune-relevance"] .ts-wrapper.form-control {
+  background: #fff;
+  color: #212529;
+}
+
+[data-controller~="tune-relevance"] .ts-control > input {
+  color: #212529;
+}
+
+[data-controller~="tune-relevance"] .ts-control > input::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+[data-controller~="tune-relevance"] .ts-dropdown {
+  --bs-body-bg: #fff;
+  --bs-body-color: #212529;
+  --bs-secondary-color: #6c757d;
+
+  background: #fff;
+  color: #212529;
+}
+
+[data-controller~="tune-relevance"] .ts-dropdown .active {
+  background: #e9ecef;
+  color: #212529;
+}

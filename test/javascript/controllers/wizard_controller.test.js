@@ -259,6 +259,59 @@ describe("WizardController", () => {
     })
   })
 
+  describe("field dropdowns", () => {
+    it("keeps custom fields and selections across renders, updates suggestions, and cleans up", () => {
+      const controller = mount({ step: STEPS.fields, settings: { titleField: "custom_title", idField: "id" } })
+      for (const field of ["titleField", "idField"]) {
+        controller[`${field}Target`] = controller.element.appendChild(document.createElement("input"))
+        controller[`has${field[0].toUpperCase()}${field.slice(1)}Target`] = true
+      }
+      controller.searchFields = ["title", "overview"]
+      controller.idFields = ["id"]
+      controller.render()
+      const [title, id] = controller.fieldSelects
+      expect(title.getValue()).toBe("custom_title")
+      expect(id.getValue()).toBe("id")
+      title.addItem("overview")
+      expect(controller.settings.titleField).toBe("overview")
+      id.createItem("external_id")
+      expect(controller.settings.idField).toBe("external_id")
+      controller.render()
+      expect(title.getValue()).toBe("overview")
+      expect(id.getValue()).toBe("external_id")
+      controller.searchFields = ["other_title"]
+      controller.render()
+      expect(title.options.other_title).toBeDefined()
+      controller.disconnect()
+      expect(controller.element.querySelectorAll(".ts-wrapper")).toHaveLength(0)
+    })
+  })
+
+  describe("additional field multi-select", () => {
+    it("retains selected fields, adds modifier suggestions, removes fields, and cleans up", () => {
+      const controller = mount({ step: STEPS.fields, settings: { titleField: "title", idField: "id", additionalFields: ["overview", "cast"] } })
+      controller.additionalFieldsTarget = controller.element.appendChild(document.createElement("input"))
+      controller.hasAdditionalFieldsTarget = true
+      controller.additionalFieldsTarget.value = "overview, cast"
+      controller.searchFields = ["title", "id", "overview", "cast", "poster_path"]
+      controller.render()
+      const select = controller.additionalFieldSelect
+      expect(select.items).toEqual(["overview", "cast"])
+      expect(select.options[" cast"]).toBeUndefined()
+      select.settings.onType("thumb:pos")
+      expect(select.options["thumb:poster_path"]).toBeDefined()
+      select.addItem("thumb:poster_path")
+      expect(controller.settings.additionalFields).toEqual(["overview", "cast", "thumb:poster_path"])
+      select.removeItem("cast")
+      expect(controller.settings.additionalFields).toEqual(["overview", "thumb:poster_path"])
+      select.createItem("custom_field")
+      controller.render()
+      expect(select.items).toEqual(["overview", "thumb:poster_path", "custom_field"])
+      controller.disconnect()
+      expect(controller.element.querySelectorAll(".ts-wrapper")).toHaveLength(0)
+    })
+  })
+
   describe("navigation", () => {
     it("does not leave the name step without a case name", () => {
       const controller = mount({ step: STEPS.name, settings: { caseName: "   " } })

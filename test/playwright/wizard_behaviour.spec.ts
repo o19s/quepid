@@ -110,8 +110,11 @@ test.describe('Case creation wizard behaviour', () => {
   }
 
   async function chooseTitleAndId(page: Page) {
-    await page.locator('#wizardTitleField').fill('title');
-    await page.locator('#wizardIdField').fill('id');
+    for (const [id, value] of [['wizardTitleField', 'title'], ['wizardIdField', 'id']]) {
+      await page.locator(`#${id} + .ts-wrapper .ts-control`).click();
+      await page.locator(`#${id}-ts-control`).fill(value);
+      await page.locator(`#${id}-ts-dropdown .option[data-value="${value}"]`).click();
+    }
   }
 
   async function addQueryAndFinish(page: Page, query = 'star wars') {
@@ -537,25 +540,27 @@ test.describe('Case creation wizard behaviour', () => {
     await stubEngine(page);
     await toFieldsStep(page);
     await chooseTitleAndId(page);
-    const suggestions = field(page, 'fieldSuggestions');
-    const items = suggestions.locator('> *');
-    await expect(items).toHaveCount(4);
-    expect((await items.allInnerTexts()).sort()).toEqual(['body', 'cast', 'poster_path', 'year']);
     const fields = page.locator('#wizardAdditionalFields');
-    await items.filter({ hasText: /^year$/ }).click();
+    const wrapper = page.locator('#wizardAdditionalFields + .ts-wrapper');
+    const input = page.locator('#wizardAdditionalFields-ts-control');
+    const options = page.locator('#wizardAdditionalFields-ts-dropdown .option');
+    await wrapper.locator('.ts-control').click();
+    await expect(options).toHaveCount(4);
+    expect((await options.allInnerTexts()).sort()).toEqual(['body', 'cast', 'poster_path', 'year']);
+    await options.filter({ hasText: /^year$/ }).click();
     await expect(fields).toHaveValue('year');
-    await expect(suggestions).not.toContainText('year');
-
-    await fields.focus();
-    await fields.fill('cast, thumb:pos');
-    await expect(suggestions).toHaveText('thumb:poster_path');
-    await suggestions.locator('> *').first().click();
-    await expect(fields).toHaveValue(/cast, thumb:poster_path/);
-    await fields.fill('cast, thumb:poster_path, ');
-    await expect(items).toHaveText(['body', 'year']);
-    // Moving on to another field tidies the trailing separator.
-    await page.locator('#wizardTitleField').fill('title');
-    await expect(fields).toHaveValue('cast, thumb:poster_path');
+    await wrapper.locator('.item[data-value="year"] .remove').click();
+    await input.fill('cast');
+    await options.filter({ hasText: /^cast$/ }).click();
+    await input.fill('thumb:pos');
+    await expect(options).toHaveText(['thumb:poster_path']);
+    await options.first().click();
+    await expect(fields).toHaveValue('cast,thumb:poster_path');
+    await expect(wrapper.locator('.item')).toHaveText(['cast×', 'thumb:poster_path×']);
+    await input.fill('custom_field');
+    await page.keyboard.press('Tab');
+    await expect(fields).toHaveValue('cast,thumb:poster_path,custom_field');
+    await expect(wrapper.locator('.item')).toHaveCount(3);
   });
 
   test('keeps Finish disabled while queries and onboarding save, then closes the wizard', async ({ page }) => {

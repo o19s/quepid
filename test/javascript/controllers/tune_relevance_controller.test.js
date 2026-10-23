@@ -286,6 +286,65 @@ describe("TuneRelevanceController", () => {
     })
   })
 
+  describe("displayed field selections", () => {
+    it("preserves unchanged syntax, supports modifiers and custom values, refreshes, and cleans up", () => {
+      const { controller, settings } = mount({ fieldSpec: "id:movie_id, title:title overview thumb:poster_path" })
+      controller.refreshSettings()
+      const select = controller.displayedFieldsSelect
+      expect(select.items).toEqual(["id:movie_id", "title:title", "overview", "thumb:poster_path"])
+      expect(controller.displayedFieldsValue()).toBe(settings.fieldSpec)
+      select.removeItem("overview")
+      select.createItem("cast")
+      select.setTextboxValue("image:backdrop_path")
+      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast, image:backdrop_path")
+      settings.fieldSpec = "id:id title:name"
+      controller.refreshSettings()
+      expect(select.items).toEqual(["id:id", "title:name"])
+      controller.disconnect()
+      expect(controller.fieldSpecTarget.tomselect).toBeUndefined()
+    })
+  })
+
+  describe("displayed field discovery", () => {
+    it("uses the wizard validator with proxy/auth settings and discovers fields without editing selections", async () => {
+      const { controller, capability } = mount({ fieldSpec: "id:id title:title", proxyRequests: true, customHeaders: '{"X-Test":"value"}' })
+      capability.settings.proxyUrlFor = vi.fn(() => "http://proxy/")
+      const validator = { fields: ["id", "title", "title_bidirect", "poster_path"], validateUrl: vi.fn().mockResolvedValue() }
+      capability.search.createValidator = vi.fn(() => validator)
+      controller.refreshSettings()
+      await controller.discoverDisplayedFields()
+      expect(capability.search.createValidator).toHaveBeenCalledWith(expect.objectContaining({ proxyUrl: "http://proxy/", customHeaders: { "X-Test": "value" } }))
+      expect(controller.displayedFieldsSelect.options.title_bidirect).toBeDefined()
+      controller.addDiscoveredFieldOptions("thumb:pos")
+      expect(controller.displayedFieldsSelect.options["thumb:poster_path"]).toBeDefined()
+      expect(controller.displayedFieldsSelect.items).toEqual(["id:id", "title:title"])
+      await controller.discoverDisplayedFields()
+      expect(validator.validateUrl).toHaveBeenCalledTimes(1)
+      controller.disconnect()
+    })
+
+    it("ignores stale endpoint responses and retries failures without losing edits", async () => {
+      const { controller, capability, settings } = mount({ fieldSpec: "id:id title:title" })
+      let resolve
+      const validator = { fields: ["old_field"], validateUrl: vi.fn(() => new Promise(done => { resolve = done })) }
+      capability.search.createValidator = vi.fn(() => validator)
+      controller.refreshSettings()
+      const pending = controller.discoverDisplayedFields()
+      settings.searchUrl = "http://other"
+      resolve()
+      await pending
+      expect(controller.displayedFieldsSelect.options.old_field).toBeUndefined()
+      validator.validateUrl.mockRejectedValueOnce(new Error("offline"))
+      await controller.discoverDisplayedFields()
+      expect(controller.displayedFieldsValue()).toBe("id:id title:title")
+      validator.fields = ["new_field"]
+      validator.validateUrl.mockResolvedValue()
+      await controller.discoverDisplayedFields()
+      expect(controller.displayedFieldsSelect.options.new_field).toBeDefined()
+      controller.disconnect()
+    })
+  })
+
   describe("save", () => {
     it("keeps the drawer open on the drawer's current tab once the save is under way", () => {
       const { controller } = mount()

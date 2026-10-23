@@ -1,10 +1,12 @@
+import TomSelect from "tom-select"
 import { endpointSettings } from "utils/endpoint_settings"
 import { Controller } from "@hotwired/stimulus"
 import { fromTextArea } from "modules/editor"
 import { getTuneRelevanceCapabilities } from "utils/core_capabilities_runtime"
 import { curatorVariableEntries, formatJson, historyTitle, queryParamsMode, queryParamsWarning, urlBucket, validateNumberOfRows } from "utils/tune_relevance"
 import coreFlash from "utils/core_flash"
-import { searchEngineLabel } from "utils/search_engines"
+import { normalizeSearchEngine, searchEngineLabel } from "utils/search_engines"
+import { parseCustomHeaders, searchApiValidationArgs } from "utils/wizard_contracts"
 import { isSameId } from "utils/record_identity"
 
 // Wraps each case-insensitive occurrence of `query` in <strong>, as the typeahead rows did.
@@ -38,7 +40,7 @@ function setLinkHref(link, url) {
 
 export default class extends Controller {
   static targets = [
-    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "knobsIntro", "curatorVars", "curatorVarTemplate", "fieldSpec", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
+    "tab", "panel", "action", "sectionBody", "editorShell", "saveButton", "queryEditor", "queryWarning", "staticEngineMessage", "staticKnobsMessage", "knobsIntro", "curatorVars", "curatorVarTemplate", "fieldSpec", "fieldDiscoveryStatus", "numberOfRows", "escapeQuery", "escapeSetting", "nightly", "runEvaluation",
     "endpointSelect", "endpointSearch", "endpointSuggestions", "endpointSuggestionTemplate", "endpointEmpty", "endpointChooser", "endpointNoResults", "endpointName", "endpointUrl", "endpointIcon", "endpointArchived", "esTemplateWarning", "tlsWarning", "tlsProtocol", "tlsExplanation", "tlsExplanationProtocol", "tlsEditLink",
     "troubleshootingLink", "troubleshootingEngine", "endpointMoreLink", "historyList", "historyItemTemplate", "tryTitle", "tryQueryParams", "tryEndpoint", "tryEndpointLink", "tryBrowseLink", "tryFieldSpec", "tryVariables", "tryDelete", "tryRenameAction", "tryModal", "tryNameInput", "tryRenameForm"
   ]
@@ -95,6 +97,9 @@ export default class extends Controller {
     if (this.settingsRetry) window.clearTimeout(this.settingsRetry)
     this.editor?.destroy()
     this.editor = null
+    this.displayedFieldsSelect?.destroy()
+    this.displayedFieldsSelect = null
+    this.displayedFieldsLookupKey = null
   }
 
   loadCapabilities() {
@@ -223,12 +228,104 @@ export default class extends Controller {
 
   refreshSettings() {
     if (!this.settings) return
-    if (this.hasFieldSpecTarget) this.fieldSpecTarget.value = this.settings.fieldSpec || ""
+    if (this.hasFieldSpecTarget) this.refreshDisplayedFields()
     if (this.hasNumberOfRowsTarget) this.numberOfRowsTarget.value = this.settings.numberOfRows || ""
     if (this.hasEscapeQueryTarget) this.escapeQueryTarget.checked = Boolean(this.settings.escapeQuery)
     if (this.hasEscapeSettingTarget) this.escapeSettingTarget.hidden = !this.capability.settings.supportsEscapeQuery(this.settings.searchEngine)
     if (this.hasNightlyTarget) this.nightlyTarget.checked = Boolean(this.capability.case.selected()?.nightly)
     this.refreshEndpointDetails()
+  }
+
+  refreshDisplayedFields() {
+    this.displayedFieldsSource = this.settings.fieldSpec || ""
+    const fields = this.displayedFieldsSource.split(/[,\s]+/).filter(Boolean)
+    if (!this.displayedFieldsSelect) {
+      this.fieldSpecTarget.value = ""
+      this.displayedFieldsSelect = new TomSelect(this.fieldSpecTarget, {
+        plugins: ["remove_button"],
+        maxItems: null,
+        hideSelected: true,
+        create: true,
+        createOnBlur: true,
+        persist: false,
+        selectOnTab: true,
+        refreshThrottle: 0,
+        splitOn: /[,\s]+/,
+        onFocus: () => this.discoverDisplayedFields(),
+        onType: (value) => {
+          this.addDiscoveredFieldOptions(value)
+          this.displayedFieldsSelect.refreshOptions(false)
+        }
+      })
+    }
+    const select = this.displayedFieldsSelect
+    const knownFields = [this.displayedFieldsSource, ...this.capability.settings.tries().map((item) => item.fieldSpec || "")]
+      .flatMap((value) => value.split(/[,\s]+/)).filter(Boolean)
+    select.clear(true)
+    select.clearOptions()
+    select.addOptions([...new Set(knownFields)].map((value) => ({ value, text: value })))
+    select.setValue(fields, true)
+    this.addDiscoveredFieldOptions()
+  }
+
+  displayedFieldsEndpointKey() {
+    const { searchEngine, searchEndpointId, searchUrl, apiMethod, proxyRequests, basicAuthCredential, customHeaders, mapperCode, queryParams } = this.settings
+    return JSON.stringify([searchEngine, searchEndpointId, searchUrl, apiMethod, proxyRequests, basicAuthCredential, customHeaders, mapperCode, queryParams])
+  }
+
+  addDiscoveredFieldOptions(query = "") {
+    if (this.discoveredFieldsKey !== this.displayedFieldsEndpointKey()) return
+    const prefix = query.match(/^(id|title|thumb|image|media|translations):/)?.[0] || ""
+    this.displayedFieldsSelect?.addOptions((this.discoveredFields || []).map((field) => {
+      const value = prefix + field
+      return { value, text: value }
+    }))
+  }
+
+  fieldDiscoveryStatus(message) {
+    if (!this.hasFieldDiscoveryStatusTarget) return
+    this.fieldDiscoveryStatusTarget.textContent = message
+    this.fieldDiscoveryStatusTarget.hidden = !message
+  }
+
+  async discoverDisplayedFields() {
+    const key = this.displayedFieldsEndpointKey()
+    if (this.displayedFieldsLookupKey === key) return
+    this.displayedFieldsLookupKey = key
+    this.fieldDiscoveryStatus("Finding available fields…")
+    try {
+      const settings = { ...this.settings, searchEngine: normalizeSearchEngine(this.settings.searchEngine) }
+      const headers = parseCustomHeaders(settings.customHeaders)
+      if (!headers.valid) throw new Error("Invalid custom headers")
+      settings.customHeaders = headers.headers
+      if (settings.proxyRequests) settings.proxyUrl = this.capability.settings.proxyUrlFor(settings.searchEndpointId)
+      if (settings.searchEngine === "searchapi") {
+        settings.args = searchApiValidationArgs((settings.queryParams || "").replace(/#\$query##/g, "test"), settings.bareQueryParam)
+        const mapper = this.capability.search.evaluateMapper(settings.mapperCode)
+        if (!mapper.numberOfResultsMapper || !mapper.docsMapper) throw new Error("Missing mapper functions")
+        Object.assign(settings, { numberOfResultsMapper: mapper.numberOfResultsMapper, docsMapper: mapper.docsMapper })
+      }
+      const validator = this.capability.search.createValidator(settings)
+      await validator.validateUrl()
+      if (!this.displayedFieldsSelect || this.displayedFieldsEndpointKey() !== key || this.displayedFieldsLookupKey !== key) return
+      this.discoveredFields = validator.fields || []
+      this.discoveredFieldsKey = key
+      this.addDiscoveredFieldOptions(this.displayedFieldsSelect.control_input.value)
+      this.displayedFieldsSelect.refreshOptions(false)
+      this.fieldDiscoveryStatus("")
+    } catch {
+      if (!this.displayedFieldsSelect || this.displayedFieldsEndpointKey() !== key || this.displayedFieldsLookupKey !== key) return
+      this.displayedFieldsLookupKey = null
+      this.fieldDiscoveryStatus("Could not load field suggestions. You can still enter fields manually.")
+    }
+  }
+
+  displayedFieldsValue() {
+    if (!this.displayedFieldsSelect) return this.fieldSpecTarget.value
+    const select = this.displayedFieldsSelect
+    if (select.control_input.value.trim()) select.createItem(select.control_input.value.trim())
+    const original = (this.displayedFieldsSource || "").split(/[,\s]+/).filter(Boolean)
+    return JSON.stringify(select.items) === JSON.stringify(original) ? this.displayedFieldsSource : select.items.join(", ")
   }
 
   populateEndpoints() {
@@ -372,7 +469,7 @@ export default class extends Controller {
   async save() {
     if (this.saving) return
     if (this.editor) this.settings.queryParams = this.editor.getValue()
-    this.settings.fieldSpec = this.fieldSpecTarget.value
+    this.settings.fieldSpec = this.displayedFieldsValue()
     this.settings.numberOfRows = this.numberOfRowsTarget.value
     this.settings.escapeQuery = this.escapeQueryTarget.checked
     if (!validateNumberOfRows(this.settings.numberOfRows)) return this.showError("Number of Results to Show must be between 1 and 100.")
