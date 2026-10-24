@@ -52,6 +52,26 @@ The branch lands when all of these hold on one commit:
 
 ---
 
+### [MIGRATION] P1 I0 C1 — Confirm large cases are no worse than main's Angular page
+
+The Stimulus page published every query's documents after each search, building
+every doc's splainer explain tree, and the header's snapshot-score badges (and the
+frog report, while open) rebuilt every query on each store event. A 5000-query case retained 1521 MB after GC,
+peaked at 2.9 GB and took 65 s with 49 s of script time. Fixed on this branch:
+documents are built only for expanded queries, and exports, book populate and the
+frog report read the live queries. The same case now retains 643 MB, peaks at
+1.1 GB and takes 24 s with 8 s of script time. At 400 queries it retains 54 MB,
+against 77 MB for the Legacy app on splainer 2.x.
+
+Measured with `yarn test:perf` (`test/playwright/large_case.perf.spec.ts`), which
+replays generated Solr responses shaped like `thor sample_data:large_data`'s, so
+no real engine is involved. Still to do before merge: measure main's Angular page
+on the same machine. Main also runs splainer-search 3.3, so it should not be
+compared with the 2.x Legacy app at 448 MB. Delete this entry if main is no
+better; otherwise record the gap here.
+
+---
+
 ### [MIGRATION-FOLLOWUP] P2 I0 C2 — Case list lost Legacy row actions and details (inherited from main)
 
 1. **Row actions.** Legacy rows offered Rename (inline), Delete (modal "Delete This Case — You're about to delete this case forever! …"), Archive, Export (the export modal) and Share. The list now has Share and Archive only. Rename, Delete and Export remain in the case workbench (header double-click, toolbar). Dropped all three in `aa076cb3` ("Good by angular /cases listing UI!", inside #1642): that commit deleted Legacy's `case_listing.html` and added the Rails list with Share and Archive only. Neither the PR description nor the commit says whether this was intended.

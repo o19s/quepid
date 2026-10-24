@@ -83,6 +83,7 @@
     "screenshots:status": "node test/playwright/screenshot-status.mjs",
     "test:visual": "playwright test --config test/playwright/visual.config.ts",
     "test:visual:update": "playwright test --config test/playwright/visual.config.ts --update-snapshots",
-    "test:visual:report": "playwright show-report test/playwright/test-results/visual-report"
+    "test:visual:report": "playwright show-report test/playwright/test-results/visual-report",
+    "test:perf": "playwright test --config test/playwright/perf.config.ts"
   }
 }

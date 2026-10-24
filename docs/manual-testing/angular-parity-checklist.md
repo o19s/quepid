@@ -767,6 +767,7 @@ Copy:
 - **Owner:** `_judgements_core_modal.html.erb`, `_judgement_book_templates.html.erb`, `judgements_core_controller.js`
 - **Scenario:** 6.6
 - **Decisions:** Main redesigned this modal after Legacy (Case Integration card with auto-sync checkboxes and Populate Now / Refresh Ratings / Sync Queries; the Legacy "Populate Book" and "Refresh ratings from book" controls are `not in main`). Current's copy was compared word for word against main (`776c68b5`) and had drifted since the partial adaptation in `6cfe145f` (upstream `c468d18f`, `4a9065db`): intro paragraph, the no-books/no-teams alert, a leftover "You have not created any Books" line and the book-list help text. All restored to main's wording in this pass (`toolbar_modals_core.spec.ts` "judgements modal keeps the upstream copy" fails on the old copy). Legacy itself was replayed only for the toolbar link and the empty state because the Legacy database has no teams or books. Selecting, saving, retry, View navigation, disconnect and the sync toggles are covered live by `toolbar_modals_core.spec.ts` and `share_case.spec.ts`.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): Legacy case 4 and a Current case with the same 21 queries, 200 ratings, try and scorer, each with a "Parity Book" on a "Parity Team". Populate Book on Legacy and Populate Now on Current wrote the same 210 query/doc pairs with the same positions. The stored `document_fields` differed: Current also stored every raw response field (`id`, `catch_line`), because `buildQueryDocPairsPayload` merged `rawFields` (added in `4eb92933` as a workaround for the documents store's copies lacking `subsList`). Restored on 2026-10-23: Populate Now passes the live queries, as auto-sync does, and pairs store the title and displayed fields only, as on Legacy and main (`book_sync.test.js`).
 
 Conditional UI:
 
@@ -928,6 +929,7 @@ Copy:
 - **Owner:** `_export_case_core_modal.html.erb`, `export_case_core_controller.js`
 - **Scenario:** 6.1
 - **Decisions:** Compared with Legacy (:3001) and main (`776c68b5`): the modal text is identical word for word on Legacy and Current (live diff with snapshots present only on Current), the link targets resolve to the same JSON (`/api/cases/N?shallow=false`, `/queries`, `/annotations`, `/scores`, `/api/export/…`, `/api/docs`). Downloads replayed on both for Information Need, General, Detailed, Basic, TREC, RRE, LTR and Quepid JSON: same file names (`<case>_<format>.<ext>`) and same headers and first rows; the Snapshot format downloaded on Current (`<case>_snapshot.csv`, "Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position") but did not download on Legacy in this replay (not investigated: Legacy-only, unverified). The Quepid-format radio (`#quepid`, added on main) is present. **Evidence level:** ticked from the modal text diff and the download replay. The "This snapshot is currently being processed" item is ticked as N/A: Legacy's `isProcessingFile()` always returned false (its loop returned from the callback, so the warning never rendered), and Current has no equivalent. Not replayed: Basic or TREC with a snapshot selected.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): Detailed CSV downloaded on Legacy case 4 and a Current case with the same queries and ratings: 210 rows, same header, the same rows apart from the Team column (that case had no team) and one title with embedded double quotes, which Legacy wrote unwrapped (`Definition of ""supervise""…`, malformed CSV) and Current wraps correctly. Both order queries by query id.
 
 Conditional UI:
 
@@ -1224,6 +1226,7 @@ Copy:
 - **Owner:** `_query_list_templates.html.erb`, `search_results_controller.js`, `query_row_controller.js`
 - **Scenario:** 4.15, 4.16, 4.20, 4.21, 4.22
 - **Decisions:** Compared the Legacy template (`8ceb99e9`) with Current's `_query_list_templates.html.erb` item by item, and replayed on Legacy (:3001) and Current (:3000) with equivalent clones of "10s of Queries" on 2026-10-17: expand/collapse, Toggle Notes, Information Need and notes save (same success flash, persisted after reload, same "Info Need: …" hover tooltip), Peek at the next page (10 to 20 docs), Show only rated (10 rated docs, note and count), Score All set and RESET (every document follows), Copy query (clipboard holds the raw query text) and Delete Query. Intentional differences with a recorded decision: "Unrated" and "of 1.00" score states (user commit `7c304651`, scenario 4.7); Delete Query asks through the shared Confirm modal with the same copy (user commit `60d0beb4`, scenario 4.15); Browse opens the browse-query modal, not a new tab (main-only change, rows 21 and 39, scenario 4.18); the "Results" label under the count renders on main and Current but never rendered on Legacy (its self-closed `<count-up />` swallowed it). The error state is not reproducible on the live Solr (it tolerates malformed queries); it is covered by `core_failure_recovery.spec.ts` and `workspace_bootstrap.spec.ts`. **Evidence level:** every item was ticked from the template comparison; only the flows named above were replayed live. Not replayed: the Querqy icon, diff display with a query in error, the bootstrapping and updating banners, the disabled-Manual state, Show only rated disabled for unsupported engines, and the notes box `hidden`/`d-none` class itself.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): Same replay: all 21 query scores and result counts, the case score, the 10 results and their ratings, "Show only rated" (the same 10 rated docs), "Peek at the next page of results" (the same 20), rating a doc, and collapse then re-expand (results and the new rating kept) all match. Bar widths match; match labels differ only by the splainer-search 3.3.0 wording already recorded for row 19.
 
 Conditional UI:
 
@@ -2058,6 +2061,7 @@ Copy:
 - **Owner:** `frog_report_controller.js`, `shared/_dynamic_modal_templates.html.erb`
 - **Scenario:** 6.9
 - **Decisions:** Replayed on Legacy case 4 and Current case 6: the summary, congratulation, distribution chart and Close match. One loss restored in this pass: Legacy worded the zero-result count as "none return", "only one returns" or "N return" before "zero results"; Current always said "0 return". Restored (`frog_report_controller.js`, `_dynamic_modal_templates.html.erb`; Vitest "words the zero-result count…" fails without it, and `workspace_modal_lifecycle.spec.ts` "Frog Report words the zero-result count as Legacy did" fails on the old copy). Refresh from book and its error state are covered live by `workspace_modal_lifecycle.spec.ts`.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): Same replay with one unrated query added to both: summary text identical (21 queries, 210 ratings needed, 10 missing, 4.8% missing rate) and the same chart buckets. One difference not caught before: Legacy shows a bar's value only on hover (its text mark reads `tooltip.amount`), Current labels every bar. Kept by user choice for accessibility; see [NOT-DOING](../todo/NOT-DOING.md#frog-report-labels-every-bar).
 
 Conditional UI:
 
@@ -2239,6 +2243,7 @@ Copy:
 - **Owner:** `search_results_controller.js` (`renderDiffResults`)
 - **Scenario:** 5.3
 - **Decisions:** Replayed on Legacy and Current with a snapshot and a query added after it: "Current Results" and the snapshot name as column headings, per-position results, "No result at position N", and "This query is not present in the snapshot so it is treated as ZSR." match. Current renders "Browse N Current Results on Solr" in the diff view; Legacy never rendered it live (its `selectedTry` is out of scope in the nested controller), so that is a gain from main's template, not a loss.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): With the same snapshot taken on both: the case snapshot score, every collapsed row's snapshot score badge (21 rows), and the expanded query's 40 comparison cells match apart from the explain wording recorded for rows 19 and 33.
 
 Conditional UI:
 
@@ -2982,6 +2987,7 @@ Bound content:
 - **Owner:** `frog_report_controller.js`, `_queries.html.erb`
 - **Scenario:** 6.9
 - **Decisions:** The "🐸 Report" link opens the Frog Pond modal (replayed on both).
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): See [row 15](#row-15).
 
 Actions:
 
@@ -3402,6 +3408,7 @@ Conditional UI:
 - **Owner:** `qgraph_controller.js`, `frog_report_controller.js` (Vega embeds)
 - **Scenario:** 5.5, 4.21
 - **Decisions:** The Angular Vega directive only embedded a spec; Current embeds the same charts (score sparkline and frog report) directly. Rendered and replayed as rows 54 and 15.
+- **Re-verified 2026-10-23** after the large-case change (documents are built only for expanded queries; detailed export, book populate and the frog report read the live queries): Frog report chart: see [row 15](#row-15).
 - [x] Behaviour reproduced (read the directive's link/controller code)
 
 ## Ported on main before this branch (51)

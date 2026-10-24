@@ -30,6 +30,18 @@ By user choice (2026-10-24), keep `9443d215` ("nicer find missing docs"): on Sol
 
 By user choice (2026-10-23), the frog report's chart labels each bar with its query count. Legacy and main showed a bar's count only on hover (the text mark read `tooltip.amount`). The chart has only a few bars, and visible counts work for keyboard, touch and screen-reader users, who cannot hover. The change arrived in `db0bf1ba` without a recorded reason; this entry records the decision to keep it.
 
+## Large cases: dropping docs after scoring, or searching from the server
+
+Two ways to cut large-case memory were considered and rejected (2026-10-23).
+Keeping only doc ids and ratings once a query is scored breaks rescoring: every
+rating change rescores `query.docs`, and custom scorers read any doc field
+through `docAt` (`scorer_runtime.js`), so the docs would have to be fetched again
+on every rating. Running searches on the server (as `RunCaseEvaluationJob`
+does) can't replace the browser: users inspect the search traffic in dev tools,
+and endpoints with `proxy_requests` off — including JSONP, localhost, intranet
+and browser-authenticated engines — are reachable only from the browser. Showing
+the last server score while the browser run is in progress remains possible.
+
 ## Admin user JSON export includes the password digest
 
 **Location:** `app/views/admin/users/index.json.jbuilder`, `app/controllers/admin/users_controller.rb` (`password_encrypted`)

@@ -4,6 +4,7 @@
 
 * **Performance monitoring:** administrators can inspect request, query, job and exception performance through Rails Pulse. Monitoring data stays in the application database.
 * **Kamal image compatibility:** the production Docker image includes the `service="quepid"` label.
+* **Large cases load faster and use less memory:** the case page builds a query's result details, such as explain bars, only when you expand it. A 5000-query case now loads in about a third of the time and holds well under half the memory. `yarn test:perf` measures this against generated search results.
 
 ### 🤖 Create, Test, and Automate AI Judges
 

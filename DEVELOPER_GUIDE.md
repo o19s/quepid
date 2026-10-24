@@ -417,6 +417,20 @@ Tests run serially (`workers: 1`, `fullyParallel: false` in `playwright.config.t
 For ad-hoc screenshots, the comparison viewer, and branch-specific capture history,
 see [Screenshot capture and diffing](docs/screenshot_review.md).
 
+### Large-case memory and load benchmark
+
+For changes to how the case page searches, scores or publishes results, run
+`yarn test:perf` in the server container. It creates a disposable case with
+`PERF_QUERIES` queries (default 400; try 5000) on a JSONP Solr endpoint at an
+unresolvable host, serves generated responses shaped like a real `large_data`
+response (`test/playwright/large_case_replay.ts`), and reports load time, peak and
+retained heap, script time and, up to 1000 queries, how many splainer explain
+trees exist while every query is collapsed. Each run writes its numbers to
+`tmp/perf/` with the git SHA. Budgets are soft assertions. `PERF_PROFILE=1` adds
+the hottest functions by CPU self time, and `PERF_BREAKDOWN=1` the biggest
+retainers of string memory. Timings vary between machines, so compare the medians
+of interleaved before/after runs on one machine.
+
 ### Routine visual regression checks
 
 For CSS/layout changes, run `yarn test:visual` inside the existing server container

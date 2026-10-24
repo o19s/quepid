@@ -272,6 +272,45 @@ same config.
 Moved from [todo.md](todo.md) on 2026-10-19, with every other `[PREEXISTING]`
 entry below. These predate the AngularJS removal and don't gate landing it.
 
+### [PREEXISTING] P2 I1 C2 — splainer-search 3.x copies every result doc's text several times
+
+splainer-search 3.x deep-clones response docs with `structuredClone`
+(`utilsSvc.deepClone`), which copies strings; 2.x's `angular.copy` shared them.
+`DocFactory` clones each doc onto itself (`copyOnto`), `origin()` clones it again,
+and `subsList` holds further copies, so each doc's text is held three to four
+times. `getDocExplain` also calls `origin()` twice just to check for an `id`. On
+a 400-query `large_data` case that is ~40 MB of the 54 MB retained heap. Fix it
+in splainer-search (share strings, or don't clone read-only response data), then
+tighten `PER_QUERY_BUDGET_KB` in `test/playwright/large_case.perf.spec.ts` and
+measure with `yarn test:perf`.
+
+### [PREEXISTING] P2 I0 C1 — "Show only rated" fires every rated-docs request at once
+
+`toggleShowOnlyRated` (`live_query_runtime_owner.js`) calls `refreshRatedDocs`
+for every query that isn't ready, outside `pAll`, ignoring both the concurrency
+of 10 and the try's `requestsPerMinute`. On a 5000-query case that is 5000
+simultaneous requests to the user's engine. Legacy's `queriesSvc` did the same.
+Route the refreshes through `pAll`.
+
+### [PREEXISTING] P2 I0 C2 — One failed search skips scoring the whole case
+
+`pAll` (`query_service.js`) runs the rest of the queue after a failure, then
+rejects, so `runSearchAll` skips `scoreAll` and book sync: a single 429 near the
+end of a large run loses the case score. Legacy's `queriesSvc.pAll` did the
+same. Score the queries that succeeded and report the failures.
+
+### [MIGRATION-FOLLOWUP] P3 I1 C2 — Further large-case load cost
+
+From profiling `yarn test:perf` (`PERF_PROFILE=1`) after the large-case fix:
+each query is scored as it finishes and again by `scoreAll`; `scorer_runtime.js`
+compiles the scorer with `new Function` on every call; the query list re-sorts
+every query each animation frame while results arrive, calling `localeCompare`
+with options per comparison (cache one `Intl.Collator`); and `ratedSearcher` is
+built for every query although few use it. Batch runs could also request
+`debug=results` without `echoParams`, re-running with full debug only when the
+query-details modal opens, but that changes what users see in dev tools, so it
+needs a product decision.
+
 ### [PREEXISTING] P1 I0 C2 — Align RRE export and import formats
 
 Scenario 6.2 accepts the exported `doc_id: {gain: rating}` format but the importer

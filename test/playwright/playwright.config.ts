@@ -51,7 +51,8 @@ export default defineConfig({
       name: 'chromium',
       dependencies: ['setup'],
       // *.test.mjs files are node:test suites for the screenshot tooling, not browser specs.
-      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts', '**/*.test.mjs'],
+      // *.perf.spec.ts are benchmarks run by perf.config.ts.
+      testIgnore: [narrowViewportSpec, '**/visual_smoke.spec.ts', '**/*.test.mjs', '**/*.perf.spec.ts'],
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 900 },
