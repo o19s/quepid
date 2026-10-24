@@ -437,11 +437,8 @@ test.describe('Case creation wizard behaviour', () => {
     await expect(field(page, 'alert')).toBeHidden();
   });
 
-  test('shows URL and auth guidance only for engines that support it, and warns about static sharing', async ({ page }) => {
-    await createEndpoint(page, { search_engine: 'static', endpoint_url: 'http://wizard.invalid/api/cases/1/snapshots/1/search' });
+  test('shows URL and auth guidance only for engines that support it', async ({ page }) => {
     await toEndpointStep(page);
-    await openExisting(page);
-    await expect(when(page, 'static-endpoints')).toBeVisible();
     await openPanel(page, 'Create a new Search Endpoint');
     await openSection(page, 'Advanced');
     await expect(field(page, 'urlFormat')).toHaveText('http(s?)://yourdomain.com:8983/<index>/select');

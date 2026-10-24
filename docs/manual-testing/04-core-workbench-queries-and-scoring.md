@@ -263,7 +263,7 @@ Every expanded query row has a small toolbar beyond the tools already covered ab
 ### 4.20 Query-list sorting, pagination & "Show only rated"
 
 - [ ] **Steps:**
-  1. With a case of more than 15 queries, confirm the list is paginated 15 per page with Bootstrap numbered page controls and previous/next chevrons. Select page 2 directly, then return with the keyboard; the active page is highlighted and exposes `aria-current="page"`, and boundary arrows are disabled.
+  1. With a case of more than 15 queries, confirm the list is paginated 15 per page with Bootstrap numbered page controls and previous/next chevrons. Select page 2 directly, then return with the keyboard; the active page is highlighted and exposes `aria-current="page"`, and boundary arrows are disabled. With more than 9 pages (over 135 queries), the controls show at most 9 entries as Legacy did: always the first and last page, a window around the current page, and a disabled `...` for skipped pages (e.g. `1 ... 22 23 24 25 26 ... 47`); the control never scrolls the results pane sideways.
   2. Tab to each sort button in turn and activate it with Enter/Space — **Manual, Name, Modified, Score, Errors** — and click the active one again to flip direction. Confirm ordering: Name alphabetical; Modified/Score/Errors newest/highest/errored first; the URL records `sort=`.
   3. Rate a document in a low-scoring query, click Modified — confirm that query moves to the top. Trigger an error (e.g. break the endpoint URL) and confirm Errors groups failing queries together.
   4. On page 2 with **Manual** sort, drag a query to a new position; reload.

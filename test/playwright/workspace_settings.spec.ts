@@ -77,7 +77,8 @@ test.describe('Workspace tuning drafts and saved tries', () => {
     await expect(rows).toHaveValue('12');
     expect(page.url()).toContain(`/case/${caseId}/try/1`);
     await page.getByRole('button', { name: 'Query', exact: true }).click();
-    await expect(editor).toHaveText(draft);
+    // Query params show one per line; innerText keeps CodeMirror's line breaks, toHaveText would drop them.
+    await expect.poll(() => editor.innerText()).toBe(draft);
 
     await page.unroute(`**/api/cases/${caseId}/tries`);
     await page.getByRole('button', { name: 'Settings', exact: true }).click();

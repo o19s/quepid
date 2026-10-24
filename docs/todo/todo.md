@@ -1,6 +1,6 @@
 # Todo
 
-**Last updated:** 2026-10-19
+**Last updated:** 2026-10-24
 
 Outstanding migration work and follow-ups for the AngularJS-removal branch.
 `[PREEXISTING]` bugs, hardening and cleanup are in
@@ -69,6 +69,29 @@ no real engine is involved. Still to do before merge: measure main's Angular pag
 on the same machine. Main also runs splainer-search 3.3, so it should not be
 compared with the 2.x Legacy app at 448 MB. Delete this entry if main is no
 better; otherwise record the gap here.
+
+---
+
+### [MIGRATION] P1 I0 C1 — Field pickers no longer accept custom field names
+
+Legacy (`8ceb99e9`) let any field name be typed in the wizard's Title, ID and
+Additional Display Fields (`wizardModal.html:409-427`) and in Tune Relevance's
+Displayed Fields (`devQueryParams.html:202`); a custom Title or ID asked "could be
+a typo" before continuing (`wizardModal.js:582-587`). `486cb05a` set
+`create: false` on all four Tom Select controls, and NOT-DOING's "Field option
+creation" records it as a user choice without a reason. Discovery only reports
+top-level keys from one sample page, so sparse fields, nested paths such as
+`author.name`, and `function:`, `hl:`, `translate:`, `unabridged:`, `sub:` and `*`
+entries can no longer be added unless already saved. A new case whose discovery
+returns nothing is stuck with the engine's default Title and ID, and the wizard's
+typo confirm can no longer fire. Separately, Tune Relevance's prefix list offers
+`translations:`, which isn't a valid type; the real one is `translate:`
+(`tune_relevance_controller.js:240`).
+
+- **Decision needed (Eric):** was dropping custom names intended, or only Tom
+  Select's "Add …" option? If not intended, restore `create: true` with the
+  existing typo confirm and fix the `translate:` prefix; otherwise record the
+  reason in NOT-DOING.
 
 ---
 

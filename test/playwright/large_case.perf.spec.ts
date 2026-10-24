@@ -89,13 +89,13 @@ function stringRetainers(snapshot: any): string[] {
 }
 
 /** Self time per function (ms), hottest first, from a CDP CPU profile. */
-function hottestFunctions(profile: { nodes: any[]; samples: number[]; timeDeltas: number[] }, limit = 25): string[] {
+function hottestFunctions(profile: { nodes: any[]; samples?: number[]; timeDeltas?: number[] }, limit = 25): string[] {
   const byId = new Map(profile.nodes.map(node => [node.id, node]));
   const selfMs = new Map<string, number>();
-  profile.samples.forEach((id, i) => {
+  (profile.samples ?? []).forEach((id, i) => {
     const frame = byId.get(id).callFrame;
     const key = `${frame.functionName || '(anonymous)'} ${frame.url.split('/').pop()}:${frame.lineNumber + 1}`;
-    selfMs.set(key, (selfMs.get(key) ?? 0) + (profile.timeDeltas[i] ?? 0) / 1000);
+    selfMs.set(key, (selfMs.get(key) ?? 0) + (profile.timeDeltas?.[i] ?? 0) / 1000);
   });
   return [...selfMs.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit).map(([key, ms]) => `${Math.round(ms)}ms ${key}`);
 }

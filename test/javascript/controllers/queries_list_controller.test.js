@@ -180,6 +180,26 @@ describe("queries_list_controller", () => {
     expect(controller.paginationTarget.childElementCount).toBe(0)
   })
 
+  it("bounds a long page list with ellipses, as Legacy's pagination did", () => {
+    const { controller } = controllerFor()
+    controller.paginationTarget = document.createElement("div")
+    controller.hasPaginationTarget = true
+    const items = () => [...controller.paginationTarget.querySelectorAll(".pagination > li")]
+      .map(item => item.textContent.trim())
+
+    controller.currentPage = 24
+    controller.renderPagination(47, 700)
+    expect(items()).toEqual(["‹", "1", "...", "22", "23", "24", "25", "26", "...", "47", "›"])
+    expect(controller.paginationTarget.querySelector('[aria-current="page"]').textContent).toBe("24")
+    const ellipses = controller.paginationTarget.querySelectorAll('[data-slot="ellipsisItem"]')
+    expect([...ellipses].every(item => item.classList.contains("disabled") && !item.querySelector("button"))).toBe(true)
+    expect(controller.paginationTarget.querySelector('[aria-label="Page 47"]').dataset.queriesListPageParam).toBe("47")
+
+    controller.currentPage = 47
+    controller.renderPagination(47, 700)
+    expect(items()).toEqual(["‹", "1", "...", "41", "42", "43", "44", "45", "46", "47", "›"])
+  })
+
   describe("keyed row reconciliation", () => {
     function renderable(controller) {
       controller.pageSize = 15

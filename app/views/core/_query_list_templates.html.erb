@@ -105,6 +105,9 @@
       <li class="page-item" data-slot="pageItem">
         <button type="button" class="page-link" data-slot="page" data-action="click->queries-list#changePage"></button>
       </li>
+      <li class="page-item disabled" data-slot="ellipsisItem" aria-hidden="true">
+        <span class="page-link">...</span>
+      </li>
       <li class="page-item" data-slot="nextItem">
         <button type="button" class="page-link" aria-label="Next page" data-slot="next" data-action="click->queries-list#changePage" data-queries-list-direction-param="next"><span aria-hidden="true">›</span></button>
       </li>

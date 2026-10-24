@@ -9,6 +9,7 @@ import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
 import coreFlash from "utils/core_flash"
 import { isSameId } from "utils/record_identity"
+import { paginationRange } from "utils/pagination"
 
 /**
  * Query-list collection rendering, toolbar, and drag lifecycle. The collection
@@ -539,7 +540,12 @@ export default class extends Controller {
     nav.querySelector('[data-slot="previousItem"]').classList.toggle("disabled", this.currentPage === 1)
     nav.querySelector('[data-slot="nextItem"]').classList.toggle("disabled", this.currentPage === pageCount)
     const pageItem = nav.querySelector('[data-slot="pageItem"]')
-    for (let page = 1; page <= pageCount; page++) {
+    const ellipsisItem = nav.querySelector('[data-slot="ellipsisItem"]')
+    paginationRange(this.currentPage, pageCount).forEach(page => {
+      if (page === null) {
+        pageItem.before(ellipsisItem.cloneNode(true))
+        return
+      }
       const item = pageItem.cloneNode(true)
       const button = item.querySelector('[data-slot="page"]')
       button.textContent = page
@@ -550,8 +556,9 @@ export default class extends Controller {
         button.setAttribute("aria-current", "page")
       }
       pageItem.before(item)
-    }
+    })
     pageItem.remove()
+    ellipsisItem.remove()
     this.paginationTarget.appendChild(nav)
   }
 
