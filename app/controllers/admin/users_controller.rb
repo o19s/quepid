@@ -14,7 +14,7 @@ module Admin
     # GET /admin/users.json
     # GET /admin/users.csv
     def index
-      @shallow = 'true' == params[:shallow]
+      @shallow = deserialize_bool_param(params[:shallow])
 
       # Exclude AI judges from the admin user list.
       query = User.real_users.order(created_at: :desc)

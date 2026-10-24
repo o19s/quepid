@@ -23,7 +23,7 @@ module Api
       def index
         @snapshots = @case.snapshots
 
-        @shallow = 'true' == params[:shallow]
+        @shallow = deserialize_bool_param(params[:shallow])
         @with_docs = false
 
         respond_with @snapshots
