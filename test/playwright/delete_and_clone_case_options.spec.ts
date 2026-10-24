@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders, createDisposableCase, deleteCaseViaApi } from './case_helpers';
 
 /**
  * End-to-end coverage for two core-case-toolbar Stimulus controllers that
@@ -18,50 +19,24 @@ import { test, expect, type Page } from '@playwright/test';
  * fixture data.
  */
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-Token': csrf };
-}
-
-async function createDisposableCase(page: Page, label: string): Promise<number> {
-  await page.goto('cases');
-  await page.waitForSelector('body', { timeout: 15_000 });
-
-  const response = await page.request.post('api/cases', {
-    data: { case_name: `Playwright ${label} Scratch ${Date.now()}` },
-    headers: await apiHeaders(page)
-  });
-  expect(response.ok()).toBeTruthy();
-  const json = await response.json();
-  const caseId = Number(json.case_id);
-  expect(caseId).toBeGreaterThan(0);
-  return caseId;
-}
-
 async function addQuery(page: Page, caseId: number, queryText: string) {
   const response = await page.request.post(`api/cases/${caseId}/queries`, {
     data: { query: { query_text: queryText } },
-    headers: await apiHeaders(page)
+    headers: await apiHeaders(page, { 'Content-Type': 'application/json' })
   });
   expect(response.ok()).toBeTruthy();
 }
 
 async function fetchQueryCount(page: Page, caseId: number): Promise<number> {
-  const response = await page.request.get(`api/cases/${caseId}/queries`, { headers: await apiHeaders(page) });
+  const response = await page.request.get(`api/cases/${caseId}/queries`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   expect(response.ok()).toBeTruthy();
   const json = await response.json();
   return Array.isArray(json.queries) ? json.queries.length : 0;
 }
 
 async function caseExists(page: Page, caseId: number): Promise<boolean> {
-  const response = await page.request.get(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
+  const response = await page.request.get(`api/cases/${caseId}`, { headers: await apiHeaders(page, { 'Content-Type': 'application/json' }) });
   return response.ok();
-}
-
-async function deleteCaseViaApi(page: Page, caseId: number) {
-  await page.request.delete(`api/cases/${caseId}`, { headers: await apiHeaders(page) });
 }
 
 async function gotoCase(page: Page, caseId: number) {
@@ -79,7 +54,7 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
       expect(await fetchQueryCount(page, caseId)).toBe(2);
 
       await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Delete', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
 
       const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
       await expect(modal).toContainText(/Delete Options for Case/i);
@@ -87,11 +62,19 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
       await modal.getByRole('button', { name: 'Delete All Queries' }).click();
       const confirmButton = modal.locator('[data-delete-case-options-core-target="submitButton"]');
       await expect(confirmButton).toBeEnabled();
+      // The page is already on a /case/ URL, so waiting for that URL proves nothing: wait for the
+      // DELETE itself, then for the queries to be gone.
+      const deleted = page.waitForResponse(response =>
+        response.request().method() === 'DELETE' && /\/cases\/\d+\/queries/.test(response.url())
+      );
       await confirmButton.click();
-
-      // submitDestructiveForm posts a real hidden form -> full navigation.
-      await page.waitForURL(/\/case\//, { timeout: 15_000 });
-      expect(await fetchQueryCount(page, caseId)).toBe(0);
+      expect((await deleted).ok()).toBeTruthy();
+      // The success redirect reloads the page; reading the CSRF token mid-navigation throws, so retry.
+      await expect.poll(
+        () => fetchQueryCount(page, caseId).catch(() => -1),
+        { timeout: 15_000 }
+      ).toBe(0);
+      await page.waitForLoadState('load');
       expect(await caseExists(page, caseId)).toBeTruthy();
     } finally {
       await deleteCaseViaApi(page, caseId);
@@ -104,7 +87,7 @@ test.describe('core case toolbar: delete-case-options-core (submitDestructiveFor
 
     try {
       await gotoCase(page, caseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Delete', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Delete', exact: true }).click();
 
       const modal = page.locator('#deleteCaseOptionsModal.show, .modal.show').first();
       await expect(modal).toContainText(/Delete Options for Case/i);
@@ -135,7 +118,7 @@ test.describe('core case toolbar: clone-case-core', () => {
       await addQuery(page, sourceCaseId, 'star wars');
 
       await gotoCase(page, sourceCaseId);
-      await page.locator('#case-actions').getByRole('link', { name: 'Clone', exact: true }).click();
+      await page.locator('#case-actions').getByRole('button', { name: 'Clone', exact: true }).click();
 
       const modal = page.locator('#cloneCaseModal.show, .modal.show').first();
       await expect(modal).toContainText(/Clone case/i);

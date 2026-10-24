@@ -1,26 +1,21 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
-import { apiFetch } from "api/fetch"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
+import { getJson, postJson } from "api/json"
+import { serverMessage } from "utils/error_message"
 import { getQuepidRootUrl } from "utils/quepid_root"
-import { showStatusMessage } from "utils/status_message"
+import { caseNameFromHeader } from "utils/case_header"
+import { isSameId } from "utils/record_identity"
 
 const REDIRECT_DELAY_MS = 1000
 
 /**
  * Clone-case options for the core case toolbar — list/form UI, API stay-on-page
- * while cloning, then navigate to the new case. Mirrors the AngularJS
- * clone-case modal it replaces, except: on success the modal stays open
- * showing an inline success alert for REDIRECT_DELAY_MS before navigating
- * (Angular closed the modal and navigated immediately), and on failure the
- * modal stays open with an inline alert instead of Angular's
- * close-then-global-flash (same documented delta as share-case-core).
+ * while cloning, then navigate to the new case. On success the modal stays
+ * open showing an inline success alert for REDIRECT_DELAY_MS before
+ * navigating; on failure it stays open with an inline alert.
  *
- * One controller class instantiated on both the toolbar trigger and the modal
- * root (same dual-role pattern as share-case-core / delete-case-options-core,
- * shared via ModalTriggerControllerBase): the trigger reads case
- * id/name/last-try off its own dataset and delegates to the modal-root
- * instance.
+ * The toolbar trigger carries the case id and last try number.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [
     "title",
     "alert",
@@ -40,15 +35,10 @@ export default class extends ModalTriggerControllerBase {
     cloneUrl: String
   }
 
-  get modalElementId() {
-    return "cloneCaseModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
-    const caseId = btn?.dataset?.cloneCaseCoreIdValue
-    const caseName = btn?.dataset?.cloneCaseCoreNameValue
-    const lastTry = btn?.dataset?.cloneCaseCoreLastTryValue
+  openFor(btn) {
+    const caseId = this.triggerValue(btn, "id")
+    const caseName = caseNameFromHeader()
+    const lastTry = this.triggerValue(btn, "lastTry")
 
     this.currentCaseId = caseId || ""
     this.newCaseName = ""
@@ -102,15 +92,11 @@ export default class extends ModalTriggerControllerBase {
 
     try {
       const url = this.triesUrlTemplateValue.replaceAll("__CASE_ID__", caseId)
-      const response = await apiFetch(url, { headers: { Accept: "application/json" } })
-      if (!response.ok) {
-        throw new Error(`Failed to load tries (${response.status})`)
-      }
-      const data = await response.json()
+      const data = await getJson(url)
       // Bail if the case changed while this request was in flight (e.g. the
       // modal was reopened for a different case) — an outdated response must
       // not clobber the now-current case's try dropdown.
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       const tries = Array.isArray(data.tries) ? data.tries : []
 
       tries.forEach((tryItem) => {
@@ -124,7 +110,7 @@ export default class extends ModalTriggerControllerBase {
         this.trySelectTarget.value = String(this.tryNumber)
       }
     } catch (error) {
-      if (caseId !== this.currentCaseId) return
+      if (!isSameId(caseId, this.currentCaseId)) return
       console.error("clone-case-core: load tries failed", error)
       this.showAlert("Unable to load try history. Please try again.", "danger")
     }
@@ -139,32 +125,23 @@ export default class extends ModalTriggerControllerBase {
     this.clearAlert()
 
     try {
-      const response = await apiFetch(this.cloneUrlValue, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          case_id: Number(this.currentCaseId),
-          clone_queries: this.includeQueries,
-          clone_ratings: this.includeRatings,
-          preserve_history: this.history,
-          try_number: this.tryNumber,
-          case_name: this.newCaseName
+      const acase = await postJson(this.cloneUrlValue, {
+        case_id: Number(this.currentCaseId),
+        clone_queries: this.includeQueries,
+        clone_ratings: this.includeRatings,
+        preserve_history: this.history,
+        try_number: this.tryNumber,
+        case_name: this.newCaseName
         })
-      })
 
-      if (!response.ok) {
-        const data = await response.json().catch(() => ({}))
-        throw new Error(data.error || data.message || "Unable to clone your case, please try again.")
-      }
-
-      const acase = await response.json()
       this.showAlert("Case cloned successfully! Redirecting…", "success")
       window.setTimeout(() => {
         window.location.href = `${getQuepidRootUrl()}/case/${acase.case_id}/try/${acase.last_try_number}`
       }, REDIRECT_DELAY_MS)
     } catch (error) {
       console.error("clone-case-core: clone failed", error)
-      this.showAlert(error.message || "Unable to clone your case, please try again.", "danger")
+      const message = serverMessage(error, "Unable to clone your case, please try again.")
+      this.showAlert(message, "danger")
       this.setSubmitting(false)
     }
   }
@@ -178,12 +155,8 @@ export default class extends ModalTriggerControllerBase {
       this.historyOnButtonTarget.classList.toggle("btn-primary", this.history)
       this.historyOnButtonTarget.classList.toggle("btn-outline-secondary", !this.history)
     }
-    if (this.hasTryFieldWrapperTarget) {
-      this.tryFieldWrapperTarget.classList.toggle("d-none", this.history)
-    }
-    if (this.hasNoQueriesAlertTarget) {
-      this.noQueriesAlertTarget.classList.toggle("d-none", this.includeQueries)
-    }
+    this.toggleVisible("tryFieldWrapper", !this.history)
+    this.toggleVisible("noQueriesAlert", !this.includeQueries)
     this.refreshSubmitState()
   }
 
@@ -193,17 +166,6 @@ export default class extends ModalTriggerControllerBase {
   }
 
   setSubmitting(isSubmitting) {
-    if (!this.hasSubmitButtonTarget) return
-    this.submitButtonTarget.disabled = isSubmitting || !this.newCaseName
-  }
-
-  showAlert(message, variant) {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${variant}` })
-  }
-
-  clearAlert() {
-    if (!this.hasAlertTarget) return
-    showStatusMessage(this.alertTarget, { message: "", className: "alert d-none" })
+    this.setButtonsDisabled(isSubmitting || !this.newCaseName, ["submitButton"])
   }
 }

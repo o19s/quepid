@@ -1,65 +1,67 @@
+import { teamCatalogHtml } from "../support/modal_catalog_html"
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import ShareCaseCoreController from "controllers/share_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
 }))
 
 function buildController(overrides = {}) {
-  const controller = Object.create(ShareCaseCoreController.prototype)
-  controller.element = document.createElement("div")
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
-  controller.teamsUrlValue = "/api/teams"
-  controller.hasTeamsUrlValue = true
-  controller.teamCasesUrlTemplateValue = "/api/teams/__TEAM_ID__/cases"
-  controller.teamCaseUrlTemplateValue = "/api/teams/__TEAM_ID__/cases/__CASE_ID__"
+  const controller = buildControllerFixture(ShareCaseCoreController, {
+    overrides: { identifier: "share-case-core" },
+    targets: {
+      title: document.createElement("h5"),
+      caseId: { value: "" },
+      unshareCaseId: { value: "" },
+      teamId: { value: "" },
+      unshareTeamId: { value: "" },
+      sharedList: document.createElement("div"),
+      submitButton: document.createElement("button"),
+      unshareButton: document.createElement("button"),
+      alert: document.createElement("div"),
+      loading: document.createElement("div"),
+      bodyContent: document.createElement("div"),
+      emptyShareable: document.createElement("div"),
+      sharePicker: document.createElement("div"),
+      shareableList: document.createElement("div"),
+      sharedSection: document.createElement("div")
+    },
+    values: {
+      catalogUrlTemplate: "/cases/__CASE_ID__/modal_catalogs/sharing",
+      teamCasesUrlTemplate: "/api/teams/__TEAM_ID__/cases",
+      teamCaseUrlTemplate: "/api/teams/__TEAM_ID__/cases/__CASE_ID__"
+    }
+  })
   controller.selectedShareTeamId = null
   controller.selectedShareTeamName = null
   controller.selectedSharedTeamId = null
   controller.selectedSharedTeamName = null
   controller.currentCaseId = null
-  controller.allTeams = []
-  controller.sharedTeams = []
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasCaseIdTarget = true
-  controller.caseIdTarget = { value: "" }
-  controller.hasUnshareCaseIdTarget = true
-  controller.unshareCaseIdTarget = { value: "" }
-  controller.hasTeamIdTarget = true
-  controller.teamIdTarget = { value: "" }
-  controller.hasUnshareTeamIdTarget = true
-  controller.unshareTeamIdTarget = { value: "" }
-  controller.hasSharedListTarget = true
-  controller.sharedListTarget = document.createElement("div")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
+  controller.teamRows = []
+  controller.sharedRows = []
   controller.submitButtonTarget.classList.add("d-none")
-  controller.hasUnshareButtonTarget = true
-  controller.unshareButtonTarget = document.createElement("button")
   controller.unshareButtonTarget.classList.add("d-none")
-  controller.hasAlertTarget = true
-  controller.alertTarget = document.createElement("div")
-  controller.hasLoadingTarget = true
-  controller.loadingTarget = document.createElement("div")
-  controller.hasBodyContentTarget = true
-  controller.bodyContentTarget = document.createElement("div")
-  controller.hasEmptyShareableTarget = true
-  controller.emptyShareableTarget = document.createElement("div")
   controller.emptyShareableTarget.classList.add("d-none")
-  controller.hasSharePickerTarget = true
-  controller.sharePickerTarget = document.createElement("div")
-  controller.hasShareableListTarget = true
-  controller.shareableListTarget = document.createElement("div")
-  controller.hasSharedSectionTarget = true
-  controller.sharedSectionTarget = document.createElement("div")
   controller.sharedSectionTarget.classList.add("d-none")
 
   Object.assign(controller, overrides)
   return controller
+}
+
+function mountTeams(controller, allTeams, sharedTeams) {
+  const catalog = new DOMParser().parseFromString(teamCatalogHtml(allTeams, sharedTeams), "text/html")
+  controller.sharedRows = [...catalog.querySelector('[data-catalog-list="shared"]').children]
+  controller.teamRows = [...catalog.querySelectorAll("[data-team-id]")].sort(
+    (a, b) => Number(a.dataset.teamOrder) - Number(b.dataset.teamOrder)
+  )
+  controller.renderTeamLists()
+}
+
+function sharedTeams(controller) {
+  return [...controller.sharedListTarget.children].map((row) => controller.teamFor(row))
 }
 
 const TEAM_PAYLOAD = {
@@ -80,7 +82,21 @@ const TEAM_PAYLOAD = {
 }
 
 describe("ShareCaseCoreController — modal list UI", () => {
-  // List partition / selection: Angular ShareCaseModalInstanceCtrl (no Karma spec existed).
+  it("renders safe team names with distinct shipped actions and replaces old rows", () => {
+    const controller = buildController()
+    const teams = [{ id: 8, name: "<img src=x onerror=alert(1)>" }]
+    mountTeams(controller, teams, [])
+    mountTeams(controller, teams, [])
+    expect(controller.shareableListTarget.querySelectorAll("button")).toHaveLength(1)
+    expect(controller.shareableListTarget.querySelector("img")).toBeNull()
+    expect(controller.shareableListTarget.textContent).toBe(teams[0].name)
+    expect(controller.shareableListTarget.firstElementChild.dataset.action).toBe("click->share-case-core#selectShareTeam")
+    mountTeams(controller, teams, teams)
+    expect(controller.sharedListTarget.firstElementChild.dataset.action).toBe("click->share-case-core#selectSharedTeam")
+    expect(controller.sharedListTarget.firstElementChild.classList.contains("list-group-item-success")).toBe(true)
+  })
+
+  // List partition / selection contract (no older unit spec existed).
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -91,22 +107,22 @@ describe("ShareCaseCoreController — modal list UI", () => {
 
   it("partitions teams into shareable vs already shared for the case", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data)
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
 
     const controller = buildController()
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
-        }
-      }
+    mountCaseHeader("Demo Case")
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
     expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
-    expect(controller.sharedTeams.map((t) => t.id)).toEqual([1])
+    expect(sharedTeams(controller).map((t) => t.id)).toEqual([1])
     const shareableIds = [...controller.shareableListTarget.querySelectorAll("[data-team-id]")]
       .map((el) => Number(el.dataset.teamId))
     expect(shareableIds).toEqual([2])
@@ -120,7 +136,7 @@ describe("ShareCaseCoreController — modal list UI", () => {
     const controller = buildController()
     const teams = [{ id: 1, name: "OSC" }]
 
-    controller.applyTeamLists(teams, teams)
+    mountTeams(controller, teams, teams)
 
     expect(controller.emptyShareableTarget.classList.contains("d-none")).toBe(true)
     expect(controller.sharePickerTarget.classList.contains("d-none")).toBe(true)
@@ -130,14 +146,14 @@ describe("ShareCaseCoreController — modal list UI", () => {
   it("shows the no-teams prompt only when the user has no teams", () => {
     const controller = buildController()
 
-    controller.applyTeamLists([], [])
+    mountTeams(controller, [], [])
 
     expect(controller.emptyShareableTarget.classList.contains("d-none")).toBe(false)
   })
 
   it("selectTeam marks a share action", () => {
     const controller = buildController()
-    controller.applyTeamLists(
+    mountTeams(controller,
       [
         { id: 1, name: "OSC" },
         { id: 2, name: "Other" }
@@ -145,11 +161,15 @@ describe("ShareCaseCoreController — modal list UI", () => {
       [{ id: 1, name: "OSC" }]
     )
     const sharedItem = controller.sharedListTarget.querySelector("[data-team-id='1']")
-    controller.toggleCoreSharedSelect({ currentTarget: sharedItem }, { id: 1, name: "OSC" })
+    expect(sharedItem.dataset.action).toBe("click->share-case-core#selectSharedTeam")
+    expect(sharedItem.dataset.shareCaseCoreTeamIdParam).toBe("1")
+    controller.selectSharedTeam({ currentTarget: sharedItem, params: { teamId: 1 } })
     expect(controller.selectedSharedTeamId).toBe(1)
 
     const shareableItem = controller.shareableListTarget.querySelector("[data-team-id='2']")
-    controller.toggleShareSelect({ currentTarget: shareableItem }, { id: 2, name: "Other" })
+    expect(shareableItem.dataset.action).toBe("click->share-case-core#selectShareTeam")
+    expect(shareableItem.dataset.shareCaseCoreTeamIdParam).toBe("2")
+    controller.selectShareTeam({ currentTarget: shareableItem, params: { teamId: 2 } })
 
     expect(controller.selectedShareTeamId).toBe(2)
     expect(controller.submitButtonTarget.classList.contains("d-none")).toBe(false)
@@ -161,7 +181,7 @@ describe("ShareCaseCoreController — modal list UI", () => {
 
 describe("ShareCaseCoreController — API share/unshare", () => {
   // HTTP contracts: Karma teamSvc_spec.js shareCase / unshareCase (Stimulus uses apiFetch instead).
-  // Event emission: Karma caseSvc_spec.js quepid:case-team-changed bridge (receiver stays in Karma).
+  // Event emission: the core share flow dispatches a native case-team-changed event.
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -172,25 +192,22 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
   it("opens the share modal with the bound case", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data)
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
 
     const controller = buildController()
-    const preventDefault = vi.fn()
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      preventDefault,
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
-        }
-      }
+    mountCaseHeader("Demo Case")
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
-    expect(preventDefault).toHaveBeenCalled()
-    expect(apiFetch).toHaveBeenCalledWith("/api/teams", {
-      headers: { Accept: "application/json" }
+    expect(apiFetch).toHaveBeenCalledWith("/cases/5/modal_catalogs/sharing", {
+      headers: { Accept: "text/html" }
     })
     expect(controller.titleTarget.textContent).toBe("Share Case: Demo Case")
     expect(controller.caseIdTarget.value).toBe("5")
@@ -200,6 +217,10 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
   it("shows danger alert when share API fails", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data)
+      },
       ok: false,
       status: 422,
       statusText: "Unprocessable Entity",
@@ -208,8 +229,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
     const controller = buildController()
     controller.currentCaseId = "5"
-    controller.allTeams = [{ id: 2, name: "Other" }]
-    controller.sharedTeams = []
+    mountTeams(controller, [{ id: 2, name: "Other" }], [])
     controller.selectedShareTeamId = 2
     controller.selectedShareTeamName = "Other"
 
@@ -219,11 +239,34 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
     expect(controller.alertTarget.textContent).toBe("Team already has this case")
     expect(controller.alertTarget.className).toBe("alert alert-danger")
-    expect(controller.sharedTeams).toEqual([])
+    expect(sharedTeams(controller)).toEqual([])
+  })
+
+  it("appends a newly shared team and restores its original position after unshare", async () => {
+    apiFetch.mockResolvedValue({ ok: true, status: 204 })
+    const controller = buildController()
+    controller.currentCaseId = "5"
+    const teams = [
+      { id: 1, name: "First" },
+      { id: 2, name: "Second" },
+      { id: 3, name: "Third" }
+    ]
+    mountTeams(controller, teams, [teams[2]])
+    controller.selectShareTeam({ currentTarget: controller.shareableListTarget.firstElementChild })
+    await controller.submitShare({ preventDefault: vi.fn() })
+    expect(sharedTeams(controller).map((team) => team.id)).toEqual([3, 1])
+    controller.selectSharedTeam({ currentTarget: controller.sharedListTarget.lastElementChild })
+    await controller.submitUnshare({ preventDefault: vi.fn() })
+    expect([...controller.shareableListTarget.children].map((row) => row.textContent)).toEqual(["First", "Second"])
+    expect(sharedTeams(controller).map((team) => team.id)).toEqual([3])
   })
 
   it("shows danger alert when unshare API fails", async () => {
     apiFetch.mockResolvedValue({
+      async text() {
+        const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data)
+      },
       ok: false,
       status: 500,
       statusText: "Internal Server Error",
@@ -234,8 +277,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     controller.currentCaseId = "5"
     controller.selectedSharedTeamId = 1
     controller.selectedSharedTeamName = "OSC"
-    controller.allTeams = [{ id: 1, name: "OSC" }]
-    controller.sharedTeams = [{ id: 1, name: "OSC" }]
+    mountTeams(controller, [{ id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
 
     await ShareCaseCoreController.prototype.submitUnshare.call(controller, {
       preventDefault: vi.fn()
@@ -243,29 +285,25 @@ describe("ShareCaseCoreController — API share/unshare", () => {
 
     expect(controller.alertTarget.textContent).toBe("Server blew up")
     expect(controller.alertTarget.className).toBe("alert alert-danger")
-    expect(controller.sharedTeams).toEqual([{ id: 1, name: "OSC" }])
+    expect(sharedTeams(controller)).toEqual([{ id: 1, name: "OSC" }])
   })
 
   it("shows danger alert when loading teams fails on open", async () => {
-    apiFetch.mockResolvedValue({
+    apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,
       ok: false,
       status: 500,
       statusText: "Error"
     })
 
     const controller = buildController()
-    await ShareCaseCoreController.prototype.open.call(controller, {
-      currentTarget: {
-        dataset: {
-          shareCaseCoreIdValue: "5",
-          shareCaseCoreNameValue: "Demo Case"
-        }
-      }
+    mountCaseHeader("Demo Case")
+    await ShareCaseCoreController.prototype.openFor.call(controller, {
+      dataset: { shareCaseCoreIdValue: "5" }
     })
 
     expect(controller.alertTarget.textContent).toBe("Unable to load teams. Please try again.")
     expect(controller.alertTarget.className).toBe("alert alert-danger")
-    expect(controller.sharedTeams).toEqual([])
+    expect(sharedTeams(controller)).toEqual([])
 
     // resetTeamListsForError: the "no teams" placeholder must stay hidden on
     // a load failure — showing it here would misleadingly suggest the case
@@ -287,42 +325,40 @@ describe("ShareCaseCoreController — API share/unshare", () => {
     apiFetch
       .mockImplementationOnce(() => firstFetch)
       .mockImplementationOnce(() =>
-        Promise.resolve({ ok: true, json: () => Promise.resolve(secondPayload) })
+        Promise.resolve({ text: async () => teamCatalogHtml(secondPayload.teams, secondPayload.teams), ok: true })
       )
 
     const controller = buildController()
 
     // Case 5's request starts but does not resolve yet.
     controller.currentCaseId = "5"
-    const staleLoad = controller.loadTeamsFromApi("5")
+    const staleLoad = controller.loadTeams("5")
 
     // The user reopens the modal for a different case before that resolves.
     controller.currentCaseId = "9"
-    await controller.loadTeamsFromApi("9")
+    await controller.loadTeams("9")
 
-    expect(controller.sharedTeams).toEqual([{ id: 3, name: "Fresh" }])
+    expect(sharedTeams(controller)).toEqual([{ id: 3, name: "Fresh" }])
     expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
 
     // Case 5's stale response now arrives — it must not clobber case 9's UI.
-    resolveFirstFetch({ ok: true, json: () => Promise.resolve(TEAM_PAYLOAD) })
+    resolveFirstFetch({ text: async function () { const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data) },  ok: true, json: () => Promise.resolve(TEAM_PAYLOAD) })
     await staleLoad
 
     expect(controller.currentCaseId).toBe("9")
-    expect(controller.sharedTeams).toEqual([{ id: 3, name: "Fresh" }])
+    expect(sharedTeams(controller)).toEqual([{ id: 3, name: "Fresh" }])
     expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("shares via API and dispatches quepid:case-team-changed", async () => {
-    apiFetch.mockResolvedValue({ ok: true, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({ text: async function () { const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data) },  ok: true, json: () => Promise.resolve({}) })
     const dispatchSpy = vi.spyOn(document, "dispatchEvent")
 
     const controller = buildController()
     controller.currentCaseId = "5"
-    controller.allTeams = [
-      { id: 2, name: "Other" },
-      { id: 1, name: "OSC" }
-    ]
-    controller.sharedTeams = [{ id: 1, name: "OSC" }]
+    mountTeams(controller, [{ id: 2, name: "Other" }, { id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
     controller.selectedShareTeamId = 2
     controller.selectedShareTeamName = "Other"
 
@@ -336,7 +372,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
       body: JSON.stringify({ id: 5 })
     })
     expect(controller.alertTarget.textContent).toBe("Case shared with team successfully.")
-    expect(controller.sharedTeams.map((t) => t.id)).toEqual([1, 2])
+    expect(sharedTeams(controller).map((t) => t.id)).toEqual([1, 2])
 
     const event = dispatchSpy.mock.calls.find((c) => c[0].type === "quepid:case-team-changed")?.[0]
     expect(event.detail).toEqual({
@@ -347,15 +383,15 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("unshares via API and dispatches quepid:case-team-changed", async () => {
-    apiFetch.mockResolvedValue({ ok: true, status: 204, json: () => Promise.resolve({}) })
+    apiFetch.mockResolvedValue({ text: async function () { const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data) },  ok: true, status: 204, json: () => Promise.resolve({}) })
     const dispatchSpy = vi.spyOn(document, "dispatchEvent")
 
     const controller = buildController()
     controller.currentCaseId = "5"
     controller.selectedSharedTeamId = 1
     controller.selectedSharedTeamName = "OSC"
-    controller.allTeams = [{ id: 1, name: "OSC" }]
-    controller.sharedTeams = [{ id: 1, name: "OSC" }]
+    mountTeams(controller, [{ id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
 
     await ShareCaseCoreController.prototype.submitUnshare.call(controller, {
       preventDefault: vi.fn()
@@ -365,7 +401,7 @@ describe("ShareCaseCoreController — API share/unshare", () => {
       method: "DELETE",
       headers: { Accept: "application/json" }
     })
-    expect(controller.sharedTeams).toEqual([])
+    expect(sharedTeams(controller)).toEqual([])
 
     const event = dispatchSpy.mock.calls.find((c) => c[0].type === "quepid:case-team-changed")?.[0]
     expect(event.detail).toEqual({
@@ -376,25 +412,131 @@ describe("ShareCaseCoreController — API share/unshare", () => {
   })
 
   it("openFromExternal shows modal and loads teams", async () => {
+    mountCaseHeader("From Judgements")
     apiFetch.mockResolvedValue({
+      async text() {
+        const data = await this.json()
+        return data.teams ? teamCatalogHtml(data.teams, data.teams.filter((t) => t.cases.some((c) => c.case_id === 5))) : JSON.stringify(data)
+      },
       ok: true,
       json: () => Promise.resolve(TEAM_PAYLOAD)
     })
+    const controller = buildController()
+    controller.element = document.createElement("div")
+    // Stand in for Bootstrap: show() fires show.bs.modal with the relatedTarget it was given.
+    let opening
+    const show = vi.fn((relatedTarget) => {
+      opening = controller.open({ target: controller.element, relatedTarget })
+    })
     window.bootstrap = {
       Modal: {
-        getOrCreateInstance: vi.fn(() => ({ show: vi.fn() }))
+        getOrCreateInstance: vi.fn(() => ({ show }))
       }
     }
 
-    const controller = buildController()
-    controller.element = document.createElement("div")
+    ShareCaseCoreController.prototype.openFromExternal.call(controller, 5)
+    await opening
 
-    await ShareCaseCoreController.prototype.openFromExternal.call(controller, {
-      detail: { caseNo: 5, caseName: "From Judgements" }
-    })
-
-    expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalled()
+    expect(window.bootstrap.Modal.getOrCreateInstance).toHaveBeenCalledWith(controller.element, undefined)
+    expect(show).toHaveBeenCalledOnce()
     expect(controller.titleTarget.textContent).toBe("Share Case: From Judgements")
     expect(controller.currentCaseId).toBe("5")
+  })
+})
+
+describe("ShareCaseCoreController — response ownership", () => {
+  beforeEach(() => vi.resetAllMocks())
+
+  const catalog = (teams) => ({
+    ok: true,
+    text: async () => teamCatalogHtml(teams, teams)
+  })
+
+  it.each(["success", "failure"])("ignores an older same-case catalog %s after a newer read", async (outcome) => {
+    const controller = buildController({ currentCaseId: "5" })
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const old = controller.loadTeams("5")
+    apiFetch.mockResolvedValueOnce(catalog([{ id: 1, name: "Fresh" }]))
+    await controller.loadTeams("5")
+    finish(outcome === "success" ? catalog([]) : { ok: false })
+    await old
+    expect(sharedTeams(controller)).toEqual([{ id: 1, name: "Fresh" }])
+    expect(controller.alertTarget.classList.contains("alert-danger")).toBe(false)
+    expect(controller.loadingTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("reconciles a late %s success after reopen and publishes its completed write", async (method) => {
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, [{ id: 1, name: "OSC" }], method === "submitUnshare" ? [{ id: 1, name: "OSC" }] : [])
+    controller.selectedShareTeamId = 1
+    controller.selectedSharedTeamId = 1
+    const notification = vi.spyOn(controller, "dispatchCaseTeamChanged")
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    apiFetch.mockResolvedValue(catalog(method === "submitShare" ? [{ id: 1, name: "OSC" }] : []))
+    await controller.loadTeams("5")
+    finish({ ok: true, status: 200, text: async () => "{}" })
+    await mutation
+    expect(sharedTeams(controller)).toHaveLength(method === "submitShare" ? 1 : 0)
+    expect(notification).toHaveBeenCalledOnce()
+    expect(controller.alertTarget.textContent).toBe("")
+    expect(apiFetch).toHaveBeenCalledTimes(3)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("ignores late %s errors and cleanup from a prior opening", async (method) => {
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, [{ id: 1, name: "OSC" }], [{ id: 1, name: "OSC" }])
+    controller.selectedShareTeamId = 1
+    controller.selectedSharedTeamId = 1
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    controller.alertTarget.textContent = "New opening"
+    controller.submitButtonTarget.disabled = true
+    finish({ ok: false, status: 503, text: async () => "{}" })
+    await mutation
+    expect(controller.alertTarget.textContent).toBe("New opening")
+    expect(controller.submitButtonTarget.disabled).toBe(true)
+    expect(sharedTeams(controller)).toHaveLength(1)
+  })
+
+  it.each(["submitShare", "submitUnshare"])("clears reopened selections when a late %s refresh replaces a two-team catalog", async (method) => {
+    const teams = [{ id: 1, name: "OSC" }, { id: 2, name: "Other" }]
+    const removing = method === "submitUnshare"
+    const controller = buildController({ currentCaseId: "5", openToken: Symbol() })
+    mountTeams(controller, teams, removing ? teams : [])
+    controller.selectedShareTeamId = removing ? null : 1
+    controller.selectedSharedTeamId = removing ? 1 : null
+    let finish
+    apiFetch.mockImplementationOnce(() => new Promise(resolve => { finish = resolve }))
+    const mutation = controller[method]({ preventDefault() {} })
+    controller.openToken = Symbol()
+    controller.clearSelections()
+    mountTeams(controller, teams, removing ? teams : [])
+    const row = (removing ? controller.sharedListTarget : controller.shareableListTarget).firstElementChild
+    if (removing) controller.selectSharedTeam({ currentTarget: row })
+    else controller.selectShareTeam({ currentTarget: row })
+    apiFetch.mockResolvedValue({
+      ok: true,
+      text: async () => teamCatalogHtml(teams, removing ? [teams[1]] : [teams[0]])
+    })
+
+    finish({ ok: true, status: 200, text: async () => "{}" })
+    await mutation
+
+    expect(controller.selectedShareTeamId).toBeNull()
+    expect(controller.selectedSharedTeamId).toBeNull()
+    expect(controller.teamIdTarget.value).toBe("")
+    expect(controller.unshareTeamIdTarget.value).toBe("")
+    for (const button of [controller.submitButtonTarget, controller.unshareButtonTarget]) {
+      expect(button.disabled).toBe(true)
+      expect(button.classList.contains("d-none")).toBe(true)
+    }
+    expect(controller.sharedListTarget.children).toHaveLength(1)
+    expect(controller.shareableListTarget.children).toHaveLength(1)
   })
 })

@@ -18,12 +18,13 @@ describe("text_paste", () => {
     const getData = vi.fn(() => "line one\nline two")
     attachTextPaste(input, onPaste)
 
-    const event = new Event("paste", { bubbles: true })
+    const event = new Event("paste", { bubbles: true, cancelable: true })
     event.clipboardData = { getData }
     input.dispatchEvent(event)
 
     expect(getData).toHaveBeenCalledWith("text/plain")
     expect(onPaste).toHaveBeenCalledWith("line one\nline two")
+    expect(event.defaultPrevented).toBe(true)
   })
 
   it("detach stops further paste callbacks", () => {

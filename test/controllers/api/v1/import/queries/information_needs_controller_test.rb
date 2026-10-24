@@ -18,6 +18,17 @@ module Api
           end
 
           describe '#create' do
+            test 'ignores blank records from older information need exports' do
+              csv_text = "query,information_need\n\n#{query.query_text},Updated information need\n\n"
+
+              assert_no_difference 'Query.count' do
+                post :create, params: { case_id: acase.id, csv_text: csv_text }
+              end
+
+              assert_response :ok
+              assert_equal 'Updated information need', query.reload.information_need
+            end
+
             test 'updates queries with information needs' do
               acase.queries = []
               acase.save!

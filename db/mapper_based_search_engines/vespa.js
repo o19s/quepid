@@ -37,12 +37,12 @@ docsMapper = function (data) {
 
 // ratedDocsQueryParamsMapper - Builds a one-off query_params string that looks up exactly
 // the given rated doc IDs, for the "Already Rated Documents" section of the
-// Find-and-Rate-Missing-Documents modal. queriesSvc.js's filterToRatings() has no generic
+// Find-and-Rate-Missing-Documents modal. query_model.js's filterToRatings() has no generic
 // ID-filter syntax for a searchapi engine (unlike Solr's {!terms f=id} or ES's terms
 // query), so that's left to whichever mapper actually knows its target API's query
 // language.
 //
-// idField is the case's own id field (queriesSvc.js passes fieldSpec.id, i.e. whatever
+// idField is the case's own id field (query_service.js passes fieldSpec.id, i.e. whatever
 // follows "id:" in the try's field_spec - "movie_id" by default here, but a case can
 // repoint it at any indexed/attribute field in its Vespa schema) - not hardcoded, since
 // Vespa's own document id (e.g. "id:movies:movies::603") isn't itself a queryable field:
@@ -65,8 +65,8 @@ ratedDocsQueryParamsMapper = function (ratedIds, idField) {
 };
 
 // nextPageArgsMapper - Given the resolved args used for the current page (already
-// curator-var/placeholder-resolved - see Try#args/settingsSvc.previewArgs), returns the
-// args for the next page. queriesSvc.js has no generic "advance to the next page" logic
+// curator-var/placeholder-resolved - see Try#args/settings_runtime.js's previewArgs), returns
+// the args for the next page. Quepid has no generic "advance to the next page" logic
 // for a searchapi engine (splainer-search's searchApiSearcherFactory has no pager()
 // implementation, unlike Solr/ES/Algolia/Vectara) since different mapper-based engines
 // could paginate in entirely different ways - a numeric offset (Vespa's own convention,

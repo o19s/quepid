@@ -6,29 +6,26 @@ module Admin
   class UsersController < Admin::AdminController
     include Pagy::Method
 
+    CSV_COLUMNS = [ :id, :name, :email, :email_marketing, :agreed_time ].freeze
+
     before_action :set_user, only: [ :show, :edit, :update, :destroy, :assign_judgements_to_anonymous_user ]
 
     # GET /admin/users
     # GET /admin/users.json
     # GET /admin/users.csv
     def index
-      @shallow = 'true' == params[:shallow]
+      @shallow = deserialize_bool_param(params[:shallow])
 
       # Exclude AI judges from the admin user list.
       query = User.real_users.order(created_at: :desc)
 
-      if params[:q].present?
-        q = "%#{params[:q].to_s.downcase}%"
-        query = query.where('LOWER(users.name) LIKE ? OR LOWER(users.email) LIKE ?', q, q)
-      end
+      query = query.search_by(params[:q], :name, :email) if params[:q].present?
 
       respond_to do |format|
         format.html { @pagy, @users = pagy(query) }
         format.json { @users = query.all }
         format.csv do
-          @users = query.all
-          headers['Content-Disposition'] = 'attachment; filename=\"quepid_users.csv\"'
-          headers['Content-Type'] ||= 'text/csv'
+          send_data users_csv(query), filename: 'quepid_users.csv', type: 'text/csv'
         end
       end
     end
@@ -61,9 +58,9 @@ module Admin
           # rubocop:enable Rails/SkipsModelValidations
         end
 
-        redirect_to admin_user_path(@user)
+        redirect_to admin_user_path(@user), notice: 'User was successfully created.', status: :see_other
       else
-        render action: :new
+        render action: :new, status: :unprocessable_content
       end
     end
 
@@ -87,10 +84,10 @@ module Admin
           end
           Analytics::Tracker.track_user_updated_by_admin_event @user
 
-          format.html { redirect_to admin_user_path @user }
+          format.html { redirect_to admin_user_path(@user), notice: 'User was successfully updated.', status: :see_other }
           format.json { render :show, status: :ok, location: edit_admin_user_path(@user) }
         else
-          format.html { render :edit }
+          format.html { render :edit, status: :unprocessable_content }
           format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
@@ -101,12 +98,12 @@ module Admin
     def destroy
       if @user.destroy
         respond_to do |format|
-          format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.' }
+          format.html { redirect_to admin_users_url, notice: 'User account was successfully deleted.', status: :see_other }
           format.json { head :no_content }
         end
       else
         respond_to do |format|
-          format.html { render :edit }
+          format.html { render :edit, status: :unprocessable_content }
           format.json { render json: @user.errors, status: :unprocessable_content }
         end
       end
@@ -118,10 +115,14 @@ module Admin
         j.save!
       end
 
-      redirect_to admin_user_path @user, notice: 'All judgements assigned to anonymous user.'
+      redirect_to admin_user_path(@user), notice: 'All judgements assigned to anonymous user.', status: :see_other
     end
 
     private
+
+    def users_csv query
+      CsvExport.generate([ CSV_COLUMNS ] + query.map { |user| CSV_COLUMNS.map { |attr| user.public_send(attr) } })
+    end
 
     # Use callbacks to share common setup or constraints between actions.
     def set_user

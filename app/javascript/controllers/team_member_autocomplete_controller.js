@@ -1,3 +1,4 @@
+import { getJson } from "api/json"
 import { Controller } from "@hotwired/stimulus"
 
 /**
@@ -12,6 +13,7 @@ import { Controller } from "@hotwired/stimulus"
  * Targets:
  *   - input: The email input field
  *   - suggestions: The dropdown container for suggestions
+ *   - itemTemplate: Markup for one suggestion row
  * 
  * Values:
  *   - url: API endpoint for fetching suggestions
@@ -19,7 +21,7 @@ import { Controller } from "@hotwired/stimulus"
  *   - debounceDelay: Delay in ms before making API request (default: 300)
  */
 export default class extends Controller {
-  static targets = ["input", "suggestions", "spinner"]
+  static targets = ["input", "suggestions", "spinner", "itemTemplate"]
   static values = {
     url: String,
     minLength: { type: Number, default: 2 },
@@ -28,23 +30,27 @@ export default class extends Controller {
 
   connect() {
     this.debounceTimer = null
+    this.request = null
     this.suggestions = []
     this.isLoading = false
   }
 
   disconnect() {
     this.clearDebounce()
+    this.abortRequest()
   }
 
   /**
    * Handle input changes
    * Debounces the search to avoid excessive API calls
    */
-  search(event) {
+  search() {
     this.clearDebounce()
+    this.abortRequest()
     const query = this.inputTarget.value.trim()
 
     if (query.length < this.minLengthValue) {
+      this.hideLoading()
       this.hideSuggestions()
       return
     }
@@ -56,30 +62,44 @@ export default class extends Controller {
   }
 
   /**
-   * Fetch suggestions from the server
+   * Fetch suggestions from the server. Each request supersedes the previous
+   * one, so a slow response for an older query never replaces newer state.
    * @param {string} query - The search query
    */
   async fetchSuggestions(query) {
+    this.abortRequest()
+    const request = new AbortController()
+    this.request = request
     try {
-      const response = await fetch(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
+      const data = await getJson(`${this.urlValue}?query=${encodeURIComponent(query)}`, {
         headers: {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest'
-        }
+        },
+        signal: request.signal
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const data = await response.json()
+      if (this.request !== request) return
+      this.request = null
       this.suggestions = data
       this.hideLoading()
       this.showSuggestions(data)
     } catch (error) {
+      if (this.request !== request) return
+      this.request = null
       console.error('Error fetching suggestions:', error)
       this.hideLoading()
       this.hideSuggestions()
+    }
+  }
+
+  /**
+   * Abort the in-flight request, if any. Its response is then ignored.
+   */
+  abortRequest() {
+    if (this.request) {
+      const request = this.request
+      this.request = null
+      request.abort()
     }
   }
 
@@ -109,35 +129,22 @@ export default class extends Controller {
    * @returns {HTMLElement} The suggestion item element
    */
   createSuggestionItem(user) {
-    const item = document.createElement('div')
-    item.className = 'autocomplete-item'
+    const item = this.itemTemplateTarget.content.firstElementChild.cloneNode(true)
     item.dataset.email = user.email
-    item.dataset.action = 'click->team-member-autocomplete#select'
 
-    const avatar = document.createElement('img')
+    const avatar = item.querySelector(".autocomplete-avatar")
     avatar.src = user.avatar_url
     avatar.alt = user.display_name
-    avatar.className = 'autocomplete-avatar'
 
-    const details = document.createElement('div')
-    details.className = 'autocomplete-details'
-
-    const name = document.createElement('div')
-    name.className = 'autocomplete-name'
-    name.textContent = user.display_name
-
-    details.appendChild(name)
+    item.querySelector(".autocomplete-name").textContent = user.display_name
 
     // Only show email if the match was on email, not on name
-    if (user.matched_on === 'email') {
-      const email = document.createElement('div')
-      email.className = 'autocomplete-email'
+    const email = item.querySelector(".autocomplete-email")
+    if (user.matched_on === "email") {
       email.textContent = user.email
-      details.appendChild(email)
+    } else {
+      email.remove()
     }
-
-    item.appendChild(avatar)
-    item.appendChild(details)
 
     return item
   }

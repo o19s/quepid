@@ -1,6 +1,7 @@
 <%= page_header "Cases" do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <div class="btn-group me-2">
+  <div class="btn-toolbar gap-2 mb-2 mb-md-0">
+    <%= page_create_button 'New Case', case_new_path, data: { turbo: false } %>
+    <div class="btn-group">
       <%= button_tag type: 'button',
                      class: 'btn btn-sm btn-outline-secondary',
                      data: {
@@ -26,59 +27,18 @@ Cases are a group of queries that you are evaluating and experimenting with.
 <p id="notice"><%= notice %></p>
 
 <% if @cases.empty? && @filter_q.blank? && @filter_team_id.blank? && !@archived %>
-  Create your first case by clicking on Relevancy Cases &gt; Create a case in the navigation bar above.
+  Create your first case by clicking New Case above.
   <br>
 <% end %>
 
 <div class="card">
   <div class="card-header">
-    <%= form_tag(cases_path, { method: :get }) do %>
-      <div class="mb-0 d-flex flex-wrap align-items-center gap-3 fs-6">
-
-        <!-- Search input with fixed width -->
-        <div class="input-group" style="max-width: 280px;">
-          <%= text_field_tag :q, params[:q],
-              class: 'form-control form-control-sm',
-              placeholder: 'Filter by case name or id',
-              id: 'q'
-          %>
-          <%= button_tag type: 'submit', class: 'btn btn-sm btn-outline-secondary' do %>
-            <i class="bi bi-search"></i>
-          <% end %>
-        </div>
-
-        <!-- Checkboxes -->
-        <div class="d-flex align-items-center gap-3">
-          <div class="form-check form-check-inline mb-0">
-            <%= check_box_tag :archived,
-                '1',
-                @archived,
-                class: 'form-check-input',
-                id: 'archived',
-                onchange: 'this.form.submit()'
-            %>
-            <label class="form-check-label" for="archived">Archived</label>
-          </div>
-        </div>
-
-        <div class="col-auto d-flex align-items-center">
-          <label for="team_id" class="me-2 mb-0">Team:</label>
-          <%= select_tag :team_id,
-              options_for_select(
-                [['All', '']] + current_user.teams.map { |t| [t.name, t.id] },
-                params[:team_id]
-              ),
-              class: 'form-select form-select-sm',
-              style: 'width: auto; min-width: 140px;',
-              id: 'team_id',
-              onchange: 'this.form.submit()'
-          %>
-        </div>
-
-      </div>
-    <% end %>
+    <%= render "shared/index_filters",
+      url: cases_path, placeholder: "Filter by case name or id", search_icon: "bi-search",
+      checkboxes: [{ name: :archived, value: '1', checked: @archived, label: 'Archived' }],
+      team_options: current_user.teams.map { |team| [team.name, team.id] }, team_label: true %>
   </div>
-  
+
   <div class="card-body">
     <div class="table-responsive">
     <table class="table table-hover table-sm">
@@ -97,8 +57,8 @@ Cases are a group of queries that you are evaluating and experimenting with.
           <th class="text-end"></th>
         </tr>
       </thead>
-  
-      <tbody>      
+
+      <tbody>
         <% @cases.each do |kase| %>
           <% last_score = @last_scores[kase.id] %>
           <tr>
@@ -131,13 +91,14 @@ Cases are a group of queries that you are evaluating and experimenting with.
               <% end %>
             </td>
             <td>
-              <% if kase.ratings.count > 0 %>
-                <span class="badge bg-primary rounded-pill"><%= kase.ratings.count %></span>
+              <% ratings_count = @ratings_counts.fetch(kase.id, 0) %>
+              <% if ratings_count > 0 %>
+                <span class="badge bg-primary rounded-pill"><%= ratings_count %></span>
               <% else %>
                 —
               <% end %>
             </td>
-            
+
             <td>
               <% if kase.teams.any? %>
                 <%= safe_join(kase.teams.map { |t| link_to t.name, team_path(t) }, ', ') %>
@@ -147,50 +108,10 @@ Cases are a group of queries that you are evaluating and experimenting with.
             </td>
             <td><%= kase.owner&.fullname || '—' %></td>
             <td class="text-end text-nowrap">
-              <%= button_tag type: 'button',
-                             class: 'btn btn-link p-0 me-2',
-                             title: 'Share',
-                             'aria-label': 'Share',
-                             data: {
-                               controller: 'share-case',
-                               action: 'click->share-case#open',
-                               bs_toggle: 'modal',
-                               bs_target: '#shareCaseModal',
-                               share_case_id_value: kase.id,
-                               share_case_name_value: kase.case_name,
-                               share_case_all_teams_json_value: current_user.teams.select(:id, :name).order(:name).to_json,
-                               share_case_shared_teams_json_value: kase.teams.select(:id, :name).to_json
-                             } do %>
-                <i class="bi bi-share" aria-hidden="true"></i>
-              <% end %>
+              <%= share_modal_button 'case', kase, name: kase.case_name, button_class: 'me-2' %>
 
-              <% if kase.archived? %>
-                <button type="button"
-                        class="btn btn-link text-success p-0"
-                        title="Unarchive case"
-                        aria-label="Unarchive case"
-                        data-controller="confirm-delete"
-                        data-action="click->confirm-delete#open"
-                        data-confirm-delete-url-value="<%= unarchive_case_path(kase) %>"
-                        data-confirm-delete-method-value="post"
-                        data-confirm-delete-message-value="<%= h("Unarchive #{kase.case_name}?") %>">
-                  <i class="bi-folder-check" aria-hidden="true"></i>
-                  <span class="visually-hidden">Unarchive case</span>
-                </button>
-              <% else %>
-                <button type="button"
-                        class="btn btn-link text-warning p-0"
-                        title="Archive case"
-                        aria-label="Archive case"
-                        data-controller="confirm-delete"
-                        data-action="click->confirm-delete#open"
-                        data-confirm-delete-url-value="<%= archive_case_path(kase) %>"
-                        data-confirm-delete-method-value="post"
-                        data-confirm-delete-message-value="<%= h("Archive #{kase.case_name}?") %>">
-                  <i class="bi-folder-check" aria-hidden="true"></i>
-                  <span class="visually-hidden">Archive case</span>
-                </button>
-              <% end %>
+              <%= archive_toggle_button kase, name: kase.case_name, group: false,
+                                        urls: { archive: archive_case_path(kase), unarchive: unarchive_case_path(kase) } %>
             </td>
           </tr>
         <% end %>
@@ -198,9 +119,7 @@ Cases are a group of queries that you are evaluating and experimenting with.
     </table>
     </div>
   </div>
-  <div class="card-footer d-flex justify-content-center">
-    <%== @pagy.series_nav(:bootstrap) %>
-  </div>
+  <%= render "shared/index_pagination", pagy: @pagy %>
 </div>
 
 <%= render 'shared/share_case_modal' %>

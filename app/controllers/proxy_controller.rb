@@ -23,7 +23,7 @@ class ProxyController < ApplicationController
   #
   def fetch
     url_param = proxy_url_params
-    proxy_debug = 'true' == params[:proxy_debug]
+    proxy_debug = deserialize_bool_param(params[:proxy_debug])
 
     headers = build_forwarded_headers
     headers['Content-Type'] = 'application/json'
@@ -33,7 +33,7 @@ class ProxyController < ApplicationController
     client = HttpClientService.new(url_param, headers: headers, credentials: credentials, debug: proxy_debug)
 
     response = if request.get?
-                 perform_get_request(client, url_param)
+                 perform_get_request(client)
                elsif request.post?
                  perform_post_request(client)
                end
@@ -49,17 +49,14 @@ class ProxyController < ApplicationController
 
   private
 
-  def perform_get_request client, url_param
+  def perform_get_request client
     excluded_keys = [ :url, :action, :controller, :proxy_debug, :search_endpoint_id ]
     query_params = request.query_parameters.except(*excluded_keys)
     body_params = request.request_parameters.except(*query_params.keys)
 
-    # Handle extra query param embedded in the URL (e.g., url=http://example.com/search?q=test&rows=10)
-    extra_params = extract_extra_url_params(url_param)
-
     body = body_params.present? ? body_params.first.first : nil
 
-    client.get(params: query_params.merge(extra_params), body: body)
+    client.get(params: query_params, body: body)
   end
 
   def perform_post_request client
@@ -70,14 +67,6 @@ class ProxyController < ApplicationController
     body = body_params.present? ? request.raw_post : nil
 
     client.post(params: query_params, body: body)
-  end
-
-  def extract_extra_url_params url_param
-    return {} unless url_param.include?('?')
-
-    # Handle URLs like http://myserver.com/search?q=tiger or http://myserver.com/search?q=tiger?
-    extra_query_param = url_param.split('?', 2).last.split('=')
-    { extra_query_param.first => extra_query_param.second }
   end
 
   def build_forwarded_headers
@@ -110,7 +99,7 @@ class ProxyController < ApplicationController
       return
     end
 
-    addresses = Addrinfo.getaddrinfo(uri.host, nil, :UNSPEC, :STREAM).map do |addrinfo|
+    addresses = Addrinfo.getaddrinfo(uri.hostname, nil, :UNSPEC, :STREAM).map do |addrinfo|
       IPAddr.new(addrinfo.ip_address)
     end
 
@@ -127,13 +116,19 @@ class ProxyController < ApplicationController
   end
 
   def blocked_proxy_address? address
+    # An IPv4-mapped IPv6 address (::ffff:a.b.c.d) is judged by the IPv4 address it wraps.
+    address = address.native if address.ipv6? && address.ipv4_mapped?
+
     return true if address.loopback?
     return true if address.link_local?
 
     private_ranges = [
+      IPAddr.new('0.0.0.0/8'), # "this host": 0.0.0.0 connects to localhost on Linux
       IPAddr.new('10.0.0.0/8'),
+      IPAddr.new('100.64.0.0/10'), # carrier-grade NAT, commonly used for internal networks
       IPAddr.new('172.16.0.0/12'),
       IPAddr.new('192.168.0.0/16'),
+      IPAddr.new('::/128'),
       IPAddr.new('fc00::/7')
     ]
 

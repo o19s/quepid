@@ -1,0 +1,13 @@
+# Ruby mutation testing (Mutant). Free under the opensource usage for this Apache-licensed repo.
+# Run inside the dev server container with RAILS_ENV=test, e.g.:
+#   bundle exec mutant run 'SolrArgParser*'
+# Only test classes that declare `cover 'Subject*'` are selected for a subject.
+usage: opensource
+integration:
+  name: minitest
+includes:
+  - test
+requires:
+  - mutation/mutant_setup
+# One worker: forked workers share the test database and load fixtures concurrently.
+jobs: 1

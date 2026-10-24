@@ -4,7 +4,7 @@
 // These are pinned in config/importmap.rb to files vendored by
 // importmap-rails (served through the Rails asset pipeline, not
 // npm/node_modules) so every page that needs Bootstrap's JS shares one copy
-// instead of each esbuild bundle (e.g. the Angular core app) shipping its
+// instead of each esbuild bundle shipping its
 // own — same reasoning as vega_globals.js.
 //
 // bootstrap.min.js and popper.min.js are plain UMD builds, not real ES

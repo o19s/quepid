@@ -18,6 +18,11 @@ module MaskableCredential
     "#{username}:#{MASKED_PASSWORD}"
   end
 
+  # Compare only; callers retain their own blank-value and credential-source policies.
+  def matches_masked_basic_auth_credential? credential
+    credential == masked_basic_auth_credential
+  end
+
   # Returns nil when proxy is required to prevent credentials from being sent to the browser.
   # Otherwise returns the full credential for direct browser connections.
   # Used in JSON API responses.

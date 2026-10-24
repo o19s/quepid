@@ -1,0 +1,34 @@
+<%# locals: (name:, code:, editor_height:, test_target:, test_action:, refine_target:, refine_action:, result_target:, logs_container_target:, logs_target:, result_style: nil) %>
+<div class="card mb-3">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <strong><%= name %></strong>
+    <div class="btn-group btn-group-sm">
+      <button type="button"
+              class="btn btn-outline-primary"
+              data-mapper-wizard-target="<%= test_target %>"
+              data-action="click->mapper-wizard#<%= test_action %>">
+        <i class="bi bi-play-fill"></i> Test
+      </button>
+      <button type="button"
+              class="btn btn-outline-warning"
+              data-mapper-wizard-target="<%= refine_target %>"
+              data-action="click->mapper-wizard#<%= refine_action %>">
+        <i class="bi bi-stars"></i> Refine with AI
+      </button>
+    </div>
+  </div>
+  <div class="card-body">
+    <%= tag.textarea code, data: codemirror_data(mode: "javascript", height: editor_height, line_numbers: true, mapper_wizard_target: name) %>
+    <div class="mt-2">
+      <strong>Test Result:</strong>
+      <div data-mapper-wizard-target="<%= result_target %>" class="p-2 bg-light border rounded"<% if result_style %> style="<%= result_style %>"<% end %>>
+        <em class="text-muted">Click "Test" to see results</em>
+      </div>
+    </div>
+    <div class="mt-2" data-mapper-wizard-target="<%= logs_container_target %>" style="display: none;">
+      <strong>Console Logs:</strong>
+      <div data-mapper-wizard-target="<%= logs_target %>" class="p-2 bg-dark text-light border rounded" style="max-height: 150px; overflow-y: auto; font-family: monospace; font-size: 12px;">
+      </div>
+    </div>
+  </div>
+</div>

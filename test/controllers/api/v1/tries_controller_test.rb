@@ -64,6 +64,18 @@ module Api
           assert_response :not_found
         end
 
+        test 'includes the direct document lookup capability from the engine definition' do
+          endpoint = case_with_one_try.tries.first.search_endpoint
+          endpoint.update!(mapper_based_search_engine_id: 'vespa')
+          get :index, params: { case_id: case_with_one_try.id }
+          assert_response :ok
+          assert_not response.parsed_body['tries'].first['mapper_based_search_engine_supports_direct_document_lookup']
+
+          endpoint.update!(mapper_based_search_engine_id: 'qdrant')
+          get :index, params: { case_id: case_with_one_try.id }
+          assert_not response.parsed_body['tries'].first['mapper_based_search_engine_supports_direct_document_lookup']
+        end
+
         test 'returns all tries for a case' do
           get :index, params: { case_id: case_with_one_try.id }
 
@@ -133,6 +145,37 @@ module Api
       end
 
       describe 'Previews args without persisting' do
+        test 'non-members can preview public tries by numeric or encrypted case id' do
+          kase = cases(:random_case)
+          kase.mark_public!
+          the_try = tries(:try_with_curator_vars)
+          original_params = the_try.query_params
+          [ kase.id, kase.public_id ].each do |case_id|
+            post :preview_args, params: { case_id: case_id, try_number: the_try.try_number, query_params: 'q=governor' }
+            assert_response :ok
+            assert_equal({ 'q' => [ 'governor' ] }, response.parsed_body['args'])
+          end
+          assert_equal original_params, the_try.reload.query_params
+        end
+
+        test 'non-members cannot preview private tries' do
+          post :preview_args, params: {
+            case_id: cases(:random_case).id, try_number: tries(:try_with_curator_vars).try_number, query_params: 'q=governor'
+          }
+          assert_response :not_found
+        end
+
+        test 'public preview access does not allow try mutation' do
+          kase = cases(:random_case)
+          kase.mark_public!
+          the_try = tries(:try_with_curator_vars)
+          put :update, params: { case_id: kase.id, try_number: the_try.try_number, try: { name: 'Hijacked' } }
+          assert_response :not_found
+          delete :destroy, params: { case_id: kase.id, try_number: the_try.try_number }
+          assert_response :not_found
+          assert Try.exists?(the_try.id)
+        end
+
         let(:case_with_two_tries)             { cases(:case_with_two_tries) }
         let(:first_for_case_with_two_tries)   { tries(:first_for_case_with_two_tries) }
 
@@ -379,6 +422,38 @@ search_endpoint: es_endpoint.attributes }
                     endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
                     api_method:            'POST',
                     basic_auth_credential: existing.masked_basic_auth_credential,
+                    proxy_requests:        true,
+                  },
+                }
+
+            assert_response :ok
+
+            existing.reload
+            assert_equal 'reader:secret', existing.basic_auth_credential
+          end
+        end
+
+        test 'does not overwrite basic auth when blank credential is submitted on wizard finish' do
+          with_require_proxy_with_basic_auth(false) do
+            existing = SearchEndpoint.create!(
+              search_engine:         'os',
+              endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+              api_method:            'POST',
+              basic_auth_credential: 'reader:secret',
+              proxy_requests:        true,
+              owner:                 joey
+            )
+
+            put :update,
+                params: {
+                  case_id:         the_case.id,
+                  try_number:      the_try.try_number,
+                  try:             { field_spec: 'id:_id' },
+                  search_endpoint: {
+                    search_engine:         'os',
+                    endpoint_url:          'https://quepid-opensearch.dev.o19s.com:9000/tmdb/_search',
+                    api_method:            'POST',
+                    basic_auth_credential: '',
                     proxy_requests:        true,
                   },
                 }

@@ -91,10 +91,10 @@ test.describe('team management', () => {
 
     await memberRow.getByRole('button', { name: 'Remove member' }).click();
 
-    const modal = page.locator('#confirmDeleteModal');
+    const modal = page.locator('#confirmModal');
     await expect(modal).toBeVisible();
-    await expect(modal.locator('.confirm-delete-message')).toContainText(MEMBER_FULLNAME);
-    await modal.locator('.confirm-delete-confirm').click();
+    await expect(modal.locator('.confirm-message')).toContainText(MEMBER_FULLNAME);
+    await modal.locator('.confirm-accept').click();
 
     await expect(page).toHaveURL(new RegExp(`/teams/${newTeamId}$`));
     await expect(page.locator('#flash-messages')).toContainText('removed from the team');

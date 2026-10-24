@@ -1,5 +1,8 @@
 # LLM judge — shared foundation for the Jev and OpenAI-Batch plans
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > **Decision record:** `docs/adr/0001-llm-judge-provider-architecture.md` — why this seam exists, what it rules out, and the step order. This file is the implementation detail.
 
 **Why this file exists:** `docs/todo/llm_judge_openai_batch.md` (§4.1, §9 PR 1) and

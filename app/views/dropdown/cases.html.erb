@@ -1,6 +1,7 @@
+<%# Shared by the Rails-page and core case navbars; DropdownController picks @link_options. %>
 <turbo-frame id="dropdown_cases">
   <% @cases.each do |kase| %>
-  <li><%= link_to_core_case  kase.case_name, kase, kase.last_try_number, data: { turbo_frame: "_top" } %></li>
+  <li><%= link_to_core_case kase.case_name, kase, kase.last_try_number, @link_options %></li>
   <li><hr class="dropdown-divider"></li>
   <% end %>
 </turbo-frame>

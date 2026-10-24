@@ -3,12 +3,12 @@
 module Analytics
   module Tracker
     module Snapshot
-      def track_snapshot_created_event user, snapshot
-        Analytics::Ahoy.user_created_snapshot user, snapshot
+      def track_snapshot_created_event _user, snapshot
+        track 'Snapshots', 'Created a Snapshot', label: snapshot.name, value: snapshot.case.snapshots.count
       end
 
-      def track_snapshot_deleted_event user, snapshot
-        Analytics::Ahoy.user_deleted_snapshot user, snapshot
+      def track_snapshot_deleted_event _user, snapshot
+        track 'Snapshots', 'Deleted a Snapshot', label: snapshot.name
       end
     end
   end

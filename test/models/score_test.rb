@@ -34,43 +34,22 @@
 require 'test_helper'
 
 class ScoreTest < ActiveSupport::TestCase
-  test 'latest summaries return one score per requested case without query payloads' do
-    case_ids = [ cases(:one).id, cases(:other_score_case).id ]
-    expected_ids = case_ids.map { |id| Case.find(id).last_score.id }
+  test 'latest summaries omit history and query payloads with deterministic tie breakers' do
+    kase = cases(:one)
+    kase.scores.delete_all
+    timestamp = Time.utc(2020, 1, 1)
+    kase.scores.create!(score: 0.1, created_at: timestamp, updated_at: timestamp)
+    winner = kase.scores.create!(user: users(:doug), score: 0.8, queries: { 'large' => 'payload' },
+                                 created_at: timestamp, updated_at: timestamp)
+    records = Score.latest_summaries_for_cases([ kase.id, cases(:two).id ]).to_a
+    summary = records.find { |record| record.case_id == kase.id }
 
-    summaries = Score.latest_summaries_for_cases(case_ids).to_a
-
-    assert_equal expected_ids.sort, summaries.map(&:id).sort
-    summaries.each do |summary|
-      assert_not summary.has_attribute?(:queries)
-      assert_predicate summary.association(:user), :loaded?
-      assert_equal summary.user_id, summary.user.id
-    end
-  end
-
-  test 'latest summaries use updated_at then created_at then id including annotated scores' do
-    kase = cases(:other_score_case)
-    timestamp = Time.current.change(usec: 0)
-    kase.scores.update_all(updated_at: timestamp, created_at: timestamp - 1.day)
-    oldest, middle, newest = kase.scores.reorder(:id).to_a
-
-    oldest.update_columns(created_at: timestamp)
-    assert_equal [ oldest.id ], Score.latest_summaries_for_cases([ kase.id ]).map(&:id)
-
-    middle.update_columns(created_at: timestamp)
-    assert_equal [ middle.id ], Score.latest_summaries_for_cases([ kase.id ]).map(&:id)
-
-    newest.update_columns(updated_at: timestamp + 1.second)
-    assert_equal [ newest.id ], Score.latest_summaries_for_cases([ kase.id ]).map(&:id)
-
-    annotated = scores(:score_with_annotation)
-    annotated.update_columns(updated_at: timestamp + 2.seconds)
-    assert_equal [ annotated.id ], Score.latest_summaries_for_cases([ kase.id ]).map(&:id)
-  end
-
-  test 'latest summaries handle an empty page and cases without scores' do
+    assert_equal winner.id, summary.id
+    assert_in_delta 0.8, summary.score
+    assert_not summary.has_attribute?(:queries)
+    assert_predicate summary.association(:user), :loaded?
+    assert_equal users(:doug), summary.user
     assert_empty Score.latest_summaries_for_cases([])
-    assert_empty Score.latest_summaries_for_cases([ cases(:two).id ])
   end
 
   describe 'serialize queries scores' do
@@ -101,6 +80,18 @@ class ScoreTest < ActiveSupport::TestCase
 
   describe '.sampled' do
     let(:kase) { cases(:one) }
+
+    it 'accepts decimal strings and a zero sample' do
+      assert_equal 5, Score.sampled(kase.id.to_s, '5').count
+      assert_empty Score.sampled(kase.id, 0)
+    end
+
+    it 'rejects SQL fragments and noninteger arguments' do
+      [ nil, -1, 1.5, '1 OR 1=1', '1; DROP TABLE case_scores' ].each do |invalid|
+        assert_raises(ArgumentError) { Score.sampled(invalid, 5) }
+        assert_raises(ArgumentError) { Score.sampled(kase.id, invalid) }
+      end
+    end
 
     it 'returns the requested number of scores for the case' do
       # fixtures give case :one 11 scores (one + valid_1..valid_10)

@@ -43,14 +43,20 @@ class QueryDocPair < ApplicationRecord
   validates :options, json_format: true, allow_blank: true
 
   scope :has_judgements, -> { joins(:judgements) }
-
   after_create_commit :queue_auto_run_ai_judges
+
+  # A thumb key takes precedence over image, including nil or blank values.
+  def image_url
+    return unless document_fields.is_a?(Hash)
+
+    document_fields.key?('thumb') ? document_fields['thumb'] : document_fields['image']
+  end
 
   private
 
   def queue_auto_run_ai_judges
     book.books_ai_judges.auto_run.find_each do |bai|
-      RunJudgeJudyJob.perform_later(book, bai.ai_judge, nil)
+      AutoRunJudgeJudyJob.enqueue_for(bai)
     end
   end
 end

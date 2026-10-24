@@ -1,0 +1,145 @@
+import { CORE_EVENTS } from "utils/core_events"
+import { Controller } from "@hotwired/stimulus"
+import { getBootstrapCapabilities } from "utils/core_capabilities_runtime"
+import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
+import coreFlash from "utils/core_flash"
+import { flashErrorMessage } from "utils/error_message"
+import { isSameId } from "utils/record_identity"
+import { setupAndStartTour } from "modules/tour"
+
+export default class extends Controller {
+  static outlets = ["case-toolbar"]
+  static values = {
+    caseNo: Number,
+    tryNo: Number,
+    initial: Object
+  }
+
+  connect() {
+    if (this.started) return
+    this.started = true
+    this.bootstrap()
+  }
+
+  disconnect() {
+    if (this.tourTimer) window.clearTimeout(this.tourTimer)
+    this.tourTimer = null
+  }
+
+  async bootstrap() {
+    try {
+      const stores = getCoreStores()
+      const runtime = getCoreCapabilities()
+      this.capabilities = await getBootstrapCapabilities()
+
+      const { user, case: caseCapability, settings, navigation } = this.capabilities.core
+      const { docCache } = this.capabilities
+      const comparisonStore = stores.diff
+      const caseNo = this.caseNoValue || 0
+      let tryNo = Number.isFinite(this.tryNoValue) ? this.tryNoValue : Number.NaN
+
+      user.initialize(this.initialValue.user)
+      const initialCaseNo = navigation.currentCaseNo()
+
+      const caseChanged = () => !isSameId(initialCaseNo, caseNo)
+      const getSearchEngine = selectedTryNo => {
+        const currentSettings = settings.editable()
+        const aTry = currentSettings?.getTry?.(selectedTryNo)
+        return aTry?.searchUrl || null
+      }
+      const searchEngineChanged = () => getSearchEngine(navigation.currentTryNo()) !== getSearchEngine(tryNo)
+
+      if (caseChanged()) runtime.queryCapabilities.resetQueryState()
+
+      navigation.complete({ caseNo, tryNo })
+
+      if (caseNo === 0) {
+        coreFlash.show("error", "You don't have any Cases created in Quepid. Click 'Create a Case' from the Relevancy Cases dropdown to get started.")
+        return this.fail(new Error("No case selected"))
+      }
+
+      runtime.queryCapabilities.resetSearchPromise()
+      if (!isSameId(this.initialValue.case?.case_id, caseNo)) {
+        throw new Error("Initial workspace data does not match the selected case")
+      }
+      const acase = caseCapability.initialize(this.initialValue.case)
+      settings.setCaseTries(acase.tries)
+      if (Number.isNaN(tryNo)) tryNo = acase.lastTry
+      settings.setCurrentTry(tryNo)
+
+      if (!settings.isTrySelected()) throw new Error(`try number ${tryNo} not existing`)
+      if (settings.editable().proxyRequests !== true && navigation.needToRedirectQuepidProtocol(settings.editable().searchUrl)) {
+        const currentSettings = settings.editable()
+        const message = `You have specified a search engine url that is on a different protocol ( <code>${navigation.getQuepidProtocol()}</code> ) than Quepid is running on. Please either <a href="${navigation.createSearchEndpointLink(currentSettings.searchEndpointId)}/edit" target="_self">swap to the proxied connection</a>, or make sure search endpoint is on the same HTTP protocol.`
+        throw new Error(`Blocked Request: mixed-content. ${message}`)
+      }
+
+      const newSettings = settings.editable()
+      if (caseChanged() || searchEngineChanged()) {
+        if (caseChanged()) {
+          comparisonStore.reset()
+          docCache.empty()
+        }
+        comparisonStore.disable()
+        docCache.invalidate()
+      }
+
+      await docCache.update(newSettings)
+      await runtime.queryCapabilities.changeSettings(caseNo, newSettings)
+      coreFlash.hide()
+      coreFlash.hide("search-error")
+      caseCapability.trackLastViewedAt(caseNo)
+      this.ready({ caseNo, tryNo })
+
+      runtime.queryCommands.searchAll().then(
+        () => coreFlash.show("notice", "All queries finished successfully!"),
+        error => {
+          coreFlash.show("error", "Some queries failed to resolve!")
+          coreFlash.show("error", flashErrorMessage(error, String(error)), "search-error")
+        }
+      )
+    } catch (error) {
+      this.handleBootstrapError(error)
+      // As in the Angular app, a protocol mismatch only blocks searching: the case is already
+      // selected, so its toolbar (including Tune Relevance, where the endpoint can be changed) stays usable.
+      if (String(error?.message).startsWith("Blocked Request")) this.showCaseActions()
+      this.fail(error)
+    }
+  }
+
+  showCaseActions() {
+    window.quepidCoreBootstrap = { ...window.quepidCoreBootstrap, actionsAvailable: true }
+    if (this.hasCaseToolbarOutlet) this.caseToolbarOutlet.showActions()
+  }
+
+  handleBootstrapError(error) {
+    const message = error?.message || String(error)
+    if (message.startsWith("Blocked Request")) {
+        coreFlash.show("error", message, "search-error", { html: true })
+    } else if (message.startsWith("try number")) {
+        coreFlash.show("error", `Could not load case ${this.caseNoValue} due to ${message}`, "search-error")
+    } else if (message !== "No case selected") {
+        coreFlash.show("error", `Could not load the case ${this.caseNoValue} due to: ${message}`, "search-error")
+    }
+  }
+
+  // The window flag covers a toolbar that connects after bootstrap finished.
+  ready(detail) {
+    window.quepidCoreBootstrap = { ready: true, ...detail }
+    if (this.hasCaseToolbarOutlet) this.caseToolbarOutlet.showActions()
+    const url = new URL(window.location.href)
+    if (url.searchParams.get("startTour") === "true") {
+      url.searchParams.delete("startTour")
+      window.history.replaceState(window.history.state, "", url)
+      this.tourTimer = window.setTimeout(() => {
+        this.tourTimer = null
+        setupAndStartTour()
+      }, 1500)
+    }
+  }
+
+  fail(error) {
+    document.dispatchEvent(new CustomEvent(CORE_EVENTS.CORE_BOOTSTRAP_FAILED, { detail: { error } }))
+  }
+}

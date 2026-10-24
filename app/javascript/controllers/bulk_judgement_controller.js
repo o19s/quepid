@@ -1,6 +1,7 @@
 import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { showStatusMessage } from "utils/status_message"
+import { deleteJson, postJson } from "api/json"
+import { HttpError } from "api/http_error"
+import { withStatusMessages } from "controllers/status_message_behavior"
 
 const STATUS_VARIANT_CLASSES = [
   "text-muted",
@@ -10,50 +11,48 @@ const STATUS_VARIANT_CLASSES = [
   "text-info"
 ]
 
-export default class extends Controller {
-  static targets = ["rating", "explanation", "status", "savedIndicator"]
-  static values = { bookId: String }
+export default class extends withStatusMessages(Controller) {
+  static targets = ["rating", "explanation", "status", "savedIndicator", "resetButtonTemplate"]
+  static values = { saveUrl: String, deleteUrl: String }
 
   connect() {
-    this.saveTimeout = null
+    this.saveTimeouts = new Map()
+    this.savedExplanations = new Map(
+      [...this.element.querySelectorAll("textarea[data-query-doc-pair-id]")].map((field) =>
+        [field.dataset.queryDocPairId, field.value]
+      )
+    )
   }
 
   disconnect() {
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout)
-    }
+    super.disconnect()
+    this.saveTimeouts.forEach((timeout) => clearTimeout(timeout))
+    this.saveTimeouts.clear()
   }
 
   // Called when reset button is clicked
   async resetRating(event) {
     const button = event.currentTarget
     const queryDocPairId = button.dataset.queryDocPairId
-    const bookId = this.bookIdValue
-
     // Show saving status first
     this.showStatus(queryDocPairId, "saving")
 
     try {
-      const response = await apiFetch(`books/${bookId}/judge/bulk/delete`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId
+      await deleteJson(this.deleteUrlValue, {
+        query_doc_pair_id: queryDocPairId
         })
-      })
 
-      // Successfully deleted the judgement or there was no judgement to delete
-      if (response.ok || response.status === 404) {
+      this.clearRatingUI(queryDocPairId)
+      this.showStatus(queryDocPairId, "reset")
+      button.remove()
+    } catch (error) {
+      // Reset is idempotent: a missing judgement is already reset.
+      if (error instanceof HttpError && error.status === 404) {
         this.clearRatingUI(queryDocPairId)
         this.showStatus(queryDocPairId, "reset")
         button.remove()
-      } else {
-        this.showStatus(queryDocPairId, "error")
-        console.error("Failed to reset judgement:", response.status)
+        return
       }
-    } catch (error) {
       this.showStatus(queryDocPairId, "error")
       console.error("Error resetting judgement:", error)
     }
@@ -78,6 +77,7 @@ export default class extends Controller {
     if (explanationField) {
       explanationField.value = ''
     }
+    this.savedExplanations.set(queryDocPairId, "")
   }
 
   // Called when a rating is clicked
@@ -85,8 +85,6 @@ export default class extends Controller {
     const button = event.currentTarget
     const queryDocPairId = button.dataset.queryDocPairId
     const rating = button.dataset.rating
-    const bookId = this.bookIdValue
-
     // Update UI immediately for responsiveness
     this.updateRatingButtons(queryDocPairId, rating)
 
@@ -100,24 +98,14 @@ export default class extends Controller {
     const explanation = explanationField ? explanationField.value : ""
 
     try {
-      const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          query_doc_pair_id: queryDocPairId,
-          rating: rating,
-          explanation: explanation
+      await postJson(this.saveUrlValue, {
+        query_doc_pair_id: queryDocPairId,
+        rating: rating,
+        explanation: explanation
         })
-      })
 
-      if (response.ok) {
-        this.showStatus(queryDocPairId, "saved")
-      } else {
-        this.showStatus(queryDocPairId, "error")
-        console.error("Failed to save judgement")
-      }
+      this.savedExplanations.set(queryDocPairId, explanation)
+      this.showStatus(queryDocPairId, "saved")
     } catch (error) {
       this.showStatus(queryDocPairId, "error")
       console.error("Error saving judgement:", error)
@@ -128,18 +116,15 @@ export default class extends Controller {
   saveExplanation(event) {
     const field = event.currentTarget
     const queryDocPairId = field.dataset.queryDocPairId
-    const bookId = this.bookIdValue
-
-    // Clear existing timeout
-    if (this.saveTimeout) {
-      clearTimeout(this.saveTimeout)
-    }
+    // Debounce independently for each document row.
+    clearTimeout(this.saveTimeouts.get(queryDocPairId))
 
     // Show typing status
     this.showStatus(queryDocPairId, "typing")
 
     // Debounce the save
-    this.saveTimeout = setTimeout(async () => {
+    this.saveTimeouts.set(queryDocPairId, setTimeout(async () => {
+      this.saveTimeouts.delete(queryDocPairId)
       // Get current rating if it exists
       const checkedRating = this.element.querySelector(
         `input[name="judgement_${queryDocPairId}"]:checked`
@@ -148,8 +133,8 @@ export default class extends Controller {
       const rating = checkedRating ? checkedRating.value : null
       const explanation = field.value
 
-      // Only save if we have either a rating or an explanation
-      if (!rating && !explanation.trim()) {
+      // An untouched empty field needs no write; clearing saved text does.
+      if (!rating && !explanation.trim() && !this.savedExplanations.get(queryDocPairId)?.trim()) {
         this.showStatus(queryDocPairId, "")
         return
       }
@@ -157,28 +142,19 @@ export default class extends Controller {
       this.showStatus(queryDocPairId, "saving")
 
       try {
-        const response = await apiFetch(`books/${bookId}/judge/bulk/save`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            query_doc_pair_id: queryDocPairId,
-            rating: rating,
-            explanation: explanation
+        await postJson(this.saveUrlValue, {
+          query_doc_pair_id: queryDocPairId,
+          rating: rating,
+          explanation: explanation
           })
-        })
 
-        if (response.ok) {
-          this.showStatus(queryDocPairId, "saved")
-        } else {
-          this.showStatus(queryDocPairId, "error")
-        }
+        this.savedExplanations.set(queryDocPairId, explanation)
+        this.showStatus(queryDocPairId, "saved")
       } catch (error) {
         this.showStatus(queryDocPairId, "error")
         console.error("Error saving explanation:", error)
       }
-    }, 1000) // Wait 1 second after typing stops
+    }, 1000)) // Wait 1 second after typing stops
   }
 
   updateRatingButtons(queryDocPairId, selectedRating) {
@@ -211,13 +187,8 @@ export default class extends Controller {
       // Create reset button dynamically
       const ratingContainer = this.element.querySelector(`#qdp_${queryDocPairId} .rating-buttons .d-flex`)
       if (ratingContainer) {
-        const resetButton = document.createElement('button')
-        resetButton.type = 'button'
-        resetButton.className = 'btn btn-sm btn-outline-secondary ms-3'
-        resetButton.setAttribute('data-action', 'click->bulk-judgement#resetRating')
-        resetButton.setAttribute('data-query-doc-pair-id', queryDocPairId)
-        resetButton.title = 'Clear rating'
-        resetButton.innerHTML = '<i class="bi bi-x-circle"></i> Reset'
+        const resetButton = this.resetButtonTemplateTarget.content.firstElementChild.cloneNode(true)
+        resetButton.dataset.queryDocPairId = queryDocPairId
         ratingContainer.appendChild(resetButton)
       }
     }
@@ -230,14 +201,14 @@ export default class extends Controller {
 
     switch (status) {
       case "saving":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<span class="spinner-border spinner-border-sm me-1 align-middle" role="status" aria-hidden="true"></span> Saving...',
           variantClass: "text-warning",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       case "saved":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-check-circle"></i> Saved',
           variantClass: "text-success",
           variantClasses: STATUS_VARIANT_CLASSES,
@@ -245,7 +216,7 @@ export default class extends Controller {
         })
         break
       case "reset":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-arrow-counterclockwise"></i> Reset',
           variantClass: "text-info",
           variantClasses: STATUS_VARIANT_CLASSES,
@@ -253,21 +224,21 @@ export default class extends Controller {
         })
         break
       case "error":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-x-circle"></i> Error saving',
           variantClass: "text-danger",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       case "typing":
-        showStatusMessage(statusElement, {
+        this.showStatusMessage(statusElement, {
           html: '<i class="bi bi-pencil"></i> Typing...',
           variantClass: "text-muted",
           variantClasses: STATUS_VARIANT_CLASSES
         })
         break
       default:
-        showStatusMessage(statusElement, { html: "", variantClasses: STATUS_VARIANT_CLASSES })
+        this.showStatusMessage(statusElement, { html: "", variantClasses: STATUS_VARIANT_CLASSES })
     }
   }
 }

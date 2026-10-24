@@ -1,0 +1,29 @@
+<%# locals: (user:, active_error_section:) %>
+<div class="row mb-3">
+  <hr>
+  <%= form_with(model: user, url: account_path) do %>
+
+    <h2>
+      Account Security
+    </h2>
+    <% if :account_security == active_error_section %>
+      <%= render "shared/error_messages", record: user, subject: "", id: "error_explanation_account_security" %>
+    <% end %>
+
+    <div class="form-floating mb-3">
+      <input id="old" type="password" name="current_password" class="form-control" placeholder="Password" autocomplete="current-password">
+      <label for="old" class="form-label">Old Password</label>
+    </div>
+    <div class="form-floating mb-3">
+      <input id="new" type="password" name="password" class="form-control" placeholder="Password" autocomplete="new-password">
+      <label for="new" class="form-label">New Password</label>
+    </div>
+    <div class="form-floating mb-3">
+      <input id="confirm" type="password" name="password_confirmation" class="form-control" placeholder="Confirm New Password" autocomplete="new-password">
+      <label for="confirm" class="form-label">Confirm New Password</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update password</button>
+
+  <% end %>
+</div>

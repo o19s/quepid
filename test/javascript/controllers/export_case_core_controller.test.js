@@ -1,10 +1,18 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { apiFetch } from "api/fetch"
 import { downloadBlob } from "utils/download_file"
+import coreFlash from "utils/core_flash"
+import { queryDocumentsStore } from "stores/query_documents_store"
 import ExportCaseCoreController from "controllers/export_case_core_controller"
+import { mountCaseHeader } from "../support/case_header_dom"
 
 vi.mock("api/fetch", () => ({
   apiFetch: vi.fn()
+}))
+
+vi.mock("utils/core_flash", () => ({
+  default: { show: vi.fn(), hide: vi.fn() }
 }))
 
 vi.mock("utils/download_file", () => ({
@@ -12,11 +20,40 @@ vi.mock("utils/download_file", () => ({
 }))
 
 function buildModalController(overrides = {}) {
-  const controller = Object.create(ExportCaseCoreController.prototype)
-  controller.application = {
-    getControllerForElementAndIdentifier: vi.fn(() => null)
-  }
-  controller.element = document.createElement("div")
+  const controller = buildControllerFixture(ExportCaseCoreController, {
+    overrides: { identifier: "export-case-core" },
+    targets: {
+      title: document.createElement("h5"),
+      submitButton: document.createElement("button"),
+      detailedRadio: document.createElement("input"),
+      detailedWarning: document.createElement("p"),
+      snapshotRadio: document.createElement("input"),
+      snapshotSelect: document.createElement("select"),
+      basicRadio: document.createElement("input"),
+      basicSnapshotSelect: document.createElement("select"),
+      apiSnapshotSelect: document.createElement("select"),
+      apiSnapshotLink: document.createElement("a"),
+      apiSnapshotWrapper: document.createElement("span"),
+      snapshotsError: Object.assign(document.createElement("p"), { className: "d-none" }),
+      caseLink: document.createElement("a"),
+      queriesLink: document.createElement("a"),
+      annotationsLink: document.createElement("a"),
+      scoresLink: document.createElement("a"),
+      ratingsLink: document.createElement("a"),
+      quepidPeekLink: document.createElement("a")
+    },
+    values: {
+      snapshotsIndexUrlTemplate: "/api/cases/__CASE_ID__/snapshots",
+      snapshotShowUrlTemplate: "/api/cases/__CASE_ID__/snapshots/__SNAPSHOT_ID__",
+      caseUrlTemplate: "/api/cases/__CASE_ID__",
+      queriesUrlTemplate: "/api/cases/__CASE_ID__/queries",
+      annotationsUrlTemplate: "/api/cases/__CASE_ID__/annotations",
+      scoresUrlTemplate: "/api/cases/__CASE_ID__/scores",
+      ratingsExportUrlTemplate: "/api/export/ratings/__CASE_ID__.__FORMAT__",
+      informationNeedUrlTemplate: "/api/export/queries/information_needs/__CASE_ID__.csv",
+      quepidExportUrlTemplate: "/api/export/cases/__CASE_ID__"
+    }
+  })
   controller.element.innerHTML = `
     <input type="radio" name="export-case-format" value="information_need">
     <input type="radio" name="export-case-format" value="general">
@@ -25,83 +62,47 @@ function buildModalController(overrides = {}) {
     <input type="radio" name="export-case-format" value="basic">
     <input type="radio" name="export-case-format" value="trec">
   `
-
-  controller.snapshotsIndexUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots"
-  controller.hasSnapshotsIndexUrlTemplateValue = true
-  controller.snapshotShowUrlTemplateValue = "/api/cases/__CASE_ID__/snapshots/__SNAPSHOT_ID__"
-  controller.caseUrlTemplateValue = "/api/cases/__CASE_ID__"
-  controller.queriesUrlTemplateValue = "/api/cases/__CASE_ID__/queries"
-  controller.annotationsUrlTemplateValue = "/api/cases/__CASE_ID__/annotations"
-  controller.scoresUrlTemplateValue = "/api/cases/__CASE_ID__/scores"
-  controller.ratingsExportUrlTemplateValue = "/api/export/ratings/__CASE_ID__.__FORMAT__"
-  controller.informationNeedUrlTemplateValue = "/api/export/queries/information_needs/__CASE_ID__.csv"
-  controller.quepidExportUrlTemplateValue = "/api/export/cases/__CASE_ID__"
-
-  controller.hasTitleTarget = true
-  controller.titleTarget = document.createElement("h5")
-  controller.hasSubmitButtonTarget = true
-  controller.submitButtonTarget = document.createElement("button")
-  controller.hasDetailedRadioTarget = true
-  controller.detailedRadioTarget = document.createElement("input")
-  controller.hasDetailedWarningTarget = true
-  controller.detailedWarningTarget = document.createElement("p")
-  controller.hasSnapshotRadioTarget = true
-  controller.snapshotRadioTarget = document.createElement("input")
-  controller.hasSnapshotSelectTarget = true
-  controller.snapshotSelectTarget = document.createElement("select")
-  controller.hasBasicRadioTarget = true
-  controller.basicRadioTarget = document.createElement("input")
-  controller.hasBasicSnapshotSelectTarget = true
-  controller.basicSnapshotSelectTarget = document.createElement("select")
-  controller.hasApiSnapshotSelectTarget = true
-  controller.apiSnapshotSelectTarget = document.createElement("select")
-  controller.hasApiSnapshotLinkTarget = true
-  controller.apiSnapshotLinkTarget = document.createElement("a")
-  controller.hasApiSnapshotWrapperTarget = true
-  controller.apiSnapshotWrapperTarget = document.createElement("span")
-  controller.hasCaseLinkTarget = true
-  controller.caseLinkTarget = document.createElement("a")
-  controller.hasQueriesLinkTarget = true
-  controller.queriesLinkTarget = document.createElement("a")
-  controller.hasAnnotationsLinkTarget = true
-  controller.annotationsLinkTarget = document.createElement("a")
-  controller.hasScoresLinkTarget = true
-  controller.scoresLinkTarget = document.createElement("a")
-  controller.hasRatingsLinkTarget = true
-  controller.ratingsLinkTarget = document.createElement("a")
-  controller.hasQuepidPeekLinkTarget = true
-  controller.quepidPeekLinkTarget = document.createElement("a")
+  controller.formatTargets = [...controller.element.querySelectorAll('input[name="export-case-format"]')]
 
   Object.assign(controller, overrides)
   return controller
 }
 
 function buildTrigger({ id = "5", name = "Movies", supportsDetailedExport = "true" } = {}) {
+  mountCaseHeader(name)
   const trigger = document.createElement("a")
   trigger.dataset.exportCaseCoreIdValue = id
-  trigger.dataset.exportCaseCoreNameValue = name
   trigger.dataset.exportCaseCoreSupportsDetailedExportValue = supportsDetailedExport
   return trigger
 }
 
+// openFor starts the snapshot load without awaiting it; let it settle.
+const settle = () => new Promise(resolve => setTimeout(resolve, 0))
+
 function okJsonResponse(body) {
-  return { ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
+  return { text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: () => Promise.resolve(body), blob: () => Promise.resolve(new Blob([ "x" ])) }
 }
 
 describe("ExportCaseCoreController", () => {
+  it.each(["basic", "trec"])("keeps %s selected when changing the shared snapshot dropdown", (format) => {
+    const controller = buildModalController()
+    controller.selectedFormat = format
+    const radio = controller.formatTargets.find((target) => target.value === format)
+    radio.checked = true
+    controller.basicSnapshotSelectTarget.innerHTML = '<option value="9">Weekly</option>'
+
+    controller.selectBasicSnapshot()
+
+    expect(controller.selectedFormat).toBe(format)
+    expect(radio.checked).toBe(true)
+  })
   beforeEach(() => {
     vi.clearAllMocks()
+    queryDocumentsStore.reset()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
-  })
-
-  it("is not a modal root without a title target", () => {
-    const trigger = Object.create(ExportCaseCoreController.prototype)
-    trigger.hasTitleTarget = false
-
-    expect(trigger.isModalRoot).toBe(false)
   })
 
   it("open resets state from the trigger's dataset, disables submit, and loads snapshots", async () => {
@@ -109,7 +110,7 @@ describe("ExportCaseCoreController", () => {
     const controller = buildModalController()
     const trigger = buildTrigger()
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.currentCaseId).toBe("5")
     expect(controller.titleTarget.textContent).toBe("Export Case: Movies")
@@ -126,13 +127,13 @@ describe("ExportCaseCoreController", () => {
     const controller = buildModalController()
     const trigger = buildTrigger({ supportsDetailedExport: "false" })
 
-    await controller.open({ preventDefault: () => {}, currentTarget: trigger })
+    await controller.openFor(trigger)
 
     expect(controller.detailedRadioTarget.disabled).toBe(true)
     expect(controller.supportsDetailedExport).toBe(false)
   })
 
-  it("_loadSnapshots populates every snapshot select with a date-prefixed label", async () => {
+  it("opening populates every snapshot select with a date-prefixed label", async () => {
     apiFetch.mockResolvedValue(okJsonResponse({
       snapshots: [
         { id: 1, name: "Weekly", time: "2026-03-05T12:00:00Z" },
@@ -140,16 +141,54 @@ describe("ExportCaseCoreController", () => {
       ]
     }))
     const controller = buildModalController()
-    controller.currentCaseId = "5"
 
-    await controller._loadSnapshots()
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
 
+    expect(apiFetch).toHaveBeenCalledWith("/api/cases/5/snapshots", expect.any(Object))
     expect(controller.snapshotSelectTarget.children).toHaveLength(3) // blank + 2
     expect(controller.basicSnapshotSelectTarget.children).toHaveLength(3)
     expect(controller.apiSnapshotSelectTarget.children).toHaveLength(3)
     // Two snapshots can share a name — the date prefix is the only way to tell them apart.
     expect(controller.snapshotSelectTarget.children[1].textContent).toBe("(3/5/26) Weekly")
     expect(controller.snapshotSelectTarget.children[2].textContent).toBe("(1/1/26) Monthly")
+  })
+
+  it.each([
+    ["an HTTP error", () => Promise.resolve({ ok: false, status: 500, statusText: "Server Error", json: () => Promise.resolve(null) })],
+    ["a network failure", () => Promise.reject(new TypeError("Failed to fetch"))]
+  ])("opening shows a snapshot error after %s, and reopening clears it on success", async (_label, failure) => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    apiFetch.mockImplementationOnce(failure)
+    const controller = buildModalController()
+
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
+
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(false)
+    expect(controller.snapshotSelectTarget.children).toHaveLength(1)
+
+    apiFetch.mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
+    controller.openFor(buildTrigger({ id: "5" }))
+    await settle()
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
+  })
+
+  it("does not report a stale snapshot failure for a case the modal has moved off", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    let fail
+    apiFetch
+      .mockImplementationOnce(() => new Promise((_resolve, reject) => { fail = reject }))
+      .mockResolvedValueOnce(okJsonResponse({ snapshots: [] }))
+    const controller = buildModalController()
+
+    controller.openFor(buildTrigger({ id: "5" }))
+    controller.openFor(buildTrigger({ id: "6" }))
+    await settle()
+    fail(new TypeError("Failed to fetch"))
+    await settle()
+
+    expect(controller.snapshotsErrorTarget.classList.contains("d-none")).toBe(true)
   })
 
   it("selectFormat enables submit and shows the warning only for an unsupported detailed pick", () => {
@@ -183,7 +222,7 @@ describe("ExportCaseCoreController", () => {
     expect(controller.submitButtonTarget.disabled).toBe(false)
   })
 
-  it("selectBasicSnapshot always selects Basic, even for a TREC export (mirrors the AngularJS $watch quirk)", () => {
+  it("selectBasicSnapshot always selects Basic, even for a TREC export (mirrors the legacy $watch quirk)", () => {
     const controller = buildModalController()
 
     controller.selectBasicSnapshot()
@@ -210,17 +249,30 @@ describe("ExportCaseCoreController", () => {
       expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "Movies_general.csv")
     })
 
-    it("detailed: dispatches a bridge event instead of fetching anything", async () => {
-      const dispatchSpy = vi.spyOn(document, "dispatchEvent")
+    it("detailed: fetches case metadata and exports the live document read model", async () => {
+      apiFetch.mockResolvedValue(okJsonResponse({
+        case_name: "Movies",
+        case_id: 5,
+        teams: [],
+        last_score: { case_id: 5 }
+      }))
+      queryDocumentsStore.replaceQuery(1, {
+        queryText: "star wars",
+        fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" },
+        docs: []
+      })
       const controller = buildModalController()
       controller.currentCaseId = "5"
+      controller.currentCaseName = "Movies"
       controller.selectedFormat = "detailed"
 
       await controller.submit()
 
-      expect(apiFetch).not.toHaveBeenCalled()
-      expect(dispatchSpy).toHaveBeenCalledWith(expect.objectContaining({ type: "export-case:detailed" }))
-      expect(dispatchSpy.mock.calls[0][0].detail).toEqual({ caseId: "5" })
+      expect(apiFetch).toHaveBeenCalledWith(
+        "/api/cases/5",
+        expect.objectContaining({ headers: { Accept: "application/json" } })
+      )
+      expect(downloadBlob).toHaveBeenCalledWith(expect.any(Blob), "Movies_detailed.csv")
     })
 
     it("basic: exports the plain ratings CSV when no snapshot is chosen", async () => {
@@ -361,7 +413,7 @@ describe("ExportCaseCoreController", () => {
 
     it("logs when the server responds with a non-2xx status instead of failing silently", async () => {
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-      apiFetch.mockResolvedValue({ ok: false, status: 500 })
+      apiFetch.mockResolvedValue({ text: async () => "", json: async () => null,  ok: false, status: 500 })
       const controller = buildModalController()
       controller.currentCaseId = "5"
       controller.currentCaseName = "Movies"
@@ -370,6 +422,7 @@ describe("ExportCaseCoreController", () => {
       await controller.submit()
 
       expect(consoleSpy).toHaveBeenCalled()
+      expect(coreFlash.show).toHaveBeenCalledWith("error", expect.stringContaining("Export failed"))
       expect(downloadBlob).not.toHaveBeenCalled()
     })
   })

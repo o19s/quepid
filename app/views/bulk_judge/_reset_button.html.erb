@@ -1,0 +1,5 @@
+<%# locals: (query_doc_pair_id: nil) %>
+<%= tag.button type: "button",
+               class: "btn btn-sm btn-outline-secondary ms-3",
+               title: "Clear rating",
+               data: { action: "click->bulk-judgement#resetRating", query_doc_pair_id: query_doc_pair_id } do %><i class="bi bi-x-circle"></i> Reset<% end %>

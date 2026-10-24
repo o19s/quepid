@@ -126,7 +126,7 @@ class UserTest < ActiveSupport::TestCase
 
     test 'an AI judge is never promoted, even when no real users exist yet' do
       with_no_real_users_yet do
-        judge = AiJudge.create(llm_key: '1234', name: 'Judge Judy')
+        judge = User.create(llm_key: '1234', name: 'Judge Judy')
 
         assert_not judge.administrator
       end
@@ -356,8 +356,10 @@ class UserTest < ActiveSupport::TestCase
       assert_not shared_team_case.destroyed?
     end
 
-    it 'deletes a user who authored an annotation, destroying the annotation rather than raising a foreign key error' do
+    it 'blocks deletion of an annotation author and preserves the linked score history' do
       annotation = Annotation.create!(user: random, message: 'a note')
+      score = scores(:one)
+      score.update!(annotation: annotation)
       random.judgements.each do |j|
         j.update!(user: nil)
       end
@@ -366,12 +368,13 @@ class UserTest < ActiveSupport::TestCase
       end
       random.reload
 
-      random.destroy
-      assert_predicate random, :destroyed?
-
-      # :destroy, not :nullify - Annotation requires a user, so the annotation
-      # must go with its author rather than being left in an invalid state.
-      assert_nil Annotation.find_by(id: annotation.id)
+      assert_no_difference([ 'User.count', 'Annotation.count', 'Score.count' ]) do
+        assert_not random.destroy
+      end
+      assert_not random.destroyed?
+      assert_includes random.errors.full_messages.join, 'annotations'
+      assert_equal random.id, annotation.reload.user_id
+      assert_equal annotation.id, score.reload.annotation_id
     end
   end
 
@@ -427,49 +430,62 @@ class UserTest < ActiveSupport::TestCase
   end
 
   describe 'User is AI Judge' do
-    # AiJudge-specific behavior (validations, judge_options, ai_judge? on an
-    # actual AiJudge instance) lives in test/models/ai_judge_test.rb. This is
-    # just the regression guard that setting the llm_key column alone,
-    # without actually being an AiJudge row, no longer flips ai_judge? -
-    # that heuristic is what STI replaced.
-    it 'is not decided by the llm_key column - only by being an AiJudge' do
+    let(:joey) { users(:joey) }
+    it 'uses the existence of the key to decide ai_judge' do
       user = User.new
       assert_not user.ai_judge?
-      user.llm_key = '1234'
-      assert_not user.ai_judge?
-    end
-  end
-
-  describe 'for_user scope (ownership + team sharing for AI judges)' do
-    let(:owner) { User.create!(name: 'Owner', email: 'for-user-owner@example.com', password: 'password1') }
-    let(:teammate) { User.create!(name: 'Teammate', email: 'for-user-teammate@example.com', password: 'password1') }
-    let(:outsider) { User.create!(name: 'Outsider', email: 'for-user-outsider@example.com', password: 'password1') }
-    let(:team) { Team.create!(name: 'for_user scope test team') }
-
-    it 'is visible to its owner' do
-      judge = AiJudge.create!(name: 'Owned Judge', llm_key: '1234', owner: owner)
-      assert_includes AiJudge.for_user(owner), judge
+      user.llm_key = ''
+      assert_not_predicate user, :ai_judge?
+      assert_not user.valid?
     end
 
-    it 'is visible to a teammate the judge is shared with' do
-      judge = AiJudge.create!(name: 'Shared Judge', llm_key: '1234')
-      team.members << judge
-      team.members << teammate
-      assert_includes AiJudge.for_user(teammate), judge
+    it 'does not require an email or password address to be valid when is a judge' do
+      user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+      assert_predicate user, :ai_judge?
+      assert_predicate user, :valid?
     end
 
-    it 'is not visible to a user who neither owns it nor shares a team with it' do
-      judge = AiJudge.create!(name: 'Private Judge', llm_key: '1234', owner: owner)
-      team.members << judge
-      assert_not_includes AiJudge.for_user(outsider), judge
+    it 'does require name to be valid when is a judge' do
+      user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234')
+      assert_predicate user, :ai_judge?
+      assert_not user.valid?
+      user.name = 'Judge Judy'
+      assert_predicate user, :valid?
     end
 
-    it 'excludes regular (non-AI-judge) users even when team-shared' do
-      human = User.create!(name: 'Human', email: 'for-user-human@example.com', password: 'password1')
-      team.members << human
-      team.members << teammate
-      assert_not_includes AiJudge.for_user(owner), human
-      assert_not_includes AiJudge.for_user(teammate), human
+    describe 'options to configure the llm server' do
+      it 'provides an empty hash' do
+        user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+        opts_hash = user.judge_options
+        assert_empty(opts_hash)
+      end
+
+      it 'lets you update the options hash via passing in a hash with new values' do
+        user = AiJudge.new(system_prompt: 'Judge it.', llm_key: '1234', name: 'Judge Judy')
+        opts_hash = user.judge_options
+
+        opts_hash[:model] = 'gpt-3.5-turbo'
+        assert_equal('gpt-3.5-turbo', opts_hash[:model])
+        user.judge_options = opts_hash
+        user.save!
+
+        user.reload
+        assert_equal('gpt-3.5-turbo', user.judge_options[:model])
+      end
+
+      it 'works with other prexisting options' do
+        joey.options = { special_options: { key1: 'opt1', key2: 2, key3: true } }
+        assert joey.save
+
+        judge_options = joey.judge_options
+        judge_options[:model] = 'gpt-3.5-turbo'
+        joey.judge_options = judge_options
+        assert joey.save!
+        joey.reload
+
+        judge_options = joey.judge_options
+        assert_equal('gpt-3.5-turbo', judge_options[:model])
+      end
     end
   end
 
@@ -487,6 +503,28 @@ class UserTest < ActiveSupport::TestCase
     it 'handles it when we got nothing!' do
       user = User.new
       assert_equal('Anonymous', user.fullname)
+    end
+  end
+
+  describe 'password reset' do
+    test 'clears the reset token once the password is reset so the link cannot be reused' do
+      user = users(:doug)
+      raw = user.send_reset_password_instructions
+
+      assert_predicate user.reload.reset_password_token, :present?
+
+      reset = User.reset_password_by_token(
+        reset_password_token: raw, password: 'newpassword1', password_confirmation: 'newpassword1'
+      )
+
+      assert_empty reset.errors
+      assert_nil user.reload.reset_password_token
+
+      again = User.reset_password_by_token(
+        reset_password_token: raw, password: 'another12', password_confirmation: 'another12'
+      )
+
+      assert_predicate again.errors, :present?
     end
   end
 end
