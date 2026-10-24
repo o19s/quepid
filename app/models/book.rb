@@ -86,6 +86,10 @@ class Book < ApplicationRecord
 
   has_many :cases, dependent: :nullify
 
+  # The database deletes these with the book (and their runs and answers with
+  # them), so no dependent: here.
+  has_many :calibration_samples, inverse_of: :book, dependent: nil
+
   has_many :rated_query_doc_pairs, -> { has_judgements },
            class_name: 'QueryDocPair',
            dependent:  :destroy,
@@ -212,6 +216,11 @@ class Book < ApplicationRecord
     "book_#{id}_judgements"
   end
 
+  # Calibration runs' progress (CalibrationRunJob).
+  def calibrations_broadcast_channel
+    "book_#{id}_calibrations"
+  end
+
   # The judges this book's assigned AI judges wake when unsure, following
   # each link to the end of its chain (A -> B -> C gives B and C). An on-call
   # judge is never in `ai_judges`: the escalation link on the judge, not an
@@ -283,6 +292,47 @@ class Book < ApplicationRecord
     { judge: judge, sparkline: activity[:sparkline], last_judged_at: activity[:last_judged_at],
       count: activity[:count], actively_judging: actively_judging, auto_run: auto_run,
       on_call: on_call, wakes: AiJudge.escalation_target_names([ judge.id ])[judge.id] }
+  end
+
+  # The judgements a calibration can sample from (docs/todo/judge_calibration.md C2).
+  def calibration_eligible_judgements
+    judgements.rateable
+      .where.not(user_id: nil)
+      .where(rating: scale)
+      .where(query_doc_pair_id: query_doc_pairs_within_rank_depth.select(:id))
+  end
+
+  # The judges a calibration can compare against, each with how many pairs it
+  # could sample (the judge's rateable judgements, on the book's scale, within
+  # rank_depth) and how many queries it rated the whole top list of
+  # (docs/todo/judge_calibration.md C2). Anonymous judgements are left out,
+  # since they don't come from one judge. Sorted by name.
+  def calibration_references
+    rated = calibration_eligible_judgements.pluck(:user_id, :query_doc_pair_id)
+      .group_by(&:first).transform_values { |rows| rows.to_set(&:last) }
+    top_lists = calibration_top_lists
+    references = User.where(id: rated.keys).map do |user|
+      pairs = rated[user.id]
+      complete = top_lists.count { |_, ids| ids.all? { |id| pairs.include?(id) } }
+      { judge: user, eligible_pairs: pairs.size, complete_queries: complete }
+    end
+    references.sort_by { |reference| reference[:judge].fullname }
+  end
+
+  # Each query's top list: its pairs within rank_depth that have a position,
+  # lowest position first, at most depth of them. { query_text => [pair ids] }
+  def calibration_top_lists depth: CalibrationSample::QUERY_DEPTH
+    query_doc_pairs_within_rank_depth.where.not(position: nil)
+      .order(:query_text, :position, :id)
+      .pluck(:query_text, :id)
+      .group_by(&:first)
+      .transform_values { |rows| rows.first(depth).map(&:last) }
+  end
+
+  # The top lists reference rated every pair of, eligibly.
+  def calibration_complete_queries reference
+    rated = calibration_eligible_judgements.where(user_id: reference.id).pluck(:query_doc_pair_id).to_set
+    calibration_top_lists.select { |_, ids| ids.all? { |id| rated.include?(id) } }
   end
 
   # Not proud of this method, but it's the only way I can get the dependent

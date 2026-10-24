@@ -1,0 +1,23 @@
+<%# locals: (answers:, book:, judge_name:) %>
+<div class="table-responsive">
+  <table class="table table-sm align-middle">
+    <thead>
+      <tr>
+        <th scope="col">Query</th>
+        <th scope="col">Document</th>
+        <th scope="col"><%= judge_name %>'s explanation</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% answers.each do |answer| %>
+        <% pair = answer.query_doc_pair %>
+        <% fields = pair.document_fields.is_a?(Hash) ? pair.document_fields : {} %>
+        <tr>
+          <td class="text-nowrap"><%= link_to pair.query_text, book_query_doc_pair_path(book, pair) %></td>
+          <td><%= (fields['title'].presence || pair.doc_id).to_s.truncate(80) %></td>
+          <td class="small"><%= answer.explanation.to_s.truncate(400) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

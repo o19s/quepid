@@ -354,6 +354,10 @@ judges, not an input to the ratings.
 
 ### D6 — Make overlap on purpose: a calibration sample
 
+> The UI, pair selection and storage are planned in `docs/todo/judge_calibration.md`. That plan
+> stores AI calibration answers **apart from judgements**, which replaces the "ordinary
+> judgements" bullet below: re-running on the same pairs needs it, and so does using pairs at the cap.
+
 Because of `SelectionStrategy`'s ordering (§4), overlap does not happen by accident. Add a way to
 ask a judge to rate a **random sample of pairs another judge has already rated** — for example
 "Judge 50 pairs that Jev has judged" on an AI judge's row in Judgement Stats.

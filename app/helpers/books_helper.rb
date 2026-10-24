@@ -58,9 +58,10 @@ module BooksHelper
 
   # True when the current page is part of the "Overview" tab family - the
   # Relevancy Engineer-facing pages nested as sub-tabs under Overview (as
-  # opposed to Judge Overview, which is judge-facing and has no sub-tabs).
+  # opposed to Judge Overview and Calibration, which have no sub-tabs).
   def book_overview_family_active?
-    make_active?({ action: 'show' }) ||
+    # Scoped to books: other controllers have a show action too (a calibration's page).
+    (make_active?({ controller: 'books' }) && make_active?({ action: 'show' })) ||
       make_active?({ action: 'judgement_stats' }) ||
       book_settings_active? ||
       make_active?({ action: 'export' }) ||
