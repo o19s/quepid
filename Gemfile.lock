@@ -137,7 +137,7 @@ GEM
     crack (1.0.1)
       bigdecimal
       rexml
-    crass (1.0.7)
+    crass (1.0.8)
     csv (3.3.6)
     database_consistency (3.0.14)
       activerecord (>= 3.2)
