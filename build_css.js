@@ -78,7 +78,7 @@ function buildApplicationCSS() {
   writeBundle('application', 'Application CSS Bundle (Bootstrap 5)', [
     ...BOOTSTRAP_BASE,
     `${STYLES}/navbar-brand.css`,
-    `${STYLES}/bootstrap5-add.css`,
+    `${STYLES}/application-overrides.css`,
     `${STYLES}/signup.css`,
     `${STYLES}/judgements.css`,
   ]);
@@ -92,7 +92,7 @@ function buildCoreCSS() {
     // modals, sub-results toolbar, ...).
     `${STYLES}/core-additions.css`,
     `${STYLES}/navbar-brand.css`,
-    `${STYLES}/bootstrap5-compat.css`,
+    `${STYLES}/core-overrides.css`,
     `${STYLES}/style.css`,
     `${STYLES}/panes.css`,
     `${STYLES}/stackedChart.css`,

@@ -823,7 +823,7 @@ AngularJS has been removed. There is no `angular` package, Angular build script 
 - Plain ES modules in `app/javascript/utils/` (query, scoring, doc cache, diff, export and search-engine runtimes) plus stores in `app/javascript/stores/` and API helpers in `app/javascript/api/`
 - Roughly 83 Stimulus controllers (about 50 registered in `core_stimulus.js`) drive the UI
 - Bundled by esbuild into `core_case.js`
-- Bootstrap 5 CSS (`core.css` + `bootstrap5-compat.css`)
+- Bootstrap 5 CSS (`core.css` + `core-overrides.css`)
 
 **Other pages (home, admin, analytics, books, profiles, judgements, bulk judge, search endpoints, mapper wizard)**:
 - Stimulus + Turbo, Bootstrap 5 CSS (`application.css`)

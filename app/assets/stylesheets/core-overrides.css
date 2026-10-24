@@ -1,12 +1,13 @@
 /*
- * Quepid overrides for the core bundle, layered on top of the
+ * Bootstrap and Tom Select component overrides for the core bundle,
+ * layered on top of the
  * full BS5 stylesheet that build_css.js concatenates earlier: the `--q-*`
  * brand variables, px sizing in place of BS5's rem values (the core root
  * font-size is 87.5%), BS3 colors and shadows BS5 dropped, and Quepid's
  * own skin on Bootstrap components. The upstream rules supply structure
  * and behaviour.
  *
- * Parallel brand skin for the application bundle: bootstrap5-add.css.
+ * Parallel brand skin for the application bundle: application-overrides.css.
  */
 
 /* BS3's boxed <pre> (BS5 has no box), so explain/debug JSON reads as code. */
@@ -278,7 +279,7 @@ header.navbar-secondary .dropdown-toggle:not(.header-recents-toggle)::after,
  * recomputes against this element's own 28px font-size (1.5 * 28 = 42px),
  * overflowing the fixed-height box below the 16px top padding and pushing
  * the text down instead of centering it. Neither the padding nor the
- * line-height is needed on the application header (bootstrap5-add.css),
+ * line-height is needed on the application header (application-overrides.css),
  * which doesn't set either. */
 .navbar-brand {
   padding: 16px 15px 0 0;
@@ -286,7 +287,7 @@ header.navbar-secondary .dropdown-toggle:not(.header-recents-toggle)::after,
 }
 
 .navbar-brand:hover .hover {
-  /* 15px here vs 5px in bootstrap5-add.css's copy of this rule is
+  /* 15px here vs 5px in application-overrides.css's copy of this rule is
    * intentional, not drift: this file's .navbar-brand carries the extra
    * `padding-top: 16px` above that the application skin doesn't have, so
    * the wordmark — and this tooltip's offset from it — sits lower here.
@@ -353,8 +354,8 @@ header .dropdown-toggle .bi {
 }
 
 /* ── #dev-settings — Bootstrap-class overrides ──────────────────────
- * Non-Bootstrap-class rules for this same panel (base sizing/theme,
- * .dev-header, .dev-section, history list, etc.) live in core-additions.css.
+ * Panel layout and skin (sizing/theme, headers, History scrolling,
+ * Query Sandbox editor, etc.) live in core-additions.css.
  */
 
 /* Dev panel tabs: BS3's gray colors, tight padding and 20px bottom margin.
@@ -401,31 +402,6 @@ header .dropdown-toggle .bi {
 	--bs-form-select-bg-img: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
 }
 
-/*
- * Dev panel — History tab scroll container.
- * The History tab in `devQueryParams.html` wraps its content in a BS
- * `.container-fluid`; this lets it fill the panel height and scroll.
- */
-#dev-settings .settings-tab > .container-fluid {
-	height: 100%;
-	overflow-y: auto;
-}
-
-/* Gap under the Query Sandbox heading row, which BS3's <h4> margin gave. */
-#dev-settings .query-sandbox .d-flex {
-  margin-bottom: 10px;
-}
-
-/* Match the staging sandbox's light editing surface inside the dark drawer. */
-#dev-settings .query-sandbox .cm-editor {
-  background-color: #fff;
-  color: #000;
-}
-
-#dev-settings .query-sandbox .cm-gutters {
-  display: none;
-}
-
 /* Checkbox settings ("Evaluate Nightly?" / "Escape Queries")
  * Drop BS5's float/negative-margin trick and just flow the checkbox 
  * inline before its label, so it lines up with the panel's normal 15px inset. */
@@ -460,20 +436,6 @@ header .dropdown-toggle .bi {
  * saturated button background reads as invisible. */
 .modal-body .btn .bi {
 	color: inherit;
-}
-
-/* Sub-results panel — toolbar absolutely top-right of the per-query
- * panel, row borders between <search-result> items. `left` reserves the
- * space core-additions.css's `.col-ratings.query-rating` occupies
- * (--score-col-end, set on .sub-results there) plus a small gap, so the
- * toolbar's own `flex-wrap: wrap` (Bootstrap's `.btn-toolbar` default) wraps
- * its buttons onto a second row at narrow viewports instead of the
- * shrink-to-fit right-anchored box overlapping the "Score All" dropdown. */
-.sub-results .btn-toolbar {
-	position: absolute;
-	top: 20px;
-	right: 20px;
-	left: calc(var(--score-col-end) + 20px);
 }
 
 /* BS3's .btn-default and softer warning/danger shades for the query
@@ -514,15 +476,6 @@ header .dropdown-toggle .bi {
 	--bs-btn-hover-border-color: #ac2925;
 	--bs-btn-active-bg: #c9302c;
 	--bs-btn-active-border-color: #ac2925;
-}
-
-.sub-results .row {
-	padding: 5px 0;
-}
-
-.sub-results .search-result .row {
-	border-top: 1px solid #CCC;
-	position: relative;
 }
 
 .single-rating .btn {

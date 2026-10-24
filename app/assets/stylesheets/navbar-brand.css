@@ -1,9 +1,9 @@
 /*
  * Quepid navbar brand skin shared by both bundles: the core
  * header (_header_core_app.html.erb, styled the rest of the way by
- * bootstrap5-compat.css) and the application header (_header.html.erb,
+ * core-overrides.css) and the application header (_header.html.erb,
  * used by the application and admin layouts, styled the rest of the way by
- * bootstrap5-add.css).
+ * application-overrides.css).
  */
 
 .navbar-brand {

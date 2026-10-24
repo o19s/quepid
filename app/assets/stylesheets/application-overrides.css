@@ -1,7 +1,7 @@
 /*
  * Bootstrap 5 overrides and page skin for the application bundle (dashboard,
  * books, judgements, admin, ...). The core case bundle uses
- * bootstrap5-compat.css instead.
+ * core-overrides.css instead.
  */
 
 /* Shared page spacing for the application and admin layouts. */
@@ -26,7 +26,7 @@ main > .container {
 	application header and the core one) live in navbar-brand.css.
 	Only genuine deltas live below: this header's .navbar-brand has no
 	padding-top (unlike the core skin — see the comment in
-	bootstrap5-compat.css), so the wordmark sits higher and this tooltip
+	core-overrides.css), so the wordmark sits higher and this tooltip
 	offset is correspondingly smaller.
 */
 

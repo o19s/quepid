@@ -6,8 +6,8 @@ import { execFileSync } from "node:child_process"
 const styles = "app/assets/stylesheets/"
 const layouts = "app/views/layouts/"
 const sharedStyles = ["fonts", "base", "navbar-brand"]
-const applicationStyles = [...sharedStyles, "bootstrap5-add", "signup", "judgements"]
-const coreStyles = [...sharedStyles, "core-additions", "bootstrap5-compat", "style", "panes", "stackedChart", "tour", "docs", "qscore", "qgraph", "misc", "animation", "froggy", "json-explorer"]
+const applicationStyles = [...sharedStyles, "application-overrides", "signup", "judgements"]
+const coreStyles = [...sharedStyles, "core-additions", "core-overrides", "style", "panes", "stackedChart", "tour", "docs", "qscore", "qgraph", "misc", "animation", "froggy", "json-explorer"]
 const sharedLayouts = ["_header", "_header_navigation", "_header_management_actions", "_header_help_links", "_footer"]
 const captureInfrastructure = new Set([
   "test/playwright/capture-options.mjs", "test/playwright/capture-claude.mjs",

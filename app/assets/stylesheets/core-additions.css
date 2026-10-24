@@ -1,19 +1,19 @@
 /*
- * Quepid core UI — layout and skin, mostly without Bootstrap framework classes
- * in selectors. Bootstrap-class overrides for the core case bundle (sub-results
- * toolbars, `#dev-settings` tabs, modals, annotations, dropdown shims, etc.)
- * live in bootstrap5-compat.css; the navbar brand skin (`.navbar-brand`,
+ * Quepid core UI — case workspace layout and skin, including result rows,
+ * toolbars, drawer scrolling, and the Query Sandbox editor. Bootstrap and
+ * Tom Select component overrides (buttons, tabs, forms, modals, popovers,
+ * annotations, dropdowns, etc.) live in core-overrides.css. The navbar brand
+ * skin (`.navbar-brand`,
  * `.navbar-secondary`, header `.nav-link`) lives in navbar-brand.css; the page
  * background and footer size live in base.css.
  *
- * Exceptions that do touch Bootstrap classes but stay here with their layout:
- * the header dropdown skin (scoped overrides on BS5 `.dropdown-menu` /
- * `.dropdown-item`), flash chrome (`.flash`, which gets `.alert`), and the
- * `.row` margin reset under `.results-control`.
+ * Keep case-specific layout here even when selectors include Bootstrap
+ * classes. Header dropdown skin and flash presentation also stay with
+ * their surrounding layout.
  *
  * build_css.js loads this first in the core bundle, right after the shared
  * base (bootstrap.css, bootstrap-icons.css, fonts.css, base.css) and before
- * navbar-brand.css and bootstrap5-compat.css.
+ * navbar-brand.css and core-overrides.css.
  */
 
 /* BS3's 14px base instead of BS5's 16px, so every rem-based size keeps the
@@ -118,7 +118,7 @@ header .dropdown-item:focus {
 /* BS3's flat #777 muted text and Helvetica body font for the case view.
  * BS5's .text-muted uses !important, so steer the variable it reads.
  * Headings keep the Aller font via the more specific rule below. The BS3
- * link blue for this scope is set in bootstrap5-compat.css. */
+ * link blue for this scope is set in core-overrides.css. */
 .results-control {
   --bs-secondary-color: #777;
   font-family: var(--q-body-font);
@@ -278,7 +278,7 @@ header .dropdown-item:focus {
 
 
 /*
-	Main - Results - Sub Results (structure only; .btn-toolbar / .row lives in bootstrap5-compat.css)
+	Main - Results - Sub Results
 */
 
 .sub-results {
@@ -288,9 +288,31 @@ header .dropdown-item:focus {
 	min-width: 650px;
 	/* Right edge of the "Score All" column below (.col-ratings.query-rating: 15px
 	 * margin-left + 75px width) — consumed by .sub-results .btn-toolbar's `left`
-	 * in bootstrap5-compat.css so the two rules stay in sync from one source of
+	 * below so the two rules stay in sync from one source of
 	 * truth instead of two independently-hardcoded pixel values. */
 	--score-col-end: 90px;
+}
+
+/* Sub-results panel — toolbar absolutely top-right of the per-query
+ * panel. `left` reserves the space `.col-ratings.query-rating` occupies
+ * (--score-col-end, set on .sub-results above) plus a small gap, so the
+ * toolbar's own `flex-wrap: wrap` (Bootstrap's `.btn-toolbar` default) wraps
+ * its buttons onto a second row at narrow viewports instead of the
+ * shrink-to-fit right-anchored box overlapping the "Score All" dropdown. */
+.sub-results .btn-toolbar {
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	left: calc(var(--score-col-end) + 20px);
+}
+
+.sub-results .row {
+	padding: 5px 0;
+}
+
+.sub-results .search-result .row {
+	border-top: 1px solid #CCC;
+	position: relative;
 }
 
 .sub-results td {
@@ -413,7 +435,7 @@ header .dropdown-item:focus {
 
 
 /*
-	Dev Settings — panel skin (selectors with no Bootstrap classes).
+	Dev Settings — panel layout and skin.
 	Dark theme is delivered via data-bs-theme="dark" on #dev-settings
 	(see _dev_settings.html); BS5 supplies --bs-body-bg / --bs-body-color
 	and the nav-tabs palette. Rules below are brand-specific surface
@@ -463,10 +485,30 @@ header .dropdown-item:focus {
   min-height: 300px;
 }
 
-/* Rules for this section that reference Bootstrap classes (`.d-flex`,
- * `.form-check-*`) live in bootstrap5-compat.css alongside the
- * other #dev-settings Bootstrap-class overrides (nav-tabs, form-control),
- * per this file's Bootstrap-class-vs-not split (see file header). */
+/*
+ * Dev panel — History tab scroll container.
+ * The History tab in `devQueryParams.html` wraps its content in a BS
+ * `.container-fluid`; this lets it fill the panel height and scroll.
+ */
+#dev-settings .settings-tab > .container-fluid {
+	height: 100%;
+	overflow-y: auto;
+}
+
+/* Gap under the Query Sandbox heading row, which BS3's <h4> margin gave. */
+#dev-settings .query-sandbox .d-flex {
+  margin-bottom: 10px;
+}
+
+/* Match the staging sandbox's light editing surface inside the dark drawer. */
+#dev-settings .query-sandbox .cm-editor {
+  background-color: #fff;
+  color: #000;
+}
+
+#dev-settings .query-sandbox .cm-gutters {
+  display: none;
+}
 
 #dev-settings #queryParamsCanvas {
   flex: 1 1 0;
@@ -501,7 +543,7 @@ header .dropdown-item:focus {
 
 #queryParamsCanvas .slider-wrap input {
   /* Color comes from the `#dev-settings input.form-control` white-box
-     override in bootstrap5-compat.css now that this input carries
+     override in core-overrides.css now that this input carries
      .form-control. It grows with its value between Legacy's auto-grow limits
      (50px to 200px) without the removed autogrow script; browsers without
      field-sizing get room for the largest allowed value (max 10000000000). */
@@ -518,7 +560,7 @@ header .dropdown-item:focus {
 }
 
 /*
-	Dev Settings - History (rest of #dev-settings uses Bootstrap selectors — bootstrap5-compat.css)
+	Dev Settings - History
 */
 
 .history-list {
