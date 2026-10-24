@@ -1,3 +1,4 @@
+<%# locals: (search_endpoint:) %>
 <div id="<%= dom_id search_endpoint %>">
   <p>
     <strong>Name:</strong>
@@ -7,11 +8,11 @@
   <p>
     <strong>Search engine:</strong>
     <% if search_endpoint.search_engine %>
-      <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle' %>
+      <%= image_tag "#{search_endpoint.mapper_based_search_engine&.id || search_endpoint.search_engine}-icon.png", size:'32x32', class:'rounded-circle', alt:'' %>
     <% end %>
     <%= search_endpoint.mapper_based_search_engine&.name || search_endpoint.search_engine %>
   </p>
-  
+
   <p>
     <strong>Endpoint url:</strong>
     <%= search_endpoint.endpoint_url %>
@@ -19,14 +20,14 @@
 
   <p>
     <strong>Custom headers:</strong>
-    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+    <%= text_area_tag 'custom_headers', format_json(search_endpoint.custom_headers), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
 
   <p>
     <strong>API method:</strong>
     <%= search_endpoint.api_method %>
   </p>
-  
+
   <% unless require_proxy_for_all_search_endpoints? %>
     <p>
       <strong>Proxy Requests:</strong>
@@ -37,52 +38,52 @@
   <p>
     <strong>Basic Auth Credential:</strong>
     <%= search_endpoint.masked_basic_auth_credential %>
-  </p>  
-  
-  <p>
+  </p>
+
+  <div class="mb-3">
     <strong>Requests Per Minute:</strong>
     <%= search_endpoint.requests_per_minute %>
     <div class="form-text">0 means no throttling</div>
-  </p>  
-  
+  </div>
+
   <p>
     <strong>Options:</strong>
-    <%= text_area_tag 'options', format_json(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+    <%= text_area_tag 'options', format_json(search_endpoint.options), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
   </p>
-  
+
   <% if search_endpoint.search_engine == 'searchapi' %>
-    <p>
+    <div class="mb-3">
       <strong>Test Query:</strong>
       <div class="form-text">Search API only. Sample query used by the Mapper Wizard for testing mappers.</div>
       <pre class="bg-light p-2 border rounded"><%= search_endpoint.test_query.presence || 'Not set' %></pre>
-    </p>
+    </div>
   <% end %>
 
-  <p>
+  <div class="mb-3">
     <strong>Custom Code Mapper:</strong>
     <pre>
 <%= truncate(search_endpoint.mapper_code, length: 100) %>
     </pre>
-  </p> 
-  
-  <p>
+  </div>
+
+  <div class="mb-3">
   <strong>Shared with Teams:</strong>
   <%= render(partial: 'team', collection: search_endpoint.teams, as: :team) || "There are no teams associated." %>
-  
+
   <div class="form-text">This shows all teams, not just the ones you are part of</div>
-  </p>
-  
+  </div>
+
   <p>
   <strong>Used by Cases:</strong>
   <%= render(partial: 'case', collection: Case.find(search_endpoint.tries.pluck(:case_id)), as: :kase) || "There are no cases associated." %>
   </p>
-  
+
   <p>
     <strong>Archived:</strong>
     <%= search_endpoint.archived? %>
     <%= search_endpoint.archived? ? "You must unarchive this search endpoint to use it with new cases" :"" %>
   </p>
-  
+
   <p>
     <strong>Owner:</strong>
     <%= search_endpoint.owner ? search_endpoint.owner.fullname : "No owner specified" %>

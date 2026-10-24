@@ -37,7 +37,7 @@ class Score < ApplicationRecord
   # Associations
   belongs_to :case, touch: true
   belongs_to :user, optional: true
-  belongs_to :try
+  belongs_to :try, optional: true # Historical scores survive deletion of their try.
   belongs_to :annotation, optional: true
   belongs_to :scorer, optional: true # optional for legacy reasons, we have old data.
 
@@ -47,8 +47,7 @@ class Score < ApplicationRecord
 
   # Scopes
 
-  # Only the requested page's latest scores, without the potentially large query
-  # payload. The correlated lookup uses index_case_scores_on_case_and_latest.
+  # Hydrate only the displayed summary, leaving query payloads in the database.
   def self.latest_summaries_for_cases case_ids
     latest_ids = Case.where(id: case_ids).select(<<~SQL.squish)
       (SELECT case_scores.id FROM case_scores
@@ -60,7 +59,9 @@ class Score < ApplicationRecord
     where(id: latest_ids).select(:id, :case_id, :score, :updated_at, :user_id).includes(:user)
   end
 
-  # The case_id/updated_at/created_at/id index supports this lookup within a case.
+  # We have an index on updated_at, created_at, id to support this lookup.
+  # Case 4848 is an example of a case that struggles with this.
+  # The where(annotation_id: nil) part of the clause kills our performance.
   scope :last_one, -> {
     # where(annotation_id: nil)
     order(updated_at: :desc)
@@ -77,6 +78,11 @@ class Score < ApplicationRecord
   # Have to pass in the case_id and the number of records to randomly sample.
   # Yes, needing to pass in the case_id is awkward if you have kase.scorers.sampled(kase.id, 100).count
   scope :sampled, ->(case_id, count) {
+    # Current callers pass integer IDs and counts; decimal strings remain supported.
+    raise ArgumentError, 'case_id and count must be nonnegative integers' unless case_id.to_s.match?(/\A[0-9]+\z/) && count.to_s.match?(/\A[0-9]+\z/)
+
+    case_id = Integer(case_id.to_s, 10)
+    count = Integer(count.to_s, 10)
     random_function = AdapterFunctions.random_function
     joins("
       JOIN (

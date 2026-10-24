@@ -5,6 +5,7 @@ class ScorersController < ApplicationController
 
   before_action :set_scorer, only: [ :edit, :update, :destroy ]
   before_action :set_source_scorer, only: [ :clone ]
+  before_action :set_sharing_resources, only: [ :share, :unshare ]
 
   # Show the scorers page (server-side rendering)
   def index
@@ -13,7 +14,7 @@ class ScorersController < ApplicationController
     @scorer_type_list = Array(@scorer_type).compact_blank
 
     # combined scorers: custom (communal = false) first, then communal scorers
-    combined_query = Scorer.for_user(current_user).includes(:owner, :teams)
+    combined_query = Scorer.for_user(current_user).includes(:owner)
     if 1 == @scorer_type_list.size
       if 'communal' == @scorer_type_list.first
         combined_query = combined_query.where(communal: true)
@@ -21,13 +22,12 @@ class ScorersController < ApplicationController
         combined_query = combined_query.where(communal: false)
       end
     end
-    combined_query = combined_query.where('LOWER(scorers.name) LIKE ?', "%#{@q.to_s.downcase}%") if @q.present?
+    combined_query = combined_query.search_by(@q, :name) if @q.present?
     # Order so that communal (true) comes after custom (false)
     combined_query = combined_query.order(Arel.sql('communal ASC, name'))
 
     @pagy, @scorers = pagy(combined_query)
     @combined_scorers = Scorer.for_user(current_user).order(Arel.sql('communal ASC, name'))
-    @user_teams = current_user.teams.order(:name)
 
     @default_scorer = current_user.default_scorer
 
@@ -45,7 +45,7 @@ class ScorersController < ApplicationController
   def create
     @scorer = Scorer.new(scorer_params.merge(owner: current_user, communal: false))
     if @scorer.save
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer created.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer created.', status: :see_other
     else
       render :new, status: :unprocessable_content
     end
@@ -62,9 +62,9 @@ class ScorersController < ApplicationController
     @scorer.show_scale_labels = @source_scorer.show_scale_labels
 
     if @scorer.save
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer cloned.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer cloned.', status: :see_other
     else
-      redirect_to scorers_path, alert: 'Unable to clone scorer.'
+      redirect_to scorers_path, alert: 'Unable to clone scorer.', status: :see_other
     end
   end
 
@@ -75,14 +75,14 @@ class ScorersController < ApplicationController
 
     unless scorer
       flash[:alert] = 'Scorer not found.'
-      redirect_to scorers_path and return
+      redirect_to scorers_path, status: :see_other and return
     end
 
     # ensure the user has access to this scorer
     allowed_ids = Scorer.for_user(current_user).pluck(:id)
     unless allowed_ids.include?(scorer.id)
       flash[:alert] = 'You cannot select that scorer as default.'
-      redirect_to scorers_path and return
+      redirect_to scorers_path, status: :see_other and return
     end
 
     current_user.default_scorer = scorer
@@ -92,76 +92,41 @@ class ScorersController < ApplicationController
       flash[:alert] = current_user.errors.full_messages.to_sentence
     end
 
-    redirect_to scorers_path
+    redirect_to scorers_path, status: :see_other
   end
 
   def share
-    team = current_user.teams.find_by(id: params[:team_id])
-    scorer = Scorer.find_by(id: params[:scorer_id])
-
-    unless team && scorer
-      flash[:alert] = 'Team or scorer not found.'
-      redirect_to scorers_path and return
-    end
-
-    unless Scorer.for_user(current_user).exists?(id: scorer.id)
-      flash[:alert] = 'You do not have access to that scorer.'
-      redirect_to scorers_path and return
-    end
-
-    if scorer.communal?
-      flash[:alert] = 'Communal scorers are already available to everyone.'
-      redirect_to scorers_path and return
-    end
-
-    if team.scorers.exists?(scorer.id)
-      flash[:alert] = "#{scorer.name} is already shared with #{team.name}."
+    if TeamSharing.new(current_user, @sharing_team).share(@sharing_scorer)
+      flash[:notice] = "#{@sharing_scorer.name} shared with #{@sharing_team.name}."
     else
-      team.scorers << scorer
-      flash[:notice] = "#{scorer.name} shared with #{team.name}."
-      Analytics::Tracker.track_scorer_shared_event current_user, scorer, team if defined?(Analytics::Tracker) && Analytics::Tracker.respond_to?(:track_scorer_shared_event)
+      flash[:alert] = "#{@sharing_scorer.name} is already shared with #{@sharing_team.name}."
     end
-
+    redirect_to scorers_path, status: :see_other
+  rescue TeamSharing::AccessDenied
+    flash[:alert] = 'You do not have access to that scorer.'
     redirect_to scorers_path, status: :see_other
   end
 
   def unshare
-    team = current_user.teams.find_by(id: params[:team_id])
-    scorer = Scorer.find_by(id: params[:scorer_id])
-
-    unless team && scorer
-      flash[:alert] = 'Team or scorer not found.'
-      redirect_to scorers_path and return
-    end
-
-    unless Scorer.for_user(current_user).exists?(id: scorer.id)
-      flash[:alert] = 'You do not have access to that scorer.'
-      redirect_to scorers_path and return
-    end
-
-    if scorer.communal?
-      flash[:alert] = 'Communal scorers are already available to everyone.'
-      redirect_to scorers_path and return
-    end
-
-    if team.scorers.exists?(scorer.id)
-      team.scorers.delete(scorer)
-      flash[:notice] = "#{scorer.name} unshared from #{team.name}."
+    if TeamSharing.new(current_user, @sharing_team).unshare(@sharing_scorer)
+      flash[:notice] = "#{@sharing_scorer.name} unshared from #{@sharing_team.name}."
     else
-      flash[:alert] = "#{scorer.name} is not shared with #{team.name}."
+      flash[:alert] = "#{@sharing_scorer.name} is not shared with #{@sharing_team.name}."
     end
-
+    redirect_to scorers_path, status: :see_other
+  rescue TeamSharing::AccessDenied
+    flash[:alert] = 'You do not have access to that scorer.'
     redirect_to scorers_path, status: :see_other
   end
 
   def update
     if @scorer.communal? && !current_user.administrator?
-      redirect_to scorers_path, alert: 'You cannot edit communal scorers.'
+      redirect_to scorers_path, alert: 'You cannot edit communal scorers.', status: :see_other
       return
     end
 
     if @scorer.update(scorer_params)
-      redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.'
+      redirect_to edit_scorer_path(@scorer), notice: 'Scorer updated.', status: :see_other
     else
       render :edit, status: :unprocessable_content
     end
@@ -169,15 +134,48 @@ class ScorersController < ApplicationController
 
   def destroy
     if @scorer.communal? && !current_user.administrator?
-      redirect_to scorers_path, alert: 'You cannot delete communal scorers.'
+      redirect_to scorers_path, alert: 'You cannot delete communal scorers.', status: :see_other
+      return
+    end
+
+    blocker = deletion_blocker
+    if blocker
+      redirect_to edit_scorer_path(@scorer), alert: blocker, status: :see_other
       return
     end
 
     @scorer.destroy
-    redirect_to scorers_path, notice: 'Scorer deleted.'
+    redirect_to scorers_path, notice: 'Scorer deleted.', status: :see_other
   end
 
   private
+
+  # A scorer that is still a case's or user's default can't be deleted; cases would be left without a scorer.
+  # Only counts are reported: the cases may belong to other users who share the scorer through a team.
+  def deletion_blocker
+    case_count = Case.where(scorer_id: @scorer.id).count
+    if case_count.positive?
+      return "Cannot delete the scorer because it is the default for #{case_count} #{'case'.pluralize(case_count)}. " \
+             'Switch those cases to another scorer first.'
+    end
+
+    user_count = User.where(default_scorer_id: @scorer.id).count
+    return unless user_count.positive?
+
+    "Cannot delete the scorer because it is the default for #{user_count} #{'user'.pluralize(user_count)}. " \
+      'Choose another default scorer first.'
+  end
+
+  def set_sharing_resources
+    @sharing_team = current_user.teams.find_by(id: params[:team_id])
+    @sharing_scorer = Scorer.find_by(id: params[:scorer_id])
+
+    if !@sharing_team || !@sharing_scorer
+      redirect_to scorers_path, alert: 'Team or scorer not found.', status: :see_other
+    elsif @sharing_scorer.communal?
+      redirect_to scorers_path, alert: 'Communal scorers are already available to everyone.', status: :see_other
+    end
+  end
 
   def set_scorer
     @scorer = if current_user.administrator?

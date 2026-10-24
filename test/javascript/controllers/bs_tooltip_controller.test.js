@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import BsTooltipController from "controllers/bs_tooltip_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 vi.mock("utils/bs_tooltip", () => ({
   createBsTooltip: vi.fn(() => ({ id: "tooltip-instance" })),
@@ -14,13 +15,10 @@ import {
 } from "utils/bs_tooltip"
 
 function buildController(element) {
-  const controller = Object.create(BsTooltipController.prototype)
-  controller.element = element
-  controller.titleValue = "Help"
-  controller.placementValue = "right"
-  controller.htmlValue = true
-  controller.delayValue = 500
-  return controller
+  return buildControllerFixture(BsTooltipController, {
+    element,
+    values: { title: "Help", placement: "right", html: true, delay: 500 }
+  })
 }
 
 describe("BsTooltipController", () => {

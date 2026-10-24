@@ -10,15 +10,16 @@ module Api
         # @teams = @teams.preload(:scorers, :members, :cases, :owner).all
         # There may be some more fields we could include...
         # @teams = current_user.teams.includes( :owner, :members, :cases, scorers: [ :teams ] ).all
-        @teams = current_user.teams.includes( :cases ).all
+        @teams = current_user.teams.with_member_count.preload(cases: [ :owner, :book ], scorers: [ :owner, :teams ]).all
 
         respond_with @teams
       end
 
       def show
         @team = current_user.teams.where(id: params[:team_id])
-          .includes([ :scorers, :members, :books, :search_endpoints ])
+          .includes(:scorers, :members, :books, :search_endpoints, cases: [ :owner, :book ])
           .first
+        @sampled_case_scores = CaseScoreSamples.load(@team.cases) if @team
         respond_with @team
       end
 

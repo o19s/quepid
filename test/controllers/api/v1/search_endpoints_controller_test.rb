@@ -80,6 +80,20 @@ module Api
           end
         end
 
+        { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
+          test "API update preserves credential policy for #{submitted.inspect}" do
+            one.update!(basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
+            patch :update, params: { id: one.id, search_endpoint: { basic_auth_credential: submitted } }
+
+            assert_response :no_content
+            if expected.nil?
+              assert_nil one.reload.basic_auth_credential
+            else
+              assert_equal expected, one.reload.basic_auth_credential
+            end
+          end
+        end
+
         describe 'when changing the name' do
           test 'updates name successfully using PATCH verb' do
             patch :update, params: { id: one.id, search_endpoint: { name: 'New Name' } }
@@ -96,6 +110,73 @@ module Api
             one.reload
             assert_equal 'New Name', one.name
           end
+        end
+      end
+
+      describe 'Filtering and archiving' do
+        let(:endpoint) { search_endpoints(:one) }
+        let(:team)     { teams(:shared) }
+
+        def listed_ids params = {}
+          get :index, params: params
+
+          assert_response :ok
+          response.parsed_body['search_endpoints'].pluck('search_endpoint_id')
+        end
+
+        test 'lists only the endpoints shared with the requested team' do
+          ids = listed_ids(team_id: team.id)
+
+          assert_includes ids, endpoint.id
+          assert_empty ids - team.search_endpoints.pluck(:id)
+        end
+
+        test 'lists only the endpoints of the teams a case is shared with' do
+          ids = listed_ids(case_id: cases(:shared_with_team).id)
+
+          assert_includes ids, endpoint.id
+          assert_empty ids - team.search_endpoints.pluck(:id)
+        end
+
+        test 'archiving takes the endpoint over and moves it to the archived list' do
+          patch :update, params: { id: endpoint.id, archived: true, search_endpoint: { name: endpoint.name } }
+
+          assert_response :no_content
+          endpoint.reload
+          assert_predicate endpoint, :archived?
+          assert_equal user, endpoint.owner
+          assert_not_includes listed_ids, endpoint.id
+          assert_includes listed_ids(archived: true), endpoint.id
+        end
+
+        test 'does not rename an endpoint while archiving it' do
+          original = endpoint.name
+
+          patch :update, params: { id: endpoint.id, archived: true, search_endpoint: { name: 'ignored' } }
+
+          assert_equal original, endpoint.reload.name
+        end
+      end
+
+      describe 'Rejecting invalid endpoints' do
+        test 'create reports the validation errors and saves nothing' do
+          assert_no_difference 'SearchEndpoint.count' do
+            post :create, params: { search_endpoint: { name: 'No url', search_engine: 'solr', api_method: 'GET' } }
+          end
+
+          assert_response :bad_request
+          assert response.parsed_body.key?('endpoint_url')
+        end
+
+        test 'update reports the validation errors and keeps the old values' do
+          endpoint = search_endpoints(:one)
+          original = endpoint.endpoint_url
+
+          patch :update, params: { id: endpoint.id, search_endpoint: { endpoint_url: '' } }
+
+          assert_response :bad_request
+          assert response.parsed_body.key?('endpoint_url')
+          assert_equal original, endpoint.reload.endpoint_url
         end
       end
     end

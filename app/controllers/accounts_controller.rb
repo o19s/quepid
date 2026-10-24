@@ -10,7 +10,7 @@ class AccountsController < ApplicationController
       error = true
     elsif @user.update password: params[:password], password_confirmation: params[:password_confirmation]
       Analytics::Tracker.track_user_updated_password_event @user
-      flash[:success] = 'Account updated successfully.'
+      flash[:notice] = 'Account updated successfully.'
     else
       flash.now[:error] = 'Oooops! Something happened, please double check your values and try again.'
       error = true
@@ -31,12 +31,23 @@ class AccountsController < ApplicationController
   def destroy
     @user = current_user
 
-    @user.cases.each do |c|
-      c.really_destroy if c.teams.empty?
+    deleted = User.transaction do
+      # Private-case cleanup can itself destroy authored annotations. Let the
+      # model reject deletion before that cleanup can erase the restriction.
+      unless @user.annotations.exists?
+        @user.cases.each do |c|
+          c.really_destroy if c.teams.empty?
+        end
+      end
+
+      destroyed = @user.destroy
+      raise ActiveRecord::Rollback unless destroyed
+
+      destroyed
     end
 
     respond_to do |format|
-      if @user.destroy
+      if deleted
         format.html { redirect_to sessions_path, notice: 'Account was deleted' }
         format.json { head :no_content }
       else

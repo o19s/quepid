@@ -1,0 +1,8 @@
+<%# locals: (engine:) %>
+<label class="wizard-engine-tile">
+  <input type="radio" name="wizardEngine" value="<%= engine %>" class="form-check-input" aria-label="<%= SearchEngine.label(engine) %>"
+         data-wizard-target="engineOption"
+         data-wizard-field="searchEnginePreset"
+         data-action="change->wizard#updateSetting">
+  <img src="images/<%= engine %>.png" alt="<%= SearchEngine.label(engine) %>" class="wizard-engine-logo">
+</label>

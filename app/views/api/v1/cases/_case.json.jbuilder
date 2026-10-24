@@ -5,6 +5,7 @@ no_tries  ||= false
 no_teams  ||= false
 no_scores ||= false
 no_queries ||= false
+sampled_case_scores ||= nil
 
 json.case_name        acase.case_name
 json.case_id          acase.id
@@ -27,7 +28,7 @@ json.options          acase.options
 json.last_try_number  acase.last_try_number
 
 unless no_teams || current_user.nil?
-  teams = acase.teams.find_all { |t| current_user.teams.all.include?(t) }
+  teams = acase.teams.find_all { |t| current_user.teams.to_a.include?(t) }
   json.teams teams
 end
 
@@ -37,14 +38,19 @@ unless no_tries || shallow
   end
 end
 
-if !no_scores && acase.last_score.present? && acase.last_score.present?
+if !no_scores && (last_score = acase.last_score).present?
   json.last_score do
-    json.partial! 'api/v1/case_scores/score', score: acase.last_score, shallow: shallow
+    json.partial! 'api/v1/case_scores/score', score: last_score, shallow: shallow
   end
 end
 
 unless shallow
-  json.scores acase.scores.sampled(acase.id, 10).includes(:annotation).limit(10) do |s|
+  sampled_scores = if sampled_case_scores
+                     sampled_case_scores.fetch(acase.id, [])
+                   else
+                     acase.scores.sampled(acase.id, 10).includes(:annotation).limit(10)
+                   end
+  json.scores sampled_scores do |s|
     json.score      s.score
     json.updated_at s.updated_at
     json.note       s.annotation&.message

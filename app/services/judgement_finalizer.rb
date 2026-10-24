@@ -37,7 +37,7 @@ class JudgementFinalizer
     scale.present? && !scale.includes?(judgement.rating)
   end
 
-  # The LLM returned a rating outside the scale it was given -- a human judge
+  # The LLM returned a rating outside this book's scale it was given -- a human judge
   # could never produce this (the judging UI only offers buttons for the
   # scale's actual values), so don't trust it, but keep the raw value
   # visible for review rather than silently dropping it. Runs before
@@ -45,6 +45,6 @@ class JudgementFinalizer
   def annotate_out_of_scale
     judgement.explanation =
       "#{judgement.explanation} [LLM returned rating #{judgement.rating.inspect}, " \
-      "outside the scale #{scale.values.inspect}]".strip
+      "outside this book's scale #{scale.values.inspect}]".strip
   end
 end

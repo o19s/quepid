@@ -1,4 +1,6 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import MatchExplainModalController from "controllers/match_explain_modal_controller"
 import MatchExplainController from "controllers/match_explain_controller"
 
 const popoverHandle = {
@@ -15,7 +17,28 @@ vi.mock("utils/bs_popover", () => ({
 const dynamicModal = { element: document.createElement("div"), dispose: vi.fn() }
 
 vi.mock("utils/dynamic_modal", () => ({
-  openDynamicModal: vi.fn(() => dynamicModal)
+  openDynamicModal: vi.fn(({ templateId }) => {
+    dynamicModal.element = document.createElement("div")
+    if (templateId === "match-explain-debug-modal-template") {
+      dynamicModal.element.innerHTML = '<em data-match-explain-modal-target="title"></em><span data-match-explain-modal-target="docId"></span><div data-match-explain-modal-target="json"></div>'
+    } else {
+      dynamicModal.element.innerHTML = '<span data-match-explain-modal-target="score"></span><pre data-match-explain-modal-target="explanation"></pre>'
+    }
+    const root = document.createElement("div")
+    root.dataset.controller = "match-explain-modal"
+    root.append(...dynamicModal.element.childNodes)
+    dynamicModal.element.append(root)
+    Object.defineProperty(root, "matchExplainData", {
+      set(data) {
+        Object.defineProperty(root, "matchExplainData", { value: data, configurable: true })
+        const targets = Object.fromEntries([...root.querySelectorAll("[data-match-explain-modal-target]")].map(el =>
+          [el.dataset.matchExplainModalTarget, el]
+        ))
+        buildControllerFixture(MatchExplainModalController, { element: root, targets }).connect()
+      }, configurable: true
+    })
+    return dynamicModal
+  })
 }))
 
 vi.mock("utils/json_explorer", () => ({
@@ -55,10 +78,20 @@ function baseData(overrides = {}) {
 }
 
 function buildController(element, data) {
-  const controller = Object.create(MatchExplainController.prototype)
-  controller.element = element
-  controller.dataValue = data
+  const controller = buildControllerFixture(MatchExplainController, {
+    element,
+    values: {
+      data
+    }
+  })
   return controller
+}
+
+// The Stimulus stub does not route data-action, so resolve the declared
+// click action and call it the way Stimulus would.
+function clickAction(controller, target) {
+  const [, method] = target.dataset.action.match(/^(?:click->)?match-explain#(\w+)$/)
+  controller[method]({ type: "click", currentTarget: target, preventDefault: vi.fn() })
 }
 
 function lastBody() {
@@ -107,8 +140,7 @@ describe("MatchExplainController", () => {
     expect(createBsPopover).toHaveBeenCalledTimes(1)
     const [trigger, options] = createBsPopover.mock.calls[0]
     expect(trigger).toBe(element.querySelector(".matches-popper"))
-    expect(options.mode).toBe("text")
-    expect(options.trigger).toBe("outsideClick")
+    expect(options.trigger).toBe("outside-click")
     expect(options.placement).toBe("left")
     expect(popoverHandle.setTitle).toHaveBeenCalledWith("Relevancy Score: 3.5")
   })
@@ -149,12 +181,12 @@ describe("MatchExplainController", () => {
     MatchExplainController.prototype.connect.call(controller)
 
     const toggle = element.querySelector(".match-explain-toggle")
-    toggle.click()
+    clickAction(controller, toggle)
 
     expect(toggle.textContent).toBe("Show Less")
     expect(element.querySelector(".match-explain-more").classList.contains("show")).toBe(true)
 
-    toggle.click()
+    clickAction(controller, toggle)
     expect(toggle.textContent).toBe("Show 2 More")
   })
 
@@ -171,7 +203,7 @@ describe("MatchExplainController", () => {
     const controller = buildController(element, baseData())
     MatchExplainController.prototype.connect.call(controller)
 
-    element.querySelector(".match-explain-bar").click()
+    clickAction(controller, element.querySelector(".match-explain-bar"))
 
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
   })
@@ -189,14 +221,13 @@ describe("MatchExplainController", () => {
 
     const body = lastBody()
     expect(body.querySelector(".doc-score-explanation pre").textContent).toBe("{}")
-    expect(body.querySelector(".match-explain-debug").classList.contains("disabled")).toBe(true)
-    expect(body.querySelector(".match-explain-debug").getAttribute("aria-disabled")).toBe("true")
+    expect(body.querySelector(".match-explain-debug").disabled).toBe(true)
 
     body.querySelector(".match-explain-debug").click()
     expect(openDynamicModal).not.toHaveBeenCalled()
   })
 
-  it("Debug opens a modal sized lg with the doc-detailed-explain-modal class and renders the JSON explorer", () => {
+  it("Debug opens a modal sized lg with the full-screen-modal class and renders the JSON explorer", () => {
     const data = baseData()
     const controller = buildController(element, data)
     MatchExplainController.prototype.connect.call(controller)
@@ -207,12 +238,26 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.size).toBe("lg")
-    expect(options.windowClass).toBe("doc-detailed-explain-modal")
-    expect(options.html).toContain("Some Doc")
-    expect(options.html).toContain("doc-1")
+    expect(options.windowClass).toBe("full-screen-modal")
+    expect(options.templateId).toBe("match-explain-debug-modal-template")
+    expect(options.ariaLabelledBy).toBe("match-explain-debug-modal-title")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='title']").textContent).toBe("Some Doc")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='docId']").textContent).toBe("doc-1")
 
     expect(renderJsonExplorer).toHaveBeenCalledTimes(1)
     expect(renderJsonExplorer.mock.calls[0][1]).toBe(data.explainRawStr)
+    expect(renderJsonExplorer.mock.calls[0][2]).toEqual({ collapsed: false })
+  })
+
+  it("closes the popover when Debug or Expand opens a modal", () => {
+    const controller = buildController(element, baseData())
+    MatchExplainController.prototype.connect.call(controller)
+
+    lastBody().querySelector(".match-explain-debug").click()
+    expect(popoverHandle.instance.hide).toHaveBeenCalledTimes(1)
+
+    lastBody().querySelector(".match-explain-expand").click()
+    expect(popoverHandle.instance.hide).toHaveBeenCalledTimes(2)
   })
 
   it("Expand opens a full-screen-modal with the same explanation text", () => {
@@ -225,14 +270,16 @@ describe("MatchExplainController", () => {
     expect(openDynamicModal).toHaveBeenCalledTimes(1)
     const options = openDynamicModal.mock.calls[0][0]
     expect(options.windowClass).toBe("full-screen-modal")
-    expect(options.html).toContain("Relevancy Score: 3.5")
-    expect(options.html).toContain("3.5 weight(title:foo)")
+    expect(options.templateId).toBe("match-explain-expand-modal-template")
+    expect(options.ariaLabelledBy).toBe("match-explain-expand-modal-title")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='score']").textContent).toBe("3.5")
+    expect(dynamicModal.element.querySelector("[data-match-explain-modal-target='explanation']").textContent).toContain("3.5 weight(title:foo)")
   })
 
   it("updates the popover in place (setTitle/setBody) on a data change, without disposing or recreating it", () => {
     const controller = buildController(element, baseData({ hots: MANY_HOTS }))
     MatchExplainController.prototype.connect.call(controller)
-    element.querySelector(".match-explain-toggle").click()
+    clickAction(controller, element.querySelector(".match-explain-toggle"))
     expect(element.querySelector(".match-explain-toggle").textContent).toBe("Show Less")
 
     MatchExplainController.prototype.dataValueChanged.call(controller, baseData({ hots: MANY_HOTS, docScore: 4.2 }))

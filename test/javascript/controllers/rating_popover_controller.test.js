@@ -1,3 +1,4 @@
+import { buildControllerFixture } from "../support/controller_fixture"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import RatingPopoverController from "controllers/rating_popover_controller"
 
@@ -19,10 +20,13 @@ const SCALE = {
 }
 
 function buildController(element) {
-  const controller = Object.create(RatingPopoverController.prototype)
-  controller.element = element
-  controller.scaleValue = SCALE
-  controller.placementValue = "auto right"
+  const controller = buildControllerFixture(RatingPopoverController, {
+    element,
+    values: {
+      scale: SCALE,
+      placement: "right"
+    }
+  })
   return controller
 }
 
@@ -46,16 +50,34 @@ describe("RatingPopoverController", () => {
     expect(createBsPopover).toHaveBeenCalledTimes(1)
     const [calledElement, options] = createBsPopover.mock.calls[0]
     expect(calledElement).toBe(element)
-    expect(options.mode).toBe("text")
-    expect(options.trigger).toBe("outsideClick")
-    expect(options.placement).toBe("auto right")
+    expect(options.trigger).toBe("outside-click")
+    expect(options.placement).toBe("right")
     expect(options.html).toBe(true)
+    expect(options.container).toBe("body")
 
     const items = options.body.querySelectorAll(".ratingNum")
     expect(items).toHaveLength(2)
+    expect(items[0].tagName).toBe("BUTTON")
+    expect(items[0].type).toBe("button")
     expect(items[0].textContent).toContain("1")
-    expect(items[1].querySelector("div").textContent).toBe("Relevant")
+    expect(items[1].querySelector(".d-block").textContent).toBe("Relevant")
     expect(options.body.querySelector(".reset")).not.toBeNull()
+  })
+
+  it("keeps interactive ratings inside the nearest modal's focus trap", () => {
+    const outer = document.createElement("div")
+    outer.className = "modal"
+    const inner = document.createElement("div")
+    inner.className = "modal"
+    outer.appendChild(inner)
+    inner.appendChild(element)
+    document.body.appendChild(outer)
+
+    const controller = buildController(element)
+    controller.connect()
+    expect(createBsPopover.mock.calls[0][1].container).toBe(inner)
+    controller.disconnect()
+    outer.remove()
   })
 
   it("dispatches rating-popover:rate with the clicked rating and hides", () => {
@@ -87,6 +109,21 @@ describe("RatingPopoverController", () => {
     expect(handle.instance.hide).toHaveBeenCalledTimes(1)
   })
 
+  it("marks a result rating so the surrounding Score All handler ignores it", () => {
+    const result = document.createElement("search-result")
+    result.appendChild(element)
+    document.body.appendChild(result)
+    const controller = buildController(element)
+    RatingPopoverController.prototype.connect.call(controller)
+
+    const listener = vi.fn()
+    element.addEventListener("rating-popover:rate", listener)
+    createBsPopover.mock.calls.at(-1)[1].body.querySelector(".ratingNum").click()
+
+    expect(listener.mock.calls[0][0].detail).toEqual({ rating: "1", source: "single-result" })
+    result.remove()
+  })
+
   it("re-renders and updates the popover body when the scale value changes", () => {
     const controller = buildController(element)
     RatingPopoverController.prototype.connect.call(controller)
@@ -96,6 +133,26 @@ describe("RatingPopoverController", () => {
     expect(handle.setBody).toHaveBeenCalledTimes(1)
     const newBody = handle.setBody.mock.calls[0][0]
     expect(newBody.querySelectorAll(".ratingNum")).toHaveLength(2)
+  })
+
+  it("returns keyboard focus to the rating trigger before removing its choices", () => {
+    const trigger = document.createElement("button")
+    element.appendChild(trigger)
+    const tip = document.createElement("div")
+    tip.id = "rating-tip"
+    element.setAttribute("aria-describedby", tip.id)
+    const choice = document.createElement("button")
+    tip.appendChild(choice)
+    document.body.appendChild(tip)
+    const controller = buildController(element)
+    controller.connect()
+    choice.focus()
+
+    controller.hide()
+
+    expect(document.activeElement).toBe(trigger)
+    expect(handle.instance.hide).toHaveBeenCalledTimes(1)
+    tip.remove()
   })
 
   it("disposes the popover on disconnect", () => {

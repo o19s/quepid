@@ -3,12 +3,16 @@
 module Analytics
   module Tracker
     module Book
-      def track_query_doc_pairs_bulk_updated_event user, book, empty = false
+      def track_query_doc_pairs_bulk_updated_event _user, book, empty = false
         if empty
-          Analytics::Ahoy.user_populated_book user, book
+          track 'Books', 'Populated empty book', label: book.name, value: book.id
         else
-          Analytics::Ahoy.user_refreshed_book user, book
+          track 'Books', 'Refreshed a book', label: book.name, value: book.id
         end
+      end
+
+      def track_book_shared_event _user, book, _team
+        track 'Books', 'Shared a Book', label: book.name
       end
     end
   end

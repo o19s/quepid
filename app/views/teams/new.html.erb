@@ -9,6 +9,7 @@
 <div class="card">
   <div class="card-body">
     <%= form_for @team, url: teams_path do |f| %>
+      <%= render 'shared/error_messages', record: @team, subject: 'team' %>
       <div class="mb-3">
         <%= f.label :name, class: 'form-label' %>
         <%= f.text_field :name, class: 'form-control' %>

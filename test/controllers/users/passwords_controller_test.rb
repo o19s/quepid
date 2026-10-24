@@ -53,6 +53,7 @@ module Users
       end
 
       test 'renders the form again when the passwords do not match' do
+        original_password = user.password
         token = user.send_reset_password_instructions
 
         put user_password_url, params: {
@@ -63,7 +64,9 @@ module Users
           },
         }
 
-        assert_response :success
+        assert_response :unprocessable_content
+        assert_select '.alert', text: /confirmation/i
+        assert_equal original_password, user.reload.password
       end
 
       test 'blocks the request and redirects to sign in when email is not configured' do

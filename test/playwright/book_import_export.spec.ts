@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders } from './case_helpers';
 
 /**
  * Book import/export end-to-end coverage (Books::ImportController /
@@ -37,13 +38,6 @@ function importJson(name: string) {
   };
 }
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' };
-}
-
 /**
  * BooksController#destroy redirects to the books index on success.
  * APIRequestContext follows redirects by default, which for this
@@ -53,7 +47,7 @@ async function apiHeaders(page: Page) {
  */
 async function deleteBook(page: Page, bookId: number) {
   const response = await page.request.delete(`books/${bookId}`, {
-    headers: await apiHeaders(page),
+    headers: await apiHeaders(page, { 'X-Requested-With': 'XMLHttpRequest' }),
     maxRedirects: 0
   });
   expect(response.status()).toBeLessThan(400);
@@ -86,11 +80,10 @@ test.describe('Book import/export', () => {
 
     try {
       // ImportBookJob runs asynchronously — poll the show page until the
-      // "currently being processed" banner clears and the query count lands.
+      // imported query and query/doc pair counts land.
       await expect(async () => {
         await page.goto(`books/${bookId}`);
-        await expect(page.getByText(/consists of 1 queries/i)).toBeVisible();
-        await expect(page.getByText(/currently being processed/i)).toHaveCount(0);
+        await expect(page.getByText(/This book has 1 query and 2 query\/doc pairs/)).toBeVisible();
       }).toPass({ timeout: 15_000 });
 
       await expect(page.getByRole('heading', { name: new RegExp(name) })).toBeVisible();
@@ -138,12 +131,12 @@ test.describe('Book import/export', () => {
 
       await page.getByRole('button', { name: 'Export' }).click();
 
-      // ExportController#update redirects back to the book show page with a
-      // "queued" notice; ExportBookJob then attaches export_file async.
-      await page.waitForURL(`**/books/${bookId}`, { timeout: 10_000 });
+      // ExportController#update redirects back to the export page with a "queued" notice;
+      // ExportBookJob then attaches export_file async and the page updates itself.
+      await page.waitForURL(`**/books/${bookId}/export`, { timeout: 10_000 });
       await expect(page.locator('#flash-messages')).toContainText(/queued up export/i);
 
-      const exportLink = page.getByRole('link', { name: /Book Exported as JSON file/i });
+      const exportLink = page.getByRole('link', { name: /available to download/ });
       await expect(async () => {
         await page.reload();
         await expect(exportLink).toBeVisible();

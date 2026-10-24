@@ -1,14 +1,9 @@
-import { Controller } from "@hotwired/stimulus"
-import { apiFetch } from "api/fetch"
-import { getQuepidRootUrl } from "utils/quepid_root"
-import { showStatusMessage } from "utils/status_message"
+import ImportFormControllerBase from "controllers/import_form_controller_base"
+import { postJson } from "api/json"
+import { HttpError } from "api/http_error"
 
-export default class extends Controller {
+export default class extends ImportFormControllerBase {
   static targets = ["form", "fileInput", "alert", "submitButton", "submitText", "spinner"]
-
-  connect() {
-    console.log("Import case controller connected")
-  }
 
   fileSelected(event) {
     const file = event.target.files[0]
@@ -39,75 +34,40 @@ export default class extends Controller {
 
     try {
       // Read the file content
-      const fileContent = await this.readFileAsText(file)
+      const fileContent = await file.text()
       let caseData
       
       try {
         caseData = JSON.parse(fileContent)
-      } catch (e) {
+      } catch {
         this.showAlert('Invalid JSON file. Please check the file format.', 'danger')
         this.setLoading(false)
         return
       }
 
       // Send to API - wrap in 'case' key as expected by API
-      const response = await apiFetch(this.formTarget.action, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ case: caseData })
-      })
-
-      const result = await response.json()
-
-      if (response.ok) {
-        this.showAlert('Case imported successfully! Redirecting...', 'success')
-        setTimeout(() => {
-          const caseId = result.id ?? result.case_id
-          if (caseId) {
-            window.location.href = `${getQuepidRootUrl()}/case/${caseId}`
-          } else {
-            window.location.reload()
-          }
-        }, 1500)
-      } else {
-        const errorMessage = result.error || result.message || 'Failed to import case. Please check the file format.'
-        this.showAlert(errorMessage, 'danger')
-        this.setLoading(false)
-      }
+      const result = await postJson(this.formTarget.action, { case: caseData })
+      this.showAlert("Case imported successfully! Redirecting...", "success")
+      setTimeout(() => {
+        if (result.redirect_url) {
+          window.location.href = result.redirect_url
+        } else {
+          window.location.reload()
+        }
+      }, 1500)
     } catch (error) {
       console.error('Import error:', error)
-      this.showAlert('An error occurred while importing the case. Please try again.', 'danger')
+      if (error instanceof HttpError) {
+        const result = error.data || {}
+        const validationMessages = Object.entries(result)
+          .filter(([, value]) => Array.isArray(value))
+          .map(([field, messages]) => `${field} ${messages.join(", ")}`)
+        this.showAlert(result.error || result.message || validationMessages.join(". ") || "Failed to import case. Please check the file format.", "danger")
+      } else {
+        this.showAlert("An error occurred while importing the case. Please try again.", "danger")
+      }
       this.setLoading(false)
     }
   }
 
-  readFileAsText(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = (e) => resolve(e.target.result)
-      reader.onerror = (e) => reject(e)
-      reader.readAsText(file)
-    })
-  }
-
-  setLoading(isLoading) {
-    this.submitButtonTarget.disabled = isLoading
-    if (isLoading) {
-      this.submitTextTarget.textContent = 'Importing...'
-      this.spinnerTarget.classList.remove('d-none')
-    } else {
-      this.submitTextTarget.textContent = 'Import'
-      this.spinnerTarget.classList.add('d-none')
-    }
-  }
-
-  showAlert(message, type) {
-    showStatusMessage(this.alertTarget, { message, className: `alert alert-${type}` })
-  }
-
-  hideAlert() {
-    this.alertTarget.classList.add('d-none')
-  }
 }

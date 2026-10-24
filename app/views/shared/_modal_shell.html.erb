@@ -1,35 +1,54 @@
 <%# Generic Bootstrap 5 modal shell (.modal > .modal-dialog > .modal-content >
     .modal-header/.modal-body/.modal-footer) shared across the share/import
-    modal partials. The standard Cancel/data-bs-dismiss button is rendered
-    automatically after `footer`.
+    modal partials. The standard dismiss button is rendered automatically after
+    `footer`. If the controller declares a "cancelButton"
+    target, it also gets `data-#{controller}-target="cancelButton"` so the
+    controller can disable Cancel during a busy/in-flight request (controllers
+    that don't declare that target just get an inert, ignored data attribute).
 
     Locals:
       id           - DOM id for the outer .modal div; also drives the title's
                      id/aria-labelledby ("#{id}Label")
       title        - modal title text
       body         - captured .modal-body content
-      footer       - captured .modal-footer content, rendered before Cancel (default: none)
+      footer       - captured .modal-footer content, rendered before the dismiss button (default: none)
+      cancel_class - Bootstrap button class for the automatic Cancel button (default: "btn-outline-secondary")
       dialog_class - extra classes for .modal-dialog, e.g. "modal-lg" (default: none)
+      modal_class  - extra classes for the outer .modal (alongside "modal fade")
       data         - data attributes for the outer .modal div, e.g. { controller: "share-book" }
-      title_data   - data attributes for the .modal-title element (default: none) %>
+      title_data   - data attributes for the .modal-title element (default: none)
+      title_tag    - title heading tag (default: :h5)
+      title_class  - extra title classes, e.g. "fs-5" (default: none)
+      close_class  - header close-button class (default: "btn-close")
+      close_label  - header close-button accessible label (default: "Close")
+      cancel_label - automatic dismiss-button text (default: "Cancel") %>
 <% footer ||= nil %>
 <% dialog_class ||= "" %>
+<% modal_class ||= "" %>
 <% data ||= {} %>
 <% title_data ||= {} %>
-<%= content_tag :div, class: "modal fade", id: id, tabindex: "-1",
+<% cancel_class ||= "btn-outline-secondary" %>
+<% title_tag ||= :h5 %>
+<% title_class ||= "" %>
+<% close_class ||= "btn-close" %>
+<% close_label ||= "Close" %>
+<% cancel_label ||= "Cancel" %>
+<% cancel_data = { bs_dismiss: "modal" } %>
+<% cancel_data["#{data[:controller]}-target"] = "cancelButton" if data[:controller].present? %>
+<%= content_tag :div, class: "modal fade #{modal_class}".strip, id: id, tabindex: "-1",
                 aria: { labelledby: "#{id}Label", hidden: "true" }, data: data do %>
   <div class="modal-dialog <%= dialog_class %>">
     <div class="modal-content">
       <div class="modal-header">
-        <%= content_tag :h5, title, class: "modal-title", id: "#{id}Label", data: title_data %>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%= content_tag title_tag, title, class: "modal-title #{title_class}".strip, id: "#{id}Label", data: title_data %>
+        <button type="button" class="<%= close_class %>" data-bs-dismiss="modal" aria-label="<%= close_label %>"></button>
       </div>
       <div class="modal-body">
         <%= body %>
       </div>
       <div class="modal-footer">
         <%= footer %>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <%= content_tag :button, cancel_label, type: "button", class: "btn #{cancel_class}", data: cancel_data %>
       </div>
     </div>
   </div>

@@ -1,0 +1,410 @@
+<%# locals: (kase:) %>
+<div class="modal fade wizard-modal-window" id="wizardModal" tabindex="-1" aria-label="Create a Quepid case" aria-hidden="true"
+     data-controller="wizard"
+     data-wizard-proxy-required-value="<%= require_proxy_for_all_search_endpoints? %>"
+     data-wizard-mapper-wizard-url-value="<%= new_mapper_wizard_url %>"
+     data-wizard-snapshot-search-url-template-value="<%= api_case_snapshot_search_index_url(kase, '__SNAPSHOT_ID__') if kase %>">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <%# As in the Angular wizard: no title bar or footer, just the steps with a close button, and the step dots along the bottom. %>
+      <div class="modal-body wizard-body">
+        <button type="button" class="btn-close wizard-close" data-action="wizard#close" aria-label="Close"></button>
+        <div class="alert alert-danger" role="alert" data-wizard-target="alert" hidden></div>
+        <p class="text-muted" data-wizard-target="loading">Loading…</p>
+        <section data-wizard-target="step" hidden>
+          <img src="images/doug.jpg" alt="Doug, creator of Quepid" class="float-start me-4 mb-3" width="100">
+          <h2>Welcome To Quepid!</h2>
+          <p>Hi, I'm Doug, creator of Quepid. Let me guide you through setting up your very first Case!</p>
+          <button type="button" class="btn btn-primary float-end" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>Name Your Case!</h2>
+          <p>Give an informative name to the problem you're solving.</p>
+          <%# Enter in the single field submits the form, as in the Angular wizard. %>
+          <form data-action="submit->wizard#next">
+            <label for="wizardCaseName">New Case Name:</label>
+            <input id="wizardCaseName" class="form-control"
+                   data-wizard-target="caseName"
+                   data-wizard-field="caseName"
+                   data-action="input->wizard#updateSetting">
+            <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          </form>
+        </section>
+        <%# Elements with data-wizard-when are shown only while every listed condition holds; see WizardController#conditions. %>
+        <section data-wizard-target="step" hidden>
+          <h2>What Search Endpoint do you want to connect to?</h2>
+          <%# As in the Angular wizard: two accordion panels, both closed on arrival; opening one closes the other. %>
+          <div class="wizard-endpoint-accordion">
+          <details class="wizard-endpoint-panel" name="wizardEndpointMode" data-wizard-target="createPanel" data-action="toggle->wizard#endpointPanelToggled">
+          <summary class="wizard-endpoint-panel-heading">Create a new Search Endpoint</summary>
+          <div class="wizard-endpoint-panel-body">
+          <p class="visually-hidden" id="wizardEngineLabel">Search engine</p>
+          <div class="wizard-engine-tiles" role="radiogroup" aria-labelledby="wizardEngineLabel">
+            <div class="wizard-engine-row">
+              <%= render 'shared/wizard_engine_tile', engine: 'solr' %>
+              <%= render 'shared/wizard_engine_tile', engine: 'es' %>
+              <%= render 'shared/wizard_engine_tile', engine: 'os' %>
+            </div>
+            <div class="wizard-engine-row" data-wizard-target="mapperEngines">
+              <%= render 'shared/wizard_engine_tile', engine: 'vectara' %>
+              <%= render 'shared/wizard_engine_tile', engine: 'algolia' %>
+            </div>
+            <div class="wizard-engine-row">
+              <%= render 'shared/wizard_engine_tile', engine: 'static' %>
+              <%= render 'shared/wizard_engine_tile', engine: 'searchapi' %>
+            </div>
+          </div>
+          <template data-wizard-target="engineTileTemplate">
+            <label class="wizard-engine-tile" data-mapper-engine>
+              <input type="radio" name="wizardEngine" class="form-check-input"
+                     data-wizard-target="engineOption"
+                     data-wizard-field="searchEnginePreset"
+                     data-action="change->wizard#updateSetting">
+              <img class="wizard-engine-logo" alt="">
+            </label>
+          </template>
+
+          <div class="alert alert-info mt-3" data-wizard-when="mapper-required" hidden>
+            <h3 class="h4"><i class="bi bi-magic" aria-hidden="true"></i> Custom Mapper Required</h3>
+            <p>Search API endpoints require a custom mapper to translate your API's response format into Quepid's expected format.</p>
+            <p><strong>To set up a Search API endpoint:</strong></p>
+            <ol>
+              <li>Use the <strong>Mapper Wizard</strong> to create your custom mapper code</li>
+              <li>Return here and select your new endpoint from <strong>"Use an existing Search Endpoint"</strong> below</li>
+            </ol>
+            <button type="button" class="btn btn-primary" data-action="wizard#goToMapperWizard">
+              <i class="bi bi-stars" aria-hidden="true"></i> Use Mapper Wizard
+            </button>
+          </div>
+
+          <div class="mt-3" data-wizard-when="static" hidden>
+            <p>
+              A "Static" (or "Offline") search endpoint is a great way to gather human judgements and leverage Quepid's existing
+              evaluation tools without requiring a live connection to a search engine.
+            </p>
+            <details class="mb-3">
+              <summary class="btn btn-sm btn-outline-secondary">Static Dataset</summary>
+              <div class="bg-light p-2 rounded border mt-2">
+                <p>
+                  Create the CSV file and upload it here.
+                  Under the covers we use the Snapshot CSV format, so you can export a snapshot from Quepid and then upload it here to create a Static search endpoint.
+                </p>
+                <div class="form-text">
+                  The CSV file should have the headers: <code>Query Text,Doc ID,Doc Position</code>.
+                  Then, all the document fields you want displayed follow as columns with the header being the name of the field.
+                  <pre class="mb-2">Query Text,Doc ID,Doc Position, MovieTitle
+star wars,527641,1, Star Wars
+star wars,9426,2, Star Wars: The Empire Strikes Back
+star wars,1921,3, Star Wars: Return of the Jedi</pre>
+                  Please note that the additional columns that a Snapshot export file contains are ignored when you import them here.
+                </div>
+              </div>
+            </details>
+            <label class="form-label" for="wizardStaticFile">Select CSV file to import:</label>
+            <input id="wizardStaticFile" type="file" accept=".csv,text/csv" class="form-control"
+                   data-wizard-target="staticFile"
+                   data-action="change->wizard#previewStatic">
+            <%# As in the Angular wizard, the chosen file is shown before anything is imported. %>
+            <div class="mt-3" data-wizard-when="static-preview" hidden>
+              <h2>CSV</h2>
+              <div class="alert alert-danger" data-wizard-target="staticAlert" hidden></div>
+              <pre class="border rounded p-2 bg-light" data-wizard-target="staticContent"></pre>
+              <button type="button" class="btn btn-primary" data-wizard-target="staticImportButton" data-action="wizard#importStatic">Import</button>
+            </div>
+            <p class="mt-2 mb-0" data-wizard-target="staticStatus" hidden></p>
+          </div>
+
+          <div data-wizard-when="live">
+            <p class="mt-3 mb-1">Paste the URL to the endpoint of your search engine for Quepid to search (you can also just experiment with the demo servers):</p>
+            <input class="form-control" placeholder="Search endpoint URL" aria-label="Search endpoint URL"
+                   data-wizard-target="searchUrl"
+                   data-wizard-field="searchUrl"
+                   data-action="input->wizard#updateSetting">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <p class="form-text mb-0">
+                Unsure? <a href="http://quepidapp.com/how-quepid-works/" target="_blank" rel="noopener noreferrer">Learn More</a> about Quepid's light touch with your search engine &amp; data.
+              </p>
+              <button type="button" class="btn btn-link btn-sm text-nowrap" data-wizard-when="can-ping"
+                      title="Manually validates Quepid can retrieve search results from your URL before continuing"
+                      data-wizard-target="pingButton"
+                      data-action="wizard#ping">ping it</button>
+            </div>
+            <p class="form-text" data-wizard-when="url-format" hidden>Tip: Your URL should look like this <code data-wizard-target="urlFormat"></code>.</p>
+
+            <%# Only Solr has a method to choose; other engines keep their preset's (mapper engines use AUTO). Required proxying forces GET. %>
+            <% unless require_proxy_for_all_search_endpoints? %>
+              <%# Collapsed until opened, as the Angular wizard's Solr Configuration and Advanced sections were. %>
+              <details class="mt-3" data-wizard-when="solr" hidden>
+                <summary class="btn btn-sm btn-outline-secondary">Solr Configuration</summary>
+                <div class="bg-light p-2 rounded border mt-2">
+                  <label class="form-label" for="wizardApiMethod">API method</label>
+                  <select id="wizardApiMethod" class="form-select"
+                          data-wizard-target="apiMethod"
+                          data-wizard-field="apiMethod"
+                          data-action="change->wizard#updateSetting">
+                    <option value="JSONP">JSONP</option>
+                    <option value="GET">GET</option>
+                  </select>
+                  <p class="form-text mb-0">Use JSONP if you are talking directly to Solr, otherwise if you are talking to an API you can use GET.</p>
+                </div>
+              </details>
+            <% end %>
+
+            <details class="mt-3">
+            <summary class="btn btn-sm btn-outline-secondary">Advanced</summary>
+            <div class="bg-light p-2 rounded border mt-2">
+            <label class="form-label" for="wizardHeaderType">Custom Headers</label>
+            <p class="form-text mb-1">If you need to send headers to authenticate with your search engine you can specify them here.</p>
+            <select id="wizardHeaderType" class="form-select mb-2"
+                    data-wizard-target="headerType"
+                    data-action="change->wizard#changeHeaderType">
+              <option>None</option>
+              <option>API Key</option>
+              <option>Custom</option>
+            </select>
+            <textarea class="form-control" rows="3" placeholder="Custom headers JSON" aria-label="Custom headers JSON"
+                      data-wizard-target="customHeaders"
+                      data-wizard-field="customHeaders"
+                      data-action="input->wizard#updateSetting"></textarea>
+            <div data-wizard-when="basic-auth">
+              <label class="form-label mt-3" for="wizardBasicAuth">Basic Authentication</label>
+              <input id="wizardBasicAuth" class="form-control" placeholder="username:password"
+                     data-wizard-target="basicAuth"
+                     data-wizard-field="basicAuthCredential"
+                     data-action="input->wizard#updateSetting">
+              <p class="form-text">Specify your <code>username:password</code> here to access Basic Auth protected endpoints.</p>
+            </div>
+            <% unless require_proxy_for_all_search_endpoints? %>
+            <div class="form-check mt-3">
+              <input id="wizardProxy" class="form-check-input" type="checkbox"
+                     data-wizard-target="proxyRequests"
+                     data-wizard-field="proxyRequests"
+                     data-action="change->wizard#updateSetting">
+              <label class="form-check-label" for="wizardProxy">Proxy requests through Quepid</label>
+              <p class="form-text mb-0">Route search requests through the Quepid server instead of the browser. Useful when CORS, mixed-content, or firewall rules block direct access; check with your operations team if unsure.</p>
+            </div>
+            <% else %>
+              <p class="form-text mt-3">This Quepid instance requires all search requests to be proxied.</p>
+            <% end %>
+            </div>
+            </details>
+          </div>
+          </div>
+          </details>
+
+          <details class="wizard-endpoint-panel" name="wizardEndpointMode" data-wizard-target="existingPanel" data-action="toggle->wizard#endpointPanelToggled">
+          <summary class="wizard-endpoint-panel-heading">Use an existing Search Endpoint</summary>
+          <div class="wizard-endpoint-panel-body">
+            <div class="d-flex justify-content-between align-items-start gap-2">
+              <label class="visually-hidden" for="wizardEndpoint">Use an existing Search Endpoint</label>
+              <select id="wizardEndpoint" class="form-select" data-wizard-target="endpointSelect" data-action="change->wizard#selectEndpoint"></select>
+              <button type="button" class="btn btn-link btn-sm text-nowrap" data-wizard-when="can-ping"
+                      title="Manually validates Quepid can retrieve search results from your URL before continuing"
+                      data-wizard-target="pingButton"
+                      data-action="wizard#ping">ping it</button>
+            </div>
+            <div class="bg-light p-2 rounded border mt-2" data-wizard-when="selected-searchapi" hidden>
+              <p class="form-text mb-0">
+                <strong>Endpoint:</strong> <code data-wizard-target="selectedEndpointUrl"></code>
+                <span class="badge bg-secondary" data-wizard-target="selectedEndpointMethod"></span>
+              </p>
+              <label class="form-label mt-3" for="wizardTestQuery">Test Query</label>
+              <p class="form-text mt-0">Enter a test query to validate the endpoint works. You'll configure the query pattern in a later step.</p>
+              <input id="wizardTestQuery" class="form-control" placeholder="shirts without stripes"
+                     data-wizard-target="testQuery"
+                     data-wizard-field="testQuery"
+                     data-action="input->wizard#updateSetting">
+              <p class="text-danger" data-wizard-when="test-query-required" hidden>Test query is required to validate the endpoint.</p>
+            </div>
+          </div>
+          </details>
+          </div>
+
+          <%# Validation feedback and Continue belong to whichever panel is open. %>
+          <div data-wizard-when="endpoint-open" hidden>
+
+          <div class="alert alert-warning mt-3" data-wizard-target="tlsWarning" hidden>
+            You have specified a search endpoint url that is on a different protocol ( <code data-wizard-target="tlsProtocol"></code> ) than Quepid is running,
+            and this triggers your browser to prevent communication with the search endpoint.<br>
+            Option 1: Reload Quepid to run on the correct protocol.<br>
+            Option 2: Check <strong>Proxy requests through Quepid</strong> so Quepid's server talks to your search endpoint.
+            <button type="button" class="btn btn-primary form-control mt-2"
+                    data-action="wizard#reloadInOtherProtocol"><i class="bi bi-arrow-repeat" aria-hidden="true"></i> Reload Quepid in
+              <code data-wizard-target="tlsProtocol"></code> Protocol</button>
+          </div>
+
+          <div class="alert alert-success mt-3" data-wizard-when="url-valid" hidden>Quepid can search this! Hit 'Continue' to keep working through setup.</div>
+
+          <div class="alert alert-warning mt-3" data-wizard-when="mapper-invalid" hidden>
+            Good news, we are getting results from the API, however we can't parse them into Quepid's expected format due to:<br>
+            <code data-wizard-target="mapperMessage"></code>
+            <ul class="mb-0">
+              <li>You can use the Search API Response panel to see the JSON returned from your API.</li>
+              <li>Use your browser Inspector to check the console, likely your JavaScript mapper code needs tweaks.</li>
+            </ul>
+          </div>
+
+          <div class="alert alert-danger mt-3" data-wizard-when="url-invalid" hidden>
+            Sorry, we're not getting any search results from your <span data-wizard-target="engineName"></span>.
+            <ul class="mb-0" data-wizard-when="searchapi" hidden>
+              <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to your Search API instead of your browser.</li>
+              <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on your Search API if your team prefers direct browser access.</li>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Do you need an API Key? If so, set one up in <strong>Custom Headers</strong> above.</li>
+              <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
+              <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting <span data-wizard-target="engineName"></span> and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
+            </ul>
+            <ul class="mb-0" data-wizard-when="es" hidden>
+              <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to Elasticsearch instead of your browser. No cluster changes required.</li>
+              <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on Elasticsearch to allow Quepid's domain if your team prefers direct browser access.</li>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Does your Elasticsearch accept HTTP POST requests?</li>
+              <li>Do you need an API Key? If so, set one up in <strong>Custom Headers</strong> above.</li>
+              <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
+              <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting Elasticsearch and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
+            </ul>
+            <ul class="mb-0" data-wizard-when="os" hidden>
+              <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to OpenSearch instead of your browser. No cluster changes required.</li>
+              <li data-wizard-when="no-proxy"><strong>Or configure CORS</strong> on OpenSearch to allow Quepid's domain if your team prefers direct browser access.</li>
+              <li>Can you open the <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">URL directly<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> in a new tab? If yes but Quepid still fails, check the browser console for CORS errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>Does your OpenSearch accept HTTP POST requests?</li>
+              <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
+              <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting OpenSearch and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
+            </ul>
+            <ul class="mb-0" data-wizard-when="solr" hidden>
+              <li data-wizard-when="no-proxy"><strong>Quick fix:</strong> check <strong>Proxy requests through Quepid</strong> above so Quepid's server talks to Solr instead of your browser. No Solr configuration changes required.</li>
+              <li>Do you see any errors when you visit your <a target="_blank" rel="noopener noreferrer" data-wizard-target="endpointLink">Solr URL directly?<i class="bi bi-box-arrow-up-right ms-1" aria-hidden="true"></i></a> If Solr responds but Quepid still fails, check the browser console for CORS or mixed-content errors.</li> <%# herb:disable html-anchor-require-href %>
+              <li>
+                You may need to configure the JSON <code>wt=json</code> to be <code>application/javascript</code> to work with Quepid.
+                You can do this via the below curl command:
+                <pre class="mb-1">curl <span data-wizard-target="curlAuth"></span>-k -X POST -H 'Content-type:application/json' -d '{
+  "create-queryresponsewriter": {
+    "name": "json",
+    "class": "solr.JSONResponseWriter",
+    "content-type": "application/javascript; charset=UTF-8"
+  }
+}' <span data-wizard-target="solrConfigUrl"></span></pre>
+                If you get an error message back, change <code>create-queryresponsewriter</code> to <code>update-queryresponsewriter</code> and re-run.
+              </li>
+              <li>If Solr responds, check if you have an ad blocker blocking your queries.</li>
+              <li data-wizard-when="chrome">Chrome does not accept self signed certificates on Solr, try Firefox.</li>
+              <li data-wizard-when="chrome">Chrome does not allow basic auth to Solr, try Firefox.</li>
+              <li>Use the browser <i>Network Inspector</i> to see the actual request.</li>
+              <li data-wizard-when="wiki">See the <a target="_blank" rel="noopener noreferrer" data-wizard-target="wikiLink">Troubleshooting Solr and Quepid</a> wiki page for more help!</li> <%# herb:disable html-anchor-require-href %>
+            </ul>
+          </div>
+
+          <button type="button" class="btn btn-primary float-end mt-3"
+                  data-wizard-when="can-validate"
+                  data-wizard-target="continueButton endpointContinue"
+                  data-action="wizard#next"><span data-wizard-when="idle">Continue</span><span data-wizard-when="validating" hidden>Validating...</span></button>
+          <button type="button" class="btn btn-danger mt-3" data-wizard-when="url-invalid can-validate" hidden
+                  data-wizard-target="skipButton" data-action="wizard#skipValidation">Skip Validation</button>
+          </div>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>How Should We Display Your Results?</h2>
+          <label class="form-label" for="wizardTitleField">Title Field</label>
+          <input id="wizardTitleField" class="form-control" autocomplete="off"
+                 placeholder="Begin typing to show suggestions"
+                 data-wizard-target="titleField"
+                 data-wizard-field="titleField"
+                 data-action="input->wizard#updateSetting">
+          <p class="form-text">What field should we treat as the 'title' when displaying results?</p>
+          <label class="form-label mt-3" for="wizardIdField">ID Field</label>
+          <input id="wizardIdField" class="form-control" autocomplete="off"
+                 placeholder="Begin typing to show suggestions"
+                 data-wizard-target="idField"
+                 data-wizard-field="idField"
+                 data-action="input->wizard#updateSetting">
+          <p class="form-text">What field is the unique identifier for your search results?</p>
+          <label class="form-label mt-3" for="wizardAdditionalFields">Additional Display Fields</label>
+          <input id="wizardAdditionalFields" class="form-control" placeholder="Add a field"
+                 data-wizard-target="additionalFields">
+          <p class="form-text">Would any extra fields be handy to display?</p>
+          <button type="button" class="btn btn-primary float-end mt-3" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <div data-wizard-when="static" hidden>
+            <h2>Search Queries</h2>
+            <p class="form-text">All of the queries defined in the static upload will be created.</p>
+          </div>
+          <div data-wizard-when="live">
+            <h2>Add Your Search Queries</h2>
+            <p class="form-text">Start out tuning a couple important search queries:</p>
+            <%# As in the Angular wizard, a Search API endpoint's query pattern is set here rather than on the Endpoint step. %>
+            <div class="bg-light p-2 rounded border mb-3" data-wizard-when="searchapi" hidden>
+              <label class="form-label" id="wizardQueryPatternLabel">Query Pattern</label>
+              <p class="form-text mb-1">
+                <strong>Endpoint:</strong> <code data-wizard-target="selectedEndpointUrl"></code>
+                <span class="badge bg-secondary" data-wizard-target="selectedEndpointMethod"></span>
+              </p>
+              <p class="form-text">
+                Modify your query structure to include <code>#$query##</code> where the search text should be substituted.
+                Quepid will replace <code>#$query##</code> with each query you add below.
+              </p>
+              <input class="form-control" placeholder="q=#$query##" aria-labelledby="wizardQueryPatternLabel"
+                     data-wizard-when="api-get" hidden
+                     data-wizard-target="queryPattern"
+                     data-wizard-field="queryParams"
+                     data-action="input->wizard#updateSetting">
+              <textarea class="form-control" rows="3" placeholder='{ "query": "#$query##" }' aria-labelledby="wizardQueryPatternLabel"
+                        data-wizard-when="api-body"
+                        data-wizard-target="queryPattern"
+                        data-wizard-field="queryParams"
+                        data-action="input->wizard#updateSetting"></textarea>
+              <p class="text-danger mt-1 mb-0" data-wizard-when="query-pattern-empty" hidden>Query pattern is required.</p>
+              <p class="text-warning-emphasis mt-1 mb-0" data-wizard-when="query-pattern-no-placeholder" hidden>
+                Your query pattern should include <code>#$query##</code> so Quepid can substitute the search text.
+              </p>
+            </div>
+            <%# As in the Angular wizard: a short input with a small Add Query button beside it. %>
+            <form class="d-flex align-items-center gap-1" data-action="submit->wizard#addQuery">
+              <input class="form-control form-control-sm wizard-query-input"
+                     data-wizard-target="queryText"
+                     data-wizard-field="text"
+                     data-action="input->wizard#updateSetting"
+                     placeholder="Search query"
+                     aria-label="Search query">
+              <button type="button" class="btn btn-success btn-sm" data-action="wizard#addQuery">Add Query</button>
+            </form>
+          </div>
+          <%# Continue floats beside the added queries, as in the Angular wizard. %>
+          <button type="button" class="btn btn-primary float-end mt-2" data-wizard-target="continueButton" data-action="wizard#next">Continue</button>
+          <div data-wizard-target="queryList"></div>
+        </section>
+        <section data-wizard-target="step" hidden>
+          <h2>That's It!</h2>
+          <p>Go to “Tune Relevance” to iterate on your relevance and manipulate searches.</p>
+          <button type="button" class="btn btn-primary float-end" data-wizard-target="finishButton" data-action="wizard#finish">Finish</button>
+        </section>
+        <ol class="wizard-steps" aria-label="Wizard steps">
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="0" aria-label="Step 1: Welcome"><span class="wizard-step-dot" aria-hidden="true"></span>Welcome</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="1" aria-label="Step 2: Name"><span class="wizard-step-dot" aria-hidden="true"></span>Name</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="2" aria-label="Step 3: Endpoint"><span class="wizard-step-dot" aria-hidden="true"></span>Endpoint</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="3" aria-label="Step 4: Fields"><span class="wizard-step-dot" aria-hidden="true"></span>Fields</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="4" aria-label="Step 5: Query"><span class="wizard-step-dot" aria-hidden="true"></span>Query</button>
+          </li>
+          <li>
+            <button type="button" class="wizard-step" data-wizard-target="tracker" data-action="wizard#setStep"
+                    data-wizard-index-param="5" aria-label="Step 6: Finish"><span class="wizard-step-dot" aria-hidden="true"></span>Finish</button>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>

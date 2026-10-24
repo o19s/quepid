@@ -1,34 +1,52 @@
 # Documentation index
 
-**Primary docs** live at the top level of `docs/` — use these for day-to-day work on `main`. **Branch archives** (`ds-phase-1/`, `view-components-port/`, `other-stashes/`, `encryption-robustness/`) are reference snapshots from abandoned branches; they do not override primary docs.
+**Primary docs** live at the top level of `docs/` — use these for day-to-day work on `main`.
 
-## Primary (living on `main`)
+## Primary product and engineering docs
 
 | Doc | Purpose |
 |-----|---------|
-| [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) | Case UI deep internals (tour, queriesSvc quirks, TryFactory, bulk judgement, Rails) |
-| [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) | AngularJS inventory, migration strategy (incremental default + optional full rewrite), open migration bugs, and removal checklist |
-| [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md) | Angular `$broadcast` / `$emit` map (re-run before deleting emitters) |
+| [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md) | Case UI deep internals (tour, queriesSvc quirks, TryFactory, bulk judgement, Rails) |
 | [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md) | ActiveRecord encryption |
 | [`app_structure.md`](./app_structure.md), [`data_mapping.md`](./data_mapping.md) | How the app is built |
 | [`todo/QUEPID_FEATURES.md`](./todo/QUEPID_FEATURES.md) | Whole-app feature inventory |
 | [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) | Case workspace (`/case/...`) deep dive |
 | [`complete_application_specification.md`](./complete_application_specification.md) | Schema columns, HTML routes, business rules (rewrite reference) |
 | [`adr/0001-llm-judge-provider-architecture.md`](./adr/0001-llm-judge-provider-architecture.md) | Why the LLM-as-Judge adapter seam exists, why Jev lands now and OpenAI Batch is deferred, and the deployable step order |
-| [`todo/escalating_judges.md`](./todo/escalating_judges.md) | A cheap judge that wakes an expensive one when it is unsure (each judge names the judge it wakes; escalation runs as an automatic second pass) — plan, decisions and risk register in one doc |
+| [`todo/judgements-escalation.md`](./todo/judgements-escalation.md) | Risks and open questions for judgement escalation — read alongside the plan |
+| [`todo/escalating_judges.md`](./todo/escalating_judges.md) | Planned: a cheap judge that wakes an expensive one when it is unsure (explicit escalation order per book) |
 | [`todo/judge_agreement_and_calibration.md`](./todo/judge_agreement_and_calibration.md) | Research and plan: how IR research and industry measure, calibrate and combine disagreeing relevance judges (human and LLM); then Krippendorff's α and confusion matrices between a book's judges on Judgement Stats, a calibration sample to create overlap, and how to use a calibration |
 | [`todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md`](./todo/optimizing_llm_as_judge_query_based_on_golden_dataset.md) | How-to and plan: build a golden dataset from expert judgements, tune an AI judge's prompt against it (DSPy for chat judges), and re-validate inside Quepid |
-| [`todo/todo.md`](./todo/todo.md) | Open bugs, hardening, and cleanup on `main` (excludes obviated Angular UI — see [§ Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular)) |
+| [`todo/todo.md`](./todo/todo.md) | AngularJS-removal sign-off gate and migration follow-ups |
+| [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) | Work deferred until the AngularJS-removal branch lands: frontend consolidation, Legacy behaviour kept only for parity, and pre-existing bugs, security and backend fixes |
+| [`operating_documentation.md`](./operating_documentation.md) | Deployment, configuration, health checks, integrations, and operational runbooks |
+| [`manual-testing/README.md`](./manual-testing/README.md) | Manual-test guide, scenario index, and execution policy |
+
+## Operations and integrations
+
+| Doc | Purpose |
+|-----|---------|
+| [`database.md`](./database.md), [`running_with_postgresql.md`](./running_with_postgresql.md) | Database operations and PostgreSQL compatibility |
+| [`docker_images.md`](./docker_images.md) | Docker image build and release notes |
+| [`endpoints_solr.md`](./endpoints_solr.md), [`endpoints_opensearch.md`](./endpoints_opensearch.md) | Search endpoint configuration and provider behavior |
+| [`jupyterlite.md`](./jupyterlite.md) | Notebook setup and analytics integration |
+| [`examples/external_eval/README.md`](./examples/external_eval/README.md) | External evaluation workflow and API example |
+
+## Developer references
+
+| Doc | Purpose |
+|-----|---------|
+| [`adr/README.md`](./adr/README.md) | Architecture decisions and provider foundation; deferred batch/escalation proposals |
+| [`js_tooling.md`](./js_tooling.md) | JavaScript tests, linting, formatting, and build commands |
+| [`screenshot_review.md`](./screenshot_review.md) | Screenshot viewer, pixel diffs, and branch-specific capture history |
 
 ## Dedup rules (Aug 2026)
 
 - **Encryption:** one living doc — [`ENCRYPTION_SETUP.md`](./ENCRYPTION_SETUP.md).
-- **Angular removal:** one living doc — [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) (inventory + migration strategy + optional full rewrite fork + open migration bugs + removal checklist). Former [`todo/QUEPID_REWRITE_PROPOSALS.md`](./todo/QUEPID_REWRITE_PROPOSALS.md) and [`todo/angular_to_stimulus_migration.md`](./todo/angular_to_stimulus_migration.md) content lives here.
-- **Angular event bus:** one living doc — [`todo/event_bus_inventory.md`](./todo/event_bus_inventory.md). Re-run before deleting `$broadcast` emitters.
-- **Open bugs / hardening:** one living doc — [`todo/todo.md`](./todo/todo.md). Outstanding work only; remove entries when fixed (no completed section).
-- **Data model:** narrative — [`data_mapping.md`](./data_mapping.md); quick table index — [`todo/QUEPID_FEATURES.md` §3](./todo/QUEPID_FEATURES.md#3-data-model--relationships); schema columns — [`complete_application_specification.md` §3](./complete_application_specification.md#3-data-model).
-- **REST API:** canonical list — OpenAPI at `/api/docs`; Stimulus client conventions — [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions); legacy Angular HTTP — [`todo/angularjs_removal_inventory.md` § Angular core HTTP](./todo/angularjs_removal_inventory.md#angular-core-http-patterns-legacy); HTML routes — [`complete_application_specification.md` §20.5](./complete_application_specification.md#205-html-rails-routes-non-api).
-- **Core UI implementation quirks:** [`todo/core_ui_implementation_reference.md`](./todo/core_ui_implementation_reference.md) (not duplicated in [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md)).
-- **Core UI file inventory:** [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) (not COREUI §23+).
-- **Obviated Angular UI bugs:** listed in [`todo/todo.md` § Obviated](./todo/todo.md#obviated-by-angular-removal-do-not-fix-in-angular); migration fixes in [`todo/angularjs_removal_inventory.md` § Open bugs](./todo/angularjs_removal_inventory.md#open-bugs--ux-address-during-migration).
+- **Frontend cleanup:** tracked in [`todo/after-angular-removal.md`](./todo/after-angular-removal.md). Former migration-plan documents are historical.
+- **Open bugs / hardening:** [`todo/after-angular-removal.md`](./todo/after-angular-removal.md) (pre-existing) and [`todo/todo.md`](./todo/todo.md) (migration). Outstanding work only; remove entries when fixed (no completed section).
+- **Data model:** narrative — [`data_mapping.md`](./data_mapping.md); feature relationships — [`todo/QUEPID_FEATURES.md` §3](./todo/QUEPID_FEATURES.md#3-data-model--relationships); schema columns — [`complete_application_specification.md` §3](./complete_application_specification.md#3-data-model).
+- **JavaScript tooling:** detailed scope, commands, and policy — [`js_tooling.md`](./js_tooling.md); the developer guide keeps only setup/test entry points and links back here.
+- **REST API:** canonical list — OpenAPI at `/api/docs`; Stimulus client conventions — [`DEVELOPER_GUIDE.md` § Stimulus HTTP conventions](../DEVELOPER_GUIDE.md#stimulus-http-conventions); HTML routes — [`complete_application_specification.md` §20.5](./complete_application_specification.md#205-html-rails-routes-non-api).
+- **Core UI implementation quirks:** [`core_ui_implementation_reference.md`](./core_ui_implementation_reference.md), not duplicated in [`todo/QUEPID_COREUI_FEATURES.md`](./todo/QUEPID_COREUI_FEATURES.md) or COREUI §23+.
 - **Business rules / edge cases:** [`complete_application_specification.md` § Edge Cases](./complete_application_specification.md#edge-cases-and-business-rules); architectural narrative — [`todo/QUEPID_FEATURES.md` §35](./todo/QUEPID_FEATURES.md#35-key-architectural-decisions).
