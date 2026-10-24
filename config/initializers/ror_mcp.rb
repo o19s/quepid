@@ -48,6 +48,15 @@ RorMcp.configure do |c|
     user && !user.locked? ? { user: user } : nil
   end
 
+  # One log line per call, since the request log only shows `POST "/mcp"`.
+  c.on_query do |event|
+    Rails.logger.info "[MCP] query #{event.collection} rows=#{event.rows} #{event.duration_ms.round}ms " \
+                      "pipeline=#{event.pipeline.to_json}#{" error=#{event.error}" if event.error}"
+  end
+  c.on_tool do |event|
+    Rails.logger.info "[MCP] tool #{event.tool} #{event.duration_ms.round}ms#{" error=#{event.error}" if event.error}"
+  end
+
   c.statement_timeout = 15.seconds
   c.default_limit     = 100
   c.max_limit         = 1000
