@@ -1,4 +1,5 @@
 import Shepherd from "shepherd.js"
+import { offset, flip, shift } from "@floating-ui/dom"
 
 // Walkthrough shown after a user's first case wizard (see wizard_controller.js).
 function setupTour() {
@@ -7,6 +8,8 @@ function setupTour() {
     defaultStepOptions: {
       classes: "quepid-tour-step",
       scrollTo: true,
+      // Shepherd's 16px rotated arrow projects this far beyond the callout edge.
+      floatingUIOptions: { middleware: [offset(8 * Math.SQRT2), flip(), shift({ padding: 8 })] },
       cancelIcon: { enabled: true }
     }
   })

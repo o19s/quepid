@@ -11,3 +11,7 @@
  .shepherd-modal-overlay-container {
 	 z-index: 9998;
 }
+
+.shepherd-modal-overlay-container.shepherd-modal-is-visible {
+  opacity: 0.2;
+}
