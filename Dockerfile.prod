@@ -98,6 +98,9 @@ RUN SECRET_KEY_BASE_DUMMY=1 SKIP_YARN_INSTALL=1 ./bin/rails assets:precompile
 # Final stage for app image
 FROM base
 
+# Kamal refuses to deploy an image without this exact label.
+LABEL service="quepid"
+
 ENV QUEPID_VERSION=$QUEPID_VERSION_VARIABLE
 
 # Install Node.js and yarn in final image for asset recompilation for nested paths /quepid at runtime

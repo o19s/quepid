@@ -53,6 +53,19 @@ a, button, .button {
 	min-width: 750px;
 }
 
+/* Below ~750px (phones/small tablets), the old BS3-era assumption that the
+ * whole app shell never needs to be narrower than 750px just forces a
+ * horizontally-scrolled viewport - the sidebar, logo and every toolbar get
+ * pushed wider than the screen and silently clipped by .pane_container's
+ * overflow:hidden (panes.css), rather than anything actually scrolling into
+ * view. Let the shell shrink to fit; .sub-results below has its own,
+ * similarly-sized override for the same reason. */
+@media (max-width: 749.98px) {
+  #main {
+    min-width: 0;
+  }
+}
+
 /*
 	Header dropdown skin — Quepid visual on BS5's .dropdown-menu /
 	.dropdown-item. Markup lives in _header_core_app.html.erb. BS5
@@ -281,6 +294,16 @@ header .dropdown-item:focus {
 	 * in bootstrap5-compat.css so the two rules stay in sync from one source of
 	 * truth instead of two independently-hardcoded pixel values. */
 	--score-col-end: 90px;
+}
+
+/* Same shrink-to-fit override as #main above, and for the same reason -
+ * .sub-results assumed at least 650px of width for its absolutely-positioned
+ * "Score All" column (.col-ratings) plus the toolbar offset from it
+ * (--score-col-end, in bootstrap5-compat.css). */
+@media (max-width: 649.98px) {
+  .sub-results {
+    min-width: 0;
+  }
 }
 
 .sub-results td {

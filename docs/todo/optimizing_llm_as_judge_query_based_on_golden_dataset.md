@@ -79,7 +79,7 @@ different inputs or a different message layout tunes the wrong thing. For a chat
 (`LlmJudgeAdapters::Base` and its OpenAI/Anthropic subclasses), Quepid sends:
 
 - **system message:** the judge's system prompt, followed by a scale reminder Quepid appends
-  (`system_prompt_for`): *"IMPORTANT: This book's rating scale is: … The "judgment" value in your
+  (`system_prompt_for`): *"IMPORTANT: The rating scale is: … The "judgment" value in your
   JSON response MUST be exactly one of these values …"*;
 - **user message:** `Query: <query_text>`, a blank line, `doc1:` and the document fields as YAML
   (`user_prompt`), plus the `image` field as an image if present;

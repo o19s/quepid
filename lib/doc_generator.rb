@@ -148,8 +148,10 @@ class DocGenerator
     self
   end
 
-  private
-
+  # Public so callers can look up docs for a query text they already have
+  # (e.g. re-populating a lookup for already-persisted queries) without
+  # going through the random word/query generation in generate_word_list
+  # and generate_query_list.
   def fetch_results_for_single_query query
     uri = URI(@solr_url)
     params = {
@@ -166,6 +168,8 @@ class DocGenerator
 
     docs.map { |doc| { query_text: query, doc_id: doc[@options[:id]], doc: doc } }
   end
+
+  private
 
   # Performs a Solr GET with exponential backoff on transient failures and configurable
   # connect/read timeouts (defaults are higher than Net::HTTP's to avoid spurious timeouts

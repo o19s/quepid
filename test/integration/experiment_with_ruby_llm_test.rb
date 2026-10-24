@@ -8,8 +8,8 @@ require 'tzinfo'
 
 class TimeInfo < RubyLLM::Tool
   description 'Gets the current time in various timezones'
-  param :timezone,
-        desc: "Timezone name (e.g., 'UTC', 'America/New_York')"
+  parameter :timezone,
+            description: "Timezone name (e.g., 'UTC', 'America/New_York')"
 
   def execute timezone:
     time = TZInfo::Timezone.get(timezone).now.strftime('%Y-%m-%d %H:%M:%S')
@@ -21,8 +21,8 @@ end
 
 class Weather < RubyLLM::Tool
   description 'Gets current weather for a location'
-  param :latitude, desc: 'Latitude (e.g., 52.5200)'
-  param :longitude, desc: 'Longitude (e.g., 13.4050)'
+  parameter :latitude, description: 'Latitude (e.g., 52.5200)'
+  parameter :longitude, description: 'Longitude (e.g., 13.4050)'
 
   def execute latitude:, longitude:
     url = "https://api.open-meteo.com/v1/forecast?latitude=#{latitude}&longitude=#{longitude}&current=temperature_2m,wind_speed_10m"

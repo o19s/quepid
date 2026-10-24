@@ -48,7 +48,7 @@ class MapperWizardService
 
     chat = RubyLLM.chat(model: 'gpt-4o')
 
-    chat.with_instructions(generation_prompt, replace: true)
+    chat.with_instructions(generation_prompt)
 
     stripped_html = strip_boilerplate(html_content)
     sample_html, truncated = truncate_for_llm(stripped_html, 50_000)

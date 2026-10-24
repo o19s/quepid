@@ -17,11 +17,10 @@ require 'test_helper'
 # app/services/mapper_wizard_service.rb and app/controllers/mapper_wizards_controller.rb.
 #
 # The test below now exercises that real, shipped pipeline end to end -- fetch -> generate ->
-# execute -- against a stubbed OpenAI response (same `https://api.openai.com/v1/chat/completions`
-# endpoint and response shape RubyLLM's OpenAI provider actually posts to and parses; see
-# test/support/openai_stubs.rb / test/services/llm_service_test.rb for the same stubbing
-# approach against LlmService's direct Faraday client). No live network or API key is needed to
-# run it.
+# execute -- against a stubbed OpenAI Responses API response. RubyLLM 2.0 uses
+# `/v1/responses`; `LlmService` still uses its own Faraday client and chat-completions API, covered
+# by test/support/openai_stubs.rb / test/services/llm_service_test.rb. No live network or API key
+# is needed to run it.
 class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
   SEARCH_RESULTS_HTML = <<~HTML
     <html>
@@ -71,14 +70,21 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
       ```
     MARKDOWN
 
-    stub_request(:post, 'https://api.openai.com/v1/chat/completions')
+    stub_request(:post, 'https://api.openai.com/v1/responses')
       .with(
         headers: { 'Authorization' => 'Bearer sk-test' },
         body:    /First Result/ # proves the downloaded HTML actually made it into the prompt
       )
       .to_return(
         status:  200,
-        body:    { choices: [ { message: { content: llm_response_content } } ] }.to_json,
+        body:    {
+          id: 'resp_test', object: 'response', status: 'completed', model: 'gpt-4o',
+          output: [ {
+            id: 'msg_test', type: 'message', role: 'assistant',
+            content: [ { type: 'output_text', text: llm_response_content, annotations: [] } ]
+          } ],
+          usage: { input_tokens: 10, output_tokens: 10, total_tokens: 20 }
+        }.to_json,
         headers: { 'Content-Type' => 'application/json' }
       )
 
@@ -110,7 +116,7 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
     assert_equal 'http://example.com/1', docs_result[:result][0]['id']
     assert_equal 'First Result', docs_result[:result][0]['title']
 
-    assert_requested(:post, 'https://api.openai.com/v1/chat/completions', times: 1)
+    assert_requested(:post, 'https://api.openai.com/v1/responses', times: 1)
   end
 
   test 'multi-attempt agentic tool-calling retry loop' do

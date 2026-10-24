@@ -90,9 +90,11 @@ export default class extends Controller {
     sampleUrl: String,
     testUrl: String,
     existing: Boolean,
+    draftKey: String,
     presets: Object,
     stockPrompts: Array,
-    hasScale: Boolean
+    hasScale: Boolean,
+    book: Boolean
   }
 
   connect() {
@@ -100,6 +102,7 @@ export default class extends Controller {
     this.optionsEditor = null
     setTimeout(() => this.captureEditors(), 500)
 
+    this.restoreDraft()
     this.readStoredOptions()
 
     if (this.hasLlmProviderTarget) {
@@ -109,6 +112,82 @@ export default class extends Controller {
     if (this.existingValue) {
       this.revealStep2()
     }
+
+    this.scrollToStep2IfRequested()
+  }
+
+  // The scale picker's reload lands back here with ?scorer_id= set - scroll
+  // down to Test & Refine instead of leaving the user at the top of a long
+  // page they've already filled out. Deliberately not a #fragment: the
+  // browser's own native fragment-scroll would fire against this same
+  // element and race our own (element position differs once revealStep2()
+  // reflows the page), consistently winning and overriding it.
+  scrollToStep2IfRequested() {
+    if (!new URLSearchParams(window.location.search).has("scorer_id")) return
+    if (!this.hasStep2Target) return
+
+    this.step2Target.closest("#test-and-refine")?.scrollIntoView({ block: "start" })
+  }
+
+  // The scale picker (Test & Refine) navigates to this same page with a
+  // different ?scorer_id= - a real GET, not a fetch, since the criteria
+  // shown and the scale handed to test_prompt both come from server-rendered
+  // state keyed off that param. Snapshot everything typed into the not-yet-
+  // saved form first so that reload doesn't throw it all away.
+  navigateToScale(event) {
+    const url = event.target.options[event.target.selectedIndex]?.dataset.url
+    if (!url) return
+
+    this.saveDraft()
+    window.location.href = url
+  }
+
+  get draftStorageKey() {
+    return `ai_judge_wizard_draft:${this.draftKeyValue}`
+  }
+
+  // Every input/select/textarea's own current value, keyed by name (and by
+  // value too for checkboxes/radios, since several share a name) - deliberately
+  // not FormData, which omits an unchecked checkbox entirely and would leave
+  // restoreDraft with no way to tell "unchecked" apart from "never asked".
+  saveDraft() {
+    const form = this.element.closest("form")
+    if (!form) return
+
+    const snapshot = []
+    form.querySelectorAll("input[name], select[name], textarea[name]").forEach((field) => {
+      if ("checkbox" === field.type || "radio" === field.type) {
+        snapshot.push({ name: field.name, value: field.value, type: field.type, checked: field.checked })
+      } else {
+        snapshot.push({ name: field.name, value: field.value, type: field.type })
+      }
+    })
+
+    sessionStorage.setItem(this.draftStorageKey, JSON.stringify(snapshot))
+  }
+
+  restoreDraft() {
+    const raw = sessionStorage.getItem(this.draftStorageKey)
+    if (!raw) return
+
+    sessionStorage.removeItem(this.draftStorageKey)
+    const form = this.element.closest("form")
+    if (!form) return
+
+    JSON.parse(raw).forEach(({ name, value, type, checked }) => {
+      if ("checkbox" === type || "radio" === type) {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"][value="${CSS.escape(value)}"]`)
+        if (field) field.checked = checked
+      } else {
+        const field = form.querySelector(`[name="${CSS.escape(name)}"]`)
+        if (field) field.value = value
+      }
+    })
+
+    // A restored name should reveal step 2 just like typing it would've -
+    // connect()'s own updateProviderPanels call (right after this returns)
+    // already covers a restored provider selection.
+    this.checkReveal()
   }
 
   captureEditors() {
@@ -252,12 +331,17 @@ export default class extends Controller {
 
   // A provider that needs a scale (currently: one sent the scale as its criteria,
   // like Jev) has nothing to judge against without one, so don't offer a run that
-  // can only fail.
+  // can only fail. With a book, the scale always comes from the book and there's
+  // no picker in the notice to keep showing once one is set; with a manually-picked
+  // scorer, keep the notice (and its dropdown) visible so it stays available to
+  // switch to a different scale.
   updateRunAvailability(preset) {
-    const missingScale = Boolean(preset?.needs_scale) && !this.hasScaleValue
+    const needsScale = Boolean(preset?.needs_scale)
+    const missingScale = needsScale && !this.hasScaleValue
+    const showNotice = this.bookValue ? missingScale : needsScale
 
     if (this.hasRunPromptButtonTarget) this.runPromptButtonTarget.disabled = missingScale
-    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = missingScale ? "" : "none"
+    if (this.hasNeedsScaleNoticeTarget) this.needsScaleNoticeTarget.style.display = showNotice ? "" : "none"
   }
 
   // Fields the provider fixes for us (e.g. a single endpoint and model) are shown

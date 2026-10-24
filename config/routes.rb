@@ -23,6 +23,7 @@ Rails.application.routes.draw do
   constraints(AdminConstraint) do
     mount MissionControl::Jobs::Engine, at: 'admin/jobs'
     mount Blazer::Engine, at: 'admin/blazer'
+    mount RailsPulse::Engine, at: 'admin/rails_pulse'
   end
 
   root 'home#show'

@@ -295,16 +295,16 @@ parts:
         paths: ["app/models/try.rb", "app/controllers/core_controller.rb"]
       "5.2":
         title: "Create a snapshot"
-        last_run: 2026-09-14T18:35:09Z
+        last_run: 2026-10-20T18:59:08Z
         result: pass
-        notes: "Re-verified via Playwright MCP after the angular-cleanup-phase3 merge from main (snapshotFactory/querySnapshotSvc/snapshotModal.html all touched). On case 6, clicked Take Snapshot with the name field left blank — same pre-existing behavior noted 2026-09-02: not blocked (no required-field error), falls back to an auto-generated name ('Snapshot 09/14/26'); 'Snapshot created successfully' flash shown and score badge updated (0.00→1.00 reflecting a rating made earlier in this pass). Doc's edge case ('should be blocked') still doesn't match actual behavior — flagging again, still not a regression. Forced-server-error and large-case-background behavior not tested."
+        notes: "Driven via Claude in Chrome on a Qdrant case (Search API, Record Document Fields forced on). Took a named snapshot ('BM25') of one rated query; it processed to 10 snapshot_docs, all with stored fields (including the thumb:poster_path value). The blank-name case, forced server error, and large-case background behavior weren't tested this pass."
         paths: ["app/services/snapshot_generator.rb", "app/models/snapshot.rb"]
       "5.3":
         title: "Compare snapshots (diff)"
-        last_run: 2026-09-14T18:36:16Z
-        result: pass
-        notes: "Re-verified via Playwright MCP after the same merge (snapshotFactory/querySnapshotSvc touched). Selected the case-6 snapshot in the compare modal, clicked Update Comparison Settings — flash 'Snapshot loaded successfully for comparison.' and the snapshot's results appeared in a diff column alongside the live results. Clear Comparison View removed it cleanly. Multi-row add, duplicate-selection warning, in-progress-snapshot warning, and the in-modal delete-snapshot confirm were not tested this pass (only one snapshot existed for the case)."
-        paths: ["app/models/snapshot.rb"]
+        last_run: 2026-10-20T18:59:08Z
+        result: pass_with_fixes
+        notes: "Driven via Claude in Chrome on a Qdrant (proxied Search API) case for #1843. Before the fix, the snapshot column showed the ZSR warning and 'No result at position N', snapshot score 0.00, with the doc lookup proxied to /proxy/fetch?url=.../snapshots/:id/search and returning 400. After the fix the lookup hits /api/cases/:id/snapshots/:id/search directly (200), the column lists the recorded docs with their rating, and the snapshot score is 1.00. Also compared three snapshots at once (Dense, BM25, BM25 with offset 5, each holding docs the others lack) against live dense results: all four columns populated, no ZSR or 'No result at position' messages, scores 1.00/1.00/1.00/0.00 (offset5 lacks the rated doc). With thumb:/image: now recorded, a fresh snapshot stored poster_path for all 10 docs and the snapshot column showed the posters. Vespa, Clear Comparison View, and the modal's warnings/delete weren't exercised this pass."
+        paths: ["app/models/snapshot.rb", "app/assets/javascripts/services/querySnapshotSvc.js", "app/controllers/api/v1/snapshots/search_controller.rb"]
       "5.4":
         title: "Annotations"
         last_run: 2026-09-02
@@ -699,6 +699,12 @@ parts:
         result: pass
         notes: "Re-driven in Chrome after judges were changed to take a scale instead of a book: Jev judge on Book of Ratings (?book_id=1) showed the criteria table (level 0/1 with the book labels) and Run Judgement returned a live Jev rating. The chat-provider preview, the out-of-scale Unrateable preview, provider switching, Save, malformed JSON and the zero-pairs book were not re-driven this time (browser JS was blocked by another extension); the out-of-scale annotation was checked through a real judging run instead (see 12.5)."
         paths: ["app/controllers/ai_judges/wizard_controller.rb", "app/javascript/controllers/ai_judge_wizard_controller.js", "app/views/ai_judges/_form.html.erb", "app/services/judgement_finalizer.rb", "app/services/llm_service.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/"]
+      "12.7":
+        title: "Escalate from one AI judge to an on-call judge"
+        last_run: 2026-10-06T11:37:00Z
+        result: pass
+        notes: "Re-driven in Chrome after the PR review renames (judgements.escalated_from_judgement_id, Book#working_ai_judge, Escalation column moved before Owner/Teams), as the realisticactivity user on Book of Ratings against live Jev and OpenAI. Steps 1-7: list shows wakes/On call with Teams rightmost; Judge Activity shows the wakes line and On call with no play button; Jev ran 10 at Minimum confidence 1.0, all unrateable, and openai woke on its own and judged all 10, linked both ways in the new column; both judgement pages show the Unrateable/handed-on and Escalated notices with working links; a crafted PATCH to run openai was refused with the on-call message; with Minimum confidence blank, Jev ran 5 and nothing escalated. Jev restored to 0.8 afterwards. Not driven: the loop/delete/visibility/off-scale/cancel edge cases."
+        paths: ["app/models/ai_judge.rb", "app/models/judgement.rb", "app/models/book.rb", "app/models/selection_strategy.rb", "app/jobs/run_judge_judy_job.rb", "app/services/llm_judge_adapters/jev.rb", "app/controllers/ai_judges_controller.rb", "app/controllers/books_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/index.html.erb", "app/views/books/_form.html.erb", "app/views/books/_judge_activity_row.html.erb", "app/views/books/_judge_status_cell.html.erb", "app/views/books/judgement_stats.html.erb", "app/views/judgements/_form.html.erb", "app/views/judgements/_escalation_notice.html.erb", "db/migrate/20261005120000_add_escalates_to_id_to_users.rb", "db/migrate/20261005130000_add_escalated_from_judgement_id_to_judgements.rb"]
       "12.6":
         title: "Judge with TypeSafe Jev"
         last_run: 2026-09-30T19:08:00Z

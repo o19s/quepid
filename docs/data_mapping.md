@@ -38,7 +38,7 @@ To support collecting search feedback from multiple Users, we introduced a simil
 
 Unlike a `Case` datamodel that is meant for live interaction with a SearchEndpoint, the Book is meant to support a offline interaction model for gathering Judgements.
 
-The data modeled by a Book can be imported back into a Case.  We take all the Judgements for a QueryDocPair, and average them, and then use that to populate the Rating for the corresponding Query in the Case.
+The data modeled by a Book can be imported back into a Case.  We take the rateable Judgements for a QueryDocPair (skipping ones marked unrateable or judge-later), combine them into one value, and use that to populate the Rating for the corresponding Query in the Case. `RatingsManager#calculate_rating_from_judgements` combines them like this: one or two judgements are averaged; with three or more it takes the three highest, and uses their shared value if they agree or the lowest of the three if they do not (so 3, 3, 1, 0 gives 1, not 1.75). Books that do not support implicit judgements round the result to an integer.
 
 ## Other
 

@@ -36,12 +36,14 @@ require 'test_helper'
 #  created_at                  :datetime         not null
 #  updated_at                  :datetime         not null
 #  default_scorer_id           :integer
+#  escalates_to_id             :integer
 #  invited_by_id               :integer
 #  owner_id                    :integer
 #
 # Indexes
 #
 #  index_users_on_default_scorer_id     (default_scorer_id)
+#  index_users_on_escalates_to_id       (escalates_to_id)
 #  index_users_on_invitation_token      (invitation_token) UNIQUE
 #  index_users_on_invited_by_id         (invited_by_id)
 #  index_users_on_name                  (name)
@@ -53,6 +55,7 @@ require 'test_helper'
 # Foreign Keys
 #
 #  fk_rails_...  (default_scorer_id => scorers.id)
+#  fk_rails_...  (escalates_to_id => users.id) ON DELETE => nullify
 #  fk_rails_...  (invited_by_id => users.id)
 #
 class AiJudgeTest < ActiveSupport::TestCase
@@ -161,6 +164,55 @@ class AiJudgeTest < ActiveSupport::TestCase
 
       assert_equal 'opt1', judge.options.dig('special_options', 'key1')
       assert_equal 'openai', judge.judge_options[:llm_provider]
+    end
+  end
+
+  describe 'escalation' do
+    let(:cheap) { AiJudge.create!(name: 'Cheap Judge') }
+    let(:expensive) { AiJudge.create!(name: 'Expensive Judge') }
+
+    it 'wakes nobody by default, and is not on call' do
+      assert_nil cheap.escalates_to
+      assert_not_predicate cheap, :on_call?
+    end
+
+    it 'makes the judge it wakes on call, and only that one' do
+      cheap.update!(escalates_to: expensive)
+
+      assert_predicate expensive.reload, :on_call?
+      assert_equal [ cheap ], expensive.escalated_from.to_a
+      assert_not_predicate cheap.reload, :on_call?
+    end
+
+    it 'allows a chain longer than two' do
+      top = AiJudge.create!(name: 'Top Judge')
+      expensive.update!(escalates_to: top)
+
+      cheap.escalates_to = expensive
+      assert_predicate cheap, :valid?
+    end
+
+    it 'cannot wake itself' do
+      cheap.escalates_to = cheap
+      assert_not cheap.valid?
+      assert_includes cheap.errors[:escalates_to], 'cannot be this judge itself'
+    end
+
+    it 'cannot close a loop, which would leave every judge in it asleep' do
+      top = AiJudge.create!(name: 'Top Judge')
+      cheap.update!(escalates_to: expensive)
+      expensive.update!(escalates_to: top)
+
+      top.escalates_to = cheap
+      assert_not top.valid?
+      assert_includes top.errors[:escalates_to], 'would wake a judge that already escalates back to this one'
+    end
+
+    it 'forgets the link when the judge it wakes is deleted' do
+      cheap.update!(escalates_to: expensive)
+      expensive.destroy!
+
+      assert_nil cheap.reload.escalates_to_id
     end
   end
 end

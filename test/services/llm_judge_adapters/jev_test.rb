@@ -180,6 +180,8 @@ module LlmJudgeAdapters
         assert_predicate judgement, :unrateable
         assert_nil judgement.rating
         assert_includes judgement.explanation, 'confidence 0.2'
+        assert_includes judgement.explanation,
+                        "[confidence 0.2 is below this judge's minimum confidence of 0.5, so it was marked unrateable]"
       end
 
       test 'a confident answer passes the floor' do
@@ -187,6 +189,7 @@ module LlmJudgeAdapters
 
         assert_in_delta(1.0, judgement.rating)
         assert_not judgement.unrateable
+        assert_not_includes judgement.explanation, 'minimum confidence'
       end
 
       test 'with no floor configured every answer counts' do

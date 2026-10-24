@@ -17,6 +17,14 @@ function judgeOptionField(key, value) {
 function buildController(overrides = {}) {
   const controller = Object.create(AiJudgeWizardController.prototype)
 
+  // saveDraft/restoreDraft walk up to the nearest <form> from the controller's
+  // own element - a bare card inside one, with nothing else in it, is enough
+  // for every test that doesn't care about draft persistence itself.
+  const form = document.createElement("form")
+  controller.element = document.createElement("div")
+  form.appendChild(controller.element)
+  controller.draftKeyValue = "new"
+
   controller.hasNameTarget = true
   controller.nameTarget = { value: "" }
   controller.hasStep2Target = true
@@ -221,6 +229,10 @@ describe("AiJudgeWizardController runPrompt", () => {
 })
 
 describe("AiJudgeWizardController connect", () => {
+  afterEach(() => {
+    sessionStorage.clear()
+  })
+
   it("reveals step 2 and samples immediately when editing an existing judge", () => {
     const controller = buildController({ existingValue: true })
     controller.sampleQueryDocPair = vi.fn()
@@ -230,6 +242,156 @@ describe("AiJudgeWizardController connect", () => {
 
     expect(controller.step2Target.style.display).toBe("block")
     expect(controller.sampleQueryDocPair).toHaveBeenCalledOnce()
+  })
+})
+
+describe("AiJudgeWizardController scale picker draft", () => {
+  // A real <form> with real named fields - saveDraft/restoreDraft walk the
+  // DOM directly (via this.element.closest("form")), not the mocked target
+  // objects buildController otherwise uses for everything else.
+  function buildFormController(overrides = {}) {
+    const controller = buildController(overrides)
+    const form = controller.element.closest("form")
+
+    const name = document.createElement("input")
+    name.name = "user[name]"
+    name.value = ""
+    form.appendChild(name)
+
+    const llmKey = document.createElement("input")
+    llmKey.name = "user[llm_key]"
+    llmKey.value = ""
+    form.appendChild(llmKey)
+
+    const imagesOn = document.createElement("input")
+    imagesOn.type = "checkbox"
+    imagesOn.name = "user[judge_options][llm_include_images]"
+    imagesOn.value = "true"
+    imagesOn.checked = true
+    form.appendChild(imagesOn)
+
+    const teamA = document.createElement("input")
+    teamA.type = "checkbox"
+    teamA.name = "user[team_ids][]"
+    teamA.value = "1"
+    teamA.checked = false
+    form.appendChild(teamA)
+
+    const teamB = document.createElement("input")
+    teamB.type = "checkbox"
+    teamB.name = "user[team_ids][]"
+    teamB.value = "2"
+    teamB.checked = false
+    form.appendChild(teamB)
+
+    // The real view's name field carries both the Stimulus target and the
+    // name= HTML attribute on the same element - checkReveal() reads the
+    // former, saveDraft/restoreDraft find it via the latter, so the test
+    // double has to be one element serving both roles too, not two.
+    controller.nameTarget = name
+    controller.nameField = name
+    controller.llmKeyField = llmKey
+    controller.imagesField = imagesOn
+    controller.teamAField = teamA
+    controller.teamBField = teamB
+
+    return controller
+  }
+
+  afterEach(() => {
+    sessionStorage.clear()
+  })
+
+  it("saves and restores every named field, checkboxes included", () => {
+    const controller = buildFormController()
+    controller.nameField.value = "Draft Judge"
+    controller.llmKeyField.value = "sk-draft"
+    controller.imagesField.checked = false
+    controller.teamBField.checked = true
+
+    AiJudgeWizardController.prototype.saveDraft.call(controller)
+
+    // A fresh page load - fields reset to whatever the server rendered, same
+    // as navigating away and back for real.
+    const restored = buildFormController()
+    AiJudgeWizardController.prototype.restoreDraft.call(restored)
+
+    expect(restored.nameField.value).toBe("Draft Judge")
+    expect(restored.llmKeyField.value).toBe("sk-draft")
+    expect(restored.imagesField.checked).toBe(false)
+    expect(restored.teamAField.checked).toBe(false)
+    expect(restored.teamBField.checked).toBe(true)
+  })
+
+  it("reveals step 2 when the restored name is non-blank", () => {
+    const controller = buildFormController()
+    controller.nameField.value = "Draft Judge"
+    AiJudgeWizardController.prototype.saveDraft.call(controller)
+
+    const restored = buildFormController()
+    restored.sampleQueryDocPair = vi.fn()
+
+    AiJudgeWizardController.prototype.restoreDraft.call(restored)
+
+    expect(restored.step2Target.style.display).toBe("block")
+  })
+
+  it("clears the stored draft once restored, so a later plain reload doesn't reapply it", () => {
+    const controller = buildFormController()
+    controller.nameField.value = "Draft Judge"
+    AiJudgeWizardController.prototype.saveDraft.call(controller)
+
+    AiJudgeWizardController.prototype.restoreDraft.call(buildFormController())
+
+    expect(sessionStorage.getItem("ai_judge_wizard_draft:new")).toBeNull()
+  })
+
+  it("is a no-op when there is nothing to restore", () => {
+    const controller = buildFormController()
+
+    expect(() => AiJudgeWizardController.prototype.restoreDraft.call(controller)).not.toThrow()
+    expect(controller.nameField.value).toBe("")
+  })
+
+  it("navigateToScale saves a draft and navigates to the picked option's url", () => {
+    const originalLocation = window.location
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: { href: "http://localhost/ai_judges/new" }
+    })
+
+    const controller = buildFormController()
+    controller.nameField.value = "Draft Judge"
+    controller.saveDraft = vi.fn(AiJudgeWizardController.prototype.saveDraft.bind(controller))
+
+    const select = document.createElement("select")
+    const option = document.createElement("option")
+    option.value = "3"
+    option.dataset.url = "/ai_judges/new?scorer_id=3"
+    select.appendChild(option)
+    select.selectedIndex = 0
+
+    AiJudgeWizardController.prototype.navigateToScale.call(controller, { target: select })
+
+    expect(controller.saveDraft).toHaveBeenCalledOnce()
+    expect(window.location.href).toBe("/ai_judges/new?scorer_id=3")
+
+    Object.defineProperty(window, "location", { configurable: true, value: originalLocation })
+  })
+
+  it("navigateToScale does nothing for the blank placeholder option", () => {
+    const controller = buildFormController()
+    controller.saveDraft = vi.fn()
+
+    const select = document.createElement("select")
+    const option = document.createElement("option")
+    option.value = ""
+    select.appendChild(option)
+    select.selectedIndex = 0
+
+    AiJudgeWizardController.prototype.navigateToScale.call(controller, { target: select })
+
+    expect(controller.saveDraft).not.toHaveBeenCalled()
   })
 })
 
