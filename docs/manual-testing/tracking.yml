@@ -1965,10 +1965,10 @@ parts:
           request-detail: "14.13/request-detail"
           requests: "14.13/requests"
           dashboard: "14.13/dashboard"
-        last_run: 2026-10-15T05:44:18Z
+        last_run: 2026-10-24T23:33:13Z
         result: pass
-        notes: "Current refresh: generated documented current-hour SummaryJob, selected Last24h. Today request72835 shows15.89ms/status200,15operations, normalized SQL placeholders and trace timeline; today WebsocketTester jobSuccess31s. Dashboard/Routes/Request detail/Job detail inspected, registered; earlier old Oct10/no-trace raw captures retained as Archive supplements. DB verifies raw SQL absent, job arguments absent, own Pulse routes excluded. No failed-job mutation or isolated retention-cleanup edge exercised; existing failed jobs untouched."
-        paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "config/initializers/postgresql_schema_compatibility.rb"]
+        notes: "Partial Ruby/gem update MCP sample on Current :3000 as realisticactivity administrator: Rails Pulse 0.5 dashboard and Requests load after the additive events migration; Requests includes the just-visited homepage with status200 and timing. Dashboard screenshot inspected and refreshed. Dashboard has no aggregated request summaries yet; summary generation, job details and retention cleanup not driven live. Fourteen integration/authorization/migration tests pass, including upgrade, fresh install, rollback/replay, dashboard, request/job recording, normalized SQL and cleanup."
+        paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "db/migrate/20261024233000_create_rails_pulse_events.rb", "Gemfile.lock", "config/initializers/postgresql_schema_compatibility.rb"]
 
   "15":
     file: 15-global-navigation-and-notebooks.md

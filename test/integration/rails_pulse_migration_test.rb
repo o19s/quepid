@@ -2,6 +2,7 @@
 
 require 'test_helper'
 require Rails.root.join('db/migrate/20261005192545_install_rails_pulse_tables')
+require Rails.root.join('db/migrate/20261024233000_create_rails_pulse_events')
 
 class RailsPulseMigrationTest < ActiveSupport::TestCase
   class ScratchRecord < ApplicationRecord
@@ -22,7 +23,7 @@ class RailsPulseMigrationTest < ActiveSupport::TestCase
   test 'installs all monitoring tables and tolerates a repeated install' do
     migrate :up
     tables = ScratchRecord.connection.tables.sort
-    assert_equal 10, tables.length
+    assert_equal 11, tables.length
 
     migrate :up
     assert_equal tables, ScratchRecord.connection.tables.sort
@@ -43,7 +44,27 @@ class RailsPulseMigrationTest < ActiveSupport::TestCase
     assert_equal 1, connection.select_value('SELECT COUNT(*) FROM rails_pulse_routes').to_i
   end
 
-  test 'rollback removes all ten tables and allows replay' do
+  test 'events upgrade works for existing and fresh monitoring installs' do
+    migrate :up
+    connection = ScratchRecord.connection
+    tables = connection.tables.sort
+    connection.execute(<<~SQL.squish)
+      INSERT INTO rails_pulse_routes (http_methods, path, created_at, updated_at)
+      VALUES ('["GET"]', '/events-upgrade-probe', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+    SQL
+    upgrade = CreateRailsPulseEvents.new
+    upgrade.define_singleton_method(:connection) { connection }
+
+    capture_io { ActiveRecord::Migration.suppress_messages { upgrade.change } }
+    assert_equal tables, connection.tables.sort
+
+    connection.drop_table(:rails_pulse_events)
+    capture_io { ActiveRecord::Migration.suppress_messages { upgrade.change } }
+    assert_equal tables, connection.tables.sort
+    assert_equal 1, connection.select_value('SELECT COUNT(*) FROM rails_pulse_routes').to_i
+  end
+
+  test 'rollback removes all monitoring tables and allows replay' do
     migrate :up
     tables = ScratchRecord.connection.tables.sort
 

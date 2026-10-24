@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_24_233000) do
   create_table "active_storage_attachments", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
@@ -339,6 +339,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.datetime "updated_at", null: false
     t.index ["revision"], name: "index_rails_pulse_deployments_on_revision"
     t.index ["started_at"], name: "index_rails_pulse_deployments_on_started_at"
+  end
+
+  create_table "rails_pulse_events", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "kind", null: false, comment: "What noticed it, e.g. writer_heartbeat"
+    t.string "subject", comment: "Who it is about: host:pid, rule name, job name, exception class"
+    t.string "outcome", null: false, comment: "sampled, triggered, clean, insufficient_data, ran"
+    t.decimal "value", precision: 15, scale: 6, comment: "The number behind it: requests dropped since the last sample, or the triggered metric value"
+    t.datetime "occurred_at", null: false
+    t.text "message"
+    t.text "metadata", comment: "JSON with the kind-specific detail"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind", "occurred_at"], name: "index_rp_events_on_kind_and_occurred_at"
+    t.index ["kind", "subject", "occurred_at"], name: "index_rp_events_on_kind_subject_and_occurred_at"
   end
 
   create_table "rails_pulse_exception_groups", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
