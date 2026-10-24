@@ -100,13 +100,13 @@ if case is None:
   payload = {
     "id": case['case_id']      
   }
-  url = f'{root_url}/api/teams/{team['id']}/cases'
+  url = f'{root_url}/api/teams/{team["id"]}/cases'
   
   r = requests.post(url, data=json.dumps(payload), headers=headers)
   
   
  # Ensure we have a try created and if not, create one 
-url = f'{root_url}/api/cases/{case['case_id']}/tries'
+url = f'{root_url}/api/cases/{case["case_id"]}/tries'
  
 r = requests.get(url, headers=headers)
 response = r.json()
@@ -114,7 +114,7 @@ atry = response['tries'][0]
   
   
 
-print(f'Working with case {case['case_name']}')
+print(f'Working with case {case["case_name"]}')
 
 # Finally able to associate a score.
 # 
@@ -128,7 +128,7 @@ payload = {
   }      
 }
 
-url = f'{root_url}/api/cases/{case['case_id']}/scores'
+url = f'{root_url}/api/cases/{case["case_id"]}/scores'
 r = requests.put(url, data=json.dumps(payload), headers=headers)
 response = r.json()
 print(json.dumps(response, indent=4))

@@ -1,9 +1,9 @@
-<%# locals: (form:, label:, help_text:) %>
+<%# locals: (form:, label:, help_text:, selected_ids: nil) %>
 <%= form.label :teams, label, class: 'form-label' %>
 <% if current_user.teams.any? %>
   <%= form.collection_check_boxes(:team_ids, current_user.teams, :id, :name) do |b| %>
-    <div class="collection-check-box">
-      <%= b.check_box %>
+    <div>
+      <%= selected_ids ? b.check_box(checked: selected_ids.map(&:to_s).include?(b.value.to_s)) : b.check_box %>
       <%= b.label %>
     </div>
   <% end %>

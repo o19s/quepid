@@ -4,19 +4,19 @@ module Analytics
   module Tracker
     module User
       def track_signup_event user
-        Analytics::Ahoy.user_signed_up user
+        track 'Users', 'Signed Up', label: user.email
       end
 
       def track_user_updated_profile_event user
-        Analytics::Ahoy.user_updated_profile user
+        track 'Users', 'Updated Profile', label: user.email
       end
 
       def track_user_updated_password_event user
-        Analytics::Ahoy.user_updated_password user
+        track 'Users', 'Updated Password', label: user.email
       end
 
       def track_user_updated_by_admin_event user
-        Analytics::Ahoy.user_updated_by_admin user
+        track 'Users', 'Updated by Admin', label: user.email
       end
     end
   end

@@ -29,18 +29,11 @@ module Api
             return
           end
 
-          serialized_data = Marshal.dump(query_doc_pairs_params)
-
-          compressed_data = Zlib::Deflate.deflate(serialized_data)
-          # Create a temporary file attachment
-          blob = ActiveStorage::Blob.create_and_upload!(
-            io:           StringIO.new(compressed_data),
-            filename:     "book_populate_#{@book.id}.bin.zip",
-            content_type: 'application/zip'
-          )
+          blob = DeferredPayload.stash!(query_doc_pairs_params, filename: "book_populate_#{@book.id}.bin.zip")
 
           # Pass the blob directly to the job instead of creating an attachment
-          track_book_populate_queued do
+          Analytics::Tracker.track_query_doc_pairs_bulk_updated_event current_user, @book, @book.query_doc_pairs.empty?
+          @book.queue_job(:populate) do
             PopulateBookJob.perform_later @book, @case, blob
           end
 
@@ -54,14 +47,6 @@ module Api
           # hash to ActiveJob via ActiveStorage by directly getting parameters from request
           # object
           request.parameters
-        end
-
-        def track_book_populate_queued
-          @book.update(populate_job: "queued at #{Time.zone.now}")
-          Analytics::Tracker.track_query_doc_pairs_bulk_updated_event current_user, @book, @book.query_doc_pairs.empty?
-
-          # Yield to the block to perform the job
-          yield if block_given?
         end
       end
     end

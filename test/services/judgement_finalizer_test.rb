@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class JudgementFinalizerTest < ActiveSupport::TestCase
+  cover 'JudgementFinalizer*'
+
   let(:book) { books(:james_bond_movies) } # scale 0,1
   let(:judge) { users(:judge_judy) }
   let(:query_doc_pair) { query_doc_pairs(:starwars_qdp1) }
@@ -30,14 +32,31 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
     assert_nil judgement.rating
   end
 
-  test 'a rating outside the scale is unrateable, with the raw value kept for review' do
+  test 'a missing rating is not annotated as out of scale' do
+    judgement = judgement_with(nil)
+
+    JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
+
+    assert_equal 'Because.', judgement.explanation
+  end
+
+  test 'a missing rating is unrateable even when there is no scale' do
+    judgement = judgement_with(nil)
+
+    JudgementFinalizer.call(judgement)
+
+    assert_predicate judgement, :unrateable
+    assert_equal 'Because.', judgement.explanation
+  end
+
+  test 'a rating outside this book\'s scale is unrateable, with the raw value kept for review' do
     judgement = judgement_with(3.0)
 
     JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
     assert_predicate judgement, :unrateable
     assert_nil judgement.rating
-    assert_equal 'Because. [LLM returned rating 3.0, outside the scale [0, 1]]',
+    assert_equal 'Because. [LLM returned rating 3.0, outside this book\'s scale [0, 1]]',
                  judgement.explanation
   end
 
@@ -46,7 +65,7 @@ class JudgementFinalizerTest < ActiveSupport::TestCase
 
     JudgementFinalizer.call(judgement, scale: JudgeScale.for(book))
 
-    assert_equal '[LLM returned rating 3.0, outside the scale [0, 1]]', judgement.explanation
+    assert_equal '[LLM returned rating 3.0, outside this book\'s scale [0, 1]]', judgement.explanation
   end
 
   test 'with no scale there is nothing to validate against and the rating stands' do

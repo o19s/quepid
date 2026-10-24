@@ -17,16 +17,19 @@ module Api
       end
 
       describe 'Updates case score' do
-        test 'return an error if try id is not specified' do
-          put :update, params: { case_id: acase.id, case_score: { score: 1 } }
+        test 'accepts a score without a try, since scores outlive their tries' do
+          assert_difference 'acase.scores.count' do
+            put :update, params: { case_id: acase.id, case_score: { score: 1 } }
+          end
 
-          assert_response :bad_request
+          assert_response :ok
+          assert_nil response.parsed_body['try_id']
         end
 
         test 'returns no content if the score is empty' do
           data = {
             score:      0,
-            all_rated:  [ true, false ].sample,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 
@@ -37,8 +40,8 @@ module Api
 
         test 'creates a new score if the case does not already have one' do
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 
@@ -52,10 +55,21 @@ module Api
           assert_equal score.all_rated, data[:all_rated]
         end
 
+        test 'returns a 400 and stores nothing when the try_number does not exist on the case' do
+          data = { score: 0.5, all_rated: false, try_number: first_try.try_number + 99 }
+
+          assert_no_difference 'acase.scores.count' do
+            put :update, params: { case_id: acase.id, case_score: data }
+          end
+
+          assert_response :bad_request
+          assert_includes response.parsed_body['try_number'].join, 'not found'
+        end
+
         test 'saves hash of query scores' do
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
             queries:    {
               '1' => {
@@ -81,8 +95,8 @@ module Api
           old_score = acase.scores.create(user_id: user.id, try_id: first_try.id, score: 80, scorer_id: acase.scorer.id)
 
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
             scorer_id:  acase.scorer.id,
           }
@@ -113,8 +127,8 @@ module Api
           )
 
           data = {
-            score:      (1..100).to_a.sample,
-            all_rated:  [ true, false ].sample,
+            score:      42,
+            all_rated:  true,
             try_number: first_try.try_number,
           }
 

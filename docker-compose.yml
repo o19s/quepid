@@ -1,6 +1,7 @@
 services:
   app:
     container_name: quepid_app
+    init: true
     build:
       context: .
       dockerfile: Dockerfile.dev
@@ -60,7 +61,7 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=root
     volumes:
-      - ./volumes/postgres:/var/lib/postgresql
+      - ./volumes/postgres18:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U root"]
       interval: 10s

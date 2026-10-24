@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import CountUpController from "controllers/count_up_controller"
+import { buildControllerFixture } from "../support/controller_fixture"
 
 vi.mock("utils/count_up", () => ({
   animateCountUp: vi.fn(),
@@ -9,10 +10,10 @@ vi.mock("utils/count_up", () => ({
 import { animateCountUp, stopCountUp } from "utils/count_up"
 
 function buildController(element, numberValue) {
-  const controller = Object.create(CountUpController.prototype)
-  controller.element = element
-  controller.numberValue = numberValue
-  return controller
+  return buildControllerFixture(CountUpController, {
+    element,
+    values: { number: numberValue }
+  })
 }
 
 describe("CountUpController", () => {

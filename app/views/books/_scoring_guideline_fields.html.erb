@@ -1,0 +1,41 @@
+<%# locals: (form:, viewer:) %>
+<div data-controller="scoring-guidelines"
+     data-scoring-guidelines-four-point-value="<%= Book::FOUR_POINT_GUIDELINES.strip %>"
+     data-scoring-guidelines-two-point-value="<%= Book::TWO_POINT_GUIDELINES.strip %>"
+     data-scoring-guidelines-scale-lengths-value="<%= scorer_scale_lengths(viewer).to_json %>">
+  <div class="mb-3">
+    <%= form.label :scorer_id, "Rating Scale", class: 'form-label' %>
+    <%= form.select(:scorer_id, scorer_options_for_select(viewer),
+          {
+            prompt: "Select a rating scale...",
+            include_blank: true
+          },
+          {
+            class: "form-control#{' is-invalid' if form.object.errors[:scorer_id].present?}",
+            required: true,
+            data: {
+              scoring_guidelines_target: 'scorerSelect',
+              action: 'scoring-guidelines#scaleChanged'
+            }
+        }) %>
+    <% if form.object.errors[:scorer_id].present? %>
+      <div class="invalid-feedback d-block"><%= form.object.errors.full_messages_for(:scorer_id).to_sentence %></div>
+    <% end %>
+    <div class="form-text">Choose from available rating scale configurations. The scale and labels will be set for this book when you save.</div>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :scoring_guidelines, "Scoring Guidelines (Markdown)", class: 'form-label' %>
+    <%= form.text_area :scoring_guidelines,
+        class: 'form-control font-monospace',
+        rows: 10,
+        placeholder: 'Scoring guidelines will be auto-populated when you select a rating scale, or enter your own custom guidelines...',
+        data: {
+          scoring_guidelines_target: 'textarea'
+        } %>
+    <div class="form-text">
+      Provide guidelines to help judges understand how to rate documents. Supports markdown formatting (tables, bold, italic, links, etc.).
+      Leave blank to use the default guidelines based on the rating scale.
+    </div>
+  </div>
+</div>

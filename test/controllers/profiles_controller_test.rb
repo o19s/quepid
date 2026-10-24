@@ -30,7 +30,7 @@ class ProfilesControllerTest < ActionController::TestCase
 
         assert_redirected_to profile_path
 
-        assert_equal user.name, name
+        assert_equal name, user.reload.name
       end
 
       it 'updates user email' do
@@ -40,7 +40,7 @@ class ProfilesControllerTest < ActionController::TestCase
 
         assert_redirected_to profile_path
 
-        assert_equal user.email, email
+        assert_equal email, user.reload.email
       end
 
       describe 'analytics' do
@@ -54,6 +54,28 @@ class ProfilesControllerTest < ActionController::TestCase
 
             assert_redirected_to profile_path
           end
+        end
+      end
+
+      test 'invalid profile inputs keep floating labels and persisted header values' do
+        original_email = user.email
+        patch :update, params: { user: { email: users(:doug).email } }
+        assert_response :unprocessable_content
+        assert_select '.form-floating > input.is-invalid[aria-invalid="true"] ~ label'
+        assert_select '.field_with_errors', count: 0
+        assert_select '.card-body p', text: original_email
+        assert_select 'input[name="user[email]"]' do |inputs|
+          assert_equal users(:doug).email, inputs.first['value']
+        end
+      end
+
+      test 'invalid profile inputs keep the navbar on the saved display name' do
+        original_name = user.name
+        patch :update, params: { user: { name: 'Unsaved Name', email: users(:doug).email } }
+        assert_response :unprocessable_content
+        assert_select '[data-display-name]', text: original_name
+        assert_select 'input[name="user[name]"]' do |inputs|
+          assert_equal 'Unsaved Name', inputs.first['value']
         end
       end
 

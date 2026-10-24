@@ -10,13 +10,14 @@ module Api
       before_action :set_case
       before_action :set_snapshot, only: [ :show, :destroy ]
 
-      # Special handling for cases that are "public", and therefore it's snapshots
+      # Snapshots of a public case can be read without logging in; creating or deleting them requires a user.
       def authenticate_api!
-        set_case
-        return true if @case&.public? || current_user
+        if [ :index, :show ].include?(action_name.to_sym)
+          set_case
+          return true if @case&.public?
+        end
 
-        render json:   { reason: 'Unauthorized!' },
-               status: :unauthorized
+        super
       end
 
       def index
@@ -42,13 +43,7 @@ module Api
         @snapshot.try = @case.tries.first
 
         if @snapshot.save
-          serialized_data = Marshal.dump(snapshot_params)
-
-          #  puts "[SnapshotController] the size of the serialized data is #{number_to_human_size(serialized_data.bytesize)}"
-          compressed_data = Zlib::Deflate.deflate(serialized_data)
-          # puts "[SnapshotController] the size of the compressed data is #{number_to_human_size(compressed_data.bytesize)}"
-          @snapshot.snapshot_file.attach(io: StringIO.new(compressed_data), filename: "snapshot_#{@snapshot.id}.bin.zip",
-                                         content_type: 'application/zip')
+          DeferredPayload.stash!(snapshot_params, filename: "snapshot_#{@snapshot.id}.bin.zip", attachment: @snapshot.snapshot_file)
           PopulateSnapshotJob.perform_later @snapshot
 
           Analytics::Tracker.track_snapshot_created_event current_user, @snapshot

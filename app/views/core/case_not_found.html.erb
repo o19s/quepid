@@ -1,0 +1,17 @@
+<%# A case id that doesn't exist or isn't shared with the user. %>
+<div class="mx-auto my-5 py-5 text-center" style="max-width: 600px;">
+  <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary mb-4"
+       style="width: 72px; height: 72px;">
+    <i class="bi bi-briefcase fs-2" aria-hidden="true"></i>
+  </div>
+  <h1 class="h3 mb-3">Case <%= params[:id] %> isn't available</h1>
+  <p class="text-body-secondary mb-4">
+    It may have been deleted, or it hasn't been shared with a team you belong to.
+    If someone sent you this link, ask them to share the case with one of your teams.
+  </p>
+  <div class="d-flex flex-wrap justify-content-center gap-2">
+    <%= link_to 'View all cases', cases_path, class: 'btn btn-primary' %>
+    <%= link_to 'View your teams', teams_path, class: 'btn btn-primary' %>
+    <%= link_to 'Create a case', case_new_path, class: 'btn btn-primary', data: { turbo: false } %>
+  </div>
+</div>

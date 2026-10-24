@@ -3,6 +3,19 @@
 require 'test_helper'
 
 class SessionsControllerTest < ActionController::TestCase
+  include ActionCable::TestHelper
+
+  test 'logout disconnects active Cable connections without reconnecting' do
+    user = users(:doug)
+    session[:current_user_id] = user.id
+    remote = ActionCable.server.remote_connections.where(current_user: user)
+    assert_broadcast_on(remote.send(:internal_channel), { type: 'disconnect', reconnect: false }) do
+      delete :destroy
+    end
+
+    assert_nil session[:current_user_id]
+  end
+
   test 'should create session for valid user' do
     post :create, params: { user: { email: 'doug@example.com', password: 'password' }, format: :json }
     assert_response :success
@@ -18,7 +31,7 @@ class SessionsControllerTest < ActionController::TestCase
 
   test 'should not create session for invalid password html' do
     post :create, params: { user: { email: 'doug@example.com', password: 'incorrect' }, format: :html }
-    assert_response :success
+    assert_response :unprocessable_content
 
     assert_template 'sessions/new'
 
@@ -26,6 +39,15 @@ class SessionsControllerTest < ActionController::TestCase
     alert_message = css_select('#error_explanation .alert').text.strip
     assert_equal alert_message_template, alert_message
     assert_nil session[:current_user_id], 'does not set a user'
+  end
+
+  test 'login page makes Turbo load it in full, including from a frame request' do
+    get :new
+    assert_select 'head meta[name="turbo-visit-control"][content="reload"]'
+
+    request.headers['Turbo-Frame'] = 'team_lists'
+    get :new
+    assert_select 'head meta[name="turbo-visit-control"][content="reload"]'
   end
 
   test 'should not create session for unknown user' do

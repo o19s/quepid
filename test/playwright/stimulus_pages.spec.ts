@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 
 /**
  * Smoke coverage for Stimulus-driven pages (application layout).
- * Complements the Angular core Playwright suite in angular_pages.spec.ts.
+ * Complements the core Playwright suite in core_pages.spec.ts.
  */
 
 async function firstBookId(page: Page): Promise<string> {
@@ -45,7 +45,7 @@ test.describe('Stimulus pages', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ case_id: 4242 }),
+          body: JSON.stringify({ redirect_url: '/case/4242' }),
         });
         return;
       }

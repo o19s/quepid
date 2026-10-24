@@ -1,36 +1,38 @@
 # JavaScript tooling (lint, format, unit tests)
 
-Quepid runs **two parallel JavaScript worlds** during the Angular → Hotwire migration:
+Quepid's first-party JavaScript is linted and tested as follows:
 
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
-| `app/assets/javascripts/` | Legacy Angular case app (esbuild → `app/assets/builds/`) | **JSHint** (`.jshintrc`) | **Karma + Jasmine** (`spec/javascripts/`) |
-| `app/javascript/` | Importmap + Stimulus + Turbo (`application_modern.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `app/javascript/` | Importmap + Stimulus + Turbo (`application.js`, controllers) | **ESLint** (full modern tree); **Prettier** (`api/`, `utils/` only) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
+| `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
 
 Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
 
-## ESLint + Prettier (`app/javascript`)
+## ESLint + Prettier
 
 ### Scope
 
 Lint/format scope is defined once in **`config/javascript_lint_scope.mjs`** and used by:
 
-- `eslint.config.mjs` (ignores + file globs) — **all** modern `app/javascript` except vendor/esbuild bridges
+- `eslint.config.mjs` (ignores + file globs) — **all** first-party JavaScript
 - `scripts/javascript_lint.mjs` + `scripts/filter_javascript_prettier_paths.mjs` — **Prettier only on `api/` and `utils/`** for now (avoids a mass reformat of controllers/modules in one PR)
+- `scripts/filter_javascript_lint_paths.mjs` (ESLint pre-commit)
+- `bin/eslint-staged` / `bin/prettier-staged`
 
 That tree includes:
 
 - `app/javascript/controllers/`, `api/`, `utils/`, `modules/`
-- Entry bundles: `application.js`, `application_modern.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`, `analytics.js`
+- Entry bundles: `application.js`, `core_stimulus.js`, `bootstrap_globals.js`, `vega_globals.js`
 
 **Excluded** (esbuild bridges / vendor — not importmap Stimulus):
 
 - `app/javascript/vendor/**`
-- `app/javascript/angular_app.js`, `quepid_app.js`, `jquery_bundle.js`, `splainer_search_adapter.js`
+- `app/javascript/core_vendor.js`, `app/javascript/utils/splainer_search_runtime.js`
 
 Importmap bare imports (`api/fetch`, `utils/quepid_root`, npm pins) are not Node-resolvable; we do not use `eslint-plugin-import`.
 
-ESLint `no-unused-vars` and `no-console` are off during migration (unused `catch (e)`, Stimulus action params, debug `console.log`).
+ESLint `no-unused-vars` is enforced throughout the linted `app/javascript/` tree, JavaScript tests, and build/config scripts. It remains off in server-side sandboxes, where declarations may be consumed outside the file. Use optional catch binding (`catch { ... }`) when the error is unused. `no-console` remains off. The server-side scorer and mapper files also disable rules that assume ordinary module scope because MiniRacer supplies their globals and evaluates user code in the same sandbox. Those files are still parsed and checked for standard syntax errors.
 
 ### Formatting conventions
 
@@ -38,9 +40,9 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Trailing commas:** unlike many JS projects, Quepid does **not** use them in modern JS. Ruby is the opposite — RuboCop **requires** trailing commas on multiline hashes. See `CLAUDE.md` § Agent checklist.
 
-**Prettier** is scoped to **`api/` and `utils/`** only (via `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
+**Prettier** is enforced on **`api/` and `utils/`** only (via pre-commit and `yarn format:js*`). Do **not** run Prettier on `controllers/`, `modules/`, or entry bundles for now — whole-file Prettier would churn older single-quote files. Hand-apply modern style to **new** lines you add there.
 
-**ESLint** covers the full modern tree under `app/javascript/`; Vitest specs live under `test/javascript/` and are out of scope entirely (not colocated, not linted/formatted by these tools). Specs follow formatting conventions manually.
+**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `controllers/`, `modules/`, etc.; run the full `yarn lint:js` command before finishing. Specs follow formatting conventions manually.
 
 **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style.
 
@@ -51,11 +53,11 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 ### Commands
 
 ```bash
-bin/docker r yarn lint:js              # ESLint — full modern tree (eslint.config.mjs)
-bin/docker r yarn format:js:check      # Prettier check — api/ and utils/ only
-bin/docker r yarn format:js            # Prettier write — api/ and utils/ only
+bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
+bin/docker r yarn format:js:check      # Prettier check — api/, utils/
+bin/docker r yarn format:js            # Prettier write — api/, utils/
 bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
-bin/docker r rails test:frontend       # Vitest + Karma + JSHint + ESLint + Stylelint
+bin/docker r rails test:frontend       # Vitest + ESLint + Stylelint
 ```
 
 Per-file ESLint (e.g. a controller outside the Prettier scope):
@@ -68,21 +70,24 @@ Do not run `prettier --write` on paths outside `api/`/`utils/` unless you delibe
 
 After pulling these dependencies, run `bin/docker r yarn install` once.
 
+Run Vitest and Stryker inside the container, not on the host. `node_modules/` is shared with the Linux container, so it holds Linux-only native bindings (e.g. `@rolldown/binding-linux-*`), and host runs fail with `Cannot find module './rolldown-binding.wasi.cjs'`. ESLint and Prettier have no native bindings and run either way. `docker exec quepid_app …` reuses the running app container, which is faster than `bin/docker r` for repeated Vitest/Stryker runs.
+
+### Pre-commit
+
+`.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
+
+- `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
+- `app/javascript/api/**` and `app/javascript/utils/**` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs` (other modern paths are ESLint-only for now)
+
+[pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged`.
+
 ### Editor
 
 `.devcontainer/devcontainer.json` includes the ESLint and EditorConfig extensions. Point ESLint at the workspace `eslint.config.mjs`; Prettier uses `.prettierrc.json`.
 
-## JSHint (legacy `app/assets/javascripts`)
-
-Still the linter for the Angular asset tree. See `DEVELOPER_GUIDE.md` § JS Lint.
-
-```bash
-bin/docker r rails test:jshint
-```
-
 ## Vitest (`app/javascript`)
 
-Unit tests for the modern importmap stack. Legacy Angular specs remain on Karma (`spec/javascripts/`).
+Unit tests for the modern importmap stack.
 
 ### Setup
 
@@ -98,44 +103,127 @@ bin/docker r yarn test:unit:watch     # watch mode
 bin/docker r rails test:vitest        # same as yarn test:unit (CI-style)
 ```
 
-`rails test:frontend` runs Vitest **before** Karma so fast failures surface first.
+Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `test/javascript/support/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
 
-Add new importmap bare imports to `vitest.config.js` `resolve.alias` when tests import them (controller specs use `app/javascript/test/stimulus_stub.js` for `@hotwired/stimulus`); `controllers/*` resolves via a wildcard alias, matching `pin_all_from` in `config/importmap.rb`, so individual controllers don't need their own entry.
+### Controller test fixtures
+
+Use `buildControllerFixture` from `test/javascript/support/controller_fixture.js`
+for specs with repeated target/value setup. Pass `targets: { title: element }`
+and `values: { url: "api/cases" }`; the builder supplies the singular target,
+plural targets, presence flags, and value properties. An array supplies repeated
+targets; `null` or an empty array represents an absent target. Use `element` for
+an existing root and `overrides` for explicit instance state or method fakes.
+Keep fixture-specific DOM construction and mutations in the spec.
+
+The builder uses the existing Stimulus stub and does not invoke lifecycle hooks,
+resolve ERB targets, or wire actions. Call lifecycle methods explicitly when
+needed. Direct-method controller specs use this builder; keep new fixtures on
+the same pattern.
+
+For new markup-wiring specs, mount real Stimulus against the actual view markup;
+convert existing specs. See
+`test/javascript/controllers/add_query_controller_markup.test.js`: its file-local
+mock overrides the Stimulus alias with the installed runtime for both the spec
+and controller. Drive DOM events, wait for connection, then remove the mounted
+scope and wait for disconnection before stopping the application. Static HTML
+from ERB can be loaded directly with a guard against unevaluated ERB tags;
+dynamic ERB and visual behavior still need Rails/browser verification.
+`query_unrated_badge_controller_markup.test.js` also covers real target/value
+resolution and store subscription cleanup using the static query-row template.
+
+The wizard and the Tune Relevance drawer are tested against the running app instead, because their markup is
+dynamic Rails output and a unit spec cannot tell whether the page is wired: see
+`test/playwright/wizard_behaviour.spec.ts` and `test/playwright/tune_relevance.spec.ts`. Those specs use disposable
+cases created through the API, and stub a third-party search engine with `page.route` only where a test needs a known
+response. Server configuration that the running app cannot vary, such as the required-proxy policy, is covered by a
+Rails controller test.
+
+Controller specs mock `utils/core_store_access`, `utils/core_capability_access`,
+and `utils/core_flash` with `vi.mock` when substituting workspace dependencies.
+Keep fakes local to the spec; production modules have no test injection hooks.
 
 ### PR policy
 
 - **`api/` and `utils/`** — New or materially changed logic requires a `*.test.js` in `test/javascript/` (mirroring the source path) in the **same PR**.
-- **`controllers/`** — Add Vitest when you touch a controller for Angular migration or meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
+- **`controllers/`** — Add Vitest when you touch a controller for meaningful behavior change. Do not blanket-rewrite untested controllers for coverage alone.
 - Run `bin/docker r yarn test:unit` before merging JS changes that add or update specs.
+
+### Property-based tests (fast-check)
+
+[fast-check](https://fast-check.dev) is installed alongside Vitest. Use it where an invariant can be stated crisply ("for all inputs, X holds") — not as a replacement for example-based specs, which stay the place for documented edge cases and regressions.
+
+**Good fits** (pure functions in `utils/` and `api/`):
+
+- Round trips: `parse(serialize(x))` equals `x` modulo documented normalization (`csv.js` ↔ `case_csv.js`).
+- Aggregations and read models: bounds, "sentinel iff nothing numeric", order independence (`scoring.js`, `diff_scores.js`).
+- Payload builders: one output per input, order preserved, input not mutated (`book_sync.js`).
+- Concurrency and ordering helpers, via `fc.scheduler()` (`pAll` in `query_service.js`).
+
+**Poor fits** — use examples instead: Stimulus controllers, DOM rendering, anything needing heavy mocking, and code whose only oracle is a reimplementation of itself.
+
+Conventions:
+
+- Put properties in `test/javascript/utils/<module>_properties.test.js` next to the module's example spec, importing via the same bare paths.
+- Make generators describe the real input domain. Include hostile values (commas, quotes, CR/LF, `=@+-` prefixes, unicode) for text that crosses a file or network boundary. Don't constrain generators just to make a property pass.
+- Use exactly representable numbers (for example `fc.integer().map((n) => n / 8)`) when asserting means or sums, so properties don't depend on floating-point tolerance.
+- Prefer `fc.pre(...)` sparingly; if most cases are discarded, build the generator to produce valid inputs instead.
+- Async code: take `fc.scheduler()` as a property input (`fc.asyncProperty(fc.scheduler(), ..., async (s, ...) => ...)`) and `await s.waitAll()`. Don't use real timers.
+- A failure prints the seed and a shrunk counterexample. Reproduce with `fc.assert(property, { seed, path })`, then **add the counterexample as a plain example test** so it stays pinned. Never "fix" a failing property by loosening it without understanding the counterexample.
+- **Prove the property can fail.** After writing one, temporarily break the code under test (flip a condition, change a constant) and confirm the property fails, then restore the code. A property that passes against a mutated implementation is too weak (for example, asserting "one of the errors" instead of "the first error").
+- Keep runs at fast-check's default 100 per property so the suite stays quick and Stryker, which re-runs tests per mutant, stays tractable. Don't raise `numRuns` globally.
+- Contracts that span Ruby and JS use a checked-in fixture under `test/fixtures/files/` that both suites read. See `csv_round_trip_cases.json`: `test/services/csv_export_test.rb` asserts the Ruby exporter still produces it, and `test/javascript/utils/csv_cross_language.test.js` asserts the JS importer reads it. Changing either side of the contract fails one of the two tests.
+- To regenerate that fixture after an intentional `CsvExport` change, edit the `values` arrays as needed and rewrite each `ruby_csv` from the exporter, in the running app container:
+
+  ```bash
+  docker exec <app-container> sh -c 'cd /srv/app && RAILS_ENV=test bin/rails runner "
+    path = Rails.root.join(\"test/fixtures/files/csv_round_trip_cases.json\")
+    cases = JSON.parse(path.read).map { |c| c.merge(\"ruby_csv\" => CsvExport.line(c[\"values\"])) }
+    path.write(JSON.pretty_generate(cases) + \"\n\")"'
+  ```
+
+  Then run `test/services/csv_export_test.rb` and `yarn test:unit test/javascript/utils/csv_cross_language.test.js`, and review the fixture diff to confirm the change was intended.
 
 ## StrykerJS mutation testing (`app/javascript/api`, `app/javascript/utils`)
 
 Mutation testing checks whether Vitest specs actually fail when the code they cover is broken (a "mutant" — e.g. flipping `&&` to `||`, an `if (x)` to `if (true)`) — plain coverage only proves a line ran, not that a test would catch a change to it.
 
 - Config: `stryker.config.mjs` (`vitest` test runner against `vitest.config.js`)
+- Use `yarn test:mutation`. Stryker core, `@stryker-mutator/vitest-runner` and (via `resolutions`) `@stryker-mutator/api` are installed from davidshq's `crash-recovery-v10.0.0-3` release tarballs (GitHub release assets), not npm. That build adds incremental crash recovery and handles [Vitest 5's changed nested-name filtering](https://vitest.dev/guide/migration/#testnamepattern-matches-the-joined-full-name), so no patch is needed. When upgrading, verify mutation kills rather than only a passing dry run.
+- After a Vitest/Stryker upgrade, run `yarn test:mutation:compat` for a cache-free seven-test smoke check that enforces the existing 15/22 mutation baseline. Clear the incremental cache before reusing results from an incompatible runner.
+- `.github/workflows/mutation.yml` runs `yarn test:mutation:nightly` (`test/mutation/nightly.config.mjs`) on manual trigger only, non-incremental, and fails when the overall score drops below its `break` threshold. Add a `schedule:` trigger to the workflow to run it regularly. Raise `break` as the score improves; a local `--mutate` run of a few files is not held to it.
 - Runs in **incremental mode** — results are cached in `tmp/stryker-tmp/incremental.json` (gitignored) and reused on the next run, so only mutants touched by changed files are re-tested. Delete that file (or the whole `tmp/stryker-tmp/` dir) to force a full run.
-- Scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above. Controllers are excluded for now (many are intentionally untested per that same policy, which would just show up as noisy `NoCoverage` mutants); add specific controller files to `mutate` in `stryker.config.mjs` once they have solid Vitest coverage.
-- Legacy Angular (`app/assets/javascripts/`, Karma) is out of scope — it's being removed by the Angular → Stimulus migration, not worth the investment.
+- After adding tests, a survivor in **module-level code** (preset tables, constant maps, anything that runs at import time) can stay "Survived" even though the new test kills it. Incremental mode re-tests a survived mutant only when a new *covering* test is detected, and static mutants aren't attributed to a specific test. Re-check those files with `yarn test:mutation --force --mutate "<file>"`. Mutants inside function bodies re-test normally.
+- Default scope: `app/javascript/api/**/*.js` and `app/javascript/utils/**/*.js` — the two directories with the strict "new logic needs a colocated test" PR policy above — plus `app/javascript/stores/**/*.js` and `app/javascript/modules/editor.js`, which also have specs. Nearly every controller has specs too, so run those on demand with `--mutate` (see below) rather than widening the default further.
+- Controller specs use the Stimulus stub (`test/javascript/support/stimulus_stub.js`) and call methods directly, so Stimulus never runs `connect()`/`disconnect()`, resolves targets/values from markup, or wires `data-action`. Lifecycle code shows up as `NoCoverage` unless the spec calls it itself; Playwright covers the wiring. Judge a controller by its actions and error paths, not its overall score.
 
 ```bash
 bin/docker r yarn test:mutation   # runs stryker, writes tmp/mutation-report/mutation-report.html
 ```
 
+The incremental cache is only written when a run finishes, so a crash mid-run loses that run's results. To build results up in small pieces, narrow `--mutate` to a slice. The shared cache keeps results for files outside the slice so successive slices accumulate in the same `incremental.json` and a later full run reuses them:
+
+```bash
+bin/docker r yarn test:mutation --mutate "app/javascript/api/**/*.js"
+bin/docker r yarn test:mutation --mutate "app/javascript/utils/core_*.js"
+bin/docker r yarn test:mutation --mutate "app/javascript/controllers/import_*_controller.js" --ignoreStatic
+```
+
+**`--ignoreStatic`** — Stryker can't tell which tests cover module-level code (constant tables, top-level `new Set([...])`, and similar), so for each of those "static" mutants it reloads the module and re-runs the whole suite. When the planner warns that static mutants dominate the run (e.g. *"155 static mutants (7% of total) … estimated to take 94% of the time"*), add `--ignoreStatic` to skip them; they are reported as `Ignored` rather than tested. On one 16-file `utils/` slice this cut the estimate from about an hour to under two minutes. The trade-off is that mutations to module-level constants go unchecked, which is usually fine — they tend to be preset and lookup data.
+
+```bash
+bin/docker r yarn test:mutation --mutate "app/javascript/utils/query_service.js" --ignoreStatic
+```
+
 Survived/no-coverage mutants in the report point at either a missing test case or genuinely dead/defensive code — triage per file rather than chasing 100%.
 
-## Unit test strategy: Karma vs Vitest
+## Unit test strategy
 
-### Current state
-
-- **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
-- **Karma + Jasmine + angular-mocks** — ~41 specs under `spec/javascripts/`, all Angular.
-- Karma loads **pre-built esbuild bundles**; every `karma:run` runs `yarn build` first.
-- **share-case migration:** Vitest `share_case_controller.test.js` (Rails index/teams) and `share_case_core_controller.test.js` (core toolbar API stay-on-page). Judgements opens share via `quepid:open-share-case-core`. HTTP/broadcast contracts in Karma `teamSvc_spec.js`; `caseSvc_spec.js` covers `quepid:case-team-changed`.
+Unit tests are **Vitest + happy-dom** — `test/javascript/**/*.test.js` (shared modules plus Stimulus controller tests where behavior changes, e.g. `test/javascript/controllers/import_case_controller.test.js`).
 
 ---
 
 ## Related docs
 
-- [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Karma, Playwright
+- [`DEVELOPER_GUIDE.md`](../DEVELOPER_GUIDE.md) — run commands, Playwright
 - [`app_structure.md`](./app_structure.md) — frontend layout
-- [`todo/angularjs_removal_inventory.md`](./todo/angularjs_removal_inventory.md) — migration scope
+- [`todo/todo.md`](./todo/after-angular-removal.md) — frontend cleanup after Angular removal

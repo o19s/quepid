@@ -9,6 +9,7 @@ json.mapper_based_search_engines @mapper_based_search_engines do |engine|
   json.proxy_requests engine.proxy_requests
   json.supports_basic_auth engine.supports_basic_auth
   json.supports_pagination engine.supports_pagination
+  json.supports_direct_document_lookup engine.supports_direct_document_lookup
   json.pagination_hits_param engine.pagination_hits_param
   json.pagination_offset_param engine.pagination_offset_param
   json.search_url engine.search_url

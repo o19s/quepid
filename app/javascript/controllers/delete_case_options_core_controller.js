@@ -1,5 +1,8 @@
-import ModalTriggerControllerBase from "controllers/core_modal_trigger_controller_base"
-import { submitDestructiveForm } from "utils/destructive_form"
+import CoreModalControllerBase from "controllers/core_modal_controller_base"
+import { deleteJson, postJson } from "api/json"
+import coreFlash from "utils/core_flash"
+import { serverMessage } from "utils/error_message"
+import { caseNameFromHeader } from "utils/case_header"
 
 const ACTION_LABELS = {
   archive: "Archive",
@@ -14,15 +17,12 @@ const ACTION_METHODS = {
 }
 
 /**
- * Delete/archive options for the core case toolbar — list UI, form-post
- * (stay-Rails) transport, mirrors the AngularJS delete-case-options modal.
+ * Core delete/archive options retain Rails actions and success destinations.
+ * JSON submission keeps failed requests on the workspace for retry.
  *
- * One controller class instantiated on both the toolbar trigger and the
- * modal root (same dual-role pattern as share-case-core, shared via
- * ModalTriggerControllerBase): the trigger reads case id/name off its own
- * dataset and delegates to the modal-root instance.
+ * The toolbar trigger carries the case id.
  */
-export default class extends ModalTriggerControllerBase {
+export default class extends CoreModalControllerBase {
   static targets = [ "title", "optionButton", "description", "submitButton" ]
 
   static values = {
@@ -31,14 +31,9 @@ export default class extends ModalTriggerControllerBase {
     destroyQueriesUrlTemplate: String
   }
 
-  get modalElementId() {
-    return "deleteCaseOptionsModal"
-  }
-
-  openAsRoot(event) {
-    const btn = event.currentTarget || event.target
-    const caseId = btn?.dataset?.deleteCaseOptionsCoreIdValue
-    const caseName = btn?.dataset?.deleteCaseOptionsCoreNameValue
+  openFor(btn) {
+    const caseId = this.triggerValue(btn, "id")
+    const caseName = caseNameFromHeader()
 
     this.currentCaseId = caseId || ""
     this.titleTarget.textContent = caseName ? `Delete Options for Case: ${caseName}` : "Delete Options for Case"
@@ -52,14 +47,30 @@ export default class extends ModalTriggerControllerBase {
     this._refreshUI()
   }
 
-  confirm() {
-    if (!this.selectedAction || !this.currentCaseId) return
+  async confirm() {
+    if (this.submitting || !this.selectedAction || !this.currentCaseId) return
 
     const template = this._urlTemplateFor(this.selectedAction)
     if (!template) return
 
     const url = template.replaceAll("__CASE_ID__", this.currentCaseId)
-    submitDestructiveForm(url, ACTION_METHODS[this.selectedAction])
+    const action = this.selectedAction
+    this.submitting = true
+    this.submitButtonTarget.disabled = true
+    this.hide()
+    try {
+      const result = ACTION_METHODS[action] === "post" ? await postJson(url, {}) : await deleteJson(url)
+      window.location.assign(result.redirect_url)
+    } catch (error) {
+      if (error.status === 401 && error.data?.redirect_url) {
+        window.location.assign(error.data.redirect_url)
+        return
+      }
+      coreFlash.show("error", serverMessage(error, `Could not ${ACTION_LABELS[action].toLowerCase()}. Please try again.`))
+    } finally {
+      this.submitting = false
+      this._refreshUI()
+    }
   }
 
   _urlTemplateFor(action) {
@@ -87,7 +98,7 @@ export default class extends ModalTriggerControllerBase {
     })
 
     if (this.hasSubmitButtonTarget) {
-      this.submitButtonTarget.disabled = !this.selectedAction
+      this.submitButtonTarget.disabled = this.submitting || !this.selectedAction
       this.submitButtonTarget.textContent = ACTION_LABELS[this.selectedAction] || "Delete"
     }
   }

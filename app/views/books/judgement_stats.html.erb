@@ -1,19 +1,6 @@
-<% title = capture do %>
-  <i class="bi bi-book"></i> <%= book_title @book %>
-<% end %>
-<%= page_header title do %>
-  <div class="btn-toolbar mb-2 mb-md-0">
-    <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
-      <span data-feather="calendar" class="align-text-bottom"></span>
-      This week
-    </button>
-  </div>
-<% end %>
+<%= book_page_header @book %>
 
-<%= render 'tabs', book: @book %>
-<p/>
-
-<h3>Leaderboard</h3>
+<h3 class="mt-3">Leaderboard</h3>
 <div class="card">
   <div class="card-body">
 
@@ -62,8 +49,7 @@
   </div>
 </div>
 
-<p/>
-<h3>Judgement Distribution</h3>
+<h3 class="mt-3">Judgement Distribution</h3>
 <div class="card">
   <div class="card-body">
 
@@ -85,8 +71,7 @@
   </div>
 </div>
 
-<p/>
-<h3>Judging Stats</h3>
+<h3 class="mt-3">Judging Stats</h3>
 <table class="table">
   <thead>
     <tr>
@@ -100,7 +85,7 @@
     <% @stats_data.each do | row | %>
     <tr>
       <th scope="row">
-        <%=display_judge_name (row[:judge]) %>
+        <%= display_judge_name (row[:judge]) %>
         <% if row[:judge] && row[:judge].ai_judge? %>
           <i class="bi bi-robot"></i>
           <% if @refinable_ai_judge_ids.include?(row[:judge].id) %>
@@ -122,7 +107,7 @@
       </th>
       <td>
         <% if row[:judge] %>
-          <%=row[:unrateable] %>
+          <%= row[:unrateable] %>
         <% end %>
       </td>
       <td>
@@ -132,7 +117,7 @@
       </td>
       <td>
         <% if row[:judge] %>
-          <%=row[:judge_later] %>
+          <%= row[:judge_later] %>
         <% end %>
       </td>
       <td>
@@ -140,7 +125,7 @@
           <%= button_to_if row[:judge] && row[:judge_later] > 0, "reset", reset_judge_later_book_path(@book,row[:judge].id), method: :delete, class: 'btn btn-sm btn-light' %>
         <% end %>
       </td>
-      <td><%=row[:judgements] %></td>
+      <td><%= row[:judgements] %></td>
     </tr>
     <% end %>
   </tbody>

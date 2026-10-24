@@ -1,19 +1,19 @@
 import { test, expect, type Page } from '@playwright/test';
-import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
+import { DEFAULT_RICH_CASE_ID, apiHeaders, createDisposableCase, deleteCaseViaApi, waitForSearchSettled } from './case_helpers';
 
 /**
  * Behavioral (non-visual) coverage for snapshots and annotations on the
- * Angular case UI. dom_migration_screenshots.spec.ts already screenshot-diffs
- * the annotation timeAgo display, but nothing previously asserted that a
+ * case UI. dom_migration_screenshots.spec.ts already screenshot-diffs
+ * the annotation relative-time display, but nothing previously asserted that a
  * snapshot actually gets created/listed, or exercised annotation creation.
  *
  * These use a case with a *working* search endpoint and existing queries —
- * DEFAULT_RICH_CASE_ID (angular_case_helpers.ts), same case the suite's own
+ * DEFAULT_RICH_CASE_ID (case_helpers.ts), same case the suite's own
  * default CASE_ID now points at. Snapshot creation doesn't strictly require
  * live results (it posts whatever query docs are in memory, even none), but
- * annotation creation does: AnnotationsCtrl#create refuses with "Can't create
- * a new annotation until searches have been run!" unless the case already has
- * a last score, which this one does.
+ * annotation creation does: the annotation controller refuses with "Can't create
+ * a new annotation until searches have been run!" unless a query scored in this
+ * run or the case has a recorded score, both true here.
  */
 
 const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAULT_RICH_CASE_ID);
@@ -21,38 +21,36 @@ const SNAPSHOT_CASE_ID = Number(process.env.QUEPID_E2E_SNAPSHOT_CASE_ID || DEFAU
 async function gotoSnapshotCase(page: Page): Promise<void> {
   await page.goto(`case/${SNAPSHOT_CASE_ID}`);
   await page.waitForSelector('#case-actions', { timeout: 20_000 });
+  // Wait for `.search-feedback` ("Bootstrapping Queries" / "Updating Queries: X / Y")
+  // to clear before proceeding -- see the identical wait in case_helpers.ts's
+  // gotoCase() for why `state: 'hidden'` alone isn't enough (two elements share the
+  // class). Without this, clicking "Take Snapshot" before the query runtime's state has
+  // actually settled can race the snapshot POST silently, which is easy to hit now
+  // that the case's search is instant (a local static/snapshot endpoint).
+  await waitForSearchSettled(page, 20_000);
 }
 
 test.describe('snapshots', () => {
   test('creating a snapshot lists it in the compare-snapshots picker', async ({ page }) => {
-    // The save serializes explain data for every query/doc in the case, and
-    // this shared dev server can be under concurrent load from other runs —
-    // give this one more headroom than the default 30s test timeout.
-    test.setTimeout(90_000);
     await gotoSnapshotCase(page);
 
     const snapshotName = `Playwright snapshot ${Date.now()}`;
     let snapshotId: number | undefined;
 
     try {
-      await page.getByText('Create snapshot', { exact: false }).first().click();
-      const snapshotModal = page.locator('.modal.show').filter({ hasText: /Take a Snapshot/i });
+      await page.locator('button[data-bs-target="#takeSnapshotModal"]').click();
+      const snapshotModal = page.locator('#takeSnapshotModal.show');
       await expect(snapshotModal).toBeVisible();
 
       await snapshotModal.locator('#snapshotName').fill(snapshotName);
 
-      // Wait on the actual querySnapshotSvc.addSnapshot() POST rather than only
-      // the modal's closing animation — the save serializes explain data for
-      // every query/doc in the case, so its response time varies with server
-      // load. This is a stronger, faster-resolving signal than #flash-messages
-      // too, since case 5's background query auto-refresh periodically emits
-      // its own "All queries finished successfully!" flash that can race with
-      // (and overwrite) the single-slot flash before this assertion samples it.
+      // Wait on the actual snapshot bridge POST rather than only the modal's
+      // closing animation or #flash-messages: the query run's own "All queries
+      // finished successfully!" flash can overwrite the single-slot flash first.
       const snapshotSaved = page.waitForResponse(
         response =>
           response.url().includes(`/api/cases/${SNAPSHOT_CASE_ID}/snapshots`) &&
-          'POST' === response.request().method(),
-        { timeout: 45_000 }
+          'POST' === response.request().method()
       );
       await snapshotModal.getByRole('button', { name: 'Take Snapshot', exact: true }).click();
       const snapshotResponse = await snapshotSaved;
@@ -64,55 +62,152 @@ test.describe('snapshots', () => {
       await page.getByText('Compare snapshots', { exact: false }).first().click();
       const compareModal = page.locator('.modal.show').filter({ hasText: /Compare Your Search Results/i });
       await expect(compareModal).toBeVisible();
+      await expect(page.locator('#diffModal[data-controller="diff-core"]')).toBeVisible();
 
       const select = compareModal.locator('select').first();
-      await expect(select.locator('option', { hasText: snapshotName })).toHaveCount(1, { timeout: 15_000 });
+      const snapshotOption = select.locator('option', { hasText: snapshotName });
+      await expect(snapshotOption).toHaveCount(1, { timeout: 15_000 });
 
+      const selectedId = await snapshotOption.getAttribute('value') as string;
+      await select.selectOption(selectedId);
+      await compareModal.getByRole('button', { name: 'Add Snapshot', exact: true }).click();
+      await compareModal.locator('select').nth(1).selectOption(selectedId);
+      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toContainText('Warning: You have selected the same snapshot multiple times.');
+      await compareModal.locator('select').nth(1).selectOption('');
+      await expect(compareModal.locator('[data-diff-core-target="warning"]')).toBeHidden();
+      await compareModal.getByRole('button', { name: 'Update Comparison Settings', exact: true }).click();
+      await expect(compareModal).toBeHidden({ timeout: 30_000 });
+
+      await expect(page.locator('.diff-score').first()).toBeVisible({ timeout: 30_000 });
+      await expect(page.locator('[data-controller="diff-case-scores"] .case-score').first()).toBeVisible({ timeout: 30_000 });
+
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal).toBeVisible();
+      await compareModal.getByRole('button', { name: 'Clear Comparison View', exact: true }).click();
+      await expect(compareModal).toBeHidden({ timeout: 30_000 });
+      await expect(page.locator('.diff-score')).toHaveCount(0, { timeout: 30_000 });
+
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal).toBeVisible();
+      await compareModal.locator('select').first().selectOption(selectedId);
+      const deleteUrl = `**/api/cases/${SNAPSHOT_CASE_ID}/snapshots/${selectedId}`;
+      await page.route(deleteUrl, route => route.request().method() === 'DELETE'
+        ? route.fulfill({ status: 500, contentType: 'application/json', body: '{}' })
+        : route.continue());
+      await compareModal.getByRole('button', { name: 'Delete this snapshot', exact: true }).click();
+      await compareModal.getByRole('button', { name: 'yes', exact: true }).click();
+      await expect(compareModal.locator('[data-diff-core-target="alert"]')).toContainText('Could not delete snapshot.');
+      await expect(compareModal.locator('select').first()).toHaveValue(selectedId);
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(1);
+
+      await page.unroute(deleteUrl);
+      const deleted = page.waitForResponse(response => response.request().method() === 'DELETE'
+        && response.url().endsWith(`/snapshots/${selectedId}`));
+      await compareModal.getByRole('button', { name: 'yes', exact: true }).click();
+      expect((await deleted).ok()).toBeTruthy();
+      snapshotId = undefined;
+      await expect(compareModal).toBeVisible();
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(0);
+      await expect(compareModal.locator('select').first()).toHaveValue('');
       await compareModal.getByRole('button', { name: 'Cancel', exact: true }).click();
-      await expect(compareModal).toBeHidden();
+      await page.getByText('Compare snapshots', { exact: false }).first().click();
+      await expect(compareModal.locator(`option[value="${selectedId}"]`)).toHaveCount(0);
+
     } finally {
       // This case's dev DB row is shared across runs (there's no per-test
       // fixture reset) — clean up after ourselves so repeated runs don't pile
       // up snapshots, each carrying full explain-data for every query/doc,
       // which otherwise bloats the case and slows every later run's save.
+      // Relative to baseURL, so it also works under RAILS_RELATIVE_URL_ROOT.
       if (snapshotId) {
-        await page.evaluate(id => {
-          const injector = (window as any).angular.element(document.body).injector();
-          return injector.get('querySnapshotSvc').deleteSnapshot(id);
-        }, snapshotId);
+        const response = await page.request.delete(`api/cases/${SNAPSHOT_CASE_ID}/snapshots/${snapshotId}`, {
+          headers: await apiHeaders(page)
+        });
+        expect(response.ok(), `Snapshot ${snapshotId} cleanup failed: ${response.status()}`).toBeTruthy();
       }
     }
   });
 });
 
 test.describe('annotations', () => {
+  // Legacy refused Create until the case had a recorded score, which a case with no queries never gets.
+  test('Create is disabled on a case with no queries', async ({ page }) => {
+    const caseId = await createDisposableCase(page, 'Empty annotations');
+    try {
+      await page.goto(`case/${caseId}/try/1`);
+      await expect(page.locator('#case-actions .col-sm-12')).toBeVisible({ timeout: 20_000 });
+      await waitForSearchSettled(page, 20_000);
+      await page.locator('#tune-relevance-link button').click();
+      await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
+
+      const annotations = page.locator('#annotations');
+      await expect(annotations.getByText('No annotations yet.')).toBeVisible();
+      await expect(annotations.getByRole('button', { name: 'Create', exact: true })).toBeDisabled();
+    } finally {
+      await deleteCaseViaApi(page, caseId);
+    }
+  });
+
   test('creating an annotation appends it to the case annotations list', async ({ page }) => {
     await gotoSnapshotCase(page);
 
-    // "Tune Relevance" toggles the east dev-settings panel (queryParams.js /
-    // devQueryParams.html), which has an "Annotations" tab (#annotationsTab)
-    // hosting the <annotations> component (create form + existing list).
-    await page.locator('#tune-relevance-link a').click();
-    await page.locator('#annotationsTab').click();
+    // "Tune Relevance" toggles the east dev-settings panel, whose Stimulus
+    // "Annotations" tab hosts the annotation controller (create form + list).
+    await page.locator('#tune-relevance-link button').click();
+    await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
 
     const annotations = page.locator('#annotations');
     await expect(annotations).toBeVisible();
 
     const message = `Playwright annotation ${Date.now()}`;
-    await annotations.locator('textarea').fill(message);
+    await annotations.locator('#annotation-message').fill(message);
+    const saved = page.waitForResponse(response =>
+      response.url().includes(`/cases/${SNAPSHOT_CASE_ID}/annotations`) && response.request().method() === 'POST'
+    );
     await annotations.getByRole('button', { name: 'Create', exact: true }).click();
 
-    // Appending to the list is the authoritative signal here for the same
-    // reason as the snapshot test above — #flash-messages is a single slot
-    // that case 5's background query refresh can overwrite mid-assertion.
+    const savedResponse = await saved;
+    expect(savedResponse.ok()).toBeTruthy();
+    expect(savedResponse.headers()['content-type']).toContain('text/vnd.turbo-stream.html');
+
     const annotationItem = annotations.locator('li.annotation').filter({ hasText: message });
     await expect(annotationItem).toBeVisible({ timeout: 10_000 });
 
-    // Same cleanup rationale as the snapshot test — this case's dev DB row is
-    // shared across runs, so remove what we added via the UI's own delete
-    // action rather than leaving it to accumulate.
-    await annotationItem.locator('.dropdown-toggle').click();
-    await annotationItem.getByText('Delete', { exact: true }).click();
-    await expect(annotationItem).toBeHidden({ timeout: 10_000 });
+    const annotationId = await annotationItem.getAttribute('data-annotation-id');
+    try {
+      await annotationItem.locator('.dropdown-toggle').click();
+      await annotationItem.getByText('Edit', { exact: true }).click();
+      const editedMessage = `${message} edited`;
+      await page.locator('#edit-annotation-message').fill(editedMessage);
+      await page.getByRole('button', { name: 'Update', exact: true }).click();
+      await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible({ timeout: 10_000 });
+
+      // Same cleanup rationale as the snapshot test — this case's dev DB row is
+      // shared across runs, so remove what we added via the UI's own delete
+      // action rather than leaving it to accumulate.
+      const updatedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
+      await updatedItem.locator('.dropdown-toggle').click();
+      await updatedItem.getByText('Edit', { exact: true }).click();
+      await page.locator('#edit-annotation-message').fill('Cancelled draft');
+      await page.locator('#editAnnotationModal').getByRole('button', { name: 'Cancel', exact: true }).click();
+      await expect(updatedItem.locator('.annotation-message')).toHaveText(editedMessage);
+
+      await gotoSnapshotCase(page);
+      await page.locator('#tune-relevance-link button').click();
+      await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
+      await expect(annotations.locator('li.annotation').filter({ hasText: editedMessage })).toBeVisible();
+
+      const editedItem = annotations.locator('li.annotation').filter({ hasText: editedMessage });
+      await editedItem.locator('.dropdown-toggle').click();
+      await editedItem.getByText('Delete', { exact: true }).click();
+      await expect(editedItem).toBeHidden({ timeout: 10_000 });
+    } finally {
+      if (annotationId) {
+        const token = await page.locator('meta[name="csrf-token"]').getAttribute('content');
+        await page.request.delete(`api/cases/${SNAPSHOT_CASE_ID}/annotations/${annotationId}`, {
+          headers: { 'X-CSRF-Token': token || '' }
+        });
+      }
+    }
   });
 });

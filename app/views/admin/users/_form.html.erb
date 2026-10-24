@@ -1,11 +1,12 @@
+<%# locals: (user:, passed_in_action:) %>
 <div class="card">
   <div class="card-body">
     <h3>User Attributes</h3>
     <p class="form-text">
       Manage the basic attributes of a user.
     </p>
-    <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-      <%= render "shared/error_messages", record: @user, subject: "user", id: "error_explanation_attributes" %>
+    <%= form_for(user, url: {action: passed_in_action}) do |f| %>
+      <%= render "shared/error_messages", record: user, subject: "user", id: "error_explanation_attributes" %>
 
       <div class="row mb-3">
         <%= f.label :email, class: 'col-sm-2 col-form-label' %>
@@ -26,9 +27,8 @@
         <div class="col-sm-10">
           <%= f.text_field :company, class: 'form-control' %>
         </div>
-      </div>  
-    
-      <p/>
+      </div>
+
       <div class="row mb-3">
         <div class="offset-sm-2 col-sm-10">
           <div class="form-check form-switch">
@@ -39,80 +39,35 @@
           </div>
         </div>
       </div>
-    
-      <p/>
-    
-      <% # special handling for passwords %>
+
+      <%# A new user's password is set with the rest of the attributes; an existing user's has its own form below. %>
       <% if passed_in_action == 'create' %>
         <h3>Manage Password</h3>
         <p class="form-text">
           You can either set the user's password in plain text, or, if you know their encrypted password provide it.
         </p>
-        
-        <div class="mb-3">
-          <%= f.label :password, class: 'form-label' %>
-          <%= f.password_field :password, class: 'form-control form-control-lg', placeholder: 'New Password' %>
-        </div>
-
-        <div class="mb-3">
-          <%= f.label :password_confirmation, class: 'form-label' %>
-          <%= f.password_field :password_confirmation, class: 'form-control form-control-lg', placeholder: 'Confirm New Password' %>
-        </div>
-        
-        <p/>
-        
-        OR
-        
-        <div class="row mb-3">
-          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 col-form-label' %>
-          <div class="col-sm-10">
-            <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
-          </div>
-        </div>
+        <%= render 'password_fields', f: %>
       <% end %>
-    
+
       <div class="mb-3">
-          <%= f.submit class: 'btn btn-primary btn-lg' %>
+        <%= f.submit class: 'btn btn-primary btn-lg' %>
       </div>
+    <% end %>
   </div>
 </div>
 
-<% end %>
-
-
 <% if passed_in_action == 'update' %>
-  <hr/>
+  <hr>
   <div class="card">
     <div class="card-body">
       <h3>Manage Password</h3>
       <p class="form-text">
         You can either set the user's password in plain text, or, if you know their encrypted password then you provide it.
       </p>
-      <%= form_for(@user, url: {action: passed_in_action}) do |f| %>
-        <%= render "shared/error_messages", record: @user, subject: "", id: "error_explanation_password" %>
+      <%= form_for(user, url: {action: passed_in_action}) do |f| %>
+        <%= render "shared/error_messages", record: user, subject: "", id: "error_explanation_password" %>
+        <%= render 'password_fields', f: %>
 
-        <div class="mb-3">
-          <%= f.label :password, class: 'form-label' %>
-          <%= f.password_field :password, class: 'form-control form-control-lg', placeholder: 'New Password' %>
-        </div>
-
-        <div class="mb-3">
-          <%= f.label :password_confirmation, class: 'form-label' %>
-          <%= f.password_field :password_confirmation, class: 'form-control form-control-lg', placeholder: 'Confirm New Password' %>
-        </div>
-        
-        <p/>
-        
-        OR
-        
-        <div class="row mb-3">
-          <%= label_tag :password_encrypted, 'Encrypted Password', class: 'col-sm-2 col-form-label' %>
-          <div class="col-sm-10">
-            <%= text_field_tag :password_encrypted, nil, class: "form-control" %>
-    
-          </div>
-        </div>
-    
         <div class="mb-3">
           <button type="submit" class="btn btn-primary btn-lg">Update password</button>
         </div>

@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   static targets = ["textarea", "scorerSelect"]
-  static values = { scaleLengths: Object }
+  static values = { scaleLengths: Object, fourPoint: String, twoPoint: String }
 
   // Called when the rating scale dropdown changes
   scaleChanged() {
@@ -14,8 +14,8 @@ export default class extends Controller {
 
     // Only auto-populate if the textarea is empty or matches a default
     const currentValue = this.textareaTarget.value.trim()
-    const fourPoint = this.textareaTarget.dataset.fourPoint
-    const twoPoint = this.textareaTarget.dataset.twoPoint
+    const fourPoint = this.fourPointValue
+    const twoPoint = this.twoPointValue
 
     const isEmptyOrDefault = currentValue === '' ||
                               currentValue === fourPoint ||

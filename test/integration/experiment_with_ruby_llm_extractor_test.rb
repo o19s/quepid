@@ -118,17 +118,4 @@ class ExperimentWithRubyLlmExtractorTest < ActionDispatch::IntegrationTest
 
     assert_requested(:post, 'https://api.openai.com/v1/responses', times: 1)
   end
-
-  test 'multi-attempt agentic tool-calling retry loop' do
-    skip 'Never adopted: this test prototyped chat.with_tools(DownloadPage, JavascriptExtractor, ' \
-         'MapperTool) plus an up-to-3-attempts retry loop with progressively simpler prompts, as ' \
-         'described in docs/agentic_javascript_extraction.md. The app never wires an LLM chat to ' \
-         'those tools via with_tools (grep app/ for with_tools -- zero hits); ' \
-         'MapperWizardService#generate_mappers asks the LLM once and returns the result, and any ' \
-         'retrying happens through the wizard UI calling #test_mapper / #refine_mapper again, not ' \
-         'through an autonomous agent loop. Reviving this would mean the app itself adopting that ' \
-         'agentic design first -- there is no current behavior to assert against. The real ' \
-         'pipeline this test used to poke at by hand (download -> generate -> execute) is now ' \
-         'covered for real, deterministically, in the test above.'
-  end
 end

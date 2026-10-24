@@ -1,5 +1,8 @@
 # Escalating judges — a cheap judge that wakes an expensive one
 
+Imported from upstream `957ab241`; see
+[the current implementation corrections](../adr/0001-llm-judge-provider-architecture.md#current-implementation-status).
+
 > **Status:** escalation runs. A judge names the judge it wakes (D3); when its run on a book ends,
 > the on-call judge judges the pairs it left unrateable as a second pass of its own (D5); both
 > judgements are kept and linked (D2); an escalated pair counts once (§4); the book and the

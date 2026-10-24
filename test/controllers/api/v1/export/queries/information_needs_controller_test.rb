@@ -41,6 +41,9 @@ module Api
 
               csv = CSV.parse(response.body, headers: true)
 
+              assert_equal the_case.queries.count, csv.length
+              assert(csv.all? { |row| row['query'].present? })
+
               assert_equal 'star wars', csv[1]['query'] # notice csv injection vulnerability
               assert_equal 'Looking for the original blockbuster movie, followed by the most recent big movies.', csv[1]['information_need']
             end

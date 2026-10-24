@@ -12,16 +12,17 @@ module Api
     include Authentication::CurrentBookManager
     include NotificationsManager
     include ApiKeyAuthenticatable
+    include ControllerConfiguration
 
     respond_to :json
 
     rescue_from ActiveRecord::RecordNotFound do |exception|
-      resource_name = exception.model.presence || 'Resource'
-      render json: { message: "#{resource_name.underscore.humanize} not found!" }, status: :not_found
+      render_not_found_json(exception)
     end
     protect_from_forgery with: :null_session
 
     prepend_before_action :set_current_user
+    prepend_before_action :reject_prefetch
     before_action :authenticate_with_api_key! # , only: [:index]
     before_action :set_default_response_format
 
@@ -40,15 +41,7 @@ module Api
       raise 'boom'
     end
 
-    def signup_enabled?
-      Rails.application.config.signup_enabled
-    end
-
     protected
-
-    def deserialize_bool_param param
-      ActiveRecord::Type::Boolean.new.deserialize(param) || false
-    end
 
     def set_default_response_format
       request.format = :json unless params[:format]

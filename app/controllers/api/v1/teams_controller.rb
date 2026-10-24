@@ -10,7 +10,7 @@ module Api
         # @teams = @teams.preload(:scorers, :members, :cases, :owner).all
         # There may be some more fields we could include...
         # @teams = current_user.teams.includes( :owner, :members, :cases, scorers: [ :teams ] ).all
-        @teams = current_user.teams.includes( :cases ).all
+        @teams = current_user.teams.with_member_count.preload(cases: [ :owner, :book ], scorers: [ :owner, :teams ]).all
 
         respond_with @teams
       end
@@ -19,6 +19,10 @@ module Api
         @team = current_user.teams.where(id: params[:team_id])
           .includes([ :scorers, :members, :books, :search_endpoints ])
           .first
+        if @team
+          ActiveRecord::Associations::Preloader.new(records: @team.cases.to_a, associations: [ :owner, :book ]).call
+          @sampled_case_scores = CaseScoreSamples.load(@team.cases)
+        end
         respond_with @team
       end
 

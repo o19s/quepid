@@ -1,32 +1,18 @@
+<% turbo_page_requires_reload if turbo_frame_request_id == "query_doc_pair_card" %>
+<%= turbo_stream_from(current_user, :notifications) %>
 <%= turbo_stream_from(@book.judgements_broadcast_channel) %>
+<%= turbo_stream_from(current_user, @book, :judgements) %>
 
-<script>
-function updateModalTitle(judgeId) {
-  const checkbox = document.getElementById(`judge_all_${judgeId}`);
-  const button = document.getElementById(`submit_${judgeId}`);
-  if (checkbox.checked) {
-    button.value = "Unleash the Kraken!!";
-  } else {
-    button.value = "Judge Documents";
-  }
-}
-</script>
 
 <%= turbo_frame_tag "modal" %>
 
-<% title = capture do %>
-  <i class="bi bi-book"></i> <%= book_title @book %>
-  <% if @book.archived? %>
-    <span class="badge bg-warning">Archived</span>
-  <% end %>
-<% end %>
-<%= page_header title do %>
+<%= book_page_header @book do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
       <% if @book.archived? %>
         <%= button_to 'Unarchive', unarchive_book_path(@book), method: :patch,
                     class: "btn btn-sm btn-outline-success",
-                    form: { data: { turbo_confirm: "Are you sure you want to unarchive this book?" } } %>
+                    form: { data: { turbo_confirm: "Are you sure you want to unarchive this book?", turbo_confirm_style: "primary" } } %>
       <% else %>
         <%= button_to 'Archive', archive_book_path(@book), method: :patch,
                     class: "btn btn-sm btn-outline-warning",
@@ -35,8 +21,6 @@ function updateModalTitle(judgeId) {
     </div>
   </div>
 <% end %>
-
-<%= render 'tabs', book: @book %>
 <p class="text-muted mt-2">
   Books organize the query/doc pairs needed for evaluating search queries.
   This book has <%= pluralize(@book.queries_count, 'query') %> and <%= pluralize(@book.query_doc_pairs.count, 'query/doc pair') %>.
@@ -76,107 +60,16 @@ function updateModalTitle(judgeId) {
 <% end %>
 <% if @count_of_anonymous_book_judgements > 0 %>
   <div class="alert alert-warning" role="alert">
-    <i class="bi bi-person-question"></i> <%= @count_of_anonymous_book_judgements %> anonymous judgements could be mapped to a user.
+    <i class="bi bi-person-exclamation"></i> <%= @count_of_anonymous_book_judgements %> anonymous judgements could be mapped to a user.
   </div>
 <% end %>
 
-<%# ── Coverage metric cards ────────────────────────────────────────────────── %>
-<% if @total_pairs > 0 %>
-<div class="row g-3 mb-4">
+<%= render "books/coverage_summary", total_pairs: @total_pairs, coverage_pct: @coverage_pct,
+           complete_count: @complete_count, zero_judgement_count: @zero_judgement_count,
+           partial_count: @partial_count, cases: @cases %>
 
-  <div class="col-md-4">
-    <div class="card h-100 text-center border-success">
-      <div class="card-body">
-        <div class="display-5 fw-bold text-success"><%= @coverage_pct %>%</div>
-        <h6 class="card-title mt-1"><i class="bi bi-trophy text-success"></i> Fully Judged</h6>
-        <p class="card-text text-muted small"><%= @complete_count %> of <%= @total_pairs %> pairs have 3+ judgements — best practice met</p>
-        <div class="progress mt-2" style="height:6px;">
-          <div class="progress-bar bg-success" style="width:<%= @coverage_pct %>%"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-4">
-    <div class="card h-100 text-center border-danger">
-      <div class="card-body">
-        <div class="display-5 fw-bold text-danger"><%= @zero_judgement_count %></div>
-        <h6 class="card-title mt-1"><i class="bi bi-exclamation-circle text-danger"></i> Not Started</h6>
-        <p class="card-text text-muted small">Pairs with no judgements — highest priority</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-md-4">
-    <div class="card h-100 text-center border-warning">
-      <div class="card-body">
-        <div class="display-5 fw-bold text-warning"><%= @partial_count %></div>
-        <h6 class="card-title mt-1"><i class="bi bi-hourglass-split text-warning"></i> In Progress</h6>
-        <p class="card-text text-muted small">Pairs with 1–2 judgements</p>
-      </div>
-    </div>
-  </div>
-
-</div>
-<% else %>
-  <div class="alert alert-warning" role="alert">
-    <h5><i class="bi bi-exclamation-triangle"></i> No Query/Doc Pairs Available</h5>
-    <p class="mb-2">You don't have any query/doc pairs created yet.</p>
-    <% if @cases.empty? %>
-      <p>You can populate this Book with query/doc pairs for judging by <%= link_to 'picking a Case', cases_path, class: 'alert-link' %> and using the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this book with query/doc pairs from your search engine.</p>
-    <% else %>
-      <% linked_cases_auto_populate = @cases.all?(&:auto_populate_book_pairs) %>
-      <% cases_are_plural = @cases.many? %>
-      <% if linked_cases_auto_populate %>
-        <p>Load query/doc pairs for judging by returning to the linked Case<%= 's' if cases_are_plural %>
-        <% @cases.each do |kase| %>
-          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
-        <% end %>
-        and letting <%= cases_are_plural ? 'them' : 'it' %> run <%= cases_are_plural ? 'their' : 'its' %> queries - <%= cases_are_plural ? 'they are' : 'it is' %> set to auto-populate this Book.</p>
-      <% else %>
-        <p>Return to the linked Case<%= 's' if cases_are_plural %>
-        <% @cases.each do |kase| %>
-          <%= link_to_core_case case_title(kase), kase, kase.last_try_number, class: 'alert-link' %>
-        <% end %>
-        and use the <strong><i class="bi bi-book-half"></i> Judgements</strong> tool to populate this Book with query/doc pairs for judging.</p>
-      <% end %>
-    <% end %>
-  </div>
-<% end %>
-
-<%# ── Judge activity table with sparklines ────────────────────────────────── %>
-<div class="card mb-4">
-  <div class="card-header d-flex justify-content-between align-items-center">
-    <h5 class="mb-0"><i class="bi bi-people"></i> Judge Activity</h5>
-    <small class="text-muted">Last 30 days</small>
-  </div>
-  <div class="card-body p-0">
-    <table class="table table-hover mb-0 align-middle" style="table-layout:fixed">
-      <thead class="table-light">
-        <tr>
-          <th style="width:35%">Judge</th>
-          <th class="text-end" style="width:10%">Judged</th>
-          <th class="text-end" style="width:25%">Last Active</th>
-          <th style="width:30%">Activity (30d)</th>
-        </tr>
-      </thead>
-      <tbody id="judge-activity-table"
-             data-controller="judge-activity-poll"
-             data-judge-activity-poll-url-value="<%= judge_activity_book_path(@book) %>">
-        <%= render 'books/judge_activity_table_body', judge_activity: @judge_activity, book: @book, flashing_judge_id: nil %>
-      </tbody>
-    </table>
-  </div>
-  <% if available_ai_judges.any? %>
-    <div class="card-footer d-flex justify-content-between align-items-center flex-wrap gap-2">
-      <small class="text-muted">
-        <i class="bi bi-robot"></i>
-        These AI judges are available on your team: <strong><%= available_ai_judges.pluck(:name).to_sentence %></strong>
-      </small>
-      <%= link_to 'Add AI Judge to this Book', edit_book_path(@book), class: 'btn btn-sm btn-outline-primary' %>
-    </div>
-  <% end %>
-</div>
+<%= render "books/judge_activity_card", book: @book, judge_activity: @judge_activity,
+           available_ai_judges: available_ai_judges %>
 
 <div class="row">
   <%# ── Case management ────────────────────────────────────────────────────── %>
@@ -193,68 +86,10 @@ function updateModalTitle(judgeId) {
 
   <%# ── Book metadata ──────────────────────────────────────────────────────── %>
   <div class="col-md-6">
-    <div class="card mb-4 h-100">
-      <div class="card-header">
-        <h5 class="mb-0"><i class="bi bi-gear"></i> Book Settings</h5>
-      </div>
-      <div class="card-body">
-        <dl class="row mb-0">
-          <dt class="col-sm-3">Teams</dt>
-          <dd class="col-sm-9">
-            <% if @book.teams.any? %>
-              <% @book.teams.each do |team| %>
-                <%= link_to team.name, team_path(team) %>&nbsp;
-              <% end %>
-            <% else %>
-              <span class="text-muted">No teams</span>
-            <% end %>
-          </dd>
-
-          <% if @book.scale_with_labels.present? %>
-            <dt class="col-sm-3">Scale Labels</dt>
-            <dd class="col-sm-9">
-              <% @book.scale_with_labels.each do |value, label| %>
-                <span class="badge me-1" style="background-color: <%= calculate_hsl_color(value.to_i, @book.scale) %>;"><%= label %>: <%= value %></span>
-              <% end %>
-            </dd>
-          <% end %>
-
-          <dt class="col-sm-3">Implicit Judgements</dt>
-          <dd class="col-sm-9"><%= @book.support_implicit_judgements? ? 'Enabled' : 'Disabled' %></dd>
-
-          <dt class="col-sm-3">Show Rank</dt>
-          <dd class="col-sm-9"><%= @book.show_rank? ? 'Visible to judges' : 'Hidden from judges' %></dd>
-
-          <dt class="col-sm-3">Rank Depth</dt>
-          <dd class="col-sm-9">
-            <% if @book.rank_depth.present? %>
-              Top <%= @book.rank_depth %> — coverage metrics and judging above only consider pairs ranked <%= @book.rank_depth %> or better.
-            <% else %>
-              <span class="text-muted">No limit</span>
-            <% end %>
-          </dd>
-
-          <% if @book.import_file.attached? %>
-            <dt class="col-sm-3">Import File</dt>
-            <dd class="col-sm-9">
-              <%= link_to 'Download', rails_blob_path(@book.import_file.blob, only_path: true) %>
-              <span class="text-muted small">(uploaded <%= time_ago_in_words @book.import_file.created_at %> ago)</span>
-            </dd>
-          <% end %>
-
-          <% if @book.export_file.attached? %>
-            <dt class="col-sm-3">Export File</dt>
-            <dd class="col-sm-9">
-              <%= link_to 'Download JSON', rails_blob_path(@book.export_file.blob, only_path: true) %>
-              <span class="text-muted small">(exported <%= time_ago_in_words @book.export_file.created_at %> ago)</span>
-            </dd>
-          <% end %>
-        </dl>
-      </div>
-    </div>
+    <%= render "books/settings_summary", book: @book %>
   </div>
 </div>
 
-<%= render partial: 'unleash_modal', collection: @book.ai_judges, as: :ai_judge %>
+<%= render partial: 'unleash_modal', collection: @book.ai_judges, as: :ai_judge, locals: { book: @book } %>
 <% ai_judges_for_modals = (@book.ai_judges + @judge_activity.to_a.map { |r| r[:judge] }.select(&:ai_judge?)).uniq %>
 <%= render partial: 'judging_modal', collection: ai_judges_for_modals, as: :ai_judge, locals: { book: @book } %>
