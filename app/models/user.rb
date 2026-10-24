@@ -67,7 +67,7 @@ class User < ApplicationRecord
     end
   end
 
-  scope :with_api_counts, -> {
+  scope :with_case_and_team_counts, -> {
     select(<<~SQL.squish)
       users.*,
       (SELECT COUNT(*) FROM cases
