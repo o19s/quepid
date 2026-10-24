@@ -207,7 +207,7 @@ export default class extends Controller {
         plugins: ["remove_button"],
         maxItems: null,
         hideSelected: true,
-        create: false,
+        create: true,
         createOnBlur: false,
         persist: false,
         selectOnTab: true,

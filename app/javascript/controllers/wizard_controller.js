@@ -696,7 +696,7 @@ export default class extends Controller {
         return new TomSelect(input, {
           maxItems: 1,
           refreshThrottle: 0,
-          create: false,
+          create: true,
           createOnBlur: false,
           persist: false,
           selectOnTab: true,
@@ -733,7 +733,7 @@ export default class extends Controller {
         hideSelected: true,
         maxItems: null,
         refreshThrottle: 0,
-        create: false,
+        create: true,
         createOnBlur: false,
         persist: false,
         selectOnTab: true,

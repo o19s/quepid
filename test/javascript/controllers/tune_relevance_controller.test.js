@@ -296,8 +296,8 @@ describe("TuneRelevanceController", () => {
       select.removeItem("overview")
       select.addOption({ value: "cast", text: "cast" })
       select.addItem("cast")
-      select.setTextboxValue("image:backdrop_path")
-      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast")
+      select.createItem("image:backdrop_path")
+      expect(controller.displayedFieldsValue()).toBe("id:movie_id, title:title, thumb:poster_path, cast, image:backdrop_path")
       settings.fieldSpec = "id:id title:name"
       controller.refreshSettings()
       expect(select.items).toEqual(["id:id", "title:name"])
