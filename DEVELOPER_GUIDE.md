@@ -853,6 +853,8 @@ Yes, Jupyterlite works in localhost. After running `./bin/setup_jupyterlite`, yo
 
 See this great blog post: https://keygen.sh/blog/how-to-implement-api-key-authentication-in-rails-without-devise/.
 
+The same keys authenticate the optional MCP server (off unless `MCP_SERVER=true`), see [docs/mcp_server.md](docs/mcp_server.md).
+
 # Troubleshooting
 
 This section covers common issues you might encounter during development and how to resolve them.

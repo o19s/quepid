@@ -9,6 +9,7 @@ services:
     environment:
       #- RAILS_RELATIVE_URL_ROOT=/quepid-app # Use to nest under a context path like tools.mycompany.com/quepid-app
       - DB_ADAPTER=${DB_ADAPTER:-mysql2} # mysql2 (default), postgresql, or sqlite3; see config/database.yml
+      - MCP_SERVER=${MCP_SERVER:-false} # true mounts the MCP server at /mcp; see docs/mcp_server.md
       - DOCKER_CONTAINER=true
       - QUEPID_DOMAIN=tools.dev.mycorp.com
       - LAUNCHY_DRY_RUN=true # dev only letter_opener gem wants to open a browser when sending emails.

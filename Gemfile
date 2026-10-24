@@ -42,6 +42,7 @@ gem 'rails_pulse'
 gem 'rack-cors'
 gem 'redcarpet'
 gem 'responders'
+gem 'ror-mcp-server', github: 'frutik/ror-mcp-server', tag: 'v0.1.1'
 gem 'ruby_llm'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8

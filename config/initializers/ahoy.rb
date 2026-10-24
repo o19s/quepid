@@ -2,6 +2,14 @@
 
 module Ahoy
   class Store < Ahoy::DatabaseStore
+    # MCP tool calls (app/mcp/quepid_toolset.rb) come from programmatic clients
+    # whose user agents bot detection would drop. They are always made with a
+    # user's API key, so record them.
+    def exclude?
+      return false if @options[:mcp]
+
+      super
+    end
   end
 end
 
