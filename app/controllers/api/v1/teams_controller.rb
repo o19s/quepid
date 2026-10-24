@@ -17,12 +17,9 @@ module Api
 
       def show
         @team = current_user.teams.where(id: params[:team_id])
-          .includes([ :scorers, :members, :books, :search_endpoints ])
+          .includes(:scorers, :members, :books, :search_endpoints, cases: [ :owner, :book ])
           .first
-        if @team
-          ActiveRecord::Associations::Preloader.new(records: @team.cases.to_a, associations: [ :owner, :book ]).call
-          @sampled_case_scores = CaseScoreSamples.load(@team.cases)
-        end
+        @sampled_case_scores = CaseScoreSamples.load(@team.cases) if @team
         respond_with @team
       end
 
