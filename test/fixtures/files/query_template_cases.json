@@ -1,0 +1,61 @@
+{
+  "description": "Placeholder filling cases checked against both splainer-search's queryTemplateSvc (test/javascript/query_template_parity.test.js) and its Ruby port QueryTemplate (test/services/query_template_test.rb), so background evaluation builds the same requests as the browser.",
+  "cases": [
+    {
+      "name": "query as the whole value",
+      "template": { "query": { "match": { "title": "#$query##" } } },
+      "query_text": "star wars",
+      "q_option": {},
+      "expected": { "query": { "match": { "title": "star wars" } } }
+    },
+    {
+      "name": "query embedded, several times",
+      "template": { "yql": "select * from movies where title contains \"#$query##\" or overview contains \"#$query##\"" },
+      "query_text": "matrix",
+      "q_option": {},
+      "expected": { "yql": "select * from movies where title contains \"matrix\" or overview contains \"matrix\"" }
+    },
+    {
+      "name": "keywords, with a missing one as the empty string",
+      "template": { "q": "#$keyword1## AND #$keyword2## #$keyword3##" },
+      "query_text": "star wars",
+      "q_option": {},
+      "expected": { "q": "star AND wars " }
+    },
+    {
+      "name": "vector as the whole value stays an array (ES/OpenSearch knn)",
+      "template": { "knn": { "field": "vec", "query_vector": "#$qOption.query_vec##", "k": 10 } },
+      "query_text": "star wars",
+      "q_option": { "query_vec": [0.25, -0.5, 1, 0.000012] },
+      "expected": { "knn": { "field": "vec", "query_vector": [0.25, -0.5, 1, 0.000012], "k": 10 } }
+    },
+    {
+      "name": "vector embedded in a string is printed comma-separated (Solr knn)",
+      "template": { "q": ["{!knn f=vec topK=10}[#$qOption.query_vec##]"] },
+      "query_text": "star wars",
+      "q_option": { "query_vec": [0.25, -0.5, 1, 0.000012] },
+      "expected": { "q": ["{!knn f=vec topK=10}[0.25,-0.5,1,0.000012]"] }
+    },
+    {
+      "name": "nested option and a default for a missing one",
+      "template": { "boost": "#$qOption.weights.title##", "size": "#$qOption.size|10##", "label": "rows: #$qOption.size|10##" },
+      "query_text": "star wars",
+      "q_option": { "weights": { "title": 2.5 } },
+      "expected": { "boost": 2.5, "size": "10", "label": "rows: 10" }
+    },
+    {
+      "name": "a placeholder with nothing to fill it is left as is",
+      "template": { "q": "#$qOption.missing##", "fq": "type:#$qOption.missing##" },
+      "query_text": "star wars",
+      "q_option": {},
+      "expected": { "q": "#$qOption.missing##", "fq": "type:#$qOption.missing##" }
+    },
+    {
+      "name": "replacement text is literal, never a backreference",
+      "template": { "q": "title:#$query##" },
+      "query_text": "\\1 not a backreference",
+      "q_option": {},
+      "expected": { "q": "title:\\1 not a backreference" }
+    }
+  ]
+}

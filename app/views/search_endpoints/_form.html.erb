@@ -66,7 +66,11 @@
 
       <div class="mb-3">
         <%= form.label :options, "Options", class: 'form-label' %>
-        <div class="form-text">This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.</div>
+        <div class="form-text">
+          This JSON is for passing in settings to the Query Sandbox as a <code>qOption</code>.
+          When the case has an embedder, each query's vector is there too, as <code>#$qOption.query_vec##</code>
+          (see <code>docs/vector_search.md</code>).
+        </div>
         <%= form.text_area :options, value: format_json(search_endpoint.options), data: { codemirror_mode: "application/json", codemirror_line_numbers: true, codemirror_height: 100 } %>
       </div>
 

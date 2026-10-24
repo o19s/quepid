@@ -251,6 +251,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "book_id"
     t.string "case_name", limit: 191
     t.datetime "created_at", precision: nil, null: false
+    t.bigint "embedder_id"
     t.integer "last_try_number"
     t.boolean "nightly"
     t.json "options"
@@ -259,6 +260,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "scorer_id"
     t.datetime "updated_at", precision: nil, null: false
     t.index ["book_id"], name: "index_cases_book_id"
+    t.index ["embedder_id"], name: "index_cases_on_embedder_id"
     t.index ["owner_id", "archived"], name: "idx_owner_archived"
     t.index ["owner_id"], name: "index_cases_on_owner_id"
   end
@@ -270,6 +272,25 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.datetime "updated_at", precision: nil, null: false
     t.float "value"
     t.index ["try_id"], name: "try_id"
+  end
+
+  create_table "embedders", charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.string "api_key", limit: 4000
+    t.boolean "archived", default: false, null: false
+    t.datetime "created_at", null: false
+    t.integer "dimensions"
+    t.text "input_template"
+    t.text "instruction"
+    t.string "model", null: false
+    t.string "name", null: false
+    t.json "options"
+    t.integer "owner_id"
+    t.string "provider", limit: 50, null: false
+    t.string "service_url", limit: 500
+    t.integer "timeout", default: 30, null: false
+    t.string "truncation", limit: 20, default: "none", null: false
+    t.datetime "updated_at", null: false
+    t.index ["owner_id", "id"], name: "index_embedders_on_owner_id_and_id"
   end
 
   create_table "judgements", charset: "utf8mb3", collation: "utf8mb3_unicode_ci", force: :cascade do |t|
@@ -752,6 +773,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_05_192545) do
     t.integer "team_id", null: false
     t.index ["case_id"], name: "index_teams_cases_on_case_id"
     t.index ["team_id"], name: "index_teams_cases_on_team_id"
+  end
+
+  create_table "teams_embedders", id: false, charset: "utf8mb4", collation: "utf8mb4_bin", force: :cascade do |t|
+    t.bigint "embedder_id", null: false
+    t.bigint "team_id", null: false
+    t.index ["embedder_id", "team_id"], name: "index_teams_embedders_on_embedder_id_and_team_id", unique: true
+    t.index ["team_id"], name: "index_teams_embedders_on_team_id"
   end
 
   create_table "teams_members", primary_key: ["member_id", "team_id"], charset: "latin1", force: :cascade do |t|

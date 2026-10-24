@@ -10,8 +10,8 @@ This part covers the query list and its per-query tools, rating, scoring, and th
 
 Before testing individual features, get oriented:
 
-- [ ] Header area: case score badge + sparkline, case name (double-click to rename inline), try name (also double-click renamable), badges for `nightly` / `PUBLIC` / `ARCHIVED` as applicable, current scorer name.
-- [ ] Case action toolbar (row of icons under the header): Select scorer, Judgements, Create snapshot, Compare snapshots, Import, Share case, Clone, Delete, Export, Tune Relevance (wrench).
+- [ ] Header area: case score badge + sparkline, case name (double-click to rename inline), try name (also double-click renamable), badges for `nightly` / `PUBLIC` / `ARCHIVED` as applicable, current scorer name, and the case's embedder name (only when one is set — see Part 17.3).
+- [ ] Case action toolbar (row of icons under the header): Select scorer, Select embedder, Judgements, Create snapshot, Compare snapshots, Import, Share case, Clone, Delete, Export, Tune Relevance (wrench).
 - [ ] Queries panel: the main list, with add/sort/filter controls and the Frog Report icon.
 - [ ] East slide-out drawer (opened by the wrench icon): "Tune Relevance" — 5 tabs (Query, Tuning Knobs, Settings, History, Annotations).
 

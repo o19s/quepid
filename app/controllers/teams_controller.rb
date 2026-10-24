@@ -9,7 +9,7 @@ class TeamsController < ApplicationController
     redirect_back_or_to(teams_path)
   end
 
-  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :suggest_members ]
+  before_action :set_team, only: [ :show, :add_member, :remove_member, :rename, :remove_case, :archive_case, :unarchive_case, :archive_search_endpoint, :unarchive_search_endpoint, :remove_embedder, :suggest_members ]
 
   # Remove a case from the team
   def remove_case
@@ -151,6 +151,21 @@ class TeamsController < ApplicationController
   end
 
   # Archive a search endpoint
+  # Stops sharing an embedder with the team. Its owner keeps it, and cases that already
+  # use it keep using it -- the same as unsharing a search endpoint.
+  def remove_embedder
+    embedder = @team.embedders.find_by(id: params.expect(:embedder_id))
+
+    if embedder
+      @team.embedders.delete(embedder)
+      flash[:notice] = "Embedder #{embedder.name} is no longer shared with #{@team.name}."
+    else
+      flash[:alert] = 'That embedder is not shared with this team.'
+    end
+
+    redirect_to team_path(@team)
+  end
+
   def archive_search_endpoint
     search_endpoint = SearchEndpoint.find(params.expect(:search_endpoint_id))
 
@@ -236,6 +251,8 @@ class TeamsController < ApplicationController
     @books_count = @team.books.count
     @scorers_count = @team.scorers.count
     @search_endpoints_count = @team.search_endpoints.count
+    @embedders = @team.embedders.includes(:owner).order(:name)
+    @embedder_case_counts = Case.where(embedder_id: @embedders.map(&:id)).group(:embedder_id).count
     @user_teams = current_user.teams.order(:name)
 
     # Cases filtering

@@ -71,6 +71,8 @@ module Api
 
           begin
             service.import
+            # RatingsImporter creates any missing queries with insert_all (no callbacks).
+            VectorizeCaseQueriesJob.enqueue_for(@case)
 
             render json: { message: 'Success!' }, status: :ok
           # rubocop:disable Lint/RescueException

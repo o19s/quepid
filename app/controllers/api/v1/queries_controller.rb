@@ -61,6 +61,7 @@ module Api
           @case.save
 
           Analytics::Tracker.track_query_created_event current_user, @query
+          vectorize_new_query
 
           @display_order = @case.queries.map(&:id)
 
@@ -122,7 +123,24 @@ module Api
         head :no_content
       end
 
+      # Seconds to wait for the embedder while the user waits for their query to appear.
+      VECTORIZE_TIMEOUT = 5
+
       private
+
+      # A new query is vectorised before its first search, which runs as soon as the
+      # page gets this response. If the embedder is slow or failing, the background
+      # job takes over (it retries failed queries); adding the query never fails over it.
+      def vectorize_new_query
+        embedder = @case.embedder
+        return if embedder.nil?
+
+        result = QueryVectorizer.new(embedder, timeout: VECTORIZE_TIMEOUT).vectorize([ @query ])
+        VectorizeCaseQueriesJob.enqueue_for(@case) if result.failed.positive?
+      rescue StandardError => e
+        Rails.logger.warn("Vectorising new query #{@query.id} failed: #{e.message}")
+        VectorizeCaseQueriesJob.enqueue_for(@case)
+      end
 
       def query_params
         params.expect(query: [ :query_text, :information_need, :notes, { options: {} } ])

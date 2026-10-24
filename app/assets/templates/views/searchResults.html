@@ -29,6 +29,16 @@
           {{query.queryText}}&nbsp;
         </span>
       </span>
+      <!-- Whether the query's vector matches the case's embedder (QueryVectorStatus):
+           nothing when it does or the case has none; the reason is in the tooltip. -->
+      <span class="badge vector-status fw-normal align-middle border"
+            ng-if="query.vectorStatus === 'pending' || query.vectorStatus === 'stale' || query.vectorStatus === 'failed'"
+            ng-class="{'bg-secondary-subtle text-secondary-emphasis border-secondary-subtle': query.vectorStatus === 'pending',
+                       'bg-warning-subtle text-warning-emphasis border-warning-subtle': query.vectorStatus === 'stale',
+                       'bg-danger-subtle text-danger-emphasis border-danger-subtle': query.vectorStatus === 'failed'}"
+            title="{{ query.vectorStatusReason }}">
+        {{ {pending: 'pending vectorisation', stale: 'vector outdated', failed: 'vectorisation failed'}[query.vectorStatus] }}
+      </span>
     </h2>
 
     <span class="float-end total-results">

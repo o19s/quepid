@@ -55,7 +55,10 @@ class UpdateCaseJob < ApplicationJob
     BroadcastLinkedCasesJob.perform_later(book)
 
     kases_to_sync.each do |kase|
+      created_before = service.queries_created
       service.sync_ratings_for_case(kase)
+      # Queries copied in from the book arrive without vectors (the book keeps none).
+      VectorizeCaseQueriesJob.enqueue_for(kase) if service.queries_created > created_before
       @counts['queries_created'] += service.queries_created
       @counts['ratings_created'] = + service.ratings_created
     end

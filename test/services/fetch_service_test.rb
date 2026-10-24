@@ -198,6 +198,51 @@ class FetchServiceTest < ActiveSupport::TestCase
     end
   end
 
+  describe 'templates using the query\'s vector (#$qOption.query_vec##)' do
+    let(:fetch_service) { FetchService.new options }
+    let(:vector) { [ 0.25, -0.5, 1.0 ] }
+
+    it 'sends the vector as a JSON array in an Elasticsearch knn body' do
+      es_try = tries(:es_try_with_curator_vars)
+      es_try.update_columns(query_params: '{ "knn": { "field": "vec", "query_vector": "#$qOption.query_vec##", "k": 10 } }')
+      query = es_try.case.queries.create!(query_text: 'star wars', options: { 'query_vec' => vector })
+      stub = stub_request(:post, 'http://test.com:9200/tmdb/_search')
+        .with(body: { 'knn' => { 'field' => 'vec', 'query_vector' => [ 0.25, -0.5, 1 ], 'k' => 10 } })
+        .to_return(status: 200, body: '{"hits":{"total":0,"hits":[]}}')
+
+      fetch_service.make_request(es_try, query)
+
+      assert_requested stub
+    end
+
+    it 'prints the vector comma-separated inside a Solr knn query, as the browser does' do
+      solr_try = tries(:for_case_queries_case)
+      solr_try.update_columns(query_params: 'q={!knn f=vec topK=10}[#$qOption.query_vec##]')
+      query = solr_try.case.queries.create!(query_text: 'star wars', options: { 'query_vec' => vector })
+      stub = stub_request(:get, %r{\Ahttp://test.com/solr/tmdb/select})
+        .with(query: hash_including('q' => '{!knn f=vec topK=10}[0.25,-0.5,1]'))
+        .to_return(status: 200, body: '{"response":{"numFound":0,"docs":[]}}')
+
+      fetch_service.make_request(solr_try, query)
+
+      assert_requested stub
+    end
+
+    it 'takes options from the try when the query has none, the query winning when both do' do
+      es_try = tries(:es_try_with_curator_vars)
+      es_try.update_columns(query_params: '{ "size": "#$qOption.size##", "label": "#$qOption.label##" }')
+      es_try.case.update!(options: { 'size' => 5, 'label' => 'from case' })
+      query = es_try.case.queries.create!(query_text: 'star wars', options: { 'label' => 'from query' })
+      stub = stub_request(:post, 'http://test.com:9200/tmdb/_search')
+        .with(body: { 'size' => 5, 'label' => 'from query' })
+        .to_return(status: 200, body: '{"hits":{"total":0,"hits":[]}}')
+
+      fetch_service.make_request(es_try, query)
+
+      assert_requested stub
+    end
+  end
+
   describe '#replace_values' do
     it 'substitutes #$query## when it is the entire value (e.g. ES-style templates)' do
       fetch_service = FetchService.new options
