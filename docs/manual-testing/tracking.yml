@@ -654,6 +654,7 @@ parts:
       "4.21":
         title: "Query row states & score badge values"
         screenshots:
+          scored-current: "4.21/scored-current"
           recovered-complete: "4.21/recovered-complete"
           recovered: "4.21/recovered"
           loading: "4.21/loading"
@@ -661,10 +662,10 @@ parts:
           information-need: "4.21/information-need"
           zero-results: "4.21/zero-results"
           loaded-unrated: "4.21/loaded-unrated"
-        last_run: 2026-10-20T18:16:30Z
+        last_run: 2026-10-24T11:36:33Z
         result: pass
-        notes: "Covered live on Current :3000: zero-result row styled and labeled separately, error row shows the warning icon and the Solr error banner, pending rows show ? Not scored, scored rows show 2-decimal values, unrated AP@10 shows 0.00, the frog shows the unrated count, hovering the query shows \"Info Need: ...\". Like Legacy, one failed search leaves every query unscored until it is fixed. Not covered: Querqy, snapshot diff badge count."
-        paths: ["app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/views/core/_query_list_templates.html.erb", "app/assets/stylesheets/core-additions.css", "app/javascript/controllers/search_results_controller.js"]
+        notes: "Partial Stylelint fix check on Current :3000 case6/try31: score-state text retained in DOM, computes clip-path inset(50%) with 1px dimensions; screenshot inspected with normal scored badges and hidden status text. Full CSS lint and build pass. Native visual suite retains missing-static-fixture and book-form baseline blockers. No screen-reader session or wider score-state matrix repeated."
+        paths: ["app/assets/stylesheets/qscore.css", "app/javascript/controllers/query_row_controller.js", "app/javascript/controllers/qscore_query_controller.js", "app/javascript/controllers/queries_list_controller.js", "app/javascript/utils/query_state.js", "app/javascript/api/json.js", "app/javascript/utils/store_subscription.js", "app/javascript/stores/query_documents_store.js", "app/javascript/stores/query_collection_store.js", "app/javascript/utils/live_query_factory.js", "app/javascript/utils/live_query_collection.js", "app/javascript/utils/query_documents.js", "app/views/core/_query_list_templates.html.erb", "app/assets/stylesheets/core-additions.css", "app/javascript/controllers/search_results_controller.js"]
       "4.22":
         title: "Bulk rating (Score All) & result paging"
         screenshots:
