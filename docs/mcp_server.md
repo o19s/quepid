@@ -33,6 +33,11 @@ claude mcp add --transport http quepid http://localhost:3000/mcp --header "Autho
 
 The server is stateless (no `Mcp-Session-Id`), so it works behind several Puma workers.
 
+Requests from a browser page on another origin get `403`; non-browser clients send no `Origin`
+and are unaffected. To allow a browser-based client, list its origin in `c.allowed_origins` in
+`config/initializers/ror_mcp.rb`. Request bodies over 4 MiB get `413`, and a `$group` producing
+more than `max_limit` (1000) groups is refused; narrow it with `$match`.
+
 ## What it publishes
 
 **Collections**, queried with `query_data_collections` and a MongoDB-style pipeline (`$match`,

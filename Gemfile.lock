@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/frutik/ror-mcp-server.git
-  revision: f6c40d3e0aa5b656c64d8b1331ef3ba636f57bfa
-  tag: v0.1.1
+  revision: a04ed43c4a5724195a6dd46ea1d13c5c56df3047
+  tag: v0.1.3
   specs:
-    ror-mcp-server (0.1.1)
+    ror-mcp-server (0.1.3)
       activerecord (>= 7.1)
       csv (>= 3.2)
       mcp (~> 1.8)
