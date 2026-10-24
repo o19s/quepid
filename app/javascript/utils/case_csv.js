@@ -1,8 +1,7 @@
 /**
  * CSV builders for the core case toolbar's "Export" modal.
  *
- * Detailed export also uses the live document read model. The search results
- * are already published into `queryDocumentsStore`.
+ * Detailed export reads the live queries' current search results.
  */
 
 import { formatShortDate } from "utils/date_format"
@@ -114,10 +113,9 @@ export function buildGeneralCaseCsv(caseData, queries) {
 }
 
 /**
- * Detailed export from the live document read model. The case endpoint
- * supplies metadata and last-score state; each query contains the plain
- * document snapshots that the live-query runtime publishes to the documents
- * store.
+ * Detailed export from the live queries. The case endpoint supplies metadata
+ * and last-score state; each query contains plain documents built from the
+ * live queries when the export runs (see bulkActionQueries).
  */
 export function buildDetailedCaseCsv(caseData, queries) {
   const lastScore = caseData.last_score

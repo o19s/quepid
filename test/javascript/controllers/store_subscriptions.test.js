@@ -88,7 +88,8 @@ describe("controller store subscription lifecycles", () => {
     expect(initial).toHaveBeenCalledTimes(1)
     const observer = Controller === QueriesList ? controller.scheduleRender : Controller === QscoreCase ? controller.renderScore : Controller === Annotations ? controller.updateCreateState : Controller === SearchResults ? controller.renderFromStore : controller.render
     observer.mockClear()
-    const event = new CustomEvent("change", { detail: { queryId: 7 } })
+    // Case diff scores only change with case-wide events, so that controller ignores one query's change.
+    const event = new CustomEvent("change", { detail: { queryId: Controller === DiffCaseScores ? null : 7 } })
     store.dispatchEvent(event)
     expect(observer).toHaveBeenCalledTimes(1)
     if (Controller === SearchResults) expect(observer).toHaveBeenCalledWith(event.detail)

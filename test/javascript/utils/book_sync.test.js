@@ -10,7 +10,7 @@ describe("buildQueryDocPairsPayload", () => {
     const doc = {
       id: "doc-1",
       title: "Document title",
-      rawFields: { title: "Original title" },
+      doc: { title: "Original title" },
       subsList: {
         category: { field: "category", value: "books" }
       },
@@ -207,12 +207,18 @@ describe("buildQueryDocPairsPayload", () => {
     const okFetch = () =>
       vi.fn(() => Promise.resolve({ text: async () => "", json: async () => null, ok: true, status: 204 }))
 
-    it("keeps raw document fields and only reports a title_field that differs", () => {
+    // Legacy and main store the title and the try's displayed fields, not every field the engine
+    // returned; Populate Now and auto-sync must write the same fields.
+    it("stores the displayed fields, not raw response fields, and only a title_field that differs", () => {
       const pair = (doc) => buildQueryDocPairsPayload([{ queryText: "q", docs: [doc] }])[0].document_fields
-      expect(pair({ id: "a", title: "T", rawFields: { color: "red" } })).toMatchObject({ color: "red", title: "T" })
-      expect(pair({ id: "a", title: "T", rawFields: { title: "T" } })).not.toHaveProperty("title_field")
+      const origin = () => ({ id: "a", title: "Raw", color: "red", body: "long text" })
+      expect(pair({
+        id: "a", title: "T", subsList: [{ field: "color", value: "red" }], doc: { title: "Raw", origin }
+      })).toEqual({ title: "T", color: "red", title_field: "Raw" })
+      expect(pair({ id: "a", title: "T", rawFields: { body: "long text" } })).toEqual({ title: "T" })
+      expect(pair({ id: "a", title: "T", doc: { title: "T" } })).not.toHaveProperty("title_field")
       expect(pair({ id: "a", title: "T" })).not.toHaveProperty("title_field")
-      expect(pair({ id: "a", title: "T", rawFields: { title: "Raw" } }).title_field).toBe("Raw")
+      expect(pair({ id: "a", title: "T", doc: { origin: () => ({ title: "Raw" }) } }).title_field).toBe("Raw")
     })
 
     it("forgets synced pairs when either the case or the book changes", async () => {

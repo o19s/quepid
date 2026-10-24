@@ -6,7 +6,7 @@ import { apiFetch } from "api/fetch"
 import { HttpError } from "api/http_error"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import coreFlash from "utils/core_flash"
-import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
 import { populateBook } from "utils/book_sync"
 import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
@@ -173,7 +173,8 @@ export default class extends CoreModalControllerBase {
     const bookId = this.activeBookId
 
     try {
-      const queries = Object.values(getCoreStores().documents.snapshot().queries || {})
+      // The live queries, as auto-sync uses, so both write the same fields.
+      const queries = Object.values(getCoreCapabilities().queryCapabilities?.getQueries?.() || {})
       await populateBook({ bookId, caseId: Number(caseId), queries })
       if (!isSameId(this.currentCaseId, caseId)) return
       this.setProgress(false)

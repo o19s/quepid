@@ -81,16 +81,26 @@ export function documentUrlFor(doc, { settings = {}, proxyUrlFor } = {}) {
 
 /**
  * Snapshot-comparison columns for a query's diff searchers. Under show-only-rated the
- * unfiltered docs are hidden and only the rated docs remain.
+ * unfiltered docs are hidden and only the rated docs remain. Without `withDocs`, only the
+ * per-snapshot scores are built: a collapsed row shows those, and its docs' scores would
+ * force every doc's explain tree.
  */
-export function buildDiffReadModel(query, { showOnlyRated = false } = {}) {
+export function buildDiffReadModel(query, { showOnlyRated = false, withDocs = true } = {}) {
   if (!query || !query.diffs || !isFunction(query.diffs.getSearchers)) {
     return null
   }
 
   return {
     searchers: query.diffs.getSearchers().map(function (searcher, index) {
-      const score = searcher.diffScore || { score: "?", allRated: false }
+      const summary = {
+        name: isFunction(searcher.name) ? searcher.name() : "Snapshot",
+        version: isFunction(searcher.version) ? searcher.version() : null,
+        inError: searcher.inError,
+        searchError: searcher.searchError,
+        score: searcher.diffScore || { score: "?", allRated: false }
+      }
+      if (!withDocs) return { ...summary, docs: [], ratedDocs: [] }
+
       const docs = query.diffs.docs(index, false) || []
       const ratedDocs = query.diffs.docs(index, true) || []
       const maxDocScore = docs.reduce(function (max, doc) {
@@ -98,11 +108,7 @@ export function buildDiffReadModel(query, { showOnlyRated = false } = {}) {
       }, 0)
 
       return {
-        name: isFunction(searcher.name) ? searcher.name() : "Snapshot",
-        version: isFunction(searcher.version) ? searcher.version() : null,
-        inError: searcher.inError,
-        searchError: searcher.searchError,
-        score: score,
+        ...summary,
         maxDocScore: maxDocScore,
         docs: showOnlyRated ? [] : docs,
         ratedDocs: ratedDocs

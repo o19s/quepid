@@ -148,25 +148,32 @@ for (const format of ['Basic', 'TREC']) {
   });
 }
 
-test('Solr Missing Documents accepts a plain ID query and retains original explain context', async ({ page }) => {
+// The finder opens on the try's query params with this query's text filled in (9443d215), so a
+// missing document is found by editing those params, as for every other engine.
+test('Solr Missing Documents searches the edited try params and resets to them', async ({ page }) => {
   await gotoCase(page, '', 6);
   await expandFirstQuery(page);
-  const originalQuery = await page.locator('.results-list-element h2').first().innerText();
+  const originalQuery = (await page.locator('.results-list-element h2').first().innerText()).trim();
   const requests: URL[] = [];
   page.on('request', request => {
     const url = new URL(request.url());
-    if (url.searchParams.get('explainOther') === 'id:l_15577') requests.push(url);
+    if (url.searchParams.get('q') === 'id:l_15577') requests.push(url);
   });
   await page.getByRole('button', { name: 'Missing Documents', exact: true }).first().click();
   const modal = page.getByRole('dialog');
-  await expect(modal.locator('textarea')).toHaveValue('');
-  await modal.locator('textarea').fill('id:l_15577');
+  const textarea = modal.locator('textarea');
+  await expect(textarea).not.toHaveValue('');
+  const prefilled = await textarea.inputValue();
+  expect(prefilled).toContain(`q=${originalQuery}`);
+  expect(prefilled).not.toContain('#$query##');
+
+  await textarea.fill('q=id:l_15577');
   await modal.getByRole('button', { name: 'Search', exact: true }).click();
   await expect(modal).toContainText('Legislative summaries.');
-  await expect(modal).toContainText('1 matching document.');
+  await expect(modal).toContainText('one matching document.');
   expect(requests.length).toBeGreaterThan(0);
-  expect(requests[0].searchParams.get('q')).toBe(originalQuery.trim());
+
   await modal.getByRole('button', { name: 'Reset to All Rated Docs' }).click();
   await expect(modal).toContainText('Already Rated Documents');
-  await expect(modal.locator('textarea')).toHaveValue('');
+  await expect(textarea).toHaveValue(prefilled);
 });

@@ -13,7 +13,11 @@ import { getCoreStores } from "utils/core_store_access"
 export default class extends Controller {
   connect() {
     this.store = getCoreStores().documents
-    this.onStoreChange = () => this.render()
+    // Case diffs change only with case-wide events; a single query's change can't affect them,
+    // and re-rendering on every query's change during a large case's load adds up.
+    this.onStoreChange = event => {
+      if (event.detail.queryId == null) this.render()
+    }
     this.unsubscribeStore = this.store && subscribeToStore(this.store, { change: this.onStoreChange, reset: this.onStoreChange })
     this.render()
   }
@@ -24,7 +28,7 @@ export default class extends Controller {
 
   render() {
     this.element.querySelectorAll("[data-diff-case-scores-generated]").forEach((badge) => badge.remove())
-    const searchers = this.store?.snapshot()?.caseDiffs || []
+    const searchers = this.store?.caseDiffs() || []
 
     searchers.forEach((searcher) => {
       const badge = document.createElement("div")

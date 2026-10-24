@@ -97,9 +97,22 @@ export class QueryCollectionStore extends EventTarget {
 
     const key = String(queryId)
     this._liveQueries.set(key, query)
-    if (!this._displayOrder.includes(Number(queryId))) this._displayOrder.push(Number(queryId))
+    if (!this.displayOrderIds().has(key)) {
+      this._displayOrder.push(Number(queryId))
+      this._displayOrderIds.add(key)
+    }
     this._status = "ready"
     if (publish) this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) }))
+  }
+
+  // Set of display-order ids, rebuilt only when _displayOrder is reassigned, so upsert() is O(1)
+  // and loading N queries stays O(N) rather than O(N^2).
+  displayOrderIds() {
+    if (this._displayOrderIdsFor !== this._displayOrder) {
+      this._displayOrderIds = new Set(this._displayOrder.map(String))
+      this._displayOrderIdsFor = this._displayOrder
+    }
+    return this._displayOrderIds
   }
 
   remove(queryId) {
@@ -119,6 +132,10 @@ export class QueryCollectionStore extends EventTarget {
     const value = Boolean(expanded)
     this._expandedQueries.set(key, value)
     this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail({ queryId: Number(queryId) }) }))
+  }
+
+  isExpanded(queryId) {
+    return this._expandedQueries.get(String(queryId)) === true
   }
 
   collapseAll() {

@@ -105,10 +105,10 @@ test('query pagination actions move between first and last pages', async ({ page
   await gotoCase(page);
   const pagination = page.locator('[data-queries-list-target="pagination"]');
   await expect(pagination).toContainText('Page 1 of 2');
-  await expect(pagination.getByRole('button', { name: 'Previous', exact: true })).toBeDisabled();
-  await pagination.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(pagination.getByRole('button', { name: 'Previous page', exact: true })).toBeDisabled();
+  await pagination.getByRole('button', { name: 'Next page', exact: true }).click();
   await expect(pagination).toContainText('Page 2 of 2');
-  await expect(pagination.getByRole('button', { name: 'Next', exact: true })).toBeDisabled();
-  await pagination.getByRole('button', { name: 'Previous', exact: true }).click();
+  await expect(pagination.getByRole('button', { name: 'Next page', exact: true })).toBeDisabled();
+  await pagination.getByRole('button', { name: 'Previous page', exact: true }).click();
   await expect(pagination).toContainText('Page 1 of 2');
 });

@@ -1,5 +1,6 @@
 import { QueryCollectionStore, queryCollectionStore } from "stores/query_collection_store"
 import { lazyDetail } from "utils/lazy_detail"
+import { plainDocument } from "utils/query_documents"
 
 // Keys of snapshot() other than queryId, exposed lazily on `change` events. Keep in sync (tested).
 export const DOCUMENTS_SNAPSHOT_KEYS = ["showOnlyRated", "query", "queries", "caseDiffs", "caseSummary"]
@@ -20,9 +21,7 @@ export class QueryDocumentsStore extends EventTarget {
     // live-query publication must also notify expanded-results subscribers.
     // Keep single-query changes scoped so other comparison controls stay mounted.
     this.collection.addEventListener("change", event => {
-      this._queries.forEach((_query, key) => {
-        if (!this.collection.liveQuery(key)) this._queries.delete(key)
-      })
+      this.pruneRemovedQueries(event.detail.queryId)
       this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail(event.detail.queryId) }))
     })
     this.collection.addEventListener("reset", () => this.reset())
@@ -73,6 +72,18 @@ export class QueryDocumentsStore extends EventTarget {
     this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
   }
 
+  // A single-query change can only have removed that query, so only a case-wide change sweeps.
+  // Sweeping on every change made loading N queries O(N^2).
+  pruneRemovedQueries(queryId) {
+    if (queryId != null) {
+      if (!this.collection.liveQuery(queryId)) this._queries.delete(String(queryId))
+      return
+    }
+    this._queries.forEach((_query, key) => {
+      if (!this.collection.liveQuery(key)) this._queries.delete(key)
+    })
+  }
+
   removeQuery(queryId) {
     this._queries.delete(String(queryId))
     this.dispatchEvent(new CustomEvent("change", { detail: this.changeDetail() }))
@@ -119,6 +130,11 @@ export class QueryDocumentsStore extends EventTarget {
     }
   }
 
+  // Case-level snapshot-comparison scores, without building every query as snapshot() does.
+  caseDiffs() {
+    return this._caseDiffs.map((searcher) => ({ ...searcher, score: { ...searcher.score } }))
+  }
+
   changeDetail(queryId) {
     return lazyDetail(DOCUMENTS_SNAPSHOT_KEYS, () => this.snapshot(queryId), { queryId: queryId == null ? null : Number(queryId) })
   }
@@ -130,7 +146,7 @@ export class QueryDocumentsStore extends EventTarget {
       showOnlyRated: this.collection.showOnlyRated,
       query: queryId == null ? null : queries[String(queryId)] ?? null,
       queries,
-      caseDiffs: this._caseDiffs.map((searcher) => ({ ...searcher, score: { ...searcher.score } })),
+      caseDiffs: this.caseDiffs(),
       caseSummary: { ...this._caseSummary }
     }
   }
@@ -160,24 +176,10 @@ export function snapshotDocument(doc, state = {}) {
   }
 
   return {
-    id: doc.id,
-    title: doc.title ?? "",
-    subs: { ...(doc.subs || {}) },
-    thumb: doc.thumb,
-    thumb_options: doc.thumb_options,
-    image: doc.image,
-    image_options: doc.image_options,
-    hasThumb: Boolean(doc.hasThumb?.()),
-    hasImage: Boolean(doc.hasImage?.()),
-    embeds: { ...(doc.embeds || {}) },
-    translations: { ...(doc.translations || {}) },
-    unabridgeds: { ...(doc.unabridgeds || {}) },
+    ...plainDocument(doc),
     snippets: { ...(doc.subSnippets?.("<strong>", "</strong>") || {}) },
-    rawFields: doc.doc?.origin?.() || {},
     linkUrl: state.documentUrlFor?.(doc) || null,
     matchExplain,
-    error: doc.error,
-    rating: doc.hasRating?.() ? doc.getRating?.() : null,
     score: doc.score?.() ?? null
   }
 }

@@ -44,6 +44,54 @@ export function buildQueryDocumentsState({
   }
 }
 
+/**
+ * A rateable doc's plain fields, without its explain, score or snippets: reading any of those
+ * builds the doc's splainer explain tree, which only an expanded query should pay for.
+ */
+export function plainDocument(doc) {
+  return {
+    id: doc.id,
+    title: doc.title ?? "",
+    subs: { ...(doc.subs || {}) },
+    thumb: doc.thumb,
+    thumb_options: doc.thumb_options,
+    image: doc.image,
+    image_options: doc.image_options,
+    hasThumb: Boolean(doc.hasThumb?.()),
+    hasImage: Boolean(doc.hasImage?.()),
+    embeds: { ...(doc.embeds || {}) },
+    translations: { ...(doc.translations || {}) },
+    unabridgeds: { ...(doc.unabridgeds || {}) },
+    rawFields: doc.doc?.origin?.() || {},
+    error: doc.error,
+    rating: doc.hasRating?.() ? doc.getRating?.() : null
+  }
+}
+
+/**
+ * Plain queries for bulk actions (detailed CSV, frog report), read from the live queries when
+ * the action runs. The documents store only holds expanded queries' docs.
+ * Pass `withDocs: false` when only doc counts are needed; `docs` is then the live list.
+ */
+export function bulkActionQueries(liveQueries, { withDocs = true } = {}) {
+  return Object.values(liveQueries || {}).map((query) => {
+    const fieldSpec = typeof query.fieldSpec === "function" ? query.fieldSpec() : {}
+    return {
+      queryId: query.queryId,
+      queryText: query.queryText,
+      fieldSpec: {
+        fields: (fieldSpec.fields || []).slice(),
+        id: fieldSpec.id,
+        title: fieldSpec.title
+      },
+      depthOfRating: query.depthOfRating,
+      allRated: query.currentScore?.allRated ?? false,
+      missingRatings: query.currentScore?.countMissingRatings ?? null,
+      docs: withDocs ? (query.docs || []).map(plainDocument) : query.docs || []
+    }
+  })
+}
+
 function browseHeaders(settings) {
   let headers = settings.customHeaders
   if (typeof headers === "string") {

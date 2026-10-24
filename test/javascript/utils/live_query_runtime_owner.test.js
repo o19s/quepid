@@ -194,12 +194,12 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(stores.queries.query(1).expanded).toBe(false)
   })
 
-  async function addQuery({ syncConflict = false } = {}) {
+  async function addQuery({ syncConflict = false, docExtras = {} } = {}) {
     const stores = buildStores()
     vi.spyOn(stores.scoring, "setLatestScoreInfo")
     const searcher = {
       type: "solr",
-      docs: [{ id: "d1" }, { id: "d2" }],
+      docs: [{ id: "d1", ...docExtras }, { id: "d2", ...docExtras }],
       numFound: 2,
       linkUrl: "http://solr/select?q=star",
       search: vi.fn(() => Promise.resolve())
@@ -249,6 +249,58 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(query.hasBeenScored).toBe(true)
     expect(query.lastScore).toBe(0.5)
     expect(stores.documents.replaceQuery).toHaveBeenCalledWith(5, expect.any(Object))
+  })
+
+  // Reading a doc's explain, score or snippets builds its splainer explain tree. Doing that for
+  // every query made a 5000-query case retain ~4x Legacy's heap, so only expanded queries may.
+  it("builds documents only for an expanded query, and drops them when it collapses", async () => {
+    const tripwires = {
+      explain: vi.fn(() => ({ children: [], asJson: {}, rawStr: () => "" })),
+      hotMatchesOutOf: vi.fn(() => []),
+      score: vi.fn(() => 1),
+      subSnippets: vi.fn(() => ({}))
+    }
+    const { stores, search } = await addQuery({ docExtras: tripwires })
+    const listChanges = []
+    stores.queries.addEventListener("change", event => listChanges.push(event.detail.queryId))
+    await search.queryCommands.searchAll()
+
+    // The list still hears about a collapsed query's new results.
+    expect(listChanges).toContain(5)
+    expect(stores.documents.query(5).docs).toEqual([])
+    Object.values(tripwires).forEach(tripwire => expect(tripwire).not.toHaveBeenCalled())
+
+    search.queryCommands.toggleQuery(5)
+    expect(stores.documents.query(5).docs.map(doc => doc.id)).toEqual(["d1", "d2"])
+    expect(tripwires.explain).toHaveBeenCalled()
+
+    search.queryCommands.toggleQuery(5)
+    expect(stores.documents.query(5).docs).toEqual([])
+    search.queryCommands.toggleQuery(5)
+    search.queryCommands.collapseAll()
+    expect(stores.queries.isExpanded(5)).toBe(false)
+    expect(stores.documents.query(5).docs).toEqual([])
+  })
+
+  it("keeps a collapsed query's snapshot-diff scores without building its diff docs", async () => {
+    const { stores, search } = await addQuery()
+    const diffDoc = { id: "s1", score: vi.fn(() => 2) }
+    const query = search.queryCapabilities.getQuery(5)
+    query.diffs = {
+      getSearchers: () => [{ name: () => "Baseline", version: () => 3, diffScore: { score: 0.4 } }],
+      docs: vi.fn(() => [diffDoc])
+    }
+    search.queryCommands.toggleQuery(5)
+    expect(stores.documents.query(5).diffs.searchers[0].docs).toEqual([expect.objectContaining({ id: "s1" })])
+    query.diffs.docs.mockClear()
+    diffDoc.score.mockClear()
+
+    search.queryCommands.toggleQuery(5)
+    expect(stores.documents.query(5).diffs.searchers).toEqual([
+      expect.objectContaining({ name: "Baseline", version: 3, score: { score: 0.4 }, docs: [], ratedDocs: [] })
+    ])
+    expect(query.diffs.docs).not.toHaveBeenCalled()
+    expect(diffDoc.score).not.toHaveBeenCalled()
   })
 
   it("reruns every registered query and completes the collection store's search", async () => {
@@ -347,7 +399,10 @@ describe("createLiveQueryRuntimeOwner", () => {
     expect(search.queryCapabilities.getQueryArray().map(query => query.queryId)).toEqual([2, 1])
     stores.queries.setExpanded(1, true)
     stores.documents.replaceQuery(1)
+    const replaceQuery = vi.spyOn(stores.documents, "replaceQuery")
     search.queryCommands.collapseAll()
+    // Only the expanded query had documents to drop.
+    expect(replaceQuery.mock.calls.map(([id]) => id)).toEqual([1])
     expect(stores.queries.query(1).expanded).toBe(false)
     expect(stores.documents.query(1).expanded).toBe(false)
     stores.queries.setShowOnlyRated(true)

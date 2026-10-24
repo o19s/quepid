@@ -1,6 +1,8 @@
 import { putJson } from "api/json"
 import { isSameId } from "utils/record_identity"
 
+// Takes the live queries' rateable docs. A pair stores the title and the try's displayed fields
+// (`subsList`), as Legacy did, not every field the engine returned.
 export function buildQueryDocPairsPayload(queries) {
   return queries.flatMap((query) =>
     (query.docs || []).map((doc, index) => {
@@ -9,12 +11,12 @@ export function buildQueryDocPairsPayload(queries) {
           result[field.field] = field.value
           return result
         },
-        { title: doc.title, ...(doc.rawFields || {}) }
+        { title: doc.title }
       )
 
       fields.title = doc.title
 
-      const rawTitle = doc.rawFields?.title ?? doc.doc?.title ?? doc.doc?.origin?.()?.title
+      const rawTitle = doc.doc?.title ?? doc.doc?.origin?.()?.title
       if (rawTitle !== undefined && rawTitle !== doc.title) {
         fields.title_field = rawTitle
       }

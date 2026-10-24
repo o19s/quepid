@@ -5,6 +5,7 @@ import { HttpError } from "api/http_error"
 import { openDynamicModal } from "utils/dynamic_modal"
 import { getCoreStores } from "utils/core_store_access"
 import { getCoreCapabilities } from "utils/core_capability_access"
+import { bulkActionQueries } from "utils/query_documents"
 import { getQuepidRootUrl } from "utils/quepid_root"
 import coreFlash from "utils/core_flash"
 
@@ -73,8 +74,13 @@ export default class extends Controller {
     this.chartResult = null
   }
 
+  // The documents store only holds expanded queries' docs, so count from the live queries.
+  queries() {
+    return bulkActionQueries(getCoreCapabilities().queryCapabilities?.getQueries(), { withDocs: false })
+  }
+
   render() {
-    const queries = Object.values(this.store?.snapshot()?.queries || {})
+    const queries = this.queries()
     const capabilities = getCoreCapabilities()
     const { withResults, withoutResults, ratingsNeeded, missingRatings, missingRate, allRated } = buildFrogReportStats(queries)
 
@@ -179,7 +185,7 @@ export default class extends Controller {
     this.refreshButtonTarget.disabled = true
     this.refreshIconTarget.classList.add("spintime")
     this.errorTarget.classList.add("d-none")
-    const background = Object.keys(this.store.snapshot().queries || {}).length >= 50
+    const background = this.queries().length >= 50
     const url = this.refreshUrlTemplateValue
       .replaceAll("__BOOK_ID__", state.bookId)
       .replaceAll("__BACKGROUND__", background ? "true" : "false")

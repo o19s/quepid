@@ -23,6 +23,35 @@ describe("QueryDocumentsStore", () => {
     expect(snapshot).toHaveBeenCalledTimes(1)
   })
 
+  it("drops a removed query's documents, checking only that query on a single-query change", () => {
+    store.replaceQuery(1, {})
+    store.replaceQuery(2, {})
+    const liveQuery = vi.spyOn(store.collection, "liveQuery")
+
+    store.collection.upsert({ queryId: 1 })
+    expect(liveQuery.mock.calls.map(([id]) => Number(id))).toEqual([1])
+
+    store.collection.remove(2)
+    expect(store.query(2)).toBeNull()
+    expect(store.query(1)).not.toBeNull()
+
+    // A case-wide change sweeps every removed query, so a re-added one starts without stale state.
+    store.updateQueryState(1, { notes: true })
+    store.collection.clearLiveQueries()
+    store.collection.setDisplayOrder([])
+    store.collection.upsert({ queryId: 1 })
+    expect(store.query(1)).toBeNull()
+  })
+
+  it("returns case diffs without building every query", () => {
+    store.setCaseDiffs([{ name: "Baseline", version: 2, score: { score: 0.5 } }])
+    const query = vi.spyOn(store, "query")
+
+    expect(store.caseDiffs()).toEqual([{ name: "Baseline", version: 2, score: { score: 0.5 } }])
+    expect(store.caseDiffs()[0].score).not.toBe(store.caseDiffs()[0].score)
+    expect(query).not.toHaveBeenCalled()
+  })
+
   it("publishes plain snapshots for current and rated documents", () => {
     const doc = {
       id: "doc-1",

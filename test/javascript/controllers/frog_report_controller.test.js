@@ -59,17 +59,18 @@ const TARGETS = [
   "chart", "refreshButton", "refreshIcon", "bookName", "error"
 ]
 
+// Stats come from the live queries (the documents store only holds expanded queries' docs);
+// the store only tells the report when to re-render.
 function buildController({ queries = {}, caseState = {}, queryLifecycle } = {}) {
   const store = new QueryDocumentsStore()
-  Object.entries(queries).forEach(([id, state]) => {
-    store.collection.upsert({
-      queryId: Number(id),
-      currentScore: { score: 0, countMissingRatings: state.missingRatings, allRated: state.allRated }
-    })
-    store.replaceQuery(id, state)
-  })
+  const liveQueries = Object.fromEntries(Object.entries(queries).map(([id, state]) => [id, {
+    queryId: Number(id),
+    docs: state.docs || [],
+    depthOfRating: state.depthOfRating,
+    currentScore: { score: 0, countMissingRatings: state.missingRatings, allRated: state.allRated }
+  }]))
   testStores = { documents: store }
-  testCapabilities = { caseState, queryLifecycle }
+  testCapabilities = { caseState, queryLifecycle, queryCapabilities: { getQueries: () => liveQueries } }
   const controller = buildControllerFixture(FrogReportController, {
     targets: Object.fromEntries(TARGETS.map(name => [name, document.createElement("div")])),
     overrides: { lifecycle: {}, store }
@@ -124,6 +125,18 @@ describe("FrogReportController", () => {
     expect(controller.notAllRatedTarget.classList.contains("d-none")).toBe(false)
     expect(controller.hopMessageTarget.classList.contains("d-none")).toBe(false)
     expect(controller.refreshButtonTarget.classList.contains("d-none")).toBe(false)
+  })
+
+  it("counts the live docs without copying them, and shows zero queries without query capabilities", () => {
+    const origin = vi.fn(() => ({}))
+    const controller = buildController({ queries: { 1: { docs: [{ id: "a", doc: { origin } }] } } })
+    controller.render()
+    expect(controller.ratingsNeededTarget.textContent).toBe("1")
+    expect(origin).not.toHaveBeenCalled()
+
+    testCapabilities = { caseState: {} }
+    controller.render()
+    expect(controller.queryCountTarget.textContent).toBe("0")
   })
 
   it("words the zero-result count as none, only one, or a number", () => {

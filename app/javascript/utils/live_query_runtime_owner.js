@@ -306,11 +306,24 @@ export function createLiveQueryRuntimeOwner({
 
   // Temporary store-transition publisher: the runtime keeps the live Query objects, but
   // Stimulus receives a plain read model for expanded result rendering.
+  //
+  // Only an expanded query gets its documents. A collapsed row shows just its list state and
+  // snapshot-diff scores, and building documents forces every doc's splainer explain tree, so
+  // publishing them for every query left a 5000-query case retaining ~4x Legacy's heap (which
+  // only built them for expanded queries). Bulk actions read the live queries instead.
   function publishQueryDocuments(query) {
     if (!queryDocumentsStore || !query) {
       return
     }
     if (getLiveQuery(query.queryId) !== query) return
+
+    if (!queryCollectionStore.isExpanded(query.queryId)) {
+      queryCollectionStore.upsert(query)
+      queryDocumentsStore.replaceQuery(query.queryId, {
+        diffs: buildDiffReadModel(query, { showOnlyRated: getShowOnlyRated(), withDocs: false })
+      })
+      return
+    }
 
     const ratingScale = resolveQueryRatingScale(query)
     const applicableSettings = domain.settings.applicable() || {}
@@ -338,10 +351,18 @@ export function createLiveQueryRuntimeOwner({
     const query = getLiveQuery(queryId)
     if (!query) return false
 
-    const currentQuery = queryCollectionStore.query(queryId)
-    const expanded = !(currentQuery && currentQuery.expanded === true)
-    queryCollectionStore.setExpanded(queryId, expanded)
+    queryCollectionStore.setExpanded(queryId, !queryCollectionStore.isExpanded(queryId))
+    // Expanding builds this query's documents; collapsing drops them.
+    publishQueryDocuments(query)
     return true
+  }
+
+  function collapseAll() {
+    const expanded = Object.values(getLiveQueries()).filter((query) =>
+      queryCollectionStore.isExpanded(query.queryId)
+    )
+    queryCollectionStore.collapseAll()
+    expanded.forEach(publishQueryDocuments)
   }
 
   /**
@@ -647,9 +668,7 @@ export function createLiveQueryRuntimeOwner({
     paginateQuery: liveQueryCommandsRuntime.paginateQuery,
     toggleShowOnlyRated,
     searchAll,
-    collapseAll: function () {
-      queryCollectionStore.collapseAll()
-    }
+    collapseAll
   }
   const queryLifecycle = {
     prepareQueries: liveQueryLifecycleRuntime.prepareQueries,

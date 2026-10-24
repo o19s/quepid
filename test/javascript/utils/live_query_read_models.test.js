@@ -204,6 +204,24 @@ describe("buildDiffReadModel", () => {
     })
   })
 
+  it("builds only each searcher's score for a collapsed row, never touching its docs", () => {
+    const doc = { score: vi.fn(() => 5) }
+    const query = queryWith(
+      [{ name: () => "Snap A", version: () => 3, inError: false, searchError: "", diffScore: { score: 0.5 } }, {}],
+      [{ all: [doc], rated: [doc] }]
+    )
+    const docs = vi.spyOn(query.diffs, "docs")
+
+    expect(buildDiffReadModel(query, { withDocs: false })).toEqual({
+      searchers: [
+        { name: "Snap A", version: 3, inError: false, searchError: "", score: { score: 0.5 }, docs: [], ratedDocs: [] },
+        { name: "Snapshot", version: null, inError: undefined, searchError: undefined, score: { score: "?", allRated: false }, docs: [], ratedDocs: [] }
+      ]
+    })
+    expect(docs).not.toHaveBeenCalled()
+    expect(doc.score).not.toHaveBeenCalled()
+  })
+
   it("defaults name, version, score, and doc lists", () => {
     const query = queryWith([{}], [])
     const [column] = buildDiffReadModel(query).searchers

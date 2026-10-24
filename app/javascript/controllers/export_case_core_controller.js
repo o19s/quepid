@@ -7,7 +7,8 @@ import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, formatDown
 import { formatShortDate } from "utils/date_format"
 import { downloadBlob } from "utils/download_file"
 import { caseNameFromHeader } from "utils/case_header"
-import { getCoreStores } from "utils/core_store_access"
+import { getCoreCapabilities } from "utils/core_capability_access"
+import { bulkActionQueries } from "utils/query_documents"
 import { caseRuntime } from "utils/case_runtime"
 import { isSameId } from "utils/record_identity"
 
@@ -231,7 +232,7 @@ export default class extends CoreModalControllerBase {
 
   async _downloadDetailed() {
     const caseData = await caseRuntime.read(this.currentCaseId, { url: this._url(this.caseUrlTemplateValue) })
-    const queries = getCoreStores().documents.snapshot().queries
+    const queries = bulkActionQueries(getCoreCapabilities().queryCapabilities?.getQueries?.())
     const csv = buildDetailedCaseCsv(caseData, queries)
     downloadBlob(new Blob([ csv ], { type: "text/csv" }), this._fileName("detailed.csv"))
   }

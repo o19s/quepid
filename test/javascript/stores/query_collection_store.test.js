@@ -59,6 +59,32 @@ describe("QueryCollectionStore", () => {
     expect(store.query(1)).toBeNull()
   })
 
+  it("orders each query once however often it is upserted, across reorders and removals", () => {
+    store.replace({ caseId: 7, displayOrder: [2, 1], queries: [{ queryId: 1 }, { queryId: 2 }] })
+    store.upsert({ queryId: 1 })
+    store.upsert({ queryId: 3 })
+    store.upsert({ queryId: "3" })
+    expect(store.snapshot().displayOrder).toEqual([2, 1, 3])
+
+    store.setDisplayOrder([3, 1, 2])
+    store.upsert({ queryId: 4 })
+    store.upsert({ queryId: 1 })
+    expect(store.snapshot().displayOrder).toEqual([3, 1, 2, 4])
+
+    store.remove(4)
+    store.upsert({ queryId: 4 })
+    expect(store.snapshot().displayOrder).toEqual([3, 1, 2, 4])
+  })
+
+  it("reports whether a query is expanded", () => {
+    store.upsert({ queryId: 1 })
+    expect(store.isExpanded(1)).toBe(false)
+    store.setExpanded("1", true)
+    expect(store.isExpanded(1)).toBe(true)
+    store.collapseAll()
+    expect(store.isExpanded(1)).toBe(false)
+  })
+
   it("exposes every snapshot field on change events without building a snapshot per event", () => {
     expect(COLLECTION_SNAPSHOT_KEYS.toSorted()).toEqual(Object.keys(store.snapshot()).toSorted())
 

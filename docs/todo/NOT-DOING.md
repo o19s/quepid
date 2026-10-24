@@ -22,6 +22,14 @@ By user choice, core and management confirmation dialogs use Confirm then Cancel
 
 By user choice, the searched-results summary removes whitespace around `&` separators in the italic query text. Preserve spaces within values such as `star wars` and leave submitted query parameters unchanged. This intentionally departs from Legacy's verbatim query display.
 
+## Missing Documents on Solr edits the try's params
+
+By user choice (2026-10-24), keep `9443d215` ("nicer find missing docs"): on Solr, the Find and Rate Missing Documents modal opens on the try's query params with the query filled in, and searches with whatever params you edit, as for every other engine. Legacy (restored in `795b2474`) opened an empty box for a plain Lucene query and sent it as `explainOther` alongside the original query, so the results were explained against that query. That explanation is no longer shown for documents found this way.
+
+## Frog report labels every bar
+
+By user choice (2026-10-23), the frog report's chart labels each bar with its query count. Legacy and main showed a bar's count only on hover (the text mark read `tooltip.amount`). The chart has only a few bars, and visible counts work for keyboard, touch and screen-reader users, who cannot hover. The change arrived in `db0bf1ba` without a recorded reason; this entry records the decision to keep it.
+
 ## Admin user JSON export includes the password digest
 
 **Location:** `app/views/admin/users/index.json.jbuilder`, `app/controllers/admin/users_controller.rb` (`password_encrypted`)

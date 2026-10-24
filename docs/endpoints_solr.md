@@ -101,13 +101,12 @@ Quepid adds some parameters:
 This Modal UI in Quepid  has two query patterns for interacting with Solr.   The first is the ability for you to craft basic Lucene queries to go find some documents that then can be rated.  The second query pattern is to return ALL the documents that have been rated for a query, and is in the style of a lookup via list of id's for the documents.
 
 ### Find Documents
-This function sends off whatever you enter to Solr using the standard GET request handler and expects a response type of JSON, wrapped in JSONP.
+The modal opens with the try's query parameters, the query you clicked Missing Documents on filled in for `#$query##`. Edit them and click Search: Quepid sends exactly those parameters to Solr using the standard GET request handler and expects a response type of JSON, wrapped in JSONP.
 
 ```
-http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=star&explainOther=title:war&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=quepidJsonpCallback._8
+http://quepid-solr.dev.o19s.com:8985/solr/tmdb/select?q=title:war&fl=id title poster_path overview cast&wt=json&debug=true&debug.explain.structured=true&hl=false&rows=10&json.wrf=quepidJsonpCallback._8
 ```
-1. `q=star` comes from the actual Query that you clicked Missing Documents button in the UI.
-1. `explainOther=title:war` comes from the query you entered on the Find and Rate Missing Documents modal and is a Lucene query.   If you are building an adapter, you probably just want to search for the `explainOther` property.
+1. `q=title:war` comes from the parameters you edited on the Find and Rate Missing Documents modal, for example a Lucene query on a field.
 1. `fl=id title poster_path overview cast` comes from the Settings
 1. `wt=json` is to ensure the response is in JSON format that Quepid expects.
 1. `debug=true&debug.explain.structured=true` is used to get back the query explain information.  If this isn't available, that is fine, you just don't get the information about how the query matched the docs in the UI.
