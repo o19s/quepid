@@ -538,7 +538,7 @@ class BooksController < ApplicationController
     end
 
     # The open book page polls judge_activity every few seconds; opening the page already counted the view.
-    TrackBookViewedJob.perform_later current_user.id, @book.id unless 'judge_activity' == action_name
+    TrackBookViewedJob.perform_later current_user, @book unless 'judge_activity' == action_name
   end
 
   def find_user

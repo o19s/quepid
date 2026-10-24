@@ -139,7 +139,7 @@ module Books
 
     def set_book
       @book = current_user.books_involved_with.find(params.expect(:id))
-      TrackBookViewedJob.perform_later current_user.id, @book.id
+      TrackBookViewedJob.perform_later current_user, @book
     end
 
     def read_json file
