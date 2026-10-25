@@ -1,8 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import {
-  createSnapshotSearcher,
-  createSnapshotSearcherFromRegistry
-} from "utils/snapshot_searcher"
+import { createSnapshotSearcher, createSnapshotSearcherFromRegistry } from "utils/snapshot_searcher"
 
 describe("snapshot searcher", () => {
   const query = { queryId: 7, version: vi.fn(() => 3) }
@@ -52,7 +49,9 @@ describe("snapshot searcher", () => {
 
     await expect(searcher.search()).resolves.toBeUndefined()
     expect(searcher.pager()).toBeNull()
-    await expect(searcher.explainOther("q", {})).rejects.toBe("ExplainOther not supported for snapshots")
+    await expect(searcher.explainOther("q", {})).rejects.toBe(
+      "ExplainOther not supported for snapshots"
+    )
     expect(searcher.name()).toBe("snapshot name")
     expect(searcher.version()).toBe(3)
   })
@@ -95,14 +94,16 @@ describe("snapshot searcher", () => {
   it("returns null and logs when a snapshot is missing", () => {
     const log = vi.fn()
 
-    expect(createSnapshotSearcherFromRegistry({
-      snapshotId: "missing",
-      snapshots: {},
-      query,
-      createRateableDoc: (doc) => doc,
-      explainDoc: (doc) => doc,
-      log
-    })).toBeNull()
+    expect(
+      createSnapshotSearcherFromRegistry({
+        snapshotId: "missing",
+        snapshots: {},
+        query,
+        createRateableDoc: (doc) => doc,
+        explainDoc: (doc) => doc,
+        log
+      })
+    ).toBeNull()
     expect(log).toHaveBeenCalledWith("Snapshot not found: missing")
   })
   it("filters docs by whether they are rated-only", () => {
@@ -121,7 +122,9 @@ describe("snapshot searcher", () => {
 
   it("skips null and undefined saved results", () => {
     const searcher = createSnapshotSearcher({
-      snapshot: makeSnapshot({ getSearchResults: () => [null, undefined, { id: "a", explain: "{}" }] }),
+      snapshot: makeSnapshot({
+        getSearchResults: () => [null, undefined, { id: "a", explain: "{}" }]
+      }),
       query,
       fieldSpec: { id: "id" },
       createRateableDoc: (doc) => ({ ...doc }),

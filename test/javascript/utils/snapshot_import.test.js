@@ -6,29 +6,37 @@ describe("snapshot import runtime", () => {
     vi.unstubAllGlobals()
   })
 
-  const rows = [{
-    "Case ID": "ignored",
-    "Snapshot Name": "Weekly",
-    "Snapshot Time": "2026-09-27",
-    "Query Text": "star wars",
-    "Doc ID": "doc-1",
-    "Doc Position": "1",
-    title: "Star Wars"
-  }]
+  const rows = [
+    {
+      "Case ID": "ignored",
+      "Snapshot Name": "Weekly",
+      "Snapshot Time": "2026-09-27",
+      "Query Text": "star wars",
+      "Doc ID": "doc-1",
+      "Doc Position": "1",
+      title: "Star Wars"
+    }
+  ]
 
   it("groups rows and preserves imported document fields", () => {
     expect(buildSnapshotImportGroups(rows, 7)[7].snapshots.Weekly).toEqual({
       name: "Weekly",
       created_at: "2026-09-27",
-      queries: { "star wars": { docs: [{ id: "doc-1", position: "1", fields: { title: "Star Wars" } }] } }
+      queries: {
+        "star wars": { docs: [{ id: "doc-1", position: "1", fields: { title: "Star Wars" } }] }
+      }
     })
   })
 
   it("keeps CSV case IDs and omits fields for the list importer", () => {
-    const groups = buildSnapshotImportGroups([
-      { ...rows[0], "Case ID": "7" },
-      { ...rows[0], "Case ID": "8", "Doc ID": "doc-2" }
-    ], undefined, { includeFields: false })
+    const groups = buildSnapshotImportGroups(
+      [
+        { ...rows[0], "Case ID": "7" },
+        { ...rows[0], "Case ID": "8", "Doc ID": "doc-2" }
+      ],
+      undefined,
+      { includeFields: false }
+    )
     expect(Object.keys(groups)).toEqual(["7", "8"])
     expect(groups[7].snapshots.Weekly.queries["star wars"].docs).toEqual([
       { id: "doc-1", position: "1" }
@@ -68,17 +76,24 @@ describe("snapshot import runtime", () => {
   it.each(["02/29/26 12:00", "02/29/2100 12:00", "2100-02-29", "04/31/26 12:00"])(
     "rejects a day past the end of its month: %s",
     (timestamp) => {
-      expect(() => buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7))
-        .toThrow(/invalid Snapshot Time/)
+      expect(() =>
+        buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+      ).toThrow(/invalid Snapshot Time/)
     }
   )
 
   it.each([
-    "00/10/26 12:00", "13/10/26 12:00", "10/00/26 12:00", "10/32/26 12:00",
-    "10/07/26 24:00", "10/07/26 12:60", "2026-10-07T10:00+99:99"
+    "00/10/26 12:00",
+    "13/10/26 12:00",
+    "10/00/26 12:00",
+    "10/32/26 12:00",
+    "10/07/26 24:00",
+    "10/07/26 12:60",
+    "2026-10-07T10:00+99:99"
   ])("rejects an out-of-range part: %s", (timestamp) => {
-    expect(() => buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7))
-      .toThrow(/invalid Snapshot Time/)
+    expect(() =>
+      buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)
+    ).toThrow(/invalid Snapshot Time/)
   })
 
   it.each([
@@ -87,8 +102,10 @@ describe("snapshot import runtime", () => {
     ["01/31/26 12:00", "2026-01-31T12:00:00"],
     ["04/30/26 12:00", "2026-04-30T12:00:00"]
   ])("accepts the boundary values of %s", (timestamp, expected) => {
-    expect(buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)[7]
-      .snapshots.Weekly.created_at).toBe(expected)
+    expect(
+      buildSnapshotImportGroups([{ ...rows[0], "Snapshot Time": timestamp }], 7)[7].snapshots.Weekly
+        .created_at
+    ).toBe(expected)
   })
 
   it.each(["2000-02-29", "2024-02-29"])("accepts a real leap day in ISO form: %s", (timestamp) => {
@@ -99,29 +116,49 @@ describe("snapshot import runtime", () => {
   it.each(["02/29/26 12:00", "13/01/26 12:00", "10/07/26 24:00", "not a date", ""])(
     "rejects invalid timestamps with the CSV row number: %s",
     (timestamp) => {
-      expect(() => buildSnapshotImportGroups([
-        rows[0], { ...rows[0], "Snapshot Name": "Invalid", "Snapshot Time": timestamp }
-      ], 7)).toThrow(/Row 3: invalid Snapshot Time/)
+      expect(() =>
+        buildSnapshotImportGroups(
+          [rows[0], { ...rows[0], "Snapshot Name": "Invalid", "Snapshot Time": timestamp }],
+          7
+        )
+      ).toThrow(/Row 3: invalid Snapshot Time/)
     }
   )
 
   it("groups names that collide with object prototype properties", () => {
-    const groups = buildSnapshotImportGroups([
-      { ...rows[0], "Snapshot Name": "__proto__", "Query Text": "constructor" }
-    ], 7)
+    const groups = buildSnapshotImportGroups(
+      [{ ...rows[0], "Snapshot Name": "__proto__", "Query Text": "constructor" }],
+      7
+    )
     expect(groups[7].snapshots.__proto__.queries.constructor.docs[0].id).toBe("doc-1")
   })
 
   it("posts grouped snapshots sequentially and returns imported snapshots", async () => {
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 9 }] }) })
-      .mockResolvedValueOnce({ text: async function () { return JSON.stringify(await this.json()) || "" },  ok: true, json: async () => ({ snapshots: [{ id: 10 }] }) })
+    const fetcher = vi
+      .fn()
+      .mockResolvedValueOnce({
+        text: async function () {
+          return JSON.stringify(await this.json()) || ""
+        },
+        ok: true,
+        json: async () => ({ snapshots: [{ id: 9 }] })
+      })
+      .mockResolvedValueOnce({
+        text: async function () {
+          return JSON.stringify(await this.json()) || ""
+        },
+        ok: true,
+        json: async () => ({ snapshots: [{ id: 10 }] })
+      })
 
     vi.stubGlobal("fetch", fetcher)
     const imported = await importSnapshotsToCase(rows, 7, "")
 
     expect(imported).toEqual([{ id: 9 }])
-    expect(fetcher).toHaveBeenCalledWith("/api/cases/7/snapshots/imports", expect.objectContaining({ method: "POST" }))
+    expect(fetcher).toHaveBeenCalledWith(
+      "/api/cases/7/snapshots/imports",
+      expect.objectContaining({ method: "POST" })
+    )
   })
   it("posts one snapshot per request with its queries and docs", async () => {
     const fetcher = vi.fn(async () => ({

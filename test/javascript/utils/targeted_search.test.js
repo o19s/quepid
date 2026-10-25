@@ -61,19 +61,27 @@ describe("targeted search adapter", () => {
     await adapter.search("q=lung")
 
     expect(config.previewArgs).toHaveBeenCalledWith(1, "q=lung")
-    expect(config.settingsWithTryOverrides).toHaveBeenCalledWith(
-      config.settings,
-      { args: { q: "heart" }, queryParams: "q=lung" }
-    )
+    expect(config.settingsWithTryOverrides).toHaveBeenCalledWith(config.settings, {
+      args: { q: "heart" },
+      queryParams: "q=lung"
+    })
     expect(searcher.search).toHaveBeenCalled()
     expect(adapter.docs).toEqual([{ id: "doc1" }])
     expect(adapter).toMatchObject({ lastQuery: "q=lung", numFound: 1, parseError: false })
   })
 
   it("pages a Solr preview search by appending the next page, and recovers after a failed search", async () => {
-    const nextSearcher = { type: "solr", numFound: 5, search: vi.fn(() => Promise.resolve()), pager: () => null }
+    const nextSearcher = {
+      type: "solr",
+      numFound: 5,
+      search: vi.fn(() => Promise.resolve()),
+      pager: () => null
+    }
     const { adapter, config, searcher } = buildAdapter({
-      normalizeDocExplains: vi.fn().mockReturnValueOnce([{ id: "doc1" }]).mockReturnValueOnce([{ id: "doc2" }])
+      normalizeDocExplains: vi
+        .fn()
+        .mockReturnValueOnce([{ id: "doc1" }])
+        .mockReturnValueOnce([{ id: "doc2" }])
     })
     searcher.pager = vi.fn(() => nextSearcher)
     searcher.search.mockRejectedValueOnce(new Error("offline"))
@@ -94,15 +102,18 @@ describe("targeted search adapter", () => {
   })
 
   it("runs a preview search through injected engine dependencies", async () => {
-    const { adapter, config, searcher } = buildAdapter({ settings: { searchEngine: "es" }, searcher: { type: "es" } })
+    const { adapter, config, searcher } = buildAdapter({
+      settings: { searchEngine: "es" },
+      searcher: { type: "es" }
+    })
 
     await adapter.search("q=lung")
 
     expect(config.previewArgs).toHaveBeenCalledWith(1, "q=lung")
-    expect(config.settingsWithTryOverrides).toHaveBeenCalledWith(
-      config.settings,
-      { args: { q: "heart" }, queryParams: "q=lung" }
-    )
+    expect(config.settingsWithTryOverrides).toHaveBeenCalledWith(config.settings, {
+      args: { q: "heart" },
+      queryParams: "q=lung"
+    })
     expect(searcher.search).toHaveBeenCalled()
     expect(adapter.docs).toEqual([{ id: "doc1" }])
     expect(adapter.numFound).toBe(1)
@@ -130,14 +141,16 @@ describe("targeted search adapter", () => {
       explainOther: vi.fn(() => Promise.resolve())
     }
     const { adapter, config } = buildAdapter({
-      createSearcherFromSettings: vi.fn()
+      createSearcherFromSettings: vi
+        .fn()
         .mockReturnValueOnce({
           type: "solr",
           args: { start: 4 },
           explainOther: vi.fn(() => Promise.resolve())
         })
         .mockReturnValueOnce(nextSearcher),
-      normalizeDocExplains: vi.fn()
+      normalizeDocExplains: vi
+        .fn()
         .mockReturnValueOnce([{ id: "doc1" }])
         .mockReturnValueOnce([{ id: "doc2" }])
     })
@@ -151,7 +164,10 @@ describe("targeted search adapter", () => {
   })
 
   it("fills the query text into every placeholder of the initial query params", () => {
-    const { adapter } = buildAdapter({ settings: { searchEngine: "es" }, selectedTry: { queryParams: "q=#$query##&pf=#$query##" } })
+    const { adapter } = buildAdapter({
+      settings: { searchEngine: "es" },
+      selectedTry: { queryParams: "q=#$query##&pf=#$query##" }
+    })
 
     expect(adapter.initialQueryParams()).toBe("q=heart&pf=heart")
     expect(buildAdapter({ selectedTry: { queryParams: "" } }).adapter.initialQueryParams()).toBe("")
@@ -183,8 +199,17 @@ describe("targeted search adapter", () => {
 
   it("keeps the previous list when the rated-document lookup fails so reset can be retried", async () => {
     const failure = new Error("aborted")
-    const { adapter, searcher } = buildAdapter({ searcher: { explainOther: vi.fn(() => Promise.reject(failure)) } })
-    const before = { docs: [{ id: "doc9" }], lastQuery: "q=id:doc9", numFound: 1, totalRatings: 4, ratedDocsLookupUnsupported: false, searcher: null }
+    const { adapter, searcher } = buildAdapter({
+      searcher: { explainOther: vi.fn(() => Promise.reject(failure)) }
+    })
+    const before = {
+      docs: [{ id: "doc9" }],
+      lastQuery: "q=id:doc9",
+      numFound: 1,
+      totalRatings: 4,
+      ratedDocsLookupUnsupported: false,
+      searcher: null
+    }
     Object.assign(adapter, before, { defaultList: false })
 
     await expect(adapter.resetToRated()).rejects.toBe(failure)
@@ -194,9 +219,17 @@ describe("targeted search adapter", () => {
   })
 
   it("shows rated counts without searching when the engine can't look up rated docs", async () => {
-    const unsupported = buildAdapter({ query: { ratings: { doc1: 1 } }, supportsRatedDocsLookup: vi.fn(() => false) })
+    const unsupported = buildAdapter({
+      query: { ratings: { doc1: 1 } },
+      supportsRatedDocsLookup: vi.fn(() => false)
+    })
     await unsupported.adapter.resetToRated()
-    expect(unsupported.adapter).toMatchObject({ ratedDocsLookupUnsupported: true, numFound: 0, totalRatings: 1, defaultList: true })
+    expect(unsupported.adapter).toMatchObject({
+      ratedDocsLookupUnsupported: true,
+      numFound: 0,
+      totalRatings: 1,
+      defaultList: true
+    })
     expect(unsupported.searcher.explainOther).not.toHaveBeenCalled()
 
     const noEditor = buildAdapter({ query: { ratings: { doc1: 1 } }, supportedEngines: [] })
@@ -211,7 +244,9 @@ describe("targeted search adapter", () => {
       settings: { searchEngine: "searchapi" },
       supportedEngines: ["searchapi"],
       searcher: { type: "searchapi" },
-      searchApiRatedDocs: vi.fn(() => Promise.resolve({ searcher: ratedSearcher, docs: [{ id: "r1" }] }))
+      searchApiRatedDocs: vi.fn(() =>
+        Promise.resolve({ searcher: ratedSearcher, docs: [{ id: "r1" }] })
+      )
     })
 
     await adapter.resetToRated()
@@ -221,10 +256,19 @@ describe("targeted search adapter", () => {
   })
 
   it("pages a preview search by appending the next page, and stops when there is none", async () => {
-    const nextSearcher = { type: "es", numFound: 5, search: vi.fn(() => Promise.resolve()), pager: () => null }
+    const nextSearcher = {
+      type: "es",
+      numFound: 5,
+      search: vi.fn(() => Promise.resolve()),
+      pager: () => null
+    }
     const { adapter, searcher } = buildAdapter({
-      settings: { searchEngine: "es" }, searcher: { type: "es" },
-      normalizeDocExplains: vi.fn().mockReturnValueOnce([{ id: "doc1" }]).mockReturnValueOnce([{ id: "doc2" }])
+      settings: { searchEngine: "es" },
+      searcher: { type: "es" },
+      normalizeDocExplains: vi
+        .fn()
+        .mockReturnValueOnce([{ id: "doc1" }])
+        .mockReturnValueOnce([{ id: "doc2" }])
     })
     searcher.pager = vi.fn(() => nextSearcher)
 
@@ -259,7 +303,11 @@ describe("targeted search adapter", () => {
   })
 
   it("clears a single rating, and ignores documents that aren't listed", async () => {
-    const doc = { id: 7, rate: vi.fn(() => Promise.resolve()), resetRating: vi.fn(() => Promise.resolve()) }
+    const doc = {
+      id: 7,
+      rate: vi.fn(() => Promise.resolve()),
+      resetRating: vi.fn(() => Promise.resolve())
+    }
     const { adapter, config } = buildAdapter()
     adapter.docs = [doc]
 
@@ -270,7 +318,11 @@ describe("targeted search adapter", () => {
   })
 
   it("mutates live rateable documents through the adapter", async () => {
-    const doc = { id: "doc1", rate: vi.fn(() => Promise.resolve()), resetRating: vi.fn(() => Promise.resolve()) }
+    const doc = {
+      id: "doc1",
+      rate: vi.fn(() => Promise.resolve()),
+      resetRating: vi.fn(() => Promise.resolve())
+    }
     const { adapter, config } = buildAdapter()
     adapter.docs = [doc]
 
@@ -281,7 +333,15 @@ describe("targeted search adapter", () => {
 
   it("touches the query only after the rating request resolves", async () => {
     let resolveRating
-    const doc = { id: "doc1", rate: vi.fn(() => new Promise((resolve) => { resolveRating = resolve })) }
+    const doc = {
+      id: "doc1",
+      rate: vi.fn(
+        () =>
+          new Promise((resolve) => {
+            resolveRating = resolve
+          })
+      )
+    }
     const { adapter, config } = buildAdapter()
     adapter.docs = [doc]
 
@@ -294,13 +354,16 @@ describe("targeted search adapter", () => {
   })
 
   it("builds the rated-only searcher when paging the rated list, and does nothing extra for other engines", async () => {
-    const createSearcherFromSettings = vi.fn()
+    const createSearcherFromSettings = vi
+      .fn()
       .mockReturnValueOnce({ type: "solr", args: {}, explainOther: vi.fn(() => Promise.resolve()) })
       .mockReturnValueOnce({ type: "solr", args: {}, explainOther: vi.fn(() => Promise.resolve()) })
     const { adapter, config } = buildAdapter({ createSearcherFromSettings })
     await adapter.resetToRated()
     await adapter.paginate()
-    expect(createSearcherFromSettings).toHaveBeenLastCalledWith(config.settings, config.query, { filterToRated: true })
+    expect(createSearcherFromSettings).toHaveBeenLastCalledWith(config.settings, config.query, {
+      filterToRated: true
+    })
 
     const other = { type: "other", args: {}, explainOther: vi.fn(), search: vi.fn() }
     const unsupported = buildAdapter({ createSearcherFromSettings: vi.fn(() => other) })
@@ -309,5 +372,4 @@ describe("targeted search adapter", () => {
     expect(other.search).not.toHaveBeenCalled()
     expect(unsupported.adapter.docs).toEqual([])
   })
-
 })

@@ -40,29 +40,45 @@ describe("wizard contracts", () => {
   })
 
   it("formats API validation errors for the finish step", () => {
-    expect(formatWizardSaveError({ data: { case_name: ["is invalid"] } })).toContain("case_name is invalid")
-    expect(formatWizardSaveError({})).toBe("Could not save your case settings. Please click Finish to try again.")
+    expect(formatWizardSaveError({ data: { case_name: ["is invalid"] } })).toContain(
+      "case_name is invalid"
+    )
+    expect(formatWizardSaveError({})).toBe(
+      "Could not save your case settings. Please click Finish to try again."
+    )
   })
 
   it("turns any validator rejection into readable text instead of [object Object]", () => {
     expect(formatValidationError(new Error("boom"))).toBe("boom")
     expect(formatValidationError("plain")).toBe("plain")
-    expect(formatValidationError({ searchError: "Error with Solr query or server." })).toBe("Error with Solr query or server.")
+    expect(formatValidationError({ searchError: "Error with Solr query or server." })).toBe(
+      "Error with Solr query or server."
+    )
     expect(formatValidationError({ status: -1, statusText: "Not Found" })).toBe("Not Found")
     expect(formatValidationError({ status: 0 })).toBe("Quepid could not search this endpoint.")
     expect(formatValidationError(undefined)).toBe("Quepid could not search this endpoint.")
   })
 })
 
- it("keeps Search API JSON and generic parameter lists unchanged, and parses Vespa scalar/repeated parameters", () => {
-  expect(searchApiValidationArgs('{"yql":"select * from movies"}', "yql")).toBe('{"yql":"select * from movies"}')
+it("keeps Search API JSON and generic parameter lists unchanged, and parses Vespa scalar/repeated parameters", () => {
+  expect(searchApiValidationArgs('{"yql":"select * from movies"}', "yql")).toBe(
+    '{"yql":"select * from movies"}'
+  )
   expect(searchApiValidationArgs("q=test", null)).toBe("q=test")
-  expect(searchApiValidationArgs("select * from movies", "yql")).toEqual({ yql: "select * from movies" })
-  expect(searchApiValidationArgs('yql=select * where title="test"\n&ranking.profile=bm25&filter=one&filter=two', "yql")).toEqual({
+  expect(searchApiValidationArgs("select * from movies", "yql")).toEqual({
+    yql: "select * from movies"
+  })
+  expect(
+    searchApiValidationArgs(
+      'yql=select * where title="test"\n&ranking.profile=bm25&filter=one&filter=two',
+      "yql"
+    )
+  ).toEqual({
     yql: 'select * where title="test"',
     "ranking.profile": "bm25",
     filter: ["one", "two"]
-  })})
+  })
+})
 
 describe("edge cases", () => {
   const plain = (value) => ({ ...value })
@@ -70,7 +86,7 @@ describe("edge cases", () => {
   it("treats text as a bare query unless it starts with a key= param", () => {
     expect(searchApiValidationArgs("hello a=1", "q")).toEqual({ q: "hello a=1" })
     expect(plain(searchApiValidationArgs("  a=1&b=2", "q"))).toEqual({ a: "1", b: "2" })
-    expect(searchApiValidationArgs("{\"a\":1}", "q")).toBe("{\"a\":1}")
+    expect(searchApiValidationArgs('{"a":1}', "q")).toBe('{"a":1}')
     expect(searchApiValidationArgs("a=1", undefined)).toBe("a=1")
   })
 
@@ -94,7 +110,9 @@ describe("edge cases", () => {
   })
 
   it("builds field specs from plain strings or tag objects, skipping blanks", () => {
-    expect(buildFieldSpec("i", "t", [{ text: "a" }, "b", "", { text: "" }])).toBe("id:i, title:t, a, b")
+    expect(buildFieldSpec("i", "t", [{ text: "a" }, "b", "", { text: "" }])).toBe(
+      "id:i, title:t, a, b"
+    )
     expect(buildFieldSpec("i", "t")).toBe("id:i, title:t")
   })
 

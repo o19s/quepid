@@ -85,10 +85,10 @@ describe("live query documents runtime", () => {
     const { runtime } = buildRuntime()
     const liveQuery = query()
 
-    runtime.setError(liveQuery, new SearchError([
-      { text: "<i>bad</i> " },
-      { text: "inspect", href: "http://solr.test/" }
-    ]))
+    runtime.setError(
+      liveQuery,
+      new SearchError([{ text: "<i>bad</i> " }, { text: "inspect", href: "http://solr.test/" }])
+    )
 
     expect(liveQuery.errorText).toBe(
       '&lt;i&gt;bad&lt;/i&gt; <a href="http://solr.test/" target="_blank" rel="noopener noreferrer">inspect</a>'

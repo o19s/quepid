@@ -4,7 +4,10 @@ import QueryUnratedBadgeController from "controllers/query_unrated_badge_control
 import { CaseScoreStore } from "stores/case_score_store"
 import { viewTemplateTargets } from "../support/view_template"
 
-vi.mock("@hotwired/stimulus", () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js"))
+vi.mock(
+  "@hotwired/stimulus",
+  () => import("../../../node_modules/@hotwired/stimulus/dist/stimulus.js")
+)
 vi.mock("utils/core_store_access", () => ({ getCoreStores: () => ({ scoring: store }) }))
 
 let store
@@ -17,7 +20,10 @@ describe("query-unrated-badge ERB wiring with real Stimulus", () => {
 
   beforeEach(async () => {
     store = new CaseScoreStore()
-    const { rowTemplate } = viewTemplateTargets("app/views/core/_query_list_templates.html.erb", "queries-list")
+    const { rowTemplate } = viewTemplateTargets(
+      "app/views/core/_query_list_templates.html.erb",
+      "queries-list"
+    )
     row = rowTemplate.content.firstElementChild.cloneNode(true)
     badge = row.querySelector('[data-slot="unratedBadge"]')
     count = badge.querySelector(".notification-bubble")
@@ -28,7 +34,9 @@ describe("query-unrated-badge ERB wiring with real Stimulus", () => {
     application = Application.start()
     application.register("query-unrated-badge", QueryUnratedBadgeController)
     await vi.waitFor(() => {
-      expect(application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")).not.toBeNull()
+      expect(
+        application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")
+      ).not.toBeNull()
     })
   })
 
@@ -36,7 +44,9 @@ describe("query-unrated-badge ERB wiring with real Stimulus", () => {
     row?.remove()
     if (application && badge) {
       await vi.waitFor(() => {
-        expect(application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")).toBeNull()
+        expect(
+          application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")
+        ).toBeNull()
       })
     }
     application?.stop()
@@ -73,14 +83,18 @@ describe("query-unrated-badge ERB wiring with real Stimulus", () => {
 
     row.remove()
     await vi.waitFor(() => {
-      expect(application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")).toBeNull()
+      expect(
+        application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")
+      ).toBeNull()
     })
     scoreQueries({ 1: { score: 0.5, allRated: false, countMissingRatings: 5 } })
     expect(count.textContent).toBe("3")
 
     document.body.append(row)
     await vi.waitFor(() => {
-      expect(application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")).not.toBeNull()
+      expect(
+        application.getControllerForElementAndIdentifier(badge, "query-unrated-badge")
+      ).not.toBeNull()
       expect(count.textContent).toBe("5")
     })
     scoreQueries({ 1: { score: 0.5, allRated: false, countMissingRatings: 6 } })

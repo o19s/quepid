@@ -77,8 +77,9 @@ describe("CaseToolbarController", () => {
       })
 
       const meta = frame.querySelector("[data-case-header-case-no]")
-      expect(meta.querySelector('[data-case-rename-target="caseDisplay"]').textContent)
-        .toBe("Wizard Name")
+      expect(meta.querySelector('[data-case-rename-target="caseDisplay"]').textContent).toBe(
+        "Wizard Name"
+      )
       expect(meta.dataset.caseHeaderCaseName).toBe("Wizard Name")
     })
 
@@ -104,9 +105,9 @@ describe("CaseToolbarController", () => {
         })
       ).not.toThrow()
 
-      expect(
-        frame.querySelector('[data-case-rename-target="caseDisplay"]').textContent
-      ).toBe("Wizard Name")
+      expect(frame.querySelector('[data-case-rename-target="caseDisplay"]').textContent).toBe(
+        "Wizard Name"
+      )
     })
   })
 

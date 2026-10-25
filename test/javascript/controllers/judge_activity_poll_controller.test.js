@@ -15,7 +15,10 @@ describe("JudgeActivityPollController", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.stubGlobal("Turbo", { renderStreamMessage: vi.fn() })
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, text: async () => "<turbo-stream></turbo-stream>" }))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({ ok: true, text: async () => "<turbo-stream></turbo-stream>" })
+    )
   })
 
   afterEach(() => {
@@ -32,7 +35,9 @@ describe("JudgeActivityPollController", () => {
     const [url] = fetch.mock.calls[0]
     expect(url.searchParams.get("existing")).toBe("1")
     expect(url.searchParams.get("known_judge_ids")).toBe("7")
-    expect(globalThis.Turbo.renderStreamMessage).toHaveBeenCalledWith("<turbo-stream></turbo-stream>")
+    expect(globalThis.Turbo.renderStreamMessage).toHaveBeenCalledWith(
+      "<turbo-stream></turbo-stream>"
+    )
     controller.disconnect()
   })
 
@@ -81,7 +86,11 @@ describe("JudgeActivityPollController", () => {
 
   it("does not overlap slow requests or apply a response after leaving the page", async () => {
     let complete
-    fetch.mockReturnValue(new Promise((resolve) => { complete = resolve }))
+    fetch.mockReturnValue(
+      new Promise((resolve) => {
+        complete = resolve
+      })
+    )
     const controller = buildController()
     controller.connect()
     await vi.advanceTimersByTimeAsync(3000)

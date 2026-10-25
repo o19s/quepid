@@ -60,7 +60,7 @@ describe("createQueryDiff", () => {
   it("retains multiple diff searchers and skips missing snapshots", async () => {
     const query = buildQuery()
     const first = buildSearcher("one")
-    const factory = vi.fn((id) => id === "one" ? first : null)
+    const factory = vi.fn((id) => (id === "one" ? first : null))
 
     await createQueryDiff({
       query,
@@ -93,7 +93,11 @@ describe("createQueryDiff searcher wiring", () => {
     const query = buildQuery()
     query.diffs = { stale: true }
     query.diffSearchers = [1]
-    await createQueryDiff({ query, diffSettings: [{ id: 1 }], createSearcherFromSnapshot: () => null })
+    await createQueryDiff({
+      query,
+      diffSettings: [{ id: 1 }],
+      createSearcherFromSnapshot: () => null
+    })
     expect(query.diffs).toBeNull()
     expect(query.diff).toBeNull()
     expect(query.diffSearchers).toEqual([])
@@ -103,7 +107,11 @@ describe("createQueryDiff searcher wiring", () => {
     const query = buildQuery()
     const searchers = [buildSearcher(1), buildSearcher(2)]
     const create = vi.fn((setting) => searchers[setting.id - 1])
-    const promise = createQueryDiff({ query, diffSettings: [{ id: 1 }, { id: 2 }], createSearcherFromSnapshot: create })
+    const promise = createQueryDiff({
+      query,
+      diffSettings: [{ id: 1 }, { id: 2 }],
+      createSearcherFromSnapshot: create
+    })
     for (const searcher of searchers) {
       expect(searcher.diffScore).toEqual({ score: "?", allRated: false })
       expect(searcher.currentScore).toBe(searcher.diffScore)

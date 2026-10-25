@@ -9,7 +9,10 @@ vi.mock("controllers/application", () => ({
 describe("confirmDialog", () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.stubGlobal("confirm", vi.fn(() => true))
+    vi.stubGlobal(
+      "confirm",
+      vi.fn(() => true)
+    )
   })
   afterEach(() => {
     document.body.innerHTML = ""
@@ -23,8 +26,10 @@ describe("confirmDialog", () => {
 
     await expect(confirmDialog("Archive?", "primary")).resolves.toBe(false)
 
-    expect(application.getControllerForElementAndIdentifier)
-      .toHaveBeenCalledWith(document.getElementById("confirmModal"), "confirm-dialog")
+    expect(application.getControllerForElementAndIdentifier).toHaveBeenCalledWith(
+      document.getElementById("confirmModal"),
+      "confirm-dialog"
+    )
     expect(dialog.ask).toHaveBeenCalledWith("Archive?", "primary")
     expect(window.confirm).not.toHaveBeenCalled()
   })

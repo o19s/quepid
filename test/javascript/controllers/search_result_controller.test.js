@@ -75,11 +75,16 @@ describe("SearchResultController", () => {
   })
 
   it("routes title clicks through a declared action that requests the rendered document", () => {
-    const controller = buildController(snapshotFor({ id: 42 }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(snapshotFor({ id: 42 }), {
+      depthOfRating: 0,
+      ratingScale: {}
+    })
     controller.render()
     const titleButton = controller.contentTarget.querySelector(".subTitle button")
     const events = []
-    document.body.addEventListener("search-result:show-document", event => events.push(event.detail))
+    document.body.addEventListener("search-result:show-document", (event) =>
+      events.push(event.detail)
+    )
     const event = { preventDefault: vi.fn() }
 
     controller.showDocument(event)
@@ -90,7 +95,10 @@ describe("SearchResultController", () => {
   })
 
   it("renders an error without a rating control", () => {
-    const controller = buildController(snapshotFor({ error: "missing id" }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(snapshotFor({ error: "missing id" }), {
+      depthOfRating: 0,
+      ratingScale: {}
+    })
     controller.render()
 
     expect(controller.contentTarget.querySelector(".single-rating")).toBeNull()
@@ -98,10 +106,13 @@ describe("SearchResultController", () => {
   })
 
   it("separates each field label from its value with a space", () => {
-    const controller = buildController(snapshotFor({
-      snippets: { structure: "Corporations" },
-      rawFields: { structure: "Corporations" }
-    }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(
+      snapshotFor({
+        snippets: { structure: "Corporations" },
+        rawFields: { structure: "Corporations" }
+      }),
+      { depthOfRating: 0, ratingScale: {} }
+    )
     controller.render()
 
     const label = controller.contentTarget.querySelector(".subLabel")
@@ -115,19 +126,30 @@ describe("SearchResultController", () => {
       movie: "https://example.org/movie.webm",
       imageBeforeVideo: "https://example.org/clip.mp4?poster=x.jpg"
     }
-    const controller = buildController(snapshotFor({ embeds }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(snapshotFor({ embeds }), {
+      depthOfRating: 0,
+      ratingScale: {}
+    })
     controller.render()
 
-    const srcs = (selector) => [...controller.contentTarget.querySelectorAll(selector)].map(el => el.getAttribute("src"))
+    const srcs = (selector) =>
+      [...controller.contentTarget.querySelectorAll(selector)].map((el) => el.getAttribute("src"))
     expect(srcs("audio.media-embed")).toEqual([embeds.fragment, embeds.queryString])
     expect(srcs("video.media-embed")).toEqual([embeds.movie])
     expect(srcs("img.media-embed")).toEqual([embeds.imageBeforeVideo])
   })
 
   it("shows a value with no media extension as text, matching the extension's case and a literal dot", () => {
-    const controller = buildController(snapshotFor({
-      embeds: { upper: "https://example.org/CLIP.MP3", noDot: "https://example.org/mp3s/list", overview: "plain text" }
-    }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(
+      snapshotFor({
+        embeds: {
+          upper: "https://example.org/CLIP.MP3",
+          noDot: "https://example.org/mp3s/list",
+          overview: "plain text"
+        }
+      }),
+      { depthOfRating: 0, ratingScale: {} }
+    )
     controller.render()
 
     const content = controller.contentTarget
@@ -138,33 +160,46 @@ describe("SearchResultController", () => {
   })
 
   it("shows an array field as its already-comma-joined snippet text, not raw JSON", () => {
-    const controller = buildController(snapshotFor({
-      snippets: { cast: "Mark Hamill,Harrison Ford,Carrie Fisher" },
-      rawFields: { cast: [ "Mark Hamill", "Harrison Ford", "Carrie Fisher" ] }
-    }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(
+      snapshotFor({
+        snippets: { cast: "Mark Hamill,Harrison Ford,Carrie Fisher" },
+        rawFields: { cast: ["Mark Hamill", "Harrison Ford", "Carrie Fisher"] }
+      }),
+      { depthOfRating: 0, ratingScale: {} }
+    )
     controller.render()
 
-    expect(controller.contentTarget.textContent).toContain("cast: Mark Hamill,Harrison Ford,Carrie Fisher")
+    expect(controller.contentTarget.textContent).toContain(
+      "cast: Mark Hamill,Harrison Ford,Carrie Fisher"
+    )
     expect(controller.contentTarget.querySelector("[data-controller='json-explorer']")).toBeNull()
   })
 
   it("renders a genuine nested object field through the JSON explorer", () => {
-    const controller = buildController(snapshotFor({
-      snippets: { options: "[object Object]" },
-      rawFields: { options: { judge_options: { llm_provider: "openai" } } }
-    }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(
+      snapshotFor({
+        snippets: { options: "[object Object]" },
+        rawFields: { options: { judge_options: { llm_provider: "openai" } } }
+      }),
+      { depthOfRating: 0, ratingScale: {} }
+    )
     controller.render()
 
     const explorer = controller.contentTarget.querySelector("[data-controller='json-explorer']")
     expect(explorer).not.toBeNull()
-    expect(explorer.dataset.jsonExplorerJsonValue).toBe(JSON.stringify({ judge_options: { llm_provider: "openai" } }))
+    expect(explorer.dataset.jsonExplorerJsonValue).toBe(
+      JSON.stringify({ judge_options: { llm_provider: "openai" } })
+    )
   })
 
   it("preserves falsy field values", () => {
-    const controller = buildController(snapshotFor({
-      snippets: { zero: "0", falseValue: "false" },
-      rawFields: { zero: 0, falseValue: false }
-    }), { depthOfRating: 0, ratingScale: {} })
+    const controller = buildController(
+      snapshotFor({
+        snippets: { zero: "0", falseValue: "false" },
+        rawFields: { zero: 0, falseValue: false }
+      }),
+      { depthOfRating: 0, ratingScale: {} }
+    )
     controller.render()
 
     expect(controller.contentTarget.textContent).toContain("0")

@@ -17,10 +17,22 @@ vi.mock("utils/clipboard", () => ({
   copyText: vi.fn(() => Promise.resolve())
 }))
 
-function controllerFor({ showOnlyRated = false, results = true, expanded = true, errorText = "", queryState = "loaded", numFound = 1, ratedDocsFound = 1, depthOfRating = null, diffError = false } = {}) {
+function controllerFor({
+  showOnlyRated = false,
+  results = true,
+  expanded = true,
+  errorText = "",
+  queryState = "loaded",
+  numFound = 1,
+  ratedDocsFound = 1,
+  depthOfRating = null,
+  diffError = false
+} = {}) {
   // The shipped expanded-query shell, plus the per-document template the results clone.
   document.body.innerHTML = loadViewTemplate(TEMPLATES)
-  const element = document.body.querySelector('[data-queries-list-target="searchResultsTemplate"]').content.firstElementChild.cloneNode(true)
+  const element = document.body
+    .querySelector('[data-queries-list-target="searchResultsTemplate"]')
+    .content.firstElementChild.cloneNode(true)
   const controller = buildControllerFixture(SearchResultsController, {
     element,
     targets: {
@@ -54,16 +66,20 @@ function controllerFor({ showOnlyRated = false, results = true, expanded = true,
     showOnlyRated,
     ratingScale: { 2: { color: "rgb(1, 2, 3)" } },
     queryRating: 2,
-    diffs: results ? null : {
-      searchers: [{
-        name: "Snapshot A",
-        docs: [{ id: "snapshot", title: "Snapshot doc" }],
-        ratedDocs: [{ id: "snapshot", title: "Snapshot doc" }],
-        inError: diffError,
-        searchError: diffError ? "Snapshot search failed" : "",
-        score: { score: 0.5, allRated: true }
-      }]
-    }
+    diffs: results
+      ? null
+      : {
+          searchers: [
+            {
+              name: "Snapshot A",
+              docs: [{ id: "snapshot", title: "Snapshot doc" }],
+              ratedDocs: [{ id: "snapshot", title: "Snapshot doc" }],
+              inError: diffError,
+              searchError: diffError ? "Snapshot search failed" : "",
+              score: { score: 0.5, allRated: true }
+            }
+          ]
+        }
   }
   controller.store = {
     query: () => snapshot,
@@ -80,10 +96,14 @@ describe("SearchResultsController", () => {
 
   it("selects current or rated documents without changing the query service", () => {
     const current = controllerFor()
-    expect(current.controller.visibleDocuments(current.controller.store.query())).toEqual([{ id: "all" }])
+    expect(current.controller.visibleDocuments(current.controller.store.query())).toEqual([
+      { id: "all" }
+    ])
 
     const rated = controllerFor({ showOnlyRated: true })
-    expect(rated.controller.visibleDocuments(rated.controller.store.query())).toEqual([{ id: "rated" }])
+    expect(rated.controller.visibleDocuments(rated.controller.store.query())).toEqual([
+      { id: "rated" }
+    ])
   })
 
   it("renders diff columns from the document store", () => {
@@ -92,11 +112,14 @@ describe("SearchResultsController", () => {
 
     expect(controller.contentTarget.classList.contains("d-none")).toBe(false)
     expect(controller.resultsTarget.childElementCount).toBe(0)
-    expect(controller.diffResultsTarget.querySelector(".diff-header").querySelectorAll(".diff-column")).toHaveLength(2)
+    expect(
+      controller.diffResultsTarget.querySelector(".diff-header").querySelectorAll(".diff-column")
+    ).toHaveLength(2)
     expect(controller.diffResultsTarget.textContent).toContain("Snapshot A")
     expect(controller.diffResultsTarget.querySelector('[data-doc-id="snapshot"]')).not.toBeNull()
-    expect(controller.diffResultsTarget.querySelector(".diff-actions a").textContent)
-      .toBe("Browse 1 Current Results on Solr")
+    expect(controller.diffResultsTarget.querySelector(".diff-actions a").textContent).toBe(
+      "Browse 1 Current Results on Solr"
+    )
   })
 
   it("preserves comparison controls when another live query changes", () => {
@@ -109,7 +132,7 @@ describe("SearchResultsController", () => {
     documents.replaceQuery(1, snapshot)
     controller.store = documents
     controller.render()
-    documents.addEventListener("change", event => controller.renderFromStore(event.detail))
+    documents.addEventListener("change", (event) => controller.renderFromStore(event.detail))
     const comparison = controller.diffResultsTarget.firstChild
 
     queries.upsert({ queryId: 2, queryText: "other", numFound: 9 })
@@ -196,9 +219,11 @@ describe("SearchResultsController", () => {
 
     expect(controller.scoreAllTarget.textContent).toContain("Score All")
     expect(controller.scoreAllTarget.querySelector(".btn").textContent).toContain("2")
-    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
-      .getAttribute("data-rating-popover-scale-value"))
-      .toBe(JSON.stringify({ 2: { color: "rgb(1, 2, 3)" } }))
+    expect(
+      controller.scoreAllTarget
+        .querySelector('[data-controller="rating-popover"]')
+        .getAttribute("data-rating-popover-scale-value")
+    ).toBe(JSON.stringify({ 2: { color: "rgb(1, 2, 3)" } }))
   })
 
   it("leaves the Score All control alone until the query rating or scale changes", () => {
@@ -207,11 +232,15 @@ describe("SearchResultsController", () => {
     const control = controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')
 
     controller.render()
-    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).toBe(control)
+    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).toBe(
+      control
+    )
 
     snapshot.queryRating = 3
     controller.render()
-    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).not.toBe(control)
+    expect(controller.scoreAllTarget.querySelector('[data-controller="rating-popover"]')).not.toBe(
+      control
+    )
     expect(controller.scoreAllTarget.querySelector(".btn").textContent).toContain("3")
   })
 
@@ -229,17 +258,23 @@ describe("SearchResultsController", () => {
   })
 
   describe("keyed result rows", () => {
-    const results = controller => [...controller.resultsTarget.children]
+    const results = (controller) => [...controller.resultsTarget.children]
 
     it("reuses each document's result and only bumps the version of the ones that changed", () => {
       const { controller, snapshot } = controllerFor()
-      snapshot.docs = [{ id: "a", rating: null }, { id: "b", rating: null }]
+      snapshot.docs = [
+        { id: "a", rating: null },
+        { id: "b", rating: null }
+      ]
       controller.render()
       const [a, b] = results(controller)
       const aVersion = a.dataset.searchResultVersionValue
       const bVersion = b.dataset.searchResultVersionValue
 
-      snapshot.docs = [{ id: "a", rating: 1 }, { id: "b", rating: null }]
+      snapshot.docs = [
+        { id: "a", rating: 1 },
+        { id: "b", rating: null }
+      ]
       controller.render()
 
       expect(results(controller)).toEqual([a, b])
@@ -279,7 +314,11 @@ describe("SearchResultsController", () => {
   })
 
   it("renders errors, pagination, and rated/depth notices from store state", () => {
-    const { controller } = controllerFor({ numFound: 3, depthOfRating: 2, errorText: "Search failed" })
+    const { controller } = controllerFor({
+      numFound: 3,
+      depthOfRating: 2,
+      errorText: "Search failed"
+    })
     controller.render()
 
     expect(controller.errorTarget.textContent).toContain("Search failed")
@@ -293,11 +332,16 @@ describe("SearchResultsController", () => {
   })
 
   it("preserves safe formatting and links in search errors", () => {
-    const { controller } = controllerFor({ errorText: 'Failed: <strong>Solr</strong> <a href="https://example.com">troubleshooting</a> <script>alert(1)</script>' })
+    const { controller } = controllerFor({
+      errorText:
+        'Failed: <strong>Solr</strong> <a href="https://example.com">troubleshooting</a> <script>alert(1)</script>'
+    })
     controller.render()
 
     expect(controller.errorTarget.querySelector("strong").textContent).toBe("Solr")
-    expect(controller.errorTarget.querySelector("a").getAttribute("href")).toBe("https://example.com/")
+    expect(controller.errorTarget.querySelector("a").getAttribute("href")).toBe(
+      "https://example.com/"
+    )
     expect(controller.errorTarget.querySelector("script")).toBeNull()
   })
 
@@ -345,10 +389,15 @@ describe("SearchResultsController", () => {
     vi.stubGlobal("requestAnimationFrame", (callback) => rafCallbacks.push(callback))
     const { controller, snapshot } = controllerFor()
     document.body.append(controller.element)
-    controller.element.insertAdjacentHTML("beforeend", `
+    controller.element.insertAdjacentHTML(
+      "beforeend",
+      `
       <div data-search-results-target="notesBox" class="d-none"><div data-controller="query-notes"></div></div>
-    `)
-    controller.notesBoxTarget = controller.element.querySelector('[data-search-results-target="notesBox"]')
+    `
+    )
+    controller.notesBoxTarget = controller.element.querySelector(
+      '[data-search-results-target="notesBox"]'
+    )
     controller.hasNotesBoxTarget = true
     const opened = vi.fn()
     controller.notesBoxTarget.firstElementChild.addEventListener("query-notes:open", opened)
@@ -391,5 +440,4 @@ describe("SearchResultsController", () => {
     expect(event.preventDefault).toHaveBeenCalled()
     expect(event.stopPropagation).toHaveBeenCalled()
   })
-
 })

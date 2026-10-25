@@ -37,7 +37,9 @@ describe("RatingsStore", () => {
     expect(store.getRating("doc3")).toBe(5)
     expect(store.version()).toBe(1)
     expect(onChanged).toHaveBeenCalledWith(1)
-    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", { rating: { doc_id: "doc3", rating: 5 } })
+    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", {
+      rating: { doc_id: "doc3", rating: 5 }
+    })
   })
 
   it("updates bulk ratings and bulk resets", async () => {
@@ -49,8 +51,13 @@ describe("RatingsStore", () => {
     expect(store.hasRating("doc3")).toBe(false)
     expect(store.hasRating("doc4")).toBe(false)
     expect(store.version()).toBe(2)
-    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings", { doc_ids: ["doc3", "doc4"], rating: 7 })
-    expect(postJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings/delete", { doc_ids: ["doc3", "doc4"] })
+    expect(putJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings", {
+      doc_ids: ["doc3", "doc4"],
+      rating: 7
+    })
+    expect(postJson).toHaveBeenCalledWith("api/cases/0/queries/1/bulk/ratings/delete", {
+      doc_ids: ["doc3", "doc4"]
+    })
   })
 
   it("leaves ratings unchanged when the request fails", async () => {
@@ -66,7 +73,9 @@ describe("RatingsStore", () => {
     await store.resetRating("doc1")
 
     expect(store.hasRating("doc1")).toBe(false)
-    expect(deleteJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", { rating: { doc_id: "doc1" } })
+    expect(deleteJson).toHaveBeenCalledWith("api/cases/0/queries/1/ratings", {
+      rating: { doc_id: "doc1" }
+    })
   })
 
   it("adds rating behavior without replacing document behavior", async () => {

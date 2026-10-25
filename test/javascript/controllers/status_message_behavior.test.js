@@ -138,5 +138,4 @@ describe("status_message", () => {
     expect(el.textContent).toBe("")
     vi.useRealTimers()
   })
-
 })

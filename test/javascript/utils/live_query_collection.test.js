@@ -4,7 +4,7 @@ import { createLiveQueryCollectionRuntime } from "utils/live_query_collection"
 function runtimeFor(overrides = {}) {
   return createLiveQueryCollectionRuntime({
     fetchQueries: vi.fn(() => Promise.resolve({ queries: [] })),
-    createQuery: vi.fn(data => data),
+    createQuery: vi.fn((data) => data),
     createDiff: vi.fn(),
     clearQueries: vi.fn(),
     registerQuery: vi.fn(),
@@ -21,31 +21,48 @@ function runtimeFor(overrides = {}) {
 
 describe("createLiveQueryCollectionRuntime", () => {
   it("registers live queries, creates diffs, and publishes the store snapshot", () => {
-    const createQuery = vi.fn(data => ({ queryId: data.query_id }))
+    const createQuery = vi.fn((data) => ({ queryId: data.query_id }))
     const createDiff = vi.fn()
     const registerQuery = vi.fn()
     const replaceStore = vi.fn()
     const applyDisplayOrder = vi.fn()
-    const runtime = runtimeFor({ createQuery, createDiff, registerQuery, replaceStore, applyDisplayOrder })
+    const runtime = runtimeFor({
+      createQuery,
+      createDiff,
+      registerQuery,
+      replaceStore,
+      applyDisplayOrder
+    })
 
-    expect(runtime.addQueriesFromResponse({
-      display_order: [4],
-      queries: [
-        { query_id: 4, query_text: "star wars" },
-        { query_id: 5, query_text: "deleted", deleted: "true" }
-      ]
-    }, 9)).toEqual([4])
+    expect(
+      runtime.addQueriesFromResponse(
+        {
+          display_order: [4],
+          queries: [
+            { query_id: 4, query_text: "star wars" },
+            { query_id: 5, query_text: "deleted", deleted: "true" }
+          ]
+        },
+        9
+      )
+    ).toEqual([4])
 
     expect(createQuery).toHaveBeenCalledWith({ query_id: 4, query_text: "star wars" })
     expect(createDiff).toHaveBeenCalledWith({ queryId: 4 })
     expect(registerQuery).toHaveBeenCalledWith(4, { queryId: 4 })
     expect(applyDisplayOrder).toHaveBeenCalledWith([4])
-    expect(replaceStore).toHaveBeenCalledWith({ caseId: 9, displayOrder: [4], queries: [{ queryId: 4 }] })
+    expect(replaceStore).toHaveBeenCalledWith({
+      caseId: 9,
+      displayOrder: [4],
+      queries: [{ queryId: 4 }]
+    })
   })
 
   it("keeps stale bootstrap responses from replacing the active collection", async () => {
     const requests = []
-    const request = vi.fn(() => new Promise((resolve, reject) => requests.push({ resolve, reject })))
+    const request = vi.fn(
+      () => new Promise((resolve, reject) => requests.push({ resolve, reject }))
+    )
     const clearQueries = vi.fn()
     const runtime = runtimeFor({ fetchQueries: request, clearQueries })
 
@@ -62,7 +79,9 @@ describe("createLiveQueryCollectionRuntime", () => {
 
   it("ignores a stale bootstrap failure instead of marking the store", async () => {
     const requests = []
-    const request = vi.fn(() => new Promise((resolve, reject) => requests.push({ resolve, reject })))
+    const request = vi.fn(
+      () => new Promise((resolve, reject) => requests.push({ resolve, reject }))
+    )
     const markStoreError = vi.fn()
     const runtime = runtimeFor({ fetchQueries: request, markStoreError })
 
@@ -106,7 +125,9 @@ describe("createLiveQueryCollectionRuntime", () => {
     const setBootstrapping = vi.fn()
     const runtime = runtimeFor({
       fetchQueries: vi.fn(() => Promise.resolve({ queries: [{ query_id: 1 }] })),
-      createQuery: vi.fn(() => { throw error }),
+      createQuery: vi.fn(() => {
+        throw error
+      }),
       setBootstrapping
     })
 
@@ -120,7 +141,12 @@ describe("createLiveQueryCollectionRuntime", () => {
     const markStoreError = vi.fn()
     const setBootstrapping = vi.fn()
     const publishState = vi.fn()
-    const runtime = runtimeFor({ fetchQueries: request, markStoreError, setBootstrapping, publishState })
+    const runtime = runtimeFor({
+      fetchQueries: request,
+      markStoreError,
+      setBootstrapping,
+      publishState
+    })
 
     await expect(runtime.bootstrapQueries(4)).rejects.toMatchObject({ status: 500 })
     expect(markStoreError).toHaveBeenCalledWith({ status: 500 })
@@ -131,10 +157,7 @@ describe("createLiveQueryCollectionRuntime", () => {
   it("leaves a newer bootstrap in charge when a superseded one throws mid-processing", async () => {
     const error = new Error("malformed query")
     const setBootstrapping = vi.fn()
-    const requests = [
-      Promise.resolve({ queries: [{ query_id: 1 }] }),
-      new Promise(() => {})
-    ]
+    const requests = [Promise.resolve({ queries: [{ query_id: 1 }] }), new Promise(() => {})]
     const runtime = runtimeFor({
       fetchQueries: vi.fn(() => requests.shift()),
       createQuery: vi.fn(() => {

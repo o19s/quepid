@@ -33,7 +33,9 @@ describe("query list templates", () => {
     const copy = root.querySelector('[data-action="click->search-results#copyQuery"]')
     expect(copy.getAttribute("aria-label")).toBe("Copy query")
     expect(copy.getAttribute("title")).toBe("Copy query")
-    expect(root.querySelector(".results-pane-toggle").getAttribute("aria-label")).toBe("Close the results pane")
+    expect(root.querySelector(".results-pane-toggle").getAttribute("aria-label")).toBe(
+      "Close the results pane"
+    )
     expect(root.querySelector(".results-pane-toggle").tagName).toBe("BUTTON")
   })
 
@@ -43,7 +45,10 @@ describe("query list templates", () => {
     const explain = root.querySelector('[data-controller="query-explain"]')
     expect(explain.dataset.queryExplainQueryIdValue).toBe("8")
     expect(explain.dataset.queryExplainQueriesListOutlet).toBe("#query-container")
-    expect(root.querySelector('[data-controller="missing-documents"]').dataset.missingDocumentsQueryIdValue).toBe("8")
+    expect(
+      root.querySelector('[data-controller="missing-documents"]').dataset
+        .missingDocumentsQueryIdValue
+    ).toBe("8")
     expect(root.querySelector('[data-controller="query-delete"]').dataset).toMatchObject({
       queryDeleteQueryIdValue: "8",
       queryDeleteDeleteUrlValue: "/api/cases/6/queries/8"
@@ -52,16 +57,21 @@ describe("query list templates", () => {
       "/api/cases/6/queries/8/notes"
     )
     // The row-opened modals read the query from the row, so their buttons carry nothing per query.
-    expect(Object.keys(root.querySelector('[data-bs-target="#queryOptionsModal"]').dataset)).toEqual(["bsToggle", "bsTarget"])
-    expect(Object.keys(root.querySelector('[data-bs-target="#moveQueryModal"]').dataset)).toEqual(["bsToggle", "bsTarget"])
+    expect(
+      Object.keys(root.querySelector('[data-bs-target="#queryOptionsModal"]').dataset)
+    ).toEqual(["bsToggle", "bsTarget"])
+    expect(Object.keys(root.querySelector('[data-bs-target="#moveQueryModal"]').dataset)).toEqual([
+      "bsToggle",
+      "bsTarget"
+    ])
   })
 
   it("ties each notes label to its field", () => {
     const root = searchResults()
 
-    expect(root.querySelector('label[for="information-8"]').nextElementSibling.firstElementChild).toBe(
-      root.querySelector('[data-query-notes-target="informationNeed"]#information-8')
-    )
+    expect(
+      root.querySelector('label[for="information-8"]').nextElementSibling.firstElementChild
+    ).toBe(root.querySelector('[data-query-notes-target="informationNeed"]#information-8'))
     expect(root.querySelector('label[for="notes-8"]').nextElementSibling.firstElementChild).toBe(
       root.querySelector('[data-query-notes-target="notes"]#notes-8')
     )

@@ -22,15 +22,17 @@ function hidden(element) {
 
 describe("DynamicModalController", () => {
   beforeEach(() => {
-    window.bootstrap = { Modal: class {
-      constructor(element) {
-        instance = this
-        this.element = element
-        this.show = vi.fn(() => element.classList.add("show"))
-        this.hide = vi.fn()
-        this.dispose = vi.fn()
+    window.bootstrap = {
+      Modal: class {
+        constructor(element) {
+          instance = this
+          this.element = element
+          this.show = vi.fn(() => element.classList.add("show"))
+          this.hide = vi.fn()
+          this.dispose = vi.fn()
+        }
       }
-    } }
+    }
   })
   afterEach(() => {
     document.body.replaceChildren()

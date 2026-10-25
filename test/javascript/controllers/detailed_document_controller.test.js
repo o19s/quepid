@@ -15,7 +15,9 @@ describe("DetailedDocumentController", () => {
     const getInstance = vi.fn(() => ({ dispose }))
     vi.stubGlobal("bootstrap", { Tab: { getInstance } })
     try {
-      const controller = buildControllerFixture(DetailedDocumentController, { targets: { tab: tabs } })
+      const controller = buildControllerFixture(DetailedDocumentController, {
+        targets: { tab: tabs }
+      })
       controller.disconnect()
       expect(getInstance.mock.calls.map(([element]) => element)).toEqual(tabs)
       expect(dispose).toHaveBeenCalledTimes(2)

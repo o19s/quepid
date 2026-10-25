@@ -13,7 +13,9 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 vi.mock("utils/core_flash", () => ({ default: { show: vi.fn(), hide: vi.fn() } }))
 beforeEach(() => {
@@ -88,7 +90,11 @@ describe("CoreBootstrapController", () => {
               needToRedirectQuepidProtocol: vi.fn().mockReturnValue(false)
             }
           },
-          docCache: { empty: vi.fn(), invalidate: vi.fn(), update: vi.fn().mockResolvedValue(undefined) }
+          docCache: {
+            empty: vi.fn(),
+            invalidate: vi.fn(),
+            update: vi.fn().mockResolvedValue(undefined)
+          }
         }
       }
     }
@@ -98,7 +104,6 @@ describe("CoreBootstrapController", () => {
     testStores = undefined
     testCapabilities = undefined
     delete window.quepidCoreBootstrap
-
   })
 
   const core = () => testCapabilities.caseRuntime.bootstrap.core
@@ -112,7 +117,10 @@ describe("CoreBootstrapController", () => {
     const controller = buildControllerFixture(CoreBootstrapController, {
       values: {
         caseNo,
-        initial: { user: { id: 7 }, case: { case_id: initialCaseNo, tries: [], last_try_number: 1 } },
+        initial: {
+          user: { id: 7 },
+          case: { case_id: initialCaseNo, tries: [], last_try_number: 1 }
+        },
         tryNo: 1
       },
       outlets: {
@@ -138,7 +146,9 @@ describe("CoreBootstrapController", () => {
     expect(testStores.diff.reset).toHaveBeenCalledOnce()
     expect(testStores.diff.disable).toHaveBeenCalledOnce()
     expect(testCapabilities.queryCapabilities.resetQueryState).toHaveBeenCalledOnce()
-    expect(testCapabilities.caseRuntime.bootstrap.core.user.initialize).toHaveBeenCalledWith({ id: 7 })
+    expect(testCapabilities.caseRuntime.bootstrap.core.user.initialize).toHaveBeenCalledWith({
+      id: 7
+    })
   })
 
   it("marks the workspace ready, clears old errors, and reports a successful search", async () => {
@@ -160,7 +170,11 @@ describe("CoreBootstrapController", () => {
     expect(testCapabilities.queryCommands.searchAll).not.toHaveBeenCalled()
     expect(failed).toHaveBeenCalledOnce()
     expect(ready).not.toHaveBeenCalled()
-    expect(flash.show).toHaveBeenCalledWith("error", "Could not load the case 2 due to: Initial workspace data does not match the selected case", "search-error")
+    expect(flash.show).toHaveBeenCalledWith(
+      "error",
+      "Could not load the case 2 due to: Initial workspace data does not match the selected case",
+      "search-error"
+    )
   })
 
   it("flashes the search error when some queries fail after loading", async () => {
@@ -186,7 +200,10 @@ describe("CoreBootstrapController", () => {
   it("tells a user with no cases how to create one", async () => {
     const { flash, failed, ready } = await bootstrapCase(0)
 
-    expect(flash.show).toHaveBeenCalledWith("error", expect.stringContaining("You don't have any Cases created in Quepid"))
+    expect(flash.show).toHaveBeenCalledWith(
+      "error",
+      expect.stringContaining("You don't have any Cases created in Quepid")
+    )
     expect(flash.show).toHaveBeenCalledOnce()
     expect(failed.mock.calls[0][0].detail.error.message).toBe("No case selected")
     expect(ready).not.toHaveBeenCalled()
@@ -195,7 +212,10 @@ describe("CoreBootstrapController", () => {
   it.each([
     [
       "initial case data cannot be initialized",
-      () => core().case.initialize.mockImplementation(() => { throw new Error("Invalid initial case data") }),
+      () =>
+        core().case.initialize.mockImplementation(() => {
+          throw new Error("Invalid initial case data")
+        }),
       ["error", "Could not load the case 2 due to: Invalid initial case data", "search-error"]
     ],
     [
@@ -210,12 +230,22 @@ describe("CoreBootstrapController", () => {
         core().navigation.getQuepidProtocol = () => "https"
         core().navigation.createSearchEndpointLink = (id) => `/search_endpoints/${id}`
       },
-      ["error", expect.stringMatching(/^Blocked Request: mixed-content\. You have specified a search engine url .*<code>https<\/code>/), "search-error", { html: true }],
+      [
+        "error",
+        expect.stringMatching(
+          /^Blocked Request: mixed-content\. You have specified a search engine url .*<code>https<\/code>/
+        ),
+        "search-error",
+        { html: true }
+      ],
       true
     ],
     [
       "anything else goes wrong",
-      () => core().case.initialize.mockImplementation(() => { throw new Error("boom") }),
+      () =>
+        core().case.initialize.mockImplementation(() => {
+          throw new Error("boom")
+        }),
       ["error", "Could not load the case 2 due to: boom", "search-error"]
     ]
   ])("explains the failure when %s", async (_label, arrange, flashArgs, toolbarShown = false) => {

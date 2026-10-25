@@ -48,7 +48,9 @@ function buildModalController(overrides = {}) {
 // Open the modal for case 5 with this scorer catalog.
 async function openWithCatalog(controller, catalog, currentScorerId = "") {
   apiFetch.mockResolvedValue({ ok: true, text: async () => scorerCatalogHtml(catalog) })
-  await controller.openFor({ dataset: { pickScorerCoreIdValue: "5", pickScorerCoreCurrentScorerIdValue: currentScorerId } })
+  await controller.openFor({
+    dataset: { pickScorerCoreIdValue: "5", pickScorerCoreCurrentScorerIdValue: currentScorerId }
+  })
 }
 
 describe("PickScorerCoreController", () => {
@@ -58,7 +60,11 @@ describe("PickScorerCoreController", () => {
     const changed = vi.fn()
     document.addEventListener("pick-scorer:selected", changed)
     let resolveSave
-    apiFetch.mockReturnValue(new Promise(resolve => { resolveSave = resolve }))
+    apiFetch.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSave = resolve
+      })
+    )
     const pending = controller.submit()
     controller.selectedScorer = { scorer_id: 2, name: "B" }
     resolveSave({ ok: true, status: 200, text: async () => "{}" })
@@ -68,7 +74,12 @@ describe("PickScorerCoreController", () => {
   })
   it("updates scorer targets without changing unrelated list items", async () => {
     const controller = buildModalController()
-    await openWithCatalog(controller, { communal_scorers: [{ scorer_id: 8, name: "Scorer" }, { scorer_id: 9, name: "Other" }] })
+    await openWithCatalog(controller, {
+      communal_scorers: [
+        { scorer_id: 8, name: "Scorer" },
+        { scorer_id: 9, name: "Other" }
+      ]
+    })
     const unrelated = document.createElement("li")
     unrelated.className = "list-group-item active"
     controller.element.append(unrelated)
@@ -272,7 +283,7 @@ describe("PickScorerCoreController", () => {
       .mockResolvedValueOnce({
         async text() {
           const data = await this.json()
-        return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
+          return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
         },
         ok: true,
         json: () =>
@@ -305,8 +316,14 @@ describe("PickScorerCoreController", () => {
     controller.selectScorer({ params: { scorerId: 2 } })
     expect(controller.submitButtonTarget.disabled).toBe(true)
 
-    resolvePut({ text: async function () { const data = await this.json()
-        return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data) },  ok: true, json: () => Promise.resolve({}) })
+    resolvePut({
+      text: async function () {
+        const data = await this.json()
+        return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
+      },
+      ok: true,
+      json: () => Promise.resolve({})
+    })
     await submitPromise
   })
 
@@ -315,7 +332,7 @@ describe("PickScorerCoreController", () => {
       .mockResolvedValueOnce({
         async text() {
           const data = await this.json()
-        return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
+          return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
         },
         ok: true,
         json: () =>
@@ -324,8 +341,14 @@ describe("PickScorerCoreController", () => {
             user_scorers: []
           })
       })
-      .mockResolvedValueOnce({ text: async function () { const data = await this.json()
-        return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data) },  ok: true, json: () => Promise.resolve({}) })
+      .mockResolvedValueOnce({
+        text: async function () {
+          const data = await this.json()
+          return data.communal_scorers ? scorerCatalogHtml(data) : JSON.stringify(data)
+        },
+        ok: true,
+        json: () => Promise.resolve({})
+      })
 
     const controller = buildModalController()
     const trigger = document.createElement("a")

@@ -52,8 +52,8 @@ describe("QueryUnratedBadgeController", () => {
   it("shows the missing-ratings count once scored with unrated results", () => {
     store.setLatestScoreInfo({
       allRated: false,
-      score:    0.5,
-      queries:  { 1: { score: 0.5, allRated: false, countMissingRatings: 3 } }
+      score: 0.5,
+      queries: { 1: { score: 0.5, allRated: false, countMissingRatings: 3 } }
     })
 
     const controller = buildController(element)
@@ -67,8 +67,8 @@ describe("QueryUnratedBadgeController", () => {
   it("hides again once every result for this query is rated", () => {
     store.setLatestScoreInfo({
       allRated: false,
-      score:    0.5,
-      queries:  { 1: { score: 0.5, allRated: false, countMissingRatings: 1 } }
+      score: 0.5,
+      queries: { 1: { score: 0.5, allRated: false, countMissingRatings: 1 } }
     })
 
     const controller = buildController(element)
@@ -78,8 +78,8 @@ describe("QueryUnratedBadgeController", () => {
 
     store.setLatestScoreInfo({
       allRated: true,
-      score:    1,
-      queries:  { 1: { score: 1, allRated: true, countMissingRatings: 0 } }
+      score: 1,
+      queries: { 1: { score: 1, allRated: true, countMissingRatings: 0 } }
     })
 
     expect(element.classList.contains("d-none")).toBe(true)
@@ -88,8 +88,8 @@ describe("QueryUnratedBadgeController", () => {
   it("ignores other queries' scores (looks up by its own queryId)", () => {
     store.setLatestScoreInfo({
       allRated: false,
-      score:    0.5,
-      queries:  {
+      score: 0.5,
+      queries: {
         1: { score: 1, allRated: true, countMissingRatings: 0 },
         2: { score: 0.5, allRated: false, countMissingRatings: 5 }
       }
@@ -111,8 +111,8 @@ describe("QueryUnratedBadgeController", () => {
 
     store.setLatestScoreInfo({
       allRated: false,
-      score:    0.5,
-      queries:  { 1: { score: 0.5, allRated: false, countMissingRatings: 4 } }
+      score: 0.5,
+      queries: { 1: { score: 0.5, allRated: false, countMissingRatings: 4 } }
     })
 
     expect(element.classList.contains("d-none")).toBe(true)

@@ -17,11 +17,15 @@ describe("createDocCache", () => {
 
     await cache.update({ proxyRequests: true, searchEndpointId: 4 })
     expect(cache.getDoc("one")).toEqual({ id: "one", title: "One" })
-    expect(resolver).toHaveBeenCalledWith(["one"], {
-      proxyRequests: true,
-      searchEndpointId: 4,
-      proxyUrl: "/proxy/4"
-    }, 15)
+    expect(resolver).toHaveBeenCalledWith(
+      ["one"],
+      {
+        proxyRequests: true,
+        searchEndpointId: 4,
+        proxyUrl: "/proxy/4"
+      },
+      15
+    )
 
     cache.empty("snapshot-1")
     expect(cache.knowsDoc("one", "snapshot-1")).toBe(false)

@@ -37,9 +37,14 @@ function mount() {
   return { controller, element }
 }
 
-const ratingButton = rating => ({ currentTarget: { dataset: { queryDocPairId: QDP, rating } } })
-const status = element => element.querySelector(`#status_${QDP}`)
-const ok = (ok = true, code = 200) => ({ text: async () => "", json: async () => null,  ok, status: code })
+const ratingButton = (rating) => ({ currentTarget: { dataset: { queryDocPairId: QDP, rating } } })
+const status = (element) => element.querySelector(`#status_${QDP}`)
+const ok = (ok = true, code = 200) => ({
+  text: async () => "",
+  json: async () => null,
+  ok,
+  status: code
+})
 
 describe("BulkJudgementController", () => {
   beforeEach(() => {
@@ -61,13 +66,18 @@ describe("BulkJudgementController", () => {
       const pending = controller.saveRating(ratingButton("1"))
 
       expect(element.querySelector("#r1").checked).toBe(true)
-      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(true)
+      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(
+        true
+      )
       expect(element.querySelector('button[data-action*="resetRating"]')).not.toBeNull()
       expect(status(element).textContent).toMatch(/Saving/)
 
       await pending
 
-      expect(apiFetch).toHaveBeenCalledWith("books/3/judge/bulk/save", expect.objectContaining({ method: "POST" }))
+      expect(apiFetch).toHaveBeenCalledWith(
+        "books/3/judge/bulk/save",
+        expect.objectContaining({ method: "POST" })
+      )
       expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
         query_doc_pair_id: QDP,
         rating: "1",
@@ -83,8 +93,12 @@ describe("BulkJudgementController", () => {
       await controller.saveRating(ratingButton("0"))
       await controller.saveRating(ratingButton("1"))
 
-      expect(element.querySelector('label[for="r0"]').classList.contains("btn-preselected")).toBe(false)
-      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(true)
+      expect(element.querySelector('label[for="r0"]').classList.contains("btn-preselected")).toBe(
+        false
+      )
+      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(
+        true
+      )
       expect(element.querySelectorAll('button[data-action*="resetRating"]')).toHaveLength(1)
     })
 
@@ -137,10 +151,15 @@ describe("BulkJudgementController", () => {
 
       await controller.resetRating({ currentTarget: button })
 
-      expect(apiFetch).toHaveBeenCalledWith("books/3/judge/bulk/delete", expect.objectContaining({ method: "DELETE" }))
+      expect(apiFetch).toHaveBeenCalledWith(
+        "books/3/judge/bulk/delete",
+        expect.objectContaining({ method: "DELETE" })
+      )
       expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({ query_doc_pair_id: QDP })
       expect(element.querySelector("#r1").checked).toBe(false)
-      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(false)
+      expect(element.querySelector('label[for="r1"]').classList.contains("btn-preselected")).toBe(
+        false
+      )
       expect(element.querySelector(`#explanation_${QDP}`).value).toBe("")
       expect(element.contains(button)).toBe(false)
       expect(status(element).textContent).toMatch(/Reset/)
@@ -179,7 +198,7 @@ describe("BulkJudgementController", () => {
   })
 
   describe("saveExplanation (debounced)", () => {
-    const field = element => {
+    const field = (element) => {
       const el = element.querySelector(`#explanation_${QDP}`)
       return { currentTarget: el }
     }
@@ -224,7 +243,9 @@ describe("BulkJudgementController", () => {
       await vi.advanceTimersByTimeAsync(1000)
 
       expect(JSON.parse(apiFetch.mock.calls[0][1].body)).toEqual({
-        query_doc_pair_id: QDP, rating: null, explanation: ""
+        query_doc_pair_id: QDP,
+        rating: null,
+        explanation: ""
       })
     })
 

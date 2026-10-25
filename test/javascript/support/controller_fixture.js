@@ -4,13 +4,16 @@
  * Outlets take camelCase names (`snapshotBridge`) and a controller or fake.
  * This does not connect the controller or resolve data attributes from markup.
  */
-export function buildControllerFixture(ControllerClass, {
-  element = document.createElement("div"),
-  targets = {},
-  values = {},
-  outlets = {},
-  overrides = {}
-} = {}) {
+export function buildControllerFixture(
+  ControllerClass,
+  {
+    element = document.createElement("div"),
+    targets = {},
+    values = {},
+    outlets = {},
+    overrides = {}
+  } = {}
+) {
   const controller = Object.create(ControllerClass.prototype)
   controller.element = element
 

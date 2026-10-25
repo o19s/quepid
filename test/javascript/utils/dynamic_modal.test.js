@@ -58,7 +58,11 @@ describe("dynamic_modal", () => {
   })
 
   it("builds a .modal > .modal-dialog > .modal-content wrapper with the given html and shows it", () => {
-    const { element } = openDynamicModal({ html: "<p>hi</p>", size: "lg", windowClass: "full-screen-modal" })
+    const { element } = openDynamicModal({
+      html: "<p>hi</p>",
+      size: "lg",
+      windowClass: "full-screen-modal"
+    })
 
     expect(element.classList.contains("modal")).toBe(true)
     expect(element.classList.contains("full-screen-modal")).toBe(true)
@@ -97,9 +101,7 @@ describe("dynamic_modal", () => {
 
   it("routes dispose() through hide() so BS5 can remove its backdrop", () => {
     const { dispose } = openDynamicModal({ html: "<p>hi</p>" })
-    const instance = window.bootstrap.Modal.instances.get(
-      document.querySelector(".modal")
-    )
+    const instance = window.bootstrap.Modal.instances.get(document.querySelector(".modal"))
     const hideSpy = vi.spyOn(instance, "hide")
 
     dispose()

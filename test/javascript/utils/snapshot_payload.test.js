@@ -6,20 +6,24 @@ function doc(id, fields = {}, titleField = "title", title = "Title") {
     id,
     titleField,
     title,
-    subsList: Object.fromEntries(Object.entries(fields).map(([field, value]) => [field, { field, value }])),
+    subsList: Object.fromEntries(
+      Object.entries(fields).map(([field, value]) => [field, { field, value }])
+    ),
     explain: () => ({ rawStr: () => `explain-${id}` })
   }
 }
 
 describe("buildSnapshotPayload", () => {
   it("preserves query scores, result counts, and both document groups", () => {
-    const payload = buildSnapshotPayload("saved", false, [{
-      queryId: 3,
-      numFound: 12,
-      currentScore: { score: "--", allRated: false },
-      docs: [doc("normal")],
-      ratedDocs: [doc("rated")]
-    }])
+    const payload = buildSnapshotPayload("saved", false, [
+      {
+        queryId: 3,
+        numFound: 12,
+        currentScore: { score: "--", allRated: false },
+        docs: [doc("normal")],
+        ratedDocs: [doc("rated")]
+      }
+    ])
 
     expect(payload).toEqual({
       snapshot: {
@@ -36,14 +40,19 @@ describe("buildSnapshotPayload", () => {
   })
 
   it("records source fields and the title for normal and rated-only results", () => {
-    const payload = buildSnapshotPayload("with fields", true, [{
-      queryId: 1,
-      docs: [doc("normal", { category: "book" }, "title", "A book")],
-      ratedDocs: [doc("rated", { category: "rated book" }, "title", "Rated book")]
-    }])
+    const payload = buildSnapshotPayload("with fields", true, [
+      {
+        queryId: 1,
+        docs: [doc("normal", { category: "book" }, "title", "A book")],
+        ratedDocs: [doc("rated", { category: "rated book" }, "title", "Rated book")]
+      }
+    ])
 
     expect(payload.snapshot.docs[1][0].fields).toEqual({ category: "book", title: "A book" })
-    expect(payload.snapshot.docs[1][1].fields).toEqual({ category: "rated book", title: "Rated book" })
+    expect(payload.snapshot.docs[1][1].fields).toEqual({
+      category: "rated book",
+      title: "Rated book"
+    })
   })
 
   it("records thumb and image fields under their source field names", () => {
@@ -55,11 +64,18 @@ describe("buildSnapshotPayload", () => {
       hasImage: () => true
     })
     const fieldSpec = { thumb: "poster_path", image: "backdrop_path" }
-    const payload = buildSnapshotPayload("with images", true, [{
-      queryId: 0,
-      docs: [withImages("123")],
-      ratedDocs: [withImages("456")]
-    }], fieldSpec)
+    const payload = buildSnapshotPayload(
+      "with images",
+      true,
+      [
+        {
+          queryId: 0,
+          docs: [withImages("123")],
+          ratedDocs: [withImages("456")]
+        }
+      ],
+      fieldSpec
+    )
     const expectedFields = {
       overview: "One ring to rule them all",
       title: "The Lord of the Rings",

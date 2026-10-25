@@ -4,7 +4,9 @@ import { buildControllerFixture } from "../support/controller_fixture"
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 function controllerFor({ canAddQueriesValue = true, text = "" } = {}) {
   const element = document.createElement("form")
@@ -33,7 +35,9 @@ describe("add_query_controller", () => {
   it("parses semicolon-separated input and dispatches the query texts", () => {
     const { controller, element } = controllerFor({ text: " first; second ;; " })
     const submissions = []
-    element.addEventListener("add-query:submit", event => submissions.push(event.detail.queryTexts))
+    element.addEventListener("add-query:submit", (event) =>
+      submissions.push(event.detail.queryTexts)
+    )
 
     controller.submit({ preventDefault() {} })
 
@@ -78,9 +82,11 @@ describe("add_query_controller", () => {
 
   it("refreshes capability state without clearing the typed query", () => {
     const { controller } = controllerFor({ text: "unfinished query" })
-    testCapabilities = { queryCapabilities: {
-      getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
-    } }
+    testCapabilities = {
+      queryCapabilities: {
+        getListState: () => ({ canAddQueries: false, addQueryMessage: "Queries are unavailable" })
+      }
+    }
     try {
       controller.refreshQueryState()
       expect(controller.submitTarget.disabled).toBe(true)

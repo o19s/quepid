@@ -18,7 +18,9 @@ describe("TriesVisualizationController", () => {
   beforeEach(() => {
     view = { runAsync: vi.fn().mockResolvedValue(undefined), finalize: vi.fn() }
     global.vega = {
-      View: vi.fn(function () { return view }),
+      View: vi.fn(function () {
+        return view
+      }),
       parse: vi.fn((spec) => ({ parsed: spec })),
       loader: vi.fn((options) => ({ loader: options }))
     }
@@ -37,9 +39,13 @@ describe("TriesVisualizationController", () => {
 
     expect(getJson).toHaveBeenCalledWith("analytics/tries_visualization/7/vega_specification")
     expect(global.vega.parse).toHaveBeenCalledWith({ marks: [] })
-    const [ runtime, options ] = global.vega.View.mock.calls[0]
+    const [runtime, options] = global.vega.View.mock.calls[0]
     expect(runtime).toEqual({ parsed: { marks: [] } })
-    expect(options).toMatchObject({ renderer: "canvas", container: controller.element, hover: true })
+    expect(options).toMatchObject({
+      renderer: "canvas",
+      container: controller.element,
+      hover: true
+    })
     expect(global.vega.loader).toHaveBeenCalledWith({ target: "_self" })
     expect(view.runAsync).toHaveBeenCalledOnce()
   })
@@ -55,7 +61,11 @@ describe("TriesVisualizationController", () => {
 
   it("does not render when disconnected before the spec arrives", async () => {
     let resolveSpec
-    getJson.mockReturnValue(new Promise((resolve) => { resolveSpec = resolve }))
+    getJson.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSpec = resolve
+      })
+    )
     const controller = buildController()
 
     controller.connect()

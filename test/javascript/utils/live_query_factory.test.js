@@ -4,7 +4,9 @@ import { createLiveQueryFactory } from "utils/live_query_factory"
 describe("live query factory", () => {
   function setup() {
     const ratingsStore = { version: vi.fn().mockReturnValue(1) }
-    const RatingsStore = vi.fn().mockImplementation(function() { return ratingsStore })
+    const RatingsStore = vi.fn().mockImplementation(function () {
+      return ratingsStore
+    })
     const createModel = vi.fn().mockImplementation(({ getQueryState }) => ({
       score: vi.fn(),
       state: getQueryState
@@ -45,7 +47,9 @@ describe("live query factory", () => {
     expect(query.ratedDocs).toEqual([])
     expect(query.options).toEqual({ field: "title" })
     expect(RatingsStore).toHaveBeenCalledOnce()
-    expect(createModel).toHaveBeenCalledWith(expect.objectContaining({ query, ratingsStore: query.ratingsStore }))
+    expect(createModel).toHaveBeenCalledWith(
+      expect.objectContaining({ query, ratingsStore: query.ratingsStore })
+    )
     expect(getQueryState).not.toHaveBeenCalled()
     expect(query.score).toBeTypeOf("function")
   })

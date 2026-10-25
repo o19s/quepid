@@ -8,15 +8,33 @@ vi.mock("api/json", () => ({ getJson: vi.fn(), postJson: vi.fn() }))
 
 function fixture(valueOverrides = {}) {
   const form = document.createElement("form")
-  form.innerHTML = '<input name="user[llm_key]" value="key"><textarea name="user[system_prompt]">draft</textarea><input name="user[judge_options][llm_provider]" value="openai"><input name="user[judge_options][llm_include_images]" value="false">'
+  form.innerHTML =
+    '<input name="user[llm_key]" value="key"><textarea name="user[system_prompt]">draft</textarea><input name="user[judge_options][llm_provider]" value="openai"><input name="user[judge_options][llm_include_images]" value="false">'
   const element = document.createElement("div")
   form.appendChild(element)
-  const targets = Object.fromEntries(AiJudgeWizardController.targets.map(name => [name, document.createElement(name === "runPromptButton" ? "button" : ["rating", "explanation", "status", "ratingInfo", "step2", "loadingSpinner"].includes(name) ? "div" : "input")]))
+  const targets = Object.fromEntries(
+    AiJudgeWizardController.targets.map((name) => [
+      name,
+      document.createElement(
+        name === "runPromptButton"
+          ? "button"
+          : ["rating", "explanation", "status", "ratingInfo", "step2", "loadingSpinner"].includes(
+                name
+              )
+            ? "div"
+            : "input"
+      )
+    ])
+  )
   targets.step2.style.display = "none"
   const controller = buildControllerFixture(AiJudgeWizardController, {
-    element, targets, values: { sampleUrl: "sample", testUrl: "test", existing: false, ...valueOverrides }
+    element,
+    targets,
+    values: { sampleUrl: "sample", testUrl: "test", existing: false, ...valueOverrides }
   })
-  getJson.mockResolvedValue({ query_doc_pair: { query_text: "q", doc_id: "d", document_fields: {}, options: {}, position: 0 } })
+  getJson.mockResolvedValue({
+    query_doc_pair: { query_text: "q", doc_id: "d", document_fields: {}, options: {}, position: 0 }
+  })
   controller.connect()
   return controller
 }
@@ -30,13 +48,36 @@ function draftFixture(valueOverrides = {}) {
   form.innerHTML = '<input name="user[name]" value="">'
   const element = document.createElement("div")
   form.appendChild(element)
-  const targets = Object.fromEntries(AiJudgeWizardController.targets.map(name => [name, document.createElement(name === "runPromptButton" ? "button" : ["rating", "explanation", "status", "ratingInfo", "step2", "loadingSpinner"].includes(name) ? "div" : "input")]))
+  const targets = Object.fromEntries(
+    AiJudgeWizardController.targets.map((name) => [
+      name,
+      document.createElement(
+        name === "runPromptButton"
+          ? "button"
+          : ["rating", "explanation", "status", "ratingInfo", "step2", "loadingSpinner"].includes(
+                name
+              )
+            ? "div"
+            : "input"
+      )
+    ])
+  )
   targets.step2.style.display = "none"
   targets.name = form.querySelector('[name="user[name]"]')
   const controller = buildControllerFixture(AiJudgeWizardController, {
-    element, targets, values: { sampleUrl: "sample", testUrl: "test", existing: false, draftKey: "new", ...valueOverrides }
+    element,
+    targets,
+    values: {
+      sampleUrl: "sample",
+      testUrl: "test",
+      existing: false,
+      draftKey: "new",
+      ...valueOverrides
+    }
   })
-  getJson.mockResolvedValue({ query_doc_pair: { query_text: "q", doc_id: "d", document_fields: {}, options: {}, position: 0 } })
+  getJson.mockResolvedValue({
+    query_doc_pair: { query_text: "q", doc_id: "d", document_fields: {}, options: {}, position: 0 }
+  })
   return controller
 }
 
@@ -74,10 +115,15 @@ it("uses the active JSON configuration and current editor content with image pre
   c.documentFieldsTarget.editor = { getValue: () => '{"title":"Edited"}' }
   postJson.mockResolvedValue({ rating: 0, explanation: "<script>text</script>" })
   await c.runPrompt({ preventDefault() {} })
-  expect(postJson).toHaveBeenCalledWith("test", expect.objectContaining({
-    system_prompt: "draft", judge_options: { llm_provider: "ollama", llm_include_images: false },
-    query_doc_pair: expect.objectContaining({ document_fields: '{"title":"Edited"}' })
-  }), expect.anything())
+  expect(postJson).toHaveBeenCalledWith(
+    "test",
+    expect.objectContaining({
+      system_prompt: "draft",
+      judge_options: { llm_provider: "ollama", llm_include_images: false },
+      query_doc_pair: expect.objectContaining({ document_fields: '{"title":"Edited"}' })
+    }),
+    expect.anything()
+  )
   expect(c.ratingTarget.textContent).toBe("0")
   expect(c.explanationTarget.textContent).toBe("<script>text</script>")
   expect(c.explanationTarget.querySelector("script")).toBeNull()
@@ -96,7 +142,11 @@ it("shows server failures and restores the button without showing a stale rating
 it("aborts requests on Turbo disconnect and ignores a stale sample", async () => {
   const c = fixture()
   let resolveSample
-  getJson.mockReturnValue(new Promise(resolve => { resolveSample = resolve }))
+  getJson.mockReturnValue(
+    new Promise((resolve) => {
+      resolveSample = resolve
+    })
+  )
   const sampling = c.sampleQueryDocPair()
   c.disconnect()
   resolveSample({ query_doc_pair: { query_text: "stale" } })
@@ -119,7 +169,10 @@ it("shows rejected ratings as Unrateable and clears that state on a successful r
 
 it("scrolls to Test & Refine when the url carries ?scorer_id=", () => {
   const originalLocation = window.location
-  Object.defineProperty(window, "location", { configurable: true, value: { search: "?scorer_id=3" } })
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: { search: "?scorer_id=3" }
+  })
 
   const c = fixture()
   const section = document.createElement("div")
@@ -147,7 +200,10 @@ it("does not scroll without ?scorer_id=", () => {
 
 it("navigateToScale saves a draft and navigates to the picked option's url", () => {
   const originalLocation = window.location
-  Object.defineProperty(window, "location", { configurable: true, value: { href: "http://localhost/ai_judges/new" } })
+  Object.defineProperty(window, "location", {
+    configurable: true,
+    value: { href: "http://localhost/ai_judges/new" }
+  })
 
   const c = draftFixture()
   c.saveDraft = vi.fn(AiJudgeWizardController.prototype.saveDraft.bind(c))

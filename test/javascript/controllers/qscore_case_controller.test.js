@@ -11,7 +11,9 @@ vi.mock("utils/core_store_access", () => ({ getCoreStores: () => testStores || {
 
 let testCapabilities
 
-vi.mock("utils/core_capability_access", () => ({ getCoreCapabilities: () => testCapabilities || {} }))
+vi.mock("utils/core_capability_access", () => ({
+  getCoreCapabilities: () => testCapabilities || {}
+}))
 
 vi.mock("utils/diff_scores", () => ({ buildCaseDiffScores: vi.fn() }))
 
@@ -80,8 +82,8 @@ describe("QscoreCaseController", () => {
   it("renders the formatted score and color once the store has a case score", () => {
     store.setLatestScoreInfo({
       allRated: true,
-      score:    0.9,
-      queries:  { 1: { score: 0.9, maxScore: 1, text: "q1", numFound: 10 } }
+      score: 0.9,
+      queries: { 1: { score: 0.9, maxScore: 1, text: "q1", numFound: 10 } }
     })
 
     const controller = buildController(element)
@@ -104,8 +106,8 @@ describe("QscoreCaseController", () => {
 
     store.setLatestScoreInfo({
       allRated: true,
-      score:    0.5,
-      queries:  { 1: { score: 0.5, maxScore: 1, text: "q1", numFound: 3 } }
+      score: 0.5,
+      queries: { 1: { score: 0.5, maxScore: 1, text: "q1", numFound: 3 } }
     })
 
     expect(valueEl.textContent).toBe("0.50")
@@ -120,8 +122,8 @@ describe("QscoreCaseController", () => {
 
     store.setLatestScoreInfo({
       allRated: true,
-      score:    0.5,
-      queries:  { 1: { score: 0.5, maxScore: 1, text: "q1", numFound: 3 } }
+      score: 0.5,
+      queries: { 1: { score: 0.5, maxScore: 1, text: "q1", numFound: 3 } }
     })
 
     expect(valueEl.textContent).toBe("?")
@@ -167,7 +169,9 @@ describe("QscoreCaseController", () => {
   // query is saved. A score URL is set so the guards, not a missing URL, decide.
   describe("score persistence guards", () => {
     function persist(snapshot) {
-      const fetch = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null, ok: true })
+      const fetch = vi
+        .fn()
+        .mockResolvedValue({ text: async () => "", json: async () => null, ok: true })
       vi.stubGlobal("fetch", fetch)
       const controller = buildController(element)
       controller.scoreUrlValue = "api/cases/1/scores"
@@ -179,12 +183,18 @@ describe("QscoreCaseController", () => {
     it("persists a score of 0", () => {
       const fetch = persist({ caseScore: { score: 0, allRated: true }, queryScores: { 1: 0 } })
 
-      expect(fetch).toHaveBeenCalledWith("api/cases/1/scores", expect.objectContaining({ method: "PUT" }))
+      expect(fetch).toHaveBeenCalledWith(
+        "api/cases/1/scores",
+        expect.objectContaining({ method: "PUT" })
+      )
       expect(JSON.parse(fetch.mock.calls[0][1].body).case_score.score).toBe(0)
     })
 
     it.each([
-      ["the unrated '--' sentinel", { caseScore: { score: "--", allRated: false }, queryScores: { 1: "--" } }],
+      [
+        "the unrated '--' sentinel",
+        { caseScore: { score: "--", allRated: false }, queryScores: { 1: "--" } }
+      ],
       ["the -1 sentinel", { caseScore: { score: -1, allRated: false }, queryScores: { 1: -1 } }],
       ["empty queryScores", { caseScore: { score: 0.5, allRated: true }, queryScores: {} }]
     ])("does not persist %s", (_label, snapshot) => {
@@ -193,7 +203,9 @@ describe("QscoreCaseController", () => {
   })
 
   it("persists a scored case through the server-owned score URL", async () => {
-    const fetch = vi.fn().mockResolvedValue({ text: async () => "", json: async () => null,  ok: true })
+    const fetch = vi
+      .fn()
+      .mockResolvedValue({ text: async () => "", json: async () => null, ok: true })
     vi.stubGlobal("fetch", fetch)
     const controller = buildController(element, { caseId: 7 })
     controller.scoreUrlValue = "api/cases/1/scores"
@@ -203,17 +215,20 @@ describe("QscoreCaseController", () => {
       caseScore: { score: 0.8, allRated: true },
       queryScores: { 1: { score: 0.8 }, 2: { score: null } }
     })
-    expect(fetch).toHaveBeenCalledWith("api/cases/1/scores", expect.objectContaining({
-      method: "PUT",
-      body: JSON.stringify({
-        case_score: {
-          score: 0.8,
-          all_rated: true,
-          try_number: 1,
-          queries: { 1: { score: 0.8 }, 2: { score: null } }
-        }
+    expect(fetch).toHaveBeenCalledWith(
+      "api/cases/1/scores",
+      expect.objectContaining({
+        method: "PUT",
+        body: JSON.stringify({
+          case_score: {
+            score: 0.8,
+            all_rated: true,
+            try_number: 1,
+            queries: { 1: { score: 0.8 }, 2: { score: null } }
+          }
+        })
       })
-    }))
+    )
   })
 
   it("does not persist a score without a valid try number", () => {
@@ -299,7 +314,9 @@ describe("QscoreCaseController", () => {
       }
     }
     const controller = buildController(element)
-    await expect(controller.refreshCaseDiffScores({ refreshQueries: true })).resolves.toBeUndefined()
+    await expect(
+      controller.refreshCaseDiffScores({ refreshQueries: true })
+    ).resolves.toBeUndefined()
 
     expect(clearCaseDiffs).toHaveBeenCalledOnce()
   })
@@ -319,9 +336,11 @@ describe("QscoreCaseController", () => {
     const controller = buildController(element)
     QscoreCaseController.prototype.initialize.call(controller)
     QscoreCaseController.prototype.connect.call(controller)
-    await controller.handleDiffsRefreshed(new CustomEvent("query-diffs:refreshed", {
-      detail: { success: false }
-    }))
+    await controller.handleDiffsRefreshed(
+      new CustomEvent("query-diffs:refreshed", {
+        detail: { success: false }
+      })
+    )
     await vi.waitFor(() => expect(clearCaseDiffs).toHaveBeenCalled())
 
     expect(clearCaseDiffs).toHaveBeenCalledOnce()
@@ -331,7 +350,12 @@ describe("QscoreCaseController", () => {
 
   it("ignores a late rating refresh after a newer diff refresh", async () => {
     let resolveFetch
-    const fetch = vi.fn(() => new Promise(resolve => { resolveFetch = resolve }))
+    const fetch = vi.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveFetch = resolve
+        })
+    )
     const setCaseDiffs = vi.fn()
     const clearCaseDiffs = vi.fn()
     const query = { diffs: { fetch } }
