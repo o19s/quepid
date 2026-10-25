@@ -514,9 +514,9 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-24T14:58:00Z
+        last_run: 2026-10-25T00:13:13Z
         result: pass
-        notes: "Covered live (MCP, case 6, save intercepted with 503 so nothing persisted): editor shows one param per line (q=#$query##\\n&magicBoost=31); a typed draft survives the failed save and a Settings/Query tab round trip unchanged, and the request carried the multi-line query_params. Native workspace_settings.spec.ts:45 had a stale assertion (toHaveText drops the new line breaks), not a draft loss; it now compares innerText. Not covered: successful save/rerun."
+        notes: "Partial importmap dependency MCP smoke: case6/try31 Tune Relevance Query opens with populated CodeMirror sandbox, original two-line query intact, no console errors. Screenshot inspected; no edits or rerun/save. The core editor uses the npm bundle; the importmap editor was separately checked on scorer5/edit. 2018 unit tests and build pass; audit clean for versioned pins; visual2pass and4known fixture/baseline failures."
         paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
@@ -1124,15 +1124,16 @@ parts:
       "8.4":
         title: "Edit a scorer"
         screenshots:
+          editor-dependencies: "8.4/editor-dependencies"
           private-edit-denied: "8.4/private-edit-denied"
           communal-edit-denied: "8.4/communal-edit-denied"
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-20T20:12:53Z
+        last_run: 2026-10-25T00:13:13Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: owned disposable scorer edited code0.5 to0.75, Binary toGraded, retained No/Yes labels and added Good/Perfect; save/reload persists. Not covered live: communal mutation (preserved shared seed), non-admin/private access edges or diff-baseline replay."
-        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
+        notes: "Partial importmap dependency MCP smoke on Current scorer5/edit (communal AP@10): JavaScript CodeMirror editor initializes with existing code, line numbers and highlighting; newly required streamparser pin resolves and no console errors. No changes or save to the shared scorer. Screenshot inspected; persistence and access-control flows not repeated. 2018 unit tests and build pass; audit clean for versioned pins."
+        paths: ["config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "8.5":
         title: "Clone a scorer"
         screenshots:
