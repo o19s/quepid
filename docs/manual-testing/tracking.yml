@@ -454,9 +454,9 @@ parts:
           query-options-saved: "4.5/query-options-saved"
           query-options-edited: "4.5/query-options-edited"
           query-options-form: "4.5/query-options-form"
-        last_run: 2026-10-20T16:41:29Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Covered live on Current :3000: Query Options modal with footer Set Options then Cancel (matches Legacy), invalid JSON keeps the modal open with \"Please provide a valid JSON object.\", valid JSON saves through PUT queries/:id/options and rescoring (no re-search, as in Legacy), a forced 500 keeps the modal open with \"Unable to save query options.\" and an enabled button. Not covered: delayed-save and dismissal races."
+        notes: "Partial shared-editor MCP check case6/try31 take: Query Options JSON editor opens using the importmap EditorView constructor; close preserves existing lifecycle. Screenshot inspected. Native disposable-clone check passes invalid JSON, save and reload; no shared-case changes. 2018 unit tests and59 Rails controller tests pass."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/controllers/status_message_behavior.js", "app/javascript/controllers/search_results_controller.js"]
       "4.6":
         title: "Rate a document"
@@ -503,9 +503,9 @@ parts:
           finder-ready: "4.9/finder-ready"
           finder-rating-popover: "4.9/finder-rating-popover"
           finder-empty: "4.9/finder-empty"
-        last_run: 2026-10-24T14:46:45Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Covered live (MCP, Current :3000, read-only): Solr case 6 query meetings opens prefilled with the try's params (q=meetings&magicBoost=31, no longer a blank Lucene query) and Search returns 'Your query ... returned 1422 matching documents.' with rateable rows; ES case 477 query matrix returns 7 documents with the JSON query shown inline in the summary. Not covered live: rating inside the finder, Reset, paging, failure/retry, Escape/delayed dismiss."
+        notes: "Partial shared-editor MCP check case6/try31 take: Missing Documents opens with Solr query prefilled and already-rated documents; screenshot inspected. Solr uses a plain textarea. Native opening check passes; ES JSON finder, rating, reset, paging and failure flows not repeated live."
         paths: ["app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/views/core/_query_list_templates.html.erb", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/controllers/status_message_behavior.js", "app/javascript/controllers/search_results_controller.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -514,10 +514,10 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-24T14:58:00Z
+        last_run: 2026-10-25T13:34:17Z
         result: pass
-        notes: "Covered live (MCP, case 6, save intercepted with 503 so nothing persisted): editor shows one param per line (q=#$query##\\n&magicBoost=31); a typed draft survives the failed save and a Settings/Query tab round trip unchanged, and the request carried the multi-line query_params. Native workspace_settings.spec.ts:45 had a stale assertion (toHaveText drops the new line breaks), not a draft loss; it now compares innerText. Not covered: successful save/rerun."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
+        notes: "Partial dependency-update MCP smoke on Current case6/try31: Query sandbox renders, Bootstrap Icons font reports loaded, no console errors; screenshot inspected. No edits/rerun/save. Updated tools pass2018 unit tests, ESLint, Prettier and build; incremental Stryker compatibility check kills18/22 mutants. Native workspace settings save/failure/retry/reload/history passes with disposable clone. Axe/modal batch12pass,1fixture mismatch (expected unrated, fixture rating0); no expectation changed. ERB lint32existing errors versus36 with previous linter."
+        paths: ["yarn.lock", "package.json", "esbuild.config.js", "app/views/layouts/_case_workspace.html.erb", "app/javascript/core_stimulus.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
         screenshots:
@@ -1006,9 +1006,9 @@ parts:
           mapper-fetch-error: "7.7/mapper-fetch-error"
           mapper-fetch: "7.7/mapper-fetch"
           mapper-entry: "7.7/mapper-entry"
-        last_run: 2026-10-20T18:46:48Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live on Current :3000: Fetch on demo Solr JSON shows the preview and reveals Step 2, blank URL, ftp URL, connection refused and invalid custom headers JSON each show their message, the Test Query hint changes with GET and POST, an existing mapper endpoint opens with its URL and both editors filled. Not covered: slow-endpoint timeout, Advanced basic auth, Copy button on plain HTTP."
+        notes: "Partial Herb-cleanup MCP smoke /search_endpoints/mapper_wizard: entry renders; preview max-height600px rule now in head with dynamic Turbo tracking. Screenshot inspected. No fetch, generated code, endpoint write or preview expansion performed. 557 affected controller tests pass."
         paths: ["app/controllers/mapper_wizards_controller.rb", "app/javascript/controllers/mapper_wizard_controller.js", "app/views/mapper_wizards/show.html.erb", "app/views/mapper_wizards/_mapper_editor.html.erb", "app/javascript/controllers/status_message_behavior.js", "app/javascript/utils/clipboard.js", "app/helpers/application_helper.rb"]
       "7.8":
         title: "Mapper Wizard — Step 2: Generate Mappers with AI"
@@ -1124,15 +1124,17 @@ parts:
       "8.4":
         title: "Edit a scorer"
         screenshots:
+          sidebar-head-styles: "8.4/sidebar-head-styles"
+          editor-dependencies: "8.4/editor-dependencies"
           private-edit-denied: "8.4/private-edit-denied"
           communal-edit-denied: "8.4/communal-edit-denied"
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-20T20:12:53Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000: owned disposable scorer edited code0.5 to0.75, Binary toGraded, retained No/Yes labels and added Good/Perfect; save/reload persists. Not covered live: communal mutation (preserved shared seed), non-admin/private access edges or diff-baseline replay."
-        paths: ["app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
+        notes: "Partial Herb-cleanup MCP smoke scorer5/edit, communal AP@10: ordinary sidebar appearance/sticky position retained; its identical CSS is now in head with dynamic Turbo tracking. Screenshot inspected. No scorer edit/save. 557 affected controller tests pass; native visual2pass/4known fixture/baseline failures."
+        paths: ["app/views/layouts/application.html.erb", "app/views/layouts/_sidebar_styles.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "8.5":
         title: "Clone a scorer"
         screenshots:
@@ -1643,9 +1645,9 @@ parts:
           json-options: "12.1/json-options"
           configured: "12.1/configured"
           new-form: "12.1/new-form"
-        last_run: 2026-10-22T20:46:43Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live on Current :3000 at /ai_judges/new: blank name with OSC checked and a custom prompt returns 'Name can't be blank' keeping both; entering a name shows Test & Refine; Ollama keeps the custom prompt and disables/unchecks images. JSON/Structured synchronization (the retained 2026-10-15 failure, which those notes recorded on Base 86e3de9/Legacy 8ceb99e while Current synchronized) re-verified on Current both ways: Structured edits appear in JSON, a JSON timeout of 45 appears in Structured, removing jev_min_confidence clears a 0.7 floor, and OpenAI with URL/model omitted restores https://api.openai.com / gpt-4o. Malformed JSON returns 'Options must be valid JSON' keeping name, team and the malformed text (the page reopens on Structured Fields with the text in the hidden JSON tab). Keyless Ollama judge 1044838952 saved ('AI Judge was successfully created.', redirect to its form), reload kept name/provider/URL/model/timeout 60/prompt/OSC, index lists it as ollama, owner You, team OSC. Not covered: team-page Create, legacy nested team route, other providers' presets. Disposable judge 1044838952 was deleted later in the session (17.12)."
+        notes: "Partial Herb-cleanup MCP DOM check /ai_judges/new?scorer_id=1: rating-scale picker has exactly one selected option, value1, with /ai_judges/new?scorer_id=1 data-url. Unavailable scorer5 correctly selects no eligible option. No prompt run, judge creation or sharing; full creation flow not repeated. 557 affected controller tests pass."
         paths: ["app/controllers/ai_judges_controller.rb", "app/views/ai_judges/_form.html.erb", "app/views/ai_judges/_provider_options.html.erb", "app/views/ai_judges/_prompt_testing.html.erb", "app/views/ai_judges/new.html.erb", "app/javascript/controllers/ai_judge_form_controller.js", "app/models/ai_judge.rb", "app/models/user.rb", "app/views/shared/_team_picker.html.erb", "app/javascript/controllers/ai_judge_wizard_controller.js", "config/routes.rb", "app/models/llm_provider.rb", "app/models/judge_scale.rb", "app/services/llm_judge_adapters.rb", "app/services/llm_judge_adapters/", "app/services/llm_connection.rb", "app/services/judgement_finalizer.rb", "app/javascript/controllers/status_message_behavior.js", "app/helpers/application_helper.rb"]
       "12.2":
         title: "Edit / delete an AI Judge"
@@ -1849,10 +1851,10 @@ parts:
         title: "Admin Home dashboard"
         screenshots:
           home: "14.2/home"
-        last_run: 2026-10-20T20:28:48Z
+        last_run: 2026-10-25T13:51:23Z
         result: pass
-        notes: "Covered live via Playwright MCP on Current :3000 as realisticactivity administrator: Admin Home3card groups and6named links; browser opened Users, Announcements, SQL Analytics, Job Manager, Websocket Tester and Rails Pulse, all200. Not covered live: each embedded-tool operation or diff-baseline replay."
-        paths: ["app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css"]
+        notes: "Partial Herb-cleanup MCP smoke on Current /admin: admin sidebar retains appearance and sticky position with identical CSS moved into head. Clicking the Quepid link used Turbo (same document) and removed admin-only styles while adding ordinary sidebar styles. Screenshot inspected. No admin writes or embedded-tool actions. 557 affected controller tests pass."
+        paths: ["app/views/layouts/application.html.erb", "app/views/layouts/_admin_sidebar_styles.html.erb", "app/controllers/admin/home_controller.rb", "app/views/admin/home/index.html.erb", "app/views/layouts/_admin_sidebar.html.erb", "build_css.js", "app/assets/stylesheets/application-overrides.css", "app/assets/stylesheets/fonts.css", "app/assets/stylesheets/navbar-brand.css"]
       "14.3":
         title: "User management — list & search"
         screenshots:
@@ -1965,10 +1967,10 @@ parts:
           request-detail: "14.13/request-detail"
           requests: "14.13/requests"
           dashboard: "14.13/dashboard"
-        last_run: 2026-10-15T05:44:18Z
+        last_run: 2026-10-24T23:33:13Z
         result: pass
-        notes: "Current refresh: generated documented current-hour SummaryJob, selected Last24h. Today request72835 shows15.89ms/status200,15operations, normalized SQL placeholders and trace timeline; today WebsocketTester jobSuccess31s. Dashboard/Routes/Request detail/Job detail inspected, registered; earlier old Oct10/no-trace raw captures retained as Archive supplements. DB verifies raw SQL absent, job arguments absent, own Pulse routes excluded. No failed-job mutation or isolated retention-cleanup edge exercised; existing failed jobs untouched."
-        paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "config/initializers/postgresql_schema_compatibility.rb"]
+        notes: "Partial Ruby/gem update MCP sample on Current :3000 as realisticactivity administrator: Rails Pulse 0.5 dashboard and Requests load after the additive events migration; Requests includes the just-visited homepage with status200 and timing. Dashboard screenshot inspected and refreshed. Dashboard has no aggregated request summaries yet; summary generation, job details and retention cleanup not driven live. Fourteen integration/authorization/migration tests pass, including upgrade, fresh install, rollback/replay, dashboard, request/job recording, normalized SQL and cleanup."
+        paths: ["config/initializers/rails_pulse.rb", "config/recurring.yml", "config/routes.rb", "app/views/admin/home/index.html.erb", "db/migrate/20261005192545_install_rails_pulse_tables.rb", "db/rails_pulse_schema.rb", "db/migrate/20261024233000_create_rails_pulse_events.rb", "Gemfile.lock", "config/initializers/postgresql_schema_compatibility.rb"]
 
   "15":
     file: 15-global-navigation-and-notebooks.md

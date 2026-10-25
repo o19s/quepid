@@ -6,9 +6,7 @@
 
     <h5 class="card-title" href="#collapseExample">Leaderboard</h5>
     <h6 class="card-subtitle mb-2 text-body-secondary">Who is closest to having all <%= @book.query_doc_pairs.count %> query/doc pairs judged?</h6>
-    <%
-      total_pairs = @book.query_doc_pairs.count
-    %>
+    <% total_pairs = @book.query_doc_pairs.count %>
     <%=
     Vega.lite
       .data(@leaderboard_data)

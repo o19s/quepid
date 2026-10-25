@@ -26,7 +26,7 @@ class RailsPulseTest < ActionDispatch::IntegrationTest
     RailsPulse.configuration.enabled = @rails_pulse_enabled
     Rails.application.env_config['action_dispatch.show_exceptions'] = @show_exceptions
     Bullet.enable = @bullet_enabled
-    RequestStore.clear!
+    RailsPulse::Current.reset
     RailsPulse::SchemaCheck.reset!
   end
 

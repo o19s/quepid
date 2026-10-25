@@ -1,4 +1,6 @@
 # Herb (HTML+ERB) configuration: https://herb-tools.dev/configuration
+framework: actionview
+
 # Exclude patterns add to Herb's defaults, which only match at the project root
 # and do not read .gitignore.
 files:

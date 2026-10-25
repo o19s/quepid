@@ -275,8 +275,10 @@
   </div>
 </div>
 
-<style>
+<% content_for :head do %>
+<style data-turbo-track="dynamic">
   .html-preview.expanded {
     max-height: 600px !important;
   }
 </style>
+<% end %>

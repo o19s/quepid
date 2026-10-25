@@ -93,7 +93,7 @@
               <select class="form-select form-select-sm" data-action="change->ai-judge-wizard#navigateToScale">
                 <option value="">Select a rating scale...</option>
                 <% scorer_options_for_select(current_user).each do |label, id| %>
-                  <option value="<%= id %>" data-url="<%= "#{picker_path}?scorer_id=#{id}" %>" <%= 'selected' if scorer_id.to_s == id.to_s %>><%= label %></option>
+                  <option value="<%= id %>" data-url="<%= picker_path %>?scorer_id=<%= id %>" <% if scorer_id.to_s == id.to_s %>selected<% end %>><%= label %></option>
                 <% end %>
               </select>
             </div>

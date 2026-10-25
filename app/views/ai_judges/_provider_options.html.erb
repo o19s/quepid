@@ -20,8 +20,7 @@
             <%= select_tag "user[judge_options][llm_provider]",
                   options_for_select(LlmProvider.select_options, value.to_s),
                   id: 'judge_options_llm_provider',
-                  class: 'form-select form-select-sm', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" }
-            %>
+                  class: 'form-select form-select-sm', data: { ai_judge_form_target: "structured provider", action: "change->ai-judge-form#providerChanged" } %>
           <% elsif spec&.dig(:type) == :number %>
             <%= number_field_tag "user[judge_options][#{key}]", value,
                   id: "judge_options_#{key}", class: 'form-control form-control-sm',
@@ -30,8 +29,7 @@
           <% else %>
             <%= text_field_tag "user[judge_options][#{key}]", value,
               id: "judge_options_#{key}",
-              class: 'form-control form-control-sm', data: { ai_judge_form_target: "structured #{ { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s]}" }
-            %>
+              class: 'form-control form-control-sm', data: { ai_judge_form_target: "structured #{ { 'llm_service_url' => 'url', 'llm_api_version' => 'version', 'llm_model' => 'model' }[key.to_s]}" } %>
           <% end %>
         </div>
       </div>

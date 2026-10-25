@@ -1,5 +1,6 @@
 <%# Core's case-not-found 404 has no case, so it gets the ordinary page chrome. %>
 <% case_page = controller_name == "core" && @case.present? %>
+<% show_sidebar = !case_page && @current_user && !(controller_name == 'judgements' && [ 'new', 'edit' ].any?(params[:action])) %>
 <!DOCTYPE html>
 <html lang="en">
 <% if content_for?(:debug_info) %>
@@ -76,6 +77,7 @@
   <%= debugbar_head  if defined? Debugbar %>
 
   <% end %>
+  <%= render "#{sidebar_partial}_styles" if show_sidebar %>
 </head>
 
 <body <%= tag.attributes(layout_body_attributes(case_page: case_page, kase: @case, try: @try)) %>> <%# herb:disable actionview-no-unnecessary-tag-attributes %>
@@ -90,7 +92,7 @@
     child width:100%, which put main underneath the fixed-width sidebar below md. %>
 <div class="container-fluid flex-shrink-0 flex-grow-1 d-flex ps-0">
 
-  <% if @current_user  && !(controller_name == 'judgements' and ['new','edit'].any? params[:action]) %>
+  <% if show_sidebar %>
     <%= render(sidebar_partial) %>
   <% end %>
 
