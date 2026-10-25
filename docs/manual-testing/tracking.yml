@@ -454,9 +454,9 @@ parts:
           query-options-saved: "4.5/query-options-saved"
           query-options-edited: "4.5/query-options-edited"
           query-options-form: "4.5/query-options-form"
-        last_run: 2026-10-20T16:41:29Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Covered live on Current :3000: Query Options modal with footer Set Options then Cancel (matches Legacy), invalid JSON keeps the modal open with \"Please provide a valid JSON object.\", valid JSON saves through PUT queries/:id/options and rescoring (no re-search, as in Legacy), a forced 500 keeps the modal open with \"Unable to save query options.\" and an enabled button. Not covered: delayed-save and dismissal races."
+        notes: "Partial shared-editor MCP check case6/try31 take: Query Options JSON editor opens using the importmap EditorView constructor; close preserves existing lifecycle. Screenshot inspected. Native disposable-clone check passes invalid JSON, save and reload; no shared-case changes. 2018 unit tests and59 Rails controller tests pass."
         paths: ["app/views/shared/_modal_shell.html.erb", "app/models/query.rb", "app/javascript/controllers/query_options_core_controller.js", "app/views/shared/_query_options_core_modal.html.erb", "app/views/core/_query_list_templates.html.erb", "app/javascript/controllers/queries_list_controller.js", "app/javascript/core_stimulus.js", "app/javascript/utils/live_query_runtime_owner.js", "config/importmap.rb", "vitest.config.js", "test/javascript/controllers/query_options_core_controller.test.js", "test/playwright/core_smoke.spec.ts", "app/javascript/api/json.js", "app/javascript/controllers/core_modal_controller_base.js", "app/javascript/utils/store_subscription.js", "app/javascript/core_runtime.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/controllers/status_message_behavior.js", "app/javascript/controllers/search_results_controller.js"]
       "4.6":
         title: "Rate a document"
@@ -503,9 +503,9 @@ parts:
           finder-ready: "4.9/finder-ready"
           finder-rating-popover: "4.9/finder-rating-popover"
           finder-empty: "4.9/finder-empty"
-        last_run: 2026-10-24T14:46:45Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Covered live (MCP, Current :3000, read-only): Solr case 6 query meetings opens prefilled with the try's params (q=meetings&magicBoost=31, no longer a blank Lucene query) and Search returns 'Your query ... returned 1422 matching documents.' with rateable rows; ES case 477 query matrix returns 7 documents with the JSON query shown inline in the summary. Not covered live: rating inside the finder, Reset, paging, failure/retry, Escape/delayed dismiss."
+        notes: "Partial shared-editor MCP check case6/try31 take: Missing Documents opens with Solr query prefilled and already-rated documents; screenshot inspected. Solr uses a plain textarea. Native opening check passes; ES JSON finder, rating, reset, paging and failure flows not repeated live."
         paths: ["app/javascript/utils/bs_popover.js", "app/javascript/utils/bs_modal.js", "app/javascript/controllers/missing_documents_controller.js", "app/javascript/modules/editor.js", "app/javascript/controllers/search_result_controller.js", "app/javascript/controllers/rating_popover_controller.js", "app/javascript/utils/live_query_runtime_owner.js", "app/javascript/utils/query_runtime.js", "app/javascript/utils/rated_docs.js", "app/javascript/core_stimulus.js", "app/views/core/_query_list_templates.html.erb", "app/views/shared/_dynamic_modal_templates.html.erb", "app/javascript/utils/core_workspace_runtime.js", "test/javascript/utils/targeted_search.test.js", "app/javascript/core_runtime.js", "test/playwright/todo_fixes.spec.ts", "test/javascript/controllers/missing_documents_controller.test.js", "test/javascript/controllers/case_editor_lifecycle.test.js", "app/javascript/utils/dynamic_modal.js", "app/javascript/controllers/dynamic_modal_controller.js", "test/playwright/workspace_modal_lifecycle.spec.ts", "test/javascript/utils/live_query_runtime_owner.test.js", "app/javascript/controllers/status_message_behavior.js", "app/javascript/controllers/search_results_controller.js"]
       "4.10":
         title: "Tune Relevance drawer — Query tab"
@@ -514,10 +514,10 @@ parts:
           query-rerun: "4.10/query-rerun"
           query-edited: "4.10/query-edited"
           query-sandbox: "4.10/query-sandbox"
-        last_run: 2026-10-25T00:13:13Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Partial importmap dependency MCP smoke: case6/try31 Tune Relevance Query opens with populated CodeMirror sandbox, original two-line query intact, no console errors. Screenshot inspected; no edits or rerun/save. The core editor uses the npm bundle; the importmap editor was separately checked on scorer5/edit. 2018 unit tests and build pass; audit clean for versioned pins; visual2pass and4known fixture/baseline failures."
-        paths: ["app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
+        notes: "Partial shared-editor MCP check case6/try31: bundled workspace imports the vendored editor; EditorView identity matches importmap, draft survives Settings/Query round trip, original restored without save. Screenshot inspected. Build contains no bundled CodeMirror/Lezer. Native disposable-clone settings check passes failure/retry, saved try, reload and history after disabling premature module-preload HTTP header. 2018 unit tests and59 Rails controller tests pass. Visual2pass/4known fixture/baseline failures."
+        paths: ["esbuild.config.js", "app/views/layouts/_case_workspace.html.erb", "app/javascript/core_stimulus.js", "app/javascript/utils/core_workspace_runtime.js", "test/playwright/workspace_settings.spec.ts", "app/javascript/controllers/tune_relevance_controller.js", "app/javascript/controllers/pane_controller.js", "app/javascript/controllers/core_bootstrap_controller.js", "app/javascript/controllers/case_toolbar_controller.js", "app/javascript/utils/settings_catalog_runtime.js", "app/javascript/utils/settings_runtime.js", "app/javascript/utils/search_endpoint_runtime.js", "app/javascript/utils/tune_relevance.js", "app/views/core/_tune_relevance.html.erb", "app/views/core/index.html.erb", "config/importmap.rb", "app/javascript/modules/editor.js", "app/javascript/api/json.js", "app/assets/stylesheets/core-overrides.css", "app/assets/stylesheets/core-additions.css"]
       "4.11":
         title: "Tune Relevance drawer — Tuning Knobs tab"
         screenshots:
@@ -1130,9 +1130,9 @@ parts:
           scorer-reopened: "8.4/scorer-reopened"
           scorer-edited: "8.4/scorer-edited"
           scorer-edit: "8.4/scorer-edit"
-        last_run: 2026-10-25T00:13:13Z
+        last_run: 2026-10-25T13:23:59Z
         result: pass
-        notes: "Partial importmap dependency MCP smoke on Current scorer5/edit (communal AP@10): JavaScript CodeMirror editor initializes with existing code, line numbers and highlighting; newly required streamparser pin resolves and no console errors. No changes or save to the shared scorer. Screenshot inspected; persistence and access-control flows not repeated. 2018 unit tests and build pass; audit clean for versioned pins."
+        notes: "Partial shared-editor MCP check scorer5/edit (communal AP@10): existing highlighted code loads through the same importmap EditorView as the case editor, with no core bundle on the page. Screenshot inspected. No changes/save to shared scorer. Yarn CodeMirror packages removed; Vitest tests the vendored modules. 2018 unit tests and59 Rails controller tests pass. Access-control/persistence flows not repeated live."
         paths: ["config/importmap.rb", "app/javascript/modules/editor.js", "app/controllers/scorers_controller.rb", "app/views/scorers/edit.html.erb", "app/views/scorers/_form.html.erb", "app/views/scorers/_scale_label.html.erb", "app/javascript/controllers/scorer_scale_controller.js", "app/services/team_sharing.rb", "app/models/concerns/text_search.rb", "app/javascript/controllers/codemirror_controller.js", "app/helpers/application_helper.rb"]
       "8.5":
         title: "Clone a scorer"

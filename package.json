@@ -9,14 +9,6 @@
     "node": ">=24 <25"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "^6.20.3",
-    "@codemirror/commands": "^6.11.1",
-    "@codemirror/lang-javascript": "^6.2.5",
-    "@codemirror/lang-json": "^6.0.2",
-    "@codemirror/language": "^6.12.4",
-    "@codemirror/lint": "^6.9.7",
-    "@codemirror/state": "^6.7.6",
-    "@codemirror/view": "^6.43.13",
     "@floating-ui/dom": "^1.8.0",
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.23",

@@ -97,6 +97,7 @@ class ScorersControllerTest < ActionController::TestCase
         get :edit, params: { id: communal_scorer.id }
 
         assert_response :success
+        assert_select 'link[rel=modulepreload][href*="codemirror--view"]', minimum: 1
         assert_equal communal_scorer, assigns(:scorer)
       end
 

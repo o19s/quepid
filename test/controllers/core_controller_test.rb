@@ -21,6 +21,9 @@ class CoreControllerTest < ActionController::TestCase
       get :index, params: { id: cases(:one).id, try_number: tries(:one).try_number }
 
       assert_response :success
+      assert_select 'link[rel=modulepreload][href*="codemirror"]', count: 0
+      assert_select 'script[type=module][src*="core_case"]', count: 1
+      assert_not_includes response.headers['Link'].to_s, 'core_case'
       %w[snapshot-bridge core-bootstrap query-command-bridge].each do |identifier|
         assert_select 'body[data-controller~=?]', identifier
       end
