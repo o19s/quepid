@@ -146,6 +146,7 @@ test.describe('Book import/export', () => {
       // visible link — full ZIP/JSON content verification is out of scope
       // here since it duplicates BookExporter's own service-level tests.
       const href = await exportLink.getAttribute('href');
+      // eslint-disable-next-line playwright/prefer-web-first-assertions -- href is read for the download below
       expect(href).toBeTruthy();
       const download = await page.request.get(href as string);
       expect(download.ok()).toBeTruthy();

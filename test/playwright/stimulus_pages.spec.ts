@@ -30,6 +30,7 @@ test.describe('Stimulus pages', () => {
     await page.goto('cases');
 
     const rootUrl = await page.locator('body').getAttribute('data-quepid-root-url');
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- root URL is used below
     expect(rootUrl).toBeTruthy();
 
     await page.getByRole('button', { name: 'Import Case from JSON' }).click();

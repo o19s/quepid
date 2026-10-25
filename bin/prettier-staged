@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Check Prettier on staged app/javascript files (see config/javascript_lint_scope.mjs).
+# Check Prettier on staged app/javascript and test/javascript files (see config/javascript_lint_scope.mjs).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

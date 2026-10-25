@@ -147,6 +147,7 @@ test('automatic judging, live activity, cancellation, synchronization and recove
     const current = await count.innerText();
     const previous = previousCount;
     previousCount = current;
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- already retried inside toPass
     expect(current).toBe(previous);
   }).toPass({ intervals: [delay * 4] });
   const stoppedAt = previousCount!;

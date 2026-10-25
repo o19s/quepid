@@ -314,6 +314,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     const optionCount = await options.count();
     expect(optionCount).toBeGreaterThan(1);
     const value = await options.nth(1).getAttribute('value');
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- value is selected below
     expect(value, 'the team select offers a shareable team').toBeTruthy();
     await teamSelect.selectOption(value!);
     await expect(modal.locator('#share-case-submit')).toBeEnabled();

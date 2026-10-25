@@ -83,6 +83,7 @@ async function captureAdminScreen(screenId, label, image, progress, environment,
       new Promise((resolve, reject) => { timeout = setTimeout(() => reject(new Error(`${label} capture timed out; retry after checking the app`)), 120000) })
     ])
   } catch (error) {
+    // eslint-disable-next-line preserve-caught-error -- the original error would leak the credentials
     throw new Error(error.message.replaceAll(email, "[admin account]").replaceAll(password, "[password]"))
   } finally {
     clearTimeout(timeout)

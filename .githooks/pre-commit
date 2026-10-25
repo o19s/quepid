@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run RuboCop and blocking ESLint + Prettier for app/javascript.
+# Run RuboCop and blocking ESLint (app/javascript) + Prettier (app/javascript, test/javascript).
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
@@ -18,8 +18,8 @@ while IFS= read -r file; do
       ;;
   esac
 
-  # Any depth under app/javascript/; eslint-staged/prettier-staged filter scope.
-  if [[ "$file" == *.js && "${file#app/javascript/}" != "$file" ]]; then
+  # Any depth under app/javascript/ or test/javascript/; eslint-staged/prettier-staged filter scope.
+  if [[ "$file" == *.js && ( "${file#app/javascript/}" != "$file" || "${file#test/javascript/}" != "$file" ) ]]; then
     modern_js_files+=("$file")
   fi
 done < <(git diff --cached --name-only --diff-filter=ACM)

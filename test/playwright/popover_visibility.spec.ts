@@ -46,6 +46,7 @@ test.describe('BS3↔BS5 popover paint (trap #5)', () => {
 
     await expect(trigger).toHaveAttribute('aria-describedby', /\S+/, { timeout: 5_000 });
     const tipId = await trigger.getAttribute('aria-describedby');
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- tip id is used below
     expect(tipId, 'Bootstrap should link trigger to tip via aria-describedby').toBeTruthy();
 
     const paint = await page.evaluate((id: string) => {
@@ -75,6 +76,7 @@ test.describe('BS3↔BS5 popover paint (trap #5)', () => {
 
     expect(opacity, 'getComputedStyle(opacity) must be > 0').toBeGreaterThan(0);
   });
+
   test('rating and Matches popovers toggle and dismiss outside the tip', async ({ page }) => {
     await gotoCase(page);
     await expandFirstQuery(page);

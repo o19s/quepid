@@ -122,7 +122,7 @@ export class CaptureJobs {
       fs.linkSync(preparedLock, this.lock)
     } catch (error) {
       fs.rmSync(path.join(this.directory, `${job.jobId}.json`), { force: true })
-      if (error.code === "EEXIST") throw new Error("Another screenshot capture is running; retry when it finishes")
+      if (error.code === "EEXIST") throw new Error("Another screenshot capture is running; retry when it finishes", { cause: error })
       throw error
     } finally {
       fs.rmSync(preparedLock, { force: true })

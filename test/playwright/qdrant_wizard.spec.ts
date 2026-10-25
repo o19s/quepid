@@ -149,6 +149,7 @@ for (const { idField, docId } of [
         await expect(result).toContainText('The Matrix');
       } finally {
         // Drain score/rating writes before afterAll deletes their case, even on assertion failure.
+        // eslint-disable-next-line playwright/no-networkidle -- drain writes before teardown
         await page.waitForLoadState('networkidle', { timeout: 10_000 }).catch(() => {});
         await page.goto('cases');
       }

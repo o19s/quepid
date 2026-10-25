@@ -104,6 +104,7 @@ test('provider switching, image preference persistence, scale gating and Jev tra
   const saved = page.waitForResponse(r => r.url().endsWith(`/ai_judges/${judgeId}`) && r.request().method() === 'POST');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   expect((await saved).status()).toBe(303);
+  // eslint-disable-next-line playwright/no-networkidle -- let the save settle before reloading
   await page.waitForLoadState('networkidle');
   await page.reload();
   await page.getByLabel('Llm Provider', { exact: true }).selectOption('openai');

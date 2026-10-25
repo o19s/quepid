@@ -1,5 +1,6 @@
 /**
- * Single source of truth for ESLint + Prettier scope on `app/javascript/`.
+ * Single source of truth for ESLint + Prettier scope on `app/javascript/`
+ * (plus `test/javascript/` for Prettier).
  */
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -17,7 +18,8 @@ export const ESLINT_IGNORES = [
   'vendor/**',
   'spec/**',
   'test/fixtures/**',
-  'test/playwright/**',
+  'test/playwright/test-results/**',
+  'test/playwright/playwright-report/**',
   'app/assets/builds/**',
   'app/javascript/vendor/**',
 ];
@@ -47,7 +49,18 @@ export function isLintableJavascriptPath(path) {
  * @returns {string[]}
  */
 export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
-  const base = join(repoRoot, 'app/javascript');
+  return listJavascriptFiles(repoRoot, 'app/javascript', isLintableJavascriptPath);
+}
+
+/**
+ * Sorted repo-relative `.js` paths under `directory` that pass `include`.
+ * @param {string} repoRoot
+ * @param {string} directory
+ * @param {(path: string) => boolean} include
+ * @returns {string[]}
+ */
+function listJavascriptFiles(repoRoot, directory, include) {
+  const base = join(repoRoot, directory);
   const results = [];
 
   function walk(dir) {
@@ -60,7 +73,7 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
         walk(full);
       } else if (name.endsWith('.js')) {
         const rel = relative(repoRoot, full);
-        if (isLintableJavascriptPath(rel)) {
+        if (include(rel)) {
           results.push(rel);
         }
       }
@@ -72,13 +85,18 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 }
 
 /**
- * Whether a repo-relative path is in the Prettier format scope.
- * Same as the ESLint scope; project style is double quotes (see docs/js_tooling.md).
+ * Whether a repo-relative path is in the Prettier format scope:
+ * the app/javascript/ lint scope plus the Vitest specs under test/javascript/.
+ * Project style is double quotes (see docs/js_tooling.md).
  * @param {string} path
  * @returns {boolean}
  */
 export function isPrettierJavascriptPath(path) {
-  return isLintableJavascriptPath(path);
+  const normalized = path.replace(/^\.\//, '');
+  return (
+    isLintableJavascriptPath(normalized) ||
+    (normalized.startsWith('test/javascript/') && normalized.endsWith('.js'))
+  );
 }
 
 /**
@@ -87,7 +105,10 @@ export function isPrettierJavascriptPath(path) {
  * @returns {string[]}
  */
 export function listPrettierJavascriptFiles(repoRoot = process.cwd()) {
-  return listLintableJavascriptFiles(repoRoot);
+  return [
+    ...listLintableJavascriptFiles(repoRoot),
+    ...listJavascriptFiles(repoRoot, 'test/javascript', isPrettierJavascriptPath),
+  ];
 }
 
 /** ESLint `files` glob for the modern stack. */

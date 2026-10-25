@@ -279,6 +279,7 @@ test.describe('cases index: share-case modal (Rails select + form POST)', () => 
     const options = teamSelect.locator('option');
     expect(await options.count()).toBeGreaterThan(1);
     const value = await options.nth(1).getAttribute('value');
+    // eslint-disable-next-line playwright/prefer-web-first-assertions -- value is selected below
     expect(value, 'seed data must give the share team <select> at least one selectable team option').toBeTruthy();
 
     await teamSelect.selectOption(value as string);

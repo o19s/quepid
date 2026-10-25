@@ -14,6 +14,7 @@ import {
 
 test.describe('core layout golden paths', () => {
   const disposableCaseIds: number[] = [];
+
   test.afterAll(async ({ browser }) => {
     const page = await browser.newPage();
     try {

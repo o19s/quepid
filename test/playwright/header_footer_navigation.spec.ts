@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { gotoCase, CASE_ID, apiHeaders, deleteCaseViaApi } from './case_helpers';
+import { gotoCase, CASE_ID, deleteCaseViaApi } from './case_helpers';
 
 // Reuse keeps the two surfaces' distinct navigation contracts and footer placement.
 const createdCases = new Set<number>();

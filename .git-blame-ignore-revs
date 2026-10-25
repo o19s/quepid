@@ -2,5 +2,11 @@
 # GitHub reads this file automatically.
 # Add the full hash as it appears on main (after any squash merge).
 
+# RuboCop: align hash values and method-def parens (lib/tasks/sample_data.thor, test/lib/doc_generator_test.rb)
+0628c7bab4ffdf175df074083e0d47a7f097cfd2
+
 # Prettier: format all of app/javascript/
 99735f3bc93a69030e84f5be0e95f0b2cbf54837
+
+# Prettier: format test/javascript/
+93214f4ca3a08c39e3c1cffcb6540b23f2c381a7

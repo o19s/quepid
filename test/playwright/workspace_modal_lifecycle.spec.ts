@@ -133,6 +133,7 @@ test.describe('Workspace modal lifecycle', () => {
     await expect(page.locator('#chart1')).not.toContainText('obsolete');
     await expect.poll(() => page.evaluate(() => (window as any).obsoleteChartFinalized)).toBe(true);
   });
+
   test('nested debug restores focus and closes only the inner modal with Escape or backdrop', async ({ page }) => {
     test.setTimeout(60_000);
     // This flow needs the rated-document lookup and explain payload from Solr.

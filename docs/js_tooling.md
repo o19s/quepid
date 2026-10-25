@@ -5,9 +5,11 @@ Quepid's first-party JavaScript is linted and tested as follows:
 | Tree | Role | Lint | Unit tests |
 |------|------|------|------------|
 | `app/javascript/` | Importmap + Stimulus + Turbo (`application.js`, controllers) | **ESLint** (full modern tree); **Prettier** (same scope) | **Vitest** (`test/javascript/**/*.test.js`, `vitest.config.js`) |
-| `test/javascript/`, `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Vitest specs, build/config tooling, and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
+| `test/javascript/` | Vitest specs | **ESLint** (+ `@vitest/eslint-plugin`); **Prettier** | — |
+| `test/playwright/` | Playwright E2E specs (TypeScript) | **ESLint** (`typescript-eslint` + `eslint-plugin-playwright`); **`tsc`** (`yarn typecheck:e2e`) | — |
+| `scripts/`, `lib/`, `db/scorers/`, `db/mapper_based_search_engines/` | Build/config tooling and server-side JavaScript sandboxes | **ESLint** | Vitest specs where applicable |
 
-Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` enables Node typings (`@types/node`) for `node:fs` / `node:path` imports.
+Playwright E2E (`test/playwright/`) covers full-browser flows for both stacks; it is not a substitute for fast unit tests. Specs are TypeScript; `test/playwright/tsconfig.json` (`strict`) enables Node typings (`@types/node`) for `node:fs` / `node:path` imports. Playwright strips types without checking them, so `yarn typecheck:e2e` (`tsc --noEmit`) is the type check. `typescript` stays on 6.0.x until `typescript-eslint` supports 7.
 
 ## ESLint + Prettier
 
@@ -37,7 +39,9 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 **Prettier** is enforced on the whole lint scope under `app/javascript/` (`config/javascript_lint_scope.mjs`) via pre-commit and `yarn format:js*`. GitHub blame skips bulk reformat commits listed in `.git-blame-ignore-revs`.
 
-**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `app/javascript/` files; run the full `yarn lint:js` command before finishing. Specs follow formatting conventions manually.
+**ESLint** covers the full modern tree under `app/javascript/`, Vitest JavaScript specs, build/config scripts, `lib/`, and DB scorer/mapper sources. Pre-commit runs ESLint on staged `app/javascript/` files; run the full `yarn lint:js` command before finishing. Vitest specs are also Prettier-formatted; Playwright specs are not yet.
+
+Spec rule sets: Vitest specs use `@vitest/eslint-plugin` recommended plus `no-focused-tests`; Playwright specs use `typescript-eslint` recommended and `eslint-plugin-playwright` recommended. Opinionated rules that clash with existing patterns (shared assertion helpers, data-dependent branches in E2E) are turned off in `eslint.config.mjs` with a comment; deliberate one-off exceptions use `eslint-disable-next-line <rule> -- <reason>`.
 
 `.editorconfig` still applies (e.g. final newline).
 
@@ -47,9 +51,10 @@ Quepid's `app/javascript/` style is **double quotes**, **no semicolons**, **no t
 
 ```bash
 bin/docker r yarn lint:js              # ESLint — first-party JavaScript scope
-bin/docker r yarn format:js:check      # Prettier check — app/javascript/ lint scope
-bin/docker r yarn format:js            # Prettier write — app/javascript/ lint scope
-bin/docker r rails test:eslint         # ESLint + Prettier check (CI-style)
+bin/docker r yarn format:js:check      # Prettier check — app/javascript/ + test/javascript/
+bin/docker r yarn format:js            # Prettier write — app/javascript/ + test/javascript/
+bin/docker r yarn typecheck:e2e        # tsc --noEmit on test/playwright/
+bin/docker r rails test:eslint         # ESLint + Prettier + Playwright tsc (CI-style)
 bin/docker r rails test:frontend       # Vitest + ESLint + Stylelint
 ```
 
@@ -68,7 +73,7 @@ Run Vitest and Stryker inside the container, not on the host. `node_modules/` is
 `.githooks/pre-commit` (via `bin/install-git-hooks`) runs on staged files:
 
 - `app/javascript/**/*.js` (lint scope) → **ESLint** via `eslint-staged` + `filter_javascript_lint_paths.mjs`
-- `app/javascript/**/*.js` (same scope) → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs`
+- `app/javascript/**/*.js` and `test/javascript/**/*.js` → **Prettier** via `prettier-staged` + `filter_javascript_prettier_paths.mjs`
 
 [pre-commit.com](https://pre-commit.com) hooks: `eslint-staged`, `prettier-staged`, `stylelint-staged`.
 

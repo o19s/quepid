@@ -117,6 +117,7 @@ test.describe('Case creation wizard', () => {
       try {
         // Let the page's own score write land first: deleting mid-write fails the
         // case_scores foreign key and returns a 500.
+        // eslint-disable-next-line playwright/no-networkidle -- drain writes before teardown
         await page.waitForLoadState('networkidle').catch(() => {});
         await deleteCaseViaApi(page, caseId);
       } finally {

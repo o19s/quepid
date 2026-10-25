@@ -202,7 +202,7 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 
 **Vitest** — `vi.resetModules()` + fresh `import()` for module singletons; `@hotwired/stimulus` is stubbed via `test/javascript/support/stimulus_stub.js`.
 
-**Playwright** (`test/playwright/*.ts`) — TypeScript; not governed by `.prettierrc.json`.
+**Playwright** (`test/playwright/*.ts`) — TypeScript; linted by ESLint (`typescript-eslint`, `eslint-plugin-playwright`) and type-checked with `docker compose exec app yarn typecheck:e2e`; not yet Prettier-formatted.
 
 
 ## Bootstrap 5 JavaScript on `core` (BS5 CSS + patch sheets)

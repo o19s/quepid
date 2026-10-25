@@ -1,4 +1,4 @@
-import { test, expect, type Locator, type Page, type Route } from '@playwright/test';
+import { test, expect, type Page, type Route } from '@playwright/test';
 import { apiHeaders, createDisposableCase, deleteCaseViaApi, resetCompletedCaseWizard } from './case_helpers';
 
 /**
@@ -143,6 +143,7 @@ test.describe('Case creation wizard behaviour', () => {
 
   test.afterEach(async ({ page }) => {
     try {
+      // eslint-disable-next-line playwright/no-networkidle -- drain writes before teardown
       await page.waitForLoadState('networkidle').catch(() => {});
       await page.unrouteAll({ behavior: 'ignoreErrors' });
       await page.goto('cases');
