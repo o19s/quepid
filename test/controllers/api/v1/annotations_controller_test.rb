@@ -17,17 +17,29 @@ module Api
       end
 
       describe '#create' do
-        test 'return an error if try id is not specified' do
-          post :create, params: { case_id: acase.id, score: { score: 1 } }
+        test 'preserves the existing filtering of browser query-score hashes' do
+          post :create, params: {
+            case_id:    acase.id,
+            annotation: { message: 'Browser score' },
+            score:      { score: 0.62, try_id: first_try.id, queries: { '11' => { score: 1 } } },
+          }
+          assert_response :ok
+          assert_nil acase.annotations.first.score.queries
+        end
 
-          assert_response :bad_request
+        test 'rejects a request without annotation params and does not create a score' do
+          assert_no_difference 'acase.scores.count' do
+            assert_raises ActionController::ParameterMissing do
+              post :create, params: { case_id: acase.id, score: { score: 1 } }
+            end
+          end
         end
 
         test 'creates a new score ' do
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {
@@ -41,6 +53,7 @@ module Api
             assert_response :ok
 
             assert_equal data[:score][:score], response.parsed_body['score']['score']
+            assert_equal first_try.try_number, response.parsed_body['score']['try_number']
           end
         end
 
@@ -50,8 +63,8 @@ module Api
 
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {
@@ -69,8 +82,8 @@ module Api
         test 'creates a new annotation' do
           data = {
             score:      {
-              score:     (1..100).to_a.sample,
-              all_rated: [ true, false ].sample,
+              score:     42,
+              all_rated: true,
               try_id:    first_try.id,
             },
             annotation: {

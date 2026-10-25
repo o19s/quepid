@@ -57,7 +57,7 @@ unless File.exist?(TRACKING_FILE)
   exit 1
 end
 
-data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date], aliases: true)
+data = YAML.safe_load(File.read(TRACKING_FILE), permitted_classes: [Date, Time], aliases: true)
 
 def path_matches?(tracked_path, changed_file)
   return true if tracked_path == changed_file

@@ -1,0 +1,65 @@
+name: quepid-legacy
+
+services:
+  app:
+    build:
+      context: ../../tmp/legacy/source
+      dockerfile: Dockerfile.dev
+    init: true
+    command: bash /legacy/start
+    environment:
+      RAILS_ENV: development
+      RACK_ENV: development
+      PORT: "3000"
+      DOCKER_CONTAINER: "true"
+      DB_HOST: mysql
+      DB_USERNAME: root
+      DB_PASSWORD: password
+      DB_NAME: quepid_legacy
+      FORCE_SSL: "false"
+      QUEPID_DOMAIN: localhost
+      QUEPID_CONSIDER_ALL_REQUESTS_LOCAL: "true"
+      SIGNUP_ENABLED: "true"
+      EMAIL_LOGIN_ENABLED: "true"
+      QUEPID_DEFAULT_SCORER: AP@10
+      SECRET_KEY_BASE: legacy-development-only-secret-key-base-for-isolated-comparison
+      ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY: legacy-development-deterministic
+      ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT: legacy-development-salt
+      ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY: legacy-development-primary
+      LAUNCHY_DRY_RUN: "true"
+      BROWSER: /dev/null
+      PUPPETEER_SKIP_DOWNLOAD: "true"
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium
+    volumes:
+      - ../../tmp/legacy/source:/srv/app
+      - ./start:/legacy/start:ro
+      - ./Procfile:/legacy/Procfile:ro
+      - ./seed.rb:/legacy/seed.rb:ro
+    ports:
+      - "127.0.0.1:${LEGACY_APP_PORT:-3001}:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "--output", "/dev/null", "http://localhost:3000/"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 90s
+
+  mysql:
+    image: mysql:8.4.3
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - mysql:/var/lib/mysql
+    ports:
+      - "127.0.0.1:${LEGACY_DB_PORT:-33307}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+volumes:
+  mysql:

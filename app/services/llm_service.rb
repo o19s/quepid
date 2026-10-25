@@ -23,8 +23,8 @@ class LlmService
     @conn = LlmConnection.build(url: @options[:llm_service_url])
   end
 
-  def perform_safe_judgement judgement, scale: JudgeScale::NONE
-    perform_judgement(judgement, scale: scale)
+  def perform_safe_judgement judgement, scale: JudgeScale::NONE, book: nil
+    perform_judgement(judgement, scale: book ? JudgeScale.for(book) : scale)
   rescue RuntimeError => e
     judgement.explanation = "BOOM: Runtime Error: #{e.message}"
     judgement.unrateable = true
@@ -37,7 +37,8 @@ class LlmService
   # @param scale [JudgeScale] the rating scale the judge is held to. How it
   #   reaches the model -- described in the prompt, or sent as the question's
   #   criteria -- is the adapter's business.
-  def perform_judgement judgement, scale: JudgeScale::NONE
+  def perform_judgement judgement, scale: JudgeScale::NONE, book: nil
+    scale = JudgeScale.for(book) if book
     envelope = @adapter.request_envelope(judgement.query_doc_pair,
                                          system_prompt: judgement.user.system_prompt,
                                          scale:         scale)

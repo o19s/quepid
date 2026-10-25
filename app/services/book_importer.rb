@@ -5,23 +5,19 @@ require 'progress_indicator'
 class BookImporter
   # include ProgressIndicator
 
-  # The uploaded file says which judge and which query/doc pair a judgement belongs to. It does
-  # not get to *change* them: we look these keys up, then drop them, so a handcrafted file can't
-  # attach its judgement to someone else's pair or overwrite one that already exists. Timestamps
-  # are excluded too - assign_attributes happily overwrites created_at/updated_at, and Rails only
-  # backfills them when blank, so a crafted file could otherwise forge a judgement's history.
-  UNASSIGNABLE_JUDGEMENT_KEYS = [
-    :user_email, :email, :user_id, :id, :judgement_id, :query_doc_pair, :query_doc_pair_id,
-    :created_at, :updated_at
+  # The only attributes an uploaded file may set. Everything else is either looked up and
+  # handled explicitly (which judge, which pair, which book) or ignored: a handcrafted file
+  # can't attach its judgement to someone else's pair, move a pair - and every judgement on
+  # it - into a book the uploader doesn't own, or forge created_at/updated_at. Keys an export
+  # emits that aren't attributes (e.g. `judgement_id`) are dropped rather than raising.
+  ASSIGNABLE_JUDGEMENT_KEYS = [ :rating, :unrateable, :judge_later, :explanation ].freeze
+
+  ASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
+    :query_text, :doc_id, :position, :document_fields, :information_need, :notes, :options
   ].freeze
 
-  # Same idea, one level up: a pair says which book it's in. Without this, a crafted `book_id`
-  # (or `id`) on a pair would move it - and every judgement on it - into a book the uploader
-  # doesn't own. See docs/todo/todo.md for why this is a stopgap, not the real fix. Timestamps
-  # are excluded for the same forgery reason as UNASSIGNABLE_JUDGEMENT_KEYS above.
-  UNASSIGNABLE_QUERY_DOC_PAIR_KEYS = [
-    :id, :book_id, :judgements, :query_doc_pair_id, :created_at, :updated_at
-  ].freeze
+  # Books must have a name, but an import file does not have to supply one.
+  DEFAULT_BOOK_NAME = 'Imported Book'
 
   attr_reader :logger, :options
 
@@ -46,6 +42,8 @@ class BookImporter
     @book.scale = params_to_use[:scale] if params_to_use.key?(:scale)
     @book.scale_with_labels = params_to_use[:scale_with_labels] if params_to_use[:scale_with_labels].present?
 
+    validate_standalone_judgements
+
     emails_of_judges(params_to_use).each do |email|
       unless User.by_email(email).exists?
         if true == options[:force_create_users]
@@ -60,8 +58,11 @@ class BookImporter
   # Returns true on success, so Api::V1::Import::BooksController#create's `if book_importer.import`
   # check doesn't depend on which of the branches below happened to run last (some callers - e.g.
   # a payload with only query_doc_pairs and no all_judgements - would otherwise see a falsy nil).
-  # rubocop:disable-next Naming/PredicateMethod
   def import
+    JudgementSync.batch { import_data }
+  end
+
+  def import_data
     params_to_use = @data_to_process
 
     apply_top_level_attributes(params_to_use)
@@ -74,7 +75,8 @@ class BookImporter
     @book.save
 
     import_query_doc_pairs(params_to_use[:query_doc_pairs]) if params_to_use[:query_doc_pairs]
-    import_all_judgements(params_to_use[:all_judgements]) if params_to_use[:all_judgements]
+    imported = import_all_judgements(standalone_judgements) if standalone_judgements
+    return no_judgements_imported if standalone_judgements && imported.zero? && params_to_use[:query_doc_pairs].blank?
 
     true
   end
@@ -83,6 +85,7 @@ class BookImporter
 
   def apply_top_level_attributes params_to_use
     @book.name = params_to_use[:name] if params_to_use.key?(:name)
+    @book.name = DEFAULT_BOOK_NAME if @book.name.blank?
     @book.show_rank = params_to_use[:show_rank] if params_to_use.key?(:show_rank)
     return unless params_to_use.key?(:support_implicit_judgements)
 
@@ -110,7 +113,7 @@ class BookImporter
       end
     end
 
-    params_to_use[:all_judgements]&.each do |judgement|
+    standalone_judgements&.each do |judgement|
       email = judgement[:user_email] || judgement[:email]
       emails << email if email.present?
     end
@@ -121,15 +124,15 @@ class BookImporter
   def import_query_doc_pairs query_doc_pairs
     total = query_doc_pairs.size
     counter = total
-    last_percent = 0
+    progress = ProgressBroadcaster.new(@book, total)
 
     query_doc_pairs.each do |query_doc_pair|
       qdp = find_or_initialize_query_doc_pair(query_doc_pair)
-      qdp.assign_attributes(query_doc_pair.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+      qdp.assign_attributes(query_doc_pair.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
       qdp.save
 
       counter -= 1
-      last_percent = broadcast_progress(total, counter, last_percent, qdp)
+      progress.advance(counter, qdp)
 
       next unless query_doc_pair[:judgements]
 
@@ -137,58 +140,67 @@ class BookImporter
     end
   end
 
-  # Emits a notifications broadcast every percent of `total` crossed, from 0 to 100,
-  # and returns the (possibly updated) last_percent for the caller to carry forward.
-  def broadcast_progress total, counter, last_percent, qdp
-    percent = (((total - counter).to_f / total) * 100).truncate
-    return last_percent unless percent > last_percent
+  # Keep the complete-book envelope compatible; the judgements endpoint uses judgements.
+  def standalone_judgements
+    @data_to_process[:all_judgements] || @data_to_process[:judgements]
+  end
 
-    Turbo::StreamsChannel.broadcast_render_to(
-      :notifications,
-      target:  'notifications',
-      partial: 'books/blah',
-      locals:  { book: @book, counter: counter, percent: percent, qdp: qdp }
-    )
-    percent
+  def validate_standalone_judgements
+    return unless standalone_judgements && @data_to_process[:query_doc_pairs].blank?
+
+    usable = standalone_judgements.any? do |attrs|
+      qdp = judgement_query_doc_pair(attrs)
+      next false unless qdp&.valid?
+
+      user = find_judgement_user(attrs)
+      judgement = Judgement.find_by(query_doc_pair: qdp, user: user) if qdp.persisted? && user
+      judgement ||= Judgement.new(query_doc_pair: qdp, user: user)
+      judgement.assign_attributes(attrs.slice(*ASSIGNABLE_JUDGEMENT_KEYS))
+      judgement.valid?
+    end
+    no_judgements_imported unless usable
+  end
+
+  # rubocop:disable-next Naming/PredicateMethod -- Adds an import error.
+  def no_judgements_imported
+    @book.errors.add(:base, 'No judgements could be imported. Provide a query_doc_pair_id belonging to this book, or both query_text and doc_id, and a valid judgement.')
+    false
   end
 
   def import_all_judgements judgements
-    judgements.each do |judgement|
-      qdp = if judgement[:query_doc_pair].present?
-              upsert_nested_query_doc_pair(judgement[:query_doc_pair])
-            else
-              find_query_doc_pair(judgement)
-            end
-
-      next unless qdp
-
-      import_judgement(qdp, judgement)
+    judgements.count do |attrs|
+      qdp = judgement_query_doc_pair(attrs)
+      qdp&.save && import_judgement(qdp, attrs)
     end
   end
 
-  def upsert_nested_query_doc_pair attrs
-    qdp = find_or_initialize_query_doc_pair(attrs)
-    qdp.assign_attributes(attrs.except(*UNASSIGNABLE_QUERY_DOC_PAIR_KEYS))
-    qdp.save
-    qdp
+  def judgement_query_doc_pair attrs
+    # Keep validation candidates and rejected rows out of book.save's autosave.
+    scope = QueryDocPair.where(book: @book)
+    pair_attrs = attrs[:query_doc_pair].presence
+    if pair_attrs
+      qdp = find_or_initialize_query_doc_pair(pair_attrs, scope: scope)
+      qdp.assign_attributes(pair_attrs.slice(*ASSIGNABLE_QUERY_DOC_PAIR_KEYS))
+      qdp
+    elsif attrs[:query_doc_pair_id].present?
+      scope.find_by(id: attrs[:query_doc_pair_id])
+    elsif attrs[:query_text].present? && attrs[:doc_id].present?
+      find_or_initialize_query_doc_pair(attrs, scope: scope)
+    end
   end
 
-  def find_query_doc_pair attrs
-    return nil if attrs[:query_doc_pair_id].blank?
-
-    @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
-  end
-
-  def find_or_initialize_query_doc_pair attrs
+  def find_or_initialize_query_doc_pair attrs, scope: @book.query_doc_pairs
     if attrs[:query_doc_pair_id].present?
-      existing = @book.query_doc_pairs.find_by(id: attrs[:query_doc_pair_id])
+      existing = scope.find_by(id: attrs[:query_doc_pair_id])
       return existing if existing
     end
 
     # No id given, or it doesn't belong to this book (e.g. a stale/foreign id) - fall back to
     # matching by query_text/doc_id rather than forcing that id onto a new record, which would
     # collide with an unrelated row's primary key.
-    @book.query_doc_pairs.find_or_initialize_by(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+    pair = scope.find_or_initialize_by(query_text: attrs[:query_text], doc_id: attrs[:doc_id])
+    pair.book = @book if pair.new_record?
+    pair
   end
 
   def import_judgement query_doc_pair, attrs
@@ -199,7 +211,7 @@ class BookImporter
     # always building instead: importing the same file twice creates duplicates, and once a pair
     # has 3+ judgements its rating is calculated differently. See docs/todo/todo.md.
     judgement = user ? query_doc_pair.judgements.find_or_initialize_by(user: user) : query_doc_pair.judgements.build
-    judgement.assign_attributes(attrs.except(*UNASSIGNABLE_JUDGEMENT_KEYS))
+    judgement.assign_attributes(attrs.slice(*ASSIGNABLE_JUDGEMENT_KEYS))
     judgement.save
   end
 

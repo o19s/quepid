@@ -8,6 +8,15 @@ module CalibrationsHelper
     label.present? ? "#{number} #{label}" : number.to_s
   end
 
+  # This judge's tuning history on the run's pairs: other judges' runs compare
+  # something else. Figures are shown for finished runs only, so only theirs
+  # need answers.
+  def calibration_sample_runs run
+    runs = run.sample.runs.where(judge_id: run.judge_id).order(:id).to_a
+    ActiveRecord::Associations::Preloader.new(records: runs.reject(&:active?), associations: :answers).call
+    runs
+  end
+
   # When the server rendered a live-updated element, for stale_stream_guard:
   # milliseconds, so updates rendered in one second still order.
   def calibration_rendered_at

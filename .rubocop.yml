@@ -1,6 +1,5 @@
 plugins:
   - rubocop-rails
-  - rubocop-capybara
   - rubocop-minitest
 
 AllCops:
@@ -11,7 +10,9 @@ AllCops:
     - bin/**/*
     - vendor/**/*
     - node_modules/**/*
+    - tmp/**/*
     - config/initializers/content_security_policy.rb
+    - .prettierignore
 
 Style/OneClassPerFile:
   Enabled: false

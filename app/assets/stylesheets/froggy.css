@@ -25,7 +25,7 @@
   opacity: .99;  /* 1.0 doesn't work. */
 }
 
-.vega-embed {
+.frog-pond .vega-embed {
   width: 100%;
   height: 100%;
 }
@@ -35,15 +35,4 @@
    own, the pond image shows through the gap to the right of the canvas. */
 #chart1 {
   background-color: #fff;
-}
-
-
-.querqy-icon {
-    display: inline-block;
-    width: 24px;  /* Adjust to match your image width */
-    height: 24px; /* Adjust to match your image height */
-    background-image: url('images/querqy-icon.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
 }

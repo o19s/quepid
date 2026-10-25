@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+no_endpoint ||= false
+
 json.args           try.args
 json.curator_vars   try.curator_vars_map
 json.escape_query   try.escape_query
@@ -19,6 +21,7 @@ json.mapper_based_search_engine_supports_pagination try.search_endpoint&.mapper_
 json.mapper_based_search_engine_pagination_hits_param try.search_endpoint&.mapper_based_search_engine&.pagination_hits_param
 json.mapper_based_search_engine_pagination_offset_param try.search_endpoint&.mapper_based_search_engine&.pagination_offset_param
 json.mapper_based_search_engine_supports_rated_docs_lookup try.search_endpoint&.mapper_based_search_engine&.supports_rated_docs_lookup
+json.mapper_based_search_engine_supports_direct_document_lookup try.search_endpoint&.mapper_based_search_engine&.supports_direct_document_lookup
 json.search_url try.search_endpoint&.endpoint_url
 json.basic_auth_credential try.search_endpoint&.api_basic_auth_credential
 json.mapper_code    try.search_endpoint&.mapper_code
@@ -32,7 +35,7 @@ json.requests_per_minute try.search_endpoint&.requests_per_minute
 json.options try.options
 
 json.try_number try.try_number
-if try.search_endpoint.present?
+if !no_endpoint && try.search_endpoint.present?
   json.search_endpoint do
     json.partial! 'api/v1/search_endpoints/search_endpoint', search_endpoint: try.search_endpoint
   end

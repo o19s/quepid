@@ -1,0 +1,48 @@
+/*
+ * Page skin shared by both bundles (application and core). build_css.js
+ * loads it right after Bootstrap and the fonts, so each bundle's own files
+ * can extend these rules (e.g. core-additions.css makes body a flex column).
+ */
+
+body {
+  background: url('blue_bg.jpg') top center repeat;
+}
+
+footer {
+  font-size: 14px;
+}
+
+/* Match footer spacing across the bundles' different root font sizes. */
+footer.py-2 {
+  padding-top: 8px !important;
+  padding-bottom: 8px !important;
+}
+
+/* Shared flash presentation; each surface owns its message lifecycle. */
+#flash-messages {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#flash-messages .alert {
+  pointer-events: auto;
+  margin: 0;
+  border-radius: 0;
+  font-size: 14px;
+  line-height: 21px;
+  padding: 14px 80px 14px 14px;
+}
+
+#flash-messages .alert-success {
+  --bs-alert-color: #3c763d;
+  --bs-alert-bg: #dff0d8;
+  --bs-alert-border-color: #d6e9c6;
+  --bs-alert-link-color: #2b542c;
+}
+
+#flash-messages .alert > span {
+  display: block;
+  margin-left: 20px;
+}

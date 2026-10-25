@@ -1,0 +1,23 @@
+<%# locals: (kase:) %>
+<% modal_body = capture do %>
+  <p>Provide a JSON object specifying query specific options</p>
+  <label for="query-options-editor">
+    This key =&gt; value object will be available in the scorer so you can use it to access query specifics.
+    You can access the values using the <code>qOption('key')</code> method in Scorers or
+    <code>#$qOption.key##</code> in Query Sandbox.
+  </label>
+  <textarea id="query-options-editor" class="d-none" data-query-options-core-target="editor"></textarea>
+<% end %>
+
+<% modal_footer = capture do %>
+  <button type="button" class="btn btn-primary" data-query-options-core-target="saveButton" data-action="click->query-options-core#save">Set Options</button>
+<% end %>
+
+<%= render "shared/modal_shell", id: "queryOptionsModal", title: "Query Options",
+                                 title_tag: :h3, title_data: { query_options_core_target: "title" },
+                                 data: {
+                                   controller: "query-options-core",
+                                   action: "show.bs.modal->query-options-core#open",
+                                   query_options_core_save_url_template_value: api_case_query_options_path(kase, '__QUERY_ID__'),
+                                 },
+                                 body: modal_body, footer: modal_footer %>

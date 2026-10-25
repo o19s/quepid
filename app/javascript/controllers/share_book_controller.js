@@ -7,8 +7,4 @@ export default class extends ShareEntityControllerBase {
   get entityLabel() {
     return "Book"
   }
-
-  get modalElementId() {
-    return "shareBookModal"
-  }
 }

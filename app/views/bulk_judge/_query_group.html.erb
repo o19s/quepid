@@ -1,0 +1,25 @@
+<%# locals: (query_text:, query_doc_pairs:, offset:, rating_buttons:, judgements:, show_explanations:) %>
+<div class="query-group-card card mb-4">
+  <div class="row g-0">
+    <div class="col-md-3 query-sidebar">
+      <div class="sticky-query-label">
+        <h5 class="query-title">
+          <i class="bi bi-search"></i> Query
+        </h5>
+        <p class="query-text"><strong><%= query_text %></strong></p>
+        <span class="badge bg-secondary"><%= pluralize query_doc_pairs.size, 'doc' %></span>
+      </div>
+    </div>
+
+    <div class="col-md-9">
+      <% query_doc_pairs.each.with_index(offset + 1) do |query_doc_pair, position| %>
+        <%= render 'bulk_judge/document',
+                   query_doc_pair:,
+                   position:,
+                   judgement: judgements[query_doc_pair.id],
+                   rating_buttons:,
+                   show_explanations: %>
+      <% end %>
+    </div>
+  </div>
+</div>

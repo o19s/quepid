@@ -8,6 +8,16 @@ class JudgementFromRatingJobTest < ActiveJob::TestCase
   let(:book) { books(:book_of_star_wars_judgements) }
 
   describe 'a rating on a query whose case has a book' do
+    test 'several ratings for one book refresh the Linked Cases card once' do
+      ratings = %w[DOC1 DOC2 DOC3].map do |doc_id|
+        Rating.create! query: query_with_book, doc_id: doc_id, rating: 2, user: user
+      end
+
+      assert_enqueued_jobs 1, only: BroadcastLinkedCasesJob do
+        JudgementFromRatingJob.perform_now user, ratings.map(&:id)
+      end
+    end
+
     test 'reuses an existing query_doc_pair and creates a judgement with the rating value' do
       rating = Rating.create! query: query_with_book, doc_id: 'Han Solo-A Star Wars Story', rating: 2, user: user
 

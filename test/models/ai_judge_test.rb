@@ -61,18 +61,18 @@ require 'test_helper'
 class AiJudgeTest < ActiveSupport::TestCase
   describe 'STI classification' do
     it 'is a User' do
-      assert_kind_of User, AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      assert_kind_of User, AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
     end
 
     it 'reports ai_judge? true, unlike a plain User' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :ai_judge?
       assert_not_predicate User.new, :ai_judge?
     end
 
     it 'AiJudge.all only returns AI judges, even mixed in with humans' do
       human = User.create!(email: 'human-for-ai-judge-test@example.com', password: 'password')
-      judge = AiJudge.create!(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.create!(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
 
       assert_includes AiJudge.all, judge
       assert_not_includes AiJudge.all, human
@@ -81,37 +81,37 @@ class AiJudgeTest < ActiveSupport::TestCase
 
   describe 'validations' do
     it 'does not require an email or password address to be valid' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :valid?
     end
 
     it 'requires a name' do
-      judge = AiJudge.new(llm_key: '1234')
+      judge = AiJudge.new(llm_key: '1234', system_prompt: 'Judge it.')
       assert_not judge.valid?
       judge.name = 'Judge Judy'
       assert_predicate judge, :valid?
     end
 
     it 'does not require an llm_key, since a local LLM provider may not check one' do
-      judge = AiJudge.new(name: 'Judge Judy')
+      judge = AiJudge.new(name: 'Judge Judy', system_prompt: 'Judge it.')
       assert_predicate judge, :valid?
     end
 
     it 'still enforces the llm_key length limit when one is provided' do
-      judge = AiJudge.new(name: 'Judge Judy', llm_key: 'x' * 256)
+      judge = AiJudge.new(name: 'Judge Judy', system_prompt: 'Judge it.', llm_key: 'x' * 256)
       assert_not judge.valid?
     end
   end
 
   describe 'options to configure the llm server' do
     it 'provides an empty hash' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       opts_hash = judge.judge_options
       assert_empty(opts_hash)
     end
 
     it 'lets you update the options hash via passing in a hash with new values' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
       opts_hash = judge.judge_options
 
       opts_hash[:model] = 'gpt-3.5-turbo'
@@ -137,9 +137,8 @@ class AiJudgeTest < ActiveSupport::TestCase
       judge_options = judge_judy.judge_options
       assert_equal('gpt-3.5-turbo', judge_options[:model])
     end
-
     it 'stores everything under one string key, whatever keys you hand it' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy')
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.')
 
       judge.judge_options = { 'llm_provider' => 'openai' }
       judge.judge_options = { llm_provider: 'ollama', llm_model: 'qwen3:0.6b' }
@@ -156,7 +155,7 @@ class AiJudgeTest < ActiveSupport::TestCase
     end
 
     it 'keeps other options entries when judge options are written' do
-      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', options: { 'special_options' => { 'key1' => 'opt1' } })
+      judge = AiJudge.new(llm_key: '1234', name: 'Judge Judy', system_prompt: 'Judge it.', options: { 'special_options' => { 'key1' => 'opt1' } })
 
       judge.judge_options = { llm_provider: 'openai' }
       judge.save!

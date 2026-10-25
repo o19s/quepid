@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "Shopify.ruby-lsp",
+    "rubocop.vscode-rubocop",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "stylelint.vscode-stylelint",
+    "EditorConfig.EditorConfig"
+  ]
+}

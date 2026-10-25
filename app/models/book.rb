@@ -38,6 +38,21 @@
 require 'scale_serializer'
 
 class Book < ApplicationRecord
+  def find_or_initialize_query_doc_pair query_text:, doc_id:
+    query_doc_pairs.find_or_initialize_by(query_text: query_text, doc_id: doc_id)
+  end
+
+  def find_or_create_query_doc_pair query_text:, doc_id:
+    pair = find_or_initialize_query_doc_pair(query_text: query_text, doc_id: doc_id)
+    pair.save if pair.new_record?
+    pair
+  end
+
+  def queue_job operation
+    update!("#{operation}_job" => "queued at #{Time.zone.now}")
+    yield
+  end
+
   # Default scoring guidelines templates
   FOUR_POINT_GUIDELINES = <<~MARKDOWN
     **0 - Poor:** *Terrible results!* Clearly not desired. These are negative examples.
@@ -117,13 +132,7 @@ class Book < ApplicationRecord
   scope :active, -> { where(archived: false) }
   scope :archived, -> { where(archived: true) }
 
-  def archive!
-    update(archived: true)
-  end
-
-  def unarchive!
-    update(archived: false)
-  end
+  validates :name, presence: true
 
   # Custom validation to prevent scale changes but allow label changes
   validate :scale_cannot_be_changed_if_judgements_exist
@@ -169,6 +178,18 @@ class Book < ApplicationRecord
 
   def queries_count
     query_doc_pairs.select(:query_text).distinct.count
+  end
+
+  # Judgements per book for list pages, in one grouped query. Books without
+  # judgements are absent from the returned hash.
+  def self.judgements_count_by_book_id book_ids
+    Judgement.joins(:query_doc_pair).where(query_doc_pairs: { book_id: book_ids })
+      .group('query_doc_pairs.book_id').count
+  end
+
+  # Cases per book for list pages, in one grouped query.
+  def self.cases_count_by_book_id book_ids
+    Case.where(book_id: book_ids).group(:book_id).count
   end
 
   # Book-level cap on how deep (by QueryDocPair#position, 1-indexed, lower =

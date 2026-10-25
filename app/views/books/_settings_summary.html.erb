@@ -1,0 +1,60 @@
+<%# locals: (book:) %>
+<div class="card mb-4 h-100">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="bi bi-gear"></i> Book Settings</h5>
+  </div>
+  <div class="card-body">
+    <dl class="row mb-0">
+      <dt class="col-sm-3">Teams</dt>
+      <dd class="col-sm-9">
+        <% if book.teams.any? %>
+          <% book.teams.each do |team| %>
+            <%= link_to team.name, team_path(team) %>&nbsp;
+          <% end %>
+        <% else %>
+          <span class="text-muted">No teams</span>
+        <% end %>
+      </dd>
+
+      <% if book.scale_with_labels.present? %>
+        <dt class="col-sm-3">Scale Labels</dt>
+        <dd class="col-sm-9">
+          <% book.scale_with_labels.each do |value, label| %>
+            <span class="badge me-1" style="background-color: <%= calculate_hsl_color(value.to_i, book.scale) %>;"><%= label %>: <%= value %></span>
+          <% end %>
+        </dd>
+      <% end %>
+
+      <dt class="col-sm-3">Implicit Judgements</dt>
+      <dd class="col-sm-9"><%= book.support_implicit_judgements? ? 'Enabled' : 'Disabled' %></dd>
+
+      <dt class="col-sm-3">Show Rank</dt>
+      <dd class="col-sm-9"><%= book.show_rank? ? 'Visible to judges' : 'Hidden from judges' %></dd>
+
+      <dt class="col-sm-3">Rank Depth</dt>
+      <dd class="col-sm-9">
+        <% if book.rank_depth.present? %>
+          Top <%= book.rank_depth %> — coverage metrics and judging above only consider pairs ranked <%= book.rank_depth %> or better.
+        <% else %>
+          <span class="text-muted">No limit</span>
+        <% end %>
+      </dd>
+
+      <% if book.import_file.attached? %>
+        <dt class="col-sm-3">Import File</dt>
+        <dd class="col-sm-9">
+          <%= link_to 'Download', rails_blob_path(book.import_file.blob, only_path: true) %>
+          <span class="text-muted small">(uploaded <%= time_ago_in_words book.import_file.created_at %> ago)</span>
+        </dd>
+      <% end %>
+
+      <% if book.export_file.attached? %>
+        <dt class="col-sm-3">Export File</dt>
+        <dd class="col-sm-9">
+          <%= link_to 'Download JSON', rails_blob_path(book.export_file.blob, only_path: true) %>
+          <span class="text-muted small">(exported <%= time_ago_in_words book.export_file.created_at %> ago)</span>
+        </dd>
+      <% end %>
+    </dl>
+  </div>
+</div>

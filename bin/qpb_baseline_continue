@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+
+# Continue the Quality Playbook baseline iteration cycle without requiring a
+# separate chat turn after every completed strategy.
+#
+# Usage:
+#   bin/qpb_baseline_continue
+#   QPB_TARGET=/path/to/target bin/qpb_baseline_continue
+#
+# The script deliberately stops at the first incomplete or failed boundary and
+# prints the exact next action. It never edits application source files.
+
+set -u
+
+if [[ "${1:-}" == "--help" || "${1:-}" == "-h" ]]; then
+  cat <<'EOF'
+Continue the Quality Playbook baseline iteration cycle.
+
+Usage:
+  bin/qpb_baseline_continue
+  QPB_TARGET=/path/to/target bin/qpb_baseline_continue
+
+The script runs gap -> unfiltered -> parity -> adversarial, skips strategies
+already marked complete in quality/PROGRESS.md only after rechecking their boundary, and
+stops with a diagnostic if a runner, gate, validator, or completion heading is
+missing.
+
+Environment:
+  QPB_TARGET  Target repository; defaults to ../.qpb-baseline
+  QPB_RUNNER  Explicit path to bin/run_playbook.py
+EOF
+  exit 0
+fi
+
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+target=${QPB_TARGET:-"$repo_root/../.qpb-baseline"}
+runner=${QPB_RUNNER:-}
+runner_args=(--codex --sequential --allow-missing-sentinels)
+strategies=(gap unfiltered parity adversarial)
+
+if [[ ! -d "$target" ]]; then
+  printf 'ERROR: QPB target does not exist: %s\n' "$target" >&2
+  exit 2
+fi
+
+if [[ -z "$runner" ]]; then
+  for candidate in \
+    "$repo_root/.qpb-runner/bin/run_playbook.py" \
+    "$repo_root/../.qpb-baseline/.qpb-runner/bin/run_playbook.py"; do
+    if [[ -f "$candidate" ]]; then
+      runner=$candidate
+      break
+    fi
+  done
+fi
+
+if [[ -z "$runner" ]]; then
+  runner=$(find /private/tmp -path '*/quality-playbook-*/bin/run_playbook.py' -type f \
+    -print 2>/dev/null | sort | tail -1)
+fi
+
+if [[ -z "$runner" || ! -f "$runner" ]]; then
+  printf '%s\n' \
+    'ERROR: Quality Playbook runner not found.' \
+    'Set QPB_RUNNER=/path/to/quality-playbook/bin/run_playbook.py or restore the runner checkout.' >&2
+  exit 2
+fi
+
+progress="$target/quality/PROGRESS.md"
+
+has_heading() {
+  local heading=$1
+  [[ -f "$progress" ]] && rg -q "^## Iteration: ${heading} complete$" "$progress"
+}
+
+run_boundary_checks() {
+  printf '\n=== Boundary verification ===\n'
+  (
+    cd "$target" || exit
+    python3 quality/mechanical/verify.py || exit $?
+    python3 .codex/skills/quality-playbook/quality_gate.py . > quality/results/quality-gate-continue.log 2>&1
+    gate_status=$?
+    rg -n '^Total:|^RESULT: GATE' quality/results/quality-gate-continue.log || true
+    if [[ $gate_status -ne 0 ]]; then
+      printf 'ERROR: quality gate failed (exit %s).\n' "$gate_status" >&2
+      exit "$gate_status"
+    fi
+    PYTHONPATH=.codex/skills/quality-playbook \
+      python3 -m bin.validate_phase_artifacts . --phase 6
+  )
+}
+
+for strategy in "${strategies[@]}"; do
+  if has_heading "$strategy"; then
+    run_boundary_checks || exit $?
+    printf 'SKIP: %s iteration already complete.\n' "$strategy"
+    continue
+  fi
+
+  printf '\n=== Starting Quality Playbook iteration: %s ===\n' "$strategy"
+  python3 "$runner" "${runner_args[@]}" \
+    --next-iteration --strategy "$strategy" "$target"
+  runner_status=$?
+  if [[ $runner_status -ne 0 ]]; then
+    printf '\nSTOPPED: %s iteration did not complete (runner exit %s).\n' \
+      "$strategy" "$runner_status" >&2
+    printf 'Inspect: %s/quality/logs/ and %s\n' "$target" "$progress" >&2
+    exit "$runner_status"
+  fi
+
+  if ! has_heading "$strategy"; then
+    printf '\nSTOPPED: runner returned success, but PROGRESS.md lacks:\n' >&2
+    printf '  ## Iteration: %s complete\n' "$strategy" >&2
+    printf 'A human/agent review is required before continuing.\n' >&2
+    exit 1
+  fi
+
+  run_boundary_checks || exit $?
+  printf 'COMPLETE: %s iteration and boundary checks.\n' "$strategy"
+done
+
+printf '\nAll Quality Playbook iterations are complete.\n'
+printf 'Final artifacts: %s/quality\n' "$target"

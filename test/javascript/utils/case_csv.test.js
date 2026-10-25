@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest"
-import { buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
+import { buildDetailedCaseCsv, buildGeneralCaseCsv, buildSnapshotCsv, csvField, formatDownloadFileName } from "utils/case_csv"
 
-// Escaping edge cases below mirror spec/javascripts/angular/services/caseCSVSvc_spec.js's
-// "stringify" examples (Karma baseline for the AngularJS service this ports).
+// Escaping edge cases preserve the established export behavior.
 describe("buildGeneralCaseCsv", () => {
   const baseCaseData = {
     case_name: "Test Case",
@@ -84,11 +83,51 @@ describe("buildSnapshotCsv", () => {
   })
 
   it("skips queries that were deleted since the snapshot was taken (no matching query_text)", () => {
-    // The field-name header is still derived from the raw docs, matching the AngularJS
+    // The field-name header is still derived from the raw docs, matching the
     // `stringifySnapshot` this ports — only the per-query data rows are skipped.
     const result = buildSnapshotCsv(8, { ...snapshotData, queries: [] })
 
     expect(result).toEqual("Snapshot Name,Snapshot Time,Case ID,Query Text,Doc ID,Doc Position,title\r\n")
+  })
+})
+
+describe("buildDetailedCaseCsv", () => {
+  it("exports the live document read model with configured fields", () => {
+    const result = buildDetailedCaseCsv(
+      {
+        case_name: "Test Case",
+        case_id: 8,
+        teams: [ { name: "Test Team" } ],
+        last_score: { case_id: 8 }
+      },
+      {
+        1: {
+          queryText: "dog",
+          fieldSpec: { fields: [ "id", "title", "brand" ], id: "id", title: "title" },
+          docs: [
+            { id: "doc-1", title: "Good dog", rating: 2, rawFields: { brand: "Acme" } }
+          ]
+        }
+      }
+    )
+
+    expect(result).toBe(
+      "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating,brand\r\n" +
+      "Test Team,Test Case,8,dog,doc-1,1,Good dog,2,Acme\r\n"
+    )
+  })
+
+  it("keeps empty-query rows compatible with the legacy export", () => {
+    const result = buildDetailedCaseCsv(
+      { case_name: "Test Case", case_id: 8, teams: [], last_score: { case_id: 8 } },
+      { 1: { queryText: "dog", fieldSpec: { fields: [ "id", "title" ], id: "id", title: "title" }, docs: [] } }
+    )
+
+    // The legacy implementation emits only the four available row fields.
+    expect(result).toBe(
+      "Team Name,Case Name,Case ID,Query Text,Doc ID,Doc Position,Title,Rating\r\n" +
+      ",Test Case,8,dog\r\n"
+    )
   })
 })
 
@@ -101,10 +140,50 @@ describe("csvField", () => {
   it("serializes non-null objects as escaped JSON", () => {
     expect(csvField({ foo: 'bar"baz' })).toBe('"{""foo"":""bar\\""baz""}"')
   })
+
+  it("leaves plain numeric strings unescaped, like CsvExport", () => {
+    expect(["-1", "+2", "-3.5", "-4abc", "-1+1", "-1 "].map(csvField)).toEqual(["-1", "+2", "-3.5", " -4abc", " -1+1", "-1"])
+  })
 })
 
 describe("formatDownloadFileName", () => {
   it("replaces spaces and colons so the name is filesystem-safe", () => {
     expect(formatDownloadFileName("My Case: general.csv")).toBe("My_Case__general.csv")
   })
+describe("csv edge cases", () => {
+  it("trims string fields", () => {
+    expect(csvField("  hello  ")).toBe("hello")
+  })
+
+  it("includes information need and notes only when present", () => {
+    const caseData = {
+      case_name: "C",
+      case_id: 1,
+      teams: [],
+      last_score: { updated_at: "d", queries: { 1: { score: 1, text: "a" }, 2: { score: 2, text: "b" } } }
+    }
+    const csv = buildGeneralCaseCsv(caseData, [
+      { query_id: 1, information_need: "find dogs", notes: "n1", options: { boost: 2 } },
+      { query_id: 2, information_need: "", notes: "", options: {} }
+    ])
+    const [, first, second] = csv.split("\r\n")
+    expect(first).toContain("find dogs")
+    expect(first).toContain("n1")
+    expect(first).toContain("boost")
+    expect(second).toBe("," + "C,1,b,2,d,,,,")
+  })
+
+  it("prefers the last score's case id in the detailed export", () => {
+    const csv = buildDetailedCaseCsv(
+      { case_name: "C", case_id: 8, teams: [], last_score: { case_id: 99 } },
+      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+    )
+    expect(csv.split("\r\n")[1]).toBe(",C,99,dog")
+    const fallback = buildDetailedCaseCsv(
+      { case_name: "C", case_id: 8, teams: [], last_score: {} },
+      { 1: { queryText: "dog", fieldSpec: { id: "id", title: "title", fields: [] }, docs: [] } }
+    )
+    expect(fallback.split("\r\n")[1]).toBe(",C,8,dog")
+  })
+})
 })

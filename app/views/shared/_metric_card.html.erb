@@ -1,0 +1,9 @@
+<%# locals: (value:, label:, caption:, icon:, color:, extra: nil) %>
+<div class="card h-100 text-center border-<%= color %>">
+  <div class="card-body">
+    <div class="display-5 fw-bold text-<%= color %>"><%= value %></div>
+    <h6 class="card-title mt-1"><i class="bi <%= icon %> text-<%= color %>"></i> <%= label %></h6>
+    <p class="card-text text-muted small"><%= caption %></p>
+    <%= extra %>
+  </div>
+</div>

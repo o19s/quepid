@@ -3,14 +3,15 @@
     <h5 class="card-header text-truncate">
       <% if kase.nightly? %>
         <i class="bi bi-repeat float-end"></i>
-      <% end %>      
-      <%= link_to_core_case case_title(kase), kase, kase.last_try_number %>
+      <% end %>
+      <i class="bi bi-briefcase me-1" aria-hidden="true"></i>
+      <%= link_to_core_case kase.case_name, kase, kase.last_try_number %>
 
     </h5>
-    
+
     <div class="card-body">
       <turbo-frame id="case_frame_<%= kase.id %>" src="<%= home_case_prophet_path(kase) %>" loading="lazy">
-        <h5 class="card-title placeholder-glow"></h5>
+        <h5 class="card-title placeholder-glow" aria-hidden="true"></h5>
         <p class="card-text placeholder-glow">
           <span class="placeholder col-11"></span>
         </p>
@@ -20,7 +21,7 @@
         <p class="card-text placeholder-glow">
           <span class="placeholder col-11"></span>
         </p>
-        <div class="placeholder w-100" style="height: 84px;"></div>                
+        <div class="placeholder w-100" style="height: 84px;"></div>
       </turbo-frame>
     </div>
   </div>

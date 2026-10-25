@@ -4,6 +4,8 @@ module Users
   class PasswordsController < Devise::PasswordsController
     include NotificationsManager
 
+    self.responder = ApplicationResponder
+
     skip_before_action :require_login
     skip_before_action :require_no_authentication
 

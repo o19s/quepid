@@ -34,7 +34,7 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
 ### 1.1 Sign up for a new account
 
 - [ ] **Steps:**
-  1. Go to `/` while logged out (redirects to `/sessions/new`; there is no `/login` route).
+  1. Go to `/` while logged out (redirects to `/sessions/new`; `/login` also opens the sign-in page).
   2. On the right panel, "Sign up to get started!" (only visible if signups are enabled), fill in Full Name, Email, Password, Confirm Password.
   3. If a "Agree to terms & conditions?" checkbox is shown, check it.
   4. If a "Keep me in the know..." marketing opt-in checkbox is shown, leave it as desired.
@@ -42,7 +42,7 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
 - **Expected:** Account is created and you're logged in (or redirected per app config).
 - **Edge cases:**
   - [ ] Sign up with an email that's already registered — should show an error, not silently succeed.
-  - [ ] Submit with Password and Confirm Password not matching — should show a validation error.
+  - [ ] Submit with Password and Confirm Password not matching — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Submit with the terms checkbox unchecked when required — should block submission.
   - [ ] If signups are disabled in this environment, confirm the sign-up panel doesn't render at all.
 
@@ -52,7 +52,9 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
   1. Go to `/sessions/new` (or `/`, which redirects there while logged out).
   2. Enter a valid seed account's email/password, click **Sign in**.
   3. Confirm you land on the home dashboard.
-  4. Click **Logout** (or navigate to `/logout`).
+  4. Hover **Log out** in the account menu; confirm the session remains active.
+  5. Click **Log out**; confirm the DELETE form (`POST` with `_method=delete` for the native submission) returns 303 and uses a full-page session boundary. Repeat from management and core.
+  6. Request `/logout` with GET while signed in; confirm 404 and that the session stays active.
 - **Expected:** Successful login lands on `/`; logout clears the session and returns you to the sign-in page.
 - **Edge cases:**
   - [ ] Wrong password → generic error: "Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account." (confirm it does **not** reveal whether the email exists).
@@ -80,10 +82,10 @@ Having at least two logged-in sessions (e.g., one normal browser + one private/i
   4. Enter a new password and confirmation, click **Change my password**.
 - **Expected:** You can then log in with the new password; the old password no longer works.
 - **Edge cases:**
-  - [ ] Request a reset for an email that doesn't exist — should behave the same as a valid request (no confirmation/denial of account existence).
+  - [ ] Request a reset for an email that doesn't exist — currently shows "Could not send reset password instructions because the email was not found" (Devise `config.paranoid` is off), so account existence is revealed. Known and accepted; confirm the message still appears and nothing is sent.
   - [ ] Try to reuse an already-used or expired reset link — should be rejected.
-  - [ ] Submit mismatched new password / confirmation — should show a validation error.
-  - [ ] Submit a password shorter than the minimum length — should show a validation error.
+  - [ ] Submit mismatched new password / confirmation — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
+  - [ ] Submit a very short password (e.g. `abc`) — Quepid enforces no minimum password length (Devise `:validatable` is not used), so it is accepted. Known and accepted; this is not a failure.
 
 ### 1.5 Invitations (accepting one)
 
@@ -98,7 +100,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - **Expected:** You're logged in as a new user who is now a member of the inviting team.
 - **Edge cases:**
   - [ ] Try to reuse the same invitation link a second time after accepting — should be rejected.
-  - [ ] Submit mismatched passwords — should show a validation error.
+  - [ ] Submit mismatched passwords — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Confirm that before accepting, the invited user shows an `INVITED` badge on the team page and doesn't show up in Admin > Users > Pulse activity data (Part 14).
 
 ### 1.6 Profile page
@@ -110,7 +112,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   4. Reload the page and confirm the changes persisted.
 - **Expected:** Profile updates save and display correctly.
 - **Edge cases:**
-  - [ ] Change your email to one already used by another account — should show a validation error.
+  - [ ] Change your email to one already used by another account — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
   - [ ] Clear the Name field entirely — check what displays elsewhere (should fall back to showing the email as display name).
 
 ### 1.7 Change password from Profile
@@ -122,7 +124,7 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
 - **Expected:** Password changes; you can log in with the new password afterward.
 - **Edge cases:**
   - [ ] Enter an incorrect Old Password — should show "The original password is incorrect." and not change anything.
-  - [ ] Enter mismatched New Password / Confirm New Password — should show a validation error.
+  - [ ] Enter mismatched New Password / Confirm New Password — should show a validation error; the floating label stays above the rejected value, and the header/avatar still use the saved profile.
 
 ### 1.8 API Keys (Personal Access Tokens)
 
@@ -146,9 +148,26 @@ Invitations are generated from the **Teams > Add Team Member** flow (see Part 9)
   1. Create (or use) a throwaway account that owns at least one case not shared with any team, and separately owns a case that **is** shared with a team.
   2. On the Profile page, scroll to the red **Danger Zone** section, read the warning text.
   3. Click **Delete your account**, confirm the dialog.
+  4. On a separate disposable account, cancel the confirmation and verify the account remains usable.
 - **Expected:** Per the warning text: you're removed from any teams; any case you own that has **no** team association is deleted (along with its snapshots/ratings). Cases that are shared with a team should not simply vanish for the team.
 - **Edge cases:**
   - [ ] Confirm a case that was shared with a team **survives** the owner's account deletion (verify with a teammate's login) — this is the trickiest behavior to verify and worth explicit testing.
   - [ ] Delete an account that is the sole member of a team — check what happens to that orphaned team.
-  - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm nothing errors for the invitee.
-  - [ ] Delete an account that authored an Annotation (Part 5.4) on any case — confirm this succeeds (the annotation survives with `user_id` nulled) rather than a 500 (`ActiveRecord::InvalidForeignKey`); previously `User` had no `has_many :annotations` association, so the FK constraint blocked the raw delete. Fixed via `has_many :annotations, dependent: :nullify` in `app/models/user.rb`.
+  - [ ] Delete an account that has outstanding/pending team invitations it sent — confirm deletion succeeds and the invitee can still accept the invitation.
+  - [ ] Try deleting an account with judgements requiring reassignment and a private case — confirm the Danger Zone shows the validation error and the account, case and its queries remain intact.
+  - [ ] Try deleting an account that authored an Annotation (Part 5.4), including one on its private case — confirm the Danger Zone shows an annotations restriction error. The account, private case, queries, annotations and linked score history remain intact; the user stays signed in.
+
+### 1.10 Transactional emails (invitation & password reset)
+
+- [ ] **Steps:**
+  1. In development, open `/rails/mailers` and preview the **reset password instructions** email. (Only that preview exists — `test/mailers/previews/devise_preview.rb` has no invitation preview, and the reset email has an HTML part only, so its `text/plain` preview errors. The invitation email has both parts; check it via step 2.)
+  2. Trigger each for real (Part 1.4 reset, Part 9.3 invite) and open the delivered message in the mail catcher / logs.
+- **Expected:** Both emails render with the Quepid layout, a working link (reset: 'Change my password' → `/users/password/edit?reset_password_token=...`; invitation: the plain `/users/invitation/accept?invitation_token=...` URL), and no unresolved placeholders or broken styling.
+- **Edge cases:**
+  - [ ] Confirm the text-part invitation email contains the same working link as the HTML part.
+  - [ ] Confirm the link host matches the environment's configured host, not `localhost` when running behind a proxy/production config.
+
+### 1.11 Health check
+
+- [ ] **Steps:** Visit `/healthcheck` while logged out.
+- **Expected:** Returns HTTP 200 (Rails' built-in health page) without authentication. Optionally, with the database stopped in a disposable environment, confirm your load balancer's probe would notice — note that Rails' default check only proves the app booted, not that the DB is reachable.

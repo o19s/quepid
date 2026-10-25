@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class SolrArgParserTest < ActiveSupport::TestCase
+  cover 'SolrArgParser*'
+
   test 'parses nil value' do
     params = nil
     result = SolrArgParser.parse(params)

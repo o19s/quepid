@@ -20,6 +20,14 @@ module Api
         end
 
         describe '#create' do
+          test 'rejects importing into a foreign team' do
+            foreign = Team.create!(name: 'Foreign team')
+            assert_no_difference 'Book.count' do
+              post :create, params: { team_id: foreign.id, book: { name: 'Unauthorized' }, format: :json }
+              assert_response :not_found
+            end
+          end
+
           test 'alerts when a team_id is not provided' do
             data = {
               name: 'test book',

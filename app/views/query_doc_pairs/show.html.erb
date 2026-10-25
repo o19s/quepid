@@ -41,15 +41,15 @@
       </p>
 
       <%= render 'query_doc_pairs/document_fields', document_fields: @query_doc_pair.document_fields %>
-      
+
       <p>
         <strong>Document Fields:</strong>
-        <%= text_area_tag 'document_fields', format_json(@query_doc_pair.document_fields), data: { codemirror_mode: "application/json", codemirror_height: 200, codemirror_width: 500, codemirror_readonly: true } %>
+        <%= text_area_tag 'document_fields', format_json(@query_doc_pair.document_fields), data: codemirror_data(mode: "application/json", height: 200, width: 500, readonly: true) %>
       </p>
-      
+
       <p>
         <strong>Options:</strong>
-        <%= text_area_tag 'options', format_json(@query_doc_pair.options), data: { codemirror_mode: "application/json", codemirror_height: 100, codemirror_width: 500, codemirror_readonly: true } %>
+        <%= text_area_tag 'options', format_json(@query_doc_pair.options), data: codemirror_data(mode: "application/json", height: 100, width: 500, readonly: true) %>
       </p>
     </div>
   </div>

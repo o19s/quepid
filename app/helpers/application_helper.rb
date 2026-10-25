@@ -2,14 +2,6 @@
 
 # rubocop:disable-next Metrics/ModuleLength
 module ApplicationHelper
-  def desktop_mode?
-    Rails.application.config.desktop_mode
-  end
-
-  def require_proxy_for_all_search_endpoints?
-    Rails.application.config.require_proxy_for_all_search_endpoints
-  end
-
   # Returns the Quepid application root URL (no trailing slash).
   # Respects RAILS_RELATIVE_URL_ROOT so deployment under a subpath works.
   # Exposed on <body> as data-quepid-root-url for Stimulus/JS navigation fallbacks.
@@ -17,22 +9,73 @@ module ApplicationHelper
     "#{request.base_url}#{request.script_name}".chomp('/')
   end
 
-  def book_title book
-    if book.name.downcase.starts_with?('book')
-      book.name.titleize
-    else
-      "Book #{book.name.titleize}"
+  # <body> attributes for the application layout. The core case page boots its
+  # Stimulus bridges from these values; every other page gets the flex shell
+  # and the Turbo page cache.
+  def layout_body_attributes case_page:, kase: nil, try: nil
+    unless case_page
+      return { class: 'd-flex flex-column min-vh-100',
+               data:  { controller: 'page-cache', action: 'turbo:before-cache@document->page-cache#prepare',
+                        quepid_root_url: quepid_root_url } }
     end
+
+    { data: {
+      controller:                          'snapshot-bridge core-bootstrap query-command-bridge',
+      core_bootstrap_case_toolbar_outlet:  '#case-actions',
+      core_bootstrap_case_no_value:        kase&.id || 0,
+      # String.new drops html_safe so the JSON is attribute-escaped.
+      core_bootstrap_initial_value:        String.new(render(partial: 'core/bootstrap', formats: [ :json ],
+                                                             locals: { kase: kase })),
+      snapshot_bridge_snapshots_url_value: kase ? api_case_snapshots_path(kase) : '',
+      # Preserve an explicitly requested missing try so core-bootstrap can report it.
+      core_bootstrap_try_no_value:         params[:try_number].presence || try&.try_number || '',
+      quepid_root_url:                     quepid_root_url,
+    } }
   end
 
-  def strip_book_title book
-    book.name.sub(/^book\s+/i, '').titleize
+  # Announcements are admin-authored HTML. The default safe list already allows
+  # class and img; add inline style, whose CSS Loofah filters to safe properties.
+  def sanitize_announcement text
+    sanitize text, attributes: Rails::HTML5::SafeListSanitizer.allowed_attributes + [ 'style' ]
+  end
+
+  # Names are shown as the user typed them; titleize would mangle acronyms
+  # ("ES" -> "Es") and mixed case ("McKey" -> "Mc Key").
+  def book_title book
+    if book.name.downcase.starts_with?('book')
+      book.name
+    else
+      "Book #{book.name}"
+    end
   end
 
   # Renders the shared page-header bar: an <h1> title plus an optional right-aligned
   # actions block (buttons, toolbar, stats -- whatever the page needs).
   def page_header title, &block
     render 'shared/page_header', title: title, actions: (block ? capture(&block) : nil)
+  end
+
+  # The one create action in an index page's header. Secondary header actions
+  # (imports, exports, wizards) sit beside it as btn-outline-secondary.
+  def page_create_button label, path, data: {}
+    link_to path, class: 'btn btn-sm btn-primary', data: data do
+      safe_join([ tag.i(class: 'bi bi-plus-lg', aria: { hidden: true }), label ], ' ')
+    end
+  end
+
+  # Bordered stat card: a large colored value over an icon label and a muted
+  # caption. The block, if any, renders extra content (progress bar, actions) below.
+  def metric_card value, label, caption, icon:, color:, &block
+    render 'shared/metric_card', value: value, label: label, caption: caption, icon: icon, color: color,
+                                 extra: (block ? capture(&block) : nil)
+  end
+
+  # Keep editor configuration shared while callers own the textarea and its form data.
+  def codemirror_data mode:, height:, before_cache: true, **options
+    data = options.extract!(:width, :readonly, :line_numbers).transform_keys { |key| :"codemirror_#{key}" }
+    data.merge!(options, controller: 'codemirror', codemirror_mode: mode, codemirror_height: height)
+    data[:action] = 'turbo:before-cache@document->codemirror#teardown' if before_cache
+    data
   end
 
   # Divider <li> for the shared account-dropdown menu (shared/_account_dropdown).
@@ -53,9 +96,9 @@ module ApplicationHelper
 
   def case_title kase
     if kase.case_name.downcase.starts_with?('case')
-      kase.case_name.titleize
+      kase.case_name
     else
-      "Case #{kase.case_name.titleize}"
+      "Case #{kase.case_name}"
     end
   end
 
@@ -65,7 +108,7 @@ module ApplicationHelper
 
   def make_active? options
     if options.key?(:path)
-      request.fullpath.include?(options[:path])
+      request.path.include?(options[:path])
     elsif options.key?(:controller)
       controller_name == options[:controller]
     elsif options.key?(:action)
@@ -75,10 +118,9 @@ module ApplicationHelper
 
   def bootstrap_class_for flash_type
     {
-      success: 'alert-success',
-      error:   'alert-danger',
-      alert:   'alert-warning',
-      notice:  'alert-info',
+      error:  'alert-danger',
+      alert:  'alert-warning',
+      notice: 'alert-success',
     }[flash_type.to_sym] || flash_type.to_s
   end
 
@@ -86,11 +128,51 @@ module ApplicationHelper
     button_to(name, options, html_options) if condition
   end
 
-  # Transient, good-news flashes auto-dismiss after a few seconds (like a
-  # toast). Errors and warnings stay put until the user closes them - they
-  # need to actually read and act on those, so auto-hiding would risk
-  # yanking the message away before they can.
-  AUTO_DISMISS_FLASH_TYPES = %w[success notice].freeze
+  # Icon button_to inside a .btn-group, confirmed through the shared modal.
+  # The form is itself a nested .btn-group so Bootstrap's `> .btn` sizing and
+  # -1px overlap still apply; ms-0 cancels the extra overlap the hidden
+  # _method input of a PATCH/DELETE form would otherwise add.
+  def group_button_to(url, confirm:, button_class:, confirm_style: nil, **html_options, &)
+    form_data = { turbo_confirm: confirm, turbo_confirm_style: confirm_style }.compact
+    button_to(url, html_options.merge(class: "btn btn-link ms-0 #{button_class}",
+                                      form:  { class: 'btn-group btn-group-sm', data: form_data }), &)
+  end
+
+  # Row icon button opening the index/team share modal (shared/_share_entity_modal)
+  # for a "case", "book", "scorer" or "search_endpoint". The modal's controller reads
+  # the name and url values off the clicked button; specs find rows by the id value.
+  def share_modal_button record_type, record, name:, url: share_modal_path(record_type, record), button_class: nil
+    return if record.is_a?(SearchEndpoint) && !record.team_shareable? && record.teams.empty?
+
+    prefix = "share_#{record_type}"
+    data = { bs_toggle: 'modal', bs_target: "##{prefix.camelize(:lower)}Modal",
+             "#{prefix}_id_value": record.id, "#{prefix}_name_value": name, "#{prefix}_url_value": url }
+    button_tag type: 'button', class: [ 'btn btn-link p-0', button_class ].compact.join(' '),
+               title: 'Share', aria: { label: 'Share' }, data: data do
+      tag.i class: 'bi bi-share', aria: { hidden: true }
+    end
+  end
+
+  # Row icon button that archives or unarchives `record`, confirmed through the
+  # shared modal. `urls` holds the :archive and :unarchive paths. `group: false`
+  # renders it as a plain inline form instead of a nested .btn-group (see group_button_to).
+  def archive_toggle_button record, name:, urls:, method: :post, group: true
+    verb = record.archived? ? 'Unarchive' : 'Archive'
+    label = "#{verb} #{record.model_name.human.downcase}"
+    color = record.archived? ? 'text-success' : 'text-warning'
+    confirm_style = 'primary' if record.archived?
+    url = urls.fetch(record.archived? ? :unarchive : :archive)
+    icon = safe_join([ tag.i(class: 'bi bi-folder-check', aria: { hidden: true }), tag.span(label, class: 'visually-hidden') ])
+
+    if group
+      group_button_to(url, method: method, button_class: "#{color} p-0 me-3", title: label, aria: { label: label },
+                           confirm: "#{verb} #{name}?", confirm_style: confirm_style) { icon }
+    else
+      form_data = { turbo_confirm: "#{verb} #{name}?", turbo_confirm_style: confirm_style }.compact
+      button_to(url, method: method, class: "btn btn-link #{color} p-0", title: label, aria: { label: label },
+                     form: { class: 'd-inline', data: form_data }) { icon }
+    end
+  end
 
   # Flash keys that are structural flags consumed by a dedicated partial/controller,
   # not user-facing messages, so the generic flash banner must not render them.
@@ -101,25 +183,25 @@ module ApplicationHelper
     flash.each do |msg_type, message|
       next if NON_DISPLAYABLE_FLASH_KEYS.include?(msg_type.to_s)
 
-      data = AUTO_DISMISS_FLASH_TYPES.include?(msg_type.to_s) ? { controller: 'auto-dismiss' } : {}
-
       concat(
         content_tag(
           :div,
           message,
-          class: "alert #{bootstrap_class_for(msg_type)} alert-dismissible fade show",
+          class: "alert #{bootstrap_class_for(msg_type)} fade show",
           role:  'alert',
-          data:  data
+          data:  flash_message_data(msg_type)
         ) do
           concat(
             content_tag(
               :button,
-              class: 'btn-close',
-              data:  { 'bs-dismiss': 'alert' }
+              class:        'btn-close float-start',
+              type:         'button',
+              'aria-label': 'Close',
+              data:         { 'bs-dismiss': 'alert' }
             ) do
             end
           )
-          concat message
+          concat content_tag(:span, message)
         end
       )
     end
@@ -127,29 +209,22 @@ module ApplicationHelper
     nil
   end
 
-  # Override default form_for to disable Turbo Drive on
-  # Forms.  Maybe should be an ENV variable?
-  # caused by https on front end attempting to make http
-  # call by Turbo Drive and getting mix mode errros
-  # rubocop:disable-next Naming/BlockForwarding
-  def form_for record, options = {}, &block
-    if options[:html].nil?
-      options[:html] = { data: { turbo: false } }
-    elsif options[:html][:data].nil?
-      options[:html][:data] = { turbo: false }
-    end
-    super
+  def desktop_mode?
+    Rails.application.config.desktop_mode
   end
 
-  def form_with_disabled( **options, &)
-    if options[:html].nil?
-      options[:html] = { data: { turbo: false } }
-    elsif options[:html][:data].nil?
-      options[:html][:data] = { turbo: false }
-    end
+  def require_proxy_for_all_search_endpoints?
+    Rails.application.config.require_proxy_for_all_search_endpoints
+  end
 
-    # Call the original `form_with` method with the modified options
-    super
+  def flash_message_data msg_type
+    data = { turbo_temporary: true }
+    if %w[notice].include?(msg_type.to_s)
+      data[:controller] = 'auto-dismiss'
+      data[:action] = 'mouseenter->auto-dismiss#pause mouseleave->auto-dismiss#schedule ' \
+                      'focusin->auto-dismiss#pause focusout->auto-dismiss#schedule'
+    end
+    data
   end
 
   # Match the link to the core case url with the endpoint_url
@@ -177,10 +252,10 @@ module ApplicationHelper
   end
 
   def get_protocol_from_url url
-    parsed_url = URI.parse(url)
+    parsed_url = Addressable::URI.parse(url)
     protocol = parsed_url.scheme # This gets the protocol (http, https, etc.)
     protocol
-  rescue URI::InvalidURIError => e
+  rescue Addressable::URI::InvalidURIError => e
     # Handle the error (e.g., log it, return nil)
     Rails.logger.error("Invalid URL for search endpoint: #{url} - Error: #{e.message}")
     nil

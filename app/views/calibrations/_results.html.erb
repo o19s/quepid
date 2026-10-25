@@ -3,10 +3,7 @@
 <% book = run.book %>
 <% judge_name = run.judge.name %>
 <% reference_name = calibration_judge_name(run.reference) %>
-<%# This judge's tuning history on these pairs: other judges' runs compare something else. %>
-<% sample_runs = run.sample.runs.where(judge_id: run.judge_id).order(:id).to_a %>
-<%# Figures are shown for finished runs only, so only theirs need answers. %>
-<% ActiveRecord::Associations::Preloader.new(records: sample_runs.reject(&:active?), associations: :answers).call %>
+<% sample_runs = calibration_sample_runs(run) %>
 <div id="calibration-results-<%= run.id %>" data-rendered-at="<%= calibration_rendered_at %>">
 <% if run.failed? && run.error.present? %>
   <div class="alert alert-danger"><strong>The run failed:</strong> <%= run.error.truncate(400) %></div>

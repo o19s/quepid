@@ -1,3 +1,4 @@
+<%# locals: (scorers:, pagy:) %>
 <div class="card">
   <div class="card-body">
     <h5 class="card-title">Scorers</h5>
@@ -14,7 +15,7 @@
           </tr>
         </thead>
         <tbody>
-          <% @scorers.each do |scorer| %>
+          <% scorers.each do |scorer| %>
             <tr>
               <td><%= scorer.name %></td>
               <td><%= scorer.communal? ? 'Communal' : 'Custom' %></td>
@@ -34,33 +35,17 @@
                     <% end %>
                     <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
                       <i class="bi bi-files" aria-hidden="true"></i>
-                    <% end %>                   
+                    <% end %>
                   </div>
                 <% else %>
                   <div class="btn-group btn-group-sm" role="group">
-                    <% shared_teams = scorer.teams.where(id: @user_teams.select(:id)).select(:id, :name) %>
-                    <%= button_tag type: 'button',
-                                   class: 'btn btn-link p-0 me-2',
-                                   title: 'Share',
-                                   'aria-label': 'Share',
-                                   data: {
-                                     controller: 'share-scorer',
-                                     action: 'click->share-scorer#open',
-                                     bs_toggle: 'modal',
-                                     bs_target: '#shareScorerModal',
-                                     share_scorer_id_value: scorer.id,
-                                     share_scorer_name_value: scorer.name,
-                                     share_scorer_all_teams_json_value: @user_teams.map { |t| { id: t.id, name: t.name } }.to_json,
-                                     share_scorer_shared_teams_json_value: shared_teams.map { |t| { id: t.id, name: t.name } }.to_json
-                                   } do %>
-                      <i class="bi bi-share" aria-hidden="true"></i>
-                    <% end %>
+                    <%= share_modal_button 'scorer', scorer, name: scorer.name, button_class: 'me-2' %>
                     <%= link_to edit_scorer_path(scorer), class: 'btn btn-link p-0 me-2', title: 'Edit', 'aria-label': 'Edit' do %>
                       <i class="bi bi-pencil" aria-hidden="true"></i>
                     <% end %>
                     <%= button_to clone_scorer_path(scorer), method: :post, class: 'btn btn-link p-0 me-2', title: 'Clone', 'aria-label': 'Clone' do %>
                       <i class="bi bi-files" aria-hidden="true"></i>
-                    <% end %>      
+                    <% end %>
                   </div>
                 <% end %>
               </td>
@@ -72,8 +57,8 @@
 
 
     <div class="mt-2">
-          
-    <%== @pagy.series_nav(:bootstrap) %>
+
+    <%== pagy.series_nav(:bootstrap) %>
 
     </div>
 

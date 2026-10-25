@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class AiJudgesController < ApplicationController
-  before_action :set_team, only: [ :new, :clone ]
-  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy, :clone ]
+  before_action :set_team, only: [ :new, :clone, :create, :update, :destroy ]
+  before_action :set_ai_judge, only: [ :show, :edit, :update, :destroy ]
   before_action :set_book, only: [ :show, :new, :edit, :create, :update ]
   before_action :set_scorer, only: [ :show, :new, :edit, :create, :update ]
 
@@ -19,63 +19,67 @@ class AiJudgesController < ApplicationController
   def new
     @ai_judge = AiJudge.new
     @ai_judge.team_ids = [ @team.id ] if @team
-    openai = LlmProvider.find('openai')
-    @ai_judge.system_prompt = openai.default_system_prompt
+    provider = LlmProvider.find('openai')
+    @ai_judge.system_prompt = provider.default_system_prompt
     @ai_judge.judge_options = {
-      llm_provider:       openai.key,
-      llm_service_url:    openai.default_service_url,
-      llm_model:          openai.default_model,
-      llm_timeout:        30,
-      llm_api_version:    openai.default_api_version,
-      llm_include_images: true,
+      llm_provider:    provider.key,
+      llm_service_url: provider.default_service_url,
+      llm_model:       provider.default_model,
+      llm_timeout:     30,
+      llm_api_version: provider.default_api_version,
     }
   end
 
-  def edit
+  def clone
+    source = AiJudge.for_user(current_user).where(id: @team.members.select(:id)).find(params.expect(:id))
+    @ai_judge = current_user.owned_ai_judges.build(
+      name:          "Clone of #{source.name}",
+      llm_key:       source.llm_key,
+      system_prompt: source.system_prompt,
+      judge_options: source.judge_options.deep_dup
+    )
+    @ai_judge.team_ids = [ @team.id ]
+    render :new
   end
 
-  def clone
-    @ai_judge = @ai_judge.dup
-    @ai_judge.name = "Clone of #{@ai_judge.name}"
-    # dup doesn't copy has_and_belongs_to_many associations - pre-select the
-    # team this clone was started from, matching #new's behavior.
-    @ai_judge.team_ids = [ @team.id ] if @team
-  end
+  def edit; end
 
   def create
-    @ai_judge = current_user.owned_ai_judges.build(ai_judge_params)
+    @ai_judge = current_user.owned_ai_judges.build
+    @ai_judge.assign_attributes(ai_judge_params)
 
-    if escalation_target_visible? && @ai_judge.save
+    if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judges_path, notice: 'AI Judge was successfully created.'
+      redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully created.', status: :see_other)
     else
-      render :new
+      render :new, status: :unprocessable_content
     end
   end
 
   def update
     @ai_judge.assign_attributes(ai_judge_params)
-
-    if escalation_target_visible? && @ai_judge.save
+    if @ai_judge.errors.empty? && escalation_target_visible? && @ai_judge.save
       apply_team_ids(@ai_judge, submitted_team_ids)
-      redirect_to ai_judges_path, notice: 'AI Judge was successfully updated.'
+      redirect_to(@team ? team_path(@team) : ai_judge_path(@ai_judge), notice: 'AI Judge was successfully updated.', status: :see_other)
     else
-      render 'edit'
+      render 'edit', status: :unprocessable_content
     end
   end
 
   def destroy
     if @ai_judge.destroy
-      redirect_to ai_judges_path, notice: "AI Judge #{@ai_judge.name} was deleted."
+      redirect_to(@team ? team_path(@team) : ai_judges_path, notice: "AI Judge #{@ai_judge.name} was deleted.", status: :see_other)
     else
-      redirect_to ai_judges_path, alert: "Could not delete AI Judge #{@ai_judge.name}: #{@ai_judge.errors.full_messages.to_sentence}"
+      redirect_to(@team ? team_path(@team) : ai_judges_path,
+                  alert:  "Could not delete AI Judge #{@ai_judge.name}: #{@ai_judge.errors.full_messages.to_sentence}",
+                  status: :see_other)
     end
   end
 
   private
 
   def set_team
-    @team = current_user.teams.find_by(id: params[:team_id])
+    @team = current_user.teams.find(params.expect(:team_id)) if params[:team_id].present?
   end
 
   def set_ai_judge
@@ -122,7 +126,7 @@ class AiJudgesController < ApplicationController
   # (form_with model: @ai_judge), so they submit as user[team_ids][],
   # not a top-level param.
   def submitted_team_ids
-    params.dig(:user, :team_ids)
+    params.dig(:user, :team_ids) || (@team ? [ @team.id ] : [])
   end
 
   # The judges this one may wake: any the current user can see, except
@@ -150,8 +154,19 @@ class AiJudgesController < ApplicationController
   def ai_judge_params
     params_to_return = params.expect(user: [ :name, :llm_key, :system_prompt, :options, :escalates_to_id,
                                              { judge_options: {} } ])
-    params_to_return[:options] = JSON.parse(params_to_return[:options]) if params_to_return[:options]
+    if params_to_return[:options]
+      @submitted_options = params_to_return[:options]
+      parsed_options = JSON.parse(@submitted_options)
+      unless parsed_options.is_a?(Hash) && (parsed_options['judge_options'].nil? || parsed_options['judge_options'].is_a?(Hash))
+        @ai_judge.errors.add(:options, 'must contain a judge_options object')
+        return params_to_return.except(:options)
+      end
+      params_to_return[:options] = parsed_options
+    end
 
     params_to_return
+  rescue JSON::ParserError
+    @ai_judge.errors.add(:options, 'must be valid JSON')
+    params_to_return.except(:options)
   end
 end

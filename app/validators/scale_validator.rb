@@ -2,6 +2,11 @@
 
 class ScaleValidator < ActiveModel::Validator
   def validate record
+    if record.respond_to?(:invalid_scale_list) && record.invalid_scale_list.present?
+      record.errors.add(:scale, :type)
+      return
+    end
+
     return true if record.scale.blank?
 
     if record.scale.length > 10

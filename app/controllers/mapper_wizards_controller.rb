@@ -195,7 +195,7 @@ class MapperWizardsController < ApplicationController
 
     # Preserve real credential when masked value is submitted unchanged
     if basic_auth_credential.present? && @search_endpoint.persisted? &&
-       basic_auth_credential == @search_endpoint.masked_basic_auth_credential
+       @search_endpoint.matches_masked_basic_auth_credential?(basic_auth_credential)
       basic_auth_credential = @search_endpoint.basic_auth_credential
     end
 
@@ -213,14 +213,14 @@ class MapperWizardsController < ApplicationController
       basic_auth_credential: basic_auth_credential
     )
 
-    if @search_endpoint.save
-      # Assign teams if team_ids provided
-      if params[:team_ids].present?
-        team_ids = params[:team_ids].map(&:to_i)
-        teams = current_user.teams.where(id: team_ids)
-        @search_endpoint.teams = teams
-      end
+    saved = SearchEndpoint.transaction do
+      TeamSharing.new(current_user).assign_teams(@search_endpoint, params[:team_ids]) if params.key?(:team_ids)
+      raise ActiveRecord::Rollback unless @search_endpoint.save
 
+      true
+    end
+
+    if saved
       clear_wizard_state
       render json: { success: true, redirect_url: search_endpoint_url(@search_endpoint) }
     else
@@ -342,51 +342,5 @@ class MapperWizardsController < ApplicationController
     end
 
     functions[function_name]
-  end
-
-  # Find the index of the closing brace that matches the opening brace at start_index
-  # Handles strings (single/double quotes), template literals, and escaped characters
-  # rubocop:disable-next Metrics/PerceivedComplexity
-  def find_matching_brace code, start_index
-    raise ArgumentError, "Character at start_index must be '{'" unless '{' == code[start_index]
-
-    brace_count = 1
-    idx = start_index + 1
-    in_string = nil # nil, '"', "'", or '`'
-    escape_next = false
-
-    while idx < code.length
-      char = code[idx]
-
-      if escape_next
-        escape_next = false
-        idx += 1
-        next
-      end
-
-      if '\\' == char
-        escape_next = true
-        idx += 1
-        next
-      end
-
-      # Handle string/template literal boundaries
-      if in_string
-        in_string = nil if char == in_string
-      elsif [ '"', "'", '`' ].include?(char)
-        in_string = char
-      elsif in_string.nil?
-        # Only count braces when not inside a string or template literal
-        brace_count += 1 if '{' == char
-        brace_count -= 1 if '}' == char
-
-        return idx if brace_count.zero?
-      end
-
-      idx += 1
-    end
-
-    # If we get here, matching brace was not found
-    start_index
   end
 end

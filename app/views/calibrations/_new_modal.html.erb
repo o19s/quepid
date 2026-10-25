@@ -7,8 +7,7 @@
      data-calibration-dialog-max-queries-value="<%= CalibrationSample::MAX_QUERIES %>"
      data-calibration-dialog-open-value="<%= preselected_judge_id.present? %>">
   <div class="modal-dialog modal-lg">
-    <%= form_with url: book_calibrations_path(book), scope: :calibration, class: 'modal-content',
-                  data: { calibration_dialog_target: 'form' } do %>
+    <%= form_with url: book_calibrations_path(book), scope: :calibration, class: 'modal-content' do %>
       <div class="modal-header">
         <h5 class="modal-title" id="new_calibration_modal_label"><i class="bi bi-bullseye" aria-hidden="true"></i> New calibration</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -21,10 +20,9 @@
                     data-calibration-dialog-target="judge" data-action="change->calibration-dialog#update">
               <option value="">Choose an AI judge…</option>
               <% judges.each do |judge| %>
-                <option value="<%= judge.id %>" data-name="<%= judge.name %>"
-                        <%= 'selected' if judge.id == preselected_judge_id %>>
+                <%= tag.option value: judge.id, selected: judge.id == preselected_judge_id, data: { name: judge.name } do %>
                   <%= judge.name %><%= " (#{judge.judge_options[:llm_model]})" if judge.judge_options[:llm_model].present? %>
-                </option>
+                <% end %>
               <% end %>
             </select>
             <div class="form-text">Any AI judge you can see, whether or not it's assigned to this book.</div>
@@ -114,9 +112,9 @@
               <label class="form-check-label" for="calibration_pairs_new">New random sample</label>
             </div>
             <div class="form-check">
-              <input class="form-check-input" type="radio" name="calibration[pairs]" id="calibration_pairs_same" value="same"
-                     <%= 'disabled' if samples.empty? %>
-                     data-calibration-dialog-target="pairsSame" data-action="change->calibration-dialog#update">
+              <%= tag.input class: 'form-check-input', type: 'radio', name: 'calibration[pairs]', id: 'calibration_pairs_same', value: 'same',
+                            disabled: samples.empty?,
+                            data: { calibration_dialog_target: 'pairsSame', action: 'change->calibration-dialog#update' } %>
               <label class="form-check-label <%= 'text-muted' if samples.empty? %>" for="calibration_pairs_same">
                 Same pairs as an earlier calibration<%= ' — none on this book yet' if samples.empty? %>
               </label>

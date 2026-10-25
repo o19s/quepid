@@ -1,0 +1,20 @@
+<%# Also broadcast from ExportBookJob, rendered without a request: nothing here may depend on current_user, the session or the request. The form relies on Turbo sending the page's CSRF meta token, so keep it a Turbo submission. %>
+<div id="<%= dom_id(book, :export_status) %>">
+  <% if local_assigns[:failed] %>
+    <p class="text-danger mb-1">The last export failed. Please try again.</p>
+  <% end %>
+  <% if book.export_job %>
+    The book is currently being exported.  The status is <code><%= book.export_job %></code>.
+  <% else %>
+    <%= button_to "#{book.export_file.present? ? 'Re-Export' : 'Export'}", books_export_path(book), method: :put, class: "btn btn-outline-primary btn-sm" %>
+  <% end %>
+  <% if book.export_file.present? %>
+    <p>
+    There is an export file created <%= time_ago_in_words book.export_file.created_at %> ago
+
+      <%= link_to rails_blob_path(book.export_file.blob, only_path: true) do %>
+        available to download <i class="bi bi-file-earmark-arrow-down-fill"></i>
+      <% end %>.
+    </p>
+  <% end %>
+</div>
