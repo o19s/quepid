@@ -31,7 +31,7 @@
     "@stryker-mutator/core": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-core-10.0.0.tgz",
     "@stryker-mutator/vitest-runner": "https://github.com/davidshq/stryker-js/releases/download/crash-recovery-v10.0.0-3/stryker-mutator-vitest-runner-10.0.0.tgz",
     "@types/node": "^24.19.2",
-    "chokidar": "5.0.0",
+    "chokidar": "6.0.0",
     "eslint": "^10.13.0",
     "eslint-config-prettier": "^10.1.8",
     "fast-check": "^4.10.2",
