@@ -1,14 +1,25 @@
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_RICH_CASE_ID } from './angular_case_helpers';
+import {
+  DEFAULT_RICH_CASE_ID,
+  createTeamViaApi,
+  deleteCaseViaApi,
+  deleteTeamViaApi,
+  stubEmptyBookCatalog
+} from './case_helpers';
 
 /** Set MIGRATION_SHOT_PHASE=before|after (default after). */
 const PHASE = process.env.MIGRATION_SHOT_PHASE === 'before' ? 'before' : 'after';
-/** Case with teams for share-case shots (fresh seed: case 1, one user team). */
-const SHARE_CASE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
+/** Configured cases are read-only sources; all mutations use disposable clones. */
+const SHARE_SOURCE_ID = Number(process.env.QUEPID_E2E_SHARE_CASE_ID || 1);
 /** Case with queries in DB for hit-count / annotations — see DEFAULT_RICH_CASE_ID's comment. */
-const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
+const QUERIES_SOURCE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT_RICH_CASE_ID);
+let SHARE_CASE_ID: number;
+let QUERIES_CASE_ID: number;
+const createdCaseIds: number[] = [];
+/** A team created for this run, so sharing never depends on teams already in the dev DB. */
+let SHARE_TEAM_ID: number;
 /**
  * Topic subfolder under `.playwright-mcp/` so the screenshot viewer can group
  * this PR's shots separately from older captures. Override with MIGRATION_SHOT_TOPIC.
@@ -16,10 +27,8 @@ const QUERIES_CASE_ID = Number(process.env.QUEPID_E2E_QUERIES_CASE_ID || DEFAULT
  */
 const TOPIC = process.env.MIGRATION_SHOT_TOPIC || '';
 
-// NOTE: the share-case migration-diff tests that used to live here were moved to
-// share_case.spec.ts as permanent regression coverage — commit 9eebf95c deleted the
-// AngularJS share_case component entirely, so there is no more "before" for this
-// surface to diff against. See that file's header comment for details.
+// share_case.spec.ts also provides checked-in visual baselines and behavioral
+// regression coverage; this file retains ad-hoc sharing captures.
 
 async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CASE_ID) {
   await page.goto(`case/${caseId}`);
@@ -28,16 +37,15 @@ async function gotoCase(page: import('@playwright/test').Page, caseId = SHARE_CA
 
 async function expandFirstQuery(page: import('@playwright/test').Page) {
   if ((await page.locator('search-result').count()) > 0) return;
-  const toggle = page.locator('.results-list-element li .toggleSign, .results-list-element li [ng-click*="toggle"]').first();
+  const toggle = page.locator('.results-list-element li .toggleSign').first();
   await expect(toggle).toBeVisible({ timeout: 20_000 });
   await toggle.click();
   await page.waitForSelector('search-result', { timeout: 15_000 });
 }
 
 async function apiHeaders(page: import('@playwright/test').Page) {
-  if (!page.url().includes('/case/')) {
-    await page.goto(`case/${SHARE_CASE_ID}`);
-    await page.waitForSelector('#case-actions', { timeout: 20_000 });
+  if (await page.locator('meta[name="csrf-token"]').count() === 0) {
+    await page.goto('cases');
   }
   const csrf = await page.evaluate(() =>
     document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
@@ -78,19 +86,12 @@ async function shareCaseWithAllTeams(page: import('@playwright/test').Page, case
 }
 
 async function ensureCaseSharedWithOneTeam(page: import('@playwright/test').Page, caseId: number) {
-  const headers = await apiHeaders(page);
-  const teamsResponse = await page.request.get('/api/teams', { headers });
-  expect(teamsResponse.ok()).toBeTruthy();
-  const payload = await teamsResponse.json();
-  const teams = Array.isArray(payload.teams) ? payload.teams : [];
-  if (teams.length === 0) {
-    test.skip(true, 'No teams available for judgements/share setup');
-  }
-  await shareCaseWithTeam(page, caseId, teams[0].id);
+  await shareCaseWithTeam(page, caseId, SHARE_TEAM_ID);
 }
 
-async function gotoCasesIndex(page: import('@playwright/test').Page) {
-  await page.goto('cases');
+// Disposable clones sort past the index's first page; narrow the index to this case's row.
+async function gotoCasesIndex(page: import('@playwright/test').Page, caseId: number) {
+  await page.goto(`cases?q=${caseId}`);
   await page.waitForSelector('table tbody tr', { timeout: 20_000 });
 }
 
@@ -106,7 +107,7 @@ async function unshareAllTeamsFromCase(page: import('@playwright/test').Page, ca
 }
 
 async function openCasesIndexShareModalForCase(page: import('@playwright/test').Page, caseId: number) {
-  await gotoCasesIndex(page);
+  await gotoCasesIndex(page, caseId);
   const shareBtn = page.locator(`button[data-share-case-id-value="${caseId}"]`);
   await expect(shareBtn).toBeVisible({ timeout: 15_000 });
   await shareBtn.click();
@@ -133,7 +134,7 @@ async function openHelpPopover(
     : modal.locator('.bi-question-circle-fill').first();
 
   if (PHASE === 'after') {
-    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'mouseenter');
+    await expect(help).toHaveAttribute('data-bs-popover-trigger-value', 'hover focus');
     await expect(help).toHaveAttribute('data-bs-popover-placement-value', 'right');
   }
 
@@ -164,6 +165,44 @@ async function openHelpPopover(
 }
 
 test.describe(`DOM migration shots (${PHASE})`, () => {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto('cases');
+      for (const sourceId of [SHARE_SOURCE_ID, QUERIES_SOURCE_ID]) {
+        const response = await page.request.post('api/clone/cases', {
+          headers: await apiHeaders(page),
+          data: {
+            case_id: sourceId,
+            case_name: `Playwright Migration Shots ${sourceId} ${Date.now()}`,
+            preserve_history: true,
+            clone_queries: true,
+            clone_ratings: true
+          }
+        });
+        expect(response.ok(), `Clone source ${sourceId}: ${response.status()}`).toBeTruthy();
+        const id = Number((await response.json()).case_id);
+        expect(id).toBeGreaterThan(0);
+        createdCaseIds.push(id);
+      }
+      [SHARE_CASE_ID, QUERIES_CASE_ID] = createdCaseIds;
+      SHARE_TEAM_ID = await createTeamViaApi(page, `Playwright Share Team ${Date.now()}`);
+    } finally {
+      await page.close();
+    }
+  });
+
+  test.afterAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    try {
+      await page.goto('cases');
+      for (const id of createdCaseIds) await deleteCaseViaApi(page, id);
+      if (SHARE_TEAM_ID) await deleteTeamViaApi(page, SHARE_TEAM_ID);
+    } finally {
+      await page.close();
+    }
+  });
+
   test('hit count', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, QUERIES_CASE_ID);
@@ -180,13 +219,14 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   });
 
   test('share-case modal with shareable', async ({ page }) => {
+    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
     await page.getByText('Share case', { exact: true }).click();
     const modal = page.locator('#shareCaseModal.show, .modal.show').first();
     await expect(modal).toContainText(/Share Case/i);
     await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
-    // Requires at least one team not yet sharing this case (Angular list-group parity).
+  // Requires at least one team not yet sharing this case (list-group parity).
     await expect(modal.locator('#share-case-shareable-list [data-team-id]').first()).toBeAttached({
       timeout: 5_000
     });
@@ -195,6 +235,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   });
 
   test('share-case modal shareable selected', async ({ page }) => {
+    await unshareCaseFromTeam(page, SHARE_CASE_ID, SHARE_TEAM_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
     await page.getByText('Share case', { exact: true }).click();
@@ -202,9 +243,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toContainText(/Share Case/i);
     await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
     const shareableItems = modal.locator('#share-case-shareable-list [data-team-id]');
-    if ((await shareableItems.count()) === 0) {
-      test.skip(true, 'No unshared team available for shareable-selected shot');
-    }
+    await expect(shareableItems.first()).toBeVisible();
     await shareableItems.first().click();
     await expect(modal.locator('#share-case-submit')).toBeVisible();
     await page.setViewportSize({ width: 900, height: 820 });
@@ -220,15 +259,13 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await expect(modal).toContainText(/Share Case/i);
     await expect(modal.locator('[data-share-case-core-target="loading"]')).toBeHidden({ timeout: 15_000 });
     await expect(modal.locator('#share-case-shareable-list [data-team-id]')).toHaveCount(0);
-    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeVisible();
+    // Commit 095a9e1a reserves this hero for users with zero teams at all —
+    // a team that already shares this case still means the user has a team,
+    // so it (and the now-empty share picker) stay hidden here.
+    await expect(modal.locator('[data-share-case-core-target="emptyShareable"]')).toBeHidden();
     await page.setViewportSize({ width: 900, height: 820 });
     await shot(page, 'share-case-modal-no-shareable', 'share-case');
-    const teamsResponse = await page.request.get('/api/teams', { headers: await apiHeaders(page) });
-    const payload = await teamsResponse.json();
-    const teams = Array.isArray(payload.teams) ? payload.teams : [];
-    if (teams.length > 0) {
-      await unshareCaseFromTeam(page, SHARE_CASE_ID, teams[0].id);
-    }
+    await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
   });
 
   test('share-case modal unshare selected', async ({ page }) => {
@@ -277,10 +314,8 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     const optionCount = await options.count();
     expect(optionCount).toBeGreaterThan(1);
     const value = await options.nth(1).getAttribute('value');
-    if (!value) {
-      test.skip(true, 'Share team select has no shareable option value');
-    }
-    await teamSelect.selectOption(value);
+    expect(value, 'the team select offers a shareable team').toBeTruthy();
+    await teamSelect.selectOption(value!);
     await expect(modal.locator('#share-case-submit')).toBeEnabled();
     await page.setViewportSize({ width: 900, height: 820 });
     await shot(page, 'share-case-rails-modal-team-selected', 'share-case-rails');
@@ -291,9 +326,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await page.setViewportSize({ width: 900, height: 900 });
     const modal = await openCasesIndexShareModalForCase(page, SHARE_CASE_ID);
     const shared = modal.locator('#share-case-shared-list [data-team-id]').first();
-    if ((await shared.count()) === 0) {
-      test.skip(true, 'No shared team on cases index row for unshare-selected shot');
-    }
+    await expect(shared).toBeVisible();
     await shared.click();
     await expect(modal.locator('#unshare-case-submit')).toBeEnabled();
     await page.setViewportSize({ width: 900, height: 820 });
@@ -302,12 +335,13 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
 
   test('judgements share case opens core modal', async ({ page }) => {
     await unshareAllTeamsFromCase(page, SHARE_CASE_ID);
+    await stubEmptyBookCatalog(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('judgements').getByText('Judgements', { exact: true }).click();
-    const judgementsModal = page.locator('.modal.show').first();
+    await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
+    const judgementsModal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(judgementsModal).toBeVisible();
-    const shareCaseLink = judgementsModal.getByText('share case', { exact: true });
+    const shareCaseLink = judgementsModal.getByText('share this case', { exact: true });
     await expect(shareCaseLink).toBeVisible({ timeout: 15_000 });
     await shareCaseLink.click();
     await expect(judgementsModal).toBeHidden({ timeout: 10_000 });
@@ -324,7 +358,7 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
   test('clone-case popover', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('a[data-controller="clone-case-core"]').click();
+    await page.locator('button[data-bs-target="#cloneCaseModal"]').click();
     const modal = page.locator('.modal.show').first();
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 760 });
@@ -336,33 +370,33 @@ test.describe(`DOM migration shots (${PHASE})`, () => {
     await ensureCaseSharedWithOneTeam(page, SHARE_CASE_ID);
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page, SHARE_CASE_ID);
-    await page.locator('judgements').getByText('Judgements', { exact: true }).click();
-    const modal = page.locator('.modal.show').first();
+    await page.locator('button[data-bs-target="#judgementsModal"]').getByText('Judgements', { exact: true }).click();
+    const modal = page.locator('#judgementsModal.show, .modal.show').first();
     await expect(modal).toBeVisible();
     await expect(modal.getByLabel('Help').first()).toBeVisible({ timeout: 15_000 });
     await page.setViewportSize({ width: 900, height: 820 });
-    await openHelpPopover(page, modal, /All the Books related to all the Teams/);
+    await openHelpPopover(page, modal, /Books you own are always listed below/);
     await shot(page, 'judgements-popover');
   });
 
-  test('import-ratings popover', async ({ page }) => {
+  test('import-ratings modal', async ({ page }) => {
     await page.setViewportSize({ width: 900, height: 900 });
     await gotoCase(page);
-    await page.locator('import-ratings a').click();
-    const modal = page.locator('.modal.show').first();
+    await page.locator('button[data-bs-target="#importRatingsModal"]').click();
+    const modal = page.locator('#importRatingsModal.show');
     await expect(modal).toBeVisible();
     await page.setViewportSize({ width: 900, height: 900 });
-    await openHelpPopover(page, modal, /Select to clear all the existing queries on a case/);
-    await shot(page, 'import-ratings-popover');
+    await expect(modal.getByText('Ratings', { exact: true })).toBeVisible();
+    await shot(page, 'import-ratings-modal');
   });
 
   test('annotation timeAgo', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await gotoCase(page, QUERIES_CASE_ID);
-    await page.getByText('Tune Relevance', { exact: false }).click();
-    await page.locator('#annotationsTab').click();
+    await page.locator('#case-actions').getByText('Tune Relevance').click();
+    await page.locator('#dev-settings button[data-tune-relevance-tab-param="annotations"]').click();
     if ((await page.locator('.annotations-time').count()) === 0) {
-      await page.locator('#annotations textarea, annotations textarea').first().fill('Migration screenshot annotation');
+      await page.locator('#annotation-message').fill('Migration screenshot annotation');
       await page.getByRole('button', { name: 'Create', exact: true }).click();
     }
     await expect(page.locator('.annotations-time').first()).toBeVisible({ timeout: 10_000 });

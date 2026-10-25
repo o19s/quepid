@@ -10,6 +10,46 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     login_user_for_integration_test user
   end
 
+  test 'invalid save rolls back sharing changes and retains wizard state' do
+    search_endpoint.update!(owner: user)
+    search_endpoint.teams = [ user.teams.first ]
+    original_team_ids = search_endpoint.team_ids
+    original_name = search_endpoint.name
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+
+    post mapper_wizard_save_url(search_endpoint), params: {
+      name: 'Rejected update', api_method: '', team_ids: []
+    }, as: :json
+
+    assert_response :unprocessable_content
+    assert_not response.parsed_body['success']
+    assert_not_empty response.parsed_body['errors']
+    assert_equal original_team_ids, search_endpoint.reload.team_ids
+    assert_equal original_name, search_endpoint.name
+    assert MapperWizardState.exists?(wizard_state.id)
+  end
+
+  test 'save rejects a foreign team without creating an endpoint' do
+    foreign = Team.create!(name: 'Foreign team')
+    assert_no_difference 'SearchEndpoint.count' do
+      post mapper_wizard_save_url('new'), params: {
+        name: 'Unauthorized', endpoint_url: 'https://example.com/search', team_ids: [ foreign.id ]
+      }, as: :json
+    end
+    assert_response :not_found
+  end
+
+  test 'save clears visible teams and preserves hidden teams' do
+    visible = user.teams.first
+    hidden = Team.create!(name: 'Hidden team')
+    search_endpoint.teams = [ visible, hidden ]
+    post mapper_wizard_save_url(search_endpoint), params: {
+      name: search_endpoint.name, team_ids: []
+    }, as: :json
+    assert_response :success
+    assert_equal [ hidden.id ], search_endpoint.reload.team_ids
+  end
+
   test 'should get show for new endpoint' do
     get new_mapper_wizard_url
     assert_response :success
@@ -23,6 +63,70 @@ class MapperWizardsControllerTest < ActionDispatch::IntegrationTest
     get mapper_wizard_url(search_endpoint)
     assert_response :success
     assert_select 'h1', 'Mapper Wizard'
+  end
+
+  test 'fetch_html preserves the real credential when its masked value is resubmitted' do
+    wizard_state = MapperWizardState.find_or_create_for_user(user)
+    wizard_state.update!(basic_auth_credential: 'bob:password')
+    html = '<html>Search results</html>'
+    request = stub_request(:get, 'https://search.example.com/results')
+      .with(basic_auth: %w[bob password])
+      .to_return(status: 200, body: html)
+
+    post mapper_wizard_fetch_html_url('new'),
+         params: {
+           search_url:            'https://search.example.com/results',
+           basic_auth_credential: wizard_state.masked_basic_auth_credential,
+         },
+         as:     :json
+
+    assert_response :success
+    assert response.parsed_body['success']
+    assert_requested request
+    wizard_state.reload
+    assert_equal 'bob:password', wizard_state.basic_auth_credential
+    assert_equal html, wizard_state.html_content
+    assert_not_includes response.body, 'bob:password'
+  end
+
+  { 'bob:newpass' => 'bob:newpass', '' => '', nil => nil }.each do |submitted, expected|
+    test "fetch_html retains credential policy for #{submitted.inspect}" do
+      wizard_state = MapperWizardState.find_or_create_for_user(user)
+      wizard_state.update!(basic_auth_credential: 'alice:secret')
+      request = stub_request(:get, 'https://search.example.com/results')
+      request = request.with(basic_auth: %w[bob newpass]) if submitted.present?
+      request = request.to_return(status: 200, body: '<html>Results</html>')
+
+      post mapper_wizard_fetch_html_url('new'), params: {
+        search_url: 'https://search.example.com/results', basic_auth_credential: submitted
+      }, as: :json
+
+      assert_response :success
+      assert response.parsed_body['success']
+      assert_requested request
+      if expected.nil?
+        assert_nil wizard_state.reload.basic_auth_credential
+      else
+        assert_equal expected, wizard_state.reload.basic_auth_credential
+      end
+    end
+  end
+
+  { 'alice:******' => 'alice:secret', 'bob:newpass' => 'bob:newpass', '' => 'wizard:secret', nil => 'wizard:secret' }.each do |submitted, expected|
+    test "mapper save retains credential policy for #{submitted.inspect}" do
+      search_endpoint.update!(owner: user, basic_auth_credential: 'alice:secret', proxy_requests: true, api_method: 'GET')
+      wizard_state = MapperWizardState.find_or_create_for_user(user)
+      wizard_state.update!(basic_auth_credential: 'wizard:secret')
+
+      post mapper_wizard_save_url(search_endpoint), params: {
+        name: search_endpoint.name, proxy_requests: true, basic_auth_credential: submitted
+      }, as: :json
+
+      assert_response :success
+      assert response.parsed_body['success']
+      assert_equal expected, search_endpoint.reload.basic_auth_credential
+      assert_not MapperWizardState.exists?(wizard_state.id)
+    end
   end
 
   test 'fetch_html returns error for blank URL' do

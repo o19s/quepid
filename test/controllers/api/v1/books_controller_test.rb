@@ -55,7 +55,7 @@ module Api
 
         test 'returns empty array when no books match filter' do
           # Archive all books except the already archived one
-          doug.books_involved_with.active.each(&:archive!)
+          doug.books_involved_with.active.each { |book| book.update!(archived: true) }
 
           get :index, params: { archived: false }
           assert_response :ok
@@ -83,6 +83,38 @@ module Api
           book_names = response.parsed_body['all_books'].map { |b| b['name'] }
           assert_includes book_names, team_only_book.name
         end
+      end
+
+      test 'create persists the selected accessible scorer scale and labels' do
+        scorer = scorers(:valid)
+        scorer.update!(scale_with_labels: { '1' => 'Poor', '4' => 'Excellent' })
+        post :create, params: { book: { name: 'API scale', scorer_id: scorer.id } }
+
+        assert_response :ok
+        created = Book.find(response.parsed_body['book_id'])
+        assert_equal scorer.scale, created.scale
+        assert_equal scorer.scale_with_labels, created.scale_with_labels
+        assert_equal doug, created.owner
+      end
+
+      test 'update applies labels while preserving the existing scale-change guard' do
+        book = books(:james_bond_movies)
+        scorer = quepid_default_scorer
+        scorer.update!(scale_with_labels: { '0' => 'Bad', '1' => 'Good' })
+        patch :update, params: { id: book.id, book: { scorer_id: scorer.id } }
+        assert_response :ok
+        assert_equal scorer.scale_with_labels, book.reload.scale_with_labels
+
+        patch :update, params: { id: book.id, book: { scorer_id: scorers(:valid).id } }
+        assert_response :bad_request
+        assert_equal scorer.scale, book.reload.scale
+      end
+
+      test 'an inaccessible scorer cannot change the scale' do
+        scorer = Scorer.create!(name: 'Private scale', owner: users(:random), code: 'pass();', scale: [ 7, 8 ])
+        post :create, params: { book: { name: 'No private scale', scorer_id: scorer.id } }
+        assert_response :ok
+        assert_empty Book.find(response.parsed_body['book_id']).scale
       end
 
       describe 'Creating a book' do
@@ -211,6 +243,27 @@ module Api
           # assert_equal body['query_doc_pairs'][0]['query'], book.query_doc_pairs[0].query_text
           # assert_nil body['query_doc_pairs'][0]['document_fields']
         end
+      end
+    end
+  end
+end
+
+module Api
+  module V1
+    class BooksControllerTest
+      test 'owned filter includes only directly owned books and retains archive filtering' do
+        owned = Book.create!(name: 'Own active', owner: doug)
+        archived = Book.create!(name: 'Own archived', owner: doug, archived: true)
+        shared = books(:book_of_star_wars_judgements)
+        get :index, params: { owned: 'true' }
+        ids = response.parsed_body['all_books'].pluck('book_id')
+        assert_includes ids, owned.id
+        assert_not_includes ids, shared.id
+        assert_not_includes ids, archived.id
+        get :index, params: { owned: 'true', archived: 'true' }
+        assert_includes response.parsed_body['all_books'].pluck('book_id'), archived.id
+        get :index, params: { owned: 'false' }
+        assert_includes response.parsed_body['all_books'].pluck('book_id'), shared.id
       end
     end
   end

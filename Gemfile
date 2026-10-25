@@ -46,7 +46,7 @@ gem 'ror-mcp-server', github: 'frutik/ror-mcp-server', tag: 'v0.1.3'
 gem 'ruby_llm'
 gem 'rubyzip'
 gem 'propshaft' # Modern asset pipeline for Rails 8
-gem 'jsbundling-rails' # For bundling the Angular 1 app
+gem 'jsbundling-rails' # For bundling the core JavaScript
 gem 'scout_apm' # using on Heroku to look at memory issues
 gem 'solid_cable'
 gem 'solid_queue'
@@ -85,7 +85,8 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
-  gem 'rubocop-capybara', require: false
+  gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
   gem 'rails-erd'
   gem 'ruby-graphviz' # required for rails-erd's Graphviz (PNG) output, used by `rake erd:image`
 end
@@ -93,12 +94,9 @@ end
 group :test do
   gem 'minitest-reporters'
   gem 'simplecov', require: false
+  gem 'mutant-minitest', '~> 0.17', require: false # Ruby mutation testing, config/mutant.yml
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
-
-  # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
-  gem 'capybara'
-  gem 'selenium-webdriver'
 end
 
 gem 'rubocop-minitest'

@@ -1,3 +1,7 @@
+<%# A Turbo Frame request that lands here (an expired session) loads the login page in full. %>
+<% content_for :head do %>
+  <meta name="turbo-visit-control" content="reload">
+<% end %>
 <% email_login_only = true %>
 <div class="row mt-4">
   <div class="col-md-5">
@@ -6,35 +10,35 @@
       <div>
         <% if Rails.application.config.devise.omniauth_providers.include?(:google_oauth2) %>
         <% email_login_only = false %>
-        <p>
-          <%= button_to user_google_oauth2_omniauth_authorize_path, disabled: @flag_not_on_https, data: { turbo: "false" }, :class=> "btn btn-social btn-google" do %>
+        <div class="my-3">
+          <%= button_to user_google_oauth2_omniauth_authorize_path, disabled: @flag_not_on_https, data: { turbo: "false" }, :class=> "btn btn-social text-truncate text-start btn-google" do %>
             <%= content_tag(:span, "", :class => "bi bi-google") %> Sign in with Google
           <% end %>
           <% if @flag_not_on_https %>
             Please <%= link_to "reload Quepid", new_session_url(protocol: 'https') %> using HTTPS to login via Google.
           <% end %>
-        </p>
+        </div>
         <% end %>
 
         <% if Rails.application.config.devise.omniauth_providers.include?(:keycloak_openid) %>
         <% email_login_only = false %>
         <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
-        <p>
-          <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
-            <%= image_tag "openid-logo.png", :class => "black-to-white" %> Sign in with Keycloak
+        <div class="my-3">
+          <%= button_to user_keycloakopenid_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social text-truncate text-start btn-openid" do %>
+            <%= image_tag "openid-logo.png", :class => "black-to-white", alt: "" %> Sign in with Keycloak
 
           <% end %>
-        </p>
+        </div>
         <% end %>
 
         <% if Rails.application.config.devise.omniauth_providers.include?(:openid_connect) %>
         <% email_login_only = false %>
         <!-- <a href="https://www.flaticon.com/free-icons/digital" title="digital icons">Digital icons created by Freepik - Flaticon</a> -->
-        <p>
-          <%= button_to user_openid_connect_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social btn-openid" do %>
-            <%= image_tag "openid-logo.png", :class => "black-to-white" %> <%= Rails.application.config.openid_connect_button_text %>
+        <div class="my-3">
+          <%= button_to user_openid_connect_omniauth_authorize_path, data: { turbo: "false" }, :class=> "btn btn-social text-truncate text-start btn-openid" do %>
+            <%= image_tag "openid-logo.png", :class => "black-to-white", alt: "" %> <%= Rails.application.config.openid_connect_button_text %>
           <% end %>
-        </p>
+        </div>
         <% end %>
 
       </div>
@@ -57,17 +61,17 @@
               </div>
             <% end %>
             <div class="mb-3">
-              <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+              <%= f.text_field :email, class: 'form-control', placeholder: 'Email Address' %>
             </div>
 
             <div class="mb-3">
-              <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+              <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
             </div>
             <div>
               <%= link_to 'Forgot Password?', new_user_password_path %>
             </div>
             <br>
-            <%= f.submit 'Sign in', class: 'btn btn-primary login' %>
+            <%= f.submit 'Sign in', class: 'btn btn-primary' %>
             <br>
 
           <% end %>
@@ -76,7 +80,7 @@
     </div>
   </div>
   <% if Rails.application.config.email_login_enabled and Rails.application.config.signup_enabled %>
-  <div class="col-md-1 or-block col-sm-2">
+  <div class="col-md-1 mt-5 text-center col-sm-2">
     <h2>OR</h2>
   </div>
   <div class="col-md-6">
@@ -95,19 +99,19 @@
             </div>
           <% end %>
           <div class="mb-3">
-             <%= f.text_field :name, class: 'form-control name', placeholder: 'Full Name' %>
+             <%= f.text_field :name, class: 'form-control', placeholder: 'Full Name' %>
           </div>
 
           <div class="mb-3">
-            <%= f.text_field :email, class: 'form-control email', placeholder: 'Email Address' %>
+            <%= f.text_field :email, class: 'form-control', placeholder: 'Email Address' %>
           </div>
 
           <div class="mb-3">
-             <%= f.password_field :password, class: 'form-control password', placeholder: 'Password' %>
+             <%= f.password_field :password, class: 'form-control', placeholder: 'Password' %>
           </div>
 
           <div class="mb-3">
-              <%= f.password_field :password_confirmation, class: 'form-control password-confirm', placeholder: 'Confirm Password' %>
+              <%= f.password_field :password_confirmation, class: 'form-control', placeholder: 'Confirm Password' %>
           </div>
 
           <% unless Rails.application.config.terms_and_conditions_url.blank? %>
@@ -129,7 +133,7 @@
           </div>
           <% end %>
 
-          <%= f.submit 'Sign up', class: 'btn btn-primary signup' %>
+          <%= f.submit 'Sign up', class: 'btn btn-primary' %>
 
         <% end %>
       </div>
@@ -140,7 +144,7 @@
 
 <div class="p-5 mb-4">
   <div class="container-fluid py-5">
-    <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:TalkToUs@opensourceconnections.com">Contact us</a>
+    <a href="http://www.opensourceconnections.com/2013/10/07/quepid-give-your-search-queries-some-love/">Read more</a> about the Quepid story. <a href="mailto:hello@opensourceconnections.com">Contact us</a>
     to talk about Quepid or ask how we can help with your search problems!
   </div>
 </div>

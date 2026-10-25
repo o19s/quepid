@@ -1,0 +1,11 @@
+# Herb (HTML+ERB) configuration: https://herb-tools.dev/configuration
+# Exclude patterns add to Herb's defaults, which only match at the project root
+# and do not read .gitignore.
+files:
+  exclude:
+    - ".playwright-mcp/**/*"
+    - "**/node_modules/**/*"
+    - "public/notebooks/**/*"
+    - "test/playwright/screenshot-viewer.html"
+    - "test/playwright/test-results/**/*"
+    - "test/fixtures/files/lse_searchapi_response.html"

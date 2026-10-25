@@ -3,8 +3,8 @@
 module Analytics
   module Tracker
     module Try
-      def track_try_saved_event user, the_try
-        Analytics::Ahoy.user_saved_case_try user, the_try
+      def track_try_saved_event _user, the_try
+        track 'Case Tries', 'Saved a Case Try', label: the_try.case.case_name, value: the_try.try_number
       end
     end
   end

@@ -1,12 +1,7 @@
-<%# Core case toolbar — export case modal, mirrors the AngularJS <export-case>
-    component/_modal.html it replaces. Clicking Export always closes the modal
-    (data-bs-dismiss) and immediately downloads (Angular's close-then-download
-    flow); there's no inline success/failure alert since Angular didn't have
-    one either.
-
-    "Detailed" is the one format that can't be reconstructed from the server
-    alone (it needs the live, already-searched documents held in the
-    still-running Angular app) — see export_case_core_controller.js. %>
+<%# Core case toolbar — export case modal. Clicking Export always closes the
+    modal and immediately downloads. "Detailed" is the one format that can't
+    be reconstructed from the server alone (it needs the live, already-searched
+    documents) — see export_case_core_controller.js. %>
 <% modal_footer = capture do %>
   <button type="button" class="btn btn-primary" disabled data-bs-dismiss="modal"
           data-export-case-core-target="submitButton" data-action="click->export-case-core#submit">Export</button>
@@ -14,9 +9,12 @@
 
 <% modal_body = capture do %>
   <p>There are a number of formats for exporting data from Quepid.</p>
+  <p class="alert alert-danger d-none" role="alert" data-export-case-core-target="snapshotsError">
+    Could not load this case's snapshots, so the snapshot lists below are empty. Close and reopen Export to try again.
+  </p>
 
   <div class="mb-3">
-    <input type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"
+    <input data-export-case-core-target="format" type="radio" id="exportInformationNeed" name="export-case-format" value="information_need"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="information_need">
     <label for="exportInformationNeed">Information Need</label>
     <span class="form-text d-block">
@@ -25,7 +23,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportGeneral" name="export-case-format" value="general"
+    <input data-export-case-core-target="format" type="radio" id="exportGeneral" name="export-case-format" value="general"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="general">
     <label for="exportGeneral">General</label>
     <span class="form-text d-block">
@@ -35,7 +33,7 @@
 
   <div class="mb-3">
     <input type="radio" id="exportDetailed" name="export-case-format" value="detailed"
-           data-export-case-core-target="detailedRadio"
+           data-export-case-core-target="detailedRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="detailed">
     <label for="exportDetailed">Detailed</label>
     <p class="alert alert-warning p-3 d-none" role="alert" data-export-case-core-target="detailedWarning">
@@ -49,7 +47,7 @@
 
   <div class="mb-3">
     <input type="radio" id="exportSnapshot" name="export-case-format" value="snapshot"
-           data-export-case-core-target="snapshotRadio"
+           data-export-case-core-target="snapshotRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="snapshot">
     <label for="exportSnapshot">Snapshot</label>
     <span class="form-text d-block">
@@ -66,7 +64,7 @@
   <hr>
   <div class="mb-3">
     <input type="radio" id="exportBasic" name="export-case-format" value="basic"
-           data-export-case-core-target="basicRadio"
+           data-export-case-core-target="basicRadio format"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="basic">
     <label for="exportBasic">Basic</label>
     <span class="form-text d-block">
@@ -74,7 +72,7 @@
       Compatible with projects like <a href="https://github.com/tballison/quaerite" target="_blank" rel="noopener noreferrer">Quaerite</a> among others.
     </span>
 
-    <input type="radio" id="exportTrec" name="export-case-format" value="trec"
+    <input data-export-case-core-target="format" type="radio" id="exportTrec" name="export-case-format" value="trec"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="trec">
     <label for="exportTrec">TREC</label>
     <span class="form-text d-block">
@@ -92,7 +90,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportRre" name="export-case-format" value="rre"
+    <input data-export-case-core-target="format" type="radio" id="exportRre" name="export-case-format" value="rre"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="rre">
     <label for="exportRre">Rated Ranking Evaluator / RankQuest</label>
     <span class="form-text d-block">
@@ -100,7 +98,7 @@
     </span>
   </div>
   <div class="mb-3">
-    <input type="radio" id="exportLtr" name="export-case-format" value="ltr"
+    <input data-export-case-core-target="format" type="radio" id="exportLtr" name="export-case-format" value="ltr"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="ltr">
     <label for="exportLtr">Learning to Rank</label>
     <span class="form-text d-block">
@@ -120,7 +118,7 @@
     <%= link_to "Annotations", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "annotationsLink" } %>,
     <%= link_to "Scores", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "scoresLink" } %>,
     <%= link_to "Ratings", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "ratingsLink" } %>, or a Snapshot
-    <select class="form-select d-inline-block w-auto"
+    <select aria-label="API snapshot" class="form-select d-inline-block w-auto"
             data-export-case-core-target="apiSnapshotSelect" data-action="change->export-case-core#selectApiSnapshot"></select>
     <span class="d-none" data-export-case-core-target="apiSnapshotWrapper">
       <%= link_to "here", "#", target: "_blank", rel: "noopener noreferrer", data: { export_case_core_target: "apiSnapshotLink" } %>
@@ -129,7 +127,7 @@
   </div>
   <hr>
   <div class="mb-3">
-    <input type="radio" id="exportQuepid" name="export-case-format" value="quepid"
+    <input data-export-case-core-target="format" type="radio" id="exportQuepid" name="export-case-format" value="quepid"
            data-action="change->export-case-core#selectFormat" data-export-case-core-format-param="quepid">
     <label for="exportQuepid">Quepid</label>
     <span class="form-text d-block">
@@ -141,9 +139,10 @@
   </div>
 <% end %>
 
-<%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", dialog_class: "modal-lg",
+<%= render "shared/modal_shell", id: "exportCaseModal", title: "Export Case", title_tag: :h2, title_class: "h5", dialog_class: "modal-lg",
                                  data: {
                                    controller: "export-case-core",
+                                   action: "show.bs.modal->export-case-core#open",
                                    export_case_core_snapshots_index_url_template_value: api_case_snapshots_path(case_id: "__CASE_ID__", shallow: true),
                                    export_case_core_snapshot_show_url_template_value: api_case_snapshot_path(case_id: "__CASE_ID__", id: "__SNAPSHOT_ID__", shallow: false),
                                    export_case_core_case_url_template_value: api_case_path(case_id: "__CASE_ID__", shallow: false),

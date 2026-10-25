@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dead-rule audit for the Angular `core.css` stylesheet bundle.
+// Dead-rule audit for the `core.css` stylesheet bundle.
 //
 // Scans every source file that `buildCoreCSS()` in build_css.js
 // concatenates into core.css, and asks PurgeCSS which selectors are
@@ -13,7 +13,7 @@
 // Exits before PurgeCSS if the output directory is not writable.
 //
 // Why per-file rather than per-bundle: the core CSS bundle is built by
-// concatenation, so an unused selector in bootstrap5-compat.css is attributable
+// concatenation, so an unused selector in core-overrides.css is attributable
 // to that file versus npm Bootstrap noise in node_modules/bootstrap. Attribution matters.
 
 const fs = require('fs');
@@ -51,16 +51,15 @@ function ensureWritableOutDir(dir) {
 // belong to upstream packages.
 const SOURCES = [
   'node_modules/bootstrap/dist/css/bootstrap.css',
+  'app/assets/stylesheets/base.css',
   'app/assets/stylesheets/core-additions.css',
   'app/assets/stylesheets/navbar-brand.css',
-  'app/assets/stylesheets/bootstrap5-compat.css',
+  'app/assets/stylesheets/core-overrides.css',
   'app/assets/stylesheets/style.css',
   'app/assets/stylesheets/panes.css',
   'app/assets/stylesheets/stackedChart.css',
   'app/assets/stylesheets/tour.css',
-  'app/assets/stylesheets/cases.css',
   'app/assets/stylesheets/docs.css',
-  'app/assets/stylesheets/settings.css',
   'app/assets/stylesheets/qscore.css',
   'app/assets/stylesheets/qgraph.css',
   'app/assets/stylesheets/misc.css',
@@ -74,55 +73,43 @@ const NOISY_SOURCES = new Set(['node_modules/bootstrap/dist/css/bootstrap.css'])
 
 // Where templates, scripts, and helpers live. PurgeCSS extracts any
 // token that *could* be a class name from these, so anything appearing
-// as a string literal (in ERB, Angular HTML, JS, or Ruby) is detected.
+// as a string literal (in ERB, JS, or Ruby) is detected.
 const CONTENT = [
   'app/views/**/*.erb',
   'app/views/**/*.html',
   'app/helpers/**/*.rb',
-  'app/assets/javascripts/**/*.js',
-  'app/assets/javascripts/**/*.html',
-  'app/assets/templates/**/*.html',
   'app/javascript/**/*.js',
   'app/javascript/**/*.html',
   'config/locales/**/*.yml',
 ];
 
 // Safelist: classes that are real but never appear as literals in the
-// content globs (runtime-added by Angular, Bootstrap JS, jQuery UI,
-// Tether-Shepherd, etc.).
+// content globs (runtime-added by Bootstrap JS, Tether-Shepherd,
+// and other browser libraries).
 const SAFELIST = {
   standard: [
-    // JS-added state classes (BS5 + Quepid). `in`/`open` are legacy BS3
-    // holdovers still emitted by older directives; safe to drop only after
-    // grep confirms no callers.
-    'in', 'fade', 'show', 'open', 'active', 'disabled', 'loading',
+    // JS-added state classes (BS5 + Quepid).
+    'fade', 'show', 'active', 'disabled',
     'collapse', 'collapsing', 'collapsed',
     // Modal sizes from `'modal-' + opts.size` in JS
-    'modal-sm', 'modal-lg', 'modal-xl', 'modal-fullscreen',
+    'modal-sm', 'modal-lg', 'modal-xl',
     // Alert variants emitted by app/helpers (bootstrap_class_for)
     'alert-success', 'alert-info', 'alert-warning', 'alert-danger',
-    'alert-primary', 'alert-secondary',
+    'alert-primary',
     // Common runtime-toggled utility
     'hidden',
   ],
   // Whole namespaces added at runtime by libraries — never appear as
   // literals in templates but the CSS rules supporting them are live.
   greedy: [
-    /^ng-/,             // Angular directive states
-    /^ui-/,             // jQuery UI
     /^shepherd-/,       // tether-shepherd tour
-    /^tooltip/,         // BS3/BS5 tooltip variants
-    /^popover/,         // BS3/BS5 popover variants
+    /^tooltip/,         // BS5 tooltip variants
+    /^popover/,         // BS5 popover variants
     /^bs-tooltip-/,
     /^bs-popover-/,
-    /^tour-/,
-    /^wizard/,          // angular-wizard
-    /^tags-/, /^ti-/,   // ng-tags-input
-    /^autocomplete/,    // autocompleter library
     /^ace_/,            // Ace editor
-    /^d3-tip/,          // d3-tip
     /^vega-/,           // Vega embed
-    /^json-/,           // ng-json-explorer
+    /^json-/,           // json_explorer (historical json-explorer classes)
   ],
 };
 
@@ -208,7 +195,7 @@ function writeSummary(reports) {
   lines.push('1. Start with non-vendored files (highest signal).');
   lines.push('2. For each candidate selector, grep the codebase one more time before deleting —');
   lines.push('   PurgeCSS can miss class names built from computed strings or stored in YAML/JSON.');
-  lines.push('3. Delete in small batches and verify visually per the CLAUDE.md BS3 screenshot policy.');
+  lines.push('3. Delete in small batches and verify visually per the AGENTS.md screenshot policy.');
   lines.push('');
   lines.push('See `<source>.dead.css` for the full rule bodies (suitable for review/diff).');
   lines.push('See `<source>.dead.txt` for a plain selector list.');
@@ -217,7 +204,7 @@ function writeSummary(reports) {
 }
 
 async function main() {
-  console.log('Auditing BS3 core.css sources for unreferenced selectors...');
+  console.log('Auditing core.css sources for unreferenced selectors...');
   console.log(`Content globs: ${CONTENT.length} patterns`);
   console.log(`CSS sources: ${SOURCES.length} files`);
   console.log(`Output directory: ${AUDIT_OUTPUT_DIR}`);

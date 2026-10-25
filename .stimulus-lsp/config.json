@@ -1,0 +1,31 @@
+{
+  "version": "1.1.2",
+  "createdAt": "2026-10-14T12:50:28Z",
+  "updatedAt": "2026-10-14T12:57:43Z",
+  "options": {
+    "ignoredControllerIdentifiers": [
+      "ai-judge-wizard",
+      "bulk-judgement",
+      "clone-case-core",
+      "delete-case-options-core",
+      "diff-core",
+      "export-case-core",
+      "import-case",
+      "import-ratings-core",
+      "import-snapshot",
+      "judgements-core",
+      "mapper-wizard",
+      "missing-documents",
+      "move-query-core",
+      "pick-scorer-core",
+      "query-options-core",
+      "share-book",
+      "share-case",
+      "share-case-core",
+      "share-scorer",
+      "share-search-endpoint",
+      "take-snapshot-core"
+    ],
+    "ignoredAttributes": ["data-bs-target"]
+  }
+}

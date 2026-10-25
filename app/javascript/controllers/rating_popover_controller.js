@@ -4,20 +4,20 @@ import { createBsPopover } from "utils/bs_popover"
 // Rating-scale popover for search results, "Score All", and the Document
 // Finder. Content here is plain DOM built from the scale value — the actual
 // rating mutation (doc.rate / doc.resetRating, scoreAll propagation, etc.)
-// still lives in Angular. This dispatches bubbling CustomEvents so whichever
-// Angular controller wraps this element (SearchResultCtrl, SearchResultsCtrl,
-// DocFinderCtrl) can handle the mutation without any id-based correlation.
+// lives in the live query runtime. This dispatches bubbling
+// CustomEvents so the owning result/search controller or document finder can
+// handle the mutation without any id-based correlation.
 export default class extends Controller {
   static values = {
     scale: Object,
-    placement: { type: String, default: "auto right" }
+    placement: { type: String, default: "right" }
   }
 
   connect() {
     this.handle = createBsPopover(this.element, {
-      mode: "text",
-      trigger: "outsideClick",
+      trigger: "outside-click",
       placement: this.placementValue,
+      container: this.element.closest(".modal") || "body",
       html: true,
       body: this.renderBody()
     })
@@ -37,48 +37,63 @@ export default class extends Controller {
     container.className = "ratingContainer"
 
     const list = document.createElement("ul")
-    list.className = "ratingNums"
+    list.className = "d-flex flex-wrap align-items-center list-unstyled m-0 p-0"
 
     Object.keys(this.scaleValue).forEach((rating) => {
       const entry = this.scaleValue[rating] || {}
-      const item = document.createElement("li")
+      const row = document.createElement("li")
+      const item = document.createElement("button")
+      item.type = "button"
       item.className = "btn btn-sm ratingNum"
       item.style.backgroundColor = entry.color || ""
       item.textContent = rating
 
       if (entry.showScaleLabels === true) {
-        const label = document.createElement("div")
+        const label = document.createElement("span")
+        label.className = "d-block"
         label.textContent = entry.label
         item.appendChild(label)
       }
 
       item.addEventListener("click", () => this.rate(rating))
-      list.appendChild(item)
+      row.appendChild(item)
+      list.appendChild(row)
     })
 
-    const reset = document.createElement("span")
+    const reset = document.createElement("button")
+    reset.type = "button"
     reset.className = "btn btn-outline-secondary btn-sm reset"
     reset.textContent = "RESET"
     reset.addEventListener("click", () => this.reset())
-    list.appendChild(reset)
+    const resetRow = document.createElement("li")
+    resetRow.appendChild(reset)
+    list.appendChild(resetRow)
 
     container.appendChild(list)
     return container
   }
 
   rate(rating) {
+    const detail = { rating }
+    if (this.element.closest("search-result")) detail.source = "single-result"
     this.element.dispatchEvent(
-      new CustomEvent("rating-popover:rate", { bubbles: true, detail: { rating } })
+      new CustomEvent("rating-popover:rate", { bubbles: true, detail })
     )
     this.hide()
   }
 
   reset() {
-    this.element.dispatchEvent(new CustomEvent("rating-popover:reset", { bubbles: true }))
+    const detail = this.element.closest("search-result") ? { source: "single-result" } : {}
+    this.element.dispatchEvent(new CustomEvent("rating-popover:reset", { bubbles: true, detail }))
     this.hide()
   }
 
   hide() {
+    const tipId = this.element.getAttribute("aria-describedby")
+    const tip = tipId && document.getElementById(tipId)
+    if (tip?.contains(document.activeElement)) {
+      this.element.querySelector("button")?.focus()
+    }
     if (this.handle && this.handle.instance) this.handle.instance.hide()
   }
 }

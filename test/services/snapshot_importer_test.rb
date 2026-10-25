@@ -3,6 +3,8 @@
 require 'test_helper'
 
 class SnapshotImporterTest < ActiveSupport::TestCase
+  cover 'SnapshotImporter*'
+
   let(:acase)     { cases(:snapshot_case) }
   let(:importer)  { SnapshotImporter.new acase }
 
@@ -34,6 +36,14 @@ class SnapshotImporterTest < ActiveSupport::TestCase
         assert_equal 'Snapshot 1', result.first.name
         assert_equal 'Snapshot 2', result.second.name
       end
+    end
+
+    test 'keeps the given creation time on the imported snapshot' do
+      created_at = Time.zone.parse('2020-01-02 03:04:05')
+
+      result = importer.import_snapshots [ { name: 'Old snapshot', created_at: created_at, queries: {} } ]
+
+      assert_equal created_at, result.first.reload.created_at
     end
 
     test 'attaches the returned snapshots to the case' do

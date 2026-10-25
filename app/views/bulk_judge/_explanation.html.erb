@@ -1,0 +1,22 @@
+<%# locals: (query_doc_pair:, judgement:, show_explanations:) %>
+<% if show_explanations %>
+  <div>
+    <label for="explanation_<%= query_doc_pair.id %>" class="form-label">
+      <small>Explanation (optional):</small>
+    </label>
+    <%= text_area_tag "explanation_#{query_doc_pair.id}",
+        judgement.explanation,
+        class: "form-control form-control-sm",
+        rows: 2,
+        id: "explanation_#{query_doc_pair.id}",
+        data: {
+          action: "input->bulk-judgement#saveExplanation",
+          query_doc_pair_id: query_doc_pair.id
+        } %>
+  </div>
+<% elsif judgement.explanation.present? %>
+  <%# Read-only view of an existing explanation while editing is switched off %>
+  <div class="text-muted small mt-2">
+    <strong>Explanation:</strong> <%= judgement.explanation %>
+  </div>
+<% end %>

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { apiHeaders } from './case_helpers';
 
 /**
  * Single-item judging flow (JudgementsController#new/#create), the
@@ -19,13 +20,6 @@ import { test, expect, type Page } from '@playwright/test';
 
 const BOOK_ID = Number(process.env.QUEPID_E2E_JUDGING_BOOK_ID || 1);
 
-async function apiHeaders(page: Page) {
-  const csrf = await page.evaluate(() =>
-    document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ?? ''
-  );
-  return { Accept: 'application/json', 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' };
-}
-
 /**
  * JudgementsController#destroy redirects to book_judge_path on success.
  * APIRequestContext follows redirects by default, and the redirect target
@@ -36,7 +30,7 @@ async function apiHeaders(page: Page) {
  */
 async function deleteJudgement(page: Page, bookId: number, judgementId: string) {
   const response = await page.request.delete(`books/${bookId}/judgements/${judgementId}`, {
-    headers: await apiHeaders(page),
+    headers: await apiHeaders(page, { 'X-Requested-With': 'XMLHttpRequest' }),
     maxRedirects: 0
   });
   expect(response.status()).toBeLessThan(400);

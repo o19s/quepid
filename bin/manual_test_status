@@ -11,23 +11,13 @@
 #     ("code changed since last verified")
 #   - last_run is older than policy.default_max_age_days ("stale by pure time")
 #
-# "Changed" is measured two different ways depending on whether git currently sees the file as
-# dirty (staged, unstaged, or untracked):
-#   - dirty file: use its on-disk mtime. It was just edited, so mtime already reflects that the
-#     moment you save - no need to wait for a commit. Using commit time here would mean last_run,
-#     stamped when you finish verifying (necessarily BEFORE you commit), is always older than the
-#     commit that's about to land, so every scenario re-flags as due the instant you commit, even
-#     though nothing changed since you tested it.
-#   - clean file: use its last `git log` commit time. mtime alone can't tell "content changed"
-#     apart from "file got rewritten to the same bytes" - a checkout, merge, or reset touches
-#     every file that differed on either side, even ones that land back on identical content, and
-#     that's ordinary activity here (branch switches, merges), not just a rare fresh-clone case.
-#     Commit time is immune to that because it's tied to the content's real history, not the disk.
-#
-# The one gap this still leaves: right after you commit a file you just tested, it flips from
-# "dirty" (mtime, already satisfied) to "clean" (commit time, which necessarily postdates the
-# last_run you stamped before committing) - so it re-flags as due once, until you re-stamp
-# last_run after committing (amend is fine).
+# Dirty files use their on-disk modification time. Clean files use the earlier of their
+# modification time and last commit time, computed per file. A normal commit preserves mtime,
+# so code tested after editing stays current when committed. An old commit also prevents a
+# checkout's refreshed mtime from marking already verified code due.
+# Fresh clones/rebases can still conservatively report DUE. Preserved/backdated mtimes can
+# hide edits, as with the dirty-file check; timestamps are a heuristic, not content identity.
+# Keep last_run as the actual test time.
 #
 # `last_run` should be a full UTC timestamp (YYYY-MM-DDTHH:MM:SSZ), compared at full precision -
 # not truncated to a date - so two events on the same calendar day (e.g. a verification pass and a
@@ -106,13 +96,21 @@ def last_change_for(paths, root, cache, dirty_files)
     return nil
   end
 
-  dirty, clean = files.partition { |f| dirty_files.include?(f) }
-  times = dirty.map { |f| File.mtime(f).utc }
+  times = files.map do |file|
+    file_key = [:file, file]
+    next cache[file_key] if cache.key?(file_key)
 
-  unless clean.empty?
-    cmd = ['git', '-C', root, 'log', '-1', '--format=%cI', '--'] + clean
-    out, status = Open3.capture2(*cmd)
-    times << Time.iso8601(out.strip).utc if status.success? && !out.strip.empty?
+    modified_at = File.mtime(file).utc
+    if dirty_files.include?(file)
+      cache[file_key] = modified_at
+    else
+      cmd = ['git', '-C', root, 'log', '-1', '--format=%cI', '--', file]
+      out, status = Open3.capture2(*cmd)
+      committed_at = if status.success? && !out.strip.empty?
+                       Time.iso8601(out.strip).utc
+                     end
+      cache[file_key] = committed_at ? [modified_at, committed_at].min : modified_at
+    end
   end
 
   cache[key] = times.max

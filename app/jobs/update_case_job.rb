@@ -3,6 +3,9 @@
 class UpdateCaseJob < ApplicationJob
   queue_as :default
 
+  # Supports two scenarios:
+  # 1. Update all cases for a book: UpdateCaseJob.perform_later(book_id, options)
+  # 2. Update specific case: UpdateCaseJob.perform_later(book_id, options, case_id)
   # Finds the in-flight (not finished) SolidQueue rows for this job class
   # matching the given book + case. Mirrors RunJudgeJudyJob.active_for -
   # the Linked Cases card uses this to pulse a case's "receives ratings"
@@ -15,6 +18,7 @@ class UpdateCaseJob < ApplicationJob
     kase_gid = kase.to_global_id.to_s
     SolidQueue::Job
       .where(class_name: name, finished_at: nil)
+      .where.missing(:failed_execution)
       .where('arguments LIKE ?', "%#{book_gid}%")
       .select { |job| job_covers_case?(job, book_gid, kase_gid, kase) }
   end
@@ -34,10 +38,8 @@ class UpdateCaseJob < ApplicationJob
   end
   private_class_method :job_covers_case?
 
-  # Supports two scenarios:
-  # 1. Update all cases for a book: UpdateCaseJob.perform_later(book_id, options)
-  # 2. Update specific case: UpdateCaseJob.perform_later(book_id, options, case_id)
   def perform book, options = {}, specific_case = nil
+    BroadcastLinkedCasesJob.perform_later(book)
     service = RatingsManager.new(book, options)
 
     @counts = {
@@ -49,17 +51,14 @@ class UpdateCaseJob < ApplicationJob
                       [ specific_case ]
                     else
                       # Bulk update from book-level operations — respect the auto-populate flag
-                      book.cases.includes(:owner).where(auto_populate_case_judgements: true)
+                      book.cases.where(auto_populate_case_judgements: true)
                     end
-
-    BroadcastLinkedCasesJob.perform_later(book)
 
     kases_to_sync.each do |kase|
       service.sync_ratings_for_case(kase)
-      @counts['queries_created'] += service.queries_created
-      @counts['ratings_created'] = + service.ratings_created
     end
-
+    @counts['queries_created'] = service.queries_created
+    @counts['ratings_created'] = service.ratings_created
     BroadcastLinkedCasesJob.perform_later(book)
     @counts
   end

@@ -2,28 +2,16 @@
 
 # Pin npm packages by running ./bin/importmap
 
-pin 'application_modern'
-# Stimulus-only entry for the Angular core case layout (no Turbo).
-pin 'core_stimulus'
-pin '@hotwired/turbo-rails', to: 'turbo.min.js'
+pin 'application'
+pin '@hotwired/turbo-rails', to: 'turbo.min.js', preload: true
 pin '@hotwired/stimulus', to: 'stimulus.min.js'
 pin '@hotwired/stimulus-loading', to: 'stimulus-loading.js'
+pin 'quepid_store', to: 'quepid_store.js'
+pin 'core_runtime', to: 'core_runtime.js'
 pin_all_from 'app/javascript/controllers', under: 'controllers'
-pin 'api/fetch', to: 'api/fetch.js'
-pin 'utils/quepid_root', to: 'utils/quepid_root.js'
-pin 'utils/bs_tooltip', to: 'utils/bs_tooltip.js'
-pin 'utils/bs_popover', to: 'utils/bs_popover.js'
-pin 'utils/bs_modal', to: 'utils/bs_modal.js'
-pin 'utils/dynamic_modal', to: 'utils/dynamic_modal.js'
-pin 'utils/json_explorer', to: 'utils/json_explorer.js'
-pin 'utils/text_paste', to: 'utils/text_paste.js'
-pin 'utils/count_up', to: 'utils/count_up.js'
-pin 'utils/share_case_teams', to: 'utils/share_case_teams.js'
-pin 'utils/status_message', to: 'utils/status_message.js'
-pin 'utils/destructive_form', to: 'utils/destructive_form.js'
-pin 'utils/case_csv', to: 'utils/case_csv.js'
-pin 'utils/download_file', to: 'utils/download_file.js'
-pin 'utils/stimulus_ui', to: 'utils/stimulus_ui.js'
+pin_all_from 'app/javascript/utils', under: 'utils'
+pin_all_from 'app/javascript/stores', under: 'stores'
+pin_all_from 'app/javascript/api', under: 'api'
 
 pin 'local-time' # @3.0.3
 
@@ -32,7 +20,7 @@ pin 'vega-lite', to: 'vega-lite.js'
 pin 'vega-embed', to: 'vega-embed.js'
 # Shared entry point that loads the three above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (analytics, the Angular core app) can load just this.
+# application.js (analytics and Rails pages) can load just this.
 pin 'vega_globals'
 
 pin 'ahoy', to: 'ahoy.js'
@@ -44,7 +32,7 @@ pin 'bootstrap', to: 'bootstrap.min.js' # @5.3.8
 pin '@popperjs/core', to: 'popper.min.js' # @2.11.8
 # Shared entry point that loads the two above and exposes them as window
 # globals — pinned separately so pages that don't otherwise load
-# application_modern.js (the Angular core app) can load just this.
+# application.js (the core case bundle) can load just this.
 pin 'bootstrap_globals'
 
 # CodeMirror 6 packages
@@ -64,5 +52,8 @@ pin 'style-mod' # @4.1.3
 pin 'w3c-keyname' # @2.2.8
 pin '@codemirror/lang-javascript', to: '@codemirror--lang-javascript.js' # @6.2.5
 pin '@codemirror/autocomplete', to: '@codemirror--autocomplete.js' # @6.20.3
+pin '@codemirror/commands', to: '@codemirror--commands.js' # @6.11.1
 pin '@lezer/javascript', to: '@lezer--javascript.js' # @1.5.4
 pin 'party-js' # @2.2.0
+
+pin 'modules/search_endpoint_select', to: 'modules/search_endpoint_select.js'

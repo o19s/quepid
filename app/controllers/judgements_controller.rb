@@ -27,7 +27,7 @@ class JudgementsController < ApplicationController
   end
 
   def skip_judging
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   # rubocop:disable Metrics/AbcSize
@@ -85,11 +85,10 @@ class JudgementsController < ApplicationController
     end
 
     if @judgement.save
-      broadcast_judgement_change @judgement.query_doc_pair, current_user
-      redirect_to book_judge_path(@book)
+      redirect_to book_judge_path(@book), status: :see_other
     else
       @query_doc_pair = @judgement.query_doc_pair
-      render action: :new
+      render action: :new, status: :unprocessable_content
     end
   end
 
@@ -98,16 +97,14 @@ class JudgementsController < ApplicationController
     @judgement.update(judgement_params)
 
     @judgement.mark_unrateable!
-    broadcast_judgement_change @judgement.query_doc_pair, current_user
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   def judge_later
     @judgement = Judgement.find_or_initialize_by(query_doc_pair_id: params[:query_doc_pair_id], user: current_user)
 
     @judgement.mark_judge_later!
-    broadcast_judgement_change @judgement.query_doc_pair, current_user
-    redirect_to book_judge_path(@book)
+    redirect_to book_judge_path(@book), status: :see_other
   end
 
   def update
@@ -115,31 +112,18 @@ class JudgementsController < ApplicationController
     @judgement.user = current_user
     @judgement.unrateable = false
     if @judgement.save
-      broadcast_judgement_change @judgement.query_doc_pair, current_user
-      redirect_to book_judge_path(@book)
+      redirect_to book_judge_path(@book), status: :see_other
     else
-      render action: :edit
+      render action: :edit, status: :unprocessable_content
     end
   end
 
   def destroy
-    judge = @judgement.user
     @judgement.destroy
-    broadcast_judgement_change @judgement.query_doc_pair, judge
-    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'."
+    redirect_to book_judge_path(@book), notice: "Removed rating for query '#{@judgement.query_doc_pair.query_text}'.", status: :see_other
   end
 
   private
-
-  # Every judgement mutation needs both: sync the case ratings this pair
-  # feeds into, and refresh the book overview's live Judge Activity table.
-  # judge is nil'able (see #destroy, where the judgement's own user may have
-  # been unassigned) - skip the activity broadcast rather than misattribute
-  # it to whoever's currently signed in.
-  def broadcast_judgement_change query_doc_pair, judge
-    UpdateCaseRatingsJob.perform_later query_doc_pair
-    BroadcastJudgeActivityJob.perform_later(@book, judge) if judge
-  end
 
   def set_judgement
     @judgement = @book.judgements.find(params.expect(:id))
@@ -177,12 +161,9 @@ class JudgementsController < ApplicationController
 
     # Apply generic LIKE search for remaining text
     if remaining_text.present?
-      q = "%#{remaining_text.to_s.downcase}%"
-      query = query.where(
-        'query_doc_pair_id = ? OR LOWER(doc_id) LIKE ? OR LOWER(query_text) LIKE ? OR ' \
-        'LOWER(information_need) LIKE ? OR LOWER(judgements.explanation) LIKE ?',
-        remaining_text.to_i, q, q, q, q
-      )
+      query = query.search_by(remaining_text, 'query_doc_pairs.doc_id', 'query_doc_pairs.query_text',
+                              'query_doc_pairs.information_need', 'judgements.explanation')
+        .or(query.where(query_doc_pair_id: remaining_text.to_i))
     end
 
     query

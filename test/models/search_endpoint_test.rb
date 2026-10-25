@@ -31,6 +31,33 @@ require 'support/shared_examples/custom_headers_validatable_examples'
 require 'support/shared_examples/json_options_validatable_examples'
 
 class SearchEndpointTest < ActiveSupport::TestCase
+  test 'universal proxy validates new and existing endpoints without mutating saved settings' do
+    original = Rails.application.config.require_proxy_for_all_search_endpoints
+    endpoint = search_endpoints(:first_for_case_with_two_tries)
+    endpoint.update!(proxy_requests: false, api_method: 'GET')
+    Rails.application.config.require_proxy_for_all_search_endpoints = true
+
+    assert_not endpoint.valid?
+    assert_not_empty endpoint.errors[:proxy_requests]
+    assert_not endpoint.reload.proxy_requests?
+    assert_equal 'GET', endpoint.api_method
+    endpoint.proxy_requests = true
+    assert_predicate endpoint, :valid?
+    endpoint.api_method = 'JSONP'
+    assert_not endpoint.valid?
+    assert_not_empty endpoint.errors[:api_method]
+
+    new_endpoint = SearchEndpoint.new(search_engine: 'solr', endpoint_url: 'http://example.com/select', api_method: 'GET')
+    assert_not new_endpoint.valid?
+    new_endpoint.proxy_requests = true
+    assert_predicate new_endpoint, :valid?
+    Rails.application.config.require_proxy_for_all_search_endpoints = false
+    new_endpoint.proxy_requests = false
+    assert_predicate new_endpoint, :valid?
+  ensure
+    Rails.application.config.require_proxy_for_all_search_endpoints = original
+  end
+
   include CustomHeadersValidatableExamples
   include JsonOptionsValidatableExamples
 
@@ -39,13 +66,34 @@ class SearchEndpointTest < ActiveSupport::TestCase
       endpoint = SearchEndpoint.new endpoint_url: 'http://something'
       assert_not endpoint.valid?
       assert_includes endpoint.errors[:search_engine], "can't be blank"
-
-      assert_raises(StandardError) do
-        endpoint.fullname
-      end
+      assert_equal 'http://something', endpoint.fullname
 
       endpoint.search_engine = 'solr'
       assert_equal 'Solr http://something', endpoint.fullname
+    end
+
+    it 'labels the engine from the SearchEngine catalog' do
+      endpoint = SearchEndpoint.new endpoint_url: 'http://something', search_engine: 'es'
+      assert_equal 'Elasticsearch http://something', endpoint.fullname
+    end
+  end
+
+  describe 'requests_per_minute' do
+    let(:endpoint) { search_endpoints(:for_case_queries_case) }
+
+    it 'accepts zero and ordinary positive values' do
+      [ 0, 60, 100_000 ].each do |value|
+        endpoint.requests_per_minute = value
+        assert_predicate endpoint, :valid?, "#{value} should be valid"
+      end
+    end
+
+    it 'rejects negative, fractional, and out-of-range values instead of storing or crashing on them' do
+      [ -5, 1.5, 100_001, 99_999_999_999 ].each do |value|
+        endpoint.requests_per_minute = value
+        assert_not endpoint.valid?, "#{value} should be invalid"
+        assert_predicate endpoint.errors[:requests_per_minute], :any?
+      end
     end
   end
 

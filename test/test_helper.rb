@@ -1,7 +1,12 @@
 # frozen_string_literal: true
 
-require 'simplecov'
-SimpleCov.start
+# Mutant (config/mutant.yml) loads this helper too; skip coverage there so it doesn't overwrite coverage/.
+unless defined?(Mutant)
+  require 'simplecov'
+  SimpleCov.start do
+    enable_coverage :branch
+  end
+end
 
 ENV['RAILS_ENV'] ||= 'test'
 require_relative '../config/environment'
@@ -9,6 +14,7 @@ require 'rails/test_help'
 require 'minitest/reporters'
 require 'minitest/spec'
 require 'webmock/minitest'
+require 'mutant/minitest/coverage'
 WebMock.disable_net_connect!(allow_localhost: true)
 
 Dir[Rails.root.join('test/support/**/*.rb')]

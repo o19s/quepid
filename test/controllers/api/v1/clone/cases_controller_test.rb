@@ -17,6 +17,30 @@ module Api
         end
 
         describe 'clone' do
+          test 'non-members can clone public sources without changing them' do
+            login_user users(:doug)
+            the_case.mark_public!
+            original = the_case.reload.attributes
+            original_try_count = the_case.tries.count
+            [ the_case.id, the_case.public_id ].each do |case_id|
+              assert_difference 'Case.count', 1 do
+                post :create, params: { case_id: case_id, try_number: the_try.try_number }
+              end
+              assert_response :ok
+              assert_equal users(:doug), assigns(:new_case).owner
+            end
+            assert_equal original, the_case.reload.attributes
+            assert_equal original_try_count, the_case.tries.count
+          end
+
+          test 'non-members cannot clone private sources' do
+            login_user users(:doug)
+            assert_no_difference 'Case.count' do
+              post :create, params: { case_id: the_case.id, try_number: the_try.try_number }
+            end
+            assert_response :not_found
+          end
+
           it 'creates a new case with all of the tries from the original case' do
             assert_difference 'Case.count' do
               assert_difference 'Try.count', the_case.tries.count do
@@ -70,6 +94,24 @@ module Api
                 assert_equal the_try.curator_variables.size, cloned_try.curator_variables.size
               end
             end
+          end
+
+          it 'chooses the newest record when try numbers are duplicated' do
+            duplicate_try = the_try.dup
+            duplicate_try.save!
+
+            assert_difference 'Case.count' do
+              post :create, params: {
+                case_id:    the_case.id,
+                try_number: the_try.try_number,
+              }
+
+              assert_response :ok
+              cloned_case = assigns(:new_case)
+              assert_equal duplicate_try.search_endpoint, cloned_case.tries.latest.search_endpoint
+            end
+          ensure
+            duplicate_try&.destroy!
           end
         end
       end

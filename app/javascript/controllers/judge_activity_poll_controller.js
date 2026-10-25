@@ -1,48 +1,30 @@
+import { apiFetch } from "api/fetch"
 import { Controller } from "@hotwired/stimulus"
 
-// Fallback safety net for BroadcastJudgeActivityJob's live Turbo Stream
-// push: if a broadcast is ever missed (a dropped ActionCable connection, one
-// that fires before this page's subscription is ready, etc.), a row could be
-// left showing as "actively judging" forever with nothing to correct it.
-// While at least one row is actively judging, poll the server periodically
-// and apply its response - cheap self-healing that doesn't depend on the
-// broadcast arriving at all.
-//
-// The poll response is real Turbo Stream HTML (see
-// BooksController#judge_activity), applied via Turbo's own
-// renderStreamMessage - the same per-cell replace targets the live
-// broadcast uses, so polling can never redraw a judge's sparkline chart
-// any more than a broadcast can.
-//
-// A MutationObserver (rather than only checking on connect) means polling
-// also kicks in if a row becomes active later via a live broadcast, and
-// stops itself as soon as the fetched (or broadcast) content shows nothing
-// active anymore - no separate bookkeeping needed to stay in sync with
-// content that can also change out from under this controller.
+// Periodic reconciliation also recovers a missed first-row broadcast on an idle
+// book. Cell updates preserve mounted sparklines while adding/removing rows.
 export default class extends Controller {
   static values = { url: String, intervalMs: { type: Number, default: 5000 } }
 
   connect() {
-    this.observer = new MutationObserver(() => this.scheduleIfNeeded())
-    this.observer.observe(this.element, { childList: true, subtree: true, attributes: true })
-    this.scheduleIfNeeded()
+    this.startPolling()
+    this.reconcileOnSubscribe()
   }
 
   disconnect() {
-    this.observer?.disconnect()
     this.stopPolling()
+    this.streamObserver?.disconnect()
   }
 
-  scheduleIfNeeded() {
-    if (this.hasActiveRow()) {
-      this.startPolling()
-    } else {
-      this.stopPolling()
-    }
-  }
-
-  hasActiveRow() {
-    return this.element.querySelector('[data-actively-judging="true"]') !== null
+  // Broadcasts sent before a stream source (re)subscribes are lost, e.g. a job
+  // finishing during a Turbo visit; reconcile as soon as each one connects.
+  reconcileOnSubscribe() {
+    this.streamObserver = new MutationObserver(records => {
+      if (records.some(record => record.target.hasAttribute("connected"))) this.poll()
+    })
+    document.querySelectorAll("turbo-cable-stream-source").forEach(source => {
+      this.streamObserver.observe(source, { attributes: true, attributeFilter: ["connected"] })
+    })
   }
 
   startPolling() {
@@ -61,11 +43,20 @@ export default class extends Controller {
     const knownJudgeIds = [...this.element.querySelectorAll('[id^="judge-row-"]')]
       .map((row) => row.id.replace("judge-row-", ""))
       .join(",")
-    const url = `${this.urlValue}?known_judge_ids=${knownJudgeIds}`
+    const url = new URL(this.urlValue, window.location.href)
+    url.searchParams.set("known_judge_ids", knownJudgeIds)
 
-    const response = await fetch(url, { headers: { Accept: "text/vnd.turbo-stream.html" } })
-    if (!response.ok) return
-
-    Turbo.renderStreamMessage(await response.text())
+    if (this.inFlight) return
+    this.inFlight = true
+    try {
+      const response = await apiFetch(url, { headers: { Accept: "text/vnd.turbo-stream.html" } })
+      if (!response.ok || !this.element.isConnected) return
+      const html = await response.text()
+      if (this.element.isConnected) Turbo.renderStreamMessage(html)
+    } catch {
+      // A disconnected cable or failed poll recovers on the next interval.
+    } finally {
+      this.inFlight = false
+    }
   }
 }

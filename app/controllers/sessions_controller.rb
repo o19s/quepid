@@ -33,7 +33,7 @@ class SessionsController < ApplicationController
         @user.errors.add(:base,
                          'Unknown email/password combo. Double check you have the correct email address and password, or sign up for a new account.' )
 
-        format.html { render :new }
+        format.html { render :new, status: :unprocessable_content }
         format.json { render json: { reason: @error }, status: :unprocessable_content }
       end
     end
@@ -42,7 +42,7 @@ class SessionsController < ApplicationController
   def destroy
     clear_user_session
 
-    redirect_to sessions_path
+    redirect_to sessions_path, status: :see_other
   end
 
   private

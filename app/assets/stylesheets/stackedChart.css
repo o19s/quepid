@@ -15,10 +15,3 @@
 .stacked-chart-container {
 	padding: 15px;
 }
-
-.stacked-chart-container .nav-tabs li a {
-	font-size: 12px;
-	padding: 8px 10px;
-}
-
-small { font-size: 11px; }

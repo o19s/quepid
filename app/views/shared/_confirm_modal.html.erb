@@ -1,0 +1,20 @@
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true"
+     aria-labelledby="confirmModalLabel" aria-describedby="confirmModalMessage"
+     data-controller="confirm-dialog"
+     data-action="show.bs.modal->confirm-dialog#transition shown.bs.modal->confirm-dialog#transition hide.bs.modal->confirm-dialog#transition hidden.bs.modal->confirm-dialog#transition hidden.bs.modal->confirm-dialog#clear hidden.bs.modal->confirm-dialog#restoreFocus turbo:before-cache@document->confirm-dialog#clear">
+  <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmModalLabel">Confirm</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="confirm-message" id="confirmModalMessage" data-confirm-dialog-target="message"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger confirm-accept" data-confirm-dialog-target="accept" data-action="confirm-dialog#confirm">Confirm</button>
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>

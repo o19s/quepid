@@ -38,6 +38,9 @@ class InstallRailsPulseTables < ActiveRecord::Migration[8.1]
     drop_table :rails_pulse_requests if table_exists?(:rails_pulse_requests)
     drop_table :rails_pulse_routes if table_exists?(:rails_pulse_routes)
     drop_table :rails_pulse_queries if table_exists?(:rails_pulse_queries)
+    drop_table :rails_pulse_exception_occurrences if table_exists?(:rails_pulse_exception_occurrences)
+    drop_table :rails_pulse_exception_groups if table_exists?(:rails_pulse_exception_groups)
+    drop_table :rails_pulse_deployments if table_exists?(:rails_pulse_deployments)
 
     say "Rails Pulse tables dropped successfully"
   end
@@ -45,8 +48,11 @@ class InstallRailsPulseTables < ActiveRecord::Migration[8.1]
   private
 
   def rails_pulse_installed?
-    # Check if core Rails Pulse tables exist
-    # We check for routes and requests as they are foundational tables
-    table_exists?(:rails_pulse_routes) && table_exists?(:rails_pulse_requests)
+    %i[
+      rails_pulse_routes rails_pulse_queries rails_pulse_requests
+      rails_pulse_operations rails_pulse_jobs rails_pulse_job_runs
+      rails_pulse_summaries rails_pulse_deployments
+      rails_pulse_exception_groups rails_pulse_exception_occurrences
+    ].all? { |table| table_exists?(table) }
   end
 end

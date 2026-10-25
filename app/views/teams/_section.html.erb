@@ -1,0 +1,52 @@
+<%# locals: (team:, section:, title:, filters:, pagy:, empty:, placeholder:, search_label:, small: false, archived_label: nil, title_link: nil) %>
+<%# Card shell shared by the team page's cases, books, scorers and search endpoints lists.
+    The block renders the table. `section` names the params this list owns
+    (`<section>_q`, `<section>_archived`, `<section>_page`); the other sections'
+    filters ride along as hidden fields so filtering one list keeps the rest.
+    The filter form and pager reload the show page's `team_lists` frame; other
+    links and buttons in the card navigate the whole page. %>
+<% search_name = :"#{section}_q" %>
+<% archived_name = :"#{section}_archived" %>
+<div class="card">
+  <div class="card-body">
+    <h5 class="card-title">
+      <%= title %>
+      <% if title_link %>
+        <small class="text-muted ms-2">
+          <%= link_to title_link.first, title_link.last, class: "text-decoration-none" %>
+        </small>
+      <% end %>
+    </h5>
+    <div class="mb-3">
+      <%= render layout: "shared/index_filters",
+                 locals: { url: team_path(team), variant: :team, search_name: search_name, search_value: filters[search_name],
+                           placeholder: placeholder, small: small, search_label: search_label,
+                           hidden_fields: filters.except(search_name, archived_name), form_data: { turbo_frame: 'team_lists' } } do %>
+        <% if archived_label %>
+          <% checkbox_id = "#{section.to_s.dasherize}-archived-checkbox" %>
+          <div class="col-auto form-check form-check-inline mb-0 ms-3 ms-md-4">
+            <%= check_box_tag archived_name, '1', filters[archived_name].present?, class: 'form-check-input', id: checkbox_id,
+                              data: { controller: "auto-submit", action: "change->auto-submit#submit" } %>
+            <%= label_tag checkbox_id, archived_label, class: 'form-check-label ms-2' %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="table-responsive">
+      <%= yield %>
+
+      <% if empty %>
+        <div class="text-center text-muted py-3">
+          <p>No <%= title.downcase %> found for this team.</p>
+        </div>
+      <% end %>
+
+      <% if pagy.last > 1 %>
+        <div class="mt-2">
+          <%== pagy.series_nav(:bootstrap, anchor_string: 'data-turbo-frame="team_lists"') %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

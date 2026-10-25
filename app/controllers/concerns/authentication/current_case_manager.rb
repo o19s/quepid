@@ -17,42 +17,38 @@ module Authentication
     # Fetches case that a user can view and query.
     # This includes a case owned by the user, shared with an team owned by
     # the user, or shared with a team shared with the user.   Or even a
-    # public case!
+    # public case, but only for reads: "public" never grants write access.
     def set_case
       case_id = params[:case_id]
       is_encrypted_case_id = !Float(case_id, exception: false)
 
       @case = if is_encrypted_case_id
-                Case.public_cases.find_by(id: decrypt_case_id(case_id))
+                Case.public_cases.find_by(id: decrypt_case_id(case_id)) if public_case_read_access?
               elsif current_user
                 current_user.cases_involved_with.where(id: case_id).first
               end
 
-      @case = Case.public_cases.find_by(id: case_id) if @case.nil? # We didn't find a match, so let's see if it's a public case
+      # We didn't find a match, so let's see if it's a public case
+      @case = Case.public_cases.find_by(id: case_id) if @case.nil? && public_case_read_access?
 
       return if @case
 
       raise ActiveRecord::RecordNotFound.new('Case not found', 'Case', 'id', case_id)
     end
 
+    # Most recently viewed active cases first; never-viewed cases last, newest first.
     def recent_cases count
-      cases = if current_user
-                # case_ids = current_user.case_metadata.order(last_viewed_at: :desc).limit(count).pluck(:case_id)
+      return [] unless current_user
 
-                # map to objects
-                # cases = current_user.cases_involved_with.where(id: case_ids).not_archived
+      current_user.cases_involved_with.not_archived.with_counts
+        .includes([ :metadata ])
+        .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
+                        'case_metadata.last_viewed_at DESC, cases.id DESC'))
+        .limit(count)
+    end
 
-                # the WHERE IN clause doesn't guarantee returning in order, so this sorts the cases in order of last viewing.
-                # cases = cases.sort_by { |x| case_ids.index x.id }
-                current_user.cases_involved_with.not_archived.with_counts
-                  .includes([ :metadata ])
-                  .order(Arel.sql('case_metadata.last_viewed_at IS NULL ASC, ' \
-                                  'case_metadata.last_viewed_at DESC, cases.id DESC'))
-                  .limit(count)
-              else
-                []
-              end
-      cases
+    def public_case_read_access?
+      request.get? || request.head?
     end
 
     def decrypt_case_id encrypted_value

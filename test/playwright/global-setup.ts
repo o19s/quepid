@@ -30,10 +30,15 @@ export default async function globalSetup(_config: FullConfig): Promise<void> {
       'Start the stack first (Docker is the primary workflow), then wait until the app responds in a browser:',
       '  bin/docker s',
       '',
-      'Default base URL is http://localhost:33000 (docker-compose maps app 3000 -> host 33000).',
-      'To use another URL:',
+      'Run the suite IN the container serving the app, so localhost is the app:',
+      '  docker exec -it $(docker ps -qf name=quepid-app-run) yarn test:e2e',
+      '',
+      'A separate container (e.g. `bin/docker r`) cannot reach the app on localhost, and using',
+      'host.docker.internal instead returns a 403 "Blocked hosts" page from Rails.',
+      '',
+      'To point somewhere else:',
       '  QUEPID_BASE_URL=http://127.0.0.1:PORT yarn test:e2e',
-      '  (with RAILS_RELATIVE_URL_ROOT, include the subpath in QUEPID_BASE_URL, e.g. http://localhost:33000/quepid-app)',
+      '  (with RAILS_RELATIVE_URL_ROOT, include the subpath in QUEPID_BASE_URL, e.g. http://localhost:3000/quepid-app)',
     ].join('\n');
     throw new Error(msg);
   } finally {

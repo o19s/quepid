@@ -12,17 +12,14 @@ class ScoresController < ApplicationController
 
     @pagy, @scores = pagy(query.order(:updated_at))
 
-    scorers = @case.scores.includes([ :scorer ]).map(&:scorer).uniq
+    scorers = @case.scores.includes([ :scorer ]).filter_map(&:scorer).uniq
     @scorer_options = scorers.map { |scorer| [ scorer.name, scorer.id ] }
   end
 
   def destroy_multiple
     @case.scores.where(id: params[:score_ids]).destroy_all
     redirect_to case_scores_path(@case, scorer_id: params[:scorer_id]),
+                status: :see_other,
                 notice: 'Selected scores were successfully deleted.'
-  end
-
-  def set_score
-    @score = Score.find(params.expect(:id))
   end
 end

@@ -3,12 +3,6 @@
 repos:
   - repo: local
     hooks:
-      - id: jshint-staged
-        name: jshint
-        entry: bin/jshint-staged
-        language: script
-        files: \.js$
-        pass_filenames: true
       - id: eslint-staged
         name: eslint (app/javascript)
         entry: bin/eslint-staged

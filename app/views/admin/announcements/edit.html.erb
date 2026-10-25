@@ -1,8 +1,8 @@
 <%= page_header "Edit Quepid Announcement" do %>
   <div class="btn-toolbar mb-2 mb-md-0">
     <div class="btn-group me-2">
-      <%= button_to "Delete", admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger', onclick: "return confirm('Are you sure you want to delete this Announcement?');" %>
-      <%= link_to 'Back to Quepid Announcements', admin_announcements_path, method: :get, class:'btn btn-sm btn-outline-secondary' %>
+      <%= button_to "Delete", admin_announcement_path(@announcement), method: :delete, class: 'btn btn-sm btn-outline-danger', form: { data: { turbo_confirm: 'Are you sure you want to delete this Announcement?' } } %>
+      <%= link_to 'Back to Quepid Announcements', admin_announcements_path, class:'btn btn-sm btn-outline-secondary' %>
     </div>
   </div>
 <% end %>
@@ -12,26 +12,9 @@
 
   <div class="card">
     <div class="card-body">
-      <div class="mb-3">
-        <%= form.label :text, class: 'form-label' %>
-        <%= form.text_area :text, required: true, rows: 5, class: 'form-control' %>
-        <div class="form-text">The announcement.  You can use HTML and emojis.</div>
-      </div>
-
-      <div class="mb-3">
-        <%= form.label :publish_date, class: 'form-label' %>
-        <%= form.date_field :publish_date, required: true, class: 'form-control' %>
-        <div class="form-text">The announcement won't be shown to users before this date. Use today's date to publish immediately.</div>
-      </div>
-
-      <div class="mb-3">
-        <%= form.label :expiration_date, class: 'form-label' %>
-        <%= form.date_field :expiration_date, required: true, class: 'form-control' %>
-        <div class="form-text">After this date the announcement will no longer be shown to users.</div>
-      </div>
-
+      <%= render "fields", form: form %>
       <br>
-    
+
       <div class="actions">
         <%= form.submit "Update", class: 'btn btn-sm btn-primary' %>
       </div>

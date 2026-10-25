@@ -7,7 +7,10 @@ module Api
       before_action :set_team, only: [ :index, :create, :destroy ]
 
       def index
-        @cases = @team.cases
+        @cases = @team.cases.with_counts.preload(:owner, :book, :teams,
+                                                 tries: [ :curator_variables, :search_endpoint ])
+        LatestCaseScores.preload(@cases)
+        @sampled_case_scores = CaseScoreSamples.load(@cases)
         respond_with @cases
       end
 
@@ -21,13 +24,9 @@ module Api
           return
         end
 
-        @team.cases << @case unless @team.cases.exists?(@case.id)
-        # if you share a case with a team, you also share it's search endpoint
-        search_endpoint = @case.tries.first&.search_endpoint
-        @team.search_endpoints << search_endpoint if search_endpoint && !@team.search_endpoints.exists?(search_endpoint.id)
+        TeamSharing.new(current_user, @team).share(@case)
 
         if @team.save
-          Analytics::Tracker.track_case_shared_event current_user, @case, @team
           @shallow = true
           respond_with @case
         else
@@ -38,8 +37,8 @@ module Api
       # @summary Remove case from team
       # @parameter id(query) [!Integer] The id of the case to be removed from the team.
       def destroy
-        acase = @team.cases.where(id: params[:id]).all
-        @team.cases.delete(acase) if acase
+        acase = @team.cases.find_by(id: params[:id])
+        TeamSharing.new(current_user, @team).unshare(acase) if acase
 
         head :no_content
       end

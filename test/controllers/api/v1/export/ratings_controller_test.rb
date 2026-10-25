@@ -126,7 +126,7 @@ module Api
             assert_equal csv[0]['query'], the_case.queries[0].query_text
           end
 
-          test 'CSV response should not have a trailing line feed' do
+          test 'CSV response ends with a single line feed, not a blank line' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_case.queries.count + 1 # include csv header line!
 
@@ -134,6 +134,8 @@ module Api
 
             raw_text = response.body
             assert_equal lines_expected, raw_text.lines.size
+            assert raw_text.end_with?("\n")
+            assert_not raw_text.end_with?("\n\n")
           end
 
           test 'adds space when cell begins with =' do
@@ -162,7 +164,30 @@ module Api
           let(:the_case)      { cases(:snapshot_case) }
           let(:the_snapshot)  { snapshots(:a_snapshot) }
 
-          test 'CSV response doesnt have a trailing line feed' do
+          test 'exports current ratings missing ratings and empty snapshot queries with padded rows' do
+            query = the_case.queries.create!(query_text: '=empty')
+            the_snapshot.snapshot_queries.create!(query: query)
+            login_user the_user
+
+            get :show, params: {
+              case_id:     the_case.id,
+              snapshot_id: the_snapshot.id,
+              format:      :csv,
+              file_format: 'basic_snapshot',
+            }
+
+            assert_response :ok
+            rows = CSV.parse(response.body)
+            assert_equal %w[query docid rating], rows.first
+            assert_includes rows, [ 'A Query', 'doc_a', '1.0' ]
+            assert_includes rows, [ 'A Query', 'doc_b', nil ]
+            assert_includes rows, [ ' =empty', nil, nil ]
+            assert(rows.all? { |row| 3 == row.size })
+            assert_match "attachment; filename=\"case_#{the_case.id}_snapshot_judgements.csv\"",
+                         response.headers['Content-Disposition']
+          end
+
+          test 'snapshot CSV response ends with a single line feed, not a blank line' do
             # See https://github.com/o19s/quepid/issues/354
             lines_expected = the_snapshot.snapshot_queries.map do |sq|
               sq.snapshot_docs.count
@@ -174,6 +199,89 @@ file_format: 'basic_snapshot' }
 
             raw_text = response.body
             assert_equal lines_expected, raw_text.lines.size
+            assert raw_text.end_with?("\n")
+            assert_not raw_text.end_with?("\n\n")
+          end
+        end
+
+        describe 'Exporting a case in TREC text format' do
+          let(:the_user)     { users(:random) }
+          let(:the_case)     { cases(:snapshot_case) }
+          let(:the_snapshot) { snapshots(:a_snapshot) }
+
+          test 'TREC snapshot export skips unrated docs instead of failing' do
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, snapshot_id: the_snapshot.id, format: :txt,
+file_format: 'trec_snapshot' }
+
+            assert_response :ok
+            assert_match(/ 0 doc_a 1/, response.body)
+            assert_no_match(/doc_b/, response.body)
+            assert_match "attachment; filename=\"case_#{the_case.id}_trec_snapshot.txt\"",
+                         response.headers['Content-Disposition']
+          end
+
+          test 'TREC export accepts an upper-case file_format' do
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'TREC' }
+
+            assert_response :ok
+          end
+
+          test 'TREC snapshot export uses the first rating when a doc has duplicates' do
+            query = the_case.queries.find_by!(query_text: 'A Query')
+            query.ratings.where(doc_id: 'doc_a').destroy_all
+            query.ratings.create!(doc_id: 'doc_a', rating: 2)
+            query.ratings.create!(doc_id: 'doc_a', rating: 3)
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, snapshot_id: the_snapshot.id, format: :txt,
+file_format: 'trec_snapshot' }
+
+            assert_includes response.body, " 0 doc_a 2.0\n"
+            assert_not_includes response.body, ' 0 doc_a 3.0'
+          end
+
+          test 'TREC snapshot export leaves out a snapshot query that has no docs' do
+            empty_query = the_case.queries.create!(query_text: 'no docs')
+            the_snapshot.snapshot_queries.create!(query: empty_query)
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, snapshot_id: the_snapshot.id, format: :txt,
+file_format: 'trec_snapshot' }
+
+            assert_response :ok
+            assert_not_includes response.body, "#{empty_query.id} 0"
+            assert_match(/ 0 doc_a 1/, response.body)
+          end
+
+          test 'TREC snapshot export returns not found for an unknown snapshot' do
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, snapshot_id: 0, format: :txt, file_format: 'trec_snapshot' }
+
+            assert_response :not_found
+          end
+
+          test 'TREC snapshot export returns not found when the snapshot id is missing' do
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'trec_snapshot' }
+
+            assert_response :not_found
+          end
+
+          test 'TREC case export lists fully rated docs' do
+            query = the_case.queries.first
+            query.ratings.create!(doc_id: 'trec_doc', rating: 3)
+            login_user the_user
+
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'trec' }
+
+            assert_response :ok
+            assert_includes response.body.lines, "#{query.id} 0 trec_doc 3.0\n"
           end
         end
 
@@ -181,21 +289,28 @@ file_format: 'basic_snapshot' }
           let(:the_case) { cases(:one) }
 
           test 'returns case info' do
+            query  = the_case.queries.first
+            rating = query.ratings.create!(doc_id: 'ltr_doc', rating: 3)
+
             get :show, params: { case_id: the_case.id, format: :txt, file_format: 'ltr' }
             assert_response :ok
 
-            # rubocop:disable  Lint/UselessAssignment
-            query  = the_case.queries.first
-            rating = query.ratings.first
-
-            # For whatever reason the response.body is blank.
-            # We want to test both the format of the lines and
-            # that specifically for LTR that the export is based on the qid.
-            # assert response.body.include?("<%=rating.rating%>    qid:<%=query.id%> #    <%=rating.doc_id %> <%=query.query_text%>")
-
-            # rubocop:enable  Lint/UselessAssignment
+            # LTR lines are keyed on the query id.
+            assert_includes response.body, "#{rating.rating} qid:#{query.id} # #{rating.doc_id} #{query.query_text}\n"
 
             assert_equal 'text/plain; charset=utf-8', response.content_type
+          end
+
+          test 'is sent as a named attachment' do
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'ltr' }
+
+            assert_match "attachment; filename=\"case_#{the_case.id}_ltr.txt\"", response.headers['Content-Disposition']
+          end
+
+          test 'rejects an unknown text format' do
+            get :show, params: { case_id: the_case.id, format: :txt, file_format: 'nope' }
+
+            assert_response :bad_request
           end
         end
       end

@@ -35,12 +35,6 @@ class ApiKey < ApplicationRecord
     find_by! token_digest: digest
   end
 
-  def self.authenticate_by_token token
-    authenticate_by_token! token
-  rescue ActiveRecord::RecordNotFound
-    nil
-  end
-
   # Add virtual token attribute to serializable attributes, and exclude
 
   # the token's HMAC digest

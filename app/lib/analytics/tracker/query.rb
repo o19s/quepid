@@ -3,24 +3,24 @@
 module Analytics
   module Tracker
     module Query
-      def track_query_created_event user, query
-        Analytics::Ahoy.user_created_query user, query
+      def track_query_created_event _user, query
+        track 'Queries', 'Created a Query', label: query.query_text, value: query.case.queries.count
       end
 
-      def track_query_deleted_event user, query
-        Analytics::Ahoy.user_deleted_query user, query
+      def track_query_deleted_event _user, query
+        track 'Queries', 'Deleted a Query', label: query.query_text
       end
 
-      def track_query_moved_event user, query, acase
-        Analytics::Ahoy.user_moved_query user, query, acase
+      def track_query_moved_event _user, query, _acase
+        track 'Queries', 'Moved a Query', label: query.query_text
       end
 
-      def track_query_notes_updated_event user, query
-        Analytics::Ahoy.user_updated_query_notes user, query
+      def track_query_notes_updated_event _user, query
+        track 'Queries', 'Updated Query Notes', label: query.query_text
       end
 
-      def track_query_options_updated_event user, query
-        Analytics::Ahoy.user_updated_query_options user, query
+      def track_query_options_updated_event _user, query
+        track 'Queries', 'Updated Query Options', label: query.query_text
       end
     end
   end
