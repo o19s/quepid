@@ -52,7 +52,10 @@ export default class extends withStatusMessages(Controller) {
     if (this.hasExistingMappersValue) {
       this.step2Target.style.display = "block"
       this.step3Target.style.display = "block"
-      this.showStatus("Existing mappers loaded. Fetch HTML to test them, or edit and save directly.", "info")
+      this.showStatus(
+        "Existing mappers loaded. Fetch HTML to test them, or edit and save directly.",
+        "info"
+      )
     }
   }
 
@@ -66,9 +69,15 @@ export default class extends withStatusMessages(Controller) {
 
   // CodeMirror's auto-init attaches each editor to its textarea, possibly after
   // this controller connects, so look editors up when they are used.
-  get numberOfResultsEditor() { return this.editorFor("numberOfResultsMapper") }
-  get docsEditor() { return this.editorFor("docsMapper") }
-  get customHeadersEditor() { return this.editorFor("customHeaders") }
+  get numberOfResultsEditor() {
+    return this.editorFor("numberOfResultsMapper")
+  }
+  get docsEditor() {
+    return this.editorFor("docsMapper")
+  }
+  get customHeadersEditor() {
+    return this.editorFor("customHeaders")
+  }
 
   editorFor(target) {
     const has = this[`has${target[0].toUpperCase()}${target.slice(1)}Target`]
@@ -84,7 +93,8 @@ export default class extends withStatusMessages(Controller) {
     this.testQueryHintTargets.forEach((hint) => {
       const active = hint.dataset.httpMethod === method
       hint.hidden = !active
-      if (active && this.hasTestQueryTarget) this.testQueryTarget.placeholder = hint.dataset.placeholder
+      if (active && this.hasTestQueryTarget)
+        this.testQueryTarget.placeholder = hint.dataset.placeholder
     })
   }
 
@@ -98,12 +108,16 @@ export default class extends withStatusMessages(Controller) {
       return
     }
 
-    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
-    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget 
-      ? (this.customHeadersEditor ? this.customHeadersEditor.getValue().trim() : this.customHeadersTarget.value.trim())
-      : ''
-    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
+    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : "GET"
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ""
+    const customHeaders = this.hasCustomHeadersTarget
+      ? this.customHeadersEditor
+        ? this.customHeadersEditor.getValue().trim()
+        : this.customHeadersTarget.value.trim()
+      : ""
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget
+      ? this.basicAuthCredentialTarget.value.trim()
+      : ""
 
     // Validate custom headers JSON if provided
     if (customHeaders) {
@@ -116,7 +130,7 @@ export default class extends withStatusMessages(Controller) {
     }
 
     // Validate test query is valid JSON for POST requests
-    if (httpMethod === 'POST' && testQuery) {
+    if (httpMethod === "POST" && testQuery) {
       try {
         JSON.parse(testQuery)
       } catch {
@@ -140,7 +154,10 @@ export default class extends withStatusMessages(Controller) {
       if (data.success) {
         this.htmlPreviewTarget.textContent = data.html_preview
         this.htmlPreviewContainerTarget.style.display = "block"
-        this.showStatus(`Response fetched successfully (${data.html_length.toLocaleString()} characters)`, "success")
+        this.showStatus(
+          `Response fetched successfully (${data.html_length.toLocaleString()} characters)`,
+          "success"
+        )
         this.step2Target.style.display = "block"
       } else {
         this.showStatus(data.error || "Failed to fetch response", "error")
@@ -160,7 +177,8 @@ export default class extends withStatusMessages(Controller) {
     try {
       return await postJson(url, body)
     } catch (error) {
-      if (error instanceof HttpError && error.data && typeof error.data === "object") return error.data
+      if (error instanceof HttpError && error.data && typeof error.data === "object")
+        return error.data
       throw error
     }
   }
@@ -182,7 +200,6 @@ export default class extends withStatusMessages(Controller) {
       const data = await this.postWizardJson(this.generateUrlValue, { api_key: apiKey })
 
       if (data.success) {
-
         // Update CodeMirror editors
         if (this.numberOfResultsEditor) {
           this.numberOfResultsEditor.setValue(data.number_of_results_mapper)
@@ -212,7 +229,7 @@ export default class extends withStatusMessages(Controller) {
   async testNumberOfResultsMapper(event) {
     event.preventDefault()
     await this.testMapper(
-      'numberOfResultsMapper',
+      "numberOfResultsMapper",
       this.numberOfResultsEditor,
       this.numberOfResultsMapperTarget,
       this.numberOfResultsResultTarget,
@@ -226,7 +243,7 @@ export default class extends withStatusMessages(Controller) {
   async testDocsMapper(event) {
     event.preventDefault()
     await this.testMapper(
-      'docsMapper',
+      "docsMapper",
       this.docsEditor,
       this.docsMapperTarget,
       this.docsResultTarget,
@@ -236,8 +253,15 @@ export default class extends withStatusMessages(Controller) {
     )
   }
 
-  async testMapper(mapperType, editor, textarea, resultTarget, button, logsTarget, logsContainerTarget) {
-
+  async testMapper(
+    mapperType,
+    editor,
+    textarea,
+    resultTarget,
+    button,
+    logsTarget,
+    logsContainerTarget
+  ) {
     const code = editor ? editor.getValue() : textarea.value
     if (!code.trim()) {
       this.showStatus(`Please enter ${mapperType} code first`, "error")
@@ -280,18 +304,30 @@ export default class extends withStatusMessages(Controller) {
 
     logsContainerTarget.style.display = "block"
 
-    logsTarget.replaceChildren(...logs.map(log => {
-      const levelClass = log.level === 'error' ? 'text-danger' :
-                         log.level === 'warn' ? 'text-warning' :
-                         log.level === 'info' ? 'text-info' : 'text-light'
-      const levelIcon = log.level === 'error' ? '[ERROR]' :
-                        log.level === 'warn' ? '[WARN]' :
-                        log.level === 'info' ? '[INFO]' : '[LOG]'
-      const line = document.createElement("div")
-      line.className = levelClass
-      line.textContent = `${levelIcon} ${log.message ?? ""}`
-      return line
-    }))
+    logsTarget.replaceChildren(
+      ...logs.map((log) => {
+        const levelClass =
+          log.level === "error"
+            ? "text-danger"
+            : log.level === "warn"
+              ? "text-warning"
+              : log.level === "info"
+                ? "text-info"
+                : "text-light"
+        const levelIcon =
+          log.level === "error"
+            ? "[ERROR]"
+            : log.level === "warn"
+              ? "[WARN]"
+              : log.level === "info"
+                ? "[INFO]"
+                : "[LOG]"
+        const line = document.createElement("div")
+        line.className = levelClass
+        line.textContent = `${levelIcon} ${log.message ?? ""}`
+        return line
+      })
+    )
   }
 
   // A mapper test result; text is set as text, never parsed as markup
@@ -305,10 +341,12 @@ export default class extends withStatusMessages(Controller) {
   // Refine numberOfResultsMapper with AI
   async refineNumberOfResultsMapper(event) {
     event.preventDefault()
-    const feedback = prompt("What would you like to improve about the numberOfResultsMapper function?")
+    const feedback = prompt(
+      "What would you like to improve about the numberOfResultsMapper function?"
+    )
     if (feedback) {
       await this.refineMapper(
-        'numberOfResultsMapper',
+        "numberOfResultsMapper",
         this.numberOfResultsEditor,
         this.numberOfResultsMapperTarget,
         feedback,
@@ -323,7 +361,7 @@ export default class extends withStatusMessages(Controller) {
     const feedback = prompt("What would you like to improve about the docsMapper function?")
     if (feedback) {
       await this.refineMapper(
-        'docsMapper',
+        "docsMapper",
         this.docsEditor,
         this.docsMapperTarget,
         feedback,
@@ -379,13 +417,10 @@ export default class extends withStatusMessages(Controller) {
       return
     }
 
-
     const numberOfResultsMapper = this.numberOfResultsEditor
       ? this.numberOfResultsEditor.getValue()
       : this.numberOfResultsMapperTarget.value
-    const docsMapper = this.docsEditor
-      ? this.docsEditor.getValue()
-      : this.docsMapperTarget.value
+    const docsMapper = this.docsEditor ? this.docsEditor.getValue() : this.docsMapperTarget.value
 
     if (!numberOfResultsMapper.trim() || !docsMapper.trim()) {
       this.showStatus("Both mapper functions are required", "error")
@@ -395,16 +430,20 @@ export default class extends withStatusMessages(Controller) {
     this.setButtonLoading(this.saveButtonTarget, true)
     this.showStatus("Saving search endpoint...", "info")
 
-    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : 'GET'
-    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ''
-    const customHeaders = this.hasCustomHeadersTarget 
-      ? (this.customHeadersEditor ? this.customHeadersEditor.getValue().trim() : this.customHeadersTarget.value.trim())
-      : ''
-    const basicAuthCredential = this.hasBasicAuthCredentialTarget ? this.basicAuthCredentialTarget.value.trim() : ''
+    const httpMethod = this.hasHttpMethodTarget ? this.httpMethodTarget.value : "GET"
+    const testQuery = this.hasTestQueryTarget ? this.testQueryTarget.value.trim() : ""
+    const customHeaders = this.hasCustomHeadersTarget
+      ? this.customHeadersEditor
+        ? this.customHeadersEditor.getValue().trim()
+        : this.customHeadersTarget.value.trim()
+      : ""
+    const basicAuthCredential = this.hasBasicAuthCredentialTarget
+      ? this.basicAuthCredentialTarget.value.trim()
+      : ""
 
     // Collect checked team IDs
     const teamIds = this.hasTeamCheckboxTarget
-      ? this.teamCheckboxTargets.filter(cb => cb.checked).map(cb => parseInt(cb.value))
+      ? this.teamCheckboxTargets.filter((cb) => cb.checked).map((cb) => parseInt(cb.value))
       : []
 
     try {
@@ -488,10 +527,12 @@ export default class extends withStatusMessages(Controller) {
     this.statusTarget.style.display = "block"
     this.showStatusMessage(this.statusTarget, {
       message,
-      className: `alert alert-${type === 'error' ? 'danger' : type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'}`,
+      className: `alert alert-${type === "error" ? "danger" : type === "success" ? "success" : type === "warning" ? "warning" : "info"}`,
       // Auto-hide success messages after 5 seconds
-      autoHideMs: type === 'success' ? 5000 : undefined,
-      onExpire: (el) => { el.style.display = "none" }
+      autoHideMs: type === "success" ? 5000 : undefined,
+      onExpire: (el) => {
+        el.style.display = "none"
+      }
     })
   }
 
@@ -499,7 +540,8 @@ export default class extends withStatusMessages(Controller) {
     if (loading) {
       button.disabled = true
       button.dataset.originalText = button.innerHTML
-      button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
+      button.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
     } else {
       button.disabled = false
       button.innerHTML = button.dataset.originalText || button.innerHTML

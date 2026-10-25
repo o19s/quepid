@@ -47,12 +47,11 @@ export default class extends Controller {
     this.store = this.coreStores.scoring
     this.diffRefreshGeneration = 0
     this.onStoreChange = () => this.renderScore()
-    this.onScoringComplete = event => {
+    this.onScoringComplete = (event) => {
       this.persistScore(event.detail)
       this.refreshCaseDiffScores()
     }
     this.onRatingChanged = () => this.refreshCaseDiffScores({ refreshQueries: true })
-
   }
 
   connect() {
@@ -108,7 +107,8 @@ export default class extends Controller {
       scoreInfo.score === -1 ||
       !queries ||
       Object.keys(queries).length === 0
-    ) return
+    )
+      return
 
     if (!this.hasScoreUrlValue || !this.scoreUrlValue) return
 
@@ -127,13 +127,17 @@ export default class extends Controller {
       )
     }
 
-    return putJson(this.scoreUrlValue, { case_score: scoreData }).then(() => {
-      document.dispatchEvent(new CustomEvent(CORE_EVENTS.CASE_SCORE_PERSISTED, {
-        detail: { caseId: this.caseIdValue }
-      }))
-    }).catch(error => {
-      console.error("qscore-case: score persistence failed", error)
-    })
+    return putJson(this.scoreUrlValue, { case_score: scoreData })
+      .then(() => {
+        document.dispatchEvent(
+          new CustomEvent(CORE_EVENTS.CASE_SCORE_PERSISTED, {
+            detail: { caseId: this.caseIdValue }
+          })
+        )
+      })
+      .catch((error) => {
+        console.error("qscore-case: score persistence failed", error)
+      })
   }
 
   async refreshCaseDiffScores({ refreshQueries = false, failed = false } = {}) {

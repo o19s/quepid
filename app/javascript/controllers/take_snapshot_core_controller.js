@@ -40,7 +40,8 @@ export default class extends CoreModalControllerBase {
     if (this.hasRecordFieldsCheckboxTarget) this.recordFieldsCheckboxTarget.checked = false
     if (this.hasFieldSpecTarget) this.fieldSpecTarget.textContent = fieldSpec
     if (this.hasEngineNameTarget) {
-      this.engineNameTarget.textContent = mapperName || searchEngineLabel(this.engineLabelsValue, searchEngine)
+      this.engineNameTarget.textContent =
+        mapperName || searchEngineLabel(this.engineLabelsValue, searchEngine)
     }
 
     this.toggleVisible("lookupFields", this.supportsLookup)

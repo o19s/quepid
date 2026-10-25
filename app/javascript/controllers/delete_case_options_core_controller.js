@@ -23,7 +23,7 @@ const ACTION_METHODS = {
  * The toolbar trigger carries the case id.
  */
 export default class extends CoreModalControllerBase {
-  static targets = [ "title", "optionButton", "description", "submitButton" ]
+  static targets = ["title", "optionButton", "description", "submitButton"]
 
   static values = {
     archiveUrlTemplate: String,
@@ -36,7 +36,9 @@ export default class extends CoreModalControllerBase {
     const caseName = caseNameFromHeader()
 
     this.currentCaseId = caseId || ""
-    this.titleTarget.textContent = caseName ? `Delete Options for Case: ${caseName}` : "Delete Options for Case"
+    this.titleTarget.textContent = caseName
+      ? `Delete Options for Case: ${caseName}`
+      : "Delete Options for Case"
 
     this.selectedAction = null
     this._refreshUI()
@@ -59,14 +61,18 @@ export default class extends CoreModalControllerBase {
     this.submitButtonTarget.disabled = true
     this.hide()
     try {
-      const result = ACTION_METHODS[action] === "post" ? await postJson(url, {}) : await deleteJson(url)
+      const result =
+        ACTION_METHODS[action] === "post" ? await postJson(url, {}) : await deleteJson(url)
       window.location.assign(result.redirect_url)
     } catch (error) {
       if (error.status === 401 && error.data?.redirect_url) {
         window.location.assign(error.data.redirect_url)
         return
       }
-      coreFlash.show("error", serverMessage(error, `Could not ${ACTION_LABELS[action].toLowerCase()}. Please try again.`))
+      coreFlash.show(
+        "error",
+        serverMessage(error, `Could not ${ACTION_LABELS[action].toLowerCase()}. Please try again.`)
+      )
     } finally {
       this.submitting = false
       this._refreshUI()

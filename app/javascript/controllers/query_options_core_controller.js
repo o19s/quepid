@@ -32,7 +32,9 @@ export default class extends CoreModalControllerBase {
   openFor(button) {
     this.openGeneration = (this.openGeneration || 0) + 1
     this.queryId = button?.closest("[data-query-id]")?.dataset.queryId || ""
-    this.saveUrl = this.queryId ? this.saveUrlTemplateValue.replaceAll("__QUERY_ID__", this.queryId) : ""
+    this.saveUrl = this.queryId
+      ? this.saveUrlTemplateValue.replaceAll("__QUERY_ID__", this.queryId)
+      : ""
     const options = getCoreCapabilities().queryCapabilities?.getQuery?.(this.queryId)?.options
 
     if (this.editor) this.editor.setValue(JSON.stringify(options || {}, null, 2))
@@ -64,9 +66,11 @@ export default class extends CoreModalControllerBase {
     try {
       await putJson(saveUrl, { query: { options } })
 
-      document.dispatchEvent(new CustomEvent(CORE_EVENTS.QUERY_OPTIONS_SAVED, {
-        detail: { queryId, options }
-      }))
+      document.dispatchEvent(
+        new CustomEvent(CORE_EVENTS.QUERY_OPTIONS_SAVED, {
+          detail: { queryId, options }
+        })
+      )
       if (generation !== this.openGeneration) return
       coreFlash.show("notice", "Query options saved successfully.")
       this.hide()

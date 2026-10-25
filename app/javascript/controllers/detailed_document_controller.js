@@ -3,7 +3,16 @@ import { sanitizeDocumentHtml } from "utils/detailed_document_modal"
 import { renderJsonExplorer } from "utils/json_explorer"
 
 export default class extends Controller {
-  static targets = ["docId", "fields", "rawFields", "viewButton", "viewLabel", "tab", "queryContext", "queryText"]
+  static targets = [
+    "docId",
+    "fields",
+    "rawFields",
+    "viewButton",
+    "viewLabel",
+    "tab",
+    "queryContext",
+    "queryText"
+  ]
   static values = { linkUrl: String, engineLabels: Object }
 
   connect() {
@@ -11,7 +20,13 @@ export default class extends Controller {
     if (data) this.render(data)
   }
 
-  render({ doc, linkUrl = null, queryText = "", searchEngine = null, mapperBasedSearchEngineName = null }) {
+  render({
+    doc,
+    linkUrl = null,
+    queryText = "",
+    searchEngine = null,
+    mapperBasedSearchEngineName = null
+  }) {
     this.linkUrlValue = linkUrl || ""
     const subs = doc.subs || {}
     const translations = doc.translations || {}
@@ -41,7 +56,12 @@ export default class extends Controller {
 
     const subRows = Object.entries(subs).map(([name, value], index) => {
       const isObject = value !== null && typeof value === "object" && !Array.isArray(value)
-      return { name, value: Array.isArray(value) ? value.join(",") : value, rawValue: isObject ? value : null, index }
+      return {
+        name,
+        value: Array.isArray(value) ? value.join(",") : value,
+        rawValue: isObject ? value : null,
+        index
+      }
     })
 
     this.docIdTarget.textContent = doc.id
@@ -50,7 +70,11 @@ export default class extends Controller {
     const fields = this.fieldsTarget
     fields.replaceChildren()
     subRows.forEach((row) => {
-      const field = fieldRow(row.name, row.rawValue === null ? row.value : "", row.rawValue === null)
+      const field = fieldRow(
+        row.name,
+        row.rawValue === null ? row.value : "",
+        row.rawValue === null
+      )
       if (row.rawValue !== null) {
         field.content.dataset.detailedDocSubJsonIndex = String(row.index)
         renderJsonExplorer(field.content, JSON.stringify(row.rawValue), { collapsed: false })
@@ -65,13 +89,16 @@ export default class extends Controller {
     if (hasImage) fields.appendChild(fieldRow("Image", doc.image).row)
 
     renderJsonExplorer(this.rawFieldsTarget, JSON.stringify(rawFields), { collapsed: false })
-    const engineName = (searchEngine === "searchapi" && mapperBasedSearchEngineName) || this.engineLabelsValue?.[searchEngine] || "Search Engine"
+    const engineName =
+      (searchEngine === "searchapi" && mapperBasedSearchEngineName) ||
+      this.engineLabelsValue?.[searchEngine] ||
+      "Search Engine"
     this.viewLabelTarget.textContent = `View Document on ${engineName}`
     this.viewButtonTarget.toggleAttribute("disabled", !linkUrl)
   }
 
   disconnect() {
-    this.tabTargets.forEach(element => window.bootstrap?.Tab?.getInstance(element)?.dispose())
+    this.tabTargets.forEach((element) => window.bootstrap?.Tab?.getInstance(element)?.dispose())
   }
 
   view() {

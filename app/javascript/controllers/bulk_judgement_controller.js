@@ -18,9 +18,10 @@ export default class extends withStatusMessages(Controller) {
   connect() {
     this.saveTimeouts = new Map()
     this.savedExplanations = new Map(
-      [...this.element.querySelectorAll("textarea[data-query-doc-pair-id]")].map((field) =>
-        [field.dataset.queryDocPairId, field.value]
-      )
+      [...this.element.querySelectorAll("textarea[data-query-doc-pair-id]")].map((field) => [
+        field.dataset.queryDocPairId,
+        field.value
+      ])
     )
   }
 
@@ -40,7 +41,7 @@ export default class extends withStatusMessages(Controller) {
     try {
       await deleteJson(this.deleteUrlValue, {
         query_doc_pair_id: queryDocPairId
-        })
+      })
 
       this.clearRatingUI(queryDocPairId)
       this.showStatus(queryDocPairId, "reset")
@@ -62,20 +63,22 @@ export default class extends withStatusMessages(Controller) {
   clearRatingUI(queryDocPairId) {
     // Clear radio button selection
     const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
-    radios.forEach(radio => {
+    radios.forEach((radio) => {
       radio.checked = false
     })
 
     // Remove btn-preselected class from all labels for this query_doc_pair
-    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
-    labels.forEach(label => {
-      label.classList.remove('btn-preselected')
+    const labels = this.element.querySelectorAll(
+      `#qdp_${queryDocPairId} .rating-buttons-container label`
+    )
+    labels.forEach((label) => {
+      label.classList.remove("btn-preselected")
     })
 
     // Clear explanation field
     const explanationField = this.element.querySelector(`#explanation_${queryDocPairId}`)
     if (explanationField) {
-      explanationField.value = ''
+      explanationField.value = ""
     }
     this.savedExplanations.set(queryDocPairId, "")
   }
@@ -102,7 +105,7 @@ export default class extends withStatusMessages(Controller) {
         query_doc_pair_id: queryDocPairId,
         rating: rating,
         explanation: explanation
-        })
+      })
 
       this.savedExplanations.set(queryDocPairId, explanation)
       this.showStatus(queryDocPairId, "saved")
@@ -123,69 +126,78 @@ export default class extends withStatusMessages(Controller) {
     this.showStatus(queryDocPairId, "typing")
 
     // Debounce the save
-    this.saveTimeouts.set(queryDocPairId, setTimeout(async () => {
-      this.saveTimeouts.delete(queryDocPairId)
-      // Get current rating if it exists
-      const checkedRating = this.element.querySelector(
-        `input[name="judgement_${queryDocPairId}"]:checked`
-      )
+    this.saveTimeouts.set(
+      queryDocPairId,
+      setTimeout(async () => {
+        this.saveTimeouts.delete(queryDocPairId)
+        // Get current rating if it exists
+        const checkedRating = this.element.querySelector(
+          `input[name="judgement_${queryDocPairId}"]:checked`
+        )
 
-      const rating = checkedRating ? checkedRating.value : null
-      const explanation = field.value
+        const rating = checkedRating ? checkedRating.value : null
+        const explanation = field.value
 
-      // An untouched empty field needs no write; clearing saved text does.
-      if (!rating && !explanation.trim() && !this.savedExplanations.get(queryDocPairId)?.trim()) {
-        this.showStatus(queryDocPairId, "")
-        return
-      }
+        // An untouched empty field needs no write; clearing saved text does.
+        if (!rating && !explanation.trim() && !this.savedExplanations.get(queryDocPairId)?.trim()) {
+          this.showStatus(queryDocPairId, "")
+          return
+        }
 
-      this.showStatus(queryDocPairId, "saving")
+        this.showStatus(queryDocPairId, "saving")
 
-      try {
-        await postJson(this.saveUrlValue, {
-          query_doc_pair_id: queryDocPairId,
-          rating: rating,
-          explanation: explanation
+        try {
+          await postJson(this.saveUrlValue, {
+            query_doc_pair_id: queryDocPairId,
+            rating: rating,
+            explanation: explanation
           })
 
-        this.savedExplanations.set(queryDocPairId, explanation)
-        this.showStatus(queryDocPairId, "saved")
-      } catch (error) {
-        this.showStatus(queryDocPairId, "error")
-        console.error("Error saving explanation:", error)
-      }
-    }, 1000)) // Wait 1 second after typing stops
+          this.savedExplanations.set(queryDocPairId, explanation)
+          this.showStatus(queryDocPairId, "saved")
+        } catch (error) {
+          this.showStatus(queryDocPairId, "error")
+          console.error("Error saving explanation:", error)
+        }
+      }, 1000)
+    ) // Wait 1 second after typing stops
   }
 
   updateRatingButtons(queryDocPairId, selectedRating) {
     // Update radio button state and handle btn-preselected class
     const radios = this.element.querySelectorAll(`input[name="judgement_${queryDocPairId}"]`)
-    const labels = this.element.querySelectorAll(`#qdp_${queryDocPairId} .rating-buttons-container label`)
-    
+    const labels = this.element.querySelectorAll(
+      `#qdp_${queryDocPairId} .rating-buttons-container label`
+    )
+
     // First remove btn-preselected from all labels
-    labels.forEach(label => {
-      label.classList.remove('btn-preselected')
+    labels.forEach((label) => {
+      label.classList.remove("btn-preselected")
     })
-    
+
     // Then update radio states and add btn-preselected to selected button
-    radios.forEach(radio => {
+    radios.forEach((radio) => {
       if (radio.value === selectedRating) {
         radio.checked = true
         // Find the corresponding label and add btn-preselected class
         const label = this.element.querySelector(`label[for="${radio.id}"]`)
         if (label) {
-          label.classList.add('btn-preselected')
+          label.classList.add("btn-preselected")
         }
       }
     })
   }
 
   showResetButton(queryDocPairId) {
-    const existingButton = this.element.querySelector(`button[data-query-doc-pair-id="${queryDocPairId}"][data-action*="resetRating"]`)
+    const existingButton = this.element.querySelector(
+      `button[data-query-doc-pair-id="${queryDocPairId}"][data-action*="resetRating"]`
+    )
 
     if (!existingButton) {
       // Create reset button dynamically
-      const ratingContainer = this.element.querySelector(`#qdp_${queryDocPairId} .rating-buttons .d-flex`)
+      const ratingContainer = this.element.querySelector(
+        `#qdp_${queryDocPairId} .rating-buttons .d-flex`
+      )
       if (ratingContainer) {
         const resetButton = this.resetButtonTemplateTarget.content.firstElementChild.cloneNode(true)
         resetButton.dataset.queryDocPairId = queryDocPairId

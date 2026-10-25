@@ -23,5 +23,8 @@ export function relativeTime(value, now = Date.now()) {
   if (Number.isNaN(date.getTime())) return ""
   const deltaSeconds = Math.round((date.getTime() - now) / 1000)
   const [unit, seconds] = UNITS.find(([, size]) => Math.abs(deltaSeconds) >= size) || ["second", 1]
-  return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(Math.round(deltaSeconds / seconds), unit)
+  return new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
+    Math.round(deltaSeconds / seconds),
+    unit
+  )
 }

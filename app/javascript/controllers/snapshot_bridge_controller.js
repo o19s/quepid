@@ -40,7 +40,10 @@ export default class extends Controller {
   }
 
   refreshAllDiffs() {
-    return getCoreCapabilities().queryCapabilities?.refreshAllDiffs?.() || Promise.reject(new Error("Query diff services are not available"))
+    return (
+      getCoreCapabilities().queryCapabilities?.refreshAllDiffs?.() ||
+      Promise.reject(new Error("Query diff services are not available"))
+    )
   }
 
   async registerSnapshots(payloads) {
@@ -53,9 +56,11 @@ export default class extends Controller {
     }
 
     const currentSettings = settings.editable()
-    const useSnapshotScopedCache = currentSettings && Object.keys(currentSettings).length > 0 && (
-      currentSettings.searchEngine === "static" || settings.supportsLookupById(currentSettings.searchEngine) === false
-    )
+    const useSnapshotScopedCache =
+      currentSettings &&
+      Object.keys(currentSettings).length > 0 &&
+      (currentSettings.searchEngine === "static" ||
+        settings.supportsLookupById(currentSettings.searchEngine) === false)
     const hydration = registerAndHydrateSnapshots({
       snapshots: payloads,
       registry,
@@ -64,27 +69,27 @@ export default class extends Controller {
       createFieldSpec: fieldSpec.create,
       rootUrl: navigation.rootUrl(),
       caseNo: navigation.caseNo(),
-      addDocIds: ids => docCache.addIds(ids),
+      addDocIds: (ids) => docCache.addIds(ids),
       addScopedDocIds: (ids, scope) => docCache.addIds(ids, scope),
-      clearScopedDocs: scope => docCache.empty(scope),
+      clearScopedDocs: (scope) => docCache.empty(scope),
       updateDocs: (hydrationSettings, scope) => docCache.update(hydrationSettings, scope),
-      createModel: options => {
+      createModel: (options) => {
         const getDoc = useSnapshotScopedCache
-          ? id => docCache.getDoc(id, options.params.id)
+          ? (id) => docCache.getDoc(id, options.params.id)
           : options.getDoc
 
         return createSnapshotModel({
           params: options.params,
           getDoc,
           explainDoc: options.explainDoc,
-          formatDate: time => new Date(time).toLocaleDateString("en-US"),
+          formatDate: (time) => new Date(time).toLocaleDateString("en-US"),
           log: options.log
         })
       },
       getDoc: docCache.getDoc,
       explainDoc: documents.explain,
-      formatDate: time => new Date(time).toLocaleDateString("en-US"),
-      log: message => console.debug(message)
+      formatDate: (time) => new Date(time).toLocaleDateString("en-US"),
+      log: (message) => console.debug(message)
     })
 
     await hydration.promise
@@ -126,7 +131,9 @@ export default class extends Controller {
     if (!snapshotsUrl) throw new Error("Snapshot comparison services are not available")
 
     const payloads = await Promise.all(
-      selections.map((snapshotId) => fetchSnapshot(`${snapshotsUrl}/${encodeURIComponent(snapshotId)}`))
+      selections.map((snapshotId) =>
+        fetchSnapshot(`${snapshotsUrl}/${encodeURIComponent(snapshotId)}`)
+      )
     )
     await this.registerSnapshots(payloads)
     this.diffStore().enable(selections)

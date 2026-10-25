@@ -27,7 +27,8 @@ export default class extends Controller {
   static values = { headerUrl: String }
 
   connect() {
-    if (window.quepidCoreBootstrap?.ready || window.quepidCoreBootstrap?.actionsAvailable) this.showActions()
+    if (window.quepidCoreBootstrap?.ready || window.quepidCoreBootstrap?.actionsAvailable)
+      this.showActions()
   }
 
   // Also the `core-bootstrap` outlet API, called once the case runtime is ready.
@@ -96,5 +97,4 @@ export default class extends Controller {
 
     if (display) display.textContent = caseName
   }
-
 }

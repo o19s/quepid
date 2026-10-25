@@ -1,9 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import {
-  createBsTooltip,
-  disposeBsTooltip,
-  updateBsTooltipContent
-} from "utils/bs_tooltip"
+import { createBsTooltip, disposeBsTooltip, updateBsTooltipContent } from "utils/bs_tooltip"
 
 /** BS5 tooltip for Rails and core case pages. */
 export default class extends Controller {
