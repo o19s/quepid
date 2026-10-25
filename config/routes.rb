@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   mount ActionCable.server => '/cable'
   mount ActiveStorageDB::Engine => '/active_storage_db'
   mount OasRails::Engine => '/api/docs'
+  # MCP server (app/mcp/), only when MCP_SERVER=true. See docs/mcp_server.md.
+  mount RorMcp::Engine, at: '/mcp' if Rails.application.config.x.mcp_server_enabled
 
   # Render dynamic PWA files from app/views/pwa/*
   # get 'service-worker' => 'rails/pwa#service_worker', as: :pwa_service_worker
