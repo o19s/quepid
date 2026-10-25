@@ -31,6 +31,39 @@ surface after it merges, checking the final shipped contract against its
 This prerequisite is for Relevance Factory; #1827 remains the calibration prerequisite for
 auto-tuning itself.
 
+### 1.1 Decision — MCP is the primary Relevance Factory interface
+
+**Choose the MCP server from #1847 as the primary interface for Relevance Factory agents.**
+Extend it with workflow commands and structured status/results. Keep the existing HTTP API for
+its current consumers; add HTTP workflow endpoints only when a concrete client needs them.
+Delivering two complete external workflow interfaces is not a prerequisite for this project.
+
+The choice is between Quepid's existing HTTP/JSON routes and its MCP interface, which also runs
+over HTTP. Both require new calibration/auto-tuning operations. The existing API has
+[OpenAPI documentation](../../config/initializers/oas_rails.rb); MCP adds standard tool discovery
+(`tools/list`), descriptions, input schemas and invocation (`tools/call`), with optional schemas
+for structured results. [MCP tools specification](https://modelcontextprotocol.io/specification/2026-07-28/server/tools),
+[transport specification](https://modelcontextprotocol.io/specification/2026-07-28/basic/transports).
+
+| Consideration | Extend the existing HTTP API | Extend #1847's MCP server |
+| --- | --- | --- |
+| Agent integration | Reuses routes and OpenAPI; agents can call it through HTTP tools or an OpenAPI adapter. Each client still needs a way to expose those operations to its agent. | Compatible MCP clients discover and invoke the same named tools. This is the main advantage for multiple agent hosts; descriptions must still explain the workflow well. |
+| Reuse and delivery | Existing controllers, bearer authentication and HTTP tooling are familiar. New workflow endpoints and agent integration still need building. | Reuses #1847's client connection, scoped collections and tool framework. New workflow tools still need building, and delivery depends on merging and enabling #1847. |
+| Fixed scripts and debugging | A straightforward choice for deterministic scripts, ordinary HTTP clients and route-level diagnostics, without an MCP dependency. | Adds JSON-RPC/tool envelopes, client compatibility testing and the MCP server dependency. Tool names and correlation ids need logging because requests share `/mcp`. |
+| Results and long jobs | JSON status endpoints and polling are simple, but durable jobs, retry rules and progress semantics are application work. | Tool results and status reads fit an agent's interaction model. MCP likewise does not supply this project's durable job lifecycle, budgets or recovery guarantees. |
+| Access control | Reuses existing user/book access. Restricted delegation and held-out-data protection still need design. | Reuses #1847's user scoping and field allowlists. MCP is not inherently more secure; the same delegation and held-out-data requirements apply across both interfaces. |
+
+**Conclusion: MCP is the better default for this project.** Relevance Factory is intended to be
+driven by agents, and #1847 already establishes their Quepid connection. Building the workflow
+there lets compatible agent hosts share one integration for discovery, inspection and commands,
+avoiding per-host API-to-tool adapters. That benefit outweighs MCP's extra protocol and compatibility
+work here; it is an architectural judgement, not a measured latency or token-cost advantage.
+Pin and test the protocol/client versions supported by the merged server.
+
+Expose domain commands such as start, cancel, finalise and Apply through the shared command
+layer below. Do not ask an agent to assemble state transitions through generic record writes.
+Any later HTTP adapter must call those same commands, rather than become a second workflow.
+
 ## 2. Build the shared boundary in auto-tuning
 
 - **One command layer.** The Calibration UI, built-in Ruby tuner, optional GEPA worker and future
@@ -59,7 +92,7 @@ auto-tuning itself.
 
 ## 3. Future external control surface
 
-These are conceptual operations, not endpoints implemented by this ADR:
+These are conceptual MCP operations, not implemented tool names or HTTP endpoints:
 
 | Operation | Observable result and control boundary |
 | --- | --- |
@@ -87,8 +120,8 @@ to the prompt/report artifacts. Preserve metric denominators, undefined figures 
 coverage; an agent must distinguish a finished evaluation from a usable improvement. Reports
 must say whether agreement is against humans or the selected advanced LLM reference.
 
-Durable state reads and polling are sufficient for the first external API. A later event feed or
-webhook delivery should carry session/revision/event ids so clients can deduplicate and catch up
+Durable state reads through MCP tools and polling are sufficient for the first delivery. A later
+event feed or webhook delivery should carry session/revision/event ids so clients can deduplicate and catch up
 after disconnects; it is a notification of persisted state, not its only record. Choose event
 delivery, retention and ordering guarantees during this project rather than treating Turbo
 broadcasts as an integration protocol.
@@ -99,11 +132,11 @@ and book/judge access rules. The current [API key model](../../app/models/api_ke
 to a user and has no per-operation scope model; scoped service identities and delegated Apply
 permissions are follow-on design work, not assumed capabilities. API responses and events must
 omit provider credentials, enforce the session's held-out-data boundary and expose document
-content only within the caller's access. Follow the existing [API routing](../../config/routes.rb)
-and [HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions), with documented,
-versioned JSON schemas. Add calibration/tuning collections and command tools to #1847's MCP
-server; JSON API adapters and MCP tools invoke the same command layer and result projections.
-Neither transport owns another state machine.
+content only within the caller's access. Add calibration/tuning collections and command tools
+to #1847's MCP server, with documented, versioned input and result schemas. If an HTTP adapter
+is needed, follow the existing [API routing](../../config/routes.rb) and
+[HTTP conventions](../../DEVELOPER_GUIDE.md#stimulus-http-conventions). Both invoke the same
+command layer and result projections; neither transport owns another state machine.
 
 An ordinary book-owner token can also read original labels through existing REST endpoints or
 #1847's [judgement collection](https://github.com/o19s/quepid/blob/781771e4a262a8a30dc389538d1afed3b91700fa/app/mcp/judgement_collection.rb).
@@ -119,10 +152,10 @@ revision/retry semantics and structured results above. Keep external transport c
 the core. This makes UI-led delivery compatible with later unattended operation.
 
 **In the Relevance Factory project:** first merge #1847, then extend its MCP surface
-with the workflow commands above and add JSON API access for other clients as needed. Specify
+with the workflow commands above. Add HTTP API access only for a demonstrated client need. Specify
 capability discovery, authentication/delegation and event transport if needed. Prove that a
-cookie-free client can drive both reference target types from planning through
-evaluation and authorised application, reconnect by id, repeat a command without duplicate work,
+cookie-free MCP client can discover the workflow tools and drive both reference target types
+from planning through evaluation and authorised application, reconnect by id, repeat a command without duplicate work,
 cancel/resume within budget and handle an intervening judge edit. Also verify that unauthorised
 Apply and held-out-label access are rejected. The same tests must exercise the shared command
 layer used by the Calibration UI; external orchestration must not fork the tuning semantics.
