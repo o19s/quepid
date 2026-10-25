@@ -24,6 +24,9 @@ const LATENCY_MS = Number(process.env.PERF_LATENCY_MS ?? 20);
 const SNAPSHOT_MAX_QUERIES = Number(process.env.PERF_SNAPSHOT_MAX_QUERIES ?? 1000);
 // PERF_PROFILE=1 records a CPU profile of the load and reports the hottest functions by self time.
 const PROFILE = process.env.PERF_PROFILE === '1';
+// PERF_LIVE_PEAK=1 forces a GC before each heap sample, so the peak counts held data only, not
+// garbage awaiting collection. The extra GCs slow the load, so its timings aren't comparable.
+const LIVE_PEAK = process.env.PERF_LIVE_PEAK === '1';
 const BASE_BUDGET_MB = 40;
 // ~120 KB/query today. Most of it is each doc's text held three to four times, because
 // splainer-search 3.x deep-clones response docs with structuredClone, which copies strings
@@ -151,8 +154,9 @@ test(`a ${QUERY_COUNT}-query case loads within its memory budget`, async ({ page
     let sampling = true;
     const sampler = (async () => {
       while (sampling) {
-        peakHeapMB = Math.max(peakHeapMB, await usedHeapMB(cdp).catch(() => 0));
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const sample = LIVE_PEAK ? retainedHeapMB(cdp) : usedHeapMB(cdp);
+        peakHeapMB = Math.max(peakHeapMB, await sample.catch(() => 0));
+        await new Promise(resolve => setTimeout(resolve, LIVE_PEAK ? 1000 : 500));
       }
     })();
 
@@ -180,7 +184,9 @@ test(`a ${QUERY_COUNT}-query case loads within its memory budget`, async ({ page
 
     const result = {
       sha: gitSha(), at: new Date().toISOString(), queries: QUERY_COUNT, latencyMs: LATENCY_MS,
-      settledMs, peakHeapMB: Math.round(peakHeapMB), retainedHeapMB: Math.round(retainedMB),
+      // The retained measurement is the last live sample, so a short load can't peak below it.
+      settledMs, peakHeapMB: Math.round(LIVE_PEAK ? Math.max(peakHeapMB, retainedMB) : peakHeapMB),
+      peakIsLive: LIVE_PEAK, retainedHeapMB: Math.round(retainedMB),
       retainedKBPerQuery: Math.round((retainedMB * 1000) / QUERY_COUNT),
       scriptSeconds: Number(metrics.ScriptDuration?.toFixed(2)), taskSeconds: Number(metrics.TaskDuration?.toFixed(2)),
       explainsWhileCollapsed: collapsed?.Explain ?? null, normalDocs: collapsed?.NormalDoc ?? null,

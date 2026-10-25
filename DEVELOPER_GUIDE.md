@@ -428,8 +428,11 @@ retained heap, script time and, up to 1000 queries, how many splainer explain
 trees exist while every query is collapsed. Each run writes its numbers to
 `tmp/perf/` with the git SHA. Budgets are soft assertions. `PERF_PROFILE=1` adds
 the hottest functions by CPU self time, and `PERF_BREAKDOWN=1` the biggest
-retainers of string memory. Timings vary between machines, so compare the medians
-of interleaved before/after runs on one machine.
+retainers of string memory. The peak heap includes garbage not yet collected, so
+a page that makes more garbage can peak higher while holding no more data.
+`PERF_LIVE_PEAK=1` forces a GC before each sample to measure held data only; its
+extra GCs slow the load, so don't compare its timings. Timings vary between
+machines, so compare the medians of interleaved before/after runs on one machine.
 
 ### Routine visual regression checks
 

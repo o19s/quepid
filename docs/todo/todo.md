@@ -1,8 +1,9 @@
 # Todo
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-10-25
 
-Outstanding migration work and follow-ups for the AngularJS-removal branch.
+Outstanding follow-ups from the AngularJS removal, which landed on `main` in
+`8d4fc1cd` (#1842). Open parity decisions stay here; restructuring and
 `[PREEXISTING]` bugs, hardening and cleanup are in
 [after-angular-removal.md](after-angular-removal.md). When something is fixed, remove its entry — do not add a completed section or keep resolved items for history.
 
@@ -25,73 +26,18 @@ Ratings appear as `P2 I3 C1` beside each item.
 | **I — Simplification impact** (higher is more benefit) | Little or no code reduction | Local simplification | Removes duplication or complexity across several paths | Substantial reduction in wrappers, code, or maintenance burden |
 | **C — Complexity / risk** (lower is easier and safer) | Trivial, isolated edit | Small change with limited regression risk | Several interacting paths or meaningful behavioral risk | Broad change, sensitive data/security contracts, or unresolved design decisions |
 
-## [MIGRATION] Sign-off gate for landing the AngularJS removal
+### [MIGRATION] P2 I0 C1 — Tune Relevance offers `translations:` instead of `translate:`
 
-From the [engineering review](../manual-testing/engineering-review-cleanup.md#l1-land-the-branch-before-further-refactoring-migration-followup).
+Custom field names are accepted again: the wizard's Title, ID and Additional
+Display Fields and Tune Relevance's Displayed Fields all use `create: true`, and
+the wizard's "could be a typo" confirm is back (`wizard_controller.js`). Two
+leftovers:
 
-**Scope freeze:** until this gate passes, the branch takes only parity fixes,
-work toward the gate, and fixes for failures the gate turns up. Restructuring
-(stylesheet splits, markup moves, renames, collapsing runtime layers) waits
-until after landing and goes to `main` as ordinary PRs; it is tracked in
-[after-angular-removal.md](after-angular-removal.md). A change to an owner file
-reopens any closed checklist row that relies on it.
-
-The branch lands when all of these hold on one commit:
-
-- Every row in the [Angular parity checklist](../manual-testing/angular-parity-checklist.md)
-  is closed: each item is ticked, marked N/A, or linked to a decision. Losses
-  without a decision are recorded as tagged entries in this file.
-- No other `[MIGRATION]` entries remain in this file, and every entry titled
-  "before merge" is resolved or reclassified with evidence. Delete this section
-  when the branch lands.
-- `bin/manual_test_status --due-only` lists nothing in parts 03–07 (case
-  management, the core workbench, endpoints and the case wizard).
-- These pass in the server container: `yarn test:unit`, `rails test`,
-  `yarn lint:js`, `yarn lint:css`, `bundle exec rubocop`, `yarn test:visual`, and
-  the full local `yarn test:e2e` run (not in CI).
-
----
-
-### [MIGRATION] P1 I0 C1 — Confirm large cases are no worse than main's Angular page
-
-The Stimulus page published every query's documents after each search, building
-every doc's splainer explain tree, and the header's snapshot-score badges (and the
-frog report, while open) rebuilt every query on each store event. A 5000-query case retained 1521 MB after GC,
-peaked at 2.9 GB and took 65 s with 49 s of script time. Fixed on this branch:
-documents are built only for expanded queries, and exports, book populate and the
-frog report read the live queries. The same case now retains 643 MB, peaks at
-1.1 GB and takes 24 s with 8 s of script time. At 400 queries it retains 54 MB,
-against 77 MB for the Legacy app on splainer 2.x.
-
-Measured with `yarn test:perf` (`test/playwright/large_case.perf.spec.ts`), which
-replays generated Solr responses shaped like `thor sample_data:large_data`'s, so
-no real engine is involved. Still to do before merge: measure main's Angular page
-on the same machine. Main also runs splainer-search 3.3, so it should not be
-compared with the 2.x Legacy app at 448 MB. Delete this entry if main is no
-better; otherwise record the gap here.
-
----
-
-### [MIGRATION] P1 I0 C1 — Field pickers no longer accept custom field names
-
-Legacy (`8ceb99e9`) let any field name be typed in the wizard's Title, ID and
-Additional Display Fields (`wizardModal.html:409-427`) and in Tune Relevance's
-Displayed Fields (`devQueryParams.html:202`); a custom Title or ID asked "could be
-a typo" before continuing (`wizardModal.js:582-587`). `486cb05a` set
-`create: false` on all four Tom Select controls, and NOT-DOING's "Field option
-creation" records it as a user choice without a reason. Discovery only reports
-top-level keys from one sample page, so sparse fields, nested paths such as
-`author.name`, and `function:`, `hl:`, `translate:`, `unabridged:`, `sub:` and `*`
-entries can no longer be added unless already saved. A new case whose discovery
-returns nothing is stuck with the engine's default Title and ID, and the wizard's
-typo confirm can no longer fire. Separately, Tune Relevance's prefix list offers
-`translations:`, which isn't a valid type; the real one is `translate:`
-(`tune_relevance_controller.js:240`).
-
-- **Decision needed (Eric):** was dropping custom names intended, or only Tom
-  Select's "Add …" option? If not intended, restore `create: true` with the
-  existing typo confirm and fix the `translate:` prefix; otherwise record the
-  reason in NOT-DOING.
+- Tune Relevance's prefix list (`addDiscoveredFieldOptions` in
+  `tune_relevance_controller.js`) offers `translations:`, which splainer-search's
+  `fieldSpecSvc` doesn't recognise; the real type is `translate:`.
+- NOT-DOING's "Field option creation" still says the field controls don't create
+  new options. Delete it, or reword it to match the code.
 
 ---
 
@@ -99,7 +45,7 @@ typo confirm can no longer fire. Separately, Tune Relevance's prefix list offers
 
 1. **Row actions.** Legacy rows offered Rename (inline), Delete (modal "Delete This Case — You're about to delete this case forever! …"), Archive, Export (the export modal) and Share. The list now has Share and Archive only. Rename, Delete and Export remain in the case workbench (header double-click, toolbar). Dropped all three in `aa076cb3` ("Good by angular /cases listing UI!", inside #1642): that commit deleted Legacy's `case_listing.html` and added the Rails list with Share and Archive only. Neither the PR description nor the commit says whether this was intended.
   - **Needs Eric's review:** confirm it was deliberate, or restore them. Delete matters most, because cleaning up cases now means opening each one in the workbench.
-2. **Archive confirmation copy.** Legacy: "Archive This Case for Later? You're about to put this case into deep freeze. You'll be able to unarchive it later through the \"Archived Cases\" filter …". Now the shared Confirm modal: "Confirm Archive <case>?". Replaced it in `aa076cb3` (inside #1642) with a generic modal titled "Confirm" that asks `Archive <case>?`. This branch later rewired that confirm (`1e700a37`, `42cb7bf9`, `2608ea7b`) but kept his wording. Neither the PR description nor the commit says whether dropping Legacy's explanation was intended.
+2. **Archive confirmation copy.** Legacy: "Archive This Case for Later? You're about to put this case into deep freeze. You'll be able to unarchive it later through the \"Archived Cases\" filter …". Now the shared Confirm modal: "Confirm Archive <case>?". Replaced it in `aa076cb3` (inside #1642) with a generic modal titled "Confirm" that asks `Archive <case>?`. The AngularJS-removal branch later rewired that confirm (`1e700a37`, `42cb7bf9`, `2608ea7b`) but kept his wording. Neither the PR description nor the commit says whether dropping Legacy's explanation was intended.
   - **Needs Eric's review:** confirm it was deliberate, or add back the sentence on where archived cases go and how to unarchive them.
 3. **View filter.** Legacy's All / My Cases / Shared With Me Cases / Archived Cases buttons became a Team select plus an Archived checkbox, so "mine" and "shared with me" cannot be filtered. Legacy also had a per-page number box, a "Loading Your Cases" spinner and a notice when there are more than 30 cases; the list is now server-paginated. Legacy's "No cases to show!" is gone too: Current shows "Create your first case by clicking New Case above." only when nothing is filtered, and an empty table otherwise. Built the new filters (search, Archived checkbox, Team select) and the `pagy` paging in `aa076cb3` (inside #1642); later commits on main only tuned search and queries. This was a redesign rather than a gap, but nothing records that losing "Mine" and "Shared with me" was intended.
   - **Needs Eric's review:** confirm it was deliberate, or add an owner filter.
