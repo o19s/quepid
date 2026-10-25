@@ -7,11 +7,11 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - Preserve behavior unless the user specifically authorizes a change. Refactoring or simplifying architecture does not authorize behavioral improvements or pre-existing bug fixes.
 - Establish and verify existing edit/shared-state, persistence, refresh, validation, failure and navigation contracts. Do not rewrite tests or scenarios to justify changed behavior; leave work incomplete if parity is unresolved.
 - Fix regressions while retaining the authorized implementation. Ask before a broad rollback.
-- In Angular parity work, "fix" or "restore" an item means make it match Legacy (`8ceb99e9`). Do not substitute an alternative, even one you recommended, unless the user chooses it by name; if the instruction is ambiguous, ask. Record only user-chosen departures in [NOT-DOING.md](docs/todo/NOT-DOING.md).
 - Keep changes focused. Before substantive renames, file moves, broad rewrites or other unrequested churn, ask with the proposed change, reason and smaller alternative. General refactoring instructions do not authorize that churn; specific approval persists.
-- **Rules go in this repo, never only in agent memory.** When the user gives a standing rule, preference or workflow requirement, write it into this file (or the doc it links to) in the same turn, then tell the user where. A private memory entry alone does not count; it may be added as a second copy. Check the existing rules first so each rule is stated once.
+- **Rules go in this repo, never only in agent memory.** When the user gives a standing rule, preference or workflow requirement, write it into this file (or the doc it links to) in the same turn, then tell the user where.
+  - Check the existing rules first so each rule is stated once.
 - Keep documentation concise: state each rule once, link to shared guidance and retain only necessary rationale and verification evidence.
-- Preserve existing and imported documentation wording and structure. Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.
+- **Preserve existing and imported documentation wording and structure.** Change it only for factual corrections, necessary task-related updates or an explicitly requested rewrite; do not condense, reorganize or restyle it merely to improve presentation.
 
 ## General Configuration / Execution
 
@@ -19,51 +19,50 @@ Follow [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) for development conventions.
 - We run Quepid in Docker primarily, don't run Rails and other build tasks locally.
 - To set up the environment use:
     `bin/setup_docker`.
-- Follow [DEVELOPER_GUIDE.md — Running the app](DEVELOPER_GUIDE.md#4-running-the-app) for the established startup workflow (`bin/docker s` / `bin/docker q`). 
-    - Start the server when needed without asking for confirmation; reuse it when running. 
+- Follow [DEVELOPER_GUIDE.md — Running the app](DEVELOPER_GUIDE.md#4-running-the-app) for the established startup workflow (`bin/docker s` / `bin/docker q`).
+    - Start the server when needed without asking for confirmation; reuse it when running.
     - Do not change developer scripts or Compose configuration to work around agent execution mistakes.
 - Do not stop (you may restart) the dev server unless the user explicitly asks. Leave it running across tasks.
-- When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory, which no other session or person can see or review.
-- **Complete requested batches, not convenient slices.** 
-    - When the user says to do the next step in an execution plan, execute the entire first incomplete batch and its acceptance criteria. 
-    - A preparatory subtask is not completion. Do not present partial work as done, offer a commit message, or move the plan forward until all gates pass. 
+- When a correction or lesson applies to how you work in this repo, fix it in the actual project file it belongs to (this file, a skill's `SKILL.md`, a doc) — not only in your own private memory.
+- **Complete requested batches, not convenient slices.**
+    - When the user says to do the next step in an execution plan, execute the entire first incomplete batch and its acceptance criteria.
+    - A preparatory subtask is not completion. Do not present partial work as done, offer a commit message, or move the plan forward until all gates pass.
     - If a concrete blocker prevents completion, record the exact blocker and smallest safe prerequisite in the plan, report that the batch is incomplete, and stop at that boundary.
-- **Work in meaningful batches, not conversational micro-slices.** 
-    - When the user says “continue”, “do it”, or “do more”, keep working through the current end-to-end batch and its verification gates. 
-    - Do not stop after one extracted method, helper, or test to ask for another instruction, provide a commit message, or imply completion. 
+    - When the user says “continue”, “do it”, or “do more”, keep working through the current end-to-end batch and its verification gates.
+    - Do not stop after one extracted method, helper, or test to ask for another instruction, provide a commit message, or imply completion.
     - Give progress updates at meaningful boundaries; only hand back when the batch is complete, or when a concrete blocker has been recorded and reported.
-- **Do not stage or unstage changes; ask before cherry-picking.** 
-    - The user stages their own changes. 
+- **Do not stage or unstage changes; ask before cherry-picking.**
+    - The user stages their own changes.
     - `git cherry-pick` is permitted only after asking for and receiving approval for the specific commits, including its index changes.
-    - This exception does not authorize other index operations: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index. 
-    - Files may show up staged without you doing anything, because the editor or the user staged them. Leave them alone and don't comment on what is staged. 
+    - This exception does not authorize other index operations: no `git add`, `git rm`, `git mv`, `git reset`, `git restore --staged`, `git stash` or `git stash pop`, including to "undo" an accidental change to the index.
+    - Files may show up staged without you doing anything, because the editor or the user staged them. Leave them alone and don't comment on what is staged.
     - If you need a file removed, delete it with plain `rm`. If you need to test old code, copy files to the scratchpad and back instead of stashing.
-- **Commit messages must describe the staged patch.** 
+- **Commit messages must describe the staged patch.**
     - Before proposing a commit message, inspect `git status --short`, `git diff --cached --stat`, and the full `git diff --cached` (including staged renames and deletions); do not infer the commit scope from the latest task or from uncommitted changes.
 - In general, prefer using a single agent and not spawning sub-agents unless it will make a big difference. Even then, ask before spawning.
 
 ## Docker
-- **Check before starting Docker.** 
-    - Inspect `docker compose ps -a app` and the configured host port. The existing wrapper uses `docker compose run`, so a healthy server may be named `quepid-app-run-*`; an empty `docker compose ps app` does not prove the server is stopped. Identify and reuse the actual server container. 
-    - The three app instances are permanent (current :3000, historical :3001, diff baseline :3003; see [Screenshot capture and diffing](docs/screenshot_review.md)). 
-    - If the current server's container exists but is stopped, restart it with `docker start <name>`. Only when no current-server container exists at all, create one with `bin/docker q`, without asking for confirmation. 
+- **Check before starting Docker.**
+    - Inspect `docker compose ps -a app` and the configured host port. The existing wrapper uses `docker compose run`, so a healthy server may be named `quepid-app-run-*`; an empty `docker compose ps app` does not prove the server is stopped. Identify and reuse the actual server container.
+    - The three app instances are permanent (current :3000, historical :3001, diff baseline :3003; see [Screenshot capture and diffing](docs/screenshot_review.md)).
+    - If the current server's container exists but is stopped, restart it with `docker start <name>`. Only when no current-server container exists at all, create one with `bin/docker q`, without asking for confirmation.
     - Don't use `bin/docker s` for this: it runs with `--rm`, so stopping it deletes the container. Never invoke startup again just to run a command or test. Leave the server running across tasks.
     - `lsof -nP -iTCP:${APP_PORT:-3000} -sTCP:LISTEN`.
     - A port-3000 bind error is not permission to stop anything, retry, or create a throwaway app. Resolve the exact owner and report it.
-- **Run commands inside the existing server container.** 
+- **Run commands inside the existing server container.**
     - Use `docker compose exec app` for the Compose service container, or `docker exec <actual-server-container-name>` for a server started by `bin/docker s` / `q`. For example, run Rails tests in that container rather than starting a new app-run container.
     - While the diff baseline runs, `docker compose exec app` can land in `quepid_app_ui_diff`, which mounts `../quepid-ui-diff-worktree` and its own database. Confirm the container mounting this checkout at `/srv/app` and use `docker exec <that-name>` instead.
-- For an authorized server image update, preserve the inspected startup command. Compose does not retain command overrides from a previous `run`; the dev server uses `foreman s -f Procfile.dev`. Reuse the wrapper startup command with `--no-deps` when dependency configuration has changed, so an app runtime update cannot also recreate a database service.
+- **For an authorized server image update, preserve the inspected startup command.** Compose does not retain command overrides from a previous `run`; the dev server uses `foreman s -f Procfile.dev`. Reuse the wrapper startup command with `--no-deps` when dependency configuration has changed, so an app runtime update cannot also recreate a database service.
 - Wait for tests and other commands in the server container to finish before restarting it; a restart terminates those checks.
 - Keep `app` immediately after `docker compose exec` so the command matches the approved Docker execution rule. For environment overrides, use `docker compose exec app env KEY=value command ...`; do not put `-e KEY=value` before `app`.
-- **Never use `bin/docker r`, `b`, or `c`, or any other `docker compose run`, for agent commands.** 
-    - Those wrappers create new throwaway containers. Use `exec` in the actual server so installed tools remain available throughout the session. 
-    - If the server looks down, check `docker compose ps -a app` first: the server's container name varies (`quepid_app`, `quepid-app-run-*`, or a custom name), so not finding one name doesn't mean it's stopped. 
+- **Never use `bin/docker r`, `b`, or `c`, or any other `docker compose run`, for agent commands.**
+    - Those wrappers create new throwaway containers. Use `exec` in the actual server so installed tools remain available throughout the session.
+    - If the server looks down, check `docker compose ps -a app` first: the server's container name varies (`quepid_app`, `quepid-app-run-*`, or a custom name), so not finding one name doesn't mean it's stopped.
     - Restart a stopped server container rather than creating a new one, as described above. A new container is never the fallback, including when it is missing gems or other dependencies.
-- Container recreation between server sessions is acceptable; preserve host-mounted or volume-backed data. 
-    - Do not pull images, rebuild Docker images, or run setup unnecessarily. 
-    - Do not stop or replace a running server unless requested. 
-    - A generated app-run name alone does not make a container a duplicate: identify which container is serving the app. 
+- Container recreation between server sessions is acceptable; preserve host-mounted or volume-backed data.
+    - Do not pull images, rebuild Docker images, or run setup unnecessarily.
+    - Do not stop or replace a running server unless requested.
+    - A generated app-run name alone does not make a container a duplicate: identify which container is serving the app.
     - If multiple servers exist, report their exact names and ask before stopping them.
     - If Docker reports permission denied while connecting to its socket, rerun the same in-scope command once with the execution tool's elevated Docker-socket permission. Do not work around the failure with another container. If the elevated retry also fails, report the permission blocker and continue only with non-Docker checks that are safe and relevant.
     - **Can't reach the app.** In the running container the app is plain `http://localhost:3000`. In an `r` container `localhost` is itself, and the host is only reachable as `host.docker.internal` — which Rails rejects with a 403 "Blocked hosts" page, since its dev allow-list takes any bare IP but only a few names.
@@ -184,11 +183,10 @@ Quepid **does not** use one global JS style. Write **new** code to modern conven
 **Modern JS** (`app/javascript/`) — `.prettierrc.json`; full tooling in `docs/js_tooling.md`:
 
 - **Double quotes**, **no semicolons**, **no trailing commas** (`trailingComma: "none"`).
-- Prettier pre-commit is limited to **`api/` and `utils/`** (see `config/javascript_lint_scope.mjs`). Before committing there: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
+- Prettier formats the whole lint scope (see `config/javascript_lint_scope.mjs`) and runs in pre-commit. Before committing JS: `docker compose exec app yarn format:js:check` and `docker compose exec app yarn lint:js`.
 - ESLint covers the wider modern tree (`controllers/`, `modules/`, entry bundles, etc.) and the JavaScript tests under `test/javascript/`; follow the conventions above when you add specs.
-    - Pre-commit **still runs ESLint** on those paths — run it yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js`.
-    - Do **not** run Prettier outside `api/`/`utils/` for now (it would churn older single-quote files); hand-apply modern style to **new** lines you add.
-- **Mixed-style files** (e.g. an older controller with single quotes): modern conventions on **new** code; when changing an existing line, match its surrounding style. Do not fall back to legacy habits (`var`, semicolons) on greenfield Stimulus/importmap code.
+    - Pre-commit runs ESLint and Prettier on staged files — run them yourself before finishing: `docker compose exec app npx eslint app/javascript/path/to/file.js` or tree-wide `docker compose exec app yarn lint:js` and `yarn format:js:check`.
+- Do not fall back to legacy habits (`var`, semicolons) on Stimulus/importmap code.
 - **Importmap bare paths** — `import { apiFetch } from "api/fetch"`, not relative `../api/...`. Add new pins to `vitest.config.js` when tests import them.
 - Use `const` or `let`, not `var`.
 

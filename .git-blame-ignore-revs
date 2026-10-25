@@ -1,0 +1,6 @@
+# Bulk formatting commits that `git blame` should skip.
+# GitHub reads this file automatically.
+# Add the full hash as it appears on main (after any squash merge).
+
+# Prettier: format all of app/javascript/
+99735f3bc93a69030e84f5be0e95f0b2cbf54837

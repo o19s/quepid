@@ -306,7 +306,7 @@ On the Ruby side there is no property-testing gem. For importer/exporter pairs, 
 
 ### Pre-commit hooks
 
-Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on `app/javascript/api/` and `utils/` — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
+Git commits run RuboCop (Ruby), ESLint on the `app/javascript/` tree, and Prettier on the same `app/javascript/` tree — via a version-controlled hook in `.githooks/pre-commit`. No extra tooling is required beyond what the project already uses (Bundler/RuboCop and Yarn).
 
 Hooks prefer Docker when it is available. RuboCop reuses the running app container
 that mounts the current checkout at `/srv/app` (including one started by
@@ -342,7 +342,7 @@ The detailed JavaScript lint and formatting scope is maintained in [`docs/js_too
 
 ```bash
 bin/docker r yarn lint:js
-bin/docker r yarn format:js:check    # Prettier check — api/, utils/; or yarn format:js to fix
+bin/docker r yarn format:js:check    # Prettier check — app/javascript/; or yarn format:js to fix
 bin/docker r rails test:eslint       # ESLint + Prettier (CI-style)
 ```
 
@@ -353,7 +353,7 @@ pip install pre-commit   # or: pipx install pre-commit
 pre-commit install
 ```
 
-The hook lints scoped files under `app/javascript` (ESLint on everything in scope; Prettier on `api/` and `utils/`). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
+The hook lints scoped files under `app/javascript` (ESLint and Prettier on everything in scope). Lint/format scope is in `config/javascript_lint_scope.mjs` and [`docs/js_tooling.md`](docs/js_tooling.md). Requires `yarn install` on the host so `node_modules` exists. Re-run `pre-commit install` after cloning or pulling hook changes.
 
 ### CSS Lint
 
@@ -572,7 +572,7 @@ When developing Quepid alongside changes to `splainer-search`, you can mount you
    bin/docker s
    ```
 
-3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core vendor bundle via **`splainer_search_adapter.js`**.
+3. **After splainer changes**: **splainer-search 3.x** is installed under **`node_modules/splainer-search`** and pulled into the core case bundle (**`core_case.js`**) via **`app/javascript/utils/splainer_search_runtime.js`**.
 
    With **`bin/docker s`**, Foreman rebuilds the core bundles when you save; **hard-refresh** the case page.
 

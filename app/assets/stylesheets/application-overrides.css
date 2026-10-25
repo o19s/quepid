@@ -198,3 +198,9 @@ h3 {
   font-weight: 500;
   margin-right: 0.25rem;
 }
+
+/* Mapper wizard: the HTML preview's Expand toggle (mapper_wizard_controller).
+ * !important beats the <pre>'s inline collapsed max-height. */
+.html-preview.expanded {
+  max-height: 600px !important;
+}

@@ -4,11 +4,6 @@
 import { readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
-/** Esbuild bridge files — not importmap/Stimulus; excluded from modern lint. */
-export const LEGACY_ESBUILD_ENTRIES = [
-  'app/javascript/utils/splainer_search_runtime.js',
-];
-
 /** Directory names under app/javascript/ never linted (vendored legacy plugins). */
 export const SKIPPED_DIRECTORIES = ['vendor'];
 
@@ -25,7 +20,6 @@ export const ESLINT_IGNORES = [
   'test/playwright/**',
   'app/assets/builds/**',
   'app/javascript/vendor/**',
-  ...LEGACY_ESBUILD_ENTRIES,
 ];
 
 /**
@@ -42,9 +36,6 @@ export function isLintableJavascriptPath(path) {
     return false;
   }
   if (normalized.startsWith('app/javascript/vendor/')) {
-    return false;
-  }
-  if (LEGACY_ESBUILD_ENTRIES.includes(normalized)) {
     return false;
   }
   return true;
@@ -81,19 +72,13 @@ export function listLintableJavascriptFiles(repoRoot = process.cwd()) {
 }
 
 /**
- * Whether a repo-relative path is in the Prettier format scope
- * (api/ and utils/).
- * Narrow scope avoids a one-shot Prettier reformat of all controllers/modules;
- * project style is double quotes (see docs/js_tooling.md).
+ * Whether a repo-relative path is in the Prettier format scope.
+ * Same as the ESLint scope; project style is double quotes (see docs/js_tooling.md).
  * @param {string} path
  * @returns {boolean}
  */
 export function isPrettierJavascriptPath(path) {
-  const normalized = path.replace(/^\.\//, '');
-  return (
-    normalized.startsWith('app/javascript/api/') ||
-    normalized.startsWith('app/javascript/utils/')
-  );
+  return isLintableJavascriptPath(path);
 }
 
 /**
@@ -102,7 +87,7 @@ export function isPrettierJavascriptPath(path) {
  * @returns {string[]}
  */
 export function listPrettierJavascriptFiles(repoRoot = process.cwd()) {
-  return listLintableJavascriptFiles(repoRoot).filter(isPrettierJavascriptPath);
+  return listLintableJavascriptFiles(repoRoot);
 }
 
 /** ESLint `files` glob for the modern stack. */

@@ -84,6 +84,7 @@ group :development do
   gem 'letter_opener'
   gem 'rubocop', require: false
   gem 'rubocop-rails', require: false
+  gem 'rubocop-minitest', require: false
   gem 'brakeman', require: false
   gem 'bundler-audit', require: false
   gem 'rails-erd'
@@ -97,5 +98,3 @@ group :test do
   gem 'webmock'
   gem 'rails-controller-testing' # bring back compatibility with rails 4 assigns in controller tests.
 end
-
-gem 'rubocop-minitest'

@@ -78,7 +78,7 @@
   <% end %>
 </head>
 
-<body <%= tag.attributes(layout_body_attributes(case_page: case_page, kase: @case, try: @try)) %>> <%# herb:disable actionview-no-unnecessary-tag-attributes %>
+<body <%= tag.attributes(layout_body_attributes(case_page: case_page, kase: @case, try: @try)) %>>
 
 <% if case_page %>
   <%= render 'layouts/case_workspace', kase: @case %>
